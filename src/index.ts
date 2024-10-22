@@ -1,0 +1,171 @@
+import { Wallet, ethers } from "ethers";
+import * as grpc from "@grpc/grpc-js";
+import { Metadata } from  "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
+import { getRpcEndpoint } from "./config";
+
+import { getKeyRequestMessage } from "./auth";
+
+const {
+  TaskType, TriggerType
+} = require('../grpc_codegen/avs_pb');
+
+// Load the protobuf definition
+const packageDefinition = protoLoader.loadSync('./submodules/EigenLayer-AVS/protobuf/avs.proto', {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+})
+
+const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
+const apProto = protoDescriptor.aggregator;
+
+interface KeyExchangeResp {
+  key: string;
+}
+
+interface ClientOption {
+  env?: string;
+  owner?: string;
+  privateKey?: string;
+  jwtApiKey?: string;
+}
+
+async function signMessageWithEthers(wallet: Wallet, message: string): Promise<string> {
+  const signature = await wallet.signMessage(message)
+  return signature
+}
+
+const AuthMethods = ["GetKey"];
+
+class BaseClient {
+  readonly env: string;
+  readonly rpcClient;
+  readonly owner?: string;
+  readonly opts: ClientOption;
+  private  authkey?: string;
+
+  constructor(opts: ClientOption) {
+    if (!opts.privateKey && !opts.jwtApiKey) {
+      throw new Error("missing private key or apikey");
+    }
+
+    if (!opts.privateKey && !opts.owner) {
+      throw new Error("missing owner");
+    }
+
+    this.env = opts.env || "production";
+    this.rpcClient = new (apProto as any).Aggregator(
+        getRpcEndpoint(this.env),
+        // TODO: switch to the TLS after we're able to update all the operator
+        grpc.credentials.createInsecure()
+    );
+
+    this.opts = opts;
+    if (opts.owner) {
+      this.owner = opts.owner;
+    }
+  }
+
+  async authenticate(): Promise<void> {
+    if (this.opts.jwtApiKey) {
+      const { key } = await this.authWithJwtKey(this.opts.jwtApiKey);
+      this.authkey = key;
+    }
+  }
+
+  async authWithJwtKey(signature: string): Promise<KeyExchangeResp> {
+    const expiredAt = Math.floor(+new Date() / 3600 * 24);
+    let result: KeyExchangeResp = await this._callRPC<KeyExchangeResp>('GetKey', {
+      owner: this.owner,
+      expired_at: expiredAt,
+      signature,
+    });
+
+    return { key: result.key }
+  }
+
+  async authWithECDSAKey(privateKey: string): Promise<KeyExchangeResp> {
+    const wallet = new Wallet(privateKey);
+    const owner = wallet.address;
+    const expiredAt = Math.floor(+new Date() / 3600 * 24)
+    const message = getKeyRequestMessage(wallet, expiredAt);
+    const signature = await signMessageWithEthers(wallet, message)
+    let result = await this._callRPC<KeyExchangeResp>('GetKey', {
+       owner,
+       expired_at: expiredAt,
+       signature,
+    });
+ 
+    return { key: result.key }
+  }
+
+  callRPC<Resp, Req extends object = {}>(method: string, request: Req = {} as Req, metadata?: Metadata): Promise<Resp> {
+    if (metadata === undefined) {
+      metadata = new grpc.Metadata()
+    }
+
+    if (!this.authkey) {
+      throw new Error("Not authenticated yet");
+    }
+
+    metadata.add('authkey', this.authkey);
+
+    return this._callRPC<Resp, Req>(method, request, metadata);
+  }
+
+  private _callRPC<Resp, Req extends object = {}>(method: string, request: Req = {} as Req, metadata?: Metadata): Promise<Resp> {
+    if (metadata === undefined) {
+      metadata = new grpc.Metadata()
+    }
+
+    return new Promise((resolve, reject) => {
+      (this.rpcClient as any)[method].bind(this.rpcClient)(request, metadata, (error: any, response: Resp) => {
+          if (error) {
+              reject(error)
+          } else {
+              resolve(response)
+          }
+      })
+    })
+  }
+
+}
+
+
+interface TaskResp {
+  id: string;
+  status: string;
+}
+
+interface TaskListResp {
+  tasks: TaskResp[];
+}
+
+interface SmartWalletResp {
+  smart_account_address: string;
+  nonce: string;
+}
+
+export default class Client extends BaseClient {
+   async listTask(): Promise<TaskListResp> {
+     const result = await this.callRPC<TaskListResp>('ListTasks')
+   
+     return result;
+   }
+
+  async getSmartWalletAddress(): Promise<SmartWalletResp> {
+    const result = await this.callRPC<SmartWalletResp>('GetSmartAccountAddress', { owner: this.owner })
+    return result;
+  }
+
+  // TODO: generate the type def using protobuf typescriplt gen util
+  async getTask(taskId: string): Promise<any> {
+    const result = await this.callRPC('GetTask', { bytes: taskId })
+    console.log("Task Data for ", taskId, "\n", result)
+    return result;
+  }
+
+}
