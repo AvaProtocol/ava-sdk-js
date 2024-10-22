@@ -65,6 +65,9 @@ class BaseClient {
     } else if (this.opts.privateKey) {
       const { key } = await this.authWithECDSAKey(this.opts.privateKey);
       this.authkey = key;
+    } else if (this.opts.presignSignature && this.opts.signatureExpiredAt) {
+      const { key } = await this.authWithSignature(this.opts.presignSignature, this.opts.signatureExpiredAt);
+      this.authkey = key;
     } else {
       throw new Error("No authentication method provided");
     }
@@ -89,7 +92,7 @@ class BaseClient {
   }
 
   async authWithECDSAKey(privateKey: string): Promise<KeyExchangeResp> {
-	this.wallet = new Wallet(privateKey);
+    this.wallet = new Wallet(privateKey);
     this.owner = this.wallet.address;
 
     const expiredAtEpoch = Math.floor(+new Date() / 3600 * 24);
@@ -104,6 +107,18 @@ class BaseClient {
 
     return { key: result.key };
   }
+
+  // This flow can be used where the signature is generate from outside, such as in front-end and pass in
+  async authWithSignature(signature: string, expiredAtEpoch: number): Promise<KeyExchangeResp> {
+    let result = await this._callRPC<KeyExchangeResp>('GetKey', {
+      owner: this.owner,
+      expired_at: expiredAtEpoch,
+      signature
+    })
+
+    return { key: result.key };
+  }
+
 
   protected async sendRequest<TResponse, TRequest extends object = {}>(
     method: string,
