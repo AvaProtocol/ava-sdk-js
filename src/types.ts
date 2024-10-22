@@ -25,6 +25,7 @@ export interface TaskListResp {
 
 export interface SmartWalletResp {
   address: string;
+  smart_account_address: string;
 }
 
 export interface TransactionResp {

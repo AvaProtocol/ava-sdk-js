@@ -8,13 +8,14 @@ describe('Client E2E Tests', () => {
   beforeAll(() => {
     // Initialize the client with test credentials
     client = new Client({
-      env: 'production',
+      env: 'staging',
       jwtApiKey: process.env.TEST_JWT_API_KEY, // Set this in your environment variables
+      privateKey: process.env.TEST_PRIVATE_KEY,
       owner: process.env.TEST_OWNER, // Set this in your environment variables
     });
   });
 
-  test('authenticate with JWT key', async () => {
+  test('authenticate', async () => {
     await expect(client.authenticate()).resolves.not.toThrow();
   });
 
@@ -29,7 +30,7 @@ describe('Client E2E Tests', () => {
     await client.authenticate(); // Ensure we're authenticated
     const result = await client.getSmartWalletAddress();
     expect(result).toBeDefined();
-    expect(result.address).toMatch(/^0x[a-fA-F0-9]{40}$/); // Ethereum address format
+    expect(result.smart_account_address).toMatch(/^0x[a-fA-F0-9]{40}$/); // Ethereum address format
   });
 
   test('getTask', async () => {
