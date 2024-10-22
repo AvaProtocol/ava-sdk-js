@@ -1,7 +1,7 @@
 {
   "name": "ava-sdk-js",
   "version": "0.6.0",
-  "description": "API Package to interact with Ava GRPC Server",
+  "description": "A JavaScript/TypeScript SDK designed to simplify integration with Ava Protocol’s AVS",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
   "author": "Vinh Nguyen (https://github.com/v9n), Chris Li (https://github.com/chrisli30)",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=20.11.0"
+    "node": ">=20.18.0"
   },
   "scripts": {
     "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --proto_path=../../submodules/EigenLayer-AVS/protobuf avs.proto",
@@ -31,10 +31,6 @@
   "devDependencies": {
     "tsup": "^8.0.2",
     "typescript": "^5.4.2"
-  },
-  "resolutions": {
-    "string-width": "4.2.3",
-    "strip-ansi": "6.0.1"
   },
   "type": "module"
 }
