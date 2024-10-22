@@ -49,6 +49,27 @@ npm run gen-protoc
 
 This will automatically download the latest `.proto` file from https://github.com/AvaProtocol/EigenLayer-AVS and generate the updated TypeScript types and gRPC code, ensuring that all changes are reflected in the SDK.
 
+### Running Tests
+
+To ensure the SDK is functioning correctly, we have a comprehensive test suite. Follow these steps to run the tests:
+
+1. Make sure all dependencies are installed:
+   ```bash
+   npm install
+   ```
+
+2. Run the test command. This will test the SDK against mockup responses.
+   ```bash
+   npm test
+   ```
+   
+3. To test the SDK against the live AVS on Ethereum Mainnet, you can run the following command:
+   ```bash
+   npm run test:e2e
+   ```
+
+This will execute all unit and integration tests. Make sure all tests pass before submitting a pull request or deploying changes.
+
 ## Contributing
 
 We welcome contributions! Feel free to submit pull requests or open issues for any bugs or feature requests.
