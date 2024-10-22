@@ -12,7 +12,7 @@
       "require": "./dist/index.js"
     }
   },
-  "author": "team@avaprotocol.org",
+  "author": "Vinh Nguyen (https://github.com/v9n), Chris Li (https://github.com/chrisli30)",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20.11.0"
@@ -26,8 +26,7 @@
     "@grpc/grpc-js": "^1.11.3",
     "@grpc/proto-loader": "^0.7.13",
     "ethers": "^6.13.2",
-    "google-protobuf": "^3.21.4",
-    "grpc-tools": "^1.12.4"
+    "google-protobuf": "^3.21.4"
   },
   "devDependencies": {
     "tsup": "^8.0.2",
