@@ -16,16 +16,8 @@ const packageDefinition = protoLoader.loadSync("./grpc_codegen/avs.proto", {
 const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const apProto = protoDescriptor.aggregator;
 
-interface KeyExchangeResp {
-  key: string;
-}
-
-interface ClientOption {
-  env?: string;
-  owner?: string;
-  privateKey?: string;
-  jwtApiKey?: string;
-}
+// Move interfaces to a separate file, e.g., types.ts
+import { KeyExchangeResp, ClientOption, TaskResp, TaskListResp, SmartWalletResp } from './types';
 
 class BaseClient {
   readonly env: string;
@@ -51,15 +43,19 @@ class BaseClient {
     );
 
     this.opts = opts;
-    if (opts.owner) {
-      this.owner = opts.owner;
-    }
+    // Use optional chaining for cleaner code
+    this.owner = opts.owner ?? undefined;
   }
 
   async authenticate(): Promise<void> {
     if (this.opts.jwtApiKey) {
       const { key } = await this.authWithJwtKey(this.opts.jwtApiKey);
       this.authkey = key;
+    } else if (this.opts.privateKey) {
+      // Implement ECDSA authentication here
+      // This was missing in the original code
+    } else {
+      throw new Error("No authentication method provided");
     }
   }
 
@@ -117,40 +113,19 @@ class BaseClient {
   private _callRPC<Resp, Req extends object = {}>(
     method: string,
     request: Req = {} as Req,
-    metadata?: Metadata
+    metadata: Metadata = new grpc.Metadata()
   ): Promise<Resp> {
-    if (metadata === undefined) {
-      metadata = new grpc.Metadata();
-    }
-
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
         request,
         metadata,
         (error: any, response: Resp) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(response);
-          }
+          if (error) reject(error);
+          else resolve(response);
         }
       );
     });
   }
-}
-
-interface TaskResp {
-  id: string;
-  status: string;
-}
-
-interface TaskListResp {
-  tasks: TaskResp[];
-}
-
-interface SmartWalletResp {
-  smart_account_address: string;
-  nonce: string;
 }
 
 export default class Client extends BaseClient {
@@ -171,7 +146,10 @@ export default class Client extends BaseClient {
   // TODO: generate the type def using protobuf typescriplt gen util
   async getTask(taskId: string): Promise<any> {
     const result = await this.callRPC("GetTask", { bytes: taskId });
-    console.log("Task Data for ", taskId, "\n", result);
+    // Consider removing console.log or using a logger
     return result;
   }
 }
+
+// Export types for easier use
+export * from './types';
