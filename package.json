@@ -18,7 +18,7 @@
     "node": ">=20.18.0"
   },
   "scripts": {
-    "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --proto_path=../../submodules/EigenLayer-AVS/protobuf avs.proto",
+    "gen-protoc": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/main/protobuf/avs.proto > temp_avs.proto && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --proto_path=. temp_avs.proto && mv ./grpc_codegen/avs_pb.js ./grpc_codegen/avs_pb.js && mv ./grpc_codegen/avs_grpc_pb.js ./grpc_codegen/avs_grpc_pb.js && rm temp_avs.proto && rm -f ./grpc_codegen/temp_*",
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -33,15 +33,21 @@ import { AvaSDK } from "ava-sdk-js";
 
 ## Development
 
-If you make changes to the .proto files, you need to regenerate the gRPC types to ensure the SDK remains type-safe.
+### Regenerating gRPC Types
 
-To regenerate the types from the protocol buffers, run the following command:
+In the case of `.proto` files at https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/protobuf/avs.proto changes, the gRPC types needs to be regenerated.Before regenerating the types from the protocol buffers, ensure that `grpc_tools_node_protoc` is installed globally on your system. You can install it using npm:
+
+```bash
+npm install -g grpc-tools
+```
+
+Then, run the following command to regenerate the types:
 
 ```bash
 npm run gen-protoc
 ```
 
-This will automatically generate the updated TypeScript types and gRPC code, ensuring that all changes are reflected in the SDK.
+This will automatically download the latest `.proto` file from https://github.com/AvaProtocol/EigenLayer-AVS and generate the updated TypeScript types and gRPC code, ensuring that all changes are reflected in the SDK.
 
 ## Contributing
 
