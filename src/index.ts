@@ -101,11 +101,11 @@ class BaseClient {
     return { key: result.key };
   }
 
-  callRPC<Resp, Req extends object = {}>(
+  protected async sendRequest<TResponse, TRequest extends object = {}>(
     method: string,
-    request: Req = {} as Req,
+    request: TRequest = {} as TRequest,
     metadata?: Metadata
-  ): Promise<Resp> {
+  ): Promise<TResponse> {
     if (metadata === undefined) {
       metadata = new grpc.Metadata();
     }
@@ -116,19 +116,19 @@ class BaseClient {
 
     metadata.add("authkey", this.authkey);
 
-    return this._callRPC<Resp, Req>(method, request, metadata);
+    return this._callRPC<TResponse, TRequest>(method, request, metadata);
   }
 
-  private _callRPC<Resp, Req extends object = {}>(
+  private _callRPC<TResponse, TRequest extends object = {}>(
     method: string,
-    request: Req = {} as Req,
+    request: TRequest = {} as TRequest,
     metadata: Metadata = new grpc.Metadata()
-  ): Promise<Resp> {
+  ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
         request,
         metadata,
-        (error: any, response: Resp) => {
+        (error: any, response: TResponse) => {
           if (error) reject(error);
           else resolve(response);
         }
@@ -143,13 +143,11 @@ export default class Client extends BaseClient {
   }
 
   async listTask(): Promise<TaskListResp> {
-    const result = await this.callRPC<TaskListResp>("ListTasks");
-
-    return result;
+    return this.sendRequest<TaskListResp>("ListTasks");
   }
 
   async getSmartWalletAddress(): Promise<SmartWalletResp> {
-    const result = await this.callRPC<SmartWalletResp>(
+    const result = await this.sendRequest<SmartWalletResp>(
       "GetSmartAccountAddress",
       { owner: this.owner }
     );
@@ -158,7 +156,7 @@ export default class Client extends BaseClient {
 
   // TODO: generate the type def using protobuf typescriplt gen util
   async getTask(taskId: string): Promise<any> {
-    const result = await this.callRPC("GetTask", { bytes: taskId });
+    const result = await this.sendRequest("GetTask", { bytes: taskId });
     // Consider removing console.log or using a logger
     return result;
   }
