@@ -1,19 +1,24 @@
 {
-  "name": "@avaprotocol/ava-api",
-  "version": "1.0.0",
+  "name": "ava-sdk-js",
+  "version": "0.6.0",
   "description": "API Package to interact with Ava GRPC Server",
   "main": "src/index.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --proto_path=../../submodules/EigenLayer-AVS/protobuf avs.proto"
-  },
   "author": "team@avaprotocol.org",
-  "license": "ISC",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --proto_path=../../submodules/EigenLayer-AVS/protobuf avs.proto",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.3",
     "@grpc/proto-loader": "^0.7.13",
     "ethers": "^6.13.2",
     "google-protobuf": "^3.21.4",
-    "grpc-tools": "^1.12.4"
+    "grpc-tools": "^1.12.4",
+    "string-width": "^7.2.0",
+    "strip-ansi": "^7.1.0"
   }
 }
