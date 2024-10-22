@@ -68,6 +68,15 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    npm run test:e2e
    ```
 
+   Before running the e2e tests, make sure to configure the required TEST values in your `.env` file:
+
+   ```
+   TEST_JWT_API_KEY=your_test_jwt_api_key_here
+   TEST_OWNER=your_test_owner_here
+   ```
+
+   Replace `your_test_jwt_api_key_here` with a valid JWT API key and `your_test_owner_here` with the appropriate owner address for testing.
+
 This will execute all unit and integration tests. Make sure all tests pass before submitting a pull request or deploying changes.
 
 ## Contributing
