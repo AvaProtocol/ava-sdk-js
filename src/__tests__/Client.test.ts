@@ -1,7 +1,15 @@
+import { jest, describe, beforeEach, test, expect } from '@jest/globals';
 import Client from "../index";
 import * as grpc from "@grpc/grpc-js";
 
-jest.mock("@grpc/grpc-js");
+// Mock the entire grpc module
+jest.mock("@grpc/grpc-js", () => ({
+  loadPackageDefinition: jest.fn(),
+  credentials: {
+    createInsecure: jest.fn(),
+  },
+}));
+
 jest.mock("../config", () => ({
   getRpcEndpoint: jest.fn().mockReturnValue("mock-endpoint"),
 }));
@@ -11,6 +19,8 @@ describe("Client", () => {
   let mockGrpcClient: any;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
     mockGrpcClient = {
       GetKey: jest.fn(),
       ListTasks: jest.fn(),
@@ -18,6 +28,7 @@ describe("Client", () => {
       GetTask: jest.fn(),
     };
 
+    // Set up the mock return value for loadPackageDefinition
     (grpc.loadPackageDefinition as jest.Mock).mockReturnValue({
       aggregator: {
         Aggregator: jest.fn().mockImplementation(() => mockGrpcClient),

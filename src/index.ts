@@ -2,6 +2,7 @@ import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import { getRpcEndpoint } from "./config";
+import { Environment } from "./types";
 import { getKeyRequestMessage } from "./auth";
 
 // Load the protobuf definition
@@ -17,10 +18,16 @@ const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 const apProto = protoDescriptor.aggregator;
 
 // Move interfaces to a separate file, e.g., types.ts
-import { KeyExchangeResp, ClientOption, TaskResp, TaskListResp, SmartWalletResp } from './types';
+import {
+  KeyExchangeResp,
+  ClientOption,
+  TaskResp,
+  TaskListResp,
+  SmartWalletResp,
+} from "./types";
 
 class BaseClient {
-  readonly env: string;
+  readonly env: Environment;
   readonly rpcClient;
   readonly owner?: string;
   readonly opts: ClientOption;
@@ -35,7 +42,7 @@ class BaseClient {
       throw new Error("missing owner");
     }
 
-    this.env = opts.env || "production";
+    this.env = opts.env || ("production" as Environment);
     this.rpcClient = new (apProto as any).Aggregator(
       getRpcEndpoint(this.env),
       // TODO: switch to the TLS after we're able to update all the operator
@@ -49,7 +56,9 @@ class BaseClient {
 
   async authenticate(): Promise<void> {
     if (this.opts.jwtApiKey) {
-      const { key } = await this.authWithJwtKey(this.opts.jwtApiKey);
+      // Add '0x' prefix if it's not already present
+      const jwtKey = this.opts.jwtApiKey.startsWith('0x') ? this.opts.jwtApiKey : `0x${this.opts.jwtApiKey}`;
+      const { key } = await this.authWithJwtKey(jwtKey);
       this.authkey = key;
     } else if (this.opts.privateKey) {
       // Implement ECDSA authentication here
@@ -64,7 +73,7 @@ class BaseClient {
   }
 
   async authWithJwtKey(signature: string): Promise<KeyExchangeResp> {
-    const expiredAt = Math.floor((+new Date() / 3600) * 24);
+    const expiredAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // Set expiration to 24 hours from now
     let result: KeyExchangeResp = await this._callRPC<KeyExchangeResp>(
       "GetKey",
       {
@@ -129,6 +138,10 @@ class BaseClient {
 }
 
 export default class Client extends BaseClient {
+  constructor(config: ClientOption) {
+    super(config);
+  }
+
   async listTask(): Promise<TaskListResp> {
     const result = await this.callRPC<TaskListResp>("ListTasks");
 
@@ -152,4 +165,4 @@ export default class Client extends BaseClient {
 }
 
 // Export types for easier use
-export * from './types';
+export * from "./types";

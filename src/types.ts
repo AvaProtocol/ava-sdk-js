@@ -1,33 +1,36 @@
-interface KeyExchangeResp {
+// Define the environment type
+export type Environment = "production" | "development" | "staging";
+
+export interface KeyExchangeResp {
   key: string;
 }
 
-interface ClientOption {
+export interface ClientOption {
   privateKey?: string;
   jwtApiKey?: string;
-  env?: string;
+  env?: Environment;
   owner?: string;
 }
 
-interface TaskResp {
+export interface TaskResp {
   id: string;
   status: string;
   result?: any;
   error?: string;
 }
 
-interface TaskListResp {
+export interface TaskListResp {
   tasks: TaskResp[];
 }
 
-interface SmartWalletResp {
+export interface SmartWalletResp {
   address: string;
 }
 
-interface TransactionResp {
+export interface TransactionResp {
   hash: string;
 }
 
-interface BalanceResp {
+export interface BalanceResp {
   balance: string;
 }
