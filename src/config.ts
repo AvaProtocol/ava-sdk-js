@@ -1,5 +1,6 @@
 import { Environment } from "./types";
-// Define the Config interface
+
+export const DEFAULT_JWT_EXPIRATION = 24 * 60 * 60; // 24 hours
 interface Config {
   AVS_RPC_URL: string;
 }
