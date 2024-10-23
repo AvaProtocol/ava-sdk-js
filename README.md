@@ -71,13 +71,23 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    Before running the e2e tests, make sure to configure the required TEST values in your `.env` file:
 
    ```
-   TEST_JWT_API_KEY=your_test_jwt_api_key_here
+   TEST_JWT_TOKEN=your_TEST_JWT_TOKEN_here
    TEST_OWNER=your_test_owner_here
    ```
 
-   Replace `your_test_jwt_api_key_here` with a valid JWT API key and `your_test_owner_here` with the appropriate owner address for testing.
+   Replace `your_TEST_JWT_TOKEN_here` with a valid JWT API key and `your_test_owner_here` with the appropriate owner address for testing.
 
 This will execute all unit and integration tests. Make sure all tests pass before submitting a pull request or deploying changes.
+
+### Utility Scripts
+
+To generate the key request message for signing, you can run the following command:
+
+```bash
+npm run build # Make sure to build the project first
+
+export TEST_MNEMONIC=<your_mnemonic> && node scripts/signMessage.js
+```
 
 ## Contributing
 
