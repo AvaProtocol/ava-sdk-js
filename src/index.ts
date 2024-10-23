@@ -4,6 +4,7 @@ import * as protoLoader from "@grpc/proto-loader";
 import { getRpcEndpoint } from "./config";
 import { Environment } from "./types";
 import { getKeyRequestMessage } from "./auth";
+import { ethers, Wallet } from "ethers";
 
 // Load the protobuf definition
 const packageDefinition = protoLoader.loadSync("./grpc_codegen/avs.proto", {
@@ -29,9 +30,10 @@ import {
 class BaseClient {
   readonly env: Environment;
   readonly rpcClient;
-  readonly owner?: string;
+  protected owner?: string;
   readonly opts: ClientOption;
-  private authkey?: string;
+  protected authkey?: string;
+  protected wallet?: any;
 
   constructor(opts: ClientOption) {
     if (!opts.privateKey && !opts.jwtApiKey) {
@@ -61,8 +63,11 @@ class BaseClient {
       const { key } = await this.authWithJwtKey(jwtKey);
       this.authkey = key;
     } else if (this.opts.privateKey) {
-      // Implement ECDSA authentication here
-      // This was missing in the original code
+      const { key } = await this.authWithECDSAKey(this.opts.privateKey);
+      this.authkey = key;
+    } else if (this.opts.presignSignature && this.opts.signatureExpiredAt) {
+      const { key } = await this.authWithSignature(this.opts.presignSignature, this.opts.signatureExpiredAt);
+      this.authkey = key;
     } else {
       throw new Error("No authentication method provided");
     }
@@ -86,20 +91,34 @@ class BaseClient {
     return { key: result.key };
   }
 
-  async authWithECDSAKey(
-    address: string,
-    signature: string,
-    expiredAt: Date
-  ): Promise<KeyExchangeResp> {
-    const expiredAtUnix = Math.floor((+expiredAt / 3600) * 24);
-    let result = await this._callRPC<KeyExchangeResp>("GetKey", {
-      owner: address,
-      expired_at: expiredAtUnix,
-      signature,
-    });
+  async authWithECDSAKey(privateKey: string): Promise<KeyExchangeResp> {
+    this.wallet = new Wallet(privateKey);
+    this.owner = this.wallet.address;
+
+    const expiredAtEpoch = Math.floor(+new Date() / 3600 * 24);
+    const message = `key request for ${this.owner} expired at ${expiredAtEpoch}`;
+
+    let signature = await this.wallet.signMessage(message);
+    let result = await this._callRPC<KeyExchangeResp>('GetKey', {
+      owner: this.owner,
+      expired_at: expiredAtEpoch,
+      signature
+    })
 
     return { key: result.key };
   }
+
+  // This flow can be used where the signature is generate from outside, such as in front-end and pass in
+  async authWithSignature(signature: string, expiredAtEpoch: number): Promise<KeyExchangeResp> {
+    let result = await this._callRPC<KeyExchangeResp>('GetKey', {
+      owner: this.owner,
+      expired_at: expiredAtEpoch,
+      signature
+    })
+
+    return { key: result.key };
+  }
+
 
   protected async sendRequest<TResponse, TRequest extends object = {}>(
     method: string,
