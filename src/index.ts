@@ -4,10 +4,10 @@ import * as protoLoader from "@grpc/proto-loader";
 import { DEFAULT_JWT_EXPIRATION, getRpcEndpoint } from "./config";
 import { Environment } from "./types";
 import { getKeyRequestMessage } from "./auth";
-import * as path from 'path';
+import * as path from "path";
 
 // Load the protobuf definition
-const protoPath = path.resolve(__dirname, "..", "grpc_codegen", "avs.proto");
+const protoPath = path.resolve(__dirname, "grpc_codegen", "avs.proto");
 const packageDefinition = protoLoader.loadSync(protoPath, {
   keepCase: true,
   longs: String,

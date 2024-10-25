@@ -57,7 +57,9 @@ var getKeyRequestMessage = (address, expiredAt) => {
 };
 
 // src/index.ts
-var packageDefinition = protoLoader.loadSync("./grpc_codegen/avs.proto", {
+var path = __toESM(require("path"), 1);
+var protoPath = path.resolve(__dirname, "grpc_codegen", "avs.proto");
+var packageDefinition = protoLoader.loadSync(protoPath, {
   keepCase: true,
   longs: String,
   enums: String,
@@ -123,13 +125,13 @@ var BaseClient = class {
     return !!this.adminToken;
   }
   _callRPC(method, request = {}, metadata = new grpc.Metadata()) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       this.rpcClient[method].bind(this.rpcClient)(
         request,
         metadata,
         (error, response) => {
           if (error) reject(error);
-          else resolve(response);
+          else resolve2(response);
         }
       );
     });
