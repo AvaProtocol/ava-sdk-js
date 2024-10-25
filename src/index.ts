@@ -20,34 +20,34 @@ const apProto = protoDescriptor.aggregator;
 // Move interfaces to a separate file, e.g., types.ts
 import {
   KeyExchangeResp,
-  ClientOption,
+  ClientParams,
   TaskResp,
   TaskListResp,
   SmartWalletResp,
 } from "./types";
 
 class BaseClient {
-  readonly env: Environment;
+  readonly endpoint: string;
   readonly rpcClient;
   // protected owner?: string;
-  // readonly opts: ClientOption;
-  protected authkey?: string;
-  protected wallet?: any;
+  // readonly opts: ClientParams;
+  protected adminToken?: string; // A JWT token for admin operations
+  // protected wallet?: any;
 
-  constructor(opts: ClientOption) {
-    // if (!opts.jwtApiKey && !opts.owner) {
+  constructor(config: ClientParams) {
+    // if (!config.jwtApiKey && !config.owner) {
     //   throw new Error("missing jwtApiKey or owner");
     // }
 
-    this.env = opts.env || ("production" as Environment);
+    this.endpoint = config.endpoint;
     this.rpcClient = new (apProto as any).Aggregator(
-      getRpcEndpoint(this.env),
+      config.endpoint,
       // TODO: switch to the TLS after we're able to update all the operator
       grpc.credentials.createInsecure()
     );
 
-    // this.opts = opts;
-    // this.owner = opts.owner ?? undefined;
+    // this.opts = clientConfig;
+    // this.owner = clientConfig.owner ?? undefined;
   }
 
   async authWithJwtToken(
@@ -70,7 +70,7 @@ class BaseClient {
       }
     );
 
-    this.authkey = result.key;
+    this.adminToken = result.key;
     return { key: result.key };
   }
 
@@ -93,7 +93,7 @@ class BaseClient {
       signature,
     });
 
-    this.authkey = result.key;
+    this.adminToken = result.key;
 
     return { key: result.key };
   }
@@ -107,18 +107,18 @@ class BaseClient {
       metadata = new grpc.Metadata();
     }
 
-    if (!this.authkey) {
+    if (!this.adminToken) {
       throw new Error(
         "Authentication required. Please call authWithJwtToken() or authWithSignature() before making requests."
       );
     }
 
-    metadata.add("authkey", this.authkey);
+    metadata.add("adminToken", this.adminToken);
 
     return this._callRPC<TResponse, TRequest>(method, request, metadata);
   }
   public isAuthenticated(): boolean {
-    return !!this.authkey;
+    return !!this.adminToken;
   }
 
   private _callRPC<TResponse, TRequest extends object = {}>(
@@ -140,7 +140,7 @@ class BaseClient {
 }
 
 export default class Client extends BaseClient {
-  constructor(config: ClientOption) {
+  constructor(config: ClientParams) {
     super(config);
   }
 

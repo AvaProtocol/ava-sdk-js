@@ -6,18 +6,15 @@ import * as protoLoader from "@grpc/proto-loader";
 var DEFAULT_JWT_EXPIRATION = 24 * 60 * 60;
 var configs = {
   development: {
-    AVS_RPC_URL: process.env.AVS_RPC_URL || "localhost:2206"
+    endpoint: process.env.AVS_RPC_URL || "localhost:2206"
   },
   staging: {
-    AVS_RPC_URL: "aggregator-holesky.avaprotocol.org:2206"
+    endpoint: "aggregator-holesky.avaprotocol.org:2206"
   },
   production: {
-    AVS_RPC_URL: "aggregator.avaprotocol.org:2206"
+    endpoint: "aggregator.avaprotocol.org:2206"
   }
 };
-function getRpcEndpoint(env) {
-  return configs[env].AVS_RPC_URL;
-}
 
 // src/auth.ts
 var getKeyRequestMessage = (address, expiredAt) => {
@@ -35,10 +32,12 @@ var packageDefinition = protoLoader.loadSync("./grpc_codegen/avs.proto", {
 var protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 var apProto = protoDescriptor.aggregator;
 var BaseClient = class {
-  constructor(opts) {
-    this.env = opts.env || "production";
+  // A JWT token for admin operations
+  // protected wallet?: any;
+  constructor(config) {
+    this.endpoint = config.endpoint;
     this.rpcClient = new apProto.Aggregator(
-      getRpcEndpoint(this.env),
+      config.endpoint,
       // TODO: switch to the TLS after we're able to update all the operator
       grpc.credentials.createInsecure()
     );
@@ -54,7 +53,7 @@ var BaseClient = class {
         signature: jwtToken
       }
     );
-    this.authkey = result.key;
+    this.adminToken = result.key;
     return { key: result.key };
   }
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
@@ -70,23 +69,23 @@ var BaseClient = class {
       expired_at: expiredAtEpoch,
       signature
     });
-    this.authkey = result.key;
+    this.adminToken = result.key;
     return { key: result.key };
   }
   async sendRequest(method, request = {}, metadata) {
     if (metadata === void 0) {
       metadata = new grpc.Metadata();
     }
-    if (!this.authkey) {
+    if (!this.adminToken) {
       throw new Error(
         "Authentication required. Please call authWithJwtToken() or authWithSignature() before making requests."
       );
     }
-    metadata.add("authkey", this.authkey);
+    metadata.add("adminToken", this.adminToken);
     return this._callRPC(method, request, metadata);
   }
   isAuthenticated() {
-    return !!this.authkey;
+    return !!this.adminToken;
   }
   _callRPC(method, request = {}, metadata = new grpc.Metadata()) {
     return new Promise((resolve, reject) => {

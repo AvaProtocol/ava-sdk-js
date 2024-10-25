@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { ethers } from "ethers";
 import { getKeyRequestMessage } from "../auth";
+import { getRpcEndpoint } from "../config";
 
 // Load environment variables from .env.test file
 dotenv.config({ path: path.resolve(__dirname, "../../.env.test") });
@@ -41,7 +42,7 @@ describe("Client E2E Tests", () => {
   beforeAll(async () => {
     // Initialize the client with test credentials
     client = new Client({
-      env: "staging",
+      endpoint: getRpcEndpoint("staging"),
     });
 
     if (!TEST_PRIVATE_KEY) {
@@ -116,7 +117,7 @@ describe("Client E2E Tests", () => {
     beforeAll(async () => {
       // Initialize the client with test credentials
       client = new Client({
-        env: "staging",
+        endpoint: getRpcEndpoint("staging"),
       });
 
       if (!TEST_PRIVATE_KEY) {
