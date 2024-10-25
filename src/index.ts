@@ -1,23 +1,23 @@
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
-import * as protoLoader from "@grpc/proto-loader";
 import { DEFAULT_JWT_EXPIRATION, getRpcEndpoint } from "./config";
 import { Environment } from "./types";
 import { getKeyRequestMessage } from "./auth";
-import * as path from "path";
+import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
+import { AddressRequest, AddressResp, GetKeyReq, KeyResp, ListTasksReq, Task, UUID } from "../grpc_codegen/avs_pb";
 
 // Load the protobuf definition
-const protoPath = path.resolve(__dirname, "grpc_codegen", "avs.proto");
-const packageDefinition = protoLoader.loadSync(protoPath, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
+// const protoPath = path.resolve(__dirname, "grpc_codegen", "avs.proto");
+// const packageDefinition = protoLoader.loadSync(protoPath, {
+//   keepCase: true,
+//   longs: String,
+//   enums: String,
+//   defaults: true,
+//   oneofs: true,
+// });
 
-const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
-const apProto = protoDescriptor.aggregator;
+// const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
+// const apProto = protoDescriptor.aggregator;
 
 // Move interfaces to a separate file, e.g., types.ts
 import {
@@ -30,7 +30,7 @@ import {
 
 class BaseClient {
   readonly endpoint: string;
-  readonly rpcClient;
+  readonly rpcClient: AggregatorClient;
   // protected owner?: string;
   // readonly opts: ClientParams;
   protected adminToken?: string; // A JWT token for admin operations
@@ -42,9 +42,8 @@ class BaseClient {
     // }
 
     this.endpoint = config.endpoint;
-    this.rpcClient = new (apProto as any).Aggregator(
+    this.rpcClient = new AggregatorClient(
       config.endpoint,
-      // TODO: switch to the TLS after we're able to update all the operator
       grpc.credentials.createInsecure()
     );
 
@@ -59,24 +58,26 @@ class BaseClient {
   ): Promise<KeyExchangeResp> {
     console.log("Authenticating with JWT token: ", jwtToken);
 
-    // Use the provided expiredAt or set it to 24 hours from now if not provided
     const expirationTime =
       expiredAt || Math.floor(Date.now() / 1000) + DEFAULT_JWT_EXPIRATION;
 
-    const result: KeyExchangeResp = await this._callRPC<KeyExchangeResp>(
-      "GetKey",
-      {
-        owner: address,
-        expired_at: expirationTime,
-        signature: jwtToken,
-      }
-    );
+    const method = this.rpcClient.getKey.bind(this.rpcClient) as (
+      request: GetKeyReq,
+      metadata: Metadata | undefined,
+      callback: (error: grpc.ServiceError | null, response: KeyResp) => void
+    ) => grpc.ClientUnaryCall;
 
-    this.adminToken = result.key;
-    return { key: result.key };
+    const request = new GetKeyReq()
+      .setOwner(address)
+      .setExpiredAt(expirationTime)
+      .setSignature(jwtToken);
+
+    const response = await this._callRPC<KeyResp, GetKeyReq>(method, request);
+
+    console.log("response:", response.getKey());
+    return { key: response.getKey() };
   }
 
-  // This flow can be used where the signature is generate from outside, such as in front-end and pass in
   async authWithSignature(
     address: string,
     signature: string,
@@ -89,52 +90,74 @@ class BaseClient {
       expiredAtEpoch
     );
 
-    let result = await this._callRPC<KeyExchangeResp>("GetKey", {
-      owner: address,
-      expired_at: expiredAtEpoch,
-      signature,
-    });
+    const method = this.rpcClient.getKey.bind(this.rpcClient) as (
+      request: GetKeyReq,
+      metadata: Metadata | undefined,
+      callback: (error: grpc.ServiceError | null, response: KeyResp) => void
+    ) => grpc.ClientUnaryCall;
 
-    this.adminToken = result.key;
+    const request = new GetKeyReq()
+      .setOwner(address)
+      .setExpiredAt(expiredAtEpoch)
+      .setSignature(signature);
 
-    return { key: result.key };
+    const response = await this._callRPC<KeyResp, GetKeyReq>(method, request);
+
+    console.log("response:", response.getKey());
+    return { key: response.getKey() };
   }
 
-  protected async sendRequest<TResponse, TRequest extends object = {}>(
-    method: string,
-    request: TRequest = {} as TRequest,
-    metadata?: Metadata
-  ): Promise<TResponse> {
-    if (metadata === undefined) {
-      metadata = new grpc.Metadata();
-    }
+  // protected async sendRequest<TResponse, TRequest extends object = {}>(
+  //   method: string,
+  //   request: TRequest = {} as TRequest,
+  //   metadata?: Metadata
+  // ): Promise<TResponse> {
+  //   if (metadata === undefined) {
+  //     metadata = new grpc.Metadata();
+  //   }
 
-    if (!this.adminToken) {
-      throw new Error(
-        "Authentication required. Please call authWithJwtToken() or authWithSignature() before making requests."
-      );
-    }
+  //   if (!this.adminToken) {
+  //     throw new Error(
+  //       "Authentication required. Please call authWithJwtToken() or authWithSignature() before making requests."
+  //     );
+  //   }
 
-    metadata.add("adminToken", this.adminToken);
+  //   metadata.add("adminToken", this.adminToken);
 
-    return this._callRPC<TResponse, TRequest>(method, request, metadata);
-  }
+  //   return this._callRPC<TResponse, TRequest>(
+  //     method as (
+  //       request: TRequest,
+  //       metadata: grpc.Metadata | undefined,
+  //       callback: (error: grpc.ServiceError | null, response: TResponse) => void
+  //     ),
+  //     request,
+  //     metadata
+  //   );
+  // }
+
   public isAuthenticated(): boolean {
     return !!this.adminToken;
   }
 
-  private _callRPC<TResponse, TRequest extends object = {}>(
-    method: string,
-    request: TRequest = {} as TRequest,
-    metadata: Metadata = new grpc.Metadata()
+  protected _callRPC<TResponse, TRequest extends object = {}>(
+    method: (
+      request: TRequest,
+      metadata: grpc.Metadata | undefined,
+      callback: (error: grpc.ServiceError | null, response: TResponse) => void
+    ) => grpc.ClientUnaryCall,
+    request: TRequest,
+    metadata?: grpc.Metadata
   ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
-      (this.rpcClient as any)[method].bind(this.rpcClient)(
+      method(
         request,
         metadata,
-        (error: any, response: TResponse) => {
-          if (error) reject(error);
-          else resolve(response);
+        (error: grpc.ServiceError | null, response: TResponse) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(response);
+          }
         }
       );
     });
@@ -147,22 +170,55 @@ export default class Client extends BaseClient {
   }
 
   async listTask(): Promise<TaskListResp> {
-    return this.sendRequest<TaskListResp>("ListTasks");
+    console.log("Listing tasks");
+
+    const method = this.rpcClient.listTasks.bind(this.rpcClient) as (
+      request: ListTasksReq,
+      metadata: Metadata | undefined,
+      callback: (
+        error: grpc.ServiceError | null,
+        response: TaskListResp
+      ) => void
+    ) => grpc.ClientUnaryCall;
+
+    const request = new ListTasksReq();
+
+    const response = await this._callRPC<TaskListResp, ListTasksReq>(
+      method,
+      request
+    );
+
+    console.log("response:", response);
+    return response;
   }
 
   async getSmartWalletAddress(address: string): Promise<SmartWalletResp> {
-    const result = await this.sendRequest<SmartWalletResp>(
-      "GetSmartAccountAddress",
-      { owner: address }
+    const method = this.rpcClient.getSmartAccountAddress.bind(this.rpcClient) as (
+      request: AddressRequest,
+      metadata: Metadata | undefined,
+      callback: (error: grpc.ServiceError | null, response: AddressResp) => void
+    ) => grpc.ClientUnaryCall;
+
+    const request = new AddressRequest().setOwner(address);
+    const response = await this._callRPC<AddressResp, AddressRequest>(
+      method,
+      request
     );
-    return result;
+
+    return response;
   }
 
   // TODO: generate the type def using protobuf typescriplt gen util
   async getTask(taskId: string): Promise<any> {
-    const result = await this.sendRequest("GetTask", { bytes: taskId });
-    // Consider removing console.log or using a logger
-    return result;
+      const method = this.rpcClient.getTask.bind(this.rpcClient) as (
+        request: UUID,
+      metadata: Metadata | undefined,
+      callback: (error: grpc.ServiceError | null, response: Task) => void
+    ) => grpc.ClientUnaryCall;
+
+    const request = new UUID().setUuid(taskId);
+    const response = await this._callRPC<Task, UUID>(method, request);
+    return response;
   }
 }
 

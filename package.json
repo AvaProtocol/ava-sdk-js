@@ -18,7 +18,8 @@
     "node": ">=20.18.0"
   },
   "scripts": {
-    "gen-protoc": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/main/protobuf/avs.proto > grpc_codegen/avs.proto && grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --proto_path=./grpc_codegen avs.proto && mv ./grpc_codegen/avs_pb.js ./grpc_codegen/avs_pb.js && mv ./grpc_codegen/avs_grpc_pb.js ./grpc_codegen/avs_grpc_pb.js && rm -f ./grpc_codegen/temp_*",
+    "download-proto": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/main/protobuf/avs.proto > grpc_codegen/avs.proto",
+    "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./grpc_codegen -I ./grpc_codegen avs.proto",
     "build": "tsup src/index.ts --format cjs,esm --dts && copyfiles -u 1 grpc_codegen/* dist/grpc_codegen",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs",
     "test:e2e": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs --testMatch '**/src/__tests__/*.e2e.test.ts'"
