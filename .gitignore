@@ -3,7 +3,8 @@ node_modules/
 jspm_packages/
 
 # Build outputs
-dist/
+# dist folder is included for now since we are yarn adding this repo directly
+# dist/
 build/
 out/
 *.tsbuildinfo
