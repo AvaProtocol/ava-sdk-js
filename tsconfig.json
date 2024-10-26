@@ -15,6 +15,5 @@
   "include": ["src/**/*"],
   "ts-node": {
     "esm": true
-  },
-  "copy": [{ "from": "grpc_codegen", "to": "dist/grpc_codegen" }]
+  }
 }

@@ -17,19 +17,6 @@ import {
 
 const grpcMetadata = new Metadata();
 
-// Load the protobuf definition
-// const protoPath = path.resolve(__dirname, "grpc_codegen", "avs.proto");
-// const packageDefinition = protoLoader.loadSync(protoPath, {
-//   keepCase: true,
-//   longs: String,
-//   enums: String,
-//   defaults: true,
-//   oneofs: true,
-// });
-
-// const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
-// const apProto = protoDescriptor.aggregator;
-
 // Move interfaces to a separate file, e.g., types.ts
 import { KeyExchangeResp, ClientParams } from "./types";
 
