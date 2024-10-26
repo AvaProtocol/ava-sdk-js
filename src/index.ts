@@ -3,15 +3,10 @@ import { Metadata } from "@grpc/grpc-js";
 import { DEFAULT_JWT_EXPIRATION, getRpcEndpoint } from "./config";
 import { Environment } from "./types";
 import { getKeyRequestMessage } from "./auth";
-import * as avsGrpcPb from "../grpc_codegen/avs_grpc_pb";
-import * as avsPb from "../grpc_codegen/avs_pb";
+import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
+import * as avs_pb from "../grpc_codegen/avs_pb";
 
-const AggregatorClient = (avsGrpcPb as any).AggregatorClient;
 const metadata = new grpc.Metadata();
-
-// console.log("protoDescriptor:", protoDescriptor);
-// console.log("apProto:", apProto);
-// console.log("apProto.Aggregator:", (new (apProto as any)).Aggregator));
 
 // Move interfaces to a separate file, e.g., types.ts
 import {
@@ -23,21 +18,22 @@ import {
 } from "./types";
 
 class BaseClient {
-  readonly env: Environment;
+  readonly endpoint: string;
+
   readonly rpcClient;
   // protected owner?: string;
   // readonly opts: ClientOption;
   protected authkey?: string;
-  protected wallet?: any;
+  // protected wallet?: any;
 
   constructor(opts: ClientOption) {
     // if (!opts.jwtApiKey && !opts.owner) {
     //   throw new Error("missing jwtApiKey or owner");
     // }
 
-    this.env = opts.env || ("production" as Environment);
+    this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
-      getRpcEndpoint(this.env),
+      this.endpoint,
       // TODO: switch to the TLS after we're able to update all the operator
       grpc.credentials.createInsecure()
     );
@@ -86,12 +82,12 @@ class BaseClient {
     );
 
     // Create a new GetKeyReq message
-    const request = new avsPb.GetKeyReq();
+    const request = new avs_pb.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
 
-    let result = await this._callRPC<avsPb.KeyResp, avsPb.GetKeyReq>(
+    let result = await this._callRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );

@@ -41,7 +41,7 @@ describe("Client E2E Tests", () => {
   beforeAll(async () => {
     // Initialize the client with test credentials
     client = new Client({
-      env: "staging",
+      endpoint: "aggregator-holesky.avaprotocol.org:2206",
     });
 
     if (!TEST_PRIVATE_KEY) {

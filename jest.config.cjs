@@ -6,7 +6,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js'],
   testMatch: ['**/__tests__/**/*.test.ts'],
   transform: {
-    '^.+\\.ts$': ['ts-jest', {
+    '^.+\\.(ts|tsx|js|jsx)$': ['ts-jest', {
       useESM: true,
     }],
   },
@@ -15,4 +15,7 @@ module.exports = {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   setupFiles: ['dotenv/config'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(avs_pb.js|avs_grpc_pb.js)/)',
+  ],
 };

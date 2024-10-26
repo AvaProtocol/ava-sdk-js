@@ -216,7 +216,7 @@ function deserialize_google_protobuf_BoolValue(buffer_arg) {
 }
 
 
-var AggregatorService = exports.AggregatorService = {
+const AggregatorService = {
   // Auth
 getKey: {
     path: '/aggregator.Aggregator/GetKey',
@@ -344,4 +344,6 @@ ping: {
   },
 };
 
-exports.AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);
+const AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);
+
+export { AggregatorService, AggregatorClient };

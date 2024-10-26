@@ -7541,3 +7541,5 @@ proto.aggregator.CustomCodeType = {
 };
 
 goog.object.extend(exports, proto.aggregator);
+
+export const { Task, CreateTaskReq, CreateTaskResp, GetKeyReq, KeyResp, UpdateChecksReq, UpdateChecksResp } = proto.aggregator;

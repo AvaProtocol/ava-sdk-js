@@ -1,14 +1,19 @@
 {
   "name": "@avaprotocol/sdk-js",
-  "version": "0.6.5",
+  "version": "0.6.9",
   "description": "A JavaScript/TypeScript SDK designed to simplify integration with Ava Protocol’s AVS",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "package.json"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.js"
     }
   },

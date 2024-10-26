@@ -4,15 +4,16 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "outDir": "./dist",
     "declaration": true,
-    "rootDir": "src",
-    "paths": {
-      "@avaprotocol/*": ["./packages/*"]
-    }
+    "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "grpc_codegen/**/*"
+  ],
   "ts-node": {
     "esm": true
   }
