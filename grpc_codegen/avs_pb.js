@@ -7501,4 +7501,11 @@ export const {
   AddressRequest,
   ListTasksReq,
   ListTasksResp,
+  TaskTrigger,
+  TriggerType,
+  ExpressionCondition,
+  TaskAction,
+  ActionType,
+  ContractExecution,
+  TaskType,
 } = proto.aggregator;

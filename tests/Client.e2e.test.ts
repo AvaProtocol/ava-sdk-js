@@ -3,19 +3,22 @@ import Client, { getKeyRequestMessage } from "../dist/index.js";
 import dotenv from "dotenv";
 import path from "path";
 import { ethers } from "ethers";
-import { getRpcEndpoint } from "../src/config";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
-const { TEST_JWT_TOKEN, TEST_PRIVATE_KEY } = process.env;
+const {
+  TEST_JWT_TOKEN,
+  TEST_PRIVATE_KEY,
+  TOKEN_CONTRACT,
+  ORACLE_CONTRACT,
+  ENDPOINT,
+} = process.env;
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
 
 // Add signature generation logic
 async function getAddress(privateKey: string): Promise<string> {
   const wallet = new ethers.Wallet(privateKey);
-
-  console.log("Wallet address:", wallet.address);
   return wallet.address;
 }
 
@@ -27,7 +30,7 @@ async function generateSignature(
   const wallet = new ethers.Wallet(privateKey);
   const message = getKeyRequestMessage(wallet.address, expiredAt);
 
-  console.log("Signing message:", message, "Expired at:", expiredAt);
+  // console.log("Signing message:", message, "Expired at:", expiredAt);
 
   const signature = await wallet.signMessage(message);
 
@@ -39,9 +42,13 @@ describe("Client E2E Tests", () => {
   let walletAddress: string; // Add this line to declare the variable
 
   beforeAll(async () => {
+    if (!ENDPOINT) {
+      throw new Error("ENDPOINT is not set in the .env.test file");
+    }
+
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: "aggregator-holesky.avaprotocol.org:2206",
+      endpoint: ENDPOINT,
     });
 
     if (!TEST_PRIVATE_KEY) {
@@ -114,9 +121,13 @@ describe("Client E2E Tests", () => {
     let client: Client;
 
     beforeAll(async () => {
+      if (!ENDPOINT) {
+        throw new Error("ENDPOINT is not set in the .env.test file");
+      }
+
       // Initialize the client with test credentials
       client = new Client({
-        endpoint: getRpcEndpoint("staging"),
+        endpoint: ENDPOINT,
       });
 
       if (!TEST_PRIVATE_KEY) {
@@ -140,7 +151,6 @@ describe("Client E2E Tests", () => {
       await client.authWithSignature(walletAddress, signature, EXPIRED_AT);
     });
 
-
     test("getAddresses", async () => {
       const result = await client.getAddresses(walletAddress);
       console.log("Get smart wallet address result:", result);
@@ -154,7 +164,26 @@ describe("Client E2E Tests", () => {
       expect(result.smart_account_address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
-    test("listTask", async () => {
+    test("createTask", async () => {
+      if (!TOKEN_CONTRACT) {
+        throw new Error("TOKEN_CONTRACT is not set in the .env.test file");
+      }
+
+      if (!ORACLE_CONTRACT) {
+        throw new Error("ORACLE_CONTRACT is not set in the .env.test file");
+      }
+
+      const result = await client.createTask({
+        address: walletAddress,
+        tokenContract: TOKEN_CONTRACT,
+        oracleContract: ORACLE_CONTRACT,
+      });
+      console.log("Create task result:", result);
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty("id");
+    });
+
+    test("listTasks", async () => {
       const result = await client.listTasks(walletAddress);
       console.log("List task result:", result);
       expect(Array.isArray(result.tasks)).toBe(true);

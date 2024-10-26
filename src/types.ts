@@ -29,6 +29,10 @@ export interface Task {
   error?: string;
 }
 
+export interface CreateTaskResponse {
+  task: Task;
+}
+
 export interface ListTasksResponse {
   tasks: Task[];
 }
