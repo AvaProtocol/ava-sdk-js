@@ -4089,20 +4089,7 @@ var init_avs_pb = __esm({
 
 // src/index.ts
 import * as grpc2 from "@grpc/grpc-js";
-
-// src/config.ts
-var DEFAULT_JWT_EXPIRATION = 24 * 60 * 60;
-var configs = {
-  development: {
-    endpoint: process.env.AVS_RPC_URL || "localhost:2206"
-  },
-  staging: {
-    endpoint: "aggregator-holesky.avaprotocol.org:2206"
-  },
-  production: {
-    endpoint: "aggregator.avaprotocol.org:2206"
-  }
-};
+import { Metadata } from "@grpc/grpc-js";
 
 // src/auth.ts
 var getKeyRequestMessage = (address, expiredAt) => {
@@ -4415,6 +4402,8 @@ var AggregatorService = exports.AggregatorService = {
 exports.AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);
 
 // src/index.ts
+init_avs_pb();
+var grpcMetadata = new Metadata();
 var BaseClient = class {
   // A JWT token for admin operations
   // protected wallet?: any;
@@ -4425,21 +4414,27 @@ var BaseClient = class {
       grpc2.credentials.createInsecure()
     );
   }
-  async authWithJwtToken(address, jwtToken, expiredAt) {
-    console.log("Authenticating with JWT token: ", jwtToken);
-    const expirationTime = expiredAt || Math.floor(Date.now() / 1e3) + DEFAULT_JWT_EXPIRATION;
-    const result = await this._callRPC(
-      "getKey",
-      {
-        owner: address,
-        expired_at: expirationTime,
-        signature: jwtToken
-      }
-    );
-    this.adminToken = result.key;
-    return { key: result.key };
-  }
-  // This flow can be used where the signature is generate from outside, such as in front-end and pass in
+  // async authWithJwtToken(
+  //   address: string,
+  //   jwtToken: string,
+  //   expiredAt?: number
+  // ): Promise<KeyExchangeResp> {
+  //   console.log("Authenticating with JWT token: ", jwtToken);
+  //   const expirationTime =
+  //     expiredAt || Math.floor(Date.now() / 1000) + DEFAULT_JWT_EXPIRATION;
+  //   const method = this.rpcClient.getKey.bind(this.rpcClient) as (
+  //     request: GetKeyReq,
+  //     metadata: Metadata | undefined,
+  //     callback: (error: grpc.ServiceError | null, response: KeyResp) => void
+  //   ) => grpc.ClientUnaryCall;
+  //   const request = new GetKeyReq()
+  //     .setOwner(address)
+  //     .setExpiredAt(expirationTime)
+  //     .setSignature(jwtToken);
+  //   const response = await this._callRPC<KeyResp, GetKeyReq>(method, request);
+  //   console.log("response:", response.getKey());
+  //   return { key: response.getKey() };
+  // }
   async authWithSignature(address, signature, expiredAtEpoch) {
     console.log(
       "Authenticating with signature:",
@@ -4447,50 +4442,54 @@ var BaseClient = class {
       "Expired at epoch:",
       expiredAtEpoch
     );
-    let result = await this._callRPC("getKey", {
-      owner: address,
-      expired_at: expiredAtEpoch,
-      signature
-    });
-    return { key: result.key };
+    const request = new (void 0)().setOwner(address).setExpiredAt(expiredAtEpoch).setSignature(signature);
+    console.log("request:", request);
+    const response = await this._callRPC("getKey", request);
+    console.log("response:", response.getKey());
+    return { key: response.getKey() };
   }
-  async sendRequest(method, request = {}, metadata) {
-    if (metadata === void 0) {
-      metadata = new grpc2.Metadata();
-    }
-    if (!this.adminToken) {
-      throw new Error(
-        "Authentication required. Please call authWithJwtToken() or authWithSignature() before making requests."
-      );
-    }
-    metadata.add("adminToken", this.adminToken);
-    return this._callRPC(
-      method,
-      request,
-      metadata
-    );
-  }
+  // protected async sendRequest<TResponse, TRequest extends object = {}>(
+  //   method: string,
+  //   request: TRequest = {} as TRequest,
+  //   metadata?: Metadata
+  // ): Promise<TResponse> {
+  //   if (metadata === undefined) {
+  //     metadata = new grpc.Metadata();
+  //   }
+  //   if (!this.adminToken) {
+  //     throw new Error(
+  //       "Authentication required. Please call authWithJwtToken() or authWithSignature() before making requests."
+  //     );
+  //   }
+  //   metadata.add("adminToken", this.adminToken);
+  //   return this._callRPC<TResponse, TRequest>(
+  //     method as (
+  //       request: TRequest,
+  //       metadata: grpc.Metadata | undefined,
+  //       callback: (error: grpc.ServiceError | null, response: TResponse) => void
+  //     ),
+  //     request,
+  //     metadata
+  //   );
+  // }
   isAuthenticated() {
     return !!this.adminToken;
   }
-  _callRPC(method, request = {}, metadata = new grpc2.Metadata()) {
+  _callRPC(methodName, request) {
     return new Promise((resolve, reject) => {
-      console.log("Calling RPC method:", method);
-      console.log("RPC client methods:", Object.keys(this.rpcClient));
-      if (!(method in this.rpcClient)) {
-        reject(new Error(`Method ${method} not found on AggregatorClient`));
-        return;
-      }
-      const rpcMethod = this.rpcClient[method];
-      console.log("RPC method type:", typeof rpcMethod);
-      if (typeof rpcMethod !== "function") {
-        reject(new Error(`Method ${method} is not a function on AggregatorClient`));
-        return;
-      }
-      rpcMethod(request, metadata, (error, response) => {
-        if (error) reject(error);
-        else resolve(response);
-      });
+      const method = this.rpcClient[methodName];
+      method.call(
+        this.rpcClient,
+        request,
+        grpcMetadata,
+        (error, response) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(response);
+          }
+        }
+      );
     });
   }
 };
@@ -4499,19 +4498,27 @@ var Client = class extends BaseClient {
     super(config);
   }
   async listTask() {
-    return this.sendRequest("ListTasks");
+    console.log("Listing tasks");
+    const request = new (void 0)();
+    const response = await this._callRPC(
+      "listTasks",
+      request
+    );
+    console.log("response:", response);
+    return response;
   }
   async getSmartWalletAddress(address) {
-    const result = await this.sendRequest(
-      "GetSmartAccountAddress",
-      { owner: address }
+    const request = new (void 0)().setOwner(address);
+    const response = await this._callRPC(
+      "getSmartAccountAddress",
+      request
     );
-    return result;
+    return response;
   }
-  // TODO: generate the type def using protobuf typescriplt gen util
   async getTask(taskId) {
-    const result = await this.sendRequest("GetTask", { bytes: taskId });
-    return result;
+    const request = new (void 0)().setBytes(taskId);
+    const response = await this._callRPC("getTask", request);
+    return response;
   }
 };
 export {

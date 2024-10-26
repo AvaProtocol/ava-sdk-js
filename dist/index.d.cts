@@ -1,5 +1,4 @@
 import * as grpc from '@grpc/grpc-js';
-import { Metadata } from '@grpc/grpc-js';
 import * as jspb from 'google-protobuf';
 import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as google_protobuf_wrappers_pb from 'google-protobuf/google/protobuf/wrappers_pb';
@@ -1044,19 +1043,6 @@ interface ClientParams {
     adminToken?: string;
     endpoint: string;
 }
-interface TaskResp {
-    id: string;
-    status: string;
-    result?: any;
-    error?: string;
-}
-interface TaskListResp {
-    tasks: TaskResp[];
-}
-interface SmartWalletResp {
-    address: string;
-    smart_account_address: string;
-}
 interface TransactionResp {
     hash: string;
 }
@@ -1069,17 +1055,15 @@ declare class BaseClient {
     readonly rpcClient: AggregatorClient;
     protected adminToken?: string;
     constructor(config: ClientParams);
-    authWithJwtToken(address: string, jwtToken: string, expiredAt?: number): Promise<KeyExchangeResp>;
     authWithSignature(address: string, signature: string, expiredAtEpoch: number): Promise<KeyExchangeResp>;
-    protected sendRequest<TResponse, TRequest extends object = {}>(method: string, request?: TRequest, metadata?: Metadata): Promise<TResponse>;
     isAuthenticated(): boolean;
-    private _callRPC;
+    protected _callRPC<TResponse, TRequest extends object = {}>(methodName: string, request: TRequest): Promise<TResponse>;
 }
 declare class Client extends BaseClient {
     constructor(config: ClientParams);
-    listTask(): Promise<TaskListResp>;
-    getSmartWalletAddress(address: string): Promise<SmartWalletResp>;
+    listTask(): Promise<ListTasksResp>;
+    getSmartWalletAddress(address: string): Promise<AddressResp>;
     getTask(taskId: string): Promise<any>;
 }
 
-export { type BalanceResp, type ClientParams, type Environment, type KeyExchangeResp, type SmartWalletResp, type TaskListResp, type TaskResp, type TransactionResp, Client as default, getKeyRequestMessage };
+export { type BalanceResp, type ClientParams, type Environment, type KeyExchangeResp, type TransactionResp, Client as default, getKeyRequestMessage };

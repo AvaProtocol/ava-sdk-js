@@ -22,23 +22,6 @@ export interface ClientParams {
   endpoint: string;
   // owner?: string;
 }
-
-export interface TaskResp {
-  id: string;
-  status: string;
-  result?: any;
-  error?: string;
-}
-
-export interface TaskListResp {
-  tasks: TaskResp[];
-}
-
-export interface SmartWalletResp {
-  address: string;
-  smart_account_address: string;
-}
-
 export interface TransactionResp {
   hash: string;
 }
