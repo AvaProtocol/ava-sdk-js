@@ -5,7 +5,7 @@ import path from "path";
 import { ethers } from "ethers";
 
 // Load environment variables from .env.test file
-dotenv.config({ path: path.resolve(__dirname, "../../.env.test") });
+dotenv.config({ path: "../.env.test" });
 
 const { TEST_JWT_TOKEN, TEST_PRIVATE_KEY } = process.env;
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
