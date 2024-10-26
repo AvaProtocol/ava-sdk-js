@@ -1,4 +1,4 @@
-name: Changeset Reminder
+name: PR Changeset
 
 on:
   pull_request:
@@ -18,10 +18,15 @@ jobs:
       - name: Check for Changeset
         id: changeset-check
         run: |
-          if [ -n "$(git diff --name-only origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | grep '^\.changeset/')" ]; then
+          echo "Checking for changeset files..."
+          CHANGESET_FILES=$(git diff --name-only origin/${{ github.base_ref }}..origin/${{ github.head_ref }} | grep '^\.changeset/' || true)
+          echo "Changeset files found: $CHANGESET_FILES"
+          if [ -n "$CHANGESET_FILES" ]; then
             echo "changeset=true" >> $GITHUB_OUTPUT
+            echo "Changeset found"
           else
             echo "changeset=false" >> $GITHUB_OUTPUT
+            echo "No changeset found"
           fi
 
       - name: Add Changeset Reminder Comment
@@ -30,9 +35,16 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.rest.issues.createComment({
+            console.log('Adding changeset reminder comment...');
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.name,
               body: 'Thank you for your contribution! It seems that this PR does not include a changeset. If this PR includes changes that should be reflected in the changelog, please add a changeset by running `npm run changeset` and committing the generated file. If no changeset is needed, you can ignore this message.'
-            })
+            });
+            console.log('Changeset reminder comment added successfully');
+
+      - name: Log Workflow Summary
+        run: |
+          echo "Workflow Summary:"
+          echo "- PR
