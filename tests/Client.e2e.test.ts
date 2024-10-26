@@ -119,6 +119,7 @@ describe("Client E2E Tests", () => {
   describe("Authenticated Tests", () => {
     let walletAddress: string;
     let client: Client;
+    let createdTaskId: string; // Add this line to declare the variable
 
     beforeAll(async () => {
       if (!ENDPOINT) {
@@ -181,6 +182,9 @@ describe("Client E2E Tests", () => {
       console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveProperty("id");
+
+      // Important: save the task ID to the suite for the following tests
+      createdTaskId = result.id;
     });
 
     test("listTasks", async () => {
@@ -189,18 +193,35 @@ describe("Client E2E Tests", () => {
       expect(Array.isArray(result.tasks)).toBe(true);
     });
 
-    // test("getTask", async () => {
-    //   // First, list tasks to get a valid task ID
-    //   const listResult = await client.listTask();
-    //   if (listResult.tasks.length > 0) {
-    //     const taskId = listResult.tasks[0].id;
-    //     const result = await client.getTask(taskId);
-    //     console.log("Get task result:", result);
-    //     expect(result).toBeDefined();
-    //     expect(result.id).toBe(taskId);
-    //   } else {
-    //     console.warn("No tasks available to test getTask");
-    //   }
-    // });
+    test("getTask", async () => {
+      // Use the saved task ID
+      if (createdTaskId) {
+        const result = await client.getTask(createdTaskId);
+        console.log("Get task result:", result);
+        expect(result).toBeDefined();
+      } else {
+        console.warn("No task ID available to test getTask");
+      }
+    });
+
+    test("cancelTask", async () => {
+      if (createdTaskId) {
+        const result = await client.cancelTask(createdTaskId);
+        console.log("Cancel task result:", result);
+        expect(result).toBe(true);
+      } else {
+        console.warn("No task ID available to test cancelTask");
+      }
+    });
+
+    test("deleteTask", async () => {
+      if (createdTaskId) {
+        const result = await client.deleteTask(createdTaskId);
+        console.log("Delete task result:", result);
+        expect(result).toBe(true);
+      } else {
+        console.warn("No task ID available to test deleteTask");
+      }
+    });
   });
 });

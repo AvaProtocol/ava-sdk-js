@@ -30,7 +30,7 @@ export interface Task {
 }
 
 export interface CreateTaskResponse {
-  task: Task;
+  id: string;
 }
 
 export interface ListTasksResponse {

@@ -5,8 +5,8 @@ import { Metadata } from "@grpc/grpc-js";
 import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
+import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import Task from "./task";
-
 const metadata = new grpc.Metadata();
 
 // Move interfaces to a separate file, e.g., types.ts
@@ -164,7 +164,7 @@ export default class Client extends BaseClient {
     address: string;
     tokenContract: string;
     oracleContract: string;
-  }): Promise<object> {
+  }): Promise<CreateTaskResponse> {
     const trigger = new avs_pb.TaskTrigger();
     trigger.setTriggerType(avs_pb.TriggerType.EXPRESSIONTRIGGER);
     trigger.setExpression(
@@ -206,7 +206,9 @@ export default class Client extends BaseClient {
 
     console.log("createTask.result:", result.toObject());
 
-    return result.toObject();
+    return {
+      id: result.getId(),
+    };
   }
 
   async listTasks(address: string): Promise<ListTasksResponse> {
@@ -229,6 +231,46 @@ export default class Client extends BaseClient {
     return {
       tasks: tasks,
     };
+  }
+
+  // TODO: specify the return type to match client’s requirements
+  // Right now we simply return the original object from the server
+  async getTask(id: string): Promise<object> {
+    const request = new avs_pb.UUID();
+    request.setBytes(id);
+
+    const result = await this._callRPC<avs_pb.Task, avs_pb.UUID>(
+      "getTask",
+      request
+    );
+
+    console.log("getTask.result:", result.toObject());
+
+    return result.toObject();
+  }
+
+  async cancelTask(id: string): Promise<boolean> {
+    const request = new avs_pb.UUID();
+    request.setBytes(id);
+
+    const result = await this._callRPC<BoolValue, avs_pb.UUID>(
+      "cancelTask",
+      request
+    );
+
+    return result.getValue();
+  }
+
+  async deleteTask(id: string): Promise<boolean> {
+    const request = new avs_pb.UUID();
+    request.setBytes(id);
+
+    const result = await this._callRPC<BoolValue, avs_pb.UUID>(
+      "deleteTask",
+      request
+    );
+
+    return result.getValue();
   }
 }
 

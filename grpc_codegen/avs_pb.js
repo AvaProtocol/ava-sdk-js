@@ -7508,4 +7508,5 @@ export const {
   ActionType,
   ContractExecution,
   TaskType,
+  UUID,
 } = proto.aggregator;

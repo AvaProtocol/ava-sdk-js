@@ -45,10 +45,10 @@ Then, run the following command to regenerate the types:
 
 ```bash
 # download the latest .proto file from https://github.com/AvaProtocol/EigenLayer-AVS
-npm run proto-download 
+npm run proto-download
 
 # Generate the TypeScript types and gRPC code based on the downloaded .proto file
-npm run gen-protoc 
+npm run gen-protoc
 ```
 
 > Important: the last line of the `grpc_codegen/avs_pb.js` needs to be manually added after the `gen-protoc` command. These type definitions must be exported; otherwise they will be undefined in the SDK. For example: `export const { Task, CreateTaskReq, CreateTaskResp, GetKeyReq, KeyResp, UpdateChecksReq, UpdateChecksResp, AddressResp, AddressRequest } = proto.aggregator;`
@@ -57,29 +57,27 @@ npm run gen-protoc
 
 To ensure the SDK is functioning correctly, we have a comprehensive test suite. Follow these steps to run the tests:
 
-1. Make sure all dependencies are installed:
+1. Make sure all dependencies are installed, and build the project. Tests are run against the files in the `/dist` folder
    ```bash
    npm install
+   npm run build
    ```
+2. Before running the e2e tests, make sure to configure the required environment variables in your `.env.test` file, based on the `.env.example` file.
 
-2. Run the test command. This will test the SDK against mockup responses.
+3. Run the test command. This will test the SDK against test server, configured in `.env.test`.
+
    ```bash
+   # Run all tests
    npm test
+
+   # or, run a specific test
+   npm run test:select -- <authWithSignature>
    ```
-   
-3. To test the SDK against the live AVS on Ethereum Mainnet, you can run the following command:
+
+4. In order to individually test `cancelTask` or `deleteTask`, `createTask` test needs to run first.
    ```bash
-   npm run test:e2e
+   npm run test:select -- "createTask|cancelTask"
    ```
-
-   Before running the e2e tests, make sure to configure the required TEST values in your `.env` file:
-
-   ```
-   TEST_JWT_TOKEN=your_TEST_JWT_TOKEN_here
-   TEST_OWNER=your_test_owner_here
-   ```
-
-   Replace `your_TEST_JWT_TOKEN_here` with a valid JWT API key and `your_test_owner_here` with the appropriate owner address for testing.
 
 This will execute all unit and integration tests. Make sure all tests pass before submitting a pull request or deploying changes.
 
