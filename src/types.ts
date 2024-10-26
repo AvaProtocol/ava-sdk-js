@@ -1,8 +1,8 @@
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
-export interface KeyExchangeResp {
-  key: string;
+export interface GetKeyResponse {
+  jwtToken: string;
 }
 
 export interface ClientOption {
@@ -22,19 +22,19 @@ export interface ClientOption {
   // owner?: string;
 }
 
-export interface TaskResp {
+export interface Task {
   id: string;
   status: string;
   result?: any;
   error?: string;
 }
 
-export interface TaskListResp {
-  tasks: TaskResp[];
+export interface ListTasksResponse {
+  tasks: Task[];
 }
 
-export interface SmartWalletResp {
-  address: string;
+export interface GetAddressesResponse {
+  owner: string;
   smart_account_address: string;
 }
 

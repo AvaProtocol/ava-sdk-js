@@ -8,12 +8,10 @@
     "strict": true,
     "outDir": "./dist",
     "declaration": true,
-    "rootDir": "src"
+    "rootDir": "./",
+    "typeRoots": ["node_modules/@types"]
   },
-  "include": [
-    "src/**/*",
-    "grpc_codegen/**/*"
-, "tests"  ],
+  "include": ["src/**/*", "grpc_codegen/**/*", "tests"],
   "ts-node": {
     "esm": true
   }

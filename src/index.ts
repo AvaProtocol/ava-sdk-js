@@ -1,20 +1,20 @@
+import _ from "lodash";
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 import { DEFAULT_JWT_EXPIRATION, getRpcEndpoint } from "./config";
-import { Environment } from "./types";
 import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
+import Task from "./task";
 
 const metadata = new grpc.Metadata();
 
 // Move interfaces to a separate file, e.g., types.ts
 import {
-  KeyExchangeResp,
   ClientOption,
-  TaskResp,
-  TaskListResp,
-  SmartWalletResp,
+  GetAddressesResponse,
+  GetKeyResponse,
+  ListTasksResponse,
 } from "./types";
 
 class BaseClient {
@@ -23,9 +23,8 @@ class BaseClient {
   readonly rpcClient;
   // protected owner?: string;
   // readonly opts: ClientOption;
-  protected authkey?: string;
   // protected wallet?: any;
-
+  protected metadata: Metadata;
   constructor(opts: ClientOption) {
     // if (!opts.jwtApiKey && !opts.owner) {
     //   throw new Error("missing jwtApiKey or owner");
@@ -34,14 +33,11 @@ class BaseClient {
     this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
       this.endpoint,
-      // TODO: switch to the TLS after we're able to update all the operator
       grpc.credentials.createInsecure()
     );
 
-    console.log("this.rpcClient:", this.rpcClient);
-
-    // this.opts = opts;
-    // this.owner = opts.owner ?? undefined;
+    // Create a new Metadata object for request headers
+    this.metadata = new Metadata();
   }
 
   // async authWithJwtToken(
@@ -64,7 +60,7 @@ class BaseClient {
   //     signature: jwtToken,
   //   });
 
-  //   this.authkey = result.getKey();
+  //   this.jwtToken = result.getKey();
   //   return { key: result.getKey() };
   // }
 
@@ -73,7 +69,7 @@ class BaseClient {
     address: string,
     signature: string,
     expiredAtEpoch: number
-  ): Promise<KeyExchangeResp> {
+  ): Promise<GetKeyResponse> {
     console.log(
       "Authenticating with signature:",
       signature,
@@ -93,13 +89,29 @@ class BaseClient {
     );
 
     console.log("result:", result);
-    this.authkey = result.getKey();
 
-    return { key: result.getKey() };
+    metadata.add("authkey", result.getKey());
+
+    return { jwtToken: result.getKey() };
   }
 
   public isAuthenticated(): boolean {
-    return !!this.authkey;
+    if (!metadata.get("authkey")) {
+      return false;
+    }
+
+    try {
+      // Decode the JWT token (without verifying the signature)
+      const [, payload] = metadata.get("authkey")[0].toString().split(".");
+      const decodedPayload = JSON.parse(atob(payload));
+
+      // Check if the token has expired
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      return decodedPayload.exp > currentTimestamp;
+    } catch (error) {
+      console.error("Error validating JWT token:", error);
+      return false;
+    }
   }
 
   protected _callRPC<TResponse, TRequest>(
@@ -122,6 +134,45 @@ class BaseClient {
 export default class Client extends BaseClient {
   constructor(config: ClientOption) {
     super(config);
+  }
+
+  async getAddresses(address: string): Promise<GetAddressesResponse> {
+    const request = new avs_pb.AddressRequest();
+    request.setOwner(address);
+
+    const result = await this._callRPC<
+      avs_pb.AddressResp,
+      avs_pb.AddressRequest
+    >("getSmartAccountAddress", request);
+
+    console.log("getAddresses.result:", result);
+
+    return {
+      owner: address,
+      smart_account_address: result.getSmartAccountAddress(),
+    };
+  }
+
+  async listTasks(address: string): Promise<ListTasksResponse> {
+    const request = new avs_pb.ListTasksReq();
+
+    const result = await this._callRPC<
+      avs_pb.ListTasksResp,
+      avs_pb.ListTasksReq
+    >("listTasks", request);
+
+    console.log("listTasks.result:", result.toObject());
+
+    const tasks = _.map(
+      result.getTasksList(),
+      (obj: avs_pb.ListTasksResp.TaskItemResp) => new Task(obj)
+    );
+
+    console.log("listTasks.tasks:", tasks);
+
+    return {
+      tasks: tasks,
+    };
   }
 }
 
