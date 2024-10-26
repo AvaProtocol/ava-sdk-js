@@ -81,6 +81,24 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
 
 This will execute all unit and integration tests. Make sure all tests pass before submitting a pull request or deploying changes.
 
+## Version Management
+
+This project uses [Changesets](https://github.com/changesets/changesets) to manage versions and changelogs. To contribute changes:
+
+1. Make your changes to the codebase.
+2. Run `npm run changeset` to create a new changeset.
+3. Follow the prompts to describe your changes.
+4. Commit the generated changeset file along with your changes.
+
+To release a new version:
+
+1. Run `npm run version` to update package versions and changelogs.
+2. Review and commit the changes.
+3. Run `npm run release` to publish the new version to npm.
+
+For more detailed information on using Changesets, refer to the [Changesets documentation](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md).
+
+
 ### Utility Scripts
 
 To generate the key request message for signing, you can run the following command:
@@ -98,3 +116,4 @@ We welcome contributions! Feel free to submit pull requests or open issues for a
 ## License
 
 This project is licensed under the Apache 2.0 License. See the LICENSE file for more details.
+
