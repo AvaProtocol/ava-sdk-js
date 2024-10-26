@@ -28,8 +28,7 @@
     "test": "jest --config jest.config.cjs",
     "test:select": "npm run test -- --testNamePattern",
     "changeset": "changeset",
-    "version": "changeset version",
-    "release": "npm run build && changeset publish"
+    "version": "changeset version"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.3",
