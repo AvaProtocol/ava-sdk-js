@@ -1,1 +1,54 @@
- 
+name: Release with Changeset
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Version Change
+        id: version_check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          LATEST_RELEASE=$(gh release list --limit 1 | cut -f1)
+          LATEST_VERSION=${LATEST_RELEASE#v}
+          
+          echo "Current version: ${CURRENT_VERSION}"
+          echo "Latest release: ${LATEST_VERSION}"
+          
+          if [ "$(printf '%s\n' "$LATEST_VERSION" "$CURRENT_VERSION" | sort -V | tail -n1)" = "$CURRENT_VERSION" ] && [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "Version increment detected"
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "No version increment detected or versions are equal"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+      - name: Create GitHub Release
+        if: steps.version_check.outputs.should_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          gh release create "v${CURRENT_VERSION}" \
+            --title "v${CURRENT_VERSION}" \
+            --generate-notes
