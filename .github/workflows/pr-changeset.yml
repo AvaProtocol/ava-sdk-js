@@ -22,7 +22,7 @@ jobs:
       - name: Fetch main branch
         run: |
           git fetch origin main
-          git branch -f main origin/main
+          git merge-base --is-ancestor origin/main HEAD || echo "Main branch is ahead"
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
