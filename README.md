@@ -98,6 +98,43 @@ To release a new version:
 
 For more detailed information on using Changesets, refer to the [Changesets documentation](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md).
 
+## Release Process
+
+This repository uses a two-step workflow process for creating new releases:
+
+1. **Version Bump Workflow**
+
+   - Go to the "Actions" tab in GitHub, and run the "Changeset Version Bump" workflow
+   - Select the version bump type:
+     - `patch` for backwards-compatible bug fixes (0.0.x)
+     - `minor` for backwards-compatible features (0.x.0)
+     - `major` for breaking changes (x.0.0)
+
+2. **Create Release Workflow**
+   - After the Version Bump workflow completes successfully
+   - Go to the "Actions" tab in GitHub and run the "Create Release" workflow
+
+The Create Release workflow will only create a new GitHub release if the version in `package.json` is higher than the latest published release. This prevents duplicate releases and ensures version increments.
+
+### NPM Publishing
+
+The NPM publishing should be handled manually, since the test cases reference the dist folder and don’t require a new version on NPM. NPM publish on dev tag is only required for testing the new version in a web app.
+1. Publish a dev version and test it in your local environment:
+   ```bash
+   # Update version with dev tag in package.json
+   npm version prerelease --preid=dev
+   
+   # Publish to npm with dev tag
+   npm publish --tag dev
+   ```
+
+2. Once tested, and a release is created using GitHub Actions, publish the production version to NPM:
+   ```bash
+   # Publish to npm with latest tag
+   npm publish
+   ```
+
+> **Note**: Make sure to run these workflows in order. The Version Bump workflow must complete successfully before running the Create Release workflow.
 
 ### Utility Scripts
 
@@ -116,4 +153,3 @@ We welcome contributions! Feel free to submit pull requests or open issues for a
 ## License
 
 This project is licensed under the Apache 2.0 License. See the LICENSE file for more details.
-
