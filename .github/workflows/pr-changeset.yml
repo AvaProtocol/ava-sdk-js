@@ -49,5 +49,5 @@ jobs:
           git config --local user.email "action@github.com"  # Use operational account email
           git config --local user.name "GitHub Action"
           git add .changeset
-          git commit -m "Add changeset" || echo "No changes to commit"
+          git commit -m "Add changeset: ${PR_TITLE}" || echo "No changes to commit"
           git push
