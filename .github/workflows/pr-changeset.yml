@@ -46,8 +46,9 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"  # Use operational account email
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .changeset
-          git commit -m "Add changeset: ${PR_TITLE}" || echo "No changes to commit"
+          git commit -m "Add changeset: ${COMMIT_MSG}" || echo "No changes to commit"
           git push
