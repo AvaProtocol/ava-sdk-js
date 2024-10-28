@@ -14,15 +14,16 @@ const {
   ORACLE_CONTRACT,
   ENDPOINT,
 } = process.env;
+
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
 
-// Add signature generation logic
+// Get wallet address from private key
 async function getAddress(privateKey: string): Promise<string> {
   const wallet = new ethers.Wallet(privateKey);
   return wallet.address;
 }
 
-// Add signature generation logic
+// Generate a signed message from a private key
 async function generateSignature(
   privateKey: string,
   expiredAt: number
@@ -179,6 +180,7 @@ describe("Client E2E Tests", () => {
         tokenContract: TOKEN_CONTRACT,
         oracleContract: ORACLE_CONTRACT,
       });
+
       console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveProperty("id");

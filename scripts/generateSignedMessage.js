@@ -1,3 +1,8 @@
+/**
+ * @file Get wallet address and generate a signed message from a private key
+ *       An environment variable TEST_MNEMONIC must be set to the mnemonic used to generate the wallet
+ */
+
 import { ethers } from "ethers";
 import { getKeyRequestMessage } from "../dist/index.js";
 
