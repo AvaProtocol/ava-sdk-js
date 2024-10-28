@@ -9,8 +9,6 @@ class Task {
   constructor(task: avs_pb.ListTasksResp.TaskItemResp) {
     this.id = task.getId();
     this.status = task.getStatus().toString();
-    // this.result = task.toObject();
-    console.log("task.constructor:", task.toObject());
   }
 }
 

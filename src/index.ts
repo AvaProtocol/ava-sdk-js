@@ -94,14 +94,7 @@ class BaseClient {
     signature: string,
     expiredAtEpoch: number
   ): Promise<GetKeyResponse> {
-    console.log(
-      "Authenticating with signature:",
-      signature,
-      "Expired at epoch:",
-      expiredAtEpoch
-    );
-
-    // Create a new GetKeyReq message
+     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
@@ -148,8 +141,6 @@ export default class Client extends BaseClient {
       avs_pb.AddressRequest
     >("getSmartAccountAddress", request);
 
-    console.log("getAddresses.result:", result);
-
     return {
       owner: address,
       smart_account_address: result.getSmartAccountAddress(),
@@ -190,8 +181,6 @@ export default class Client extends BaseClient {
     ]);
     execution.setCallData(callData);
 
-    // console.log("callData:", callData);
-    console.log("execution:", execution.toObject());
     action.setContractExecution(execution);
 
     const request = new avs_pb.CreateTaskReq()
@@ -203,8 +192,6 @@ export default class Client extends BaseClient {
       avs_pb.CreateTaskResp,
       avs_pb.CreateTaskReq
     >("createTask", request);
-
-    console.log("createTask.result:", result.toObject());
 
     return {
       id: result.getId(),
@@ -219,14 +206,10 @@ export default class Client extends BaseClient {
       avs_pb.ListTasksReq
     >("listTasks", request);
 
-    console.log("listTasks.result:", result.toObject());
-
     const tasks = _.map(
       result.getTasksList(),
       (obj: avs_pb.ListTasksResp.TaskItemResp) => new Task(obj)
     );
-
-    console.log("listTasks.tasks:", tasks);
 
     return {
       tasks: tasks,
@@ -243,8 +226,6 @@ export default class Client extends BaseClient {
       "getTask",
       request
     );
-
-    console.log("getTask.result:", result.toObject());
 
     return result.toObject();
   }

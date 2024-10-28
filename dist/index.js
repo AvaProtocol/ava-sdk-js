@@ -4511,7 +4511,6 @@ var Task2 = class {
   constructor(task) {
     this.id = task.getId();
     this.status = task.getStatus().toString();
-    console.log("task.constructor:", task.toObject());
   }
 };
 var task_default = Task2;
@@ -4566,12 +4565,6 @@ var BaseClient = class {
   // }
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
   async authWithSignature(address, signature, expiredAtEpoch) {
-    console.log(
-      "Authenticating with signature:",
-      signature,
-      "Expired at epoch:",
-      expiredAtEpoch
-    );
     const request = new GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
@@ -4604,7 +4597,6 @@ var Client = class extends BaseClient {
     const request = new AddressRequest();
     request.setOwner(address);
     const result = await this._callRPC("getSmartAccountAddress", request);
-    console.log("getAddresses.result:", result);
     return {
       owner: address,
       smart_account_address: result.getSmartAccountAddress()
@@ -4637,11 +4629,9 @@ var Client = class extends BaseClient {
       import_ethers.ethers.parseUnits("12", 18)
     ]);
     execution.setCallData(callData);
-    console.log("execution:", execution.toObject());
     action.setContractExecution(execution);
     const request = new CreateTaskReq().setTrigger(trigger).setActionsList([action]).setExpiredAt(Math.floor(Date.now() / 1e3) + 1e6);
     const result = await this._callRPC("createTask", request);
-    console.log("createTask.result:", result.toObject());
     return {
       id: result.getId()
     };
@@ -4649,12 +4639,10 @@ var Client = class extends BaseClient {
   async listTasks(address) {
     const request = new ListTasksReq();
     const result = await this._callRPC("listTasks", request);
-    console.log("listTasks.result:", result.toObject());
     const tasks = import_lodash.default.map(
       result.getTasksList(),
       (obj) => new task_default(obj)
     );
-    console.log("listTasks.tasks:", tasks);
     return {
       tasks
     };
@@ -4668,7 +4656,6 @@ var Client = class extends BaseClient {
       "getTask",
       request
     );
-    console.log("getTask.result:", result.toObject());
     return result.toObject();
   }
   async cancelTask(id) {
