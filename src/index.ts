@@ -7,7 +7,7 @@ import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import Task from "./task";
-import { AUTH_KEY_HEADER } from "./types";
+import { AUTH_KEY_HEADER, RequestOptions } from "./types";
 
 // Move interfaces to a separate file, e.g., types.ts
 import {
@@ -17,7 +17,6 @@ import {
   GetKeyResponse,
   ListTasksResponse,
 } from "./types";
-
 
 class BaseClient {
   readonly endpoint: string;
@@ -35,32 +34,17 @@ class BaseClient {
     this.metadata = new Metadata();
   }
 
-  public setAuthKey(key: string): void {
-    this.metadata.add(AUTH_KEY_HEADER, key);
-  }
-
-  public getAuthKey(): string | undefined {
-    const authKey = this.metadata.get(AUTH_KEY_HEADER);
-    return authKey?.[0]?.toString();
-  }
-
-  public isAuthenticated(): boolean {
-    const authKey = this.getAuthKey();
-
-    if (!authKey) {
-      return false;
-    }
-
+  public isAuthKeyValid(key: string): boolean {
     try {
       // Decode the JWT token (without verifying the signature)
-      const [, payload] = authKey.split(".");
+      const [, payload] = key.split(".");
       const decodedPayload = JSON.parse(atob(payload));
 
       // Check if the token has expired
       const currentTimestamp = Math.floor(Date.now() / 1000);
       return decodedPayload.exp > currentTimestamp;
     } catch (error) {
-      console.error("Error validating JWT token:", error);
+      console.error("Error validating auth key:", error);
       return false;
     }
   }
@@ -80,8 +64,7 @@ class BaseClient {
       avs_pb.GetKeyReq
     >("getKey", request);
 
-    this.setAuthKey(result.getKey());
-    return { key: result.getKey() };
+    return { authKey: result.getKey() };
   }
 
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
@@ -101,19 +84,26 @@ class BaseClient {
       request
     );
 
-    this.setAuthKey(result.getKey());
-
-    return { key: result.getKey() };
+    return { authKey: result.getKey() };
   }
 
   protected _callRPC<TResponse, TRequest>(
     method: string,
-    request: TRequest | any
+    request: TRequest | any,
+    options?: RequestOptions
   ): Promise<TResponse> {
+    // Clone the existing metadata from the client
+    const metadata = _.cloneDeep(this.metadata);
+
+    // Add the auth key to the metadata as a header
+    if (options?.authKey) {
+      metadata.set(AUTH_KEY_HEADER, options.authKey);
+    }
+
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
         request,
-        this.metadata,
+        metadata,
         (error: any, response: TResponse) => {
           if (error) reject(error);
           else resolve(response);
@@ -128,14 +118,17 @@ export default class Client extends BaseClient {
     super(config);
   }
 
-  async getAddresses(address: string): Promise<GetAddressesResponse> {
+  async getAddresses(
+    address: string,
+    { authKey }: { authKey: string }
+  ): Promise<GetAddressesResponse> {
     const request = new avs_pb.AddressRequest();
     request.setOwner(address);
 
     const result = await this._callRPC<
       avs_pb.AddressResp,
       avs_pb.AddressRequest
-    >("getSmartAccountAddress", request);
+    >("getSmartAccountAddress", request, { authKey });
 
     return {
       owner: address,

@@ -3,8 +3,12 @@ export type Environment = "production" | "development" | "staging";
 
 export const AUTH_KEY_HEADER = "authKey";
 
+export interface RequestOptions {
+  authKey: string;
+}
+
 export interface GetKeyResponse {
-  key: string;
+  authKey: string;
 }
 
 export interface ClientOption {

@@ -4517,25 +4517,14 @@ var BaseClient = class {
     );
     this.metadata = new Metadata();
   }
-  setAuthKey(key) {
-    this.metadata.add(AUTH_KEY_HEADER, key);
-  }
-  getAuthKey() {
-    const authKey = this.metadata.get(AUTH_KEY_HEADER);
-    return authKey?.[0]?.toString();
-  }
-  isAuthenticated() {
-    const authKey = this.getAuthKey();
-    if (!authKey) {
-      return false;
-    }
+  isAuthKeyValid(key) {
     try {
-      const [, payload] = authKey.split(".");
+      const [, payload] = key.split(".");
       const decodedPayload = JSON.parse(atob(payload));
       const currentTimestamp = Math.floor(Date.now() / 1e3);
       return decodedPayload.exp > currentTimestamp;
     } catch (error) {
-      console.error("Error validating JWT token:", error);
+      console.error("Error validating auth key:", error);
       return false;
     }
   }
@@ -4545,8 +4534,7 @@ var BaseClient = class {
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
     const result = await this._callRPC("getKey", request);
-    this.setAuthKey(result.getKey());
-    return { key: result.getKey() };
+    return { authKey: result.getKey() };
   }
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
   async authWithSignature(address, signature, expiredAtEpoch) {
@@ -4558,14 +4546,17 @@ var BaseClient = class {
       "getKey",
       request
     );
-    this.setAuthKey(result.getKey());
-    return { key: result.getKey() };
+    return { authKey: result.getKey() };
   }
-  _callRPC(method, request) {
+  _callRPC(method, request, options) {
+    const metadata = _.cloneDeep(this.metadata);
+    if (options?.authKey) {
+      metadata.set(AUTH_KEY_HEADER, options.authKey);
+    }
     return new Promise((resolve, reject) => {
       this.rpcClient[method].bind(this.rpcClient)(
         request,
-        this.metadata,
+        metadata,
         (error, response) => {
           if (error) reject(error);
           else resolve(response);
@@ -4578,10 +4569,10 @@ var Client = class extends BaseClient {
   constructor(config) {
     super(config);
   }
-  async getAddresses(address) {
+  async getAddresses(address, { authKey }) {
     const request = new AddressRequest();
     request.setOwner(address);
-    const result = await this._callRPC("getSmartAccountAddress", request);
+    const result = await this._callRPC("getSmartAccountAddress", request, { authKey });
     return {
       owner: address,
       smart_account_address: result.getSmartAccountAddress()
