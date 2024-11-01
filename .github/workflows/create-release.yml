@@ -24,7 +24,10 @@ jobs:
 
       - name: Create Release Pull Request or Publish
         id: changesets
-        run: npx changeset version
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          npx changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
