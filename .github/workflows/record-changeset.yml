@@ -44,8 +44,12 @@ jobs:
           echo "Creating changeset for: ${COMMIT_MESSAGE}"
 
           # Create changeset and capture the output
-          npx changeset add --empty --message "${COMMIT_MESSAGE}" --type "${{ github.event.inputs.version_type }}"
-          
+          CHANGESET_OUTPUT=$(npx changeset add --empty --message "${COMMIT_MESSAGE}" --type "${{ github.event.inputs.version_type }}")
+
+          # Extract filename from changeset output
+          CHANGESET_FILE=$(echo "$CHANGESET_OUTPUT" | grep -o '[a-z0-9\-]\+\.md')
+          echo "changeset_file=${CHANGESET_FILE}" >> $GITHUB_OUTPUT
+
           # Verify changeset creation
           if [ ! -d ".changeset" ]; then
             echo "Error: .changeset directory not created"
@@ -57,22 +61,25 @@ jobs:
           COMMIT_MSG=$(git log -1 --pretty=%B)
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "chore: add changeset for ${COMMIT_MSG}" || echo "No changes to commit"
-          git push
+
+          # Add changeset files to commit
+          git add .changeset/
+          git commit -m "chore: add changeset for ${COMMIT_MSG}" || exit 1
+
+          # Create and checkout new branch using changeset filename
+          BRANCH_NAME="changeset-$(basename ${{ steps.changeset.outputs.changeset_file }} .md)"
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: add changeset"
-          title: "Add changeset for changes"
-          body: |
-            Automated changeset creation via GitHub Actions
-            Original commit message: ${{ github.event.inputs.commit_message }}
-          branch: changeset/add-changes
-          base: main
-          delete-branch: true
+          branch: ${{ steps.changeset.outputs.changeset_file }} # Use the generated branch name
+          title: "Add changeset for ${COMMIT_MSG}"
+          body: "This pull request adds a changeset for ${COMMIT_MSG}. Please review."
+          labels: ["changeset"]
+
     permissions:
       contents: write
       pull-requests: write
