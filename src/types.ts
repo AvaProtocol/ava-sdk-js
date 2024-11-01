@@ -1,6 +1,8 @@
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
+export const AUTH_KEY_HEADER = "authKey";
+
 export interface GetKeyResponse {
   key: string;
 }
