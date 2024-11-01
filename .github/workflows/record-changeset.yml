@@ -73,10 +73,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          # Add changeset files to commit
-          git add .changeset/
-          git commit -m "chore: add changeset for ${COMMIT_MSG}" || exit 1
-
           # Create and checkout new branch using changeset filename
           BRANCH_NAME="changeset-$(basename ${{ steps.changeset.outputs.changeset_file }} .md)"
           git checkout -b "$BRANCH_NAME"
@@ -88,7 +84,7 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CHRIS_PERSONAL_ACCESS_TOKEN }}
           COMMIT_MESSAGE: ${{ env.commit_message }}
           BRANCH_NAME: ${{ env.branch_name }}
         run: |

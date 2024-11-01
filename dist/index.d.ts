@@ -1458,8 +1458,11 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
 
 type Environment = "production" | "development" | "staging";
 declare const AUTH_KEY_HEADER = "authKey";
+interface RequestOptions {
+    authKey: string;
+}
 interface GetKeyResponse {
-    key: string;
+    authKey: string;
 }
 interface ClientOption {
     endpoint: string;
@@ -1493,16 +1496,16 @@ declare class BaseClient {
     readonly rpcClient: AggregatorClient;
     protected metadata: Metadata;
     constructor(opts: ClientOption);
-    setAuthKey(key: string): void;
-    getAuthKey(): string | undefined;
-    isAuthenticated(): boolean;
+    isAuthKeyValid(key: string): boolean;
     authWithAPIKey(apiKey: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
     authWithSignature(address: string, signature: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
-    protected _callRPC<TResponse, TRequest>(method: string, request: TRequest | any): Promise<TResponse>;
+    protected _callRPC<TResponse, TRequest>(method: string, request: TRequest | any, options?: RequestOptions): Promise<TResponse>;
 }
 declare class Client extends BaseClient {
     constructor(config: ClientOption);
-    getAddresses(address: string): Promise<GetAddressesResponse>;
+    getAddresses(address: string, { authKey }: {
+        authKey: string;
+    }): Promise<GetAddressesResponse>;
     createTask({ address, oracleContract, tokenContract, }: {
         address: string;
         tokenContract: string;
@@ -1514,4 +1517,4 @@ declare class Client extends BaseClient {
     deleteTask(id: string): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, type BalanceResp, type ClientOption, type CreateTaskResponse, type Environment, type GetAddressesResponse, type GetKeyResponse, type ListTasksResponse, type Task, type TransactionResp, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, type BalanceResp, type ClientOption, type CreateTaskResponse, type Environment, type GetAddressesResponse, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type Task, type TransactionResp, Client as default, getKeyRequestMessage };
