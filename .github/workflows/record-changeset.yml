@@ -51,7 +51,7 @@ jobs:
           
           # Modify the changeset file to include the package
           echo "---
-'@avaprotocol/sdk-js': ${{ github.event.inputs.version_type }}
+'\"@avaprotocol/sdk-js\"': ${{ github.event.inputs.version_type }}
 ---
 
 ${COMMIT_MESSAGE}" > .changeset/${CHANGESET_FILE}
