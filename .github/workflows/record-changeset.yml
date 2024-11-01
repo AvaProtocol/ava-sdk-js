@@ -72,14 +72,15 @@ jobs:
           git push origin "$BRANCH_NAME"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.changeset.outputs.changeset_file }}
-          title: "Add changeset for ${COMMIT_MSG}"
-          body: "This pull request adds a changeset for ${COMMIT_MSG}. Please review."
-          labels: ["changeset"]
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "Add changeset for ${COMMIT_MSG}" \
+            --body "This pull request adds a changeset for ${COMMIT_MSG}. Please review." \
+            --base main \
+            --head "$BRANCH_NAME"
 
-permissions:
-  contents: write
-  pull-requests: write
+    permissions:
+      contents: write
+      pull-requests: write
