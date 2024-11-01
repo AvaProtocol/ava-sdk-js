@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 0.7.2
+
+### Patch Changes
+
+- d4dcc7c: authKey is no longer stored in client and added getAddresses test cases
+
 ## 0.7.1
 
 ### Patch Changes
