@@ -4182,6 +4182,7 @@ var init_avs_pb = __esm({
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
+  AUTH_KEY_HEADER: () => AUTH_KEY_HEADER,
   default: () => Client,
   getKeyRequestMessage: () => getKeyRequestMessage
 });
@@ -4515,8 +4516,10 @@ var Task2 = class {
 };
 var task_default = Task2;
 
+// src/types.ts
+var AUTH_KEY_HEADER = "authKey";
+
 // src/index.ts
-var metadata = new grpc2.Metadata();
 var BaseClient = class {
   constructor(opts) {
     this.endpoint = opts.endpoint;
@@ -4526,11 +4529,11 @@ var BaseClient = class {
     );
     this.metadata = new import_grpc_js.Metadata();
   }
-  setAuthKey(jwtToken) {
-    metadata.add("authKey", jwtToken);
+  setAuthKey(key) {
+    this.metadata.add(AUTH_KEY_HEADER, key);
   }
   getAuthKey() {
-    const authKey = this.metadata.get("authKey");
+    const authKey = this.metadata.get(AUTH_KEY_HEADER);
     return authKey?.[0]?.toString();
   }
   isAuthenticated() {
@@ -4574,7 +4577,7 @@ var BaseClient = class {
     return new Promise((resolve, reject) => {
       this.rpcClient[method].bind(this.rpcClient)(
         request,
-        metadata,
+        this.metadata,
         (error, response) => {
           if (error) reject(error);
           else resolve(response);
@@ -4673,5 +4676,6 @@ var Client = class extends BaseClient {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AUTH_KEY_HEADER,
   getKeyRequestMessage
 });

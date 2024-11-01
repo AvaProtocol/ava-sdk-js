@@ -1457,6 +1457,7 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
 }
 
 type Environment = "production" | "development" | "staging";
+declare const AUTH_KEY_HEADER = "authKey";
 interface GetKeyResponse {
     key: string;
 }
@@ -1492,7 +1493,7 @@ declare class BaseClient {
     readonly rpcClient: AggregatorClient;
     protected metadata: Metadata;
     constructor(opts: ClientOption);
-    setAuthKey(jwtToken: string): void;
+    setAuthKey(key: string): void;
     getAuthKey(): string | undefined;
     isAuthenticated(): boolean;
     authWithAPIKey(apiKey: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
@@ -1513,4 +1514,4 @@ declare class Client extends BaseClient {
     deleteTask(id: string): Promise<boolean>;
 }
 
-export { type BalanceResp, type ClientOption, type CreateTaskResponse, type Environment, type GetAddressesResponse, type GetKeyResponse, type ListTasksResponse, type Task, type TransactionResp, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, type BalanceResp, type ClientOption, type CreateTaskResponse, type Environment, type GetAddressesResponse, type GetKeyResponse, type ListTasksResponse, type Task, type TransactionResp, Client as default, getKeyRequestMessage };

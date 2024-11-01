@@ -4178,7 +4178,7 @@ var init_avs_pb = __esm({
 import _ from "lodash";
 import { ethers } from "ethers";
 import * as grpc2 from "@grpc/grpc-js";
-import { Metadata as Metadata2 } from "@grpc/grpc-js";
+import { Metadata } from "@grpc/grpc-js";
 
 // src/auth.ts
 var getKeyRequestMessage = (address, expiredAt) => {
@@ -4504,8 +4504,10 @@ var Task2 = class {
 };
 var task_default = Task2;
 
+// src/types.ts
+var AUTH_KEY_HEADER = "authKey";
+
 // src/index.ts
-var metadata = new grpc2.Metadata();
 var BaseClient = class {
   constructor(opts) {
     this.endpoint = opts.endpoint;
@@ -4513,13 +4515,13 @@ var BaseClient = class {
       this.endpoint,
       grpc2.credentials.createInsecure()
     );
-    this.metadata = new Metadata2();
+    this.metadata = new Metadata();
   }
-  setAuthKey(jwtToken) {
-    metadata.add("authKey", jwtToken);
+  setAuthKey(key) {
+    this.metadata.add(AUTH_KEY_HEADER, key);
   }
   getAuthKey() {
-    const authKey = this.metadata.get("authKey");
+    const authKey = this.metadata.get(AUTH_KEY_HEADER);
     return authKey?.[0]?.toString();
   }
   isAuthenticated() {
@@ -4563,7 +4565,7 @@ var BaseClient = class {
     return new Promise((resolve, reject) => {
       this.rpcClient[method].bind(this.rpcClient)(
         request,
-        metadata,
+        this.metadata,
         (error, response) => {
           if (error) reject(error);
           else resolve(response);
@@ -4661,6 +4663,7 @@ var Client = class extends BaseClient {
   }
 };
 export {
+  AUTH_KEY_HEADER,
   Client as default,
   getKeyRequestMessage
 };

@@ -7,7 +7,7 @@ import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import Task from "./task";
-const metadata = new grpc.Metadata();
+import { AUTH_KEY_HEADER } from "./types";
 
 // Move interfaces to a separate file, e.g., types.ts
 import {
@@ -18,19 +18,13 @@ import {
   ListTasksResponse,
 } from "./types";
 
+
 class BaseClient {
   readonly endpoint: string;
 
   readonly rpcClient;
-  // protected owner?: string;
-  // readonly opts: ClientOption;
-  // protected wallet?: any;
   protected metadata: Metadata;
   constructor(opts: ClientOption) {
-    // if (!opts.jwtApiKey && !opts.owner) {
-    //   throw new Error("missing jwtApiKey or owner");
-    // }
-
     this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
       this.endpoint,
@@ -41,17 +35,18 @@ class BaseClient {
     this.metadata = new Metadata();
   }
 
-  public setAuthKey(jwtToken: string): void {
-    metadata.add("authKey", jwtToken);
+  public setAuthKey(key: string): void {
+    this.metadata.add(AUTH_KEY_HEADER, key);
   }
 
   public getAuthKey(): string | undefined {
-    const authKey = this.metadata.get("authKey");
+    const authKey = this.metadata.get(AUTH_KEY_HEADER);
     return authKey?.[0]?.toString();
   }
 
   public isAuthenticated(): boolean {
     const authKey = this.getAuthKey();
+
     if (!authKey) {
       return false;
     }
@@ -118,7 +113,7 @@ class BaseClient {
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
         request,
-        metadata,
+        this.metadata,
         (error: any, response: TResponse) => {
           if (error) reject(error);
           else resolve(response);
