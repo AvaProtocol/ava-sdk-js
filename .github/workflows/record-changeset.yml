@@ -24,10 +24,13 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Fetch main branch
+      - name: Check if on main branch
         run: |
-          git fetch origin main
-          git merge-base --is-ancestor origin/main HEAD || echo "Main branch is ahead"
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$CURRENT_BRANCH" = "main" ]; then
+            echo "Error: Cannot create changeset on main branch"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -43,12 +46,18 @@ jobs:
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
           echo "Creating changeset for: ${COMMIT_MESSAGE}"
 
-          # Create changeset and capture the output
-          CHANGESET_OUTPUT=$(npx changeset add --empty --message "${COMMIT_MESSAGE}" --type "${{ github.event.inputs.version_type }}")
-
-          # Extract filename from changeset output
+          # Create the changeset file first
+          CHANGESET_OUTPUT=$(npx changeset add --empty)
+          
+          # Get the generated changeset filename
           CHANGESET_FILE=$(echo "$CHANGESET_OUTPUT" | grep -o '[a-z0-9\-]\+\.md')
-          echo "changeset_file=${CHANGESET_FILE}" >> $GITHUB_OUTPUT
+          
+          # Modify the changeset file to include the package
+          echo "---
+          '@avaprotocol/sdk-js': ${{ github.event.inputs.version_type }}
+          ---
+
+          ${COMMIT_MESSAGE}" > .changeset/${CHANGESET_FILE}
 
           # Verify changeset creation
           if [ ! -d ".changeset" ]; then
@@ -56,37 +65,18 @@ jobs:
             exit 1
           fi
 
-      - name: Commit and push changes
-        id: commit_and_push
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          # Add changeset files to commit
-          git add .changeset/
-          git commit -m "chore: add changeset for ${COMMIT_MSG}" || exit 1
-
-          # Create and checkout new branch using changeset filename
-          BRANCH_NAME="changeset-$(basename ${{ steps.changeset.outputs.changeset_file }} .md)"
-          git checkout -b "$BRANCH_NAME"
-          git push origin "$BRANCH_NAME"
-
-          # Set commit message as output for later use
-          echo "commit_message=${COMMIT_MSG}" >> $GITHUB_ENV
-          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_ENV
-
       - name: Create Pull Request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_MESSAGE: ${{ env.commit_message }}
-          BRANCH_NAME: ${{ env.branch_name }}
         run: |
+          # Create PR from current branch
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           gh pr create \
             --title "Add changeset for ${COMMIT_MESSAGE}" \
             --body "This pull request adds a changeset for ${COMMIT_MESSAGE}. Please review." \
             --base main \
-            --head "$BRANCH_NAME"
+            --head "$CURRENT_BRANCH"
 
     permissions:
       contents: write
