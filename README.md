@@ -103,6 +103,7 @@ For more detailed information on using Changesets, refer to the [Changesets docu
 This repository uses a two-step workflow process for creating new releases:
 
 1. **Record changeset workflow**
+
    - Go to the "Actions" tab in GitHub, and run the "Record Changeset" workflow
    - Select the version bump type:
      - `patch` for backwards-compatible bug fixes (0.0.x)
@@ -112,15 +113,19 @@ This repository uses a two-step workflow process for creating new releases:
 
 2. **Create release workflow**
    - Go to the "Actions" tab in GitHub and run the "Create Release" workflow. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
+3. **Publish to NPM**
+   - After the last step, the version number in `package.json` is updated and a git tag with the new version number is created. Now you can publish the production version to NPM using `npm publish`.
 
-### NPM Publishing
+### NPM Publishing Dev Versions
 
-The NPM publishing should be handled manually, since the test cases reference the dist folder and don’t require a new version on NPM. NPM publish on dev tag is only required for testing the new version in a web app.
+The NPM publishing of dev versions can be handled manually, since the test cases reference the dist folder and don’t require a new version on NPM. NPM publish on dev tag is only required for testing the new version in a web app.
+
 1. Publish a dev version and test it in your local environment:
+
    ```bash
    # Update version with dev tag in package.json
    npm version prerelease --preid=dev
-   
+
    # Publish to npm with dev tag
    npm publish --tag dev
    ```
@@ -130,8 +135,6 @@ The NPM publishing should be handled manually, since the test cases reference th
    # Publish to npm with latest tag
    npm publish
    ```
-
-> **Note**: Make sure to run these workflows in order. The Version Bump workflow must complete successfully before running the Create Release workflow.
 
 ### Utility Scripts
 
