@@ -2,7 +2,7 @@
 export type Environment = "production" | "development" | "staging";
 
 export interface GetKeyResponse {
-  jwtToken: string;
+  key: string;
 }
 
 export interface ClientOption {

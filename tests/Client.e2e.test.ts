@@ -8,7 +8,7 @@ import { ethers } from "ethers";
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 const {
-  TEST_JWT_TOKEN,
+  TEST_API_KEY,
   TEST_PRIVATE_KEY,
   TOKEN_CONTRACT,
   ORACLE_CONTRACT,
@@ -61,20 +61,44 @@ describe("Client E2E Tests", () => {
     walletAddress = address;
   });
 
-  //   test("authWithJwtToken", async () => {
-  //     if (!TEST_JWT_TOKEN) {
-  //       throw new Error("TEST_JWT_TOKEN is not set in the .env.test file");
-  //     }
+ 
+  test("authWithAPIKey", async () => {
+    if (!TEST_API_KEY) {
+      throw new Error("TEST_API_KEY is not set in the .env.test file");
+    }
 
-  //     const response = await client.authWithJwtToken(
-  //       walletAddress,
-  //       TEST_JWT_TOKEN,
-  //       EXPIRED_AT
-  //     );
+    if (!EXPIRED_AT) {
+      throw new Error("EXPIRED_AT is not set.");
+    }
 
-  //     console.log("authWithJwtToken response:", response);
-  //     expect(response).toBeDefined();
-  //   });
+    const res = await client.authWithAPIKey(TEST_API_KEY, EXPIRED_AT);
+
+    console.log("authWithAPIKey response:", res);
+
+    expect(res).toBeDefined();
+    expect(res).toHaveProperty("key");
+    expect(typeof res.key).toBe("string");
+
+    // Check if the key is a valid JWT token
+    const keyParts = res.key.split(".");
+
+    console.log("Key parts:", keyParts);
+    expect(keyParts).toHaveLength(3);
+
+
+    // The format of the parsed key payload is
+    // {
+    //   "iss": "AvaProtocol",
+    //   "exp": number
+    // }
+
+    // Decode the base64 token and check the payload
+    const payload = JSON.parse(Buffer.from(keyParts[1], "base64").toString());
+
+    // Verify all expected payload fields
+    expect(payload).toHaveProperty("iss", "AvaProtocol");
+    expect(payload).toHaveProperty("exp", EXPIRED_AT);
+  });
 
   test("authWithSignature", async () => {
     if (!TEST_PRIVATE_KEY) {

@@ -1458,7 +1458,7 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
 
 type Environment = "production" | "development" | "staging";
 interface GetKeyResponse {
-    jwtToken: string;
+    key: string;
 }
 interface ClientOption {
     endpoint: string;
@@ -1492,8 +1492,10 @@ declare class BaseClient {
     readonly rpcClient: AggregatorClient;
     protected metadata: Metadata;
     constructor(opts: ClientOption);
-    private setAuthKey;
+    setAuthKey(jwtToken: string): void;
+    getAuthKey(): string | undefined;
     isAuthenticated(): boolean;
+    authWithAPIKey(apiKey: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
     authWithSignature(address: string, signature: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
     protected _callRPC<TResponse, TRequest>(method: string, request: TRequest | any): Promise<TResponse>;
 }

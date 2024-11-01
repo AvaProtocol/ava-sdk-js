@@ -7,7 +7,7 @@ const dotenv = require("dotenv");
 dotenv.config({ path: require("path").resolve(__dirname, "../.env.test") });
 
 const {
-  TEST_JWT_TOKEN,
+  TEST_API_KEY,
   TEST_PRIVATE_KEY,
   TOKEN_CONTRACT,
   ORACLE_CONTRACT,
@@ -174,7 +174,7 @@ async function scheduleERC20TransferJob(owner, token, taskCondition) {
   console.log("\n\nTask condition:", taskCondition);
 
   const metadata = new grpc.Metadata();
-  metadata.add("authkey", token);
+  metadata.add("authKey", token);
 
   console.log("Trigger type", TriggerType.EXPRESSIONTRIGGER);
 
@@ -220,7 +220,7 @@ async function scheduleTimeTransfer(owner, token) {
   console.log("\n\nTask condition: Timeschedule", "*/2");
 
   const metadata = new grpc.Metadata();
-  metadata.add("authkey", token);
+  metadata.add("authKey", token);
 
   console.log("Trigger type", TriggerType.TIMETRIGGER);
 

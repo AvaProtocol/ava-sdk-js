@@ -4527,14 +4527,19 @@ var BaseClient = class {
     this.metadata = new import_grpc_js.Metadata();
   }
   setAuthKey(jwtToken) {
-    metadata.add("authkey", jwtToken);
+    metadata.add("authKey", jwtToken);
+  }
+  getAuthKey() {
+    const authKey = this.metadata.get("authKey");
+    return authKey?.[0]?.toString();
   }
   isAuthenticated() {
-    if (!metadata.get("authkey")) {
+    const authKey = this.getAuthKey();
+    if (!authKey) {
       return false;
     }
     try {
-      const [, payload] = metadata.get("authkey")[0].toString().split(".");
+      const [, payload] = authKey.split(".");
       const decodedPayload = JSON.parse(atob(payload));
       const currentTimestamp = Math.floor(Date.now() / 1e3);
       return decodedPayload.exp > currentTimestamp;
@@ -4543,26 +4548,15 @@ var BaseClient = class {
       return false;
     }
   }
-  // async authWithJwtToken(
-  //   address: string,
-  //   jwtToken: string,
-  //   expiredAt?: number
-  // ): Promise<KeyExchangeResp> {
-  //   console.log("Authenticating with JWT token: ", jwtToken);
-  //   // Use the provided expiredAt or set it to 24 hours from now if not provided
-  //   const expirationTime =
-  //     expiredAt || Math.floor(Date.now() / 1000) + DEFAULT_JWT_EXPIRATION;
-  //   const result: avsPb.KeyResp = await this._callRPC<
-  //     avsPb.KeyResp,
-  //     avsPb.GetKeyReq
-  //   >("getKey", {
-  //     owner: address,
-  //     expired_at: expirationTime,
-  //     signature: jwtToken,
-  //   });
-  //   this.jwtToken = result.getKey();
-  //   return { key: result.getKey() };
-  // }
+  async authWithAPIKey(apiKey, expiredAtEpoch) {
+    const request = new GetKeyReq();
+    request.setOwner("");
+    request.setExpiredAt(expiredAtEpoch);
+    request.setSignature(apiKey);
+    const result = await this._callRPC("getKey", request);
+    this.setAuthKey(result.getKey());
+    return { key: result.getKey() };
+  }
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
   async authWithSignature(address, signature, expiredAtEpoch) {
     const request = new GetKeyReq();
@@ -4574,7 +4568,7 @@ var BaseClient = class {
       request
     );
     this.setAuthKey(result.getKey());
-    return { jwtToken: result.getKey() };
+    return { key: result.getKey() };
   }
   _callRPC(method, request) {
     return new Promise((resolve, reject) => {
