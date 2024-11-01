@@ -50,13 +50,13 @@ jobs:
           CHANGESET_FILE=$(echo "$CHANGESET_OUTPUT" | grep -o '[a-z0-9\-]\+\.md')
           
           # Modify the changeset file to include the package
-          cat > .changeset/${CHANGESET_FILE} << 'EOL'
----
-"@avaprotocol/sdk-js": ${{ github.event.inputs.version_type }}
----
+          cat > ".changeset/${CHANGESET_FILE}" << 'EOF'
+          ---
+          "@avaprotocol/sdk-js": ${{ github.event.inputs.version_type }}
+          ---
 
-${COMMIT_MESSAGE}
-EOL
+          ${COMMIT_MESSAGE}
+          EOF
 
           echo "changeset_file=${CHANGESET_FILE}" >> $GITHUB_OUTPUT
 
