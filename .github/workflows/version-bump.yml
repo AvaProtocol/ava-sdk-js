@@ -45,8 +45,12 @@ jobs:
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "Current version: ${CURRENT_VERSION}"
           
-          echo "Setting changeset with type: ${{ github.event.inputs.version_type }}"
-          npx changeset add --empty --message "${COMMIT_MESSAGE}" --type "${{ github.event.inputs.version_type }}"
+          # Create a temporary changeset file directly
+          echo "---
+'ava-sdk-js': ${{ github.event.inputs.version_type }}
+---
+
+${COMMIT_MESSAGE}" > .changeset/version-bump.md
           
           # Run changeset version to bump the version
           npx changeset version
