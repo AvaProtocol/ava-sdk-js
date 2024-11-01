@@ -39,22 +39,14 @@ jobs:
         run: npm ci
 
       - name: Run Changeset
-        id: changeset
-        run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Current version: ${CURRENT_VERSION}"
-
-          npx changeset version --release ${{ github.event.inputs.version_type }}
-
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "New version: ${NEW_VERSION}"
-          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.version_type }}
+        run: npm run changeset
 
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .changeset package.json
-          git commit -m "Version bump to ${{ steps.changeset.outputs.new_version }}: ${COMMIT_MESSAGE}" || echo "No changes to commit"
+          git commit -m "Version bump via changeset" || echo "No changes to commit"
           git push --follow-tags
