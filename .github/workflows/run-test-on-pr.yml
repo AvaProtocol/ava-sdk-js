@@ -10,6 +10,7 @@ jobs:
     environment: test # The below environment variables are only available in the test environment
     
     env:
+      TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
