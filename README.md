@@ -102,19 +102,16 @@ For more detailed information on using Changesets, refer to the [Changesets docu
 
 This repository uses a two-step workflow process for creating new releases:
 
-1. **Version Bump Workflow**
-
-   - Go to the "Actions" tab in GitHub, and run the "Changeset Version Bump" workflow
+1. **Record changeset workflow**
+   - Go to the "Actions" tab in GitHub, and run the "Record Changeset" workflow
    - Select the version bump type:
      - `patch` for backwards-compatible bug fixes (0.0.x)
      - `minor` for backwards-compatible features (0.x.0)
      - `major` for breaking changes (x.0.0)
+   - Examine the Pull Request created by the workflow, and merge it if everything looks correct. This will record any commits before it as a major, minor, or patch.
 
-2. **Create Release Workflow**
-   - After the Version Bump workflow completes successfully
-   - Go to the "Actions" tab in GitHub and run the "Create Release" workflow
-
-The Create Release workflow will only create a new GitHub release if the version in `package.json` is higher than the latest published release. This prevents duplicate releases and ensures version increments.
+2. **Create release workflow**
+   - Go to the "Actions" tab in GitHub and run the "Create Release" workflow. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
 
 ### NPM Publishing
 
