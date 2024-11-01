@@ -29,8 +29,6 @@ describe("Client E2E Tests", () => {
   let walletAddress: string; // Add this line to declare the variable
 
   beforeAll(async () => {
-    console.log("Connecting to:", ENDPOINT);
-
     // Initialize the client with test credentials
     client = new Client({
       endpoint: ENDPOINT,
@@ -118,11 +116,6 @@ describe("Client E2E Tests", () => {
       }
 
       await client.authWithSignature(walletAddress, signature, EXPIRED_AT);
-
-      console.log(
-        "authWithSignature.client.getAuthKey():",
-        client.getAuthKey()
-      );
     });
 
     test("getAddresses", async () => {
@@ -138,15 +131,12 @@ describe("Client E2E Tests", () => {
     });
 
     test("createTask", async () => {
-      console.log("createTask.isAuthenticated:", client.isAuthenticated());
-
       const result = await client.createTask({
         address: walletAddress,
         tokenContract: TOKEN_CONTRACT,
         oracleContract: ORACLE_CONTRACT,
       });
 
-      console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveProperty("id");
 
@@ -158,7 +148,6 @@ describe("Client E2E Tests", () => {
       // Use the saved task ID
       if (createdTaskId) {
         const result = await client.getTask(createdTaskId);
-        console.log("Get task result:", result);
         expect(result).toBeDefined();
       } else {
         console.warn("No task ID available to test getTask");
@@ -168,7 +157,6 @@ describe("Client E2E Tests", () => {
     test("cancelTask", async () => {
       if (createdTaskId) {
         const result = await client.cancelTask(createdTaskId);
-        console.log("Cancel task result:", result);
         expect(result).toBe(true);
       } else {
         console.warn("No task ID available to test cancelTask");
@@ -178,7 +166,6 @@ describe("Client E2E Tests", () => {
     test("deleteTask", async () => {
       if (createdTaskId) {
         const result = await client.deleteTask(createdTaskId);
-        console.log("Delete task result:", result);
         expect(result).toBe(true);
       } else {
         console.warn("No task ID available to test deleteTask");
