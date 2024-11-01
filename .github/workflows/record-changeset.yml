@@ -57,6 +57,7 @@ jobs:
           fi
 
       - name: Commit and push changes
+        id: commit_and_push
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           git config --local user.email "action@github.com"
@@ -71,13 +72,19 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           git push origin "$BRANCH_NAME"
 
+          # Set commit message as output for later use
+          echo "commit_message=${COMMIT_MSG}" >> $GITHUB_ENV
+          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_ENV
+
       - name: Create Pull Request
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_MESSAGE: ${{ env.commit_message }}
+          BRANCH_NAME: ${{ env.branch_name }}
         run: |
           gh pr create \
-            --title "Add changeset for ${COMMIT_MSG}" \
-            --body "This pull request adds a changeset for ${COMMIT_MSG}. Please review." \
+            --title "Add changeset for ${COMMIT_MESSAGE}" \
+            --body "This pull request adds a changeset for ${COMMIT_MESSAGE}. Please review." \
             --base main \
             --head "$BRANCH_NAME"
 
