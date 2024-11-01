@@ -1,10 +1,10 @@
-name: Changeset Version Bump
+name: Record Changeset
 
 on:
   workflow_dispatch:
     inputs:
       version_type:
-        description: "Version bump type"
+        description: "Change type"
         required: true
         type: choice
         options:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   changeset:
-    name: Run Changeset
+    name: Create Changeset
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,13 +37,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Changeset
+      - name: Create Changeset
         id: changeset
         run: |
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          # Get and log current version
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Current version: ${CURRENT_VERSION}"
+          echo "Creating changeset for: ${COMMIT_MESSAGE}"
 
           # Create changeset and capture the output
           npx changeset add --empty --message "${COMMIT_MESSAGE}" --type "${{ github.event.inputs.version_type }}"
@@ -54,19 +52,27 @@ jobs:
             exit 1
           fi
 
-      - name: Review Changeset Files
-        run: |
-          echo "Checking .changeset directory contents:"
-          ls -la .changeset/
-          
-          # Use find with proper error handling
-          find .changeset -type f -not -name "config.json" -not -name "README.md" || echo "No changeset files found"
-
       - name: Commit and push changes
         run: |
           COMMIT_MSG=$(git log -1 --pretty=%B)
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add .
-          git commit -m "Version bump to ${{ steps.changeset.outputs.new_version }}: ${COMMIT_MSG}" || echo "No changes to commit"
+          git commit -m "chore: add changeset for ${COMMIT_MSG}" || echo "No changes to commit"
           git push
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: add changeset"
+          title: "Add changeset for changes"
+          body: |
+            Automated changeset creation via GitHub Actions
+            Original commit message: ${{ github.event.inputs.commit_message }}
+          branch: changeset/add-changes
+          base: main
+          delete-branch: true
+    permissions:
+      contents: write
+      pull-requests: write
