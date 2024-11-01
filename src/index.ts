@@ -41,18 +41,24 @@ class BaseClient {
     this.metadata = new Metadata();
   }
 
-  private setAuthKey(jwtToken: string): void {
-    metadata.add("authkey", jwtToken);
+  public setAuthKey(jwtToken: string): void {
+    metadata.add("authKey", jwtToken);
+  }
+
+  public getAuthKey(): string | undefined {
+    const authKey = this.metadata.get("authKey");
+    return authKey?.[0]?.toString();
   }
 
   public isAuthenticated(): boolean {
-    if (!metadata.get("authkey")) {
+    const authKey = this.getAuthKey();
+    if (!authKey) {
       return false;
     }
 
     try {
       // Decode the JWT token (without verifying the signature)
-      const [, payload] = metadata.get("authkey")[0].toString().split(".");
+      const [, payload] = authKey.split(".");
       const decodedPayload = JSON.parse(atob(payload));
 
       // Check if the token has expired
@@ -64,29 +70,24 @@ class BaseClient {
     }
   }
 
-  // async authWithJwtToken(
-  //   address: string,
-  //   jwtToken: string,
-  //   expiredAt?: number
-  // ): Promise<KeyExchangeResp> {
-  //   console.log("Authenticating with JWT token: ", jwtToken);
+  async authWithAPIKey(
+    apiKey: string,
+    expiredAtEpoch: number
+  ): Promise<GetKeyResponse> {
+    // Create a new GetKeyReq message
+    const request = new avs_pb.GetKeyReq();
+    request.setOwner("");
+    request.setExpiredAt(expiredAtEpoch);
+    request.setSignature(apiKey);
 
-  //   // Use the provided expiredAt or set it to 24 hours from now if not provided
-  //   const expirationTime =
-  //     expiredAt || Math.floor(Date.now() / 1000) + DEFAULT_JWT_EXPIRATION;
+    const result: avs_pb.KeyResp = await this._callRPC<
+      avs_pb.KeyResp,
+      avs_pb.GetKeyReq
+    >("getKey", request);
 
-  //   const result: avsPb.KeyResp = await this._callRPC<
-  //     avsPb.KeyResp,
-  //     avsPb.GetKeyReq
-  //   >("getKey", {
-  //     owner: address,
-  //     expired_at: expirationTime,
-  //     signature: jwtToken,
-  //   });
-
-  //   this.jwtToken = result.getKey();
-  //   return { key: result.getKey() };
-  // }
+    this.setAuthKey(result.getKey());
+    return { key: result.getKey() };
+  }
 
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
   async authWithSignature(
@@ -94,7 +95,7 @@ class BaseClient {
     signature: string,
     expiredAtEpoch: number
   ): Promise<GetKeyResponse> {
-     // Create a new GetKeyReq message
+    // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
@@ -107,7 +108,7 @@ class BaseClient {
 
     this.setAuthKey(result.getKey());
 
-    return { jwtToken: result.getKey() };
+    return { key: result.getKey() };
   }
 
   protected _callRPC<TResponse, TRequest>(
