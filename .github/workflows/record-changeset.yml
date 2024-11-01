@@ -75,11 +75,11 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.changeset.outputs.changeset_file }} # Use the generated branch name
+          branch: ${{ steps.changeset.outputs.changeset_file }}
           title: "Add changeset for ${COMMIT_MSG}"
           body: "This pull request adds a changeset for ${COMMIT_MSG}. Please review."
           labels: ["changeset"]
 
-    permissions:
-      contents: write
-      pull-requests: write
+permissions:
+  contents: write
+  pull-requests: write
