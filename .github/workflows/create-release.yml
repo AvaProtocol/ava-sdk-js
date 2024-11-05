@@ -34,12 +34,28 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git add .
             git commit -m "Version packages"
-            git push
           else
             echo "No changes to commit"
           fi
+
+      - name: Create Version Bump Branch and Push
+        if: steps.changesets.outputs.commit
+        run: |
+          BRANCH_NAME="release-version-bump-$(date +'%Y%m%d%H%M%S')"
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
         env:
-          GITHUB_TOKEN: ${{ secrets.CHRIS_PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Open Pull Request for Version Bump
+        if: steps.changesets.outputs.commit
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ github.token }}
+          base: main
+          head: ${{ steps.create_version_bump_branch.outputs.BRANCH_NAME }}
+          title: "Version packages"
+          body: "This pull request contains version bumps for packages."
 
       - name: Check Version Change
         id: version_check
