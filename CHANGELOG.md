@@ -1,5 +1,12 @@
 # @avaprotocol/sdk-js
 
+## 0.7.3
+
+### Patch Changes
+
+- a5305c0: Revert changeset auto-commit to false
+- f9f8874: Create a new branch for version bump 2
+
 ## 0.7.2
 
 ### Patch Changes
