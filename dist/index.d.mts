@@ -474,8 +474,8 @@ declare namespace BranchAction {
 }
 
 declare class TaskAction extends jspb.Message { 
-    getTaskType(): TaskType;
-    setTaskType(value: TaskType): TaskAction;
+    getTaskType(): TaskType$1;
+    setTaskType(value: TaskType$1): TaskAction;
     getId(): string;
     setId(value: string): TaskAction;
     getName(): string;
@@ -527,7 +527,7 @@ declare class TaskAction extends jspb.Message {
 
 declare namespace TaskAction {
     export type AsObject = {
-        taskType: TaskType,
+        taskType: TaskType$1,
         id: string,
         name: string,
         nextList: Array<string>,
@@ -566,53 +566,53 @@ declare namespace Execution {
     }
 }
 
-declare class Task$1 extends jspb.Message { 
+declare class Task extends jspb.Message { 
 
     hasId(): boolean;
     clearId(): void;
     getId(): UUID | undefined;
-    setId(value?: UUID): Task$1;
+    setId(value?: UUID): Task;
     getOwner(): string;
-    setOwner(value: string): Task$1;
+    setOwner(value: string): Task;
     getSmartAccountAddress(): string;
-    setSmartAccountAddress(value: string): Task$1;
+    setSmartAccountAddress(value: string): Task;
 
     hasTrigger(): boolean;
     clearTrigger(): void;
     getTrigger(): TaskTrigger | undefined;
-    setTrigger(value?: TaskTrigger): Task$1;
+    setTrigger(value?: TaskTrigger): Task;
     clearNodesList(): void;
     getNodesList(): Array<TaskAction>;
-    setNodesList(value: Array<TaskAction>): Task$1;
+    setNodesList(value: Array<TaskAction>): Task;
     addNodes(value?: TaskAction, index?: number): TaskAction;
     getStartAt(): number;
-    setStartAt(value: number): Task$1;
+    setStartAt(value: number): Task;
     getExpiredAt(): number;
-    setExpiredAt(value: number): Task$1;
+    setExpiredAt(value: number): Task;
     getMemo(): string;
-    setMemo(value: string): Task$1;
+    setMemo(value: string): Task;
     getCompletedAt(): number;
-    setCompletedAt(value: number): Task$1;
+    setCompletedAt(value: number): Task;
     getStatus(): TaskStatus;
-    setStatus(value: TaskStatus): Task$1;
+    setStatus(value: TaskStatus): Task;
     getRepeatable(): boolean;
-    setRepeatable(value: boolean): Task$1;
+    setRepeatable(value: boolean): Task;
     clearExecutionsList(): void;
     getExecutionsList(): Array<Execution>;
-    setExecutionsList(value: Array<Execution>): Task$1;
+    setExecutionsList(value: Array<Execution>): Task;
     addExecutions(value?: Execution, index?: number): Execution;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): Task$1.AsObject;
-    static toObject(includeInstance: boolean, msg: Task$1): Task$1.AsObject;
+    toObject(includeInstance?: boolean): Task.AsObject;
+    static toObject(includeInstance: boolean, msg: Task): Task.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: Task$1, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): Task$1;
-    static deserializeBinaryFromReader(message: Task$1, reader: jspb.BinaryReader): Task$1;
+    static serializeBinaryToWriter(message: Task, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Task;
+    static deserializeBinaryFromReader(message: Task, reader: jspb.BinaryReader): Task;
 }
 
-declare namespace Task$1 {
+declare namespace Task {
     export type AsObject = {
         id?: UUID.AsObject,
         owner: string,
@@ -939,7 +939,7 @@ declare enum TriggerType {
     EXPRESSIONTRIGGER = 2,
 }
 
-declare enum TaskType {
+declare enum TaskType$1 {
     ETHTRANSFERTASK = 0,
     CONTRACTEXECUTIONTASK = 1,
     GRAPHQLDATAQUERYTASK = 2,
@@ -1088,18 +1088,18 @@ interface IAggregatorClient {
   ): grpc.ClientUnaryCall;
   getTask(
     request: UUID,
-    callback: (error: grpc.ServiceError | null, response: Task$1) => void
+    callback: (error: grpc.ServiceError | null, response: Task) => void
   ): grpc.ClientUnaryCall;
   getTask(
     request: UUID,
     metadata: grpc.Metadata,
-    callback: (error: grpc.ServiceError | null, response: Task$1) => void
+    callback: (error: grpc.ServiceError | null, response: Task) => void
   ): grpc.ClientUnaryCall;
   getTask(
     request: UUID,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
-    callback: (error: grpc.ServiceError | null, response: Task$1) => void
+    callback: (error: grpc.ServiceError | null, response: Task) => void
   ): grpc.ClientUnaryCall;
   cancelTask(
     request: UUID,
@@ -1336,18 +1336,18 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
   ): grpc.ClientUnaryCall;
   public getTask(
     request: UUID,
-    callback: (error: grpc.ServiceError | null, response: Task$1) => void
+    callback: (error: grpc.ServiceError | null, response: Task) => void
   ): grpc.ClientUnaryCall;
   public getTask(
     request: UUID,
     metadata: grpc.Metadata,
-    callback: (error: grpc.ServiceError | null, response: Task$1) => void
+    callback: (error: grpc.ServiceError | null, response: Task) => void
   ): grpc.ClientUnaryCall;
   public getTask(
     request: UUID,
     metadata: grpc.Metadata,
     options: Partial<grpc.CallOptions>,
-    callback: (error: grpc.ServiceError | null, response: Task$1) => void
+    callback: (error: grpc.ServiceError | null, response: Task) => void
   ): grpc.ClientUnaryCall;
   public cancelTask(
     request: UUID,
@@ -1466,29 +1466,57 @@ interface GetKeyResponse {
 }
 interface ClientOption {
     endpoint: string;
-    jwtApiKey?: string;
 }
-interface Task {
+interface TaskType {
     id: string;
-    status: string;
-    result?: any;
-    error?: string;
+    owner: string;
+    smartAccountAddress: string;
+    trigger: {
+        triggerType: number;
+        schedule?: any;
+        contractQuery?: any;
+        expression: {
+            expression: string;
+        };
+    };
+    nodesList: Array<{
+        taskType: number;
+        id: string;
+        name: string;
+        nextList: any[];
+        ethTransfer?: any;
+        contractExecution: any;
+        graphqlDataQuery?: any;
+        httpDataQuery?: any;
+        customCode?: any;
+        branch?: any;
+    }>;
+    startAt: number;
+    expiredAt: number;
+    memo: string;
+    completedAt: number;
+    status: number;
+    repeatable: boolean;
+    executionsList: any[];
 }
 interface CreateTaskResponse {
     id: string;
 }
 interface ListTasksResponse {
-    tasks: Task[];
+    tasks: {
+        id: string;
+        status: string;
+    }[];
+}
+interface CancelTaskResponse {
+    value: boolean;
+}
+interface DeleteTaskResponse {
+    value: boolean;
 }
 interface GetAddressesResponse {
     owner: string;
     smart_account_address: string;
-}
-interface TransactionResp {
-    hash: string;
-}
-interface BalanceResp {
-    balance: string;
 }
 
 declare class BaseClient {
@@ -1510,11 +1538,21 @@ declare class Client extends BaseClient {
         address: string;
         tokenContract: string;
         oracleContract: string;
+    }, { authKey }: {
+        authKey: string;
     }): Promise<CreateTaskResponse>;
-    listTasks(address: string): Promise<ListTasksResponse>;
-    getTask(id: string): Promise<object>;
-    cancelTask(id: string): Promise<boolean>;
-    deleteTask(id: string): Promise<boolean>;
+    listTasks(address: string, { authKey }: {
+        authKey: string;
+    }): Promise<ListTasksResponse>;
+    getTask(id: string, { authKey }: {
+        authKey: string;
+    }): Promise<TaskType>;
+    cancelTask(id: string, { authKey }: {
+        authKey: string;
+    }): Promise<CancelTaskResponse>;
+    deleteTask(id: string, { authKey }: {
+        authKey: string;
+    }): Promise<DeleteTaskResponse>;
 }
 
-export { AUTH_KEY_HEADER, type BalanceResp, type ClientOption, type CreateTaskResponse, type Environment, type GetAddressesResponse, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type Task, type TransactionResp, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type DeleteTaskResponse, type Environment, type GetAddressesResponse, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type TaskType, Client as default, getKeyRequestMessage };

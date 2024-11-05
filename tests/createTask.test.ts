@@ -25,105 +25,139 @@ const {
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
 
-describe("listTasks Tests", () => {
+describe("createTask Tests", () => {
   let ownerAddress: string;
-
+  let client: Client;
   beforeAll(async () => {
     ownerAddress = await getAddress(TEST_PRIVATE_KEY);
+    console.log("Client endpoint:", ENDPOINT, "\nOwner address:", ownerAddress);
+
+    // Initialize the client with test credentials
+    client = new Client({
+      endpoint: ENDPOINT,
+    });
   });
 
   describe("Auth with Signature", () => {
-    let client: Client;
     let smartWallet: string;
-    beforeAll(async () => {
-      // Initialize the client with test credentials
-      client = new Client({
-        endpoint: ENDPOINT,
-      });
+    let authKey: string;
 
+    beforeAll(async () => {
       console.log("Authenticating with signature ...");
       const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-      await client.authWithSignature(ownerAddress, signature, EXPIRED_AT);
+      const res = await client.authWithSignature(
+        ownerAddress,
+        signature,
+        EXPIRED_AT
+      );
+      authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const result = await client.getAddresses(ownerAddress);
+      const result = await client.getAddresses(ownerAddress, { authKey });
       smartWallet = result.smart_account_address;
       console.log(`Smart wallet created: ${smartWallet}`);
     });
 
     test("should create a task when authenticated with signature", async () => {
-      const result = await client.createTask({
-        address: smartWallet,
-        tokenContract: TOKEN_CONTRACT,
-        oracleContract: ORACLE_CONTRACT,
-      });
+      const result = await client.createTask(
+        {
+          address: smartWallet,
+          tokenContract: TOKEN_CONTRACT,
+          oracleContract: ORACLE_CONTRACT,
+        },
+        { authKey }
+      );
       console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveProperty("id");
     });
 
-    test("should fail when creating a task with owner address using signature", async () => {
-      await expect(
-        client.createTask({
+    test("should throw error when creating a task with owner address using signature", async () => {
+      await expect(client.createTask(
+        {
           address: ownerAddress,
           tokenContract: TOKEN_CONTRACT,
           oracleContract: ORACLE_CONTRACT,
-        })
-      ).rejects.toThrow("invalid address");
+        },
+        { authKey }
+      )).rejects.toThrow("invalid address");
     });
   });
 
   describe("Auth with API key", () => {
-    let client: Client;
+    let authKey: string;
     let smartWallet: string;
-    beforeAll(async () => {
-      // Initialize the client with test credentials
-      client = new Client({
-        endpoint: ENDPOINT,
-      });
 
+    beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      await client.authWithAPIKey(TEST_API_KEY, EXPIRED_AT);
+      const res = await client.authWithAPIKey(TEST_API_KEY, EXPIRED_AT);
+      authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const result = await client.getAddresses(ownerAddress);
+      const result = await client.getAddresses(ownerAddress, { authKey });
       smartWallet = result.smart_account_address;
       console.log(`Smart wallet created: ${smartWallet}`);
     });
 
     test("should create a task when authenticated with API key", async () => {
-      const result = await client.createTask({
-        address: smartWallet,
-        tokenContract: TOKEN_CONTRACT,
-        oracleContract: ORACLE_CONTRACT,
-      });
+      const result = await client.createTask(
+        {
+          address: smartWallet,
+          tokenContract: TOKEN_CONTRACT,
+          oracleContract: ORACLE_CONTRACT,
+        },
+        { authKey }
+      );
       console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveProperty("id");
     });
 
-    test("should fail when creating a task with owner address using API key", async () => {
-      await expect(
-        client.createTask({
+    test("should throw error when creating a task with owner address using API key", async () => {
+      await expect(client.createTask(
+        {
           address: ownerAddress,
           tokenContract: TOKEN_CONTRACT,
           oracleContract: ORACLE_CONTRACT,
-        })
+        },
+          { authKey }
+        )
       ).rejects.toThrow("invalid address");
     });
   });
 
-  test("should throw error when creating a task without authentication", async () => {
-    const clientWithoutAuth = new Client({
-      endpoint: ENDPOINT,
+  describe("Without authentication", () => {
+    let smartWallet: string;
+    let authKey: string;
+
+    beforeAll(async () => {
+      console.log("Authenticating with signature ...");
+      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+      const res = await client.authWithSignature(
+        ownerAddress,
+        signature,
+        EXPIRED_AT
+      );
+      authKey = res.authKey;
+
+      console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
+      const getAddressesRes = await client.getAddresses(ownerAddress, {
+        authKey,
+      });
+      smartWallet = getAddressesRes.smart_account_address;
+      console.log(`Smart wallet created: ${smartWallet}`);
     });
 
-    await expect(
-      clientWithoutAuth.createTask({
-        address: ownerAddress,
-        tokenContract: TOKEN_CONTRACT,
-        oracleContract: ORACLE_CONTRACT,
-      })
-    ).rejects.toThrow("missing auth header");
+    test("should throw error when creating a task without authentication", async () => {
+      await expect(client.createTask(
+        {
+          address: smartWallet,
+          tokenContract: TOKEN_CONTRACT,
+          oracleContract: ORACLE_CONTRACT,
+        },
+          { authKey: "" }
+        )
+      ).rejects.toThrow("missing auth header");
+    });
   });
 });

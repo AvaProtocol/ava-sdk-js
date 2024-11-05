@@ -1,3 +1,5 @@
+import { TaskStatus } from "../grpc_codegen/avs_pb";
+import _ from "lodash";
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
@@ -12,27 +14,40 @@ export interface GetKeyResponse {
 }
 
 export interface ClientOption {
-  // env?: Environment;
   endpoint: string;
-
-  // used in automated manner where this key can schedule job on behalf of other user. this jwtApiKey is generated from aggregator CLI. It's a long live key.
-  // This currently used in our telegram bot, because the bot can schedule and manage tasks for any user
-  // It is just require the user to prove they own the wallet in initial onboarding.
-  jwtApiKey?: string;
-
-  // used in front-end app where front-end generate the signature
-  // presignSignature?: string;
-  // signatureExpiredAt?: number;
-
-  // env?: Environment;
-  // owner?: string;
 }
 
-export interface Task {
+export interface TaskType {
   id: string;
-  status: string;
-  result?: any;
-  error?: string;
+  owner: string;
+  smartAccountAddress: string;
+  trigger: {
+    triggerType: number;
+    schedule?: any;
+    contractQuery?: any;
+    expression: {
+      expression: string;
+    };
+  };
+  nodesList: Array<{
+    taskType: number;
+    id: string;
+    name: string;
+    nextList: any[];
+    ethTransfer?: any;
+    contractExecution: any;
+    graphqlDataQuery?: any;
+    httpDataQuery?: any;
+    customCode?: any;
+    branch?: any;
+  }>;
+  startAt: number;
+  expiredAt: number;
+  memo: string;
+  completedAt: number;
+  status: number;
+  repeatable: boolean;
+  executionsList: any[];
 }
 
 export interface CreateTaskResponse {
@@ -40,18 +55,21 @@ export interface CreateTaskResponse {
 }
 
 export interface ListTasksResponse {
-  tasks: Task[];
+  tasks: {
+    id: string;
+    status: string;
+  }[];
+}
+
+export interface CancelTaskResponse {
+  value: boolean;
+}
+
+export interface DeleteTaskResponse {
+  value: boolean;
 }
 
 export interface GetAddressesResponse {
   owner: string;
   smart_account_address: string;
-}
-
-export interface TransactionResp {
-  hash: string;
-}
-
-export interface BalanceResp {
-  balance: string;
 }

@@ -6,9 +6,14 @@ import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
+import {
+  AUTH_KEY_HEADER,
+  CancelTaskResponse,
+  DeleteTaskResponse,
+  RequestOptions,
+  TaskType,
+} from "./types";
 import Task from "./task";
-import { AUTH_KEY_HEADER, RequestOptions } from "./types";
-
 // Move interfaces to a separate file, e.g., types.ts
 import {
   ClientOption,
@@ -136,15 +141,18 @@ export default class Client extends BaseClient {
     };
   }
 
-  async createTask({
-    address,
-    oracleContract,
-    tokenContract,
-  }: {
-    address: string;
-    tokenContract: string;
-    oracleContract: string;
-  }): Promise<CreateTaskResponse> {
+  async createTask(
+    {
+      address,
+      oracleContract,
+      tokenContract,
+    }: {
+      address: string;
+      tokenContract: string;
+      oracleContract: string;
+    },
+    { authKey }: { authKey: string }
+  ): Promise<CreateTaskResponse> {
     const trigger = new avs_pb.TaskTrigger();
     trigger.setTriggerType(avs_pb.TriggerType.EXPRESSIONTRIGGER);
     trigger.setExpression(
@@ -180,24 +188,32 @@ export default class Client extends BaseClient {
     const result = await this._callRPC<
       avs_pb.CreateTaskResp,
       avs_pb.CreateTaskReq
-    >("createTask", request);
+    >("createTask", request, { authKey });
 
     return {
       id: result.getId(),
     };
   }
 
-  async listTasks(address: string): Promise<ListTasksResponse> {
+  async listTasks(
+    address: string,
+    { authKey }: { authKey: string }
+  ): Promise<ListTasksResponse> {
     const request = new avs_pb.ListTasksReq();
 
     const result = await this._callRPC<
       avs_pb.ListTasksResp,
       avs_pb.ListTasksReq
-    >("listTasks", request);
+    >("listTasks", request, { authKey });
 
     const tasks = _.map(
       result.getTasksList(),
-      (obj: avs_pb.ListTasksResp.TaskItemResp) => new Task(obj)
+      (obj: avs_pb.ListTasksResp.TaskItemResp) => {
+        return {
+          id: obj.getId(),
+          status: _.capitalize(obj.getStatus().toString()),
+        };
+      }
     );
 
     return {
@@ -207,40 +223,57 @@ export default class Client extends BaseClient {
 
   // TODO: specify the return type to match client’s requirements
   // Right now we simply return the original object from the server
-  async getTask(id: string): Promise<object> {
+  async getTask(
+    id: string,
+    { authKey }: { authKey: string }
+  ): Promise<TaskType> {
     const request = new avs_pb.UUID();
     request.setBytes(id);
+    ``;
 
     const result = await this._callRPC<avs_pb.Task, avs_pb.UUID>(
       "getTask",
-      request
+      request,
+      { authKey }
     );
 
-    return result.toObject();
+    return new Task(result);
   }
 
-  async cancelTask(id: string): Promise<boolean> {
+  async cancelTask(
+    id: string,
+    { authKey }: { authKey: string }
+  ): Promise<CancelTaskResponse> {
     const request = new avs_pb.UUID();
     request.setBytes(id);
 
     const result = await this._callRPC<BoolValue, avs_pb.UUID>(
       "cancelTask",
-      request
+      request,
+      { authKey }
     );
 
-    return result.getValue();
+    return {
+      value: result.getValue(),
+    };
   }
 
-  async deleteTask(id: string): Promise<boolean> {
+  async deleteTask(
+    id: string,
+    { authKey }: { authKey: string }
+  ): Promise<DeleteTaskResponse> {
     const request = new avs_pb.UUID();
     request.setBytes(id);
 
     const result = await this._callRPC<BoolValue, avs_pb.UUID>(
       "deleteTask",
-      request
+      request,
+      { authKey }
     );
 
-    return result.getValue();
+    return {
+      value: result.getValue(),
+    };
   }
 }
 

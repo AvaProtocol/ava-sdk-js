@@ -25,7 +25,7 @@ const {
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
 
-describe("listTasks Tests", () => {
+describe("cancelTask Tests", () => {
   let ownerAddress: string;
   let client: Client;
 
@@ -74,16 +74,21 @@ describe("listTasks Tests", () => {
       createdTaskId = createTaskRes.id;
     });
 
-    test("should list tasks when authenticated with signature", async () => {
-      const result = await client.listTasks(smartWallet, { authKey });
-      expect(Array.isArray(result.tasks)).toBe(true);
-      expect(result.tasks.some((task) => task.id === createdTaskId)).toBe(true);
+    test("should cancel task when authenticated with signature", async () => {
+      const result = await client.cancelTask(createdTaskId, { authKey });
+      expect(result.value).toBe(true);
+
+      const listRes = await client.listTasks(smartWallet, { authKey });
+      expect(Array.isArray(listRes.tasks)).toBe(true);
+      expect(listRes.tasks.some((task) => task.id === createdTaskId)).toBe(
+        true
+      );
     });
 
-    test("should return empty when listing owner address using signature", async () => {
-      const result = await client.listTasks(ownerAddress, { authKey });
-      expect(Array.isArray(result.tasks)).toBe(true);
-      expect(result.tasks.length).toBe(0);
+    test("should throw error when canceling an non-existent task", async () => {
+      // This fails because the current error message is "2 UNKNOWN: Key not found", which is not a clear error message
+      await expect(client.cancelTask("non-existent-task-id", { authKey }))
+        .rejects.toThrow("Task Id not found");
     });
   });
 
@@ -117,23 +122,28 @@ describe("listTasks Tests", () => {
       createdTaskId = createTaskRes.id;
     });
 
-    test("should list tasks when authenticated with API key", async () => {
-      const result = await client.listTasks(smartWallet, { authKey });
-      expect(Array.isArray(result.tasks)).toBe(true);
-      expect(result.tasks.some((task) => task.id === createdTaskId)).toBe(true);
+    test("should cancel task when authenticated with API key", async () => {
+      const result = await client.cancelTask(createdTaskId, { authKey });
+      expect(result.value).toBe(true);
+
+      const listRes = await client.listTasks(smartWallet, { authKey });
+      expect(Array.isArray(listRes.tasks)).toBe(true);
+      expect(listRes.tasks.some((task) => task.id === createdTaskId)).toBe(
+        true
+      );
     });
 
-    test("should return empty when listing owner address using API key", async () => {
-      const result = await client.listTasks(ownerAddress, { authKey });
-      expect(Array.isArray(result.tasks)).toBe(true);
-      expect(result.tasks.length).toBe(0);
+    test("should throw error when canceling an non-existent task", async () => {
+      await expect(client.cancelTask("non-existent-task-id", { authKey }))
+        .rejects.toThrow("Task Id not found");
     });
   });
 
   describe("Without authentication", () => {
     let smartWallet: string;
     let authKey: string;
-    
+    let createdTaskId: string;
+
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
       const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
@@ -150,12 +160,22 @@ describe("listTasks Tests", () => {
       });
       smartWallet = getAddressesRes.smart_account_address;
       console.log(`Smart wallet created: ${smartWallet}`);
+
+      console.log("Creating a task to use for the following tests");
+      const createTaskRes = await client.createTask(
+        {
+          address: smartWallet,
+          tokenContract: TOKEN_CONTRACT,
+          oracleContract: ORACLE_CONTRACT,
+        },
+        { authKey }
+      );
+
+      createdTaskId = createTaskRes.id;
     });
 
-    test("should throw error when listing tasks without authentication", async () => {
-      await expect(
-        client.listTasks(smartWallet, { authKey: "" })
-      ).rejects.toThrow("missing auth header");
+    test("should throw error when canceling a task without authentication", async () => {
+      await expect(client.cancelTask(createdTaskId, { authKey: "" })).rejects.toThrow("missing auth header");
     });
   });
 });

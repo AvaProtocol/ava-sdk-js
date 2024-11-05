@@ -4493,19 +4493,36 @@ var AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);
 // src/index.ts
 init_avs_pb();
 
+// src/types.ts
+var AUTH_KEY_HEADER = "authKey";
+
 // src/task.ts
 var Task2 = class {
-  //   result?: any;
-  //   error?: string;
+  // Add other missing properties here
   constructor(task) {
-    this.id = task.getId();
+    this.id = task.getId()?.toString() || "";
     this.status = task.getStatus().toString();
+    this.owner = task.getOwner();
+    this.smartAccountAddress = task.getSmartAccountAddress();
+    this.trigger = {
+      triggerType: task.getTrigger()?.getTriggerType() || 0,
+      schedule: task.getTrigger()?.getSchedule()?.toObject(),
+      contractQuery: task.getTrigger()?.getContractQuery()?.toObject(),
+      expression: task.getTrigger()?.getExpression()?.toObject() || {
+        expression: ""
+      }
+    };
+    this.nodesList = task.getNodesList();
+    this.startAt = task.getStartAt();
+    this.expiredAt = task.getExpiredAt();
+    this.memo = task.getMemo();
+    this.completedAt = task.getCompletedAt();
+    this.status = task.getStatus();
+    this.repeatable = task.getRepeatable();
+    this.executionsList = task.getExecutionsList();
   }
 };
 var task_default = Task2;
-
-// src/types.ts
-var AUTH_KEY_HEADER = "authKey";
 
 // src/index.ts
 var BaseClient = class {
@@ -4582,7 +4599,7 @@ var Client = class extends BaseClient {
     address,
     oracleContract,
     tokenContract
-  }) {
+  }, { authKey }) {
     const trigger = new TaskTrigger();
     trigger.setTriggerType(TriggerType.EXPRESSIONTRIGGER);
     trigger.setExpression(
@@ -4607,17 +4624,22 @@ var Client = class extends BaseClient {
     execution.setCallData(callData);
     action.setContractExecution(execution);
     const request = new CreateTaskReq().setTrigger(trigger).setActionsList([action]).setExpiredAt(Math.floor(Date.now() / 1e3) + 1e6);
-    const result = await this._callRPC("createTask", request);
+    const result = await this._callRPC("createTask", request, { authKey });
     return {
       id: result.getId()
     };
   }
-  async listTasks(address) {
+  async listTasks(address, { authKey }) {
     const request = new ListTasksReq();
-    const result = await this._callRPC("listTasks", request);
+    const result = await this._callRPC("listTasks", request, { authKey });
     const tasks = _.map(
       result.getTasksList(),
-      (obj) => new task_default(obj)
+      (obj) => {
+        return {
+          id: obj.getId(),
+          status: _.capitalize(obj.getStatus().toString())
+        };
+      }
     );
     return {
       tasks
@@ -4625,32 +4647,40 @@ var Client = class extends BaseClient {
   }
   // TODO: specify the return type to match client’s requirements
   // Right now we simply return the original object from the server
-  async getTask(id) {
+  async getTask(id, { authKey }) {
     const request = new UUID();
     request.setBytes(id);
+    ``;
     const result = await this._callRPC(
       "getTask",
-      request
+      request,
+      { authKey }
     );
-    return result.toObject();
+    return new task_default(result);
   }
-  async cancelTask(id) {
+  async cancelTask(id, { authKey }) {
     const request = new UUID();
     request.setBytes(id);
     const result = await this._callRPC(
       "cancelTask",
-      request
+      request,
+      { authKey }
     );
-    return result.getValue();
+    return {
+      value: result.getValue()
+    };
   }
-  async deleteTask(id) {
+  async deleteTask(id, { authKey }) {
     const request = new UUID();
     request.setBytes(id);
     const result = await this._callRPC(
       "deleteTask",
-      request
+      request,
+      { authKey }
     );
-    return result.getValue();
+    return {
+      value: result.getValue()
+    };
   }
 };
 export {
