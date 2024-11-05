@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create Release Pull Request or Publish
+      - name: Commit Changeset Version Bump
         id: changesets
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -39,7 +39,7 @@ jobs:
             echo "No changes to commit"
           fi
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.CHRIS_PERSONAL_ACCESS_TOKEN }}
 
       - name: Check Version Change
         id: version_check
