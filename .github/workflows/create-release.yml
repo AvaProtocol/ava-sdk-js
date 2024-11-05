@@ -31,17 +31,22 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           npx changeset version
+
           if [ -n "$(git status --porcelain)" ]; then
+            NEW_VERSION=$(node -p "require('./package.json').version")
             git add .
             git commit -m "Version packages"
+            echo "commit=true" >> $GITHUB_ENV
+            echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           else
             echo "No changes to commit"
+            echo "commit=false" >> $GITHUB_ENV
           fi
 
       - name: Create Version Bump Branch and Push
         if: steps.changesets.outputs.commit
         run: |
-          BRANCH_NAME="release-version-bump-$(date +'%Y%m%d%H%M%S')"
+          BRANCH_NAME="bump-to-${{ env.NEW_VERSION }}"
           git checkout -b "$BRANCH_NAME"
           git push origin "$BRANCH_NAME"
         env:
