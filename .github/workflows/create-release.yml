@@ -56,14 +56,21 @@ jobs:
           git push origin "$BRANCH_NAME"
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          BRANCH_NAME: bump-to-${{ env.NEW_VERSION }}
+
+      - name: Verify Changes Before PR
+        if: steps.changesets.outputs.commit == 'true'
+        run: |
+          git fetch origin
+          git diff --exit-code origin/main || echo "Changes detected"
 
       - name: Open Pull Request for Version Bump
-        if: steps.changesets.outputs.commit
+        if: steps.changesets.outputs.commit == 'true'
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ github.token }}
           base: main
-          head: ${{ steps.create_version_bump_branch.outputs.BRANCH_NAME }}
+          head: ${{ env.BRANCH_NAME }}
           title: "Version packages"
           body: "This pull request contains version bumps for packages."
 
