@@ -24,31 +24,53 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Fetch main branch
+      - name: Set BASE_BRANCH
         run: |
-          git fetch origin main
-          git merge-base --is-ancestor origin/main HEAD || echo "Main branch is ahead"
+          if [[ "${GITHUB_REF#refs/heads/}" == "staging"* ]]; then
+            echo "BASE_BRANCH=staging" >> $GITHUB_ENV
+          else
+            echo "BASE_BRANCH=main" >> $GITHUB_ENV
+          fi
+
+      - name: Sync Base Branch
+        run: |
+          git fetch origin ${{ env.BASE_BRANCH }}
+          git merge origin/${{ env.BASE_BRANCH }} --no-edit
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
 
-      - name: Create Changeset
+      - name: Run Changeset Command
         id: changeset
+        env:
+          BASE_BRANCH: ${{ env.BASE_BRANCH }}
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "Creating changeset for: ${COMMIT_MESSAGE}"
+          echo "=== Starting Changeset Creation ==="
 
+          # Get and log commit message
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Commit Message: ${COMMIT_MESSAGE}"
+          echo "Base Branch: ${BASE_BRANCH}"
+
+          echo "=== Creating Empty Changeset ==="
           # Create the changeset file first
           CHANGESET_OUTPUT=$(npx changeset add --empty)
-          
+          echo "Changeset Command Output: ${CHANGESET_OUTPUT}"
+
+          echo "=== Extracting Filename ==="
           # Get the generated changeset filename
           CHANGESET_FILE=$(echo "$CHANGESET_OUTPUT" | grep -o '[a-z0-9\-]\+\.md')
-          
+          echo "Generated Changeset Filename: ${CHANGESET_FILE}"
+
+          echo "=== Checking .changeset Directory ==="
+          ls -la .changeset || echo "Directory not found!"
+
+          echo "=== Writing Changeset Content ==="
           # Modify the changeset file to include the package
           cat > ".changeset/${CHANGESET_FILE}" << EOF
           ---
@@ -58,18 +80,46 @@ jobs:
           ${COMMIT_MESSAGE}
           EOF
 
+          echo "=== Verifying Changeset File Content ==="
+          if [ -f ".changeset/${CHANGESET_FILE}" ]; then
+            echo "Changeset file content:"
+            cat ".changeset/${CHANGESET_FILE}"
+          else
+            echo "Error: Changeset file was not created!"
+          fi
+
+          echo "=== Setting Output Variable ==="
           echo "changeset_file=${CHANGESET_FILE}" >> $GITHUB_OUTPUT
 
+          echo "=== Final Directory Check ==="
           # Verify changeset creation
           if [ ! -d ".changeset" ]; then
             echo "Error: .changeset directory not created"
             exit 1
           fi
 
-      - name: Commit and push changes
+          echo "=== Staging and Committing Changeset ==="
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          echo "Staging changeset file..."
+          git add ".changeset/${CHANGESET_FILE}"
+          git status
+
+          echo "Committing changeset..."
+          git commit -m "Add changeset for: ${COMMIT_MESSAGE} [skip ci]"
+
+          echo "Verifying commit..."
+          git log -1 --stat
+
+          echo "=== Changeset Creation Complete ==="
+
+          # Add this line to set the commit message as an output
+          echo "commit_message=${COMMIT_MESSAGE}" >> $GITHUB_OUTPUT
+
+      - name: Commit and Push Changes
         id: commit_and_push
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
@@ -78,20 +128,21 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           git push origin "$BRANCH_NAME"
 
-          # Set commit message as output for later use
-          echo "commit_message=${COMMIT_MSG}" >> $GITHUB_ENV
+          # Set outputs for later use
+          echo "commit_message=${{ steps.changeset.outputs.commit_message }}" >> $GITHUB_ENV
           echo "branch_name=${BRANCH_NAME}" >> $GITHUB_ENV
 
       - name: Create Pull Request
         env:
-          GITHUB_TOKEN: ${{ secrets.CHRIS_PERSONAL_ACCESS_TOKEN }}
-          COMMIT_MESSAGE: ${{ env.commit_message }}
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_MESSAGE: ${{ steps.changeset.outputs.commit_message }}
           BRANCH_NAME: ${{ env.branch_name }}
+          BASE_BRANCH: ${{ env.BASE_BRANCH }}
         run: |
           gh pr create \
             --title "Add changeset for ${COMMIT_MESSAGE}" \
             --body "This pull request adds a changeset for ${COMMIT_MESSAGE}. Please review." \
-            --base main \
+            --base "$BASE_BRANCH" \
             --head "$BRANCH_NAME"
 
     permissions:
