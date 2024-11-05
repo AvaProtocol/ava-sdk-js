@@ -120,10 +120,10 @@ This repository uses a two-step workflow process for creating new releases:
 
 The NPM publishing of dev versions can be handled manually, since the test cases reference the dist folder and don’t require a new version on NPM. NPM publish on dev tag is only required for testing the new version in a web app.
 
-1. Publish a dev version and test it in your local environment:
+1. Publish a dev version and test it in your local environment. The `npm publish` will use the version number in `package.json`, so run `npm version prerelease --preid=dev` first if you need a new version number.
 
    ```bash
-   # Update version with dev tag in package.json
+   # Optionally, update version with dev tag in package.json
    npm version prerelease --preid=dev
 
    # Publish to npm with dev tag
