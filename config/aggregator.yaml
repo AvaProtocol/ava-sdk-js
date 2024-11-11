@@ -1,0 +1,33 @@
+# Dummy unsecure test key. do not deposit real fund to here
+ecdsa_private_key: e0502ddd5a0d05ec7b5c22614a01c8ce783810edaa98e44cc82f5fa5a819aaa9
+
+eth_rpc_url: https://holesky.gateway.tenderly.co/6PJfDJkrMGBl3f4MuyU5M
+eth_ws_url: wss://holesky.gateway.tenderly.co/6PJfDJkrMGBl3f4MuyU5M
+
+rpc_bind_address: "0.0.0.0:2206"
+http_bind_address: "0.0.0.0:8080"
+
+avs_registry_coordinator_address: 0x90c6d6f2A78d5Ce22AB8631Ddb142C03AC87De7a
+operator_state_retriever_address: 0xb7bb920538e038DFFEfcB55caBf713652ED2031F
+
+etherscan_url: https://sepolia.etherscan.io
+eigenlayer_url: https://holesky.eigenlayer.xyz
+
+environment: development
+db_path: /tmp/ap-avs/db
+
+# Random key for test, please do not use or copy/paste this to any prod env
+jwt_secret: "1b7db1c64236d92de3b3ed32e5d6bf56"
+
+
+# account abstraction config
+# Sepolia
+smart_wallet:
+  eth_rpc_url: https://sepolia.gateway.tenderly.co
+  eth_ws_url: wss://sepolia.gateway.tenderly.co
+  bundler_url: https://bundler-sepolia.avaprotocol.org
+  factory_address: 0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7
+  entrypoint_address: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789
+
+  # dummy key, cannot actually run transaction
+  controller_private_key: e0502ddd5a0d05ec7b5c22614a01c8ce783810edaa98e44cc82f5fa5a819aaa9

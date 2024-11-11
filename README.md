@@ -64,6 +64,21 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    ```
 2. Before running the e2e tests, make sure to configure the required environment variables in your `.env.test` file, based on the `.env.example` file.
 
+3. Bring up a locally environment for aggregator
+
+   ```bash
+   docker compose up -d
+   ```
+
+  When running test, you will want to test against different aggregator. You can do so by finding the hash of the branch/commit of EigenLayer-AVS code and run it like this
+
+  ```
+  export AVS_BUILD_VERSION=git-commit-hash-123
+  docker compose down
+  docker compose pull
+  docker compose up -d
+  ```
+
 3. Run the test command. This will test the SDK against test server, configured in `.env.test`.
 
    ```bash

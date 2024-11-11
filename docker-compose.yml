@@ -1,0 +1,11 @@
+name: ava-sdk-test
+services:
+  aggregator:
+    image: avaprotocol/avs-dev:${AVS_BUILD_VERSION:-latest}
+    command:
+    - "aggregator"
+    ports:
+      - "2206:2206"
+      - "1323:1323"
+    volumes:
+      - ./config:/app/config
