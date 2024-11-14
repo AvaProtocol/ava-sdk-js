@@ -14,7 +14,7 @@ jobs:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
-      ENDPOINT: ${{ vars.ENDPOINT }}
+      ENDPOINT: localhost:2206
 
     steps:
     - name: Checkout repository
@@ -35,6 +35,10 @@ jobs:
         echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
         echo "ENDPOINT: $ENDPOINT"
         echo "TEST_PRIVATE_KEY is set: ${{ env.TEST_PRIVATE_KEY != '' }}"
-      
+ 
+    - name: Bring up docker compose
+      run: |
+        docker compose up -d
+            
     - name: Run tests
       run: npm test 
