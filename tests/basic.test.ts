@@ -115,9 +115,12 @@ describe("Client E2E Tests", () => {
         );
       }
 
-      console.log("should hit here", "dauhu", walletAddress, signature, EXPIRED_AT);
       let a = await client.authWithSignature(walletAddress, signature, EXPIRED_AT);
-      console.log("should hit here", "dauhu", a);
+    });
+
+    test("createWallet", async () => {
+      const result = await client.createWallet("123");
+      expect(result?.address).toEqual("0x2Ca3B219f7A22185693D10051EeD9C29EC3e8f8e");
     });
 
     test("listSmartWallets", async () => {
@@ -127,13 +130,13 @@ describe("Client E2E Tests", () => {
       //   address: '0xD3a07BA3264839d2D3B5FD5c4546a94Ce4ad5eEc',
       //   smart_account_address: '0xD3a07BA3264839d2D3B5FD5c4546a94Ce4ad5eEc',
       // }
-      console.log("dauhu", result);
       expect(result).toBeDefined();
       expect(result.wallets).toBeDefined();
-      const total = result.wallets.length;
-      expect(total).toBeGreaterThan(1);
+      expect(result.wallets.length).toBeGreaterThanOrEqual(1);
 
-      expect(result.wallet[s0].smart_account_address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(result.wallets[0].address).toEqual("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41");
+      expect(result.wallets[0].salt).toEqual("0");
+      expect(result.wallets[0].factory).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
     });
 
     test("createTask", async () => {

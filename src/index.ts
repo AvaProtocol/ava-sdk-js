@@ -29,6 +29,8 @@ class BaseClient {
   readonly rpcClient;
   protected metadata: Metadata;
   protected authKey?: string;
+  // owner is the EOA user wallet. It's the underlying user who created smart wallets and create tasks
+  protected owner?: string;
 
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
@@ -75,6 +77,8 @@ class BaseClient {
     >("getKey", request);
 
     this.authKey = result.getKey();
+    // when using an API key, the key can authenticate on behalf of other users as long as the user granted the permission
+    this.owner = address;
 
     return { authKey: result.getKey() };
   }
@@ -96,7 +100,10 @@ class BaseClient {
       "getKey",
       request
     );
+
+    // succesfully authenticated, initialized trusted information for subsequent api call on this client
     this.authKey = result.getKey();
+    this.owner = address;
     
     return { authKey: result.getKey() };
   }
@@ -159,8 +166,26 @@ export default class Client extends BaseClient {
     >("getSmartAccountAddress", request);
 
     return {
-      owner: address,
-      wallets: result.getWalletsList(),
+      wallets: result.getWalletsList().map(item => item.toObject()),
+    };
+  }
+
+  async createWallet(
+    salt: string, factoryAddress?: string
+  ): Promise<GetAddressesResponse> {
+    const request = new avs_pb.CreateWalletReq();
+    request.setSalt(salt);
+    if (factoryAddress) {
+      request.setFactoryAddress(factoryAddress);
+    }
+
+    const result = await this._callRPC<
+      avs_pb.CreateWalletReq,
+      avs_pb.CreateWalletResp
+    >("createWallet", request);
+
+    return {
+      address: result.getAddress(),
     };
   }
 
