@@ -72,6 +72,28 @@ function deserialize_aggregator_CreateTaskResp(buffer_arg) {
   return avs_pb.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_CreateWalletReq(arg) {
+  if (!(arg instanceof avs_pb.CreateWalletReq)) {
+    throw new Error('Expected argument of type aggregator.CreateWalletReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_CreateWalletReq(buffer_arg) {
+  return avs_pb.CreateWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_CreateWalletResp(arg) {
+  if (!(arg instanceof avs_pb.CreateWalletResp)) {
+    throw new Error('Expected argument of type aggregator.CreateWalletResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_CreateWalletResp(buffer_arg) {
+  return avs_pb.CreateWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_GetKeyReq(arg) {
   if (!(arg instanceof avs_pb.GetKeyReq)) {
     throw new Error('Expected argument of type aggregator.GetKeyReq');
@@ -216,7 +238,7 @@ function deserialize_google_protobuf_BoolValue(buffer_arg) {
 }
 
 
-const AggregatorService = {
+var AggregatorService = exports.AggregatorService = {
   // Auth
 getKey: {
     path: '/aggregator.Aggregator/GetKey',
@@ -253,7 +275,18 @@ getNonce: {
     responseDeserialize: deserialize_aggregator_AddressResp,
   },
   // Task Management
-createTask: {
+createWallet: {
+    path: '/aggregator.Aggregator/CreateWallet',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.CreateWalletReq,
+    responseType: avs_pb.CreateWalletResp,
+    requestSerialize: serialize_aggregator_CreateWalletReq,
+    requestDeserialize: deserialize_aggregator_CreateWalletReq,
+    responseSerialize: serialize_aggregator_CreateWalletResp,
+    responseDeserialize: deserialize_aggregator_CreateWalletResp,
+  },
+  createTask: {
     path: '/aggregator.Aggregator/CreateTask',
     requestStream: false,
     responseStream: false,
@@ -344,6 +377,4 @@ ping: {
   },
 };
 
-const AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);
-
-export { AggregatorService, AggregatorClient };
+exports.AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);

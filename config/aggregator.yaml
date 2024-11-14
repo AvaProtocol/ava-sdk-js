@@ -1,4 +1,5 @@
 # Dummy unsecure test key. do not deposit real fund to here
+# Wallet: 0x578B110b0a7c06e66b7B1a33C39635304aaF733c
 ecdsa_private_key: e0502ddd5a0d05ec7b5c22614a01c8ce783810edaa98e44cc82f5fa5a819aaa9
 
 eth_rpc_url: https://holesky.gateway.tenderly.co/6PJfDJkrMGBl3f4MuyU5M

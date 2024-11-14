@@ -28,6 +28,8 @@ class BaseClient {
 
   readonly rpcClient;
   protected metadata: Metadata;
+  protected authKey?: string;
+
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
@@ -54,20 +56,25 @@ class BaseClient {
     }
   }
 
+  // When using the APIkey, depends on scope of the key, it may have access to one ore more account
   async authWithAPIKey(
+    address: string,
     apiKey: string,
     expiredAtEpoch: number
   ): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
-    request.setOwner("");
+    request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
 
-    const result: avs_pb.KeyResp = await this._callRPC<
+    // when exchanging the key, we don't set the token yet
+    const result: avs_pb.KeyResp = await this._callAnonRPC<
       avs_pb.KeyResp,
       avs_pb.GetKeyReq
     >("getKey", request);
+
+    this.authKey = result.getKey();
 
     return { authKey: result.getKey() };
   }
@@ -84,11 +91,13 @@ class BaseClient {
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
 
-    let result = await this._callRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
+    // when exchanging the key, we don't set the token yet
+    let result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );
-
+    this.authKey = result.getKey();
+    
     return { authKey: result.getKey() };
   }
 
@@ -100,15 +109,32 @@ class BaseClient {
     // Clone the existing metadata from the client
     const metadata = _.cloneDeep(this.metadata);
 
-    // Add the auth key to the metadata as a header
-    if (options?.authKey) {
-      metadata.set(AUTH_KEY_HEADER, options.authKey);
+    if (!this.authKey) {
+      throw new Error("Not authenticated yet");
     }
+    metadata.set(AUTH_KEY_HEADER, this.authKey);
 
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
         request,
         metadata,
+        (error: any, response: TResponse) => {
+          if (error) reject(error);
+          else resolve(response);
+        }
+      );
+    });
+  }
+
+  protected _callAnonRPC<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return new Promise((resolve, reject) => {
+      (this.rpcClient as any)[method].bind(this.rpcClient)(
+        request,
+        this.metadata,
         (error: any, response: TResponse) => {
           if (error) reject(error);
           else resolve(response);
@@ -123,21 +149,18 @@ export default class Client extends BaseClient {
     super(config);
   }
 
-  async getAddresses(
-    address: string,
-    { authKey }: { authKey: string }
+  async listSmartWallets(
   ): Promise<GetAddressesResponse> {
     const request = new avs_pb.AddressRequest();
-    request.setOwner(address);
 
     const result = await this._callRPC<
       avs_pb.AddressResp,
       avs_pb.AddressRequest
-    >("getSmartAccountAddress", request, { authKey });
+    >("getSmartAccountAddress", request);
 
     return {
       owner: address,
-      smart_account_address: result.getSmartAccountAddress(),
+      wallets: result.getWalletsList(),
     };
   }
 
@@ -150,8 +173,7 @@ export default class Client extends BaseClient {
       address: string;
       tokenContract: string;
       oracleContract: string;
-    },
-    { authKey }: { authKey: string }
+    }
   ): Promise<CreateTaskResponse> {
     const trigger = new avs_pb.TaskTrigger();
     trigger.setTriggerType(avs_pb.TriggerType.EXPRESSIONTRIGGER);
@@ -196,8 +218,7 @@ export default class Client extends BaseClient {
   }
 
   async listTasks(
-    address: string,
-    { authKey }: { authKey: string }
+    address: string
   ): Promise<ListTasksResponse> {
     const request = new avs_pb.ListTasksReq();
 
@@ -225,7 +246,6 @@ export default class Client extends BaseClient {
   // Right now we simply return the original object from the server
   async getTask(
     id: string,
-    { authKey }: { authKey: string }
   ): Promise<TaskType> {
     const request = new avs_pb.UUID();
     request.setBytes(id);
@@ -234,15 +254,13 @@ export default class Client extends BaseClient {
     const result = await this._callRPC<avs_pb.Task, avs_pb.UUID>(
       "getTask",
       request,
-      { authKey }
     );
 
     return new Task(result);
   }
 
   async cancelTask(
-    id: string,
-    { authKey }: { authKey: string }
+    id: string
   ): Promise<CancelTaskResponse> {
     const request = new avs_pb.UUID();
     request.setBytes(id);
@@ -250,7 +268,6 @@ export default class Client extends BaseClient {
     const result = await this._callRPC<BoolValue, avs_pb.UUID>(
       "cancelTask",
       request,
-      { authKey }
     );
 
     return {
@@ -259,8 +276,7 @@ export default class Client extends BaseClient {
   }
 
   async deleteTask(
-    id: string,
-    { authKey }: { authKey: string }
+    id: string
   ): Promise<DeleteTaskResponse> {
     const request = new avs_pb.UUID();
     request.setBytes(id);
@@ -268,7 +284,6 @@ export default class Client extends BaseClient {
     const result = await this._callRPC<BoolValue, avs_pb.UUID>(
       "deleteTask",
       request,
-      { authKey }
     );
 
     return {

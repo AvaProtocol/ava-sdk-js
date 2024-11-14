@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "../dist/index.js";
+import Client from "../src/index";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
@@ -40,14 +40,14 @@ describe("Client E2E Tests", () => {
   });
 
   test("should authenticate and return valid JWT token when using API key", async () => {
-    const res = await client.authWithAPIKey(TEST_API_KEY, EXPIRED_AT);
+    const res = await client.authWithAPIKey(walletAddress, TEST_API_KEY, EXPIRED_AT);
 
     expect(res).toBeDefined();
-    expect(res).toHaveProperty("key");
-    expect(typeof res.key).toBe("string");
+    expect(res).toHaveProperty("authKey");
+    expect(typeof res.authKey).toBe("string");
 
     // Check if the key is a valid JWT token
-    const keyParts = res.key.split(".");
+    const keyParts = res.authKey.split(".");
     expect(keyParts).toHaveLength(3);
 
     // The format of the parsed key payload is
@@ -80,11 +80,11 @@ describe("Client E2E Tests", () => {
     );
 
     expect(res).toBeDefined();
-    expect(res).toHaveProperty("key");
-    expect(typeof res.key).toBe("string");
+    expect(res).toHaveProperty("authKey");
+    expect(typeof res.authKey).toBe("string");
 
     // Check if the key is a valid JWT token
-    const keyParts = res.key.split(".");
+    const keyParts = res.authKey.split(".");
     expect(keyParts).toHaveLength(3);
 
     // Decode the base64 token and check the payload
@@ -115,19 +115,25 @@ describe("Client E2E Tests", () => {
         );
       }
 
-      await client.authWithSignature(walletAddress, signature, EXPIRED_AT);
+      console.log("should hit here", "dauhu", walletAddress, signature, EXPIRED_AT);
+      let a = await client.authWithSignature(walletAddress, signature, EXPIRED_AT);
+      console.log("should hit here", "dauhu", a);
     });
 
-    test("getAddresses", async () => {
-      const result = await client.getAddresses(walletAddress);
+    test("listSmartWallets", async () => {
+      const result = await client.listSmartWallets(walletAddress);
       // Example result:
       // {
       //   address: '0xD3a07BA3264839d2D3B5FD5c4546a94Ce4ad5eEc',
       //   smart_account_address: '0xD3a07BA3264839d2D3B5FD5c4546a94Ce4ad5eEc',
       // }
+      console.log("dauhu", result);
       expect(result).toBeDefined();
-      expect(result.owner).toMatch(/^0x[a-fA-F0-9]{40}$/); // Ethereum address format
-      expect(result.smart_account_address).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(result.wallets).toBeDefined();
+      const total = result.wallets.length;
+      expect(total).toBeGreaterThan(1);
+
+      expect(result.wallet[s0].smart_account_address).toMatch(/^0x[a-fA-F0-9]{40}$/);
     });
 
     test("createTask", async () => {
