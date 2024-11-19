@@ -8,23 +8,23 @@ import * as jspb from "google-protobuf";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
-export class UUID extends jspb.Message { 
-    getBytes(): string;
-    setBytes(value: string): UUID;
+export class IdReq extends jspb.Message { 
+    getId(): string;
+    setId(value: string): IdReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UUID.AsObject;
-    static toObject(includeInstance: boolean, msg: UUID): UUID.AsObject;
+    toObject(includeInstance?: boolean): IdReq.AsObject;
+    static toObject(includeInstance: boolean, msg: IdReq): IdReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UUID, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UUID;
-    static deserializeBinaryFromReader(message: UUID, reader: jspb.BinaryReader): UUID;
+    static serializeBinaryToWriter(message: IdReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): IdReq;
+    static deserializeBinaryFromReader(message: IdReq, reader: jspb.BinaryReader): IdReq;
 }
 
-export namespace UUID {
+export namespace IdReq {
     export type AsObject = {
-        bytes: string,
+        id: string,
     }
 }
 
@@ -237,8 +237,6 @@ export namespace EventCondition {
 }
 
 export class TaskTrigger extends jspb.Message { 
-    getTriggerType(): TriggerType;
-    setTriggerType(value: TriggerType): TaskTrigger;
 
     hasManual(): boolean;
     clearManual(): void;
@@ -265,7 +263,7 @@ export class TaskTrigger extends jspb.Message {
     getEvent(): EventCondition | undefined;
     setEvent(value?: EventCondition): TaskTrigger;
 
-    getTriggerConditionCase(): TaskTrigger.TriggerConditionCase;
+    getTriggerTypeCase(): TaskTrigger.TriggerTypeCase;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TaskTrigger.AsObject;
@@ -279,7 +277,6 @@ export class TaskTrigger extends jspb.Message {
 
 export namespace TaskTrigger {
     export type AsObject = {
-        triggerType: TriggerType,
         manual: boolean,
         at?: FixedEpochCondition.AsObject,
         cron?: CronCondition.AsObject,
@@ -287,8 +284,8 @@ export namespace TaskTrigger {
         event?: EventCondition.AsObject,
     }
 
-    export enum TriggerConditionCase {
-        TRIGGER_CONDITION_NOT_SET = 0,
+    export enum TriggerTypeCase {
+        TRIGGER_TYPE_NOT_SET = 0,
         MANUAL = 2,
         AT = 3,
         CRON = 4,
@@ -376,25 +373,25 @@ export namespace ContractWriteNode {
     }
 }
 
-export class ContractQueryNode extends jspb.Message { 
+export class ContractReadNode extends jspb.Message { 
     getContractAddress(): string;
-    setContractAddress(value: string): ContractQueryNode;
+    setContractAddress(value: string): ContractReadNode;
     getCallData(): string;
-    setCallData(value: string): ContractQueryNode;
+    setCallData(value: string): ContractReadNode;
     getContractAbi(): string;
-    setContractAbi(value: string): ContractQueryNode;
+    setContractAbi(value: string): ContractReadNode;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ContractQueryNode.AsObject;
-    static toObject(includeInstance: boolean, msg: ContractQueryNode): ContractQueryNode.AsObject;
+    toObject(includeInstance?: boolean): ContractReadNode.AsObject;
+    static toObject(includeInstance: boolean, msg: ContractReadNode): ContractReadNode.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ContractQueryNode, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ContractQueryNode;
-    static deserializeBinaryFromReader(message: ContractQueryNode, reader: jspb.BinaryReader): ContractQueryNode;
+    static serializeBinaryToWriter(message: ContractReadNode, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ContractReadNode;
+    static deserializeBinaryFromReader(message: ContractReadNode, reader: jspb.BinaryReader): ContractReadNode;
 }
 
-export namespace ContractQueryNode {
+export namespace ContractReadNode {
     export type AsObject = {
         contractAddress: string,
         callData: string,
@@ -479,44 +476,37 @@ export namespace CustomCodeNode {
     }
 }
 
-export class ConditionJump extends jspb.Message { 
+export class Condition extends jspb.Message { 
+    getId(): string;
+    setId(value: string): Condition;
+    getType(): string;
+    setType(value: string): Condition;
     getExpression(): string;
-    setExpression(value: string): ConditionJump;
-    getNext(): string;
-    setNext(value: string): ConditionJump;
+    setExpression(value: string): Condition;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ConditionJump.AsObject;
-    static toObject(includeInstance: boolean, msg: ConditionJump): ConditionJump.AsObject;
+    toObject(includeInstance?: boolean): Condition.AsObject;
+    static toObject(includeInstance: boolean, msg: Condition): Condition.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ConditionJump, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ConditionJump;
-    static deserializeBinaryFromReader(message: ConditionJump, reader: jspb.BinaryReader): ConditionJump;
+    static serializeBinaryToWriter(message: Condition, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Condition;
+    static deserializeBinaryFromReader(message: Condition, reader: jspb.BinaryReader): Condition;
 }
 
-export namespace ConditionJump {
+export namespace Condition {
     export type AsObject = {
+        id: string,
+        type: string,
         expression: string,
-        next: string,
     }
 }
 
 export class BranchNode extends jspb.Message { 
-
-    hasIf(): boolean;
-    clearIf(): void;
-    getIf(): ConditionJump | undefined;
-    setIf(value?: ConditionJump): BranchNode;
-    clearElseifsList(): void;
-    getElseifsList(): Array<ConditionJump>;
-    setElseifsList(value: Array<ConditionJump>): BranchNode;
-    addElseifs(value?: ConditionJump, index?: number): ConditionJump;
-
-    hasElse(): boolean;
-    clearElse(): void;
-    getElse(): ConditionJump | undefined;
-    setElse(value?: ConditionJump): BranchNode;
+    clearConditionsList(): void;
+    getConditionsList(): Array<Condition>;
+    setConditionsList(value: Array<Condition>): BranchNode;
+    addConditions(value?: Condition, index?: number): Condition;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): BranchNode.AsObject;
@@ -530,9 +520,7 @@ export class BranchNode extends jspb.Message {
 
 export namespace BranchNode {
     export type AsObject = {
-        pb_if?: ConditionJump.AsObject,
-        elseifsList: Array<ConditionJump.AsObject>,
-        pb_else?: ConditionJump.AsObject,
+        conditionsList: Array<Condition.AsObject>,
     }
 }
 
@@ -583,8 +571,6 @@ export namespace TaskEdge {
 }
 
 export class TaskNode extends jspb.Message { 
-    getNodeType(): TaskType;
-    setNodeType(value: TaskType): TaskNode;
     getId(): string;
     setId(value: string): TaskNode;
     getName(): string;
@@ -602,8 +588,8 @@ export class TaskNode extends jspb.Message {
 
     hasContractRead(): boolean;
     clearContractRead(): void;
-    getContractRead(): ContractQueryNode | undefined;
-    setContractRead(value?: ContractQueryNode): TaskNode;
+    getContractRead(): ContractReadNode | undefined;
+    setContractRead(value?: ContractReadNode): TaskNode;
 
     hasGraphqlDataQuery(): boolean;
     clearGraphqlDataQuery(): void;
@@ -630,7 +616,7 @@ export class TaskNode extends jspb.Message {
     getCustomCode(): CustomCodeNode | undefined;
     setCustomCode(value?: CustomCodeNode): TaskNode;
 
-    getTaskBodyCase(): TaskNode.TaskBodyCase;
+    getTaskTypeCase(): TaskNode.TaskTypeCase;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TaskNode.AsObject;
@@ -644,12 +630,11 @@ export class TaskNode extends jspb.Message {
 
 export namespace TaskNode {
     export type AsObject = {
-        nodeType: TaskType,
         id: string,
         name: string,
         ethTransfer?: ETHTransferNode.AsObject,
         contractWrite?: ContractWriteNode.AsObject,
-        contractRead?: ContractQueryNode.AsObject,
+        contractRead?: ContractReadNode.AsObject,
         graphqlDataQuery?: GraphQLQueryNode.AsObject,
         restApi?: RestAPINode.AsObject,
         branch?: BranchNode.AsObject,
@@ -657,8 +642,8 @@ export namespace TaskNode {
         customCode?: CustomCodeNode.AsObject,
     }
 
-    export enum TaskBodyCase {
-        TASK_BODY_NOT_SET = 0,
+    export enum TaskTypeCase {
+        TASK_TYPE_NOT_SET = 0,
         ETH_TRANSFER = 10,
         CONTRACT_WRITE = 11,
         CONTRACT_READ = 12,
@@ -698,11 +683,8 @@ export namespace Execution {
 }
 
 export class Task extends jspb.Message { 
-
-    hasId(): boolean;
-    clearId(): void;
-    getId(): UUID | undefined;
-    setId(value?: UUID): Task;
+    getId(): string;
+    setId(value: string): Task;
     getOwner(): string;
     setOwner(value: string): Task;
     getSmartWalletAddress(): string;
@@ -749,7 +731,7 @@ export class Task extends jspb.Message {
 
 export namespace Task {
     export type AsObject = {
-        id?: UUID.AsObject,
+        id: string,
         owner: string,
         smartWalletAddress: string,
         startAt: number,
@@ -873,23 +855,23 @@ export namespace NonceResp {
     }
 }
 
-export class AddressRequest extends jspb.Message { 
+export class ListWalletReq extends jspb.Message { 
     getFactory(): string;
-    setFactory(value: string): AddressRequest;
+    setFactory(value: string): ListWalletReq;
     getSalt(): string;
-    setSalt(value: string): AddressRequest;
+    setSalt(value: string): ListWalletReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): AddressRequest.AsObject;
-    static toObject(includeInstance: boolean, msg: AddressRequest): AddressRequest.AsObject;
+    toObject(includeInstance?: boolean): ListWalletReq.AsObject;
+    static toObject(includeInstance: boolean, msg: ListWalletReq): ListWalletReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: AddressRequest, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): AddressRequest;
-    static deserializeBinaryFromReader(message: AddressRequest, reader: jspb.BinaryReader): AddressRequest;
+    static serializeBinaryToWriter(message: ListWalletReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListWalletReq;
+    static deserializeBinaryFromReader(message: ListWalletReq, reader: jspb.BinaryReader): ListWalletReq;
 }
 
-export namespace AddressRequest {
+export namespace ListWalletReq {
     export type AsObject = {
         factory: string,
         salt: string,
@@ -922,23 +904,23 @@ export namespace SmartWallet {
     }
 }
 
-export class AddressResp extends jspb.Message { 
+export class ListWalletResp extends jspb.Message { 
     clearWalletsList(): void;
     getWalletsList(): Array<SmartWallet>;
-    setWalletsList(value: Array<SmartWallet>): AddressResp;
+    setWalletsList(value: Array<SmartWallet>): ListWalletResp;
     addWallets(value?: SmartWallet, index?: number): SmartWallet;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): AddressResp.AsObject;
-    static toObject(includeInstance: boolean, msg: AddressResp): AddressResp.AsObject;
+    toObject(includeInstance?: boolean): ListWalletResp.AsObject;
+    static toObject(includeInstance: boolean, msg: ListWalletResp): ListWalletResp.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: AddressResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): AddressResp;
-    static deserializeBinaryFromReader(message: AddressResp, reader: jspb.BinaryReader): AddressResp;
+    static serializeBinaryToWriter(message: ListWalletResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListWalletResp;
+    static deserializeBinaryFromReader(message: ListWalletResp, reader: jspb.BinaryReader): ListWalletResp;
 }
 
-export namespace AddressResp {
+export namespace ListWalletResp {
     export type AsObject = {
         walletsList: Array<SmartWallet.AsObject>,
     }
@@ -1109,6 +1091,10 @@ export namespace CreateWalletReq {
 export class CreateWalletResp extends jspb.Message { 
     getAddress(): string;
     setAddress(value: string): CreateWalletResp;
+    getSalt(): string;
+    setSalt(value: string): CreateWalletResp;
+    getFactoryAddress(): string;
+    setFactoryAddress(value: string): CreateWalletResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CreateWalletResp.AsObject;
@@ -1123,6 +1109,8 @@ export class CreateWalletResp extends jspb.Message {
 export namespace CreateWalletResp {
     export type AsObject = {
         address: string,
+        salt: string,
+        factoryAddress: string,
     }
 }
 
@@ -1155,15 +1143,4 @@ export enum TaskStatus {
 
 export enum CustomCodeType {
     JAVASCRIPT = 0,
-}
-
-export enum TaskType {
-    ETHTRANSFERTASK = 0,
-    CONTRACTWRITETASK = 1,
-    CONTRACTREADTASK = 2,
-    GRAPHQLDATAQUERYTASK = 3,
-    RESTAPITASK = 4,
-    BRANCHTASK = 5,
-    FILTERTASK = 6,
-    CUSTOMCODETASK = 7,
 }

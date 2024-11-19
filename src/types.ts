@@ -3,7 +3,7 @@ import _ from "lodash";
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
-export const AUTH_KEY_HEADER = "authKey";
+export const AUTH_KEY_HEADER = "authkey";
 
 export interface RequestOptions {
   authKey: string;
@@ -72,4 +72,9 @@ export interface DeleteTaskResponse {
 export interface GetAddressesResponse {
   owner: string;
   smart_account_address: string;
+}
+
+export interface CreateWalletReq {
+  salt: string;
+  factoryAddress?: string;
 }

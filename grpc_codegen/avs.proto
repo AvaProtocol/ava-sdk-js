@@ -6,8 +6,8 @@ option go_package = "./avsproto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
-message UUID {
-  string bytes = 1;
+message IdReq {
+  string id = 1;
 }
 
 message Checkin {
@@ -74,9 +74,7 @@ message EventCondition {
 }
 
 message TaskTrigger {
-  TriggerType            trigger_type   = 1;
-
-  oneof trigger_condition {
+  oneof trigger_type {
     bool                   manual     = 2;
 
     // run at a specific epoch, name inspired by unix `at` utility
@@ -144,7 +142,7 @@ message ContractWriteNode {
   string contract_abi = 3;
 }
 
-message ContractQueryNode {
+message ContractReadNode {
   string contract_address = 1;
   string call_data = 2;
 
@@ -175,15 +173,14 @@ message CustomCodeNode {
   string         source    = 2;
 }
 
-message ConditionJump {
-  string expression  = 1;
-  string next        = 2;
+message Condition {
+  string id = 1;
+  string type = 2;
+  string expression = 3;
 }
 
 message BranchNode {
-  ConditionJump if                  = 1;
-  repeated ConditionJump elseIfs    = 2;
-  ConditionJump else                = 3;
+  repeated Condition conditions                  = 1;
 }
 
 message FilterNode {
@@ -198,38 +195,12 @@ message TaskEdge {
   string target = 3 ; 
 }
 
-// TaskType represents what kind of work the task will perform
-enum TaskType {
-  // Handle default/missing data
-  ETHTransferTask = 0;
-  
-  // Generic contract execution which can be used for:
-  // ERC20 Transfer, NFT Transfer, auto reclaim, auto restaking etc
-  // When executing a contract we need at least 2 things:
-  // - target contract address
-  // - the message to send to that contract
-  ContractWriteTask = 1;
-  ContractReadTask  = 2;
-
-  // GraphQL query. Note that a graphql can also be query as a HTTP API, but having its own graphql type make writing query easiser without passing all the data in post as parameter.
-  GraphQLDataQueryTask = 3;
-
-  // Make call to a HTTP endpoint
-  RestAPITask = 4;
-
-  // CustomCode allow to run arbitraty JavaScript.
-  BranchTask = 5;
-  FilterTask = 6;
-  CustomCodeTask = 7;
-}
-
 message TaskNode {
-  TaskType node_type = 1;
   string id   = 2;
   string name = 3;
 
   // based on node_type one and only one of these field are set
-  oneof task_body {
+  oneof task_type {
     // Transfer eth require no calldata etc, just a destination address and an eth amount to be sent
     ETHTransferNode   eth_transfer = 10;
 
@@ -237,7 +208,7 @@ message TaskNode {
     // multicall to wrap many calls. in a contract write, we need to generate signature and send as userops.
     ContractWriteNode contract_write = 11;
     // read data fron a target contract
-    ContractQueryNode contract_read = 12;
+    ContractReadNode contract_read = 12;
     // Make call to a graphql endpoint
     GraphQLQueryNode  graphql_data_query = 13;
     // Make call to a HTTP endpoint
@@ -256,7 +227,7 @@ message Execution {
 }
 
 message Task {
-  UUID   id                   = 1;
+  string   id                   = 1;
   string owner                = 2;
   string smart_wallet_address = 3;
 
@@ -269,9 +240,8 @@ message Task {
 
   int64 completed_at = 8;
 
-  // repeatable means a task can continue to run even after the first execution.
-  // By default, recurring is false, task will only executed once.
-  bool recurring  = 10;
+  // limit on how many time this task can run. Set to 0 will make it run unlimited until cancelling or reaching its expired time
+  int64 max_execution = 10;
 
   TaskStatus status  = 9;
   TaskTrigger trigger = 4;
@@ -312,7 +282,7 @@ message NonceResp {
   string nonce = 1;
 }
 
-message AddressRequest {
+message ListWalletReq {
   // filter out by factory address or salt
   // otherwise return all the wallet
   string factory = 1;
@@ -325,7 +295,7 @@ message SmartWallet {
   string factory = 3;
 }
 
-message AddressResp {
+message ListWalletResp {
   repeated SmartWallet wallets = 1;
 }
 
@@ -367,6 +337,8 @@ message CreateWalletReq {
 
 message CreateWalletResp {
   string address = 1;
+  string salt = 2;
+  string factory_address = 3;
 }
 
 service Aggregator {
@@ -375,15 +347,15 @@ service Aggregator {
 
   // Smart Acccount
   rpc GetNonce(NonceRequest)                 returns (NonceResp) {};
-  rpc GetSmartAccountAddress(AddressRequest) returns (AddressResp) {};
+  rpc CreateWallet(CreateWalletReq) returns (CreateWalletResp) {};
+  rpc ListWallets(ListWalletReq) returns (ListWalletResp) {};
 
   // Task Management
-  rpc CreateWallet(CreateWalletReq) returns (CreateWalletResp) {};
   rpc CreateTask(CreateTaskReq)     returns (CreateTaskResp) {};
   rpc ListTasks(ListTasksReq)       returns (ListTasksResp) {};
-  rpc GetTask(UUID)                 returns (Task) {};
-  rpc CancelTask(UUID)              returns (google.protobuf.BoolValue) {};
-  rpc DeleteTask(UUID)              returns (google.protobuf.BoolValue) {};
+  rpc GetTask(IdReq)                 returns (Task) {};
+  rpc CancelTask(IdReq)              returns (google.protobuf.BoolValue) {};
+  rpc DeleteTask(IdReq)              returns (google.protobuf.BoolValue) {};
 
   // Operator endpoint
   rpc Ping(Checkin) returns (CheckinResp) {};

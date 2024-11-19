@@ -1,6 +1,14 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { TaskType } from "./types";
 
+function buildNodeFromGRPC(node) {
+  return node.toObject();
+}
+
+function buildTriggerFromGRPC(trigger) {
+  return trigger?.toObject();
+}
+
 class Task implements TaskType {
   id: string;
   status: number;
@@ -25,22 +33,15 @@ class Task implements TaskType {
     this.id = task.getId()?.toString() || "";
     this.status = task.getStatus().toString();
     this.owner = task.getOwner();
-    this.smartAccountAddress = task.getSmartAccountAddress();
-    this.trigger = {
-      triggerType: task.getTrigger()?.getTriggerType() || 0,
-      schedule: task.getTrigger()?.getSchedule()?.toObject(),
-      contractQuery: task.getTrigger()?.getContractQuery()?.toObject(),
-      expression: task.getTrigger()?.getExpression()?.toObject() || {
-        expression: "",
-      },
-    };
-    this.nodesList = task.getNodesList();
+    this.smartWalletAddress = task.getSmartWalletAddress();
+    this.trigger = buildTriggerFromGRPC(task.getTrigger());
+    this.nodes = task.getNodesList().map(node => buildNodeFromGRPC(node));
     this.startAt = task.getStartAt();
     this.expiredAt = task.getExpiredAt();
     this.memo = task.getMemo();
     this.completedAt = task.getCompletedAt();
     this.status = task.getStatus();
-    this.repeatable = task.getRepeatable();
+    //this.repeatable = task.getRepeatable();
     this.executionsList = task.getExecutionsList();
   }
 }
