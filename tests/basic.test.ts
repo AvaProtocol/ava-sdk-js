@@ -182,7 +182,7 @@ describe("Client E2E Tests", () => {
       expect(result?.id).toHaveLength(26);
 
       const task = await client.getTask(result.id, { authKey });
-      expect(task.status).toEqual(0);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(TOKEN_CONTRACT);
       expect(task.nodes[0].contractWrite.callData).toEqual("0x123cdef");
@@ -216,18 +216,18 @@ describe("Client E2E Tests", () => {
     test("cancelTask", async () => {
       const result = await client.createTask(testTaskPayload, { authKey });
       const task = await client.getTask(result.id, { authKey });
-      expect(task.status).toEqual(0);
+      expect(task.status).toEqual( avs_pb.TaskStatus.ACTIVE);
 
       const cancelResult = await client.cancelTask(task.id, { authKey });
       expect(cancelResult).toEqual(true);
       const updatedTask = await client.getTask(task.id, { authKey });
-      expect(updatedTask.status).toEqual(3);
+      expect(updatedTask.status).toEqual( avs_pb.TaskStatus.CANCELED);
     });
 
     test("deleteTask", async () => {
       const result = await client.createTask(testTaskPayload, { authKey });
       const task = await client.getTask(result.id, { authKey });
-      expect(task.status).toEqual(0);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.id).toHaveLength(26);
 
       const deleteResult = await client.deleteTask(task.id, { authKey });
