@@ -203,10 +203,12 @@ describe("Client E2E Tests", () => {
       expect(tasks2.length).toBeGreaterThanOrEqual(1);
 
       const task1 = tasks1.find(t => t.id == result1.id);
+      expect(tasks1.find(t => t.id == result2.id)).toBe(undefined);
       expect(task1?.id).toEqual(result1.id);
       expect(task1?.memo).toEqual('task1 test');
 
       const task2 = tasks2.find(t => t.id == result2.id);
+      expect(tasks2.find(t => t.id == result1.id)).toBe(undefined);
       expect(task2?.id).toEqual(result2.id);
       expect(task2?.memo).toEqual('default wallet test');
     });
