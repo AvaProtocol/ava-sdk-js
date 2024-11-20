@@ -3,18 +3,20 @@ import Client from "../src";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
-import { TEST_PRIVATE_KEY } from "./fixture";
+import { DUMMY_PRIVATE_KEY } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 // Get environment variables with type safety
 const {
   TEST_API_KEY,
+  TEST_PRIVATE_KEY,
   TOKEN_CONTRACT,
   ORACLE_CONTRACT,
   ENDPOINT,
 } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
+  TEST_PRIVATE_KEY: requireEnvVar('TEST_PRIVATE_KEY'),
   TOKEN_CONTRACT: requireEnvVar("TOKEN_CONTRACT"),
   ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
@@ -28,7 +30,7 @@ describe("listSmartWalletses Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(TEST_PRIVATE_KEY);
+    ownerAddress = await getAddress(DUMMY_PRIVATE_KEY);
     console.log("Client endpoint:", ENDPOINT, "\nOwner address:", ownerAddress);
 
     // Initialize the client with test credentials
@@ -43,7 +45,7 @@ describe("listSmartWalletses Tests", () => {
 
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
-      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+      const signature = await generateSignature(DUMMY_PRIVATE_KEY, EXPIRED_AT);
       const res = await client.authWithSignature(
         ownerAddress,
         signature,

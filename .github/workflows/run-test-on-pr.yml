@@ -11,6 +11,7 @@ jobs:
     
     env:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: localhost:2206
@@ -45,8 +46,11 @@ jobs:
           sleep 5
         done
 
-        echo "TEST_API_KEY=$(docker compose exec aggregator /ava  create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
+    - name: Run tests againts local AVS
+      run: |
+        export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
+        npm test 
 
-    - name: Run tests
+    - name: Run tests againts staging AVS
       run: |
         npm test 
