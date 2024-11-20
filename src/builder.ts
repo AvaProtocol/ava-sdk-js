@@ -1,5 +1,9 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
 
+import {
+    TaskTrigger
+} from "./types";
+
 export const buildContractWrite = ({contractAddress, callData, contractABI}): avs_pb.ContractWriteNode => {
   const n = new avs_pb.ContractWriteNode();
   n.setContractAddress(contractAddress);
@@ -78,9 +82,13 @@ export const buildTrigger = (payload): avs_pb.TaskTrigger => {
   }
 }
 
-export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger) => {
+export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger | undefined): TaskTrigger => {
+  if (!trigger) {
+    return { triggerType: avs_pb.TaskTrigger.TriggerTypeCase.TRIGGER_TYPE_NOT_SET }
+  }
+
   const base = {
-    trigger_type: trigger.getTriggerTypeCase()
+    triggerType: trigger.getTriggerTypeCase()
   }
 
   switch (trigger.getTriggerTypeCase()) {
@@ -107,7 +115,7 @@ export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger) => {
 export const nodeFromGRPC = (node) => {
   const base = node.toObject();
   const standarize = {
-    task_type: node.getTaskTypeCase()
+    taskType: node.getTaskTypeCase()
   }
 
   switch (node.getTaskTypeCase()) {

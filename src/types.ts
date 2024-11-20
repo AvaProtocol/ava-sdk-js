@@ -17,19 +17,29 @@ export interface ClientOption {
   endpoint: string;
 }
 
+export interface TaskTrigger {
+  triggerType: number;
+  manual?: boolean;
+  cron?: {
+    schedule: string[];
+  };
+  event?: {
+    expression: string;
+  };
+  fixedTime?: {
+    epochs: number[],
+  }
+  block?: {
+    interval: number;
+  }
+}
+
 export interface TaskType {
   id: string;
   owner: string;
-  smartAccountAddress: string;
-  trigger: {
-    triggerType: number;
-    schedule?: any;
-    contractQuery?: any;
-    expression: {
-      expression: string;
-    };
-  };
-  nodesList: Array<{
+  smartWalletAddress: string;
+  trigger: TaskTrigger;
+  nodes: Array<{
     taskType: number;
     id: string;
     name: string;
@@ -46,7 +56,7 @@ export interface TaskType {
   memo: string;
   completedAt: number;
   status: number;
-  repeatable: boolean;
+  maxExecution: number;
   executionsList: any[];
 }
 
@@ -69,9 +79,10 @@ export interface DeleteTaskResponse {
   value: boolean;
 }
 
-export interface GetAddressesResponse {
-  owner: string;
-  smart_account_address: string;
+export interface SmartWallet {
+  address: string;
+  salt: string;
+  factory: string;
 }
 
 export interface CreateWalletReq {

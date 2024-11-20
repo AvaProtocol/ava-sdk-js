@@ -6,25 +6,26 @@ import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
+import Task from "./task";
 import {
   AUTH_KEY_HEADER,
   CancelTaskResponse,
   DeleteTaskResponse,
   RequestOptions,
   TaskType,
-} from "./types";
-import Task from "./task";
-// Move interfaces to a separate file, e.g., types.ts
-import {
   ClientOption,
   CreateTaskResponse,
-  GetAddressesResponse,
+  CreateWalletReq,
+  SmartWallet,
   GetKeyResponse,
   ListTasksResponse,
 } from "./types";
 
 import {
-  buildContractWrite, buildTaskEdge, buildTrigger
+  buildContractRead,
+  buildContractWrite,
+  buildTaskEdge,
+  buildTrigger,
 } from "./builder";
 
 class BaseClient {
@@ -154,11 +155,11 @@ export default class Client extends BaseClient {
 
   async listSmartWallets(
     options: RequestOptions,
-  ): Promise<GetAddressesResponse> {
+  ): Promise<SmartWallet[]> {
     const request = new avs_pb.ListWalletReq();
 
     const result = await this._callRPC<
-      avs_pb.AddressResp,
+      avs_pb.ListWalletResp,
       avs_pb.ListWalletReq
     >("listWallets", request, options);
 
@@ -171,7 +172,7 @@ export default class Client extends BaseClient {
       factoryAddress
     }: CreateWalletReq,
     options: RequestOptions,
-  ): Promise<GetAddressesResponse> {
+  ): Promise<SmartWallet> {
     const request = new avs_pb.CreateWalletReq();
     request.setSalt(salt);
     if (factoryAddress) {
@@ -179,14 +180,18 @@ export default class Client extends BaseClient {
     }
 
     const result = await this._callRPC<
-      avs_pb.CreateWalletReq,
-      avs_pb.CreateWalletResp
+      avs_pb.CreateWalletResp,
+      avs_pb.CreateWalletReq
     >("createWallet", request, options);
 
-    return result.toObject();
+    return {
+      address: result.getAddress(),
+      salt: result.getSalt(),
+      factory: result.getFactoryAddress(),
+    }
   }
 
-  async createTask(payload: any, options: RequestOptions): Promise<CreateTaskResponse> {
+  async createTask(payload: any, options: RequestOptions): Promise<string> {
     const request = new avs_pb.CreateTaskReq();
     // TODO: add client side validation
     request.setSmartWalletAddress(payload.smartWalletAddress);
@@ -233,15 +238,14 @@ export default class Client extends BaseClient {
     request.setEdgesList(edges);
 
     const result = await this._callRPC<
-      avs_pb.CreateTaskResp
+      avs_pb.CreateTaskResp,
+      avs_pb.CreateTaskReq
     >("createTask", request, options);
 
-    return {
-      id: result.getId(),
-    };
+    return result.getId();
   }
 
-  async listTasks(address: string, options: RequestOptions): Promise<ListTasksResponse> {
+  async listTasks(address: string, options: RequestOptions): Promise<Task[]> {
     const request = new avs_pb.ListTasksReq();
     request.setSmartWalletAddress(address);
 
@@ -267,7 +271,7 @@ export default class Client extends BaseClient {
     return new Task(result);
   }
 
-  async cancelTask(id: string, options: RequestOptions): Promise<CancelTaskResponse> {
+  async cancelTask(id: string, options: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
@@ -280,7 +284,7 @@ export default class Client extends BaseClient {
     return result.getValue();
   }
 
-  async deleteTask(id: string, options: RequestOptions): Promise<DeleteTaskResponse> {
+  async deleteTask(id: string, options: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
