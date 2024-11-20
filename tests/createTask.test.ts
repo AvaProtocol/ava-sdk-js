@@ -1,3 +1,4 @@
+import * as avs_pb from "../grpc_codegen/avs_pb";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../src";
 import dotenv from "dotenv";
@@ -74,6 +75,134 @@ describe("createTask Tests", () => {
         { authKey }
       )).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
+
+    test("create cron trigger", async () => {
+      const result = await client.createTask(
+        {
+          ...sampleTask1,
+          smartWalletAddress,
+          // https://crontab.guru/ for syntax
+          trigger: {
+            cron: { schedule: ["5 4 * * *", "5 0 * 8 *"] },
+          }
+        },
+        { authKey }
+      );
+
+      const task = await client.getTask(result.id, { authKey });
+      expect(task.id).toEqual(result.id);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
+      expect(task.nodes).toHaveLength(1);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+
+      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.CRON);
+      expect(task.trigger.cron.schedule[0]).toEqual("5 4 * * *");
+      expect(task.trigger.cron.schedule[1]).toEqual("5 0 * 8 *");
+    });
+
+    test("create fixed time trigger", async () => {
+      const result = await client.createTask(
+        {
+          ...sampleTask1,
+          smartWalletAddress,
+          // https://crontab.guru/ for syntax
+          trigger: {
+            fixedTime: { epochs: [10, 20, 30] },
+          }
+        },
+        { authKey }
+      );
+
+      const task = await client.getTask(result.id, { authKey });
+      expect(task.id).toEqual(result.id);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
+      expect(task.nodes).toHaveLength(1);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+
+      console.log("task is", task);
+      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME);
+      expect(task.trigger.fixedTime.epochs).toEqual([10, 20, 30]);
+    });
+
+    test("create event trigger", async () => {
+      const result = await client.createTask(
+        {
+          ...sampleTask1,
+          smartWalletAddress,
+          // https://crontab.guru/ for syntax
+          trigger: {
+            event: { expression: `topic0 == "0x123" && topic2 == "0xdef"` },
+          }
+        },
+        { authKey }
+      );
+
+      const task = await client.getTask(result.id, { authKey });
+      expect(task.id).toEqual(result.id);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
+      expect(task.nodes).toHaveLength(1);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+
+      console.log("task is", task);
+      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.EVENT);
+      expect(task.trigger.event.expression).toEqual(`topic0 == "0x123" && topic2 == "0xdef"` );
+    });
+
+    test("create manual trigger", async () => {
+      const result = await client.createTask(
+        {
+          ...sampleTask1,
+          smartWalletAddress,
+          // https://crontab.guru/ for syntax
+          trigger: {
+            manual: true,
+          }
+        },
+        { authKey }
+      );
+
+      const task = await client.getTask(result.id, { authKey });
+      expect(task.id).toEqual(result.id);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
+      expect(task.nodes).toHaveLength(1);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+
+      console.log("task is", task);
+      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.MANUAL);
+      expect(task.trigger.manual).toBe(true);
+    });
+
+    test("create block trigger", async () => {
+      const result = await client.createTask(
+        {
+          ...sampleTask1,
+          smartWalletAddress,
+          // https://crontab.guru/ for syntax
+          trigger: {
+            block: {
+              interval: 102,
+            }
+          }
+        },
+        { authKey }
+      );
+
+      const task = await client.getTask(result.id, { authKey });
+      expect(task.id).toEqual(result.id);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
+      expect(task.nodes).toHaveLength(1);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+
+      console.log("task is", task);
+      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
+      expect(task.trigger.block.interval).toEqual(102);
+    });
+
   });
 
   describe("Auth with API key", () => {

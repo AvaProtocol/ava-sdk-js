@@ -24,7 +24,7 @@ import {
 } from "./types";
 
 import {
-  buildContractWrite, buildTaskEdge
+  buildContractWrite, buildTaskEdge, buildTrigger
 } from "./builder";
 
 class BaseClient {
@@ -188,12 +188,15 @@ export default class Client extends BaseClient {
 
   async createTask(payload: any, options: RequestOptions): Promise<CreateTaskResponse> {
     const request = new avs_pb.CreateTaskReq();
+    // TODO: add client side validation
     request.setSmartWalletAddress(payload.smartWalletAddress);
     request.setStartAt(payload.startAt);
-    request.setExpiredAt(payload.expiredAt);
-    request.setMemo(payload.memo);
+    request.setExpiredAt(payload.expiredAt || -1);
+    request.setMemo(payload.memo || "");
+    request.setMaxExecution(payload.maxExecution || 0);
 
-    // request.setTrigger(payload.trigger);
+    request.setTrigger(buildTrigger(payload.trigger));
+
     let nodes = [];
     for (const node of payload.nodes) {
       const n = new avs_pb.TaskNode();
@@ -228,7 +231,6 @@ export default class Client extends BaseClient {
       edges.push(buildTaskEdge(edge));
     }
     request.setEdgesList(edges);
-    //const request = aggPb.CreateTaskReq.create(payload);
 
     const result = await this._callRPC<
       avs_pb.CreateTaskResp

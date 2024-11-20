@@ -153,10 +153,10 @@ export namespace SyncTasksReq {
 }
 
 export class FixedEpochCondition extends jspb.Message { 
-    clearEpochesList(): void;
-    getEpochesList(): Array<number>;
-    setEpochesList(value: Array<number>): FixedEpochCondition;
-    addEpoches(value: number, index?: number): number;
+    clearEpochsList(): void;
+    getEpochsList(): Array<number>;
+    setEpochsList(value: Array<number>): FixedEpochCondition;
+    addEpochs(value: number, index?: number): number;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): FixedEpochCondition.AsObject;
@@ -170,15 +170,15 @@ export class FixedEpochCondition extends jspb.Message {
 
 export namespace FixedEpochCondition {
     export type AsObject = {
-        epochesList: Array<number>,
+        epochsList: Array<number>,
     }
 }
 
 export class CronCondition extends jspb.Message { 
-    clearCronTableList(): void;
-    getCronTableList(): Array<string>;
-    setCronTableList(value: Array<string>): CronCondition;
-    addCronTable(value: string, index?: number): string;
+    clearScheduleList(): void;
+    getScheduleList(): Array<string>;
+    setScheduleList(value: Array<string>): CronCondition;
+    addSchedule(value: string, index?: number): string;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CronCondition.AsObject;
@@ -192,7 +192,7 @@ export class CronCondition extends jspb.Message {
 
 export namespace CronCondition {
     export type AsObject = {
-        cronTableList: Array<string>,
+        scheduleList: Array<string>,
     }
 }
 
@@ -243,10 +243,10 @@ export class TaskTrigger extends jspb.Message {
     getManual(): boolean;
     setManual(value: boolean): TaskTrigger;
 
-    hasAt(): boolean;
-    clearAt(): void;
-    getAt(): FixedEpochCondition | undefined;
-    setAt(value?: FixedEpochCondition): TaskTrigger;
+    hasFixedTime(): boolean;
+    clearFixedTime(): void;
+    getFixedTime(): FixedEpochCondition | undefined;
+    setFixedTime(value?: FixedEpochCondition): TaskTrigger;
 
     hasCron(): boolean;
     clearCron(): void;
@@ -278,7 +278,7 @@ export class TaskTrigger extends jspb.Message {
 export namespace TaskTrigger {
     export type AsObject = {
         manual: boolean,
-        at?: FixedEpochCondition.AsObject,
+        fixedTime?: FixedEpochCondition.AsObject,
         cron?: CronCondition.AsObject,
         block?: BlockCondition.AsObject,
         event?: EventCondition.AsObject,
@@ -286,11 +286,11 @@ export namespace TaskTrigger {
 
     export enum TriggerTypeCase {
         TRIGGER_TYPE_NOT_SET = 0,
-        MANUAL = 2,
-        AT = 3,
-        CRON = 4,
-        BLOCK = 5,
-        EVENT = 6,
+        MANUAL = 1,
+        FIXED_TIME = 2,
+        CRON = 3,
+        BLOCK = 4,
+        EVENT = 5,
     }
 
 }
@@ -405,6 +405,9 @@ export class GraphQLQueryNode extends jspb.Message {
     getQuery(): string;
     setQuery(value: string): GraphQLQueryNode;
 
+    getVariablesMap(): jspb.Map<string, string>;
+    clearVariablesMap(): void;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): GraphQLQueryNode.AsObject;
     static toObject(includeInstance: boolean, msg: GraphQLQueryNode): GraphQLQueryNode.AsObject;
@@ -419,6 +422,8 @@ export namespace GraphQLQueryNode {
     export type AsObject = {
         url: string,
         query: string,
+
+        variablesMap: Array<[string, string]>,
     }
 }
 
@@ -544,6 +549,29 @@ export namespace FilterNode {
     }
 }
 
+export class LoopNode extends jspb.Message { 
+    getIterVar(): string;
+    setIterVar(value: string): LoopNode;
+    getIterKey(): string;
+    setIterKey(value: string): LoopNode;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): LoopNode.AsObject;
+    static toObject(includeInstance: boolean, msg: LoopNode): LoopNode.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: LoopNode, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): LoopNode;
+    static deserializeBinaryFromReader(message: LoopNode, reader: jspb.BinaryReader): LoopNode;
+}
+
+export namespace LoopNode {
+    export type AsObject = {
+        iterVar: string,
+        iterKey: string,
+    }
+}
+
 export class TaskEdge extends jspb.Message { 
     getId(): string;
     setId(value: string): TaskEdge;
@@ -611,6 +639,11 @@ export class TaskNode extends jspb.Message {
     getFilter(): FilterNode | undefined;
     setFilter(value?: FilterNode): TaskNode;
 
+    hasLoop(): boolean;
+    clearLoop(): void;
+    getLoop(): LoopNode | undefined;
+    setLoop(value?: LoopNode): TaskNode;
+
     hasCustomCode(): boolean;
     clearCustomCode(): void;
     getCustomCode(): CustomCodeNode | undefined;
@@ -639,6 +672,7 @@ export namespace TaskNode {
         restApi?: RestAPINode.AsObject,
         branch?: BranchNode.AsObject,
         filter?: FilterNode.AsObject,
+        loop?: LoopNode.AsObject,
         customCode?: CustomCodeNode.AsObject,
     }
 
@@ -651,7 +685,8 @@ export namespace TaskNode {
         REST_API = 14,
         BRANCH = 15,
         FILTER = 16,
-        CUSTOM_CODE = 17,
+        LOOP = 17,
+        CUSTOM_CODE = 18,
     }
 
 }
@@ -697,8 +732,8 @@ export class Task extends jspb.Message {
     setMemo(value: string): Task;
     getCompletedAt(): number;
     setCompletedAt(value: number): Task;
-    getRecurring(): boolean;
-    setRecurring(value: boolean): Task;
+    getMaxExecution(): number;
+    setMaxExecution(value: number): Task;
     getStatus(): TaskStatus;
     setStatus(value: TaskStatus): Task;
 
@@ -738,7 +773,7 @@ export namespace Task {
         expiredAt: number,
         memo: string,
         completedAt: number,
-        recurring: boolean,
+        maxExecution: number,
         status: TaskStatus,
         trigger?: TaskTrigger.AsObject,
         nodesList: Array<TaskNode.AsObject>,
@@ -757,8 +792,8 @@ export class CreateTaskReq extends jspb.Message {
     setStartAt(value: number): CreateTaskReq;
     getExpiredAt(): number;
     setExpiredAt(value: number): CreateTaskReq;
-    getRepeatable(): boolean;
-    setRepeatable(value: boolean): CreateTaskReq;
+    getMaxExecution(): number;
+    setMaxExecution(value: number): CreateTaskReq;
     getSmartWalletAddress(): string;
     setSmartWalletAddress(value: string): CreateTaskReq;
     getMemo(): string;
@@ -787,7 +822,7 @@ export namespace CreateTaskReq {
         trigger?: TaskTrigger.AsObject,
         startAt: number,
         expiredAt: number,
-        repeatable: boolean,
+        maxExecution: number,
         smartWalletAddress: string,
         memo: string,
         nodesList: Array<TaskNode.AsObject>,
@@ -1112,14 +1147,6 @@ export namespace CreateWalletResp {
         salt: string,
         factoryAddress: string,
     }
-}
-
-export enum TriggerType {
-    MANUALTRIGGER = 0,
-    FIXEDEPOCHTRIGGER = 1,
-    CRONTRIGGER = 2,
-    BLOCKTRIGGER = 3,
-    EVENTTRIGGER = 4,
 }
 
 export enum Error {

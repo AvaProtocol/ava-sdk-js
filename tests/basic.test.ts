@@ -152,6 +152,7 @@ describe("Client E2E Tests", () => {
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.trigger.block.interval).toEqual(5);
     });
 
     test("listTask", async () => {
@@ -169,7 +170,6 @@ describe("Client E2E Tests", () => {
       expect(tasks2.length).toBeGreaterThanOrEqual(1);
 
       const task1 = tasks1.find(t => t.id == result1.id);
-      console.log("task1", tasks1, task1);
       expect(tasks1.find(t => t.id == result2.id)).toBe(undefined);
       expect(task1?.id).toEqual(result1.id);
       expect(task1?.memo).toEqual('task1 test');

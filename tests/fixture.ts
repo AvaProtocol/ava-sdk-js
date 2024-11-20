@@ -12,7 +12,6 @@ export const sampleTask1 = {
   memo: `Test task`,
 
   trigger: {
-    trigger_type: avs_pb.TriggerType.BLOCKTRIGGER,
     block: {
       interval: 5, // run every 5 block
     },
@@ -33,4 +32,5 @@ export const sampleTask1 = {
    target: "uuid123",
  }],
 };
+
 
