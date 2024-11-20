@@ -26,9 +26,6 @@ jobs:
         node-version: '18.x'
         cache: 'npm'
         
-    - name: Install dependencies
-      run: npm ci
-      
     - name: Debug environment variables
       run: |
         echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
@@ -39,7 +36,10 @@ jobs:
     - name: Bring up docker compose
       run: |
         docker compose up -d
-            
+        
+    - name: Install dependencies
+      run: npm ci
+          
     - name: Run tests
       run: |
         until curl --output /dev/null --silent --head --fail http://localhost:1323/telemetry; do
