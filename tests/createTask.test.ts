@@ -66,7 +66,7 @@ describe("createTask Tests", () => {
       );
       console.log("Create task result:", result);
       expect(result).toBeDefined();
-      expect(result).toHaveProperty("id");
+      expect(result).toHaveLength(26);
     });
 
     test("should throw error when creating a task with owner address using signature", async () => {
@@ -89,14 +89,14 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      const task = await client.getTask(result.id, { authKey });
-      expect(task.id).toEqual(result.id);
+      const task = await client.getTask(result, { authKey });
+      expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.CRON);
+      expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.CRON);
       expect(task.trigger.cron.schedule[0]).toEqual("5 4 * * *");
       expect(task.trigger.cron.schedule[1]).toEqual("5 0 * 8 *");
     });
@@ -114,14 +114,14 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      const task = await client.getTask(result.id, { authKey });
-      expect(task.id).toEqual(result.id);
+      const task = await client.getTask(result, { authKey });
+      expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME);
+      expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME);
       expect(task.trigger.fixedTime.epochs).toEqual([10, 20, 30]);
     });
 
@@ -138,14 +138,14 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      const task = await client.getTask(result.id, { authKey });
-      expect(task.id).toEqual(result.id);
+      const task = await client.getTask(result, { authKey });
+      expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.EVENT);
+      expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.EVENT);
       expect(task.trigger.event.expression).toEqual(`topic0 == "0x123" && topic2 == "0xdef"` );
     });
 
@@ -162,14 +162,14 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      const task = await client.getTask(result.id, { authKey });
-      expect(task.id).toEqual(result.id);
+      const task = await client.getTask(result, { authKey });
+      expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.MANUAL);
+      expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.MANUAL);
       expect(task.trigger.manual).toBe(true);
     });
 
@@ -188,14 +188,14 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      const task = await client.getTask(result.id, { authKey });
-      expect(task.id).toEqual(result.id);
+      const task = await client.getTask(result, { authKey });
+      expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
+      expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
       expect(task.trigger.block.interval).toEqual(102);
     });
 
@@ -223,7 +223,7 @@ describe("createTask Tests", () => {
       );
       console.log("Create task result:", result);
       expect(result).toBeDefined();
-      expect(result).toHaveProperty("id");
+      expect(result).toHaveLength(26);
     });
 
     test("should throw error when creating a task with owner address using API key", async () => {

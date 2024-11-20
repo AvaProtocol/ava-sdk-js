@@ -123,7 +123,7 @@ describe("Client E2E Tests", () => {
       const result = await client.createWallet({salt: "123"}, { authKey });
       expect(result?.address).toHaveLength(42);
       expect(result?.salt).toEqual("123");
-      expect(result?.factoryAddress).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
+      expect(result?.factory).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
     });
 
     test("listSmartWallets", async () => {
@@ -139,15 +139,14 @@ describe("Client E2E Tests", () => {
       const result = await client.createTask(sampleTask1, { authKey });
 
       expect(result).toBeDefined();
-      expect(result).toHaveProperty("id");
-      expect(result.id).toHaveLength(26);
+      expect(result).toHaveLength(26);
     });
 
     test("getTask", async () => {
       const result = await client.createTask(sampleTask1, { authKey });
-      expect(result?.id).toHaveLength(26);
+      expect(result).toHaveLength(26);
 
-      const task = await client.getTask(result.id, { authKey });
+      const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
@@ -169,20 +168,20 @@ describe("Client E2E Tests", () => {
       expect(tasks1.length).toBeGreaterThanOrEqual(1);
       expect(tasks2.length).toBeGreaterThanOrEqual(1);
 
-      const task1 = tasks1.find(t => t.id == result1.id);
-      expect(tasks1.find(t => t.id == result2.id)).toBe(undefined);
-      expect(task1?.id).toEqual(result1.id);
+      const task1 = tasks1.find(t => t.id == result1);
+      expect(tasks1.find(t => t.id == result2)).toBe(undefined);
+      expect(task1?.id).toEqual(result1);
       expect(task1?.memo).toEqual('task1 test');
 
-      const task2 = tasks2.find(t => t.id == result2.id);
-      expect(tasks2.find(t => t.id == result1.id)).toBe(undefined);
-      expect(task2?.id).toEqual(result2.id);
+      const task2 = tasks2.find(t => t.id == result2);
+      expect(tasks2.find(t => t.id == result1)).toBe(undefined);
+      expect(task2?.id).toEqual(result2);
       expect(task2?.memo).toEqual('default wallet test');
     });
 
     test("cancelTask", async () => {
       const result = await client.createTask(sampleTask1, { authKey });
-      const task = await client.getTask(result.id, { authKey });
+      const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual( avs_pb.TaskStatus.ACTIVE);
 
       const cancelResult = await client.cancelTask(task.id, { authKey });
@@ -193,7 +192,7 @@ describe("Client E2E Tests", () => {
 
     test("deleteTask", async () => {
       const result = await client.createTask(sampleTask1, { authKey });
-      const task = await client.getTask(result.id, { authKey });
+      const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.id).toHaveLength(26);
 

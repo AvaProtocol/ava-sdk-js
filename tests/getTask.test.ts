@@ -61,14 +61,12 @@ describe("getTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         {
           ...sampleTask1, smartWalletAddress
         },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should get task when authenticated with signature", async () => {
@@ -106,23 +104,23 @@ describe("getTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should get task when authenticated with API key", async () => {
       const result = await client.getTask(createdTaskId, { authKey });
 
+      console.log("trask is ", result);
       // Check if the result is an object and has the expected properties
       expect(result).toBeDefined();
       expect(result.status).toBe(avs_pb.TaskStatus.ACTIVE);
       expect(result.id).toBe(createdTaskId);
       expect(result.smartWalletAddress).toEqual(smartWalletAddress);
-      //expect(result.trigger).toBeDefined();
+      expect(result.trigger).toBeDefined();
+      expect(result.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
       expect(result.nodes).toHaveLength(1);
       expect(result.expiredAt).toEqual(sampleTask1.expiredAt);
       expect(result.memo).toEqual(sampleTask1.memo);
@@ -154,12 +152,10 @@ describe("getTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should throw error when getting a task without authentication", async () => {

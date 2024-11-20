@@ -60,12 +60,10 @@ describe("listTasks Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should list tasks when authenticated with signature", async () => {
@@ -102,12 +100,10 @@ describe("listTasks Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should list tasks when authenticated with API key", async () => {

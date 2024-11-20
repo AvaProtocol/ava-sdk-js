@@ -60,12 +60,10 @@ describe("deleteTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId  = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should delete task when authenticated with signature", async () => {
@@ -103,12 +101,11 @@ describe("deleteTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
 
-      createdTaskId = createTaskRes.id;
       console.log("crate task", createdTaskId);
     });
 
@@ -152,12 +149,10 @@ describe("deleteTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should throw error when deleting a task without authentication", async () => {

@@ -61,12 +61,10 @@ describe("cancelTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should cancel task when authenticated with signature", async () => {
@@ -101,12 +99,10 @@ describe("cancelTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should cancel task when authenticated with API key", async () => {
@@ -145,15 +141,13 @@ describe("cancelTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      const createTaskRes = await client.createTask(
+      createdTaskId = await client.createTask(
         {
           ...sampleTask1,
           smartWalletAddress
         },
         { authKey }
       );
-
-      createdTaskId = createTaskRes.id;
     });
 
     test("should throw error when canceling a task without authentication", async () => {
