@@ -79,6 +79,8 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
   docker compose up -d
   ```
 
+  Note: Every commit on every branch of https://github.com/AvaProtocol/EigenLayer-AVS will auto-generate a Docker image. By default the `docker compose up -d` is pulling the latest commit on the main branch.
+
 4. Run the test command. This will test the SDK against test server, configured in `.env.test`.
 
    ```bash
