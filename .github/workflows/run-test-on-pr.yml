@@ -39,7 +39,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: ensure the aggregator is ready
+    - name: ensure the aggregator and env is ready
       run: |
         until curl --output /dev/null --silent --fail http://localhost:1323/telemetry; do
           printf '.'
@@ -51,6 +51,4 @@ jobs:
     - name: Run tests
       run: |
         docker compose run out/ap create-api-key --role=admin --subject=apikey
-        export TEST_API_KEY=$(docker compose exec ./out/ap create-api-key --role=admin --subject=apikey)
-        #npm test 
-        npx jest tests/deleteTask.test.ts
+        npm test 
