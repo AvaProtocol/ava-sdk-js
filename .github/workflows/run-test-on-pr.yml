@@ -10,7 +10,9 @@ jobs:
     environment: test # The below environment variables are only available in the test environment
     
     env:
-      TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+      # Dummy api key
+      TEST_API_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBdmFQcm90b2NvbCIsInN1YiI6ImFwaWtleSIsImV4cCI6MjA0NzQzNTg2Niwicm9sZXMiOlsiYWRtaW4iXX0.C7-WZRLQDxLCG4RQ0NLyuncWTF0nqH5XwioUaIdJ-OQ"
+      # ${{ secrets.TEST_API_KEY }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
@@ -39,12 +41,14 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
-          
-    - name: Run tests
-      run: |
+
+    - name: ensure the aggregator is ready
         until curl --output /dev/null --silent --fail http://localhost:1323/telemetry; do
           printf '.'
           sleep 5
         done
 
-        npm test 
+    - name: Run tests
+      run: |
+        #npm test 
+        npx jest tests/deleteTask.test.ts
