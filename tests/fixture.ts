@@ -2,6 +2,9 @@ import * as avs_pb from "../grpc_codegen/avs_pb";
 import { UlidMonotonic } from "id128";
 import { requireEnvVar } from "./utils";
 
+// Dummy private key for determinictics test
+export const TEST_PRIVATE_KEY = "0x677240d3b2d8a167e536969785de1bb9f893ed0593682dc8c4dbaf8980d325ee"
+
 export const sampleTask1 = {
   smartWalletAddress: '0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41',
   startAt: Math.floor(Date.now() / 1000) + 30,

@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
 
-import { sampleTask1 } from "./fixture";
+import { sampleTask1, TEST_PRIVATE_KEY } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -12,13 +12,11 @@ dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 // Get environment variables with type safety
 const {
   TEST_API_KEY,
-  TEST_PRIVATE_KEY,
   TOKEN_CONTRACT,
   ORACLE_CONTRACT,
   ENDPOINT,
 } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   TOKEN_CONTRACT: requireEnvVar("TOKEN_CONTRACT"),
   ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
@@ -97,6 +95,7 @@ describe("deleteTask Tests", () => {
       console.log("Authenticating with API key ...");
       const res = await client.authWithAPIKey(ownerAddress, TEST_API_KEY, EXPIRED_AT);
       authKey = res.authKey;
+      console.log("Got key exchange...", authKey);
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
       const getAddressesRes = await client.listSmartWallets({ authKey });
@@ -114,6 +113,7 @@ describe("deleteTask Tests", () => {
     });
 
     test("should delete task when authenticated with API key", async () => {
+      console.log("delete task with authkey...", authKey);
       const result = await client.deleteTask(createdTaskId, { authKey });
       expect(result).toBe(true);
 
@@ -147,6 +147,7 @@ describe("deleteTask Tests", () => {
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
       const getAddressesRes = await client.listSmartWallets({ authKey });
+      console.log(`got wallet`, getAddressesRes);
       smartWalletAddress = getAddressesRes[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 

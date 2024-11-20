@@ -3,19 +3,18 @@ import Client from "../src";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import { TEST_PRIVATE_KEY } from "./fixture";
+
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
-
 // Get environment variables with type safety
 const {
   TEST_API_KEY,
-  TEST_PRIVATE_KEY,
   TOKEN_CONTRACT,
   ORACLE_CONTRACT,
   ENDPOINT,
 } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   TOKEN_CONTRACT: requireEnvVar("TOKEN_CONTRACT"),
   ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
