@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
 
-import { sampleTask1, TEST_PRIVATE_KEY } from "./fixture";
+import { sampleTask1, sampleTask2, TEST_PRIVATE_KEY } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -199,6 +199,35 @@ describe("createTask Tests", () => {
       expect(task.trigger.block.interval).toEqual(102);
     });
 
+    test("create complex task with multi nodes and edge ",  async() => {
+      const result = await client.createTask(
+        {
+          ...sampleTask2,
+          smartWalletAddress,
+        },
+        { authKey });
+
+      const task = await client.getTask(result, { authKey });
+
+      expect(task.id).toEqual(result);
+      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
+      expect(task.nodes).toHaveLength(6);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      
+      expect(task.nodes[5].branch.conditions).toHaveLength(3);
+      expect(task.nodes[5].branch.conditions[0].type).toEqual("if");
+      expect(task.nodes[5].branch.conditions[1].type).toEqual("if");
+      expect(task.nodes[5].branch.conditions[2].type).toEqual("else");
+
+      expect(task.edges).toHaveLength(6);
+      expect(task.edges[3].source).toEqual("t100.b1");
+      expect(task.edges[4].source).toEqual("t100.b2");
+
+      expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
+      expect(task.trigger.block.interval).toEqual(5);
+
+    })
   });
 
   describe("Auth with API key", () => {

@@ -28,6 +28,48 @@ export const buildContractRead = ({contract_ddress, callData, contractABI}): avs
   return n;
 }
 
+export const buildGraphQL = ({url, query, variables}): avs_pb.GraphQLQueryNode => {
+  const n = new avs_pb.GraphQLQueryNode();
+  n.setUrl(url);
+  n.setQuery(query);
+  for (const [k,v ] of Object.entries(variables || {})) {
+    n.getVariablesMap().set(k, v);
+  }
+  return n;
+}
+
+export const buildRestAPI = ({url, body, method, headers}): avs_pb.RestAPINode => {
+  const n = new avs_pb.RestAPINode();
+  n.setUrl(url);
+  n.setBody(body);
+  n.setMethod(method);
+  for (const [k,v ] of Object.entries(headers || {})) {
+    n.getHeadersMap().set(k, v);
+  }
+
+  return n;
+}
+
+export const buildBranch = ({conditions}): avs_pb.BranchNode => {
+  const n = new avs_pb.BranchNode();
+
+  for (const item of conditions) {
+    const condition = new avs_pb.Condition();
+    condition.setId(item.id);
+    condition.setType(item.type);
+    condition.setExpression(item.expression);
+
+    n.addConditions(condition);
+  }
+  return n;
+}
+
+export const buildFilter = ({expression}): avs_pb.FilterNode => {
+  const n = new avs_pb.FilterNode();
+  n.setExpression(expression);
+  return n;
+}
+
 export const buildTaskEdge = ({id, source, target}): avs_pb.TaskEdge => {
   const edge = new avs_pb.TaskEdge();
   edge.setId(id);
@@ -37,6 +79,37 @@ export const buildTaskEdge = ({id, source, target}): avs_pb.TaskEdge => {
   return edge;
 }
 
+export const buildTaskNode = (node): avs_pb.TaskNode => {
+  const n = new avs_pb.TaskNode();
+  n.setId(node.id);
+  n.setName(node.name);
+
+  if (node.ethTransfer) {
+    const ethTransfer = new avs_pb.ETHTransferNode();
+    ethTransfer.setDestination(node.ethTransfer.destination);
+    ethTransfer.setAmount(node.ethTransfer.amount);
+    n.setEthTransfer(ethTransfer);
+  } else if (node.contractWrite) {
+    n.setContractWrite(buildContractWrite(node.contractWrite));
+  } else if (node.contractRead) {
+    n.setContractRead(buildContractRead(node.contractRead));
+  } else if (node.graphqlDataQuery) {
+    n.setGraphqlDataQuery(buildGraphQL(node.graphqlDataQuery));
+  } else if (node.restApi) {
+    n.setRestApi(buildRestAPI(node.restApi));
+  } else if (node.branch) {
+    n.setBranch(buildBranch(node.branch));
+  } else if (node["filter"]) {
+    n.setfilter(buildFilter(node["filter"]));
+  } else if (node.customCode) {
+    const code = new avs_pb.CustomCodeNode;
+    code.setType(node.customCode.type);
+    n.setCustomCode(node.customCode);
+  } else {
+    throw new Error("missing task payload");
+  }
+  return n
+}
 
 export const buildTrigger = (payload): avs_pb.TaskTrigger => {
   const trigger = new avs_pb.TaskTrigger();
@@ -135,7 +208,9 @@ export const nodeFromGRPC = (node) => {
       standarize.restApi = base.restApi;
       break;
     case avs_pb.TaskNode.TaskTypeCase.BRANCH:
-      standarize.branch = base.branch;
+      standarize.branch = {
+        conditions: base.branch.conditionsList,
+      }
       break;
     case avs_pb.TaskNode.TaskTypeCase.FILTER:
       standarize.filter = base.filter;
@@ -149,4 +224,12 @@ export const nodeFromGRPC = (node) => {
   }
 
   return standarize;
+}
+
+export const taskEdgeFromGRPC = (edge: avs_pb.TaskEdge) => {
+  return {
+    id: edge.getId(),
+    source: edge.getSource(),
+    target: edge.getTarget(),
+  }
 }

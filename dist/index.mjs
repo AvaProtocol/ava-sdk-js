@@ -5358,12 +5358,77 @@ var buildContractRead = ({ contract_ddress, callData, contractABI }) => {
   }
   return n;
 };
+var buildGraphQL = ({ url, query, variables }) => {
+  const n = new avs_pb.GraphQLQueryNode();
+  n.setUrl(url);
+  n.setQuery(query);
+  for (const [k, v] of Object.entries(variables || {})) {
+    n.getVariablesMap().set(k, v);
+  }
+  return n;
+};
+var buildRestAPI = ({ url, body, method, headers }) => {
+  const n = new avs_pb.RestAPINode();
+  n.setUrl(url);
+  n.setBody(body);
+  n.setMethod(method);
+  for (const [k, v] of Object.entries(headers || {})) {
+    n.getHeadersMap().set(k, v);
+  }
+  return n;
+};
+var buildBranch = ({ conditions }) => {
+  const n = new avs_pb.BranchNode();
+  for (const item of conditions) {
+    const condition = new avs_pb.Condition();
+    condition.setId(item.id);
+    condition.setType(item.type);
+    condition.setExpression(item.expression);
+    n.addConditions(condition);
+  }
+  return n;
+};
+var buildFilter = ({ expression }) => {
+  const n = new avs_pb.FilterNode();
+  n.setExpression(expression);
+  return n;
+};
 var buildTaskEdge = ({ id, source, target }) => {
   const edge = new avs_pb.TaskEdge();
   edge.setId(id);
   edge.setSource(source);
   edge.setTarget(target);
   return edge;
+};
+var buildTaskNode = (node) => {
+  const n = new avs_pb.TaskNode();
+  n.setId(node.id);
+  n.setName(node.name);
+  if (node.ethTransfer) {
+    const ethTransfer = new avs_pb.ETHTransferNode();
+    ethTransfer.setDestination(node.ethTransfer.destination);
+    ethTransfer.setAmount(node.ethTransfer.amount);
+    n.setEthTransfer(ethTransfer);
+  } else if (node.contractWrite) {
+    n.setContractWrite(buildContractWrite(node.contractWrite));
+  } else if (node.contractRead) {
+    n.setContractRead(buildContractRead(node.contractRead));
+  } else if (node.graphqlDataQuery) {
+    n.setGraphqlDataQuery(buildGraphQL(node.graphqlDataQuery));
+  } else if (node.restApi) {
+    n.setRestApi(buildRestAPI(node.restApi));
+  } else if (node.branch) {
+    n.setBranch(buildBranch(node.branch));
+  } else if (node["filter"]) {
+    n.setfilter(buildFilter(node["filter"]));
+  } else if (node.customCode) {
+    const code = new avs_pb.CustomCodeNode();
+    code.setType(node.customCode.type);
+    n.setCustomCode(node.customCode);
+  } else {
+    throw new Error("missing task payload");
+  }
+  return n;
 };
 var buildTrigger = (payload) => {
   const trigger = new avs_pb.TaskTrigger();
@@ -5447,7 +5512,9 @@ var nodeFromGRPC = (node) => {
       standarize.restApi = base.restApi;
       break;
     case avs_pb.TaskNode.TaskTypeCase.BRANCH:
-      standarize.branch = base.branch;
+      standarize.branch = {
+        conditions: base.branch.conditionsList
+      };
       break;
     case avs_pb.TaskNode.TaskTypeCase.FILTER:
       standarize.filter = base.filter;
@@ -5461,6 +5528,13 @@ var nodeFromGRPC = (node) => {
   }
   return standarize;
 };
+var taskEdgeFromGRPC = (edge) => {
+  return {
+    id: edge.getId(),
+    source: edge.getSource(),
+    target: edge.getTarget()
+  };
+};
 
 // src/task.ts
 var Task = class {
@@ -5471,12 +5545,19 @@ var Task = class {
     this.smartWalletAddress = task.getSmartWalletAddress();
     this.nodes = task.getNodesList().map((node) => nodeFromGRPC(node));
     this.trigger = triggerFromGRPC(task.getTrigger());
+    this.edges = task.getEdgesList().map((edge) => taskEdgeFromGRPC(edge));
     this.startAt = task.getStartAt();
     this.expiredAt = task.getExpiredAt();
     this.memo = task.getMemo();
     this.completedAt = task.getCompletedAt();
     this.status = task.getStatus();
-    this.executionsList = task.getExecutionsList();
+    this.executions = task.getExecutionsList().map((execution) => {
+      return {
+        epoch: execution.getEpoch(),
+        userOpHash: execution.getUserOpHash(),
+        error: execution.getError()
+      };
+    });
     this.maxExecution = task.getMaxExecution();
   }
 };
@@ -5591,21 +5672,8 @@ var Client = class extends BaseClient {
     request.setMemo(payload.memo || "");
     request.setMaxExecution(payload.maxExecution || 0);
     request.setTrigger(buildTrigger(payload.trigger));
-    let nodes = [];
     for (const node of payload.nodes) {
-      const n = new avs_pb2.TaskNode();
-      n.setId(node.id);
-      n.setName(node.name);
-      if (node.ethTransfer) {
-      } else if (node.contractWrite) {
-        n.setContractWrite(buildContractWrite(node.contractWrite));
-      } else if (node.contractRead) {
-        n.setContractRead(buildContractRead(node.contractRead));
-      } else {
-        throw new Error("missing task payload");
-      }
-      nodes.push(n);
-      request.addNodes(n);
+      request.addNodes(buildTaskNode(node));
     }
     const edges = [];
     for (const edge of payload.edges) {

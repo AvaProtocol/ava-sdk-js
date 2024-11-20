@@ -694,25 +694,25 @@ declare namespace TaskNode {
 
 }
 
-declare class Execution extends jspb.Message { 
+declare class Execution$1 extends jspb.Message { 
     getEpoch(): number;
-    setEpoch(value: number): Execution;
+    setEpoch(value: number): Execution$1;
     getUserOpHash(): string;
-    setUserOpHash(value: string): Execution;
+    setUserOpHash(value: string): Execution$1;
     getError(): string;
-    setError(value: string): Execution;
+    setError(value: string): Execution$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): Execution.AsObject;
-    static toObject(includeInstance: boolean, msg: Execution): Execution.AsObject;
+    toObject(includeInstance?: boolean): Execution$1.AsObject;
+    static toObject(includeInstance: boolean, msg: Execution$1): Execution$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: Execution, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): Execution;
-    static deserializeBinaryFromReader(message: Execution, reader: jspb.BinaryReader): Execution;
+    static serializeBinaryToWriter(message: Execution$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Execution$1;
+    static deserializeBinaryFromReader(message: Execution$1, reader: jspb.BinaryReader): Execution$1;
 }
 
-declare namespace Execution {
+declare namespace Execution$1 {
     export type AsObject = {
         epoch: number,
         userOpHash: string,
@@ -753,9 +753,9 @@ declare class Task$1 extends jspb.Message {
     setEdgesList(value: Array<TaskEdge>): Task$1;
     addEdges(value?: TaskEdge, index?: number): TaskEdge;
     clearExecutionsList(): void;
-    getExecutionsList(): Array<Execution>;
-    setExecutionsList(value: Array<Execution>): Task$1;
-    addExecutions(value?: Execution, index?: number): Execution;
+    getExecutionsList(): Array<Execution$1>;
+    setExecutionsList(value: Array<Execution$1>): Task$1;
+    addExecutions(value?: Execution$1, index?: number): Execution$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Task$1.AsObject;
@@ -781,7 +781,7 @@ declare namespace Task$1 {
         trigger?: TaskTrigger$1.AsObject,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
-        executionsList: Array<Execution.AsObject>,
+        executionsList: Array<Execution$1.AsObject>,
     }
 }
 
@@ -1282,21 +1282,22 @@ interface TaskType {
         taskType: number;
         id: string;
         name: string;
-        nextList: any[];
         ethTransfer?: any;
-        contractExecution: any;
-        graphqlDataQuery?: any;
-        httpDataQuery?: any;
+        contractWrite?: any;
+        contractRead?: any;
+        restApi?: any;
         customCode?: any;
         branch?: any;
+        filter?: any;
     }>;
+    edges: any[];
     startAt: number;
     expiredAt: number;
     memo: string;
     completedAt: number;
     status: number;
     maxExecution: number;
-    executionsList: any[];
+    executions: Execution[];
 }
 interface CreateTaskResponse {
     id: string;
@@ -1322,6 +1323,11 @@ interface CreateWalletReq {
     salt: string;
     factoryAddress?: string;
 }
+interface Execution {
+    epoch: number;
+    userOpHash: string;
+    error: string;
+}
 
 declare class Task implements TaskType {
     id: string;
@@ -1330,12 +1336,13 @@ declare class Task implements TaskType {
     smartWalletAddress: string;
     trigger: TaskTrigger;
     nodes: any[];
+    edges: any[];
     startAt: number;
     expiredAt: number;
     memo: string;
     completedAt: number;
     maxExecution: number;
-    executionsList: any[];
+    executions: Execution[];
     constructor(task: Task$1);
 }
 
@@ -1361,4 +1368,4 @@ declare class Client extends BaseClient {
     deleteTask(id: string, options: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskTrigger, type TaskType, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type Execution, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskTrigger, type TaskType, Client as default, getKeyRequestMessage };

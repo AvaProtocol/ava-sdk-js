@@ -43,21 +43,22 @@ export interface TaskType {
     taskType: number;
     id: string;
     name: string;
-    nextList: any[];
     ethTransfer?: any;
-    contractExecution: any;
-    graphqlDataQuery?: any;
-    httpDataQuery?: any;
+    contractWrite?: any;
+    contractRead?: any;
+    restApi?: any;
     customCode?: any;
     branch?: any;
+    filter?: any;
   }>;
+  edges: any[];
   startAt: number;
   expiredAt: number;
   memo: string;
   completedAt: number;
   status: number;
   maxExecution: number;
-  executionsList: any[];
+  executions: Execution[];
 }
 
 export interface CreateTaskResponse {
@@ -88,4 +89,10 @@ export interface SmartWallet {
 export interface CreateWalletReq {
   salt: string;
   factoryAddress?: string;
+}
+
+export interface Execution {
+  epoch: number;
+  userOpHash: string;
+  error: string;
 }

@@ -26,6 +26,7 @@ import {
   buildContractWrite,
   buildTaskEdge,
   buildTrigger,
+  buildTaskNode,
 } from "./builder";
 
 class BaseClient {
@@ -202,33 +203,8 @@ export default class Client extends BaseClient {
 
     request.setTrigger(buildTrigger(payload.trigger));
 
-    let nodes = [];
     for (const node of payload.nodes) {
-      const n = new avs_pb.TaskNode();
-      n.setId(node.id);
-      n.setName(node.name);
-
-      if (node.ethTransfer) {
-       // n.setEthTransfer(node.ethTransfer);
-      } else if (node.contractWrite) {
-        n.setContractWrite(buildContractWrite(node.contractWrite));
-      } else if (node.contractRead) {
-        n.setContractRead(buildContractRead(node.contractRead));
-      // } else if (node.graphqlDataQuery) {
-      //   n.setGraphqlDataQuery(node.graphqlDataQuery);
-      // } else if (node.restApi) {
-      //   n.setRestApi(node.restApi);
-      //} else if (node.branch) {
-      //  n.setBranch(node.branch);
-      //} else if (node["filter"]) {
-      //  n.setfilter(node["filter"]);
-      //} else if (node.customCode) {
-      //  n.setCustomCode(node.customCode);
-      } else {
-        throw new Error("missing task payload");
-      }
-      nodes.push(n);
-      request.addNodes(n);
+      request.addNodes(buildTaskNode(node));
     }
 
     const edges = [];
