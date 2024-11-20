@@ -110,7 +110,7 @@ class BaseClient {
     const metadata = _.cloneDeep(this.metadata);
 
     if (!options?.authKey) {
-      throw new Error("Not authenticated yet");
+      throw new Error("missing auth header");
     }
     metadata.set(AUTH_KEY_HEADER, options.authKey);
 
@@ -162,9 +162,7 @@ export default class Client extends BaseClient {
       avs_pb.ListWalletReq
     >("listWallets", request, options);
 
-    return {
-      wallets: result.getWalletsList().map(item => item.toObject()),
-    };
+    return result.getWalletsList().map(item => item.toObject());
   }
 
   async createWallet(

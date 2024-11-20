@@ -1,8 +1,11 @@
+import * as avs_pb from "../grpc_codegen/avs_pb";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "../dist/index.js";
+import Client from "../src";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
+
+import { sampleTask1 } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -41,7 +44,7 @@ describe("cancelTask Tests", () => {
 
   describe("Auth with Signature", () => {
     let authKey: string;
-    let smartWallet: string;
+    let smartWalletAddress: string;
     let createdTaskId: string;
 
     beforeAll(async () => {
@@ -55,19 +58,13 @@ describe("cancelTask Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const getAddressesRes = await client.getAddresses(ownerAddress, {
-        authKey,
-      });
-      smartWallet = getAddressesRes.smart_account_address;
-      console.log(`Smart wallet created: ${smartWallet}`);
+      const result = await client.listSmartWallets({ authKey });
+      smartWalletAddress = result[0].address;
+      console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
       const createTaskRes = await client.createTask(
-        {
-          address: smartWallet,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
+        { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
 
@@ -76,46 +73,38 @@ describe("cancelTask Tests", () => {
 
     test("should cancel task when authenticated with signature", async () => {
       const result = await client.cancelTask(createdTaskId, { authKey });
-      expect(result.value).toBe(true);
+      expect(result).toBe(true);
 
-      const listRes = await client.listTasks(smartWallet, { authKey });
-      expect(Array.isArray(listRes.tasks)).toBe(true);
-      expect(listRes.tasks.some((task) => task.id === createdTaskId)).toBe(
-        true
-      );
+      const cancelTask = await client.getTask(createdTaskId, { authKey });
+      expect(cancelTask.id).toEqual(createdTaskId);
+      expect(cancelTask.status).toEqual(avs_pb.TaskStatus.CANCELED);
     });
 
     test("should throw error when canceling an non-existent task", async () => {
       // This fails because the current error message is "2 UNKNOWN: Key not found", which is not a clear error message
       await expect(client.cancelTask("non-existent-task-id", { authKey }))
-        .rejects.toThrow("Task Id not found");
+        .rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
 
   describe("Auth with API key", () => {
     let authKey: string;
-    let smartWallet: string;
+    let smartWalletAddress: string;
     let createdTaskId: string;
 
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(TEST_API_KEY, EXPIRED_AT);
+      const res = await client.authWithAPIKey(ownerAddress, TEST_API_KEY, EXPIRED_AT);
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const getAddressesRes = await client.getAddresses(ownerAddress, {
-        authKey,
-      });
-      smartWallet = getAddressesRes.smart_account_address;
-      console.log(`Smart wallet created: ${smartWallet}`);
+      const wallets = await client.listSmartWallets({ authKey });
+      smartWalletAddress = wallets[0].address;
+      console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
       const createTaskRes = await client.createTask(
-        {
-          address: smartWallet,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
+        { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
 
@@ -124,23 +113,21 @@ describe("cancelTask Tests", () => {
 
     test("should cancel task when authenticated with API key", async () => {
       const result = await client.cancelTask(createdTaskId, { authKey });
-      expect(result.value).toBe(true);
+      expect(result).toBe(true);
 
-      const listRes = await client.listTasks(smartWallet, { authKey });
-      expect(Array.isArray(listRes.tasks)).toBe(true);
-      expect(listRes.tasks.some((task) => task.id === createdTaskId)).toBe(
-        true
-      );
+      const cancelTask = await client.getTask(createdTaskId, { authKey });
+      expect(cancelTask.id).toEqual(createdTaskId);
+      expect(cancelTask.status).toEqual(avs_pb.TaskStatus.CANCELED);
     });
 
     test("should throw error when canceling an non-existent task", async () => {
       await expect(client.cancelTask("non-existent-task-id", { authKey }))
-        .rejects.toThrow("Task Id not found");
+        .rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
 
   describe("Without authentication", () => {
-    let smartWallet: string;
+    let smartWalletAddress: string;
     let authKey: string;
     let createdTaskId: string;
 
@@ -155,18 +142,15 @@ describe("cancelTask Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const getAddressesRes = await client.getAddresses(ownerAddress, {
-        authKey,
-      });
-      smartWallet = getAddressesRes.smart_account_address;
-      console.log(`Smart wallet created: ${smartWallet}`);
+      const wallets = await client.listSmartWallets({ authKey });
+      smartWalletAddress = wallets[0].address;
+      console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
       const createTaskRes = await client.createTask(
         {
-          address: smartWallet,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
+          ...sampleTask1,
+          smartWalletAddress
         },
         { authKey }
       );

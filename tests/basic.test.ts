@@ -4,10 +4,11 @@ import Client from "../src/index";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
-import { UlidMonotonic } from 'id128'
+import { sampleTask1 } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+
 // Get environment variables with type safety
 const {
   TEST_API_KEY,
@@ -101,37 +102,6 @@ describe("Client E2E Tests", () => {
     let createdTaskId: string; // Add this line to declare the variable
     let authKey: string;
 
-    let testTaskPayload = {
-        smartWalletAddress: '0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41',
-
-        startAt: Math.floor(Date.now() / 1000) + 30,
-        expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-        memo: `Test task`,
-
-        trigger: {
-          trigger_type: avs_pb.TriggerType.BLOCKTRIGGER,
-          block: {
-           interval: 5, // run every 5 block
-          },
-        },
-        nodes: [{
-          // id need to be unique. it will be assign to the variable
-          id: "uuid123",
-          // name is for our note only. use for display a humand friendly version
-          name: 'transfer token',
-          contractWrite: {
-            contractAddress: TOKEN_CONTRACT,
-            callData: "0x123cdef",
-          }
-        }],
-
-        edges: [{
-          id: UlidMonotonic.generate().toCanonical(),
-          source: "__TRIGGER__",
-          target: "uuid123",
-        }],
-      };
-
     beforeAll(async () => {
       // Initialize the client with test credentials
       client = new Client({
@@ -159,18 +129,16 @@ describe("Client E2E Tests", () => {
     });
 
     test("listSmartWallets", async () => {
-      const result = await client.listSmartWallets({ authKey });
-      expect(result).toBeDefined();
-      expect(result.wallets).toBeDefined();
-      expect(result.wallets.length).toBeGreaterThanOrEqual(1);
+      const wallets = await client.listSmartWallets({ authKey });
+      expect(wallets.length).toBeGreaterThanOrEqual(1);
 
-      expect(result.wallets[0].address).toEqual("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41");
-      expect(result.wallets[0].salt).toEqual("0");
-      expect(result.wallets[0].factory).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
+      expect(wallets[0].address).toEqual("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41");
+      expect(wallets[0].salt).toEqual("0");
+      expect(wallets[0].factory).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
     });
 
     test("createTask", async () => {
-      const result = await client.createTask(testTaskPayload, { authKey });
+      const result = await client.createTask(sampleTask1, { authKey });
 
       expect(result).toBeDefined();
       expect(result).toHaveProperty("id");
@@ -178,14 +146,14 @@ describe("Client E2E Tests", () => {
     });
 
     test("getTask", async () => {
-      const result = await client.createTask(testTaskPayload, { authKey });
+      const result = await client.createTask(sampleTask1, { authKey });
       expect(result?.id).toHaveLength(26);
 
       const task = await client.getTask(result.id, { authKey });
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(TOKEN_CONTRACT);
-      expect(task.nodes[0].contractWrite.callData).toEqual("0x123cdef");
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
     });
 
     test("listTask", async () => {
@@ -193,10 +161,10 @@ describe("Client E2E Tests", () => {
       const smartWallet = await client.createWallet({salt: "345"}, { authKey });
 
       // populate tasks for default wallet and the custom salt smart wallet above
-      const result1 = await client.createTask({...testTaskPayload, memo: 'task1 test', smartWalletAddress: smartWallet.address}, { authKey });
+      const result1 = await client.createTask({...sampleTask1, memo: 'task1 test', smartWalletAddress: smartWallet.address}, { authKey });
       const tasks1 = await client.listTasks(smartWallet.address, { authKey });
 
-      const result2 = await client.createTask({...testTaskPayload, memo: 'default wallet test'}, { authKey });
+      const result2 = await client.createTask({...sampleTask1, memo: 'default wallet test'}, { authKey });
       const tasks2 = await client.listTasks("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41", { authKey });
 
       expect(tasks1.length).toBeGreaterThanOrEqual(1);
@@ -214,7 +182,7 @@ describe("Client E2E Tests", () => {
     });
 
     test("cancelTask", async () => {
-      const result = await client.createTask(testTaskPayload, { authKey });
+      const result = await client.createTask(sampleTask1, { authKey });
       const task = await client.getTask(result.id, { authKey });
       expect(task.status).toEqual( avs_pb.TaskStatus.ACTIVE);
 
@@ -225,7 +193,7 @@ describe("Client E2E Tests", () => {
     });
 
     test("deleteTask", async () => {
-      const result = await client.createTask(testTaskPayload, { authKey });
+      const result = await client.createTask(sampleTask1, { authKey });
       const task = await client.getTask(result.id, { authKey });
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.id).toHaveLength(26);

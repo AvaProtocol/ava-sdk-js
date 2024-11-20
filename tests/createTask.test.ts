@@ -1,8 +1,10 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "../dist/index.js";
+import Client from "../src";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
+
+import { sampleTask1 } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -39,7 +41,7 @@ describe("createTask Tests", () => {
   });
 
   describe("Auth with Signature", () => {
-    let smartWallet: string;
+    let smartWalletAddress: string;
     let authKey: string;
 
     beforeAll(async () => {
@@ -53,18 +55,14 @@ describe("createTask Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const result = await client.getAddresses(ownerAddress, { authKey });
-      smartWallet = result.smart_account_address;
-      console.log(`Smart wallet created: ${smartWallet}`);
+      const result = await client.listSmartWallets({ authKey });
+      smartWalletAddress = result[0].address;
+      console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
     test("should create a task when authenticated with signature", async () => {
       const result = await client.createTask(
-        {
-          address: smartWallet,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
+        { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
       console.log("Create task result:", result);
@@ -74,38 +72,30 @@ describe("createTask Tests", () => {
 
     test("should throw error when creating a task with owner address using signature", async () => {
       await expect(client.createTask(
-        {
-          address: ownerAddress,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
+        { ...sampleTask1, smartWalletAddress: ownerAddress },
         { authKey }
-      )).rejects.toThrow("invalid address");
+      )).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
   });
 
   describe("Auth with API key", () => {
     let authKey: string;
-    let smartWallet: string;
+    let smartWalletAddress: string;
 
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(TEST_API_KEY, EXPIRED_AT);
+      const res = await client.authWithAPIKey(ownerAddress,TEST_API_KEY,  EXPIRED_AT);
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const result = await client.getAddresses(ownerAddress, { authKey });
-      smartWallet = result.smart_account_address;
-      console.log(`Smart wallet created: ${smartWallet}`);
+      const result = await client.listSmartWallets({ authKey });
+      smartWalletAddress = result[0].address;
+      console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
     test("should create a task when authenticated with API key", async () => {
       const result = await client.createTask(
-        {
-          address: smartWallet,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
+        { ...sampleTask1, smartWalletAddress },
         { authKey }
       );
       console.log("Create task result:", result);
@@ -115,49 +105,20 @@ describe("createTask Tests", () => {
 
     test("should throw error when creating a task with owner address using API key", async () => {
       await expect(client.createTask(
-        {
-          address: ownerAddress,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
-          { authKey }
-        )
-      ).rejects.toThrow("invalid address");
+        { ...sampleTask1, smartWalletAddress: ownerAddress },
+        { authKey }
+       )).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account addres");
     });
   });
 
   describe("Without authentication", () => {
-    let smartWallet: string;
+    let smartWalletAddress: string;
     let authKey: string;
-
-    beforeAll(async () => {
-      console.log("Authenticating with signature ...");
-      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-      const res = await client.authWithSignature(
-        ownerAddress,
-        signature,
-        EXPIRED_AT
-      );
-      authKey = res.authKey;
-
-      console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const getAddressesRes = await client.getAddresses(ownerAddress, {
-        authKey,
-      });
-      smartWallet = getAddressesRes.smart_account_address;
-      console.log(`Smart wallet created: ${smartWallet}`);
-    });
 
     test("should throw error when creating a task without authentication", async () => {
       await expect(client.createTask(
-        {
-          address: smartWallet,
-          tokenContract: TOKEN_CONTRACT,
-          oracleContract: ORACLE_CONTRACT,
-        },
-          { authKey: "" }
-        )
-      ).rejects.toThrow("missing auth header");
+        { ...sampleTask1, smartWalletAddress }
+      )).rejects.toThrow("missing auth header");
     });
   });
 });
