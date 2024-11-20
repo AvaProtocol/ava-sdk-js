@@ -11,8 +11,8 @@ jobs:
     
     env:
       # Dummy api key
-      TEST_API_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBdmFQcm90b2NvbCIsInN1YiI6ImFwaWtleSIsImV4cCI6MjA0NzQzNTg2Niwicm9sZXMiOlsiYWRtaW4iXX0.C7-WZRLQDxLCG4RQ0NLyuncWTF0nqH5XwioUaIdJ-OQ"
       # ${{ secrets.TEST_API_KEY }}
+      TEST_API_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBdmFQcm90b2NvbCIsInN1YiI6ImFwaWtleSIsImV4cCI6MjA0NzQzNTg2Niwicm9sZXMiOlsiYWRtaW4iXX0.C7-WZRLQDxLCG4RQ0NLyuncWTF0nqH5XwioUaIdJ-OQ"
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
@@ -43,6 +43,7 @@ jobs:
       run: npm ci
 
     - name: ensure the aggregator is ready
+      run: |
         until curl --output /dev/null --silent --fail http://localhost:1323/telemetry; do
           printf '.'
           sleep 5
