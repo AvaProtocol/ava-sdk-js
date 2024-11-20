@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  staging-test:
     runs-on: ubuntu-latest
     environment: test # The below environment variables are only available in the test environment
     
@@ -15,6 +15,39 @@ jobs:
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+ 
+    - name: Debug environment variables
+      run: |
+        echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
+        echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
+        echo "ENDPOINT: $ENDPOINT"
+ 
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run tests againts staging AVS
+      run: |
+        npm test 
+
+  local-test:
+    runs-on: ubuntu-latest
+    environment: test # The below environment variables are only available in the test environment
+    
+    env:
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
+      ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
+      ENDPOINT: "localhost:2206"
     
     steps:
     - name: Checkout repository
@@ -41,19 +74,13 @@ jobs:
 
     - name: ensure the aggregator and env is ready
       run: |
-        until curl --output /dev/null --silent --fail http://localhost:1323/telemetry; do
+        until curl --output /dev/null --silent --fail http://localhost:1323/up; do
           printf '.'
           sleep 5
         done
 
     - name: Run tests againts local AVS
       run: |
-        curl localhost:1323/telemetry
         export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
         export ENDPOINT="localhost:2206"
-        sleep 15
-        npm test 
-
-    - name: Run tests againts staging AVS
-      run: |
         npm test 
