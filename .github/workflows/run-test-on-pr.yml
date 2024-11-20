@@ -14,7 +14,7 @@ jobs:
       TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
-      ENDPOINT: localhost:2206
+      ENDPOINT: ${{ vars.ENDPOINT }}
     
     steps:
     - name: Checkout repository
@@ -49,6 +49,7 @@ jobs:
     - name: Run tests againts local AVS
       run: |
         export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
+        export ENDPOINT="localhost:2206"
         npm test 
 
     - name: Run tests againts staging AVS
