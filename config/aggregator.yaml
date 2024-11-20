@@ -24,7 +24,7 @@ jwt_secret: "1b7db1c64236d92de3b3ed32e5d6bf56"
 # account abstraction config
 # Sepolia
 smart_wallet:
-  eth_rpc_url: https://sepolia.gateway.tenderly.co
+  eth_rpc_url: https://sepolia.drpc.org
   eth_ws_url: wss://sepolia.gateway.tenderly.co
   bundler_url: https://bundler-sepolia.avaprotocol.org
   factory_address: 0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7
