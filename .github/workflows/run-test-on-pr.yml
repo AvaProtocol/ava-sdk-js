@@ -49,5 +49,4 @@ jobs:
 
     - name: Run tests
       run: |
-        docker compose run out/ap create-api-key --role=admin --subject=apikey
         npm test 
