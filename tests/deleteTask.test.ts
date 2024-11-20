@@ -63,7 +63,7 @@ describe("deleteTask Tests", () => {
 
       console.log("Creating a task to use for the following tests");
       createdTaskId  = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
     });
@@ -104,7 +104,7 @@ describe("deleteTask Tests", () => {
 
       console.log("Creating a task to use for the following tests");
       createdTaskId = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
 
@@ -152,7 +152,7 @@ describe("deleteTask Tests", () => {
 
       console.log("Creating a task to use for the following tests");
       createdTaskId = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
     });

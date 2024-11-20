@@ -63,7 +63,7 @@ describe("createTask Tests", () => {
 
     test("should create a task when authenticated with signature", async () => {
       const result = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
       console.log("Create task result:", result);
@@ -73,7 +73,7 @@ describe("createTask Tests", () => {
 
     test("should throw error when creating a task with owner address using signature", async () => {
       await expect(client.createTask(
-        { ...sampleTask1, smartWalletAddress: ownerAddress },
+        { ...erc20TransferTask, smartWalletAddress: ownerAddress },
         { authKey }
       )).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
@@ -81,7 +81,7 @@ describe("createTask Tests", () => {
     test("create cron trigger", async () => {
       const result = await client.createTask(
         {
-          ...sampleTask1,
+          ...erc20TransferTask,
           smartWalletAddress,
           // https://crontab.guru/ for syntax
           trigger: {
@@ -95,8 +95,8 @@ describe("createTask Tests", () => {
       expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
 
       expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.CRON);
       expect(task.trigger.cron.schedule[0]).toEqual("5 4 * * *");
@@ -106,7 +106,7 @@ describe("createTask Tests", () => {
     test("create fixed time trigger", async () => {
       const result = await client.createTask(
         {
-          ...sampleTask1,
+          ...erc20TransferTask,
           smartWalletAddress,
           // https://crontab.guru/ for syntax
           trigger: {
@@ -120,8 +120,8 @@ describe("createTask Tests", () => {
       expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
 
       expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME);
       expect(task.trigger.fixedTime.epochs).toEqual([10, 20, 30]);
@@ -130,7 +130,7 @@ describe("createTask Tests", () => {
     test("create event trigger", async () => {
       const result = await client.createTask(
         {
-          ...sampleTask1,
+          ...erc20TransferTask,
           smartWalletAddress,
           // https://crontab.guru/ for syntax
           trigger: {
@@ -144,8 +144,8 @@ describe("createTask Tests", () => {
       expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
 
       expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.EVENT);
       expect(task.trigger.event.expression).toEqual(`topic0 == "0x123" && topic2 == "0xdef"` );
@@ -154,7 +154,7 @@ describe("createTask Tests", () => {
     test("create manual trigger", async () => {
       const result = await client.createTask(
         {
-          ...sampleTask1,
+          ...erc20TransferTask,
           smartWalletAddress,
           // https://crontab.guru/ for syntax
           trigger: {
@@ -168,8 +168,8 @@ describe("createTask Tests", () => {
       expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
 
       expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.MANUAL);
       expect(task.trigger.manual).toBe(true);
@@ -178,7 +178,7 @@ describe("createTask Tests", () => {
     test("create block trigger", async () => {
       const result = await client.createTask(
         {
-          ...sampleTask1,
+          ...erc20TransferTask,
           smartWalletAddress,
           // https://crontab.guru/ for syntax
           trigger: {
@@ -194,8 +194,8 @@ describe("createTask Tests", () => {
       expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
 
       expect(task.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
       expect(task.trigger.block.interval).toEqual(102);
@@ -204,7 +204,7 @@ describe("createTask Tests", () => {
     test("create complex task with multi nodes and edge ",  async() => {
       const result = await client.createTask(
         {
-          ...sampleTask2,
+          ...multiNodeBranchingTask,
           smartWalletAddress,
         },
         { authKey });
@@ -214,8 +214,8 @@ describe("createTask Tests", () => {
       expect(task.id).toEqual(result);
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(6);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
       
       expect(task.nodes[5].branch.conditions).toHaveLength(3);
       expect(task.nodes[5].branch.conditions[0].type).toEqual("if");
@@ -249,7 +249,7 @@ describe("createTask Tests", () => {
 
     test("should create a task when authenticated with API key", async () => {
       const result = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
       console.log("Create task result:", result);
@@ -259,7 +259,7 @@ describe("createTask Tests", () => {
 
     test("should throw error when creating a task with owner address using API key", async () => {
       await expect(client.createTask(
-        { ...sampleTask1, smartWalletAddress: ownerAddress },
+        { ...erc20TransferTask, smartWalletAddress: ownerAddress },
         { authKey }
        )).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account addres");
     });
@@ -271,7 +271,7 @@ describe("createTask Tests", () => {
 
     test("should throw error when creating a task without authentication", async () => {
       await expect(client.createTask(
-        { ...sampleTask1, smartWalletAddress }
+        { ...erc20TransferTask, smartWalletAddress }
       )).rejects.toThrow("missing auth header");
     });
   });

@@ -138,21 +138,21 @@ describe("Client E2E Tests", () => {
     });
 
     test("createTask", async () => {
-      const result = await client.createTask(sampleTask1, { authKey });
+      const result = await client.createTask(erc20TransferTask, { authKey });
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(26);
     });
 
     test("getTask", async () => {
-      const result = await client.createTask(sampleTask1, { authKey });
+      const result = await client.createTask(erc20TransferTask, { authKey });
       expect(result).toHaveLength(26);
 
       const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
+      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
+      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
       expect(task.trigger.block.interval).toEqual(5);
     });
 
@@ -161,10 +161,10 @@ describe("Client E2E Tests", () => {
       const smartWallet = await client.createWallet({salt: "345"}, { authKey });
 
       // populate tasks for default wallet and the custom salt smart wallet above
-      const result1 = await client.createTask({...sampleTask1, memo: 'task1 test', smartWalletAddress: smartWallet.address}, { authKey });
+      const result1 = await client.createTask({...erc20TransferTask, memo: 'task1 test', smartWalletAddress: smartWallet.address}, { authKey });
       const tasks1 = await client.listTasks(smartWallet.address, { authKey });
 
-      const result2 = await client.createTask({...sampleTask1, memo: 'default wallet test'}, { authKey });
+      const result2 = await client.createTask({...erc20TransferTask, memo: 'default wallet test'}, { authKey });
       const tasks2 = await client.listTasks("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41", { authKey });
 
       expect(tasks1.length).toBeGreaterThanOrEqual(1);
@@ -182,7 +182,7 @@ describe("Client E2E Tests", () => {
     });
 
     test("cancelTask", async () => {
-      const result = await client.createTask(sampleTask1, { authKey });
+      const result = await client.createTask(erc20TransferTask, { authKey });
       const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual( avs_pb.TaskStatus.ACTIVE);
 
@@ -193,7 +193,7 @@ describe("Client E2E Tests", () => {
     });
 
     test("deleteTask", async () => {
-      const result = await client.createTask(sampleTask1, { authKey });
+      const result = await client.createTask(erc20TransferTask, { authKey });
       const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.id).toHaveLength(26);

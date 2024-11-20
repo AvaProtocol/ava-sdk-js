@@ -65,7 +65,7 @@ describe("getTask Tests", () => {
       console.log("Creating a task to use for the following tests");
       createdTaskId = await client.createTask(
         {
-          ...sampleTask1, smartWalletAddress
+          ...erc20TransferTask, smartWalletAddress
         },
         { authKey }
       );
@@ -81,8 +81,8 @@ describe("getTask Tests", () => {
       expect(result.smartWalletAddress).toEqual(smartWalletAddress);
       //expect(result.trigger).toBeDefined();
       expect(result.nodes).toHaveLength(1);
-      expect(result.expiredAt).toEqual(sampleTask1.expiredAt);
-      expect(result.memo).toEqual(sampleTask1.memo);
+      expect(result.expiredAt).toEqual(erc20TransferTask.expiredAt);
+      expect(result.memo).toEqual(erc20TransferTask.memo);
     });
 
     test("should throw task not found when getting an non-existent task", async () => {
@@ -107,7 +107,7 @@ describe("getTask Tests", () => {
 
       console.log("Creating a task to use for the following tests");
       createdTaskId = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
     });
@@ -124,8 +124,8 @@ describe("getTask Tests", () => {
       expect(result.trigger).toBeDefined();
       expect(result.trigger.triggerType).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
       expect(result.nodes).toHaveLength(1);
-      expect(result.expiredAt).toEqual(sampleTask1.expiredAt);
-      expect(result.memo).toEqual(sampleTask1.memo);
+      expect(result.expiredAt).toEqual(erc20TransferTask.expiredAt);
+      expect(result.memo).toEqual(erc20TransferTask.memo);
     });
 
     test("should throw task not found when getting an non-existent task", async () => {
@@ -155,7 +155,7 @@ describe("getTask Tests", () => {
 
       console.log("Creating a task to use for the following tests");
       createdTaskId = await client.createTask(
-        { ...sampleTask1, smartWalletAddress },
+        { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
     });
