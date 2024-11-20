@@ -10,8 +10,8 @@ jobs:
     environment: test # The below environment variables are only available in the test environment
     
     env:
-      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
@@ -48,10 +48,10 @@ jobs:
 
     - name: Run tests againts local AVS
       run: |
-        export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
+        export LOCAL_TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
         export ENDPOINT="localhost:2206"
         npm test 
 
     - name: Run tests againts staging AVS
       run: |
-        echo skip npm test 
+        npm test 
