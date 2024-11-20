@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
 
-import { sampleTask1, sampleTask2 } from "./fixture";
+import { erc20TransferTask, multiNodeBranchingTask } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });

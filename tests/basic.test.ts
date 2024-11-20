@@ -4,7 +4,7 @@ import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
-import { sampleTask1, DUMMY_PRIVATE_KEY  } from "./fixture";
+import { erc20TransferTask, DUMMY_PRIVATE_KEY  } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
