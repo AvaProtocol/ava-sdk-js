@@ -28,7 +28,6 @@ jobs:
         echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
         echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
         echo "ENDPOINT: $ENDPOINT"
-        echo "TEST_PRIVATE_KEY is set: ${{ env.TEST_PRIVATE_KEY != '' }}"
  
     - name: Use Node.js
       uses: actions/setup-node@v4
