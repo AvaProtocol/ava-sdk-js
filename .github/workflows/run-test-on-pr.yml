@@ -19,12 +19,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18.x'
-        cache: 'npm'
+ 
+    - name: Bring up docker compose
+      run: |
+        docker compose up -d
         
     - name: Debug environment variables
       run: |
@@ -33,10 +31,12 @@ jobs:
         echo "ENDPOINT: $ENDPOINT"
         echo "TEST_PRIVATE_KEY is set: ${{ env.TEST_PRIVATE_KEY != '' }}"
  
-    - name: Bring up docker compose
-      run: |
-        docker compose up -d
-        
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+
     - name: Install dependencies
       run: npm ci
           
