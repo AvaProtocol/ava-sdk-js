@@ -80,7 +80,7 @@ export const buildTrigger = (payload): avs_pb.TaskTrigger => {
 
 export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger) => {
   const base = {
-    trigger_type:trigger.getTriggerTypeCase()
+    trigger_type: trigger.getTriggerTypeCase()
   }
 
   switch (trigger.getTriggerTypeCase()) {
@@ -105,5 +105,40 @@ export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger) => {
 }
 
 export const nodeFromGRPC = (node) => {
-  return node.toObject();
+  const base = node.toObject();
+  const standarize = {
+    task_type: node.getTaskTypeCase()
+  }
+
+  switch (node.getTaskTypeCase()) {
+    case avs_pb.TaskNode.TaskTypeCase.ETH_TRANSFER:
+      standarize.ethTransfer = base.ethTransfer;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.CONTRACT_WRITE:
+      standarize.contractWrite = base.contractWrite;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.CONTRACT_READ:
+      standarize.contractRead = base.contractRead;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.GRAPHQL_DATA_QUERY:
+      standarize.graphqlDataQuery = base.graphqlDataQuery;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.REST_API:
+      standarize.restApi = base.restApi;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.BRANCH:
+      standarize.branch = base.branch;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.FILTER:
+      standarize.filter = base.filter;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.LOOP:
+      standarize.loop = base.loop;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.CUSTOM_CODE:
+      standarize.custom_code = base.custom_code;
+      break;
+  }
+
+  return standarize;
 }

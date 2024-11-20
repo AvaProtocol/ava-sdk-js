@@ -121,7 +121,6 @@ describe("createTask Tests", () => {
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      console.log("task is", task);
       expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME);
       expect(task.trigger.fixedTime.epochs).toEqual([10, 20, 30]);
     });
@@ -146,7 +145,6 @@ describe("createTask Tests", () => {
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      console.log("task is", task);
       expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.EVENT);
       expect(task.trigger.event.expression).toEqual(`topic0 == "0x123" && topic2 == "0xdef"` );
     });
@@ -171,7 +169,6 @@ describe("createTask Tests", () => {
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      console.log("task is", task);
       expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.MANUAL);
       expect(task.trigger.manual).toBe(true);
     });
@@ -198,7 +195,6 @@ describe("createTask Tests", () => {
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(sampleTask1.nodes[0].contractWrite.contractAddress);
       expect(task.nodes[0].contractWrite.callData).toEqual(sampleTask1.nodes[0].contractWrite.callData);
 
-      console.log("task is", task);
       expect(task.trigger.trigger_type).toEqual(avs_pb.TaskTrigger.TriggerTypeCase.BLOCK);
       expect(task.trigger.block.interval).toEqual(102);
     });
