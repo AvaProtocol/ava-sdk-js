@@ -55,15 +55,13 @@ var require_avs_pb = __commonJS({
     goog.object.extend(proto, google_protobuf_timestamp_pb);
     var google_protobuf_wrappers_pb = __require("google-protobuf/google/protobuf/wrappers_pb.js");
     goog.object.extend(proto, google_protobuf_wrappers_pb);
-    goog.exportSymbol("proto.aggregator.AddressRequest", null, global);
-    goog.exportSymbol("proto.aggregator.AddressResp", null, global);
     goog.exportSymbol("proto.aggregator.BlockCondition", null, global);
     goog.exportSymbol("proto.aggregator.BranchNode", null, global);
     goog.exportSymbol("proto.aggregator.Checkin", null, global);
     goog.exportSymbol("proto.aggregator.Checkin.Status", null, global);
     goog.exportSymbol("proto.aggregator.CheckinResp", null, global);
-    goog.exportSymbol("proto.aggregator.ConditionJump", null, global);
-    goog.exportSymbol("proto.aggregator.ContractQueryNode", null, global);
+    goog.exportSymbol("proto.aggregator.Condition", null, global);
+    goog.exportSymbol("proto.aggregator.ContractReadNode", null, global);
     goog.exportSymbol("proto.aggregator.ContractWriteNode", null, global);
     goog.exportSymbol("proto.aggregator.CreateTaskReq", null, global);
     goog.exportSymbol("proto.aggregator.CreateTaskResp", null, global);
@@ -80,9 +78,13 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.FixedEpochCondition", null, global);
     goog.exportSymbol("proto.aggregator.GetKeyReq", null, global);
     goog.exportSymbol("proto.aggregator.GraphQLQueryNode", null, global);
+    goog.exportSymbol("proto.aggregator.IdReq", null, global);
     goog.exportSymbol("proto.aggregator.KeyResp", null, global);
     goog.exportSymbol("proto.aggregator.ListTasksReq", null, global);
     goog.exportSymbol("proto.aggregator.ListTasksResp", null, global);
+    goog.exportSymbol("proto.aggregator.ListWalletReq", null, global);
+    goog.exportSymbol("proto.aggregator.ListWalletResp", null, global);
+    goog.exportSymbol("proto.aggregator.LoopNode", null, global);
     goog.exportSymbol("proto.aggregator.NonceRequest", null, global);
     goog.exportSymbol("proto.aggregator.NonceResp", null, global);
     goog.exportSymbol("proto.aggregator.RestAPINode", null, global);
@@ -92,21 +94,18 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.Task", null, global);
     goog.exportSymbol("proto.aggregator.TaskEdge", null, global);
     goog.exportSymbol("proto.aggregator.TaskNode", null, global);
-    goog.exportSymbol("proto.aggregator.TaskNode.TaskBodyCase", null, global);
+    goog.exportSymbol("proto.aggregator.TaskNode.TaskTypeCase", null, global);
     goog.exportSymbol("proto.aggregator.TaskStatus", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger", null, global);
-    goog.exportSymbol("proto.aggregator.TaskTrigger.TriggerConditionCase", null, global);
-    goog.exportSymbol("proto.aggregator.TaskType", null, global);
-    goog.exportSymbol("proto.aggregator.TriggerType", null, global);
-    goog.exportSymbol("proto.aggregator.UUID", null, global);
+    goog.exportSymbol("proto.aggregator.TaskTrigger.TriggerTypeCase", null, global);
     goog.exportSymbol("proto.aggregator.UpdateChecksReq", null, global);
     goog.exportSymbol("proto.aggregator.UpdateChecksResp", null, global);
-    proto.aggregator.UUID = function(opt_data) {
+    proto.aggregator.IdReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.UUID, jspb.Message);
+    goog.inherits(proto.aggregator.IdReq, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.UUID.displayName = "proto.aggregator.UUID";
+      proto.aggregator.IdReq.displayName = "proto.aggregator.IdReq";
     }
     proto.aggregator.Checkin = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -192,12 +191,12 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.ContractWriteNode.displayName = "proto.aggregator.ContractWriteNode";
     }
-    proto.aggregator.ContractQueryNode = function(opt_data) {
+    proto.aggregator.ContractReadNode = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.ContractQueryNode, jspb.Message);
+    goog.inherits(proto.aggregator.ContractReadNode, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.ContractQueryNode.displayName = "proto.aggregator.ContractQueryNode";
+      proto.aggregator.ContractReadNode.displayName = "proto.aggregator.ContractReadNode";
     }
     proto.aggregator.GraphQLQueryNode = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -220,12 +219,12 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.CustomCodeNode.displayName = "proto.aggregator.CustomCodeNode";
     }
-    proto.aggregator.ConditionJump = function(opt_data) {
+    proto.aggregator.Condition = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.ConditionJump, jspb.Message);
+    goog.inherits(proto.aggregator.Condition, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.ConditionJump.displayName = "proto.aggregator.ConditionJump";
+      proto.aggregator.Condition.displayName = "proto.aggregator.Condition";
     }
     proto.aggregator.BranchNode = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.BranchNode.repeatedFields_, null);
@@ -240,6 +239,13 @@ var require_avs_pb = __commonJS({
     goog.inherits(proto.aggregator.FilterNode, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.FilterNode.displayName = "proto.aggregator.FilterNode";
+    }
+    proto.aggregator.LoopNode = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.LoopNode, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.LoopNode.displayName = "proto.aggregator.LoopNode";
     }
     proto.aggregator.TaskEdge = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -297,12 +303,12 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.NonceResp.displayName = "proto.aggregator.NonceResp";
     }
-    proto.aggregator.AddressRequest = function(opt_data) {
+    proto.aggregator.ListWalletReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.AddressRequest, jspb.Message);
+    goog.inherits(proto.aggregator.ListWalletReq, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.AddressRequest.displayName = "proto.aggregator.AddressRequest";
+      proto.aggregator.ListWalletReq.displayName = "proto.aggregator.ListWalletReq";
     }
     proto.aggregator.SmartWallet = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -311,12 +317,12 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.SmartWallet.displayName = "proto.aggregator.SmartWallet";
     }
-    proto.aggregator.AddressResp = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.AddressResp.repeatedFields_, null);
+    proto.aggregator.ListWalletResp = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ListWalletResp.repeatedFields_, null);
     };
-    goog.inherits(proto.aggregator.AddressResp, jspb.Message);
+    goog.inherits(proto.aggregator.ListWalletResp, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.AddressResp.displayName = "proto.aggregator.AddressResp";
+      proto.aggregator.ListWalletResp.displayName = "proto.aggregator.ListWalletResp";
     }
     proto.aggregator.ListTasksReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -375,12 +381,12 @@ var require_avs_pb = __commonJS({
       proto.aggregator.CreateWalletResp.displayName = "proto.aggregator.CreateWalletResp";
     }
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.UUID.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.UUID.toObject(opt_includeInstance, this);
+      proto.aggregator.IdReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.IdReq.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.UUID.toObject = function(includeInstance, msg) {
+      proto.aggregator.IdReq.toObject = function(includeInstance, msg) {
         var f, obj = {
-          bytes: jspb.Message.getFieldWithDefault(msg, 1, "")
+          id: jspb.Message.getFieldWithDefault(msg, 1, "")
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -388,12 +394,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.UUID.deserializeBinary = function(bytes) {
+    proto.aggregator.IdReq.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.UUID();
-      return proto.aggregator.UUID.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.IdReq();
+      return proto.aggregator.IdReq.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.UUID.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.IdReq.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -405,7 +411,7 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.setBytes(value);
+            msg.setId(value);
             break;
           default:
             reader.skipField();
@@ -414,14 +420,14 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.UUID.prototype.serializeBinary = function() {
+    proto.aggregator.IdReq.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.UUID.serializeBinaryToWriter(this, writer);
+      proto.aggregator.IdReq.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.UUID.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.IdReq.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getBytes();
+      f = message.getId();
       if (f.length > 0) {
         writer.writeString(
           1,
@@ -429,13 +435,13 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.UUID.prototype.getBytes = function() {
+    proto.aggregator.IdReq.prototype.getId = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.UUID.prototype.setBytes = function(value) {
+    proto.aggregator.IdReq.prototype.setId = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -980,7 +986,7 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.FixedEpochCondition.toObject = function(includeInstance, msg) {
         var f, obj = {
-          epochesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? void 0 : f
+          epochsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? void 0 : f
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -1006,7 +1012,7 @@ var require_avs_pb = __commonJS({
               reader.isDelimited() ? reader.readPackedInt64() : [reader.readInt64()]
             );
             for (var i = 0; i < values.length; i++) {
-              msg.addEpoches(values[i]);
+              msg.addEpochs(values[i]);
             }
             break;
           default:
@@ -1023,7 +1029,7 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.FixedEpochCondition.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getEpochesList();
+      f = message.getEpochsList();
       if (f.length > 0) {
         writer.writePackedInt64(
           1,
@@ -1031,20 +1037,20 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.FixedEpochCondition.prototype.getEpochesList = function() {
+    proto.aggregator.FixedEpochCondition.prototype.getEpochsList = function() {
       return (
         /** @type {!Array<number>} */
         jspb.Message.getRepeatedField(this, 1)
       );
     };
-    proto.aggregator.FixedEpochCondition.prototype.setEpochesList = function(value) {
+    proto.aggregator.FixedEpochCondition.prototype.setEpochsList = function(value) {
       return jspb.Message.setField(this, 1, value || []);
     };
-    proto.aggregator.FixedEpochCondition.prototype.addEpoches = function(value, opt_index) {
+    proto.aggregator.FixedEpochCondition.prototype.addEpochs = function(value, opt_index) {
       return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
     };
-    proto.aggregator.FixedEpochCondition.prototype.clearEpochesList = function() {
-      return this.setEpochesList([]);
+    proto.aggregator.FixedEpochCondition.prototype.clearEpochsList = function() {
+      return this.setEpochsList([]);
     };
     proto.aggregator.CronCondition.repeatedFields_ = [1];
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1053,7 +1059,7 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.CronCondition.toObject = function(includeInstance, msg) {
         var f, obj = {
-          cronTableList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? void 0 : f
+          scheduleList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? void 0 : f
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -1078,7 +1084,7 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.addCronTable(value);
+            msg.addSchedule(value);
             break;
           default:
             reader.skipField();
@@ -1094,7 +1100,7 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.CronCondition.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getCronTableList();
+      f = message.getScheduleList();
       if (f.length > 0) {
         writer.writeRepeatedString(
           1,
@@ -1102,20 +1108,20 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.CronCondition.prototype.getCronTableList = function() {
+    proto.aggregator.CronCondition.prototype.getScheduleList = function() {
       return (
         /** @type {!Array<string>} */
         jspb.Message.getRepeatedField(this, 1)
       );
     };
-    proto.aggregator.CronCondition.prototype.setCronTableList = function(value) {
+    proto.aggregator.CronCondition.prototype.setScheduleList = function(value) {
       return jspb.Message.setField(this, 1, value || []);
     };
-    proto.aggregator.CronCondition.prototype.addCronTable = function(value, opt_index) {
+    proto.aggregator.CronCondition.prototype.addSchedule = function(value, opt_index) {
       return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
     };
-    proto.aggregator.CronCondition.prototype.clearCronTableList = function() {
-      return this.setCronTableList([]);
+    proto.aggregator.CronCondition.prototype.clearScheduleList = function() {
+      return this.setScheduleList([]);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.BlockCondition.prototype.toObject = function(opt_includeInstance) {
@@ -1245,18 +1251,18 @@ var require_avs_pb = __commonJS({
     proto.aggregator.EventCondition.prototype.setExpression = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.TaskTrigger.oneofGroups_ = [[2, 3, 4, 5, 6]];
-    proto.aggregator.TaskTrigger.TriggerConditionCase = {
-      TRIGGER_CONDITION_NOT_SET: 0,
-      MANUAL: 2,
-      AT: 3,
-      CRON: 4,
-      BLOCK: 5,
-      EVENT: 6
+    proto.aggregator.TaskTrigger.oneofGroups_ = [[1, 2, 3, 4, 5]];
+    proto.aggregator.TaskTrigger.TriggerTypeCase = {
+      TRIGGER_TYPE_NOT_SET: 0,
+      MANUAL: 1,
+      FIXED_TIME: 2,
+      CRON: 3,
+      BLOCK: 4,
+      EVENT: 5
     };
-    proto.aggregator.TaskTrigger.prototype.getTriggerConditionCase = function() {
+    proto.aggregator.TaskTrigger.prototype.getTriggerTypeCase = function() {
       return (
-        /** @type {proto.aggregator.TaskTrigger.TriggerConditionCase} */
+        /** @type {proto.aggregator.TaskTrigger.TriggerTypeCase} */
         jspb.Message.computeOneofCase(this, proto.aggregator.TaskTrigger.oneofGroups_[0])
       );
     };
@@ -1266,9 +1272,8 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
         var f, obj = {
-          triggerType: jspb.Message.getFieldWithDefault(msg, 1, 0),
-          manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-          at: (f = msg.getAt()) && proto.aggregator.FixedEpochCondition.toObject(includeInstance, f),
+          manual: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
+          fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedEpochCondition.toObject(includeInstance, f),
           cron: (f = msg.getCron()) && proto.aggregator.CronCondition.toObject(includeInstance, f),
           block: (f = msg.getBlock()) && proto.aggregator.BlockCondition.toObject(includeInstance, f),
           event: (f = msg.getEvent()) && proto.aggregator.EventCondition.toObject(includeInstance, f)
@@ -1293,34 +1298,27 @@ var require_avs_pb = __commonJS({
         switch (field) {
           case 1:
             var value = (
-              /** @type {!proto.aggregator.TriggerType} */
-              reader.readEnum()
-            );
-            msg.setTriggerType(value);
-            break;
-          case 2:
-            var value = (
               /** @type {boolean} */
               reader.readBool()
             );
             msg.setManual(value);
             break;
-          case 3:
+          case 2:
             var value = new proto.aggregator.FixedEpochCondition();
             reader.readMessage(value, proto.aggregator.FixedEpochCondition.deserializeBinaryFromReader);
-            msg.setAt(value);
+            msg.setFixedTime(value);
             break;
-          case 4:
+          case 3:
             var value = new proto.aggregator.CronCondition();
             reader.readMessage(value, proto.aggregator.CronCondition.deserializeBinaryFromReader);
             msg.setCron(value);
             break;
-          case 5:
+          case 4:
             var value = new proto.aggregator.BlockCondition();
             reader.readMessage(value, proto.aggregator.BlockCondition.deserializeBinaryFromReader);
             msg.setBlock(value);
             break;
-          case 6:
+          case 5:
             var value = new proto.aggregator.EventCondition();
             reader.readMessage(value, proto.aggregator.EventCondition.deserializeBinaryFromReader);
             msg.setEvent(value);
@@ -1339,25 +1337,18 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getTriggerType();
-      if (f !== 0) {
-        writer.writeEnum(
+      f = /** @type {boolean} */
+      jspb.Message.getField(message, 1);
+      if (f != null) {
+        writer.writeBool(
           1,
           f
         );
       }
-      f = /** @type {boolean} */
-      jspb.Message.getField(message, 2);
-      if (f != null) {
-        writer.writeBool(
-          2,
-          f
-        );
-      }
-      f = message.getAt();
+      f = message.getFixedTime();
       if (f != null) {
         writer.writeMessage(
-          3,
+          2,
           f,
           proto.aggregator.FixedEpochCondition.serializeBinaryToWriter
         );
@@ -1365,7 +1356,7 @@ var require_avs_pb = __commonJS({
       f = message.getCron();
       if (f != null) {
         writer.writeMessage(
-          4,
+          3,
           f,
           proto.aggregator.CronCondition.serializeBinaryToWriter
         );
@@ -1373,7 +1364,7 @@ var require_avs_pb = __commonJS({
       f = message.getBlock();
       if (f != null) {
         writer.writeMessage(
-          5,
+          4,
           f,
           proto.aggregator.BlockCondition.serializeBinaryToWriter
         );
@@ -1381,95 +1372,86 @@ var require_avs_pb = __commonJS({
       f = message.getEvent();
       if (f != null) {
         writer.writeMessage(
-          6,
+          5,
           f,
           proto.aggregator.EventCondition.serializeBinaryToWriter
         );
       }
     };
-    proto.aggregator.TaskTrigger.prototype.getTriggerType = function() {
-      return (
-        /** @type {!proto.aggregator.TriggerType} */
-        jspb.Message.getFieldWithDefault(this, 1, 0)
-      );
-    };
-    proto.aggregator.TaskTrigger.prototype.setTriggerType = function(value) {
-      return jspb.Message.setProto3EnumField(this, 1, value);
-    };
     proto.aggregator.TaskTrigger.prototype.getManual = function() {
       return (
         /** @type {boolean} */
-        jspb.Message.getBooleanFieldWithDefault(this, 2, false)
+        jspb.Message.getBooleanFieldWithDefault(this, 1, false)
       );
     };
     proto.aggregator.TaskTrigger.prototype.setManual = function(value) {
-      return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+      return jspb.Message.setOneofField(this, 1, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
     proto.aggregator.TaskTrigger.prototype.clearManual = function() {
-      return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], void 0);
+      return jspb.Message.setOneofField(this, 1, proto.aggregator.TaskTrigger.oneofGroups_[0], void 0);
     };
     proto.aggregator.TaskTrigger.prototype.hasManual = function() {
-      return jspb.Message.getField(this, 2) != null;
+      return jspb.Message.getField(this, 1) != null;
     };
-    proto.aggregator.TaskTrigger.prototype.getAt = function() {
+    proto.aggregator.TaskTrigger.prototype.getFixedTime = function() {
       return (
         /** @type{?proto.aggregator.FixedEpochCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.FixedEpochCondition, 3)
+        jspb.Message.getWrapperField(this, proto.aggregator.FixedEpochCondition, 2)
       );
     };
-    proto.aggregator.TaskTrigger.prototype.setAt = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 3, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+    proto.aggregator.TaskTrigger.prototype.setFixedTime = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
-    proto.aggregator.TaskTrigger.prototype.clearAt = function() {
-      return this.setAt(void 0);
+    proto.aggregator.TaskTrigger.prototype.clearFixedTime = function() {
+      return this.setFixedTime(void 0);
     };
-    proto.aggregator.TaskTrigger.prototype.hasAt = function() {
-      return jspb.Message.getField(this, 3) != null;
+    proto.aggregator.TaskTrigger.prototype.hasFixedTime = function() {
+      return jspb.Message.getField(this, 2) != null;
     };
     proto.aggregator.TaskTrigger.prototype.getCron = function() {
       return (
         /** @type{?proto.aggregator.CronCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.CronCondition, 4)
+        jspb.Message.getWrapperField(this, proto.aggregator.CronCondition, 3)
       );
     };
     proto.aggregator.TaskTrigger.prototype.setCron = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 4, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+      return jspb.Message.setOneofWrapperField(this, 3, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
     proto.aggregator.TaskTrigger.prototype.clearCron = function() {
       return this.setCron(void 0);
     };
     proto.aggregator.TaskTrigger.prototype.hasCron = function() {
-      return jspb.Message.getField(this, 4) != null;
+      return jspb.Message.getField(this, 3) != null;
     };
     proto.aggregator.TaskTrigger.prototype.getBlock = function() {
       return (
         /** @type{?proto.aggregator.BlockCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.BlockCondition, 5)
+        jspb.Message.getWrapperField(this, proto.aggregator.BlockCondition, 4)
       );
     };
     proto.aggregator.TaskTrigger.prototype.setBlock = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 5, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+      return jspb.Message.setOneofWrapperField(this, 4, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
     proto.aggregator.TaskTrigger.prototype.clearBlock = function() {
       return this.setBlock(void 0);
     };
     proto.aggregator.TaskTrigger.prototype.hasBlock = function() {
-      return jspb.Message.getField(this, 5) != null;
+      return jspb.Message.getField(this, 4) != null;
     };
     proto.aggregator.TaskTrigger.prototype.getEvent = function() {
       return (
         /** @type{?proto.aggregator.EventCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.EventCondition, 6)
+        jspb.Message.getWrapperField(this, proto.aggregator.EventCondition, 5)
       );
     };
     proto.aggregator.TaskTrigger.prototype.setEvent = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 6, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+      return jspb.Message.setOneofWrapperField(this, 5, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
     proto.aggregator.TaskTrigger.prototype.clearEvent = function() {
       return this.setEvent(void 0);
     };
     proto.aggregator.TaskTrigger.prototype.hasEvent = function() {
-      return jspb.Message.getField(this, 6) != null;
+      return jspb.Message.getField(this, 5) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.SyncTasksResp.prototype.toObject = function(opt_includeInstance) {
@@ -1789,10 +1771,10 @@ var require_avs_pb = __commonJS({
       return jspb.Message.setProto3StringField(this, 3, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.ContractQueryNode.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.ContractQueryNode.toObject(opt_includeInstance, this);
+      proto.aggregator.ContractReadNode.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.ContractReadNode.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.ContractQueryNode.toObject = function(includeInstance, msg) {
+      proto.aggregator.ContractReadNode.toObject = function(includeInstance, msg) {
         var f, obj = {
           contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
           callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
@@ -1804,12 +1786,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.ContractQueryNode.deserializeBinary = function(bytes) {
+    proto.aggregator.ContractReadNode.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.ContractQueryNode();
-      return proto.aggregator.ContractQueryNode.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.ContractReadNode();
+      return proto.aggregator.ContractReadNode.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.ContractQueryNode.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.ContractReadNode.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -1844,12 +1826,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.ContractQueryNode.prototype.serializeBinary = function() {
+    proto.aggregator.ContractReadNode.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.ContractQueryNode.serializeBinaryToWriter(this, writer);
+      proto.aggregator.ContractReadNode.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.ContractQueryNode.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.ContractReadNode.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getContractAddress();
       if (f.length > 0) {
@@ -1873,31 +1855,31 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.ContractQueryNode.prototype.getContractAddress = function() {
+    proto.aggregator.ContractReadNode.prototype.getContractAddress = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.ContractQueryNode.prototype.setContractAddress = function(value) {
+    proto.aggregator.ContractReadNode.prototype.setContractAddress = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.ContractQueryNode.prototype.getCallData = function() {
+    proto.aggregator.ContractReadNode.prototype.getCallData = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 2, "")
       );
     };
-    proto.aggregator.ContractQueryNode.prototype.setCallData = function(value) {
+    proto.aggregator.ContractReadNode.prototype.setCallData = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
-    proto.aggregator.ContractQueryNode.prototype.getContractAbi = function() {
+    proto.aggregator.ContractReadNode.prototype.getContractAbi = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 3, "")
       );
     };
-    proto.aggregator.ContractQueryNode.prototype.setContractAbi = function(value) {
+    proto.aggregator.ContractReadNode.prototype.setContractAbi = function(value) {
       return jspb.Message.setProto3StringField(this, 3, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1907,7 +1889,8 @@ var require_avs_pb = __commonJS({
       proto.aggregator.GraphQLQueryNode.toObject = function(includeInstance, msg) {
         var f, obj = {
           url: jspb.Message.getFieldWithDefault(msg, 1, ""),
-          query: jspb.Message.getFieldWithDefault(msg, 2, "")
+          query: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          variablesMap: (f = msg.getVariablesMap()) ? f.toObject(includeInstance, void 0) : []
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -1941,6 +1924,12 @@ var require_avs_pb = __commonJS({
             );
             msg.setQuery(value);
             break;
+          case 3:
+            var value = msg.getVariablesMap();
+            reader.readMessage(value, function(message, reader2) {
+              jspb.Map.deserializeBinary(message, reader2, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+            });
+            break;
           default:
             reader.skipField();
             break;
@@ -1969,6 +1958,10 @@ var require_avs_pb = __commonJS({
           f
         );
       }
+      f = message.getVariablesMap(true);
+      if (f && f.getLength() > 0) {
+        f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+      }
     };
     proto.aggregator.GraphQLQueryNode.prototype.getUrl = function() {
       return (
@@ -1987,6 +1980,21 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.GraphQLQueryNode.prototype.setQuery = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
+    };
+    proto.aggregator.GraphQLQueryNode.prototype.getVariablesMap = function(opt_noLazyCreate) {
+      return (
+        /** @type {!jspb.Map<string,string>} */
+        jspb.Message.getMapField(
+          this,
+          3,
+          opt_noLazyCreate,
+          null
+        )
+      );
+    };
+    proto.aggregator.GraphQLQueryNode.prototype.clearVariablesMap = function() {
+      this.getVariablesMap().clear();
+      return this;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.RestAPINode.prototype.toObject = function(opt_includeInstance) {
@@ -2215,13 +2223,14 @@ var require_avs_pb = __commonJS({
       return jspb.Message.setProto3StringField(this, 2, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.ConditionJump.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.ConditionJump.toObject(opt_includeInstance, this);
+      proto.aggregator.Condition.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.Condition.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.ConditionJump.toObject = function(includeInstance, msg) {
+      proto.aggregator.Condition.toObject = function(includeInstance, msg) {
         var f, obj = {
-          expression: jspb.Message.getFieldWithDefault(msg, 1, ""),
-          next: jspb.Message.getFieldWithDefault(msg, 2, "")
+          id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          type: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          expression: jspb.Message.getFieldWithDefault(msg, 3, "")
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -2229,12 +2238,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.ConditionJump.deserializeBinary = function(bytes) {
+    proto.aggregator.Condition.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.ConditionJump();
-      return proto.aggregator.ConditionJump.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.Condition();
+      return proto.aggregator.Condition.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.ConditionJump.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.Condition.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -2246,14 +2255,21 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.setExpression(value);
+            msg.setId(value);
             break;
           case 2:
             var value = (
               /** @type {string} */
               reader.readString()
             );
-            msg.setNext(value);
+            msg.setType(value);
+            break;
+          case 3:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setExpression(value);
             break;
           default:
             reader.skipField();
@@ -2262,60 +2278,74 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.ConditionJump.prototype.serializeBinary = function() {
+    proto.aggregator.Condition.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.ConditionJump.serializeBinaryToWriter(this, writer);
+      proto.aggregator.Condition.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.ConditionJump.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.Condition.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getExpression();
+      f = message.getId();
       if (f.length > 0) {
         writer.writeString(
           1,
           f
         );
       }
-      f = message.getNext();
+      f = message.getType();
       if (f.length > 0) {
         writer.writeString(
           2,
           f
         );
       }
+      f = message.getExpression();
+      if (f.length > 0) {
+        writer.writeString(
+          3,
+          f
+        );
+      }
     };
-    proto.aggregator.ConditionJump.prototype.getExpression = function() {
+    proto.aggregator.Condition.prototype.getId = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.ConditionJump.prototype.setExpression = function(value) {
+    proto.aggregator.Condition.prototype.setId = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.ConditionJump.prototype.getNext = function() {
+    proto.aggregator.Condition.prototype.getType = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 2, "")
       );
     };
-    proto.aggregator.ConditionJump.prototype.setNext = function(value) {
+    proto.aggregator.Condition.prototype.setType = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
-    proto.aggregator.BranchNode.repeatedFields_ = [2];
+    proto.aggregator.Condition.prototype.getExpression = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 3, "")
+      );
+    };
+    proto.aggregator.Condition.prototype.setExpression = function(value) {
+      return jspb.Message.setProto3StringField(this, 3, value);
+    };
+    proto.aggregator.BranchNode.repeatedFields_ = [1];
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.BranchNode.prototype.toObject = function(opt_includeInstance) {
         return proto.aggregator.BranchNode.toObject(opt_includeInstance, this);
       };
       proto.aggregator.BranchNode.toObject = function(includeInstance, msg) {
         var f, obj = {
-          pb_if: (f = msg.getIf()) && proto.aggregator.ConditionJump.toObject(includeInstance, f),
-          elseifsList: jspb.Message.toObjectList(
-            msg.getElseifsList(),
-            proto.aggregator.ConditionJump.toObject,
+          conditionsList: jspb.Message.toObjectList(
+            msg.getConditionsList(),
+            proto.aggregator.Condition.toObject,
             includeInstance
-          ),
-          pb_else: (f = msg.getElse()) && proto.aggregator.ConditionJump.toObject(includeInstance, f)
+          )
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -2336,19 +2366,9 @@ var require_avs_pb = __commonJS({
         var field = reader.getFieldNumber();
         switch (field) {
           case 1:
-            var value = new proto.aggregator.ConditionJump();
-            reader.readMessage(value, proto.aggregator.ConditionJump.deserializeBinaryFromReader);
-            msg.setIf(value);
-            break;
-          case 2:
-            var value = new proto.aggregator.ConditionJump();
-            reader.readMessage(value, proto.aggregator.ConditionJump.deserializeBinaryFromReader);
-            msg.addElseifs(value);
-            break;
-          case 3:
-            var value = new proto.aggregator.ConditionJump();
-            reader.readMessage(value, proto.aggregator.ConditionJump.deserializeBinaryFromReader);
-            msg.setElse(value);
+            var value = new proto.aggregator.Condition();
+            reader.readMessage(value, proto.aggregator.Condition.deserializeBinaryFromReader);
+            msg.addConditions(value);
             break;
           default:
             reader.skipField();
@@ -2364,75 +2384,29 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.BranchNode.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getIf();
-      if (f != null) {
-        writer.writeMessage(
-          1,
-          f,
-          proto.aggregator.ConditionJump.serializeBinaryToWriter
-        );
-      }
-      f = message.getElseifsList();
+      f = message.getConditionsList();
       if (f.length > 0) {
         writer.writeRepeatedMessage(
-          2,
+          1,
           f,
-          proto.aggregator.ConditionJump.serializeBinaryToWriter
-        );
-      }
-      f = message.getElse();
-      if (f != null) {
-        writer.writeMessage(
-          3,
-          f,
-          proto.aggregator.ConditionJump.serializeBinaryToWriter
+          proto.aggregator.Condition.serializeBinaryToWriter
         );
       }
     };
-    proto.aggregator.BranchNode.prototype.getIf = function() {
+    proto.aggregator.BranchNode.prototype.getConditionsList = function() {
       return (
-        /** @type{?proto.aggregator.ConditionJump} */
-        jspb.Message.getWrapperField(this, proto.aggregator.ConditionJump, 1)
+        /** @type{!Array<!proto.aggregator.Condition>} */
+        jspb.Message.getRepeatedWrapperField(this, proto.aggregator.Condition, 1)
       );
     };
-    proto.aggregator.BranchNode.prototype.setIf = function(value) {
-      return jspb.Message.setWrapperField(this, 1, value);
+    proto.aggregator.BranchNode.prototype.setConditionsList = function(value) {
+      return jspb.Message.setRepeatedWrapperField(this, 1, value);
     };
-    proto.aggregator.BranchNode.prototype.clearIf = function() {
-      return this.setIf(void 0);
+    proto.aggregator.BranchNode.prototype.addConditions = function(opt_value, opt_index) {
+      return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.Condition, opt_index);
     };
-    proto.aggregator.BranchNode.prototype.hasIf = function() {
-      return jspb.Message.getField(this, 1) != null;
-    };
-    proto.aggregator.BranchNode.prototype.getElseifsList = function() {
-      return (
-        /** @type{!Array<!proto.aggregator.ConditionJump>} */
-        jspb.Message.getRepeatedWrapperField(this, proto.aggregator.ConditionJump, 2)
-      );
-    };
-    proto.aggregator.BranchNode.prototype.setElseifsList = function(value) {
-      return jspb.Message.setRepeatedWrapperField(this, 2, value);
-    };
-    proto.aggregator.BranchNode.prototype.addElseifs = function(opt_value, opt_index) {
-      return jspb.Message.addToRepeatedWrapperField(this, 2, opt_value, proto.aggregator.ConditionJump, opt_index);
-    };
-    proto.aggregator.BranchNode.prototype.clearElseifsList = function() {
-      return this.setElseifsList([]);
-    };
-    proto.aggregator.BranchNode.prototype.getElse = function() {
-      return (
-        /** @type{?proto.aggregator.ConditionJump} */
-        jspb.Message.getWrapperField(this, proto.aggregator.ConditionJump, 3)
-      );
-    };
-    proto.aggregator.BranchNode.prototype.setElse = function(value) {
-      return jspb.Message.setWrapperField(this, 3, value);
-    };
-    proto.aggregator.BranchNode.prototype.clearElse = function() {
-      return this.setElse(void 0);
-    };
-    proto.aggregator.BranchNode.prototype.hasElse = function() {
-      return jspb.Message.getField(this, 3) != null;
+    proto.aggregator.BranchNode.prototype.clearConditionsList = function() {
+      return this.setConditionsList([]);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.FilterNode.prototype.toObject = function(opt_includeInstance) {
@@ -2497,6 +2471,94 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.FilterNode.prototype.setExpression = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.LoopNode.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.LoopNode.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.LoopNode.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          iterVar: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          iterKey: jspb.Message.getFieldWithDefault(msg, 2, "")
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.LoopNode.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.LoopNode();
+      return proto.aggregator.LoopNode.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.LoopNode.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setIterVar(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setIterKey(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.LoopNode.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.LoopNode.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.LoopNode.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getIterVar();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+      f = message.getIterKey();
+      if (f.length > 0) {
+        writer.writeString(
+          2,
+          f
+        );
+      }
+    };
+    proto.aggregator.LoopNode.prototype.getIterVar = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setIterVar = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    proto.aggregator.LoopNode.prototype.getIterKey = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 2, "")
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setIterKey = function(value) {
+      return jspb.Message.setProto3StringField(this, 2, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.TaskEdge.prototype.toObject = function(opt_includeInstance) {
@@ -2610,9 +2672,9 @@ var require_avs_pb = __commonJS({
     proto.aggregator.TaskEdge.prototype.setTarget = function(value) {
       return jspb.Message.setProto3StringField(this, 3, value);
     };
-    proto.aggregator.TaskNode.oneofGroups_ = [[10, 11, 12, 13, 14, 15, 16, 17]];
-    proto.aggregator.TaskNode.TaskBodyCase = {
-      TASK_BODY_NOT_SET: 0,
+    proto.aggregator.TaskNode.oneofGroups_ = [[10, 11, 12, 13, 14, 15, 16, 17, 18]];
+    proto.aggregator.TaskNode.TaskTypeCase = {
+      TASK_TYPE_NOT_SET: 0,
       ETH_TRANSFER: 10,
       CONTRACT_WRITE: 11,
       CONTRACT_READ: 12,
@@ -2620,11 +2682,12 @@ var require_avs_pb = __commonJS({
       REST_API: 14,
       BRANCH: 15,
       FILTER: 16,
-      CUSTOM_CODE: 17
+      LOOP: 17,
+      CUSTOM_CODE: 18
     };
-    proto.aggregator.TaskNode.prototype.getTaskBodyCase = function() {
+    proto.aggregator.TaskNode.prototype.getTaskTypeCase = function() {
       return (
-        /** @type {proto.aggregator.TaskNode.TaskBodyCase} */
+        /** @type {proto.aggregator.TaskNode.TaskTypeCase} */
         jspb.Message.computeOneofCase(this, proto.aggregator.TaskNode.oneofGroups_[0])
       );
     };
@@ -2634,16 +2697,16 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.TaskNode.toObject = function(includeInstance, msg) {
         var f, obj = {
-          nodeType: jspb.Message.getFieldWithDefault(msg, 1, 0),
           id: jspb.Message.getFieldWithDefault(msg, 2, ""),
           name: jspb.Message.getFieldWithDefault(msg, 3, ""),
           ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.toObject(includeInstance, f),
           contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.toObject(includeInstance, f),
-          contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractQueryNode.toObject(includeInstance, f),
+          contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.toObject(includeInstance, f),
           graphqlDataQuery: (f = msg.getGraphqlDataQuery()) && proto.aggregator.GraphQLQueryNode.toObject(includeInstance, f),
           restApi: (f = msg.getRestApi()) && proto.aggregator.RestAPINode.toObject(includeInstance, f),
           branch: (f = msg.getBranch()) && proto.aggregator.BranchNode.toObject(includeInstance, f),
           filter: (f = msg.getFilter()) && proto.aggregator.FilterNode.toObject(includeInstance, f),
+          loop: (f = msg.getLoop()) && proto.aggregator.LoopNode.toObject(includeInstance, f),
           customCode: (f = msg.getCustomCode()) && proto.aggregator.CustomCodeNode.toObject(includeInstance, f)
         };
         if (includeInstance) {
@@ -2664,13 +2727,6 @@ var require_avs_pb = __commonJS({
         }
         var field = reader.getFieldNumber();
         switch (field) {
-          case 1:
-            var value = (
-              /** @type {!proto.aggregator.TaskType} */
-              reader.readEnum()
-            );
-            msg.setNodeType(value);
-            break;
           case 2:
             var value = (
               /** @type {string} */
@@ -2696,8 +2752,8 @@ var require_avs_pb = __commonJS({
             msg.setContractWrite(value);
             break;
           case 12:
-            var value = new proto.aggregator.ContractQueryNode();
-            reader.readMessage(value, proto.aggregator.ContractQueryNode.deserializeBinaryFromReader);
+            var value = new proto.aggregator.ContractReadNode();
+            reader.readMessage(value, proto.aggregator.ContractReadNode.deserializeBinaryFromReader);
             msg.setContractRead(value);
             break;
           case 13:
@@ -2721,6 +2777,11 @@ var require_avs_pb = __commonJS({
             msg.setFilter(value);
             break;
           case 17:
+            var value = new proto.aggregator.LoopNode();
+            reader.readMessage(value, proto.aggregator.LoopNode.deserializeBinaryFromReader);
+            msg.setLoop(value);
+            break;
+          case 18:
             var value = new proto.aggregator.CustomCodeNode();
             reader.readMessage(value, proto.aggregator.CustomCodeNode.deserializeBinaryFromReader);
             msg.setCustomCode(value);
@@ -2739,13 +2800,6 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.TaskNode.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getNodeType();
-      if (f !== 0) {
-        writer.writeEnum(
-          1,
-          f
-        );
-      }
       f = message.getId();
       if (f.length > 0) {
         writer.writeString(
@@ -2781,7 +2835,7 @@ var require_avs_pb = __commonJS({
         writer.writeMessage(
           12,
           f,
-          proto.aggregator.ContractQueryNode.serializeBinaryToWriter
+          proto.aggregator.ContractReadNode.serializeBinaryToWriter
         );
       }
       f = message.getGraphqlDataQuery();
@@ -2816,23 +2870,22 @@ var require_avs_pb = __commonJS({
           proto.aggregator.FilterNode.serializeBinaryToWriter
         );
       }
-      f = message.getCustomCode();
+      f = message.getLoop();
       if (f != null) {
         writer.writeMessage(
           17,
           f,
+          proto.aggregator.LoopNode.serializeBinaryToWriter
+        );
+      }
+      f = message.getCustomCode();
+      if (f != null) {
+        writer.writeMessage(
+          18,
+          f,
           proto.aggregator.CustomCodeNode.serializeBinaryToWriter
         );
       }
-    };
-    proto.aggregator.TaskNode.prototype.getNodeType = function() {
-      return (
-        /** @type {!proto.aggregator.TaskType} */
-        jspb.Message.getFieldWithDefault(this, 1, 0)
-      );
-    };
-    proto.aggregator.TaskNode.prototype.setNodeType = function(value) {
-      return jspb.Message.setProto3EnumField(this, 1, value);
     };
     proto.aggregator.TaskNode.prototype.getId = function() {
       return (
@@ -2884,8 +2937,8 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.TaskNode.prototype.getContractRead = function() {
       return (
-        /** @type{?proto.aggregator.ContractQueryNode} */
-        jspb.Message.getWrapperField(this, proto.aggregator.ContractQueryNode, 12)
+        /** @type{?proto.aggregator.ContractReadNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.ContractReadNode, 12)
       );
     };
     proto.aggregator.TaskNode.prototype.setContractRead = function(value) {
@@ -2957,20 +3010,35 @@ var require_avs_pb = __commonJS({
     proto.aggregator.TaskNode.prototype.hasFilter = function() {
       return jspb.Message.getField(this, 16) != null;
     };
+    proto.aggregator.TaskNode.prototype.getLoop = function() {
+      return (
+        /** @type{?proto.aggregator.LoopNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.LoopNode, 17)
+      );
+    };
+    proto.aggregator.TaskNode.prototype.setLoop = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 17, proto.aggregator.TaskNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.TaskNode.prototype.clearLoop = function() {
+      return this.setLoop(void 0);
+    };
+    proto.aggregator.TaskNode.prototype.hasLoop = function() {
+      return jspb.Message.getField(this, 17) != null;
+    };
     proto.aggregator.TaskNode.prototype.getCustomCode = function() {
       return (
         /** @type{?proto.aggregator.CustomCodeNode} */
-        jspb.Message.getWrapperField(this, proto.aggregator.CustomCodeNode, 17)
+        jspb.Message.getWrapperField(this, proto.aggregator.CustomCodeNode, 18)
       );
     };
     proto.aggregator.TaskNode.prototype.setCustomCode = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 17, proto.aggregator.TaskNode.oneofGroups_[0], value);
+      return jspb.Message.setOneofWrapperField(this, 18, proto.aggregator.TaskNode.oneofGroups_[0], value);
     };
     proto.aggregator.TaskNode.prototype.clearCustomCode = function() {
       return this.setCustomCode(void 0);
     };
     proto.aggregator.TaskNode.prototype.hasCustomCode = function() {
-      return jspb.Message.getField(this, 17) != null;
+      return jspb.Message.getField(this, 18) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.Execution.prototype.toObject = function(opt_includeInstance) {
@@ -3091,14 +3159,14 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.Task.toObject = function(includeInstance, msg) {
         var f, obj = {
-          id: (f = msg.getId()) && proto.aggregator.UUID.toObject(includeInstance, f),
+          id: jspb.Message.getFieldWithDefault(msg, 1, ""),
           owner: jspb.Message.getFieldWithDefault(msg, 2, ""),
           smartWalletAddress: jspb.Message.getFieldWithDefault(msg, 3, ""),
-          startAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
-          expiredAt: jspb.Message.getFieldWithDefault(msg, 6, 0),
-          memo: jspb.Message.getFieldWithDefault(msg, 7, ""),
-          completedAt: jspb.Message.getFieldWithDefault(msg, 8, 0),
-          recurring: jspb.Message.getBooleanFieldWithDefault(msg, 10, false),
+          startAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
+          expiredAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
+          memo: jspb.Message.getFieldWithDefault(msg, 6, ""),
+          completedAt: jspb.Message.getFieldWithDefault(msg, 7, 0),
+          maxExecution: jspb.Message.getFieldWithDefault(msg, 8, 0),
           status: jspb.Message.getFieldWithDefault(msg, 9, 0),
           trigger: (f = msg.getTrigger()) && proto.aggregator.TaskTrigger.toObject(includeInstance, f),
           nodesList: jspb.Message.toObjectList(
@@ -3136,8 +3204,10 @@ var require_avs_pb = __commonJS({
         var field = reader.getFieldNumber();
         switch (field) {
           case 1:
-            var value = new proto.aggregator.UUID();
-            reader.readMessage(value, proto.aggregator.UUID.deserializeBinaryFromReader);
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
             msg.setId(value);
             break;
           case 2:
@@ -3154,40 +3224,40 @@ var require_avs_pb = __commonJS({
             );
             msg.setSmartWalletAddress(value);
             break;
-          case 5:
+          case 4:
             var value = (
               /** @type {number} */
               reader.readInt64()
             );
             msg.setStartAt(value);
             break;
-          case 6:
+          case 5:
             var value = (
               /** @type {number} */
               reader.readInt64()
             );
             msg.setExpiredAt(value);
             break;
-          case 7:
+          case 6:
             var value = (
               /** @type {string} */
               reader.readString()
             );
             msg.setMemo(value);
             break;
-          case 8:
+          case 7:
             var value = (
               /** @type {number} */
               reader.readInt64()
             );
             msg.setCompletedAt(value);
             break;
-          case 10:
+          case 8:
             var value = (
-              /** @type {boolean} */
-              reader.readBool()
+              /** @type {number} */
+              reader.readInt64()
             );
-            msg.setRecurring(value);
+            msg.setMaxExecution(value);
             break;
           case 9:
             var value = (
@@ -3196,7 +3266,7 @@ var require_avs_pb = __commonJS({
             );
             msg.setStatus(value);
             break;
-          case 4:
+          case 10:
             var value = new proto.aggregator.TaskTrigger();
             reader.readMessage(value, proto.aggregator.TaskTrigger.deserializeBinaryFromReader);
             msg.setTrigger(value);
@@ -3231,11 +3301,10 @@ var require_avs_pb = __commonJS({
     proto.aggregator.Task.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getId();
-      if (f != null) {
-        writer.writeMessage(
+      if (f.length > 0) {
+        writer.writeString(
           1,
-          f,
-          proto.aggregator.UUID.serializeBinaryToWriter
+          f
         );
       }
       f = message.getOwner();
@@ -3255,35 +3324,35 @@ var require_avs_pb = __commonJS({
       f = message.getStartAt();
       if (f !== 0) {
         writer.writeInt64(
-          5,
+          4,
           f
         );
       }
       f = message.getExpiredAt();
       if (f !== 0) {
         writer.writeInt64(
-          6,
+          5,
           f
         );
       }
       f = message.getMemo();
       if (f.length > 0) {
         writer.writeString(
-          7,
+          6,
           f
         );
       }
       f = message.getCompletedAt();
       if (f !== 0) {
         writer.writeInt64(
-          8,
+          7,
           f
         );
       }
-      f = message.getRecurring();
-      if (f) {
-        writer.writeBool(
-          10,
+      f = message.getMaxExecution();
+      if (f !== 0) {
+        writer.writeInt64(
+          8,
           f
         );
       }
@@ -3297,7 +3366,7 @@ var require_avs_pb = __commonJS({
       f = message.getTrigger();
       if (f != null) {
         writer.writeMessage(
-          4,
+          10,
           f,
           proto.aggregator.TaskTrigger.serializeBinaryToWriter
         );
@@ -3329,18 +3398,12 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.Task.prototype.getId = function() {
       return (
-        /** @type{?proto.aggregator.UUID} */
-        jspb.Message.getWrapperField(this, proto.aggregator.UUID, 1)
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
     proto.aggregator.Task.prototype.setId = function(value) {
-      return jspb.Message.setWrapperField(this, 1, value);
-    };
-    proto.aggregator.Task.prototype.clearId = function() {
-      return this.setId(void 0);
-    };
-    proto.aggregator.Task.prototype.hasId = function() {
-      return jspb.Message.getField(this, 1) != null;
+      return jspb.Message.setProto3StringField(this, 1, value);
     };
     proto.aggregator.Task.prototype.getOwner = function() {
       return (
@@ -3363,47 +3426,47 @@ var require_avs_pb = __commonJS({
     proto.aggregator.Task.prototype.getStartAt = function() {
       return (
         /** @type {number} */
-        jspb.Message.getFieldWithDefault(this, 5, 0)
+        jspb.Message.getFieldWithDefault(this, 4, 0)
       );
     };
     proto.aggregator.Task.prototype.setStartAt = function(value) {
-      return jspb.Message.setProto3IntField(this, 5, value);
+      return jspb.Message.setProto3IntField(this, 4, value);
     };
     proto.aggregator.Task.prototype.getExpiredAt = function() {
       return (
         /** @type {number} */
-        jspb.Message.getFieldWithDefault(this, 6, 0)
+        jspb.Message.getFieldWithDefault(this, 5, 0)
       );
     };
     proto.aggregator.Task.prototype.setExpiredAt = function(value) {
-      return jspb.Message.setProto3IntField(this, 6, value);
+      return jspb.Message.setProto3IntField(this, 5, value);
     };
     proto.aggregator.Task.prototype.getMemo = function() {
       return (
         /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 7, "")
+        jspb.Message.getFieldWithDefault(this, 6, "")
       );
     };
     proto.aggregator.Task.prototype.setMemo = function(value) {
-      return jspb.Message.setProto3StringField(this, 7, value);
+      return jspb.Message.setProto3StringField(this, 6, value);
     };
     proto.aggregator.Task.prototype.getCompletedAt = function() {
+      return (
+        /** @type {number} */
+        jspb.Message.getFieldWithDefault(this, 7, 0)
+      );
+    };
+    proto.aggregator.Task.prototype.setCompletedAt = function(value) {
+      return jspb.Message.setProto3IntField(this, 7, value);
+    };
+    proto.aggregator.Task.prototype.getMaxExecution = function() {
       return (
         /** @type {number} */
         jspb.Message.getFieldWithDefault(this, 8, 0)
       );
     };
-    proto.aggregator.Task.prototype.setCompletedAt = function(value) {
+    proto.aggregator.Task.prototype.setMaxExecution = function(value) {
       return jspb.Message.setProto3IntField(this, 8, value);
-    };
-    proto.aggregator.Task.prototype.getRecurring = function() {
-      return (
-        /** @type {boolean} */
-        jspb.Message.getBooleanFieldWithDefault(this, 10, false)
-      );
-    };
-    proto.aggregator.Task.prototype.setRecurring = function(value) {
-      return jspb.Message.setProto3BooleanField(this, 10, value);
     };
     proto.aggregator.Task.prototype.getStatus = function() {
       return (
@@ -3417,17 +3480,17 @@ var require_avs_pb = __commonJS({
     proto.aggregator.Task.prototype.getTrigger = function() {
       return (
         /** @type{?proto.aggregator.TaskTrigger} */
-        jspb.Message.getWrapperField(this, proto.aggregator.TaskTrigger, 4)
+        jspb.Message.getWrapperField(this, proto.aggregator.TaskTrigger, 10)
       );
     };
     proto.aggregator.Task.prototype.setTrigger = function(value) {
-      return jspb.Message.setWrapperField(this, 4, value);
+      return jspb.Message.setWrapperField(this, 10, value);
     };
     proto.aggregator.Task.prototype.clearTrigger = function() {
       return this.setTrigger(void 0);
     };
     proto.aggregator.Task.prototype.hasTrigger = function() {
-      return jspb.Message.getField(this, 4) != null;
+      return jspb.Message.getField(this, 10) != null;
     };
     proto.aggregator.Task.prototype.getNodesList = function() {
       return (
@@ -3484,7 +3547,7 @@ var require_avs_pb = __commonJS({
           trigger: (f = msg.getTrigger()) && proto.aggregator.TaskTrigger.toObject(includeInstance, f),
           startAt: jspb.Message.getFieldWithDefault(msg, 2, 0),
           expiredAt: jspb.Message.getFieldWithDefault(msg, 3, 0),
-          repeatable: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+          maxExecution: jspb.Message.getFieldWithDefault(msg, 4, 0),
           smartWalletAddress: jspb.Message.getFieldWithDefault(msg, 5, ""),
           memo: jspb.Message.getFieldWithDefault(msg, 6, ""),
           nodesList: jspb.Message.toObjectList(
@@ -3537,10 +3600,10 @@ var require_avs_pb = __commonJS({
             break;
           case 4:
             var value = (
-              /** @type {boolean} */
-              reader.readBool()
+              /** @type {number} */
+              reader.readInt64()
             );
-            msg.setRepeatable(value);
+            msg.setMaxExecution(value);
             break;
           case 5:
             var value = (
@@ -3602,9 +3665,9 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getRepeatable();
-      if (f) {
-        writer.writeBool(
+      f = message.getMaxExecution();
+      if (f !== 0) {
+        writer.writeInt64(
           4,
           f
         );
@@ -3673,14 +3736,14 @@ var require_avs_pb = __commonJS({
     proto.aggregator.CreateTaskReq.prototype.setExpiredAt = function(value) {
       return jspb.Message.setProto3IntField(this, 3, value);
     };
-    proto.aggregator.CreateTaskReq.prototype.getRepeatable = function() {
+    proto.aggregator.CreateTaskReq.prototype.getMaxExecution = function() {
       return (
-        /** @type {boolean} */
-        jspb.Message.getBooleanFieldWithDefault(this, 4, false)
+        /** @type {number} */
+        jspb.Message.getFieldWithDefault(this, 4, 0)
       );
     };
-    proto.aggregator.CreateTaskReq.prototype.setRepeatable = function(value) {
-      return jspb.Message.setProto3BooleanField(this, 4, value);
+    proto.aggregator.CreateTaskReq.prototype.setMaxExecution = function(value) {
+      return jspb.Message.setProto3IntField(this, 4, value);
     };
     proto.aggregator.CreateTaskReq.prototype.getSmartWalletAddress = function() {
       return (
@@ -3923,10 +3986,10 @@ var require_avs_pb = __commonJS({
       return jspb.Message.setProto3StringField(this, 1, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.AddressRequest.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.AddressRequest.toObject(opt_includeInstance, this);
+      proto.aggregator.ListWalletReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.ListWalletReq.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.AddressRequest.toObject = function(includeInstance, msg) {
+      proto.aggregator.ListWalletReq.toObject = function(includeInstance, msg) {
         var f, obj = {
           factory: jspb.Message.getFieldWithDefault(msg, 1, ""),
           salt: jspb.Message.getFieldWithDefault(msg, 2, "")
@@ -3937,12 +4000,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.AddressRequest.deserializeBinary = function(bytes) {
+    proto.aggregator.ListWalletReq.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.AddressRequest();
-      return proto.aggregator.AddressRequest.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.ListWalletReq();
+      return proto.aggregator.ListWalletReq.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.AddressRequest.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.ListWalletReq.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -3970,12 +4033,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.AddressRequest.prototype.serializeBinary = function() {
+    proto.aggregator.ListWalletReq.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.AddressRequest.serializeBinaryToWriter(this, writer);
+      proto.aggregator.ListWalletReq.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.AddressRequest.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.ListWalletReq.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getFactory();
       if (f.length > 0) {
@@ -3992,22 +4055,22 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.AddressRequest.prototype.getFactory = function() {
+    proto.aggregator.ListWalletReq.prototype.getFactory = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.AddressRequest.prototype.setFactory = function(value) {
+    proto.aggregator.ListWalletReq.prototype.setFactory = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.AddressRequest.prototype.getSalt = function() {
+    proto.aggregator.ListWalletReq.prototype.getSalt = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 2, "")
       );
     };
-    proto.aggregator.AddressRequest.prototype.setSalt = function(value) {
+    proto.aggregator.ListWalletReq.prototype.setSalt = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -4122,12 +4185,12 @@ var require_avs_pb = __commonJS({
     proto.aggregator.SmartWallet.prototype.setFactory = function(value) {
       return jspb.Message.setProto3StringField(this, 3, value);
     };
-    proto.aggregator.AddressResp.repeatedFields_ = [1];
+    proto.aggregator.ListWalletResp.repeatedFields_ = [1];
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.AddressResp.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.AddressResp.toObject(opt_includeInstance, this);
+      proto.aggregator.ListWalletResp.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.ListWalletResp.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.AddressResp.toObject = function(includeInstance, msg) {
+      proto.aggregator.ListWalletResp.toObject = function(includeInstance, msg) {
         var f, obj = {
           walletsList: jspb.Message.toObjectList(
             msg.getWalletsList(),
@@ -4141,12 +4204,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.AddressResp.deserializeBinary = function(bytes) {
+    proto.aggregator.ListWalletResp.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.AddressResp();
-      return proto.aggregator.AddressResp.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.ListWalletResp();
+      return proto.aggregator.ListWalletResp.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.AddressResp.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.ListWalletResp.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -4165,12 +4228,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.AddressResp.prototype.serializeBinary = function() {
+    proto.aggregator.ListWalletResp.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.AddressResp.serializeBinaryToWriter(this, writer);
+      proto.aggregator.ListWalletResp.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.AddressResp.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.ListWalletResp.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getWalletsList();
       if (f.length > 0) {
@@ -4181,19 +4244,19 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.AddressResp.prototype.getWalletsList = function() {
+    proto.aggregator.ListWalletResp.prototype.getWalletsList = function() {
       return (
         /** @type{!Array<!proto.aggregator.SmartWallet>} */
         jspb.Message.getRepeatedWrapperField(this, proto.aggregator.SmartWallet, 1)
       );
     };
-    proto.aggregator.AddressResp.prototype.setWalletsList = function(value) {
+    proto.aggregator.ListWalletResp.prototype.setWalletsList = function(value) {
       return jspb.Message.setRepeatedWrapperField(this, 1, value);
     };
-    proto.aggregator.AddressResp.prototype.addWallets = function(opt_value, opt_index) {
+    proto.aggregator.ListWalletResp.prototype.addWallets = function(opt_value, opt_index) {
       return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.SmartWallet, opt_index);
     };
-    proto.aggregator.AddressResp.prototype.clearWalletsList = function() {
+    proto.aggregator.ListWalletResp.prototype.clearWalletsList = function() {
       return this.setWalletsList([]);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -4792,7 +4855,9 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.CreateWalletResp.toObject = function(includeInstance, msg) {
         var f, obj = {
-          address: jspb.Message.getFieldWithDefault(msg, 1, "")
+          address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          salt: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          factoryAddress: jspb.Message.getFieldWithDefault(msg, 3, "")
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -4819,6 +4884,20 @@ var require_avs_pb = __commonJS({
             );
             msg.setAddress(value);
             break;
+          case 2:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setSalt(value);
+            break;
+          case 3:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setFactoryAddress(value);
+            break;
           default:
             reader.skipField();
             break;
@@ -4840,6 +4919,20 @@ var require_avs_pb = __commonJS({
           f
         );
       }
+      f = message.getSalt();
+      if (f.length > 0) {
+        writer.writeString(
+          2,
+          f
+        );
+      }
+      f = message.getFactoryAddress();
+      if (f.length > 0) {
+        writer.writeString(
+          3,
+          f
+        );
+      }
     };
     proto.aggregator.CreateWalletResp.prototype.getAddress = function() {
       return (
@@ -4850,12 +4943,23 @@ var require_avs_pb = __commonJS({
     proto.aggregator.CreateWalletResp.prototype.setAddress = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.TriggerType = {
-      MANUALTRIGGER: 0,
-      FIXEDEPOCHTRIGGER: 1,
-      CRONTRIGGER: 2,
-      BLOCKTRIGGER: 3,
-      EVENTTRIGGER: 4
+    proto.aggregator.CreateWalletResp.prototype.getSalt = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 2, "")
+      );
+    };
+    proto.aggregator.CreateWalletResp.prototype.setSalt = function(value) {
+      return jspb.Message.setProto3StringField(this, 2, value);
+    };
+    proto.aggregator.CreateWalletResp.prototype.getFactoryAddress = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 3, "")
+      );
+    };
+    proto.aggregator.CreateWalletResp.prototype.setFactoryAddress = function(value) {
+      return jspb.Message.setProto3StringField(this, 3, value);
     };
     proto.aggregator.Error = {
       UNKNOWERROR: 0,
@@ -4877,16 +4981,6 @@ var require_avs_pb = __commonJS({
     proto.aggregator.CustomCodeType = {
       JAVASCRIPT: 0
     };
-    proto.aggregator.TaskType = {
-      ETHTRANSFERTASK: 0,
-      CONTRACTWRITETASK: 1,
-      CONTRACTREADTASK: 2,
-      GRAPHQLDATAQUERYTASK: 3,
-      RESTAPITASK: 4,
-      BRANCHTASK: 5,
-      FILTERTASK: 6,
-      CUSTOMCODETASK: 7
-    };
     goog.object.extend(exports, proto.aggregator);
   }
 });
@@ -4896,188 +4990,188 @@ var require_avs_grpc_pb = __commonJS({
   "grpc_codegen/avs_grpc_pb.js"(exports) {
     "use strict";
     var grpc2 = __require("@grpc/grpc-js");
-    var avs_pb2 = require_avs_pb();
+    var avs_pb3 = require_avs_pb();
     var google_protobuf_timestamp_pb = __require("google-protobuf/google/protobuf/timestamp_pb.js");
     var google_protobuf_wrappers_pb = __require("google-protobuf/google/protobuf/wrappers_pb.js");
-    function serialize_aggregator_AddressRequest(arg) {
-      if (!(arg instanceof avs_pb2.AddressRequest)) {
-        throw new Error("Expected argument of type aggregator.AddressRequest");
-      }
-      return Buffer.from(arg.serializeBinary());
-    }
-    function deserialize_aggregator_AddressRequest(buffer_arg) {
-      return avs_pb2.AddressRequest.deserializeBinary(new Uint8Array(buffer_arg));
-    }
-    function serialize_aggregator_AddressResp(arg) {
-      if (!(arg instanceof avs_pb2.AddressResp)) {
-        throw new Error("Expected argument of type aggregator.AddressResp");
-      }
-      return Buffer.from(arg.serializeBinary());
-    }
-    function deserialize_aggregator_AddressResp(buffer_arg) {
-      return avs_pb2.AddressResp.deserializeBinary(new Uint8Array(buffer_arg));
-    }
     function serialize_aggregator_Checkin(arg) {
-      if (!(arg instanceof avs_pb2.Checkin)) {
+      if (!(arg instanceof avs_pb3.Checkin)) {
         throw new Error("Expected argument of type aggregator.Checkin");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Checkin(buffer_arg) {
-      return avs_pb2.Checkin.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.Checkin.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CheckinResp(arg) {
-      if (!(arg instanceof avs_pb2.CheckinResp)) {
+      if (!(arg instanceof avs_pb3.CheckinResp)) {
         throw new Error("Expected argument of type aggregator.CheckinResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CheckinResp(buffer_arg) {
-      return avs_pb2.CheckinResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.CheckinResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateTaskReq(arg) {
-      if (!(arg instanceof avs_pb2.CreateTaskReq)) {
+      if (!(arg instanceof avs_pb3.CreateTaskReq)) {
         throw new Error("Expected argument of type aggregator.CreateTaskReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskReq(buffer_arg) {
-      return avs_pb2.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateTaskResp(arg) {
-      if (!(arg instanceof avs_pb2.CreateTaskResp)) {
+      if (!(arg instanceof avs_pb3.CreateTaskResp)) {
         throw new Error("Expected argument of type aggregator.CreateTaskResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskResp(buffer_arg) {
-      return avs_pb2.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateWalletReq(arg) {
-      if (!(arg instanceof avs_pb2.CreateWalletReq)) {
+      if (!(arg instanceof avs_pb3.CreateWalletReq)) {
         throw new Error("Expected argument of type aggregator.CreateWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateWalletReq(buffer_arg) {
-      return avs_pb2.CreateWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.CreateWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateWalletResp(arg) {
-      if (!(arg instanceof avs_pb2.CreateWalletResp)) {
+      if (!(arg instanceof avs_pb3.CreateWalletResp)) {
         throw new Error("Expected argument of type aggregator.CreateWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateWalletResp(buffer_arg) {
-      return avs_pb2.CreateWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.CreateWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetKeyReq(arg) {
-      if (!(arg instanceof avs_pb2.GetKeyReq)) {
+      if (!(arg instanceof avs_pb3.GetKeyReq)) {
         throw new Error("Expected argument of type aggregator.GetKeyReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetKeyReq(buffer_arg) {
-      return avs_pb2.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_IdReq(arg) {
+      if (!(arg instanceof avs_pb3.IdReq)) {
+        throw new Error("Expected argument of type aggregator.IdReq");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_IdReq(buffer_arg) {
+      return avs_pb3.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_KeyResp(arg) {
-      if (!(arg instanceof avs_pb2.KeyResp)) {
+      if (!(arg instanceof avs_pb3.KeyResp)) {
         throw new Error("Expected argument of type aggregator.KeyResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_KeyResp(buffer_arg) {
-      return avs_pb2.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksReq(arg) {
-      if (!(arg instanceof avs_pb2.ListTasksReq)) {
+      if (!(arg instanceof avs_pb3.ListTasksReq)) {
         throw new Error("Expected argument of type aggregator.ListTasksReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksReq(buffer_arg) {
-      return avs_pb2.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksResp(arg) {
-      if (!(arg instanceof avs_pb2.ListTasksResp)) {
+      if (!(arg instanceof avs_pb3.ListTasksResp)) {
         throw new Error("Expected argument of type aggregator.ListTasksResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksResp(buffer_arg) {
-      return avs_pb2.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_ListWalletReq(arg) {
+      if (!(arg instanceof avs_pb3.ListWalletReq)) {
+        throw new Error("Expected argument of type aggregator.ListWalletReq");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_ListWalletReq(buffer_arg) {
+      return avs_pb3.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_ListWalletResp(arg) {
+      if (!(arg instanceof avs_pb3.ListWalletResp)) {
+        throw new Error("Expected argument of type aggregator.ListWalletResp");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_ListWalletResp(buffer_arg) {
+      return avs_pb3.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceRequest(arg) {
-      if (!(arg instanceof avs_pb2.NonceRequest)) {
+      if (!(arg instanceof avs_pb3.NonceRequest)) {
         throw new Error("Expected argument of type aggregator.NonceRequest");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceRequest(buffer_arg) {
-      return avs_pb2.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceResp(arg) {
-      if (!(arg instanceof avs_pb2.NonceResp)) {
+      if (!(arg instanceof avs_pb3.NonceResp)) {
         throw new Error("Expected argument of type aggregator.NonceResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceResp(buffer_arg) {
-      return avs_pb2.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_SyncTasksReq(arg) {
-      if (!(arg instanceof avs_pb2.SyncTasksReq)) {
+      if (!(arg instanceof avs_pb3.SyncTasksReq)) {
         throw new Error("Expected argument of type aggregator.SyncTasksReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_SyncTasksReq(buffer_arg) {
-      return avs_pb2.SyncTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.SyncTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_SyncTasksResp(arg) {
-      if (!(arg instanceof avs_pb2.SyncTasksResp)) {
+      if (!(arg instanceof avs_pb3.SyncTasksResp)) {
         throw new Error("Expected argument of type aggregator.SyncTasksResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_SyncTasksResp(buffer_arg) {
-      return avs_pb2.SyncTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.SyncTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Task(arg) {
-      if (!(arg instanceof avs_pb2.Task)) {
+      if (!(arg instanceof avs_pb3.Task)) {
         throw new Error("Expected argument of type aggregator.Task");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Task(buffer_arg) {
-      return avs_pb2.Task.deserializeBinary(new Uint8Array(buffer_arg));
-    }
-    function serialize_aggregator_UUID(arg) {
-      if (!(arg instanceof avs_pb2.UUID)) {
-        throw new Error("Expected argument of type aggregator.UUID");
-      }
-      return Buffer.from(arg.serializeBinary());
-    }
-    function deserialize_aggregator_UUID(buffer_arg) {
-      return avs_pb2.UUID.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.Task.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_UpdateChecksReq(arg) {
-      if (!(arg instanceof avs_pb2.UpdateChecksReq)) {
+      if (!(arg instanceof avs_pb3.UpdateChecksReq)) {
         throw new Error("Expected argument of type aggregator.UpdateChecksReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_UpdateChecksReq(buffer_arg) {
-      return avs_pb2.UpdateChecksReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.UpdateChecksReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_UpdateChecksResp(arg) {
-      if (!(arg instanceof avs_pb2.UpdateChecksResp)) {
+      if (!(arg instanceof avs_pb3.UpdateChecksResp)) {
         throw new Error("Expected argument of type aggregator.UpdateChecksResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_UpdateChecksResp(buffer_arg) {
-      return avs_pb2.UpdateChecksResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb3.UpdateChecksResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_google_protobuf_BoolValue(arg) {
       if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
@@ -5094,8 +5188,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetKey",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.GetKeyReq,
-        responseType: avs_pb2.KeyResp,
+        requestType: avs_pb3.GetKeyReq,
+        responseType: avs_pb3.KeyResp,
         requestSerialize: serialize_aggregator_GetKeyReq,
         requestDeserialize: deserialize_aggregator_GetKeyReq,
         responseSerialize: serialize_aggregator_KeyResp,
@@ -5106,42 +5200,42 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetNonce",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.NonceRequest,
-        responseType: avs_pb2.NonceResp,
+        requestType: avs_pb3.NonceRequest,
+        responseType: avs_pb3.NonceResp,
         requestSerialize: serialize_aggregator_NonceRequest,
         requestDeserialize: deserialize_aggregator_NonceRequest,
         responseSerialize: serialize_aggregator_NonceResp,
         responseDeserialize: deserialize_aggregator_NonceResp
       },
-      getSmartAccountAddress: {
-        path: "/aggregator.Aggregator/GetSmartAccountAddress",
-        requestStream: false,
-        responseStream: false,
-        requestType: avs_pb2.AddressRequest,
-        responseType: avs_pb2.AddressResp,
-        requestSerialize: serialize_aggregator_AddressRequest,
-        requestDeserialize: deserialize_aggregator_AddressRequest,
-        responseSerialize: serialize_aggregator_AddressResp,
-        responseDeserialize: deserialize_aggregator_AddressResp
-      },
-      // Task Management
       createWallet: {
         path: "/aggregator.Aggregator/CreateWallet",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.CreateWalletReq,
-        responseType: avs_pb2.CreateWalletResp,
+        requestType: avs_pb3.CreateWalletReq,
+        responseType: avs_pb3.CreateWalletResp,
         requestSerialize: serialize_aggregator_CreateWalletReq,
         requestDeserialize: deserialize_aggregator_CreateWalletReq,
         responseSerialize: serialize_aggregator_CreateWalletResp,
         responseDeserialize: deserialize_aggregator_CreateWalletResp
       },
+      listWallets: {
+        path: "/aggregator.Aggregator/ListWallets",
+        requestStream: false,
+        responseStream: false,
+        requestType: avs_pb3.ListWalletReq,
+        responseType: avs_pb3.ListWalletResp,
+        requestSerialize: serialize_aggregator_ListWalletReq,
+        requestDeserialize: deserialize_aggregator_ListWalletReq,
+        responseSerialize: serialize_aggregator_ListWalletResp,
+        responseDeserialize: deserialize_aggregator_ListWalletResp
+      },
+      // Task Management
       createTask: {
         path: "/aggregator.Aggregator/CreateTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.CreateTaskReq,
-        responseType: avs_pb2.CreateTaskResp,
+        requestType: avs_pb3.CreateTaskReq,
+        responseType: avs_pb3.CreateTaskResp,
         requestSerialize: serialize_aggregator_CreateTaskReq,
         requestDeserialize: deserialize_aggregator_CreateTaskReq,
         responseSerialize: serialize_aggregator_CreateTaskResp,
@@ -5151,8 +5245,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListTasks",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.ListTasksReq,
-        responseType: avs_pb2.ListTasksResp,
+        requestType: avs_pb3.ListTasksReq,
+        responseType: avs_pb3.ListTasksResp,
         requestSerialize: serialize_aggregator_ListTasksReq,
         requestDeserialize: deserialize_aggregator_ListTasksReq,
         responseSerialize: serialize_aggregator_ListTasksResp,
@@ -5162,10 +5256,10 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.UUID,
-        responseType: avs_pb2.Task,
-        requestSerialize: serialize_aggregator_UUID,
-        requestDeserialize: deserialize_aggregator_UUID,
+        requestType: avs_pb3.IdReq,
+        responseType: avs_pb3.Task,
+        requestSerialize: serialize_aggregator_IdReq,
+        requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_aggregator_Task,
         responseDeserialize: deserialize_aggregator_Task
       },
@@ -5173,10 +5267,10 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CancelTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.UUID,
+        requestType: avs_pb3.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
-        requestSerialize: serialize_aggregator_UUID,
-        requestDeserialize: deserialize_aggregator_UUID,
+        requestSerialize: serialize_aggregator_IdReq,
+        requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_google_protobuf_BoolValue,
         responseDeserialize: deserialize_google_protobuf_BoolValue
       },
@@ -5184,10 +5278,10 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/DeleteTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.UUID,
+        requestType: avs_pb3.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
-        requestSerialize: serialize_aggregator_UUID,
-        requestDeserialize: deserialize_aggregator_UUID,
+        requestSerialize: serialize_aggregator_IdReq,
+        requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_google_protobuf_BoolValue,
         responseDeserialize: deserialize_google_protobuf_BoolValue
       },
@@ -5196,8 +5290,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/Ping",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.Checkin,
-        responseType: avs_pb2.CheckinResp,
+        requestType: avs_pb3.Checkin,
+        responseType: avs_pb3.CheckinResp,
         requestSerialize: serialize_aggregator_Checkin,
         requestDeserialize: deserialize_aggregator_Checkin,
         responseSerialize: serialize_aggregator_CheckinResp,
@@ -5207,8 +5301,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/SyncTasks",
         requestStream: false,
         responseStream: true,
-        requestType: avs_pb2.SyncTasksReq,
-        responseType: avs_pb2.SyncTasksResp,
+        requestType: avs_pb3.SyncTasksReq,
+        responseType: avs_pb3.SyncTasksResp,
         requestSerialize: serialize_aggregator_SyncTasksReq,
         requestDeserialize: deserialize_aggregator_SyncTasksReq,
         responseSerialize: serialize_aggregator_SyncTasksResp,
@@ -5218,8 +5312,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/UpdateChecks",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb2.UpdateChecksReq,
-        responseType: avs_pb2.UpdateChecksResp,
+        requestType: avs_pb3.UpdateChecksReq,
+        responseType: avs_pb3.UpdateChecksResp,
         requestSerialize: serialize_aggregator_UpdateChecksReq,
         requestDeserialize: deserialize_aggregator_UpdateChecksReq,
         responseSerialize: serialize_aggregator_UpdateChecksResp,
@@ -5232,49 +5326,164 @@ var require_avs_grpc_pb = __commonJS({
 
 // src/index.ts
 import _ from "lodash";
-import { ethers } from "ethers";
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 
 // src/auth.ts
-var getKeyRequestMessage = (address2, expiredAt) => {
-  return `key request for ${address2} expired at ${expiredAt}`;
+var getKeyRequestMessage = (address, expiredAt) => {
+  return `key request for ${address} expired at ${expiredAt}`;
 };
 
 // src/index.ts
 var import_avs_grpc_pb = __toESM(require_avs_grpc_pb());
-var avs_pb = __toESM(require_avs_pb());
+var avs_pb2 = __toESM(require_avs_pb());
 
-// src/types.ts
-var AUTH_KEY_HEADER = "authKey";
+// src/builder.ts
+var avs_pb = __toESM(require_avs_pb());
+var buildContractWrite = ({ contractAddress: contractAddress2, callData, contractABI }) => {
+  const n = new avs_pb.ContractWriteNode();
+  n.setContractAddress(contractAddress2);
+  n.setCallData(callData);
+  if (contractABI) {
+    n.setContractAbi(contractABI);
+  }
+  return n;
+};
+var buildContractRead = ({ contract_ddress, callData, contractABI }) => {
+  const n = new avs_pb.ContractReadNode();
+  n.setContractAddress(contractAddress);
+  n.setCallData(callData);
+  if (n.contractABI) {
+    n.setContractAbi(n.contractABI);
+  }
+  return n;
+};
+var buildTaskEdge = ({ id, source, target }) => {
+  const edge = new avs_pb.TaskEdge();
+  edge.setId(id);
+  edge.setSource(source);
+  edge.setTarget(target);
+  return edge;
+};
+var buildTrigger = (payload) => {
+  const trigger = new avs_pb.TaskTrigger();
+  for (const [key, value] of Object.entries(payload)) {
+    if (key == "manual") {
+      trigger.setManual(value);
+      return trigger;
+    }
+    if (key == "fixedTime") {
+      let schedule = new avs_pb.FixedEpochCondition();
+      schedule.setEpochsList(value.epochs);
+      trigger.setFixedTime(schedule);
+      return trigger;
+    }
+    if (key == "cron") {
+      const cron = new avs_pb.CronCondition();
+      cron.setScheduleList(value.schedule);
+      trigger.setCron(cron);
+      return trigger;
+    }
+    if (key == "block") {
+      const block = new avs_pb.BlockCondition();
+      block.setInterval(value.interval);
+      trigger.setBlock(block);
+      return trigger;
+    }
+    if (key == "event") {
+      const event = new avs_pb.EventCondition();
+      event.setExpression(payload.event.expression);
+      trigger.setEvent(event);
+      return trigger;
+    }
+    throw new Error("missing trigger");
+  }
+};
+var triggerFromGRPC = (trigger) => {
+  if (!trigger) {
+    return { triggerType: avs_pb.TaskTrigger.TriggerTypeCase.TRIGGER_TYPE_NOT_SET };
+  }
+  const base = {
+    triggerType: trigger.getTriggerTypeCase()
+  };
+  switch (trigger.getTriggerTypeCase()) {
+    case avs_pb.TaskTrigger.TriggerTypeCase.MANUAL:
+      base.manual = trigger.getManual();
+      break;
+    case avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME:
+      base.fixedTime = { epochs: trigger.getFixedTime().getEpochsList() };
+      break;
+    case avs_pb.TaskTrigger.TriggerTypeCase.CRON:
+      base.cron = { schedule: trigger.getCron().getScheduleList() };
+      break;
+    case avs_pb.TaskTrigger.TriggerTypeCase.BLOCK:
+      base.block = { interval: trigger.getBlock().getInterval() };
+      break;
+    case avs_pb.TaskTrigger.TriggerTypeCase.EVENT:
+      base.event = { expression: trigger.getEvent().getExpression() };
+      break;
+  }
+  return base;
+};
+var nodeFromGRPC = (node) => {
+  const base = node.toObject();
+  const standarize = {
+    taskType: node.getTaskTypeCase()
+  };
+  switch (node.getTaskTypeCase()) {
+    case avs_pb.TaskNode.TaskTypeCase.ETH_TRANSFER:
+      standarize.ethTransfer = base.ethTransfer;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.CONTRACT_WRITE:
+      standarize.contractWrite = base.contractWrite;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.CONTRACT_READ:
+      standarize.contractRead = base.contractRead;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.GRAPHQL_DATA_QUERY:
+      standarize.graphqlDataQuery = base.graphqlDataQuery;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.REST_API:
+      standarize.restApi = base.restApi;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.BRANCH:
+      standarize.branch = base.branch;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.FILTER:
+      standarize.filter = base.filter;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.LOOP:
+      standarize.loop = base.loop;
+      break;
+    case avs_pb.TaskNode.TaskTypeCase.CUSTOM_CODE:
+      standarize.custom_code = base.custom_code;
+      break;
+  }
+  return standarize;
+};
 
 // src/task.ts
 var Task = class {
-  // Add other missing properties here
   constructor(task) {
-    this.id = task.getId()?.toString() || "";
-    this.status = task.getStatus().toString();
+    this.id = task.getId() || "";
+    this.status = task.getStatus();
     this.owner = task.getOwner();
-    this.smartAccountAddress = task.getSmartAccountAddress();
-    this.trigger = {
-      triggerType: task.getTrigger()?.getTriggerType() || 0,
-      schedule: task.getTrigger()?.getSchedule()?.toObject(),
-      contractQuery: task.getTrigger()?.getContractQuery()?.toObject(),
-      expression: task.getTrigger()?.getExpression()?.toObject() || {
-        expression: ""
-      }
-    };
-    this.nodesList = task.getNodesList();
+    this.smartWalletAddress = task.getSmartWalletAddress();
+    this.nodes = task.getNodesList().map((node) => nodeFromGRPC(node));
+    this.trigger = triggerFromGRPC(task.getTrigger());
     this.startAt = task.getStartAt();
     this.expiredAt = task.getExpiredAt();
     this.memo = task.getMemo();
     this.completedAt = task.getCompletedAt();
     this.status = task.getStatus();
-    this.repeatable = task.getRepeatable();
     this.executionsList = task.getExecutionsList();
+    this.maxExecution = task.getMaxExecution();
   }
 };
 var task_default = Task;
+
+// src/types.ts
+var AUTH_KEY_HEADER = "authkey";
 
 // src/index.ts
 var BaseClient = class {
@@ -5298,34 +5507,30 @@ var BaseClient = class {
     }
   }
   // When using the APIkey, depends on scope of the key, it may have access to one ore more account
-  async authWithAPIKey(address2, apiKey, expiredAtEpoch) {
-    const request = new avs_pb.GetKeyReq();
-    request.setOwner(address2);
+  async authWithAPIKey(address, apiKey, expiredAtEpoch) {
+    const request = new avs_pb2.GetKeyReq();
+    request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
-    const result = await this._callRPC("getKey", request);
-    this.authKey = result.getKey();
+    const result = await this._callAnonRPC("getKey", request);
     return { authKey: result.getKey() };
   }
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
-  async authWithSignature(address2, signature, expiredAtEpoch) {
-    const request = new avs_pb.GetKeyReq();
-    request.setOwner(address2);
+  async authWithSignature(address, signature, expiredAtEpoch) {
+    const request = new avs_pb2.GetKeyReq();
+    request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
-    let result = await this._callRPC(
+    let result = await this._callAnonRPC(
       "getKey",
       request
     );
-    console.log("my key is ", result, result.getKey());
-    this.authKey = result.getKey();
     return { authKey: result.getKey() };
   }
   _callRPC(method, request, options) {
     const metadata = _.cloneDeep(this.metadata);
-    console.log("my authkey", this.authkey);
-    if (!this.authKey) {
-      throw new Error("Not authenticated yet");
+    if (!options?.authKey) {
+      throw new Error("missing auth header");
     }
     metadata.set(AUTH_KEY_HEADER, options.authKey);
     return new Promise((resolve, reject) => {
@@ -5340,10 +5545,11 @@ var BaseClient = class {
     });
   }
   _callAnonRPC(method, request, options) {
+    const metadata = _.cloneDeep(this.metadata);
     return new Promise((resolve, reject) => {
       this.rpcClient[method].bind(this.rpcClient)(
         request,
-        this.metadata,
+        metadata,
         (error, response) => {
           if (error) reject(error);
           else resolve(response);
@@ -5356,98 +5562,95 @@ var Client = class extends BaseClient {
   constructor(config) {
     super(config);
   }
-  async listSmartWallets() {
-    const request = new avs_pb.AddressRequest();
-    request.setOwner(address);
-    const result = await this._callRPC("getSmartAccountAddress", request);
+  async listSmartWallets(options) {
+    const request = new avs_pb2.ListWalletReq();
+    const result = await this._callRPC("listWallets", request, options);
+    return result.getWalletsList().map((item) => item.toObject());
+  }
+  async createWallet({
+    salt,
+    factoryAddress
+  }, options) {
+    const request = new avs_pb2.CreateWalletReq();
+    request.setSalt(salt);
+    if (factoryAddress) {
+      request.setFactoryAddress(factoryAddress);
+    }
+    const result = await this._callRPC("createWallet", request, options);
     return {
-      owner: address,
-      wallets: result.getWalletsList()
+      address: result.getAddress(),
+      salt: result.getSalt(),
+      factory: result.getFactoryAddress()
     };
   }
-  async createTask({
-    address: address2,
-    oracleContract,
-    tokenContract
-  }) {
-    const trigger = new avs_pb.TaskTrigger();
-    trigger.setTriggerType(avs_pb.TriggerType.EXPRESSIONTRIGGER);
-    trigger.setExpression(
-      new avs_pb.ExpressionCondition().setExpression(`
-      bigCmp(
-        priceChainlink("${oracleContract}"), 
-        toBigInt("10000")
-      ) > 0`)
-    );
-    const action = new avs_pb.TaskAction();
-    action.setTaskType(avs_pb.TaskType.CONTRACTEXECUTIONTASK);
-    action.setId("transfer_erc20_1");
-    action.setName("Transfer Test Token");
-    const execution = new avs_pb.ContractExecution();
-    execution.setContractAddress(tokenContract);
-    let ABI = ["function transfer(address to, uint amount)"];
-    let iface = new ethers.Interface(ABI);
-    const callData = iface.encodeFunctionData("transfer", [
-      address2,
-      ethers.parseUnits("12", 18)
-    ]);
-    execution.setCallData(callData);
-    action.setContractExecution(execution);
-    const request = new avs_pb.CreateTaskReq().setTrigger(trigger).setActionsList([action]).setExpiredAt(Math.floor(Date.now() / 1e3) + 1e6);
-    const result = await this._callRPC("createTask", request, { authKey });
-    return {
-      id: result.getId()
-    };
-  }
-  async listTasks(address2) {
-    const request = new avs_pb.ListTasksReq();
-    const result = await this._callRPC("listTasks", request, { authKey });
-    const tasks = _.map(
-      result.getTasksList(),
-      (obj) => {
-        return {
-          id: obj.getId(),
-          status: _.capitalize(obj.getStatus().toString())
-        };
+  async createTask(payload, options) {
+    const request = new avs_pb2.CreateTaskReq();
+    request.setSmartWalletAddress(payload.smartWalletAddress);
+    request.setStartAt(payload.startAt);
+    request.setExpiredAt(payload.expiredAt || -1);
+    request.setMemo(payload.memo || "");
+    request.setMaxExecution(payload.maxExecution || 0);
+    request.setTrigger(buildTrigger(payload.trigger));
+    let nodes = [];
+    for (const node of payload.nodes) {
+      const n = new avs_pb2.TaskNode();
+      n.setId(node.id);
+      n.setName(node.name);
+      if (node.ethTransfer) {
+      } else if (node.contractWrite) {
+        n.setContractWrite(buildContractWrite(node.contractWrite));
+      } else if (node.contractRead) {
+        n.setContractRead(buildContractRead(node.contractRead));
+      } else {
+        throw new Error("missing task payload");
       }
-    );
-    return {
-      tasks
-    };
+      nodes.push(n);
+      request.addNodes(n);
+    }
+    const edges = [];
+    for (const edge of payload.edges) {
+      edges.push(buildTaskEdge(edge));
+    }
+    request.setEdgesList(edges);
+    const result = await this._callRPC("createTask", request, options);
+    return result.getId();
+  }
+  async listTasks(address, options) {
+    const request = new avs_pb2.ListTasksReq();
+    request.setSmartWalletAddress(address);
+    const result = await this._callRPC("listTasks", request, options);
+    return result.getTasksList().map((item) => new task_default(item));
   }
   // TODO: specify the return type to match client’s requirements
-  // Right now we simply return the original object from the server
-  async getTask(id) {
-    const request = new avs_pb.UUID();
-    request.setBytes(id);
-    ``;
+  async getTask(id, options) {
+    const request = new avs_pb2.IdReq();
+    request.setId(id);
     const result = await this._callRPC(
       "getTask",
-      request
+      request,
+      options
     );
     return new task_default(result);
   }
-  async cancelTask(id) {
-    const request = new avs_pb.UUID();
-    request.setBytes(id);
+  async cancelTask(id, options) {
+    const request = new avs_pb2.IdReq();
+    request.setId(id);
     const result = await this._callRPC(
       "cancelTask",
-      request
+      request,
+      options
     );
-    return {
-      value: result.getValue()
-    };
+    return result.getValue();
   }
-  async deleteTask(id) {
-    const request = new avs_pb.UUID();
-    request.setBytes(id);
+  async deleteTask(id, options) {
+    const request = new avs_pb2.IdReq();
+    request.setId(id);
     const result = await this._callRPC(
       "deleteTask",
-      request
+      request,
+      options
     );
-    return {
-      value: result.getValue()
-    };
+    return result.getValue();
   }
 };
 export {
