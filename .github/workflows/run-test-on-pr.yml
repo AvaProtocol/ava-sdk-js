@@ -48,6 +48,7 @@ jobs:
 
     - name: Run tests againts local AVS
       run: |
+        sleep 5
         export LOCAL_TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
         export ENDPOINT="localhost:2206"
         npm test 
