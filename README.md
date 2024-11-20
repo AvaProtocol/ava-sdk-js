@@ -79,7 +79,7 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
   docker compose up -d
   ```
 
-3. Run the test command. This will test the SDK against test server, configured in `.env.test`.
+4. Run the test command. This will test the SDK against test server, configured in `.env.test`.
 
    ```bash
    # Run all tests
@@ -89,7 +89,9 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    npm run test:select -- <authWithSignature>
    ```
 
-4. In order to individually test `cancelTask` or `deleteTask`, `createTask` test needs to run first.
+   Note: to generate an api for `TEST_API_KEY`, bring up the docker compose and run `npm run gen-api-key`.
+
+5. In order to individually test `cancelTask` or `deleteTask`, `createTask` test needs to run first.
    ```bash
    npm run test:select -- "createTask|cancelTask"
    ```
