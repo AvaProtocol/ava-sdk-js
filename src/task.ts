@@ -1,5 +1,5 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
-import { TaskType, TaskTrigger, Execution } from "./types";
+import { TaskType, TaskTrigger, Execution, TaskEdge, TaskNode } from "./types";
 import { triggerFromGRPC, nodeFromGRPC, taskEdgeFromGRPC } from "./builder";
 
 class Task implements TaskType {
@@ -8,8 +8,8 @@ class Task implements TaskType {
   owner: string;
   smartWalletAddress: string;
   trigger: TaskTrigger;
-  nodes: any[];
-  edges: any[];
+  nodes: TaskNode[];
+  edges: TaskEdge[];
   startAt: number;
   expiredAt: number;
   memo: string;

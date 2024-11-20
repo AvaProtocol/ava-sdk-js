@@ -1,7 +1,7 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
 
 import {
-    TaskTrigger
+  TaskTrigger, TaskEdge
 } from "./types";
 
 export const buildContractWrite = ({contractAddress, callData, contractABI}): avs_pb.ContractWriteNode => {
@@ -185,7 +185,7 @@ export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger | undefined): TaskTr
   return base;
 }
 
-export const nodeFromGRPC = (node) => {
+export const nodeFromGRPC = (node): TaskNode => {
   const base = node.toObject();
   const standarize = {
     taskType: node.getTaskTypeCase()
@@ -226,7 +226,7 @@ export const nodeFromGRPC = (node) => {
   return standarize;
 }
 
-export const taskEdgeFromGRPC = (edge: avs_pb.TaskEdge) => {
+export const taskEdgeFromGRPC = (edge: avs_pb.TaskEdge): TaskEdge => {
   return {
     id: edge.getId(),
     source: edge.getSource(),

@@ -575,25 +575,25 @@ declare namespace LoopNode {
     }
 }
 
-declare class TaskEdge extends jspb.Message { 
+declare class TaskEdge$1 extends jspb.Message { 
     getId(): string;
-    setId(value: string): TaskEdge;
+    setId(value: string): TaskEdge$1;
     getSource(): string;
-    setSource(value: string): TaskEdge;
+    setSource(value: string): TaskEdge$1;
     getTarget(): string;
-    setTarget(value: string): TaskEdge;
+    setTarget(value: string): TaskEdge$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TaskEdge.AsObject;
-    static toObject(includeInstance: boolean, msg: TaskEdge): TaskEdge.AsObject;
+    toObject(includeInstance?: boolean): TaskEdge$1.AsObject;
+    static toObject(includeInstance: boolean, msg: TaskEdge$1): TaskEdge$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TaskEdge, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TaskEdge;
-    static deserializeBinaryFromReader(message: TaskEdge, reader: jspb.BinaryReader): TaskEdge;
+    static serializeBinaryToWriter(message: TaskEdge$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TaskEdge$1;
+    static deserializeBinaryFromReader(message: TaskEdge$1, reader: jspb.BinaryReader): TaskEdge$1;
 }
 
-declare namespace TaskEdge {
+declare namespace TaskEdge$1 {
     export type AsObject = {
         id: string,
         source: string,
@@ -601,70 +601,70 @@ declare namespace TaskEdge {
     }
 }
 
-declare class TaskNode extends jspb.Message { 
+declare class TaskNode$1 extends jspb.Message { 
     getId(): string;
-    setId(value: string): TaskNode;
+    setId(value: string): TaskNode$1;
     getName(): string;
-    setName(value: string): TaskNode;
+    setName(value: string): TaskNode$1;
 
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
     getEthTransfer(): ETHTransferNode | undefined;
-    setEthTransfer(value?: ETHTransferNode): TaskNode;
+    setEthTransfer(value?: ETHTransferNode): TaskNode$1;
 
     hasContractWrite(): boolean;
     clearContractWrite(): void;
     getContractWrite(): ContractWriteNode | undefined;
-    setContractWrite(value?: ContractWriteNode): TaskNode;
+    setContractWrite(value?: ContractWriteNode): TaskNode$1;
 
     hasContractRead(): boolean;
     clearContractRead(): void;
     getContractRead(): ContractReadNode | undefined;
-    setContractRead(value?: ContractReadNode): TaskNode;
+    setContractRead(value?: ContractReadNode): TaskNode$1;
 
     hasGraphqlDataQuery(): boolean;
     clearGraphqlDataQuery(): void;
     getGraphqlDataQuery(): GraphQLQueryNode | undefined;
-    setGraphqlDataQuery(value?: GraphQLQueryNode): TaskNode;
+    setGraphqlDataQuery(value?: GraphQLQueryNode): TaskNode$1;
 
     hasRestApi(): boolean;
     clearRestApi(): void;
     getRestApi(): RestAPINode | undefined;
-    setRestApi(value?: RestAPINode): TaskNode;
+    setRestApi(value?: RestAPINode): TaskNode$1;
 
     hasBranch(): boolean;
     clearBranch(): void;
     getBranch(): BranchNode | undefined;
-    setBranch(value?: BranchNode): TaskNode;
+    setBranch(value?: BranchNode): TaskNode$1;
 
     hasFilter(): boolean;
     clearFilter(): void;
     getFilter(): FilterNode | undefined;
-    setFilter(value?: FilterNode): TaskNode;
+    setFilter(value?: FilterNode): TaskNode$1;
 
     hasLoop(): boolean;
     clearLoop(): void;
     getLoop(): LoopNode | undefined;
-    setLoop(value?: LoopNode): TaskNode;
+    setLoop(value?: LoopNode): TaskNode$1;
 
     hasCustomCode(): boolean;
     clearCustomCode(): void;
     getCustomCode(): CustomCodeNode | undefined;
-    setCustomCode(value?: CustomCodeNode): TaskNode;
+    setCustomCode(value?: CustomCodeNode): TaskNode$1;
 
-    getTaskTypeCase(): TaskNode.TaskTypeCase;
+    getTaskTypeCase(): TaskNode$1.TaskTypeCase;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TaskNode.AsObject;
-    static toObject(includeInstance: boolean, msg: TaskNode): TaskNode.AsObject;
+    toObject(includeInstance?: boolean): TaskNode$1.AsObject;
+    static toObject(includeInstance: boolean, msg: TaskNode$1): TaskNode$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TaskNode, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TaskNode;
-    static deserializeBinaryFromReader(message: TaskNode, reader: jspb.BinaryReader): TaskNode;
+    static serializeBinaryToWriter(message: TaskNode$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TaskNode$1;
+    static deserializeBinaryFromReader(message: TaskNode$1, reader: jspb.BinaryReader): TaskNode$1;
 }
 
-declare namespace TaskNode {
+declare namespace TaskNode$1 {
     export type AsObject = {
         id: string,
         name: string,
@@ -745,13 +745,13 @@ declare class Task$1 extends jspb.Message {
     getTrigger(): TaskTrigger$1 | undefined;
     setTrigger(value?: TaskTrigger$1): Task$1;
     clearNodesList(): void;
-    getNodesList(): Array<TaskNode>;
-    setNodesList(value: Array<TaskNode>): Task$1;
-    addNodes(value?: TaskNode, index?: number): TaskNode;
+    getNodesList(): Array<TaskNode$1>;
+    setNodesList(value: Array<TaskNode$1>): Task$1;
+    addNodes(value?: TaskNode$1, index?: number): TaskNode$1;
     clearEdgesList(): void;
-    getEdgesList(): Array<TaskEdge>;
-    setEdgesList(value: Array<TaskEdge>): Task$1;
-    addEdges(value?: TaskEdge, index?: number): TaskEdge;
+    getEdgesList(): Array<TaskEdge$1>;
+    setEdgesList(value: Array<TaskEdge$1>): Task$1;
+    addEdges(value?: TaskEdge$1, index?: number): TaskEdge$1;
     clearExecutionsList(): void;
     getExecutionsList(): Array<Execution$1>;
     setExecutionsList(value: Array<Execution$1>): Task$1;
@@ -779,8 +779,8 @@ declare namespace Task$1 {
         maxExecution: number,
         status: TaskStatus,
         trigger?: TaskTrigger$1.AsObject,
-        nodesList: Array<TaskNode.AsObject>,
-        edgesList: Array<TaskEdge.AsObject>,
+        nodesList: Array<TaskNode$1.AsObject>,
+        edgesList: Array<TaskEdge$1.AsObject>,
         executionsList: Array<Execution$1.AsObject>,
     }
 }
@@ -802,13 +802,13 @@ declare class CreateTaskReq extends jspb.Message {
     getMemo(): string;
     setMemo(value: string): CreateTaskReq;
     clearNodesList(): void;
-    getNodesList(): Array<TaskNode>;
-    setNodesList(value: Array<TaskNode>): CreateTaskReq;
-    addNodes(value?: TaskNode, index?: number): TaskNode;
+    getNodesList(): Array<TaskNode$1>;
+    setNodesList(value: Array<TaskNode$1>): CreateTaskReq;
+    addNodes(value?: TaskNode$1, index?: number): TaskNode$1;
     clearEdgesList(): void;
-    getEdgesList(): Array<TaskEdge>;
-    setEdgesList(value: Array<TaskEdge>): CreateTaskReq;
-    addEdges(value?: TaskEdge, index?: number): TaskEdge;
+    getEdgesList(): Array<TaskEdge$1>;
+    setEdgesList(value: Array<TaskEdge$1>): CreateTaskReq;
+    addEdges(value?: TaskEdge$1, index?: number): TaskEdge$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CreateTaskReq.AsObject;
@@ -828,8 +828,8 @@ declare namespace CreateTaskReq {
         maxExecution: number,
         smartWalletAddress: string,
         memo: string,
-        nodesList: Array<TaskNode.AsObject>,
-        edgesList: Array<TaskEdge.AsObject>,
+        nodesList: Array<TaskNode$1.AsObject>,
+        edgesList: Array<TaskEdge$1.AsObject>,
     }
 }
 
@@ -1273,24 +1273,25 @@ interface TaskTrigger {
         interval: number;
     };
 }
+interface TaskNode {
+    taskType: number;
+    id: string;
+    name: string;
+    ethTransfer?: any;
+    contractWrite?: any;
+    contractRead?: any;
+    restApi?: any;
+    customCode?: any;
+    branch?: any;
+    filter?: any;
+}
 interface TaskType {
     id: string;
     owner: string;
     smartWalletAddress: string;
     trigger: TaskTrigger;
-    nodes: Array<{
-        taskType: number;
-        id: string;
-        name: string;
-        ethTransfer?: any;
-        contractWrite?: any;
-        contractRead?: any;
-        restApi?: any;
-        customCode?: any;
-        branch?: any;
-        filter?: any;
-    }>;
-    edges: any[];
+    nodes: TaskNode[];
+    edges: TaskEdge[];
     startAt: number;
     expiredAt: number;
     memo: string;
@@ -1328,6 +1329,11 @@ interface Execution {
     userOpHash: string;
     error: string;
 }
+interface TaskEdge {
+    id: string;
+    source: string;
+    target: string;
+}
 
 declare class Task implements TaskType {
     id: string;
@@ -1335,8 +1341,8 @@ declare class Task implements TaskType {
     owner: string;
     smartWalletAddress: string;
     trigger: TaskTrigger;
-    nodes: any[];
-    edges: any[];
+    nodes: TaskNode[];
+    edges: TaskEdge[];
     startAt: number;
     expiredAt: number;
     memo: string;
@@ -1368,4 +1374,4 @@ declare class Client extends BaseClient {
     deleteTask(id: string, options: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type Execution, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskTrigger, type TaskType, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type Execution, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskEdge, type TaskNode, type TaskTrigger, type TaskType, Client as default, getKeyRequestMessage };

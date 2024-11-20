@@ -34,24 +34,26 @@ export interface TaskTrigger {
   }
 }
 
+export interface TaskNode {
+  taskType: number;
+  id: string;
+  name: string;
+  ethTransfer?: any;
+  contractWrite?: any;
+  contractRead?: any;
+  restApi?: any;
+  customCode?: any;
+  branch?: any;
+  filter?: any;
+}
+
 export interface TaskType {
   id: string;
   owner: string;
   smartWalletAddress: string;
   trigger: TaskTrigger;
-  nodes: Array<{
-    taskType: number;
-    id: string;
-    name: string;
-    ethTransfer?: any;
-    contractWrite?: any;
-    contractRead?: any;
-    restApi?: any;
-    customCode?: any;
-    branch?: any;
-    filter?: any;
-  }>;
-  edges: any[];
+  nodes:  TaskNode[];
+  edges: TaskEdge[];
   startAt: number;
   expiredAt: number;
   memo: string;
@@ -95,4 +97,10 @@ export interface Execution {
   epoch: number;
   userOpHash: string;
   error: string;
+}
+
+export interface TaskEdge {
+  id: string;
+  source: string;
+  target: string;
 }
