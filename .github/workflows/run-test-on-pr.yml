@@ -42,5 +42,9 @@ jobs:
             
     - name: Run tests
       run: |
-        sleep 10
+        until curl --output /dev/null --silent --head --fail http://localhost:1323/telemetry; do
+          printf '.'
+          sleep 5
+        done
+
         npm test 
