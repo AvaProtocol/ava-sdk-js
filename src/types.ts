@@ -3,7 +3,7 @@ import _ from "lodash";
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
-export const AUTH_KEY_HEADER = "authKey";
+export const AUTH_KEY_HEADER = "authkey";
 
 export interface RequestOptions {
   authKey: string;
@@ -17,37 +17,50 @@ export interface ClientOption {
   endpoint: string;
 }
 
+export interface TaskTrigger {
+  triggerType: number;
+  manual?: boolean;
+  cron?: {
+    schedule: string[];
+  };
+  event?: {
+    expression: string;
+  };
+  fixedTime?: {
+    epochs: number[],
+  }
+  block?: {
+    interval: number;
+  }
+}
+
+export interface TaskNode {
+  taskType: number;
+  id: string;
+  name: string;
+  ethTransfer?: any;
+  contractWrite?: any;
+  contractRead?: any;
+  restApi?: any;
+  customCode?: any;
+  branch?: any;
+  filter?: any;
+}
+
 export interface TaskType {
   id: string;
   owner: string;
-  smartAccountAddress: string;
-  trigger: {
-    triggerType: number;
-    schedule?: any;
-    contractQuery?: any;
-    expression: {
-      expression: string;
-    };
-  };
-  nodesList: Array<{
-    taskType: number;
-    id: string;
-    name: string;
-    nextList: any[];
-    ethTransfer?: any;
-    contractExecution: any;
-    graphqlDataQuery?: any;
-    httpDataQuery?: any;
-    customCode?: any;
-    branch?: any;
-  }>;
+  smartWalletAddress: string;
+  trigger: TaskTrigger;
+  nodes:  TaskNode[];
+  edges: TaskEdge[];
   startAt: number;
   expiredAt: number;
   memo: string;
   completedAt: number;
   status: number;
-  repeatable: boolean;
-  executionsList: any[];
+  maxExecution: number;
+  executions: Execution[];
 }
 
 export interface CreateTaskResponse {
@@ -69,7 +82,25 @@ export interface DeleteTaskResponse {
   value: boolean;
 }
 
-export interface GetAddressesResponse {
-  owner: string;
-  smart_account_address: string;
+export interface SmartWallet {
+  address: string;
+  salt: string;
+  factory: string;
+}
+
+export interface CreateWalletReq {
+  salt: string;
+  factoryAddress?: string;
+}
+
+export interface Execution {
+  epoch: number;
+  userOpHash: string;
+  error: string;
+}
+
+export interface TaskEdge {
+  id: string;
+  source: string;
+  target: string;
 }

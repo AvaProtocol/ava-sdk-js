@@ -1,47 +1,43 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
-import { TaskType } from "./types";
+import { TaskType, TaskTrigger, Execution, TaskEdge, TaskNode } from "./types";
+import { triggerFromGRPC, nodeFromGRPC, taskEdgeFromGRPC } from "./builder";
 
 class Task implements TaskType {
   id: string;
   status: number;
   owner: string;
-  smartAccountAddress: string;
-  trigger: {
-    triggerType: number;
-    schedule?: any;
-    contractQuery?: any;
-    expression: { expression: string };
-  };
-  nodesList: any[];
+  smartWalletAddress: string;
+  trigger: TaskTrigger;
+  nodes: TaskNode[];
+  edges: TaskEdge[];
   startAt: number;
   expiredAt: number;
   memo: string;
   completedAt: number;
-  repeatable: boolean;
-  executionsList: any[];
-  // Add other missing properties here
+  maxExecution: number;
+  executions: Execution[];
 
   constructor(task: avs_pb.Task) {
-    this.id = task.getId()?.toString() || "";
-    this.status = task.getStatus().toString();
+    this.id = task.getId() || "";
+    this.status = task.getStatus();
     this.owner = task.getOwner();
-    this.smartAccountAddress = task.getSmartAccountAddress();
-    this.trigger = {
-      triggerType: task.getTrigger()?.getTriggerType() || 0,
-      schedule: task.getTrigger()?.getSchedule()?.toObject(),
-      contractQuery: task.getTrigger()?.getContractQuery()?.toObject(),
-      expression: task.getTrigger()?.getExpression()?.toObject() || {
-        expression: "",
-      },
-    };
-    this.nodesList = task.getNodesList();
+    this.smartWalletAddress = task.getSmartWalletAddress();
+    this.nodes = task.getNodesList().map(node => nodeFromGRPC(node));
+    this.trigger = triggerFromGRPC(task.getTrigger());
+    this.edges = task.getEdgesList().map(edge => taskEdgeFromGRPC(edge));
     this.startAt = task.getStartAt();
     this.expiredAt = task.getExpiredAt();
     this.memo = task.getMemo();
     this.completedAt = task.getCompletedAt();
     this.status = task.getStatus();
-    this.repeatable = task.getRepeatable();
-    this.executionsList = task.getExecutionsList();
+    this.executions = task.getExecutionsList().map(execution => {
+       return {
+         epoch: execution.getEpoch(),
+         userOpHash: execution.getUserOpHash(),
+         error: execution.getError(),
+       } 
+    });
+    this.maxExecution = task.getMaxExecution();
   }
 }
 

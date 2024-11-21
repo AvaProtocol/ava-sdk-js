@@ -1,11 +1,11 @@
-name: Run tests on PR
+name: Run tests against staging on PR
 
 on:
   pull_request:
     branches: [ main ]
 
 jobs:
-  test:
+  staging-test:
     runs-on: ubuntu-latest
     environment: test # The below environment variables are only available in the test environment
     
@@ -15,26 +15,26 @@ jobs:
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
-
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18.x'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
+ 
     - name: Debug environment variables
       run: |
         echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
         echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
         echo "ENDPOINT: $ENDPOINT"
-        echo "TEST_PRIVATE_KEY is set: ${{ env.TEST_PRIVATE_KEY != '' }}"
-      
-    - name: Run tests
-      run: npm test 
+ 
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run tests againts staging AVS
+      run: |
+        npm test 

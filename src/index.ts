@@ -6,28 +6,35 @@ import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
+import Task from "./task";
 import {
   AUTH_KEY_HEADER,
   CancelTaskResponse,
   DeleteTaskResponse,
   RequestOptions,
   TaskType,
-} from "./types";
-import Task from "./task";
-// Move interfaces to a separate file, e.g., types.ts
-import {
   ClientOption,
   CreateTaskResponse,
-  GetAddressesResponse,
+  CreateWalletReq,
+  SmartWallet,
   GetKeyResponse,
   ListTasksResponse,
 } from "./types";
+
+import {
+  buildContractRead,
+  buildContractWrite,
+  buildTaskEdge,
+  buildTrigger,
+  buildTaskNode,
+} from "./builder";
 
 class BaseClient {
   readonly endpoint: string;
 
   readonly rpcClient;
   protected metadata: Metadata;
+
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
@@ -54,17 +61,20 @@ class BaseClient {
     }
   }
 
+  // When using the APIkey, depends on scope of the key, it may have access to one ore more account
   async authWithAPIKey(
+    address: string,
     apiKey: string,
     expiredAtEpoch: number
   ): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
-    request.setOwner("");
+    request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
 
-    const result: avs_pb.KeyResp = await this._callRPC<
+    // when exchanging the key, we don't set the token yet
+    const result: avs_pb.KeyResp = await this._callAnonRPC<
       avs_pb.KeyResp,
       avs_pb.GetKeyReq
     >("getKey", request);
@@ -84,7 +94,8 @@ class BaseClient {
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
 
-    let result = await this._callRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
+    // when exchanging the key, we don't set the token yet
+    let result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );
@@ -100,10 +111,30 @@ class BaseClient {
     // Clone the existing metadata from the client
     const metadata = _.cloneDeep(this.metadata);
 
-    // Add the auth key to the metadata as a header
-    if (options?.authKey) {
-      metadata.set(AUTH_KEY_HEADER, options.authKey);
+    if (!options?.authKey) {
+      throw new Error("missing auth header");
     }
+    metadata.set(AUTH_KEY_HEADER, options.authKey);
+
+    return new Promise((resolve, reject) => {
+      (this.rpcClient as any)[method].bind(this.rpcClient)(
+        request as any,
+        metadata,
+        (error: any, response: TResponse) => {
+          if (error) reject(error);
+          else resolve(response);
+        }
+      );
+    });
+  }
+
+  protected _callAnonRPC<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    // Clone the existing metadata from the client
+    const metadata = _.cloneDeep(this.metadata);
 
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
@@ -123,157 +154,123 @@ export default class Client extends BaseClient {
     super(config);
   }
 
-  async getAddresses(
-    address: string,
-    { authKey }: { authKey: string }
-  ): Promise<GetAddressesResponse> {
-    const request = new avs_pb.AddressRequest();
-    request.setOwner(address);
+  async listSmartWallets(
+    options: RequestOptions,
+  ): Promise<SmartWallet[]> {
+    const request = new avs_pb.ListWalletReq();
 
     const result = await this._callRPC<
-      avs_pb.AddressResp,
-      avs_pb.AddressRequest
-    >("getSmartAccountAddress", request, { authKey });
+      avs_pb.ListWalletResp,
+      avs_pb.ListWalletReq
+    >("listWallets", request, options);
 
-    return {
-      owner: address,
-      smart_account_address: result.getSmartAccountAddress(),
-    };
+    return result.getWalletsList().map(item => item.toObject());
   }
 
-  async createTask(
+  async createWallet(
     {
-      address,
-      oracleContract,
-      tokenContract,
-    }: {
-      address: string;
-      tokenContract: string;
-      oracleContract: string;
-    },
-    { authKey }: { authKey: string }
-  ): Promise<CreateTaskResponse> {
-    const trigger = new avs_pb.TaskTrigger();
-    trigger.setTriggerType(avs_pb.TriggerType.EXPRESSIONTRIGGER);
-    trigger.setExpression(
-      new avs_pb.ExpressionCondition().setExpression(`
-      bigCmp(
-        priceChainlink("${oracleContract}"), 
-        toBigInt("10000")
-      ) > 0`)
-    );
+      salt,
+      factoryAddress
+    }: CreateWalletReq,
+    options: RequestOptions,
+  ): Promise<SmartWallet> {
+    const request = new avs_pb.CreateWalletReq();
+    request.setSalt(salt);
+    if (factoryAddress) {
+      request.setFactoryAddress(factoryAddress);
+    }
 
-    const action = new avs_pb.TaskAction();
-    action.setTaskType(avs_pb.TaskType.CONTRACTEXECUTIONTASK);
-    action.setId("transfer_erc20_1");
-    action.setName("Transfer Test Token");
-    const execution = new avs_pb.ContractExecution();
-    execution.setContractAddress(tokenContract);
+    const result = await this._callRPC<
+      avs_pb.CreateWalletResp,
+      avs_pb.CreateWalletReq
+    >("createWallet", request, options);
 
-    let ABI = ["function transfer(address to, uint amount)"];
-    let iface = new ethers.Interface(ABI);
-    const callData = iface.encodeFunctionData("transfer", [
-      address,
-      ethers.parseUnits("12", 18),
-    ]);
-    execution.setCallData(callData);
+    return {
+      address: result.getAddress(),
+      salt: result.getSalt(),
+      factory: result.getFactoryAddress(),
+    }
+  }
 
-    action.setContractExecution(execution);
+  async createTask(payload: any, options: RequestOptions): Promise<string> {
+    const request = new avs_pb.CreateTaskReq();
+    // TODO: add client side validation
+    request.setSmartWalletAddress(payload.smartWalletAddress);
+    request.setStartAt(payload.startAt);
+    request.setExpiredAt(payload.expiredAt || -1);
+    request.setMemo(payload.memo || "");
+    request.setMaxExecution(payload.maxExecution || 0);
 
-    const request = new avs_pb.CreateTaskReq()
-      .setTrigger(trigger)
-      .setActionsList([action])
-      .setExpiredAt(Math.floor(Date.now() / 1000) + 1000000);
+    request.setTrigger(buildTrigger(payload.trigger));
+
+    for (const node of payload.nodes) {
+      request.addNodes(buildTaskNode(node));
+    }
+
+    const edges = [];
+    for (const edge of payload.edges) {
+      edges.push(buildTaskEdge(edge));
+    }
+    request.setEdgesList(edges);
 
     const result = await this._callRPC<
       avs_pb.CreateTaskResp,
       avs_pb.CreateTaskReq
-    >("createTask", request, { authKey });
+    >("createTask", request, options);
 
-    return {
-      id: result.getId(),
-    };
+    return result.getId();
   }
 
-  async listTasks(
-    address: string,
-    { authKey }: { authKey: string }
-  ): Promise<ListTasksResponse> {
+  async listTasks(address: string, options: RequestOptions): Promise<Task[]> {
     const request = new avs_pb.ListTasksReq();
+    request.setSmartWalletAddress(address);
 
     const result = await this._callRPC<
       avs_pb.ListTasksResp,
       avs_pb.ListTasksReq
-    >("listTasks", request, { authKey });
+    >("listTasks", request, options);
 
-    const tasks = _.map(
-      result.getTasksList(),
-      (obj: avs_pb.ListTasksResp.TaskItemResp) => {
-        return {
-          id: obj.getId(),
-          status: _.capitalize(obj.getStatus().toString()),
-        };
-      }
-    );
-
-    return {
-      tasks: tasks,
-    };
+    return result.getTasksList().map(item => new Task(item));
   }
 
   // TODO: specify the return type to match client’s requirements
-  // Right now we simply return the original object from the server
-  async getTask(
-    id: string,
-    { authKey }: { authKey: string }
-  ): Promise<TaskType> {
-    const request = new avs_pb.UUID();
-    request.setBytes(id);
-    ``;
+  async getTask(id: string, options: RequestOptions): Promise<TaskType> {
+    const request = new avs_pb.IdReq();
+    request.setId(id);
 
-    const result = await this._callRPC<avs_pb.Task, avs_pb.UUID>(
+    const result = await this._callRPC<avs_pb.Task, avs_pb.IdReq>(
       "getTask",
       request,
-      { authKey }
+      options
     );
 
     return new Task(result);
   }
 
-  async cancelTask(
-    id: string,
-    { authKey }: { authKey: string }
-  ): Promise<CancelTaskResponse> {
-    const request = new avs_pb.UUID();
-    request.setBytes(id);
+  async cancelTask(id: string, options: RequestOptions): Promise<boolean> {
+    const request = new avs_pb.IdReq();
+    request.setId(id);
 
-    const result = await this._callRPC<BoolValue, avs_pb.UUID>(
+    const result = await this._callRPC<BoolValue, avs_pb.IdReq>(
       "cancelTask",
       request,
-      { authKey }
+      options
     );
 
-    return {
-      value: result.getValue(),
-    };
+    return result.getValue();
   }
 
-  async deleteTask(
-    id: string,
-    { authKey }: { authKey: string }
-  ): Promise<DeleteTaskResponse> {
-    const request = new avs_pb.UUID();
-    request.setBytes(id);
+  async deleteTask(id: string, options: RequestOptions): Promise<boolean> {
+    const request = new avs_pb.IdReq();
+    request.setId(id);
 
-    const result = await this._callRPC<BoolValue, avs_pb.UUID>(
+    const result = await this._callRPC<BoolValue, avs_pb.IdReq>(
       "deleteTask",
       request,
-      { authKey }
+      options
     );
 
-    return {
-      value: result.getValue(),
-    };
+    return result.getValue();
   }
 }
 

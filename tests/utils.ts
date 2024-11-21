@@ -1,4 +1,4 @@
-import { getKeyRequestMessage } from "../dist/index.js";
+import { getKeyRequestMessage } from "../dist";
 import { ethers } from "ethers";
 import _ from "lodash";
 // Get wallet address from private key
