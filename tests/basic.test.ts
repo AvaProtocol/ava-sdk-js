@@ -27,7 +27,7 @@ const {
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
 
-describe("Client E2E Tests", () => {
+describe("Basic Tests", () => {
   let client: Client;
   let walletAddress: string; // Add this line to declare the variable
 

@@ -25,7 +25,7 @@
     "proto-download": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/new-task-data-structure/protobuf/avs.proto > grpc_codegen/avs.proto",
     "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./grpc_codegen --proto_path=./grpc_codegen grpc_codegen/avs.proto",
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "gen-apikey": "docker compose exec aggregator /ava  create-api-key --role=admin --subject=apikey",
+    "gen-apikey": "sh -c 'API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey) && echo \"Generated API key for tests: $API_KEY\" && echo \"Writing to .env.test to replace the TEST_API_KEY env variable\" && sed -i \"\" -e \"s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/\" .env.test && echo \"Done.\"'",
     "test": "jest --config jest.config.cjs",
     "test:select": "npm run test -- --testNamePattern",
     "changeset": "changeset",
