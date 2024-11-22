@@ -1,13 +1,14 @@
 /**
  * This script generates the SDK reference documentation based on the methods array defined at the beginning of the file.
  * For a generated example, please refer to https://avaprotocol.org/docs/ethereum/develop/js-sdk
- * 
+ *
  * Usage:
  * node ./scripts/generate-docs.js
  */
 
 const fs = require("fs");
 
+const OUTPUT_DIR = "./scripts"; // The directory to output the generated documentation; setting is to ./scripts for now.
 const OUTPUT_FILENAME = "SDK_References.md";
 
 const methods = [
@@ -222,6 +223,6 @@ const generateMarkdown = (methods) => {
 
 const markdown = generateMarkdown(methods);
 
-fs.writeFileSync(OUTPUT_FILENAME, markdown);
+fs.writeFileSync(`${OUTPUT_DIR}/${OUTPUT_FILENAME}`, markdown);
 
-console.log(`Documentation generated: ${OUTPUT_FILENAME}`);
+console.log(`Documentation generated: ${OUTPUT_DIR}/${OUTPUT_FILENAME}`);
