@@ -1,4 +1,4 @@
-name: Run tests on PR
+name: Run tests against staging on PR
 
 on:
   pull_request:
