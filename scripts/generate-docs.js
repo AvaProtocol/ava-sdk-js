@@ -13,27 +13,6 @@ const OUTPUT_FILENAME = "SDK_References.md";
 
 const methods = [
   {
-    name: "authWithAPIKey",
-    description: "Authenticate with an API key.",
-    params: [
-      { name: "address", type: "string", description: "The user's address." },
-      {
-        name: "apiKey",
-        type: "string",
-        description: "The API key for authentication.",
-      },
-      {
-        name: "expiredAtEpoch",
-        type: "number",
-        description: "The expiration epoch for the key.",
-      },
-    ],
-    returns: {
-      type: "Promise<GetKeyResponse>",
-      description: "The authentication key response.",
-    },
-  },
-  {
     name: "authWithSignature",
     description: "Authenticate using a signature.",
     params: [
