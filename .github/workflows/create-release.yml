@@ -48,32 +48,12 @@ jobs:
             echo "::set-output name=commit::false"
           fi
 
-      - name: Create Version Bump Branch and Push
+      - name: Push Version Bump to Main
         if: steps.changesets.outputs.commit == 'true'
         run: |
-          BRANCH_NAME="bump-to-${{ env.NEW_VERSION }}"
-          git checkout -b "$BRANCH_NAME"
-          git push origin "$BRANCH_NAME"
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          BRANCH_NAME: bump-to-${{ env.NEW_VERSION }}
-
-      - name: Verify Changes Before PR
-        if: steps.changesets.outputs.commit == 'true'
-        run: |
-          git fetch origin
-          git diff --exit-code origin/main || echo "Changes detected"
-
-      - name: Open Pull Request for Version Bump
-        if: steps.changesets.outputs.commit == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ github.token }}
-          base: main
-          branch: ${{ env.BRANCH_NAME }}
-          delete-branch: true
-          title: "Version packages"
-          body: "This pull request contains version bumps for packages."
 
       - name: Check Version Change
         id: version_check
@@ -96,12 +76,38 @@ jobs:
             exit 0
           fi
 
+      - name: Generate Release Summary
+        if: steps.version_check.outputs.should_release == 'true'
+        id: release_summary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get all commits between the last release and current
+          LATEST_RELEASE=$(gh release list --limit 1 | cut -f1)
+          COMMITS=$(git log ${LATEST_RELEASE}..HEAD --pretty=format:"%s")
+
+          # Use GitHub API to generate AI summary
+          SUMMARY=$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
+            -f body="Please summarize these changes:
+            ${COMMITS}" \
+            -q .body)
+
+          # Store the summary for the release
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         if: steps.version_check.outputs.should_release == 'true'
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           gh release create "v${CURRENT_VERSION}" \
-            --title "v${CURRENT_VERSION}" \
+            --title "v${CURRENT_VERSION}: ${{ steps.release_summary.outputs.summary }}" \
+            --notes "${{ steps.release_summary.outputs.summary }}" \
             --generate-notes
