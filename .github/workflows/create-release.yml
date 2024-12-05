@@ -48,6 +48,12 @@ jobs:
             echo "::set-output name=commit::false"
           fi
 
+      - name: Pull Latest Changes
+        run: |
+          git pull origin main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
       - name: Push Version Bump to Main
         if: steps.changesets.outputs.commit == 'true'
         run: |
@@ -87,14 +93,8 @@ jobs:
           LATEST_RELEASE=$(gh release list --limit 1 | cut -f1)
           COMMITS=$(git log ${LATEST_RELEASE}..HEAD --pretty=format:"%s")
 
-          # Use GitHub API to generate AI summary
-          SUMMARY=$(gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
-            -f body="Please summarize these changes:
-            ${COMMITS}" \
-            -q .body)
+          # Generate a summary of the commit messages
+          SUMMARY="Summary of changes:\n${COMMITS}"
 
           # Store the summary for the release
           echo "summary<<EOF" >> $GITHUB_OUTPUT
