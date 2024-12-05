@@ -82,32 +82,12 @@ jobs:
             exit 0
           fi
 
-      - name: Generate Release Summary
-        if: steps.version_check.outputs.should_release == 'true'
-        id: release_summary
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Get all commits between the last release and current
-          LATEST_RELEASE=$(gh release list --limit 1 | cut -f1)
-          COMMITS=$(git log ${LATEST_RELEASE}..HEAD --pretty=format:"%s")
-
-          # Generate a summary of the commit messages
-          SUMMARY="Summary of changes:\n${COMMITS}"
-
-          # Store the summary for the release
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "$SUMMARY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: Create GitHub Release
         if: steps.version_check.outputs.should_release == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           gh release create "v${CURRENT_VERSION}" \
-            --title "v${CURRENT_VERSION}: ${{ steps.release_summary.outputs.summary }}" \
-            --notes "${{ steps.release_summary.outputs.summary }}" \
+            --title "v${CURRENT_VERSION}" \
             --generate-notes
