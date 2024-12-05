@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 0.8.0
+
+### Minor Changes
+
+- 6414916: Release after Vinh’s restructure
+
 ## 0.7.3
 
 ### Patch Changes
