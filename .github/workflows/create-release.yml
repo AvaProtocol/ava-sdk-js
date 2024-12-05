@@ -70,7 +70,7 @@ jobs:
         with:
           token: ${{ github.token }}
           base: main
-          head: ${{ env.BRANCH_NAME }}
+          branch: ${{ env.BRANCH_NAME }}
           title: "Version packages"
           body: "This pull request contains version bumps for packages."
 
