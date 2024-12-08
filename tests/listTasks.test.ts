@@ -2,7 +2,7 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 
 import { erc20TransferTask } from "./fixture";
 
@@ -66,7 +66,10 @@ describe("listTasks Tests", () => {
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+      queueTaskCleanup(createdTaskId);
     });
+
+    afterAll(async() => await teardown(client, authKey));
 
     test("should list tasks when authenticated with signature", async () => {
       const result = await client.listTasks(smartWalletAddress, { authKey });
@@ -106,7 +109,10 @@ describe("listTasks Tests", () => {
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+      queueTaskCleanup(createdTaskId);
     });
+
+    afterAll(async() => await teardown(client, authKey));
 
     test("should list tasks when authenticated with API key", async () => {
       const result = await client.listTasks(smartWalletAddress, { authKey });

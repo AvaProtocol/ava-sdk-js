@@ -70,6 +70,18 @@ describe("listSmartWalletses Tests", () => {
       expect(wallets.length).toBeGreaterThanOrEqual(2);
       expect(wallets.some(item => item.salt === "12345")).toBe(true);
     });
+
+    test("create wallet is idempotent", async () => {
+      await client.createWallet({salt: "12345"}, { authKey });
+      await client.createWallet({salt: "12345"}, { authKey });
+      await client.createWallet({salt: 0}, { authKey });
+      await client.createWallet({salt: 0}, { authKey });
+
+      const wallets = await client.listSmartWallets({ authKey });
+      console.log("wallet", wallets);
+      expect(wallets.filter(item => item.salt === "12345")).toHaveLength(1);
+      expect(wallets.filter(item => item.salt === "0")).toHaveLength(1);
+    });
   });
 
   describe("Auth with API key", () => {
