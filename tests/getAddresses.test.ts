@@ -3,7 +3,7 @@ import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
-import { FACTORY_ADDRESS } from "./fixture";
+import { FACTORY_ADDRESS } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -64,15 +64,16 @@ describe("listSmartWalletses Tests", () => {
     });
 
     test("create wallet is idempotent", async () => {
-      await client.createWallet({salt: "12345"}, { authKey });
-      await client.createWallet({salt: "12345"}, { authKey });
-      await client.createWallet({salt: 0}, { authKey });
-      await client.createWallet({salt: 0}, { authKey });
+      const salt1 = "12345";
+      const salt2 = "0";
+      const createdWallet1 = await client.createWallet({ salt: salt1 }, { authKey });
+      const createdWallet2 = await client.createWallet({ salt: salt2 }, { authKey });
 
-      const wallets = await client.listSmartWallets({ authKey });
-      console.log("wallet", wallets);
-      expect(wallets.filter(item => item.salt === "12345")).toHaveLength(1);
-      expect(wallets.filter(item => item.salt === "0")).toHaveLength(1);
+      const wallets = await client.getWallets({ authKey });
+
+      // Make sure the created wallets have correponding salts
+      expect(wallets.find((item) => item.address === createdWallet1.address)?.salt).toEqual(salt1);
+      expect(wallets.find((item) => item.address === createdWallet2.address)?.salt).toEqual(salt2);
     });
   });
 

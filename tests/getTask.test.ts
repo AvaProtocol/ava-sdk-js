@@ -2,25 +2,28 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 import {
-  WorkflowTemplate,
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  queueWorkflowForCleanup,
   compareResults,
-} from "./fixture";
+  removeCreatedWorkflows,
+} from "./utils";
+import { WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Get environment variables with type safety
-const {
-  TEST_API_KEY,
-  TEST_PRIVATE_KEY,
-  ENDPOINT,
-} = {
+const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
+const createdWorkflows: Map<string, boolean> = new Map();
 
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -65,17 +68,18 @@ describe("getTask Tests", () => {
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueTaskCleanup(createdTaskId);
+
+      queueWorkflowForCleanup(createdWorkflows, workflowId);
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(async () =>
+      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should get task when authenticated with signature", async () => {
       const result = await client.getWorkflow(workflowId, {
         authKey,
       });
-
-      console.log("trask is ", result);
 
       // Check if the result is an object and has the expected properties
       compareResults(
@@ -124,15 +128,16 @@ describe("getTask Tests", () => {
         }),
         { authKey }
       );
-      queueTaskCleanup(workflowId);
+
+      queueWorkflowForCleanup(createdWorkflows, workflowId);
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(async () =>
+      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should get task when authenticated with API key", async () => {
       const result = await client.getWorkflow(workflowId, { authKey });
-
-      console.log("trask is ", result);
 
       // Check if the result is an object and has the expected properties
       compareResults(
@@ -181,10 +186,13 @@ describe("getTask Tests", () => {
         }),
         { authKey }
       );
-      queueTaskCleanup(workflowId);
+
+      queueWorkflowForCleanup(createdWorkflows, workflowId);
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(async () =>
+      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should throw error when getting a task without authentication", async () => {
       await expect(

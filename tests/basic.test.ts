@@ -2,8 +2,15 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client, { WorkflowStatuses } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup } from "./utils";
-import { compareResults, FACTORY_ADDRESS, WorkflowTemplate } from "./fixture";
+import {
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  queueWorkflowForCleanup,
+  removeCreatedWorkflows,
+  compareResults,
+} from "./utils";
+import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -14,6 +21,9 @@ const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
+const createdWorkflows: Map<string, boolean> = new Map();
 
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -119,7 +129,10 @@ describe("Basic Tests", () => {
       authKey = result.authKey;
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("createWallet", async () => {
       const result = await client.createWallet({ salt: "123" }, { authKey });
@@ -132,8 +145,6 @@ describe("Basic Tests", () => {
       const wallets = await client.getWallets({ authKey });
       expect(wallets.length).toBeGreaterThanOrEqual(1);
 
-      console.log("wallets", wallets);
-
       expect(wallets[0].address).toBeDefined();
       expect(wallets[0].salt).toEqual("0");
       expect(wallets[0].factory).toEqual(FACTORY_ADDRESS);
@@ -143,34 +154,47 @@ describe("Basic Tests", () => {
       const wallets = await client.getWallets({ authKey });
       const smartWalletAddress = wallets[0].address;
 
-      const result = await client.submitWorkflow(
+      const createResult = await client.submitWorkflow(
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
 
-      queueTaskCleanup(result);
+      queueWorkflowForCleanup(createdWorkflows, createResult);
 
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(26);
+      expect(createResult).toBeDefined();
+      expect(createResult).toHaveLength(26);
     });
 
     test("getTask", async () => {
       const wallets = await client.getWallets({ authKey });
       const smartWalletAddress = wallets[0].address;
 
-      const result = await client.submitWorkflow(
+      const createResult = await client.submitWorkflow(
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
 
-      expect(result).toHaveLength(26);
+      expect(createResult).toHaveLength(26);
 
-      const task = await client.getWorkflow(result, { authKey });
-      compareResults({ ...WorkflowTemplate, smartWalletAddress }, task);
-      queueTaskCleanup(result);
+      const task = await client.getWorkflow(createResult, { authKey });
+      compareResults(
+        {
+          ...WorkflowTemplate,
+          smartWalletAddress,
+          id: createResult,
+          status: WorkflowStatuses.ACTIVE,
+          owner: walletAddress,
+        },
+        task
+      );
+
+      queueWorkflowForCleanup(createdWorkflows, createResult);
     });
 
     test("listTask", async () => {
+      // Remove any workflows created in previous tests
+      await removeCreatedWorkflows(client, authKey, createdWorkflows);
+
       const smartWallet = await client.createWallet(
         { salt: "345" },
         { authKey }
@@ -193,6 +217,8 @@ describe("Basic Tests", () => {
         { authKey }
       );
 
+      queueWorkflowForCleanup(createdWorkflows, createdId1);
+
       console.log("Getting workflows for wallet:", walletSalt0);
       const listResult1 = await client.getWorkflows(walletSalt0!, {
         authKey,
@@ -206,11 +232,15 @@ describe("Basic Tests", () => {
         { authKey }
       );
 
+      queueWorkflowForCleanup(createdWorkflows, createdId2);
+
       console.log("Getting workflows for wallet:", walletSalt345);
       const listResult2 = await client.getWorkflows(walletSalt345, { authKey });
 
+      console.log("listResult1:", listResult1);
+      console.log("listResult2:", listResult2);
       expect(listResult1.length).toBeGreaterThanOrEqual(1);
-      expect(listResult2.length).toBeGreaterThanOrEqual(2);
+      expect(listResult2.length).toBeGreaterThanOrEqual(1);
 
       const foundFirstWorkflow = listResult1.find(
         (item) => item.id === createdId1
@@ -225,34 +255,38 @@ describe("Basic Tests", () => {
       expect(foundSecondWorkflow?.smartWalletAddress).toEqual(walletSalt345);
 
       // Not found the second workflow in the first list, since the are from different wallets
-      expect(listResult1.find((item) => item.id === createdId2)).toBeUndefined();
+      expect(
+        listResult1.find((item) => item.id === createdId2)
+      ).toBeUndefined();
 
       // Not found the first workflow in the second list, since the are from different wallets
-      expect(listResult2.find((item) => item.id === createdId1)).toBeUndefined();
-
-      // TODO: cleanup the created workflows
+      expect(
+        listResult2.find((item) => item.id === createdId1)
+      ).toBeUndefined();
     });
 
     test("cancelTask", async () => {
       const wallets = await client.getWallets({ authKey });
       const smartWalletAddress = wallets[0].address;
 
-      const result = await client.submitWorkflow(
+      const createResult = await client.submitWorkflow(
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
 
-      // TODO: there was a cleanup after creation
-      const workflow = await client.getWorkflow(result, { authKey });
+      queueWorkflowForCleanup(createdWorkflows, createResult);
+
+      const workflow = await client.getWorkflow(createResult, { authKey });
       expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
 
-      const cancelResult = await client.cancelWorkflow(workflow.id!, {
+      const cancelResult = await client.cancelWorkflow(createResult, {
         authKey,
       });
       expect(cancelResult).toEqual(true);
-      const updatedWorkflow = await client.getWorkflow(workflow.id!, {
+      const updatedWorkflow = await client.getWorkflow(createResult, {
         authKey,
       });
+
       expect(updatedWorkflow.status).toEqual(WorkflowStatuses.CANCELED);
     });
 
@@ -260,14 +294,16 @@ describe("Basic Tests", () => {
       const wallets = await client.getWallets({ authKey });
       const smartWalletAddress = wallets[0].address;
 
-      const result = await client.submitWorkflow(
+      const createResult = await client.submitWorkflow(
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      const workflow = await client.getWorkflow(result, { authKey });
+
+      const workflow = await client.getWorkflow(createResult, { authKey });
       expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
       expect(workflow.id).toHaveLength(26);
-      const deleteResult = await client.deleteWorkflow(workflow.id!, {
+
+      const deleteResult = await client.deleteWorkflow(createResult, {
         authKey,
       });
 

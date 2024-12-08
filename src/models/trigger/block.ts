@@ -8,12 +8,6 @@ export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
 class BlockTrigger extends Trigger {
   constructor(props: BlockTriggerProps) {
     super({ ...props, type: TriggerTypes.BLOCK, data: props.data });
-
-    console.log("BlockTrigger.constructor.props:", {
-      ...props,
-      type: TriggerTypes.BLOCK,
-      data: props.data,
-    });
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -28,8 +22,6 @@ class BlockTrigger extends Trigger {
     condition.setInterval((this.data as BlockTriggerDataType).interval);
     request.setBlock(condition);
 
-    console.log("Trigger.toRequest.request:", request.toObject());
-
     return request;
   }
 
@@ -37,7 +29,6 @@ class BlockTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    console.log("BlockTrigger.fromResponse.obj:", obj);
     return new BlockTrigger({
       ...obj,
       type: TriggerTypes.BLOCK,

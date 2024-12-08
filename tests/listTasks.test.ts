@@ -2,9 +2,14 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
-
-import { WorkflowTemplate } from "./fixture";
+import {
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  queueWorkflowForCleanup,
+  removeCreatedWorkflows,
+} from "./utils";
+import { WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -15,6 +20,9 @@ const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+// Map of created workflows tracking of those that need to be cleaned up after the test
+const createdWorkflows: Map<string, boolean> = new Map();
 
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -58,10 +66,13 @@ describe("listTasks Tests", () => {
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueTaskCleanup(createdTaskId);
+
+      queueWorkflowForCleanup(createdWorkflows, workflowId);
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(async () =>
+      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should list tasks when authenticated with signature", async () => {
       const result = await client.getWorkflows(smartWalletAddress, {
@@ -109,10 +120,12 @@ describe("listTasks Tests", () => {
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueTaskCleanup(createdTaskId);
+      queueWorkflowForCleanup(createdWorkflows, workflowId);
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(async () =>
+      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should list tasks when authenticated with API key", async () => {
       const result = await client.getWorkflows(smartWalletAddress, { authKey });

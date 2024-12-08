@@ -17,18 +17,17 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  teardown,
-  queueTaskCleanup,
+  removeCreatedWorkflows,
+  queueWorkflowForCleanup,
+  compareResults,
 } from "./utils";
 
 import {
   WorkflowTemplate,
   NodesTemplate,
   EdgesTemplate,
-  TriggerTemplate,
-  compareResults,
   multiNodeBranchingTask,
-} from "./fixture";
+} from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -47,6 +46,9 @@ const {
   ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
+const createdWorkflows: Map<string, boolean> = new Map();
 
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -84,7 +86,10 @@ describe("createTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
-    afterAll(async () => await teardown(client, authKey));
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should create a task when authenticated with signature", async () => {
       console.log("TriggerFactory.create.inputs:", {
@@ -113,7 +118,7 @@ describe("createTask Tests", () => {
       const result = await client.submitWorkflow(workflow, { authKey });
       console.log("Create workflow.result:", result);
 
-      queueTaskCleanup(result);
+      queueWorkflowForCleanup(createdWorkflows, result);
 
       expect(result).toBeDefined();
       expect(typeof result).toBe("string");
@@ -145,7 +150,7 @@ describe("createTask Tests", () => {
         client.createWorkflow(workflowData),
         { authKey }
       );
-      queueTaskCleanup(result);
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
 
       const getResult = await client.getWorkflow(submitResult, { authKey });
 
@@ -166,15 +171,15 @@ describe("createTask Tests", () => {
         }),
       };
 
-      const result = await client.submitWorkflow(
+      const submitResult = await client.submitWorkflow(
         client.createWorkflow(workflowData),
         { authKey }
       );
-      queueTaskCleanup(result);
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
 
-      const task = await client.getWorkflow(result, { authKey });
+      const task = await client.getWorkflow(submitResult, { authKey });
       compareResults(
-        { ...workflowData, id: result, owner: ownerAddress },
+        { ...workflowData, id: submitResult, owner: ownerAddress },
         task
       );
     });
@@ -405,18 +410,22 @@ describe("createTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
-    afterAll(async () => await teardown(client, authKey));
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should create a task when authenticated with API key", async () => {
-      const result = await client.createWorkflow(
-        { ...WorkflowTemplate, smartWalletAddress },
+      const submitResult = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueTaskCleanup(result);
 
-      console.log("Create task result:", result);
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(26);
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
+
+      console.log("Create task result:", submitResult);
+      expect(submitResult).toBeDefined();
+      expect(submitResult).toHaveLength(26);
     });
 
     test("should throw error when creating a task with owner address using API key", async () => {

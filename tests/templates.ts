@@ -9,9 +9,6 @@ import {
   BlockTriggerProps,
   NodeProps,
   ContractWriteNodeProps,
-  Workflow,
-  WorkflowStatuses,
-  WorkflowProps,
 } from "../dist";
 
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
@@ -37,7 +34,17 @@ const contractWriteNodeProps: ContractWriteNodeProps = {
   data: {
     contractAddress: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     callData: "0x123cdef",
-    contractAbi: `[{"type":"event","name":"Transfer","inputs":[{"indexed":true,"type":"address","name":"from"},{"indexed":true,"type":"address","name":"to"},{"indexed":false,"type":"uint256","name":"value"}]}]`,
+    contractAbi: `[
+      {
+        "type": "event",
+        "name": "Transfer",
+        "inputs": [
+          { "indexed": true, "type": "address", "name": "from" },
+          { "indexed": true, "type": "address", "name": "to" },
+          { "indexed": false, "type": "uint256", "name": "value" }
+        ]
+      }
+    ]`,
   },
 };
 export const NodesTemplate: NodeProps[] = [contractWriteNodeProps];
@@ -172,18 +179,4 @@ export const multiNodeBranchingTask = {
       target: "t004",
     },
   ],
-};
-
-export const compareResults = (expected: WorkflowProps, actual: Workflow) => {
-  expect(actual).toBeDefined();
-  expect(actual.smartWalletAddress).toEqual(expected.smartWalletAddress);
-  expect(actual.trigger.type).toEqual(expected.trigger.type);
-  expect(actual.nodes).toHaveLength(expected.nodes.length);
-  expect(actual.edges).toHaveLength(expected.edges.length);
-  expect(actual.startAt).toEqual(expected.startAt);
-  expect(actual.expiredAt).toEqual(expected.expiredAt);
-  // expect(actual.maxExecution).toBe(expected.maxExecution);
-  expect(actual.status).toBe(WorkflowStatuses.ACTIVE);
-  expect(actual.id).toBe(expected.id);
-  expect(actual.owner).toBe(expected.owner);
 };
