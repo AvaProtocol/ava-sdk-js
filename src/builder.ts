@@ -1,10 +1,21 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
+import { TaskEdge, TaskTrigger } from "../grpc_codegen/avs_pb";
+import { TaskNode } from "../grpc_codegen/avs_pb";
+import { TriggerType, NodeType } from "./types";
 
-import {
-  TaskTrigger, TaskEdge
-} from "./types";
+// import {
+//   TaskTrigger, TaskEdge
+// } from "./types";
 
-export const buildContractWrite = ({contractAddress, callData, contractABI}): avs_pb.ContractWriteNode => {
+export const buildContractWrite = ({
+  contractAddress,
+  callData,
+  contractABI,
+}: {
+  contractAddress: string;
+  callData: string;
+  contractABI: string;
+}): avs_pb.ContractWriteNode => {
   const n = new avs_pb.ContractWriteNode();
   n.setContractAddress(contractAddress);
   n.setCallData(callData);
@@ -14,43 +25,64 @@ export const buildContractWrite = ({contractAddress, callData, contractABI}): av
   }
 
   return n;
-}
+};
 
-export const buildContractRead = ({contract_ddress, callData, contractABI}): avs_pb.ContractReadNode => {
-  const n = new avs_pb.ContractReadNode();
-  n.setContractAddress(contractAddress);
-  n.setCallData(callData);
-  if (n.contractABI) {
+export const buildContractRead = ({
+  contractAddress,
+  callData,
+  contractABI,
+}: {
+  contractAddress: string;
+  callData: string;
+  contractABI: string;
+}): avs_pb.ContractReadNode => {
+  const contract = new avs_pb.ContractReadNode();
+  contract.setContractAddress(contractAddress);
+  contract.setCallData(callData);
+  if (contractABI) {
     // not everytine the Abi is available on Etherscan
-    n.setContractAbi(n.contractABI);
+    contract.setContractAbi(contractABI);
   }
 
   return n;
-}
+};
 
-export const buildGraphQL = ({url, query, variables}): avs_pb.GraphQLQueryNode => {
+export const buildGraphQL = ({
+  url,
+  query,
+  variables,
+}: {
+  url: string;
+  query: string;
+  variables: Record<string, string>;
+}): avs_pb.GraphQLQueryNode => {
   const n = new avs_pb.GraphQLQueryNode();
   n.setUrl(url);
   n.setQuery(query);
-  for (const [k,v ] of Object.entries(variables || {})) {
+  for (const [k, v] of Object.entries(variables || {})) {
     n.getVariablesMap().set(k, v);
   }
   return n;
-}
+};
 
-export const buildRestAPI = ({url, body, method, headers}): avs_pb.RestAPINode => {
+export const buildRestAPI = ({
+  url,
+  body,
+  method,
+  headers,
+}): avs_pb.RestAPINode => {
   const n = new avs_pb.RestAPINode();
   n.setUrl(url);
   n.setBody(body);
   n.setMethod(method);
-  for (const [k,v ] of Object.entries(headers || {})) {
+  for (const [k, v] of Object.entries(headers || {})) {
     n.getHeadersMap().set(k, v);
   }
 
   return n;
-}
+};
 
-export const buildBranch = ({conditions}): avs_pb.BranchNode => {
+export const buildBranch = ({ conditions }): avs_pb.BranchNode => {
   const n = new avs_pb.BranchNode();
 
   for (const item of conditions) {
@@ -62,174 +94,180 @@ export const buildBranch = ({conditions}): avs_pb.BranchNode => {
     n.addConditions(condition);
   }
   return n;
-}
+};
 
-export const buildFilter = ({expression}): avs_pb.FilterNode => {
+export const buildFilter = ({ expression }): avs_pb.FilterNode => {
   const n = new avs_pb.FilterNode();
   n.setExpression(expression);
   return n;
-}
+};
 
-export const buildTaskEdge = ({id, source, target}): avs_pb.TaskEdge => {
-  const edge = new avs_pb.TaskEdge();
-  edge.setId(id);
-  edge.setSource(source);
-  edge.setTarget(target);
+// export const buildTaskEdge = ({ id, source, target }): avs_pb.TaskEdge => {
+//   const edge = new avs_pb.TaskEdge();
+//   edge.setId(id);
+//   edge.setSource(source);
+//   edge.setTarget(target);
 
-  return edge;
-}
+//   return edge;
+// };
 
-export const buildTaskNode = (node): avs_pb.TaskNode => {
-  const n = new avs_pb.TaskNode();
-  n.setId(node.id);
-  n.setName(node.name);
+// TODO: define node params for the input node variable
+// export const buildTaskNode = (node): avs_pb.TaskNode => {
+//   const newNode = new avs_pb.TaskNode();
+//   newNode.setId(node.id);
+//   newNode.setName(node.name);
 
-  if (node.ethTransfer) {
-    const ethTransfer = new avs_pb.ETHTransferNode();
-    ethTransfer.setDestination(node.ethTransfer.destination);
-    ethTransfer.setAmount(node.ethTransfer.amount);
-    n.setEthTransfer(ethTransfer);
-  } else if (node.contractWrite) {
-    n.setContractWrite(buildContractWrite(node.contractWrite));
-  } else if (node.contractRead) {
-    n.setContractRead(buildContractRead(node.contractRead));
-  } else if (node.graphqlDataQuery) {
-    n.setGraphqlDataQuery(buildGraphQL(node.graphqlDataQuery));
-  } else if (node.restApi) {
-    n.setRestApi(buildRestAPI(node.restApi));
-  } else if (node.branch) {
-    n.setBranch(buildBranch(node.branch));
-  } else if (node["filter"]) {
-    n.setfilter(buildFilter(node["filter"]));
-  } else if (node.customCode) {
-    const code = new avs_pb.CustomCodeNode;
-    code.setType(node.customCode.type);
-    n.setCustomCode(node.customCode);
-  } else {
-    throw new Error("missing task payload");
-  }
-  return n
-}
+//   if (node.ethTransfer) {
+//     const ethTransfer = new avs_pb.ETHTransferNode();
+//     ethTransfer.setDestination(node.ethTransfer.destination);
+//     ethTransfer.setAmount(node.ethTransfer.amount);
+//     newNode.setEthTransfer(ethTransfer);
+//   } else if (node.contractWrite) {
+//     newNode.setContractWrite(buildContractWrite(node.contractWrite));
+//   } else if (node.contractRead) {
+//     newNode.setContractRead(buildContractRead(node.contractRead));
+//   } else if (node.graphqlDataQuery) {
+//     newNode.setGraphqlDataQuery(buildGraphQL(node.graphqlDataQuery));
+//   } else if (node.rest_api) {
+//     newNode.setRestApi(buildRestAPI(node.rest_api));
+//   } else if (node.branch) {
+//     newNode.setBranch(buildBranch(node.branch));
+//   } else if (node["filter"]) {
+//     newNode.setFilter(buildFilter(node["filter"]));
+//   } else if (node.customCode) {
+//     const code = new avs_pb.CustomCodeNode();
+//     code.setType(node.customCode.type);
+//     newNode.setCustomCode(code);
+//   } else {
+//     throw new Error(`Unknown node type while building node.`);
+//   }
+//   return newNode;
+// };
 
 export const buildTrigger = (payload): avs_pb.TaskTrigger => {
   const trigger = new avs_pb.TaskTrigger();
 
-  for (const [key, value] of Object.entries(payload)) {
-    if (key == "manual") {
-      trigger.setManual(value);
-      return trigger;
-    }
+  switch (payload.triggerType) {
+    case TriggerType.MANUAL:
+      trigger.setManual(payload.manual);
+      break;
 
-    if (key == "fixedTime") {
-      let schedule = new avs_pb.FixedEpochCondition();
-      schedule.setEpochsList(value.epochs);
+    case TriggerType.FIXED_TIME:
+      const schedule = new avs_pb.FixedEpochCondition();
+      schedule.setEpochsList(payload.fixedTime.epochs);
       trigger.setFixedTime(schedule);
+      break;
 
-      return trigger;
-    }
-
-    if (key == "cron") {
+    case TriggerType.CRON:
       const cron = new avs_pb.CronCondition();
-      cron.setScheduleList(value.schedule);
+      cron.setScheduleList(payload.cron.schedule);
       trigger.setCron(cron);
-      return trigger;
-    }
-    
-    if (key == "block") {
+      break;
+
+    case TriggerType.BLOCK:
       const block = new avs_pb.BlockCondition();
-      block.setInterval(value.interval);
+      block.setInterval(payload.block.interval);
       trigger.setBlock(block);
-      return trigger;
-    }
-    
-    if (key == "event") {
+      break;
+
+    case TriggerType.EVENT:
       const event = new avs_pb.EventCondition();
       event.setExpression(payload.event.expression);
-
       trigger.setEvent(event);
+      break;
 
-      return trigger;
-    }
-
-    throw new Error("missing trigger");
+    default:
+      throw new Error(`Unknown trigger type: ${payload.triggerType}.`);
   }
-}
 
-export const triggerFromGRPC = (trigger: avs_pb.TaskTrigger | undefined): TaskTrigger => {
+  return trigger;
+};
+
+export const triggerFromGRPC = (
+  trigger: avs_pb.TaskTrigger | undefined
+): avs_pb.TaskTrigger.AsObject | undefined => {
   if (!trigger) {
-    return { triggerType: avs_pb.TaskTrigger.TriggerTypeCase.TRIGGER_TYPE_NOT_SET }
+    return undefined;
   }
+
+  // if (!trigger) {
+  //   return { triggerType: TriggerType.TRIGGER_TYPE_NOT_SET };
+  // }
 
   const base = {
-    triggerType: trigger.getTriggerTypeCase()
-  }
+    triggerType: trigger.getTriggerTypeCase(),
+  };
 
   switch (trigger.getTriggerTypeCase()) {
-    case avs_pb.TaskTrigger.TriggerTypeCase.MANUAL:
+    case TriggerType.MANUAL:
       base.manual = trigger.getManual();
       break;
-    case avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME:
-      base.fixedTime = { epochs: trigger.getFixedTime().getEpochsList() }
+    case TriggerType.FIXED_TIME:
+      base.fixedTime = { epochs: trigger.getFixedTime().getEpochsList() };
       break;
-    case avs_pb.TaskTrigger.TriggerTypeCase.CRON:
-      base.cron = { schedule: trigger.getCron().getScheduleList() }
+    case TriggerType.CRON:
+      base.cron = { schedule: trigger.getCron().getScheduleList() };
       break;
-    case avs_pb.TaskTrigger.TriggerTypeCase.BLOCK:
-      base.block = { interval: trigger.getBlock().getInterval() }
+    case TriggerType.BLOCK:
+      base.block = { interval: trigger.getBlock().getInterval() };
       break;
-    case avs_pb.TaskTrigger.TriggerTypeCase.EVENT:
-      base.event = { expression: trigger.getEvent().getExpression() }
+    case TriggerType.EVENT:
+      base.event = { expression: trigger.getEvent().getExpression() };
       break;
   }
 
   return base;
-}
+};
 
-export const nodeFromGRPC = (node): TaskNode => {
+export const nodeFromGRPC = (
+  node: avs_pb.TaskNode
+): avs_pb.TaskNode.AsObject => {
+  console.log("nodeFromGRPC.node", node);
   const base = node.toObject();
+
   const standarize = {
-    taskType: node.getTaskTypeCase()
-  }
+    taskType: node.getTaskTypeCase(),
+  };
 
   switch (node.getTaskTypeCase()) {
-    case avs_pb.TaskNode.TaskTypeCase.ETH_TRANSFER:
+    case NodeType.ETH_TRANSFER:
       standarize.ethTransfer = base.ethTransfer;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.CONTRACT_WRITE:
+    case NodeType.CONTRACT_WRITE:
       standarize.contractWrite = base.contractWrite;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.CONTRACT_READ:
+    case NodeType.CONTRACT_READ:
       standarize.contractRead = base.contractRead;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.GRAPHQL_DATA_QUERY:
+    case NodeType.GRAPHQL_DATA_QUERY:
       standarize.graphqlDataQuery = base.graphqlDataQuery;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.REST_API:
+    case NodeType.REST_API:
       standarize.restApi = base.restApi;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.BRANCH:
+    case NodeType.BRANCH:
       standarize.branch = {
         conditions: base.branch.conditionsList,
-      }
+      };
       break;
-    case avs_pb.TaskNode.TaskTypeCase.FILTER:
+    case NodeType.FILTER:
       standarize.filter = base.filter;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.LOOP:
+    case NodeType.LOOP:
       standarize.loop = base.loop;
       break;
-    case avs_pb.TaskNode.TaskTypeCase.CUSTOM_CODE:
-      standarize.custom_code = base.custom_code;
+    case NodeType.CUSTOM_CODE:
+      standarize.customCode = base.customCode;
       break;
   }
 
   return standarize;
-}
+};
 
-export const taskEdgeFromGRPC = (edge: avs_pb.TaskEdge): TaskEdge => {
+export const taskEdgeFromGRPC = (edge: TaskEdge): TaskEdge.AsObject => {
   return {
     id: edge.getId(),
     source: edge.getSource(),
     target: edge.getTarget(),
-  }
-}
+  };
+};

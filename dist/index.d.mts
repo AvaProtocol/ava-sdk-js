@@ -114,48 +114,48 @@ declare namespace EventCondition {
     }
 }
 
-declare class TaskTrigger$1 extends jspb.Message { 
+declare class TaskTrigger extends jspb.Message { 
     getName(): string;
-    setName(value: string): TaskTrigger$1;
+    setName(value: string): TaskTrigger;
 
     hasManual(): boolean;
     clearManual(): void;
     getManual(): boolean;
-    setManual(value: boolean): TaskTrigger$1;
+    setManual(value: boolean): TaskTrigger;
 
     hasFixedTime(): boolean;
     clearFixedTime(): void;
     getFixedTime(): FixedEpochCondition | undefined;
-    setFixedTime(value?: FixedEpochCondition): TaskTrigger$1;
+    setFixedTime(value?: FixedEpochCondition): TaskTrigger;
 
     hasCron(): boolean;
     clearCron(): void;
     getCron(): CronCondition | undefined;
-    setCron(value?: CronCondition): TaskTrigger$1;
+    setCron(value?: CronCondition): TaskTrigger;
 
     hasBlock(): boolean;
     clearBlock(): void;
     getBlock(): BlockCondition | undefined;
-    setBlock(value?: BlockCondition): TaskTrigger$1;
+    setBlock(value?: BlockCondition): TaskTrigger;
 
     hasEvent(): boolean;
     clearEvent(): void;
     getEvent(): EventCondition | undefined;
-    setEvent(value?: EventCondition): TaskTrigger$1;
+    setEvent(value?: EventCondition): TaskTrigger;
 
-    getTriggerTypeCase(): TaskTrigger$1.TriggerTypeCase;
+    getTriggerTypeCase(): TaskTrigger.TriggerTypeCase;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TaskTrigger$1.AsObject;
-    static toObject(includeInstance: boolean, msg: TaskTrigger$1): TaskTrigger$1.AsObject;
+    toObject(includeInstance?: boolean): TaskTrigger.AsObject;
+    static toObject(includeInstance: boolean, msg: TaskTrigger): TaskTrigger.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TaskTrigger$1, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TaskTrigger$1;
-    static deserializeBinaryFromReader(message: TaskTrigger$1, reader: jspb.BinaryReader): TaskTrigger$1;
+    static serializeBinaryToWriter(message: TaskTrigger, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TaskTrigger;
+    static deserializeBinaryFromReader(message: TaskTrigger, reader: jspb.BinaryReader): TaskTrigger;
 }
 
-declare namespace TaskTrigger$1 {
+declare namespace TaskTrigger {
     export type AsObject = {
         name: string,
         manual: boolean,
@@ -199,25 +199,25 @@ declare namespace ETHTransferNode {
     }
 }
 
-declare class ContractWriteNode extends jspb.Message { 
+declare class ContractWriteNode$1 extends jspb.Message { 
     getContractAddress(): string;
-    setContractAddress(value: string): ContractWriteNode;
+    setContractAddress(value: string): ContractWriteNode$1;
     getCallData(): string;
-    setCallData(value: string): ContractWriteNode;
+    setCallData(value: string): ContractWriteNode$1;
     getContractAbi(): string;
-    setContractAbi(value: string): ContractWriteNode;
+    setContractAbi(value: string): ContractWriteNode$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): ContractWriteNode.AsObject;
-    static toObject(includeInstance: boolean, msg: ContractWriteNode): ContractWriteNode.AsObject;
+    toObject(includeInstance?: boolean): ContractWriteNode$1.AsObject;
+    static toObject(includeInstance: boolean, msg: ContractWriteNode$1): ContractWriteNode$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: ContractWriteNode, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): ContractWriteNode;
-    static deserializeBinaryFromReader(message: ContractWriteNode, reader: jspb.BinaryReader): ContractWriteNode;
+    static serializeBinaryToWriter(message: ContractWriteNode$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ContractWriteNode$1;
+    static deserializeBinaryFromReader(message: ContractWriteNode$1, reader: jspb.BinaryReader): ContractWriteNode$1;
 }
 
-declare namespace ContractWriteNode {
+declare namespace ContractWriteNode$1 {
     export type AsObject = {
         contractAddress: string,
         callData: string,
@@ -303,7 +303,6 @@ declare class RestAPINode extends jspb.Message {
 declare namespace RestAPINode {
     export type AsObject = {
         url: string,
-
         headersMap: Array<[string, string]>,
         body: string,
         method: string,
@@ -416,8 +415,8 @@ declare class LoopNode extends jspb.Message {
 
     hasContractWrite(): boolean;
     clearContractWrite(): void;
-    getContractWrite(): ContractWriteNode | undefined;
-    setContractWrite(value?: ContractWriteNode): LoopNode;
+    getContractWrite(): ContractWriteNode$1 | undefined;
+    setContractWrite(value?: ContractWriteNode$1): LoopNode;
 
     hasContractRead(): boolean;
     clearContractRead(): void;
@@ -457,7 +456,7 @@ declare namespace LoopNode {
         iterVal: string,
         iterKey: string,
         ethTransfer?: ETHTransferNode.AsObject,
-        contractWrite?: ContractWriteNode.AsObject,
+        contractWrite?: ContractWriteNode$1.AsObject,
         contractRead?: ContractReadNode.AsObject,
         graphqlDataQuery?: GraphQLQueryNode.AsObject,
         restApi?: RestAPINode.AsObject,
@@ -476,25 +475,25 @@ declare namespace LoopNode {
 
 }
 
-declare class TaskEdge$1 extends jspb.Message { 
+declare class TaskEdge extends jspb.Message { 
     getId(): string;
-    setId(value: string): TaskEdge$1;
+    setId(value: string): TaskEdge;
     getSource(): string;
-    setSource(value: string): TaskEdge$1;
+    setSource(value: string): TaskEdge;
     getTarget(): string;
-    setTarget(value: string): TaskEdge$1;
+    setTarget(value: string): TaskEdge;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TaskEdge$1.AsObject;
-    static toObject(includeInstance: boolean, msg: TaskEdge$1): TaskEdge$1.AsObject;
+    toObject(includeInstance?: boolean): TaskEdge.AsObject;
+    static toObject(includeInstance: boolean, msg: TaskEdge): TaskEdge.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TaskEdge$1, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TaskEdge$1;
-    static deserializeBinaryFromReader(message: TaskEdge$1, reader: jspb.BinaryReader): TaskEdge$1;
+    static serializeBinaryToWriter(message: TaskEdge, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TaskEdge;
+    static deserializeBinaryFromReader(message: TaskEdge, reader: jspb.BinaryReader): TaskEdge;
 }
 
-declare namespace TaskEdge$1 {
+declare namespace TaskEdge {
     export type AsObject = {
         id: string,
         source: string,
@@ -502,75 +501,75 @@ declare namespace TaskEdge$1 {
     }
 }
 
-declare class TaskNode$1 extends jspb.Message { 
+declare class TaskNode extends jspb.Message { 
     getId(): string;
-    setId(value: string): TaskNode$1;
+    setId(value: string): TaskNode;
     getName(): string;
-    setName(value: string): TaskNode$1;
+    setName(value: string): TaskNode;
 
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
     getEthTransfer(): ETHTransferNode | undefined;
-    setEthTransfer(value?: ETHTransferNode): TaskNode$1;
+    setEthTransfer(value?: ETHTransferNode): TaskNode;
 
     hasContractWrite(): boolean;
     clearContractWrite(): void;
-    getContractWrite(): ContractWriteNode | undefined;
-    setContractWrite(value?: ContractWriteNode): TaskNode$1;
+    getContractWrite(): ContractWriteNode$1 | undefined;
+    setContractWrite(value?: ContractWriteNode$1): TaskNode;
 
     hasContractRead(): boolean;
     clearContractRead(): void;
     getContractRead(): ContractReadNode | undefined;
-    setContractRead(value?: ContractReadNode): TaskNode$1;
+    setContractRead(value?: ContractReadNode): TaskNode;
 
     hasGraphqlDataQuery(): boolean;
     clearGraphqlDataQuery(): void;
     getGraphqlDataQuery(): GraphQLQueryNode | undefined;
-    setGraphqlDataQuery(value?: GraphQLQueryNode): TaskNode$1;
+    setGraphqlDataQuery(value?: GraphQLQueryNode): TaskNode;
 
     hasRestApi(): boolean;
     clearRestApi(): void;
     getRestApi(): RestAPINode | undefined;
-    setRestApi(value?: RestAPINode): TaskNode$1;
+    setRestApi(value?: RestAPINode): TaskNode;
 
     hasBranch(): boolean;
     clearBranch(): void;
     getBranch(): BranchNode | undefined;
-    setBranch(value?: BranchNode): TaskNode$1;
+    setBranch(value?: BranchNode): TaskNode;
 
     hasFilter(): boolean;
     clearFilter(): void;
     getFilter(): FilterNode | undefined;
-    setFilter(value?: FilterNode): TaskNode$1;
+    setFilter(value?: FilterNode): TaskNode;
 
     hasLoop(): boolean;
     clearLoop(): void;
     getLoop(): LoopNode | undefined;
-    setLoop(value?: LoopNode): TaskNode$1;
+    setLoop(value?: LoopNode): TaskNode;
 
     hasCustomCode(): boolean;
     clearCustomCode(): void;
     getCustomCode(): CustomCodeNode | undefined;
-    setCustomCode(value?: CustomCodeNode): TaskNode$1;
+    setCustomCode(value?: CustomCodeNode): TaskNode;
 
-    getTaskTypeCase(): TaskNode$1.TaskTypeCase;
+    getTaskTypeCase(): TaskNode.TaskTypeCase;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TaskNode$1.AsObject;
-    static toObject(includeInstance: boolean, msg: TaskNode$1): TaskNode$1.AsObject;
+    toObject(includeInstance?: boolean): TaskNode.AsObject;
+    static toObject(includeInstance: boolean, msg: TaskNode): TaskNode.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TaskNode$1, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TaskNode$1;
-    static deserializeBinaryFromReader(message: TaskNode$1, reader: jspb.BinaryReader): TaskNode$1;
+    static serializeBinaryToWriter(message: TaskNode, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TaskNode;
+    static deserializeBinaryFromReader(message: TaskNode, reader: jspb.BinaryReader): TaskNode;
 }
 
-declare namespace TaskNode$1 {
+declare namespace TaskNode {
     export type AsObject = {
         id: string,
         name: string,
         ethTransfer?: ETHTransferNode.AsObject,
-        contractWrite?: ContractWriteNode.AsObject,
+        contractWrite?: ContractWriteNode$1.AsObject,
         contractRead?: ContractReadNode.AsObject,
         graphqlDataQuery?: GraphQLQueryNode.AsObject,
         restApi?: RestAPINode.AsObject,
@@ -669,54 +668,54 @@ declare namespace Execution$1 {
 
 }
 
-declare class Task$1 extends jspb.Message { 
+declare class Task extends jspb.Message { 
     getId(): string;
-    setId(value: string): Task$1;
+    setId(value: string): Task;
     getOwner(): string;
-    setOwner(value: string): Task$1;
+    setOwner(value: string): Task;
     getSmartWalletAddress(): string;
-    setSmartWalletAddress(value: string): Task$1;
+    setSmartWalletAddress(value: string): Task;
     getStartAt(): number;
-    setStartAt(value: number): Task$1;
+    setStartAt(value: number): Task;
     getExpiredAt(): number;
-    setExpiredAt(value: number): Task$1;
+    setExpiredAt(value: number): Task;
     getMemo(): string;
-    setMemo(value: string): Task$1;
+    setMemo(value: string): Task;
     getCompletedAt(): number;
-    setCompletedAt(value: number): Task$1;
+    setCompletedAt(value: number): Task;
     getMaxExecution(): number;
-    setMaxExecution(value: number): Task$1;
+    setMaxExecution(value: number): Task;
     getStatus(): TaskStatus;
-    setStatus(value: TaskStatus): Task$1;
+    setStatus(value: TaskStatus): Task;
 
     hasTrigger(): boolean;
     clearTrigger(): void;
-    getTrigger(): TaskTrigger$1 | undefined;
-    setTrigger(value?: TaskTrigger$1): Task$1;
+    getTrigger(): TaskTrigger | undefined;
+    setTrigger(value?: TaskTrigger): Task;
     clearNodesList(): void;
-    getNodesList(): Array<TaskNode$1>;
-    setNodesList(value: Array<TaskNode$1>): Task$1;
-    addNodes(value?: TaskNode$1, index?: number): TaskNode$1;
+    getNodesList(): Array<TaskNode>;
+    setNodesList(value: Array<TaskNode>): Task;
+    addNodes(value?: TaskNode, index?: number): TaskNode;
     clearEdgesList(): void;
-    getEdgesList(): Array<TaskEdge$1>;
-    setEdgesList(value: Array<TaskEdge$1>): Task$1;
-    addEdges(value?: TaskEdge$1, index?: number): TaskEdge$1;
+    getEdgesList(): Array<TaskEdge>;
+    setEdgesList(value: Array<TaskEdge>): Task;
+    addEdges(value?: TaskEdge, index?: number): TaskEdge;
     clearExecutionsList(): void;
     getExecutionsList(): Array<Execution$1>;
-    setExecutionsList(value: Array<Execution$1>): Task$1;
+    setExecutionsList(value: Array<Execution$1>): Task;
     addExecutions(value?: Execution$1, index?: number): Execution$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): Task$1.AsObject;
-    static toObject(includeInstance: boolean, msg: Task$1): Task$1.AsObject;
+    toObject(includeInstance?: boolean): Task.AsObject;
+    static toObject(includeInstance: boolean, msg: Task): Task.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: Task$1, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): Task$1;
-    static deserializeBinaryFromReader(message: Task$1, reader: jspb.BinaryReader): Task$1;
+    static serializeBinaryToWriter(message: Task, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Task;
+    static deserializeBinaryFromReader(message: Task, reader: jspb.BinaryReader): Task;
 }
 
-declare namespace Task$1 {
+declare namespace Task {
     export type AsObject = {
         id: string,
         owner: string,
@@ -726,10 +725,10 @@ declare namespace Task$1 {
         memo: string,
         completedAt: number,
         maxExecution: number,
-        status: TaskStatus,
-        trigger?: TaskTrigger$1.AsObject,
-        nodesList: Array<TaskNode$1.AsObject>,
-        edgesList: Array<TaskEdge$1.AsObject>,
+        status: avs_pb.TaskStatus,
+        trigger?: TaskTrigger.AsObject,
+        nodesList: Array<TaskNode.AsObject>,
+        edgesList: Array<TaskEdge.AsObject>,
         executionsList: Array<Execution$1.AsObject>,
     }
 }
@@ -738,8 +737,8 @@ declare class CreateTaskReq extends jspb.Message {
 
     hasTrigger(): boolean;
     clearTrigger(): void;
-    getTrigger(): TaskTrigger$1 | undefined;
-    setTrigger(value?: TaskTrigger$1): CreateTaskReq;
+    getTrigger(): TaskTrigger | undefined;
+    setTrigger(value?: TaskTrigger): CreateTaskReq;
     getStartAt(): number;
     setStartAt(value: number): CreateTaskReq;
     getExpiredAt(): number;
@@ -751,13 +750,13 @@ declare class CreateTaskReq extends jspb.Message {
     getMemo(): string;
     setMemo(value: string): CreateTaskReq;
     clearNodesList(): void;
-    getNodesList(): Array<TaskNode$1>;
-    setNodesList(value: Array<TaskNode$1>): CreateTaskReq;
-    addNodes(value?: TaskNode$1, index?: number): TaskNode$1;
+    getNodesList(): Array<TaskNode>;
+    setNodesList(value: Array<TaskNode>): CreateTaskReq;
+    addNodes(value?: TaskNode, index?: number): TaskNode;
     clearEdgesList(): void;
-    getEdgesList(): Array<TaskEdge$1>;
-    setEdgesList(value: Array<TaskEdge$1>): CreateTaskReq;
-    addEdges(value?: TaskEdge$1, index?: number): TaskEdge$1;
+    getEdgesList(): Array<TaskEdge>;
+    setEdgesList(value: Array<TaskEdge>): CreateTaskReq;
+    addEdges(value?: TaskEdge, index?: number): TaskEdge;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CreateTaskReq.AsObject;
@@ -771,14 +770,14 @@ declare class CreateTaskReq extends jspb.Message {
 
 declare namespace CreateTaskReq {
     export type AsObject = {
-        trigger?: TaskTrigger$1.AsObject,
+        trigger?: TaskTrigger.AsObject,
         startAt: number,
         expiredAt: number,
         maxExecution: number,
         smartWalletAddress: string,
         memo: string,
-        nodesList: Array<TaskNode$1.AsObject>,
-        edgesList: Array<TaskEdge$1.AsObject>,
+        nodesList: Array<TaskNode.AsObject>,
+        edgesList: Array<TaskEdge.AsObject>,
     }
 }
 
@@ -935,9 +934,9 @@ declare namespace ListTasksReq {
 
 declare class ListTasksResp extends jspb.Message { 
     clearTasksList(): void;
-    getTasksList(): Array<Task$1>;
-    setTasksList(value: Array<Task$1>): ListTasksResp;
-    addTasks(value?: Task$1, index?: number): Task$1;
+    getTasksList(): Array<Task>;
+    setTasksList(value: Array<Task>): ListTasksResp;
+    addTasks(value?: Task, index?: number): Task;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -951,7 +950,7 @@ declare class ListTasksResp extends jspb.Message {
 
 declare namespace ListTasksResp {
     export type AsObject = {
-        tasksList: Array<Task$1.AsObject>,
+        tasksList: Array<Task.AsObject>,
     }
 }
 
@@ -1112,9 +1111,9 @@ interface IAggregatorClient {
     listTasks(request: ListTasksReq, callback: (error: grpc.ServiceError | null, response: ListTasksResp) => void): grpc.ClientUnaryCall;
     listTasks(request: ListTasksReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListTasksResp) => void): grpc.ClientUnaryCall;
     listTasks(request: ListTasksReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListTasksResp) => void): grpc.ClientUnaryCall;
-    getTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: Task$1) => void): grpc.ClientUnaryCall;
-    getTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Task$1) => void): grpc.ClientUnaryCall;
-    getTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Task$1) => void): grpc.ClientUnaryCall;
+    getTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
+    getTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
+    getTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -1143,15 +1142,161 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public listTasks(request: ListTasksReq, callback: (error: grpc.ServiceError | null, response: ListTasksResp) => void): grpc.ClientUnaryCall;
     public listTasks(request: ListTasksReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListTasksResp) => void): grpc.ClientUnaryCall;
     public listTasks(request: ListTasksReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListTasksResp) => void): grpc.ClientUnaryCall;
-    public getTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: Task$1) => void): grpc.ClientUnaryCall;
-    public getTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Task$1) => void): grpc.ClientUnaryCall;
-    public getTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Task$1) => void): grpc.ClientUnaryCall;
+    public getTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
+    public getTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
+    public getTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+}
+
+type ExecutionProps = Execution$1.AsObject;
+type TriggerMarkProps = TriggerMark$1.AsObject;
+type StepProps = Execution$1.Step.AsObject;
+declare class Execution implements ExecutionProps {
+    epoch: number;
+    success: boolean;
+    error: string;
+    triggerMark?: TriggerMarkProps;
+    result: string;
+    stepsList: Array<StepProps>;
+    constructor(props: ExecutionProps);
+    static fromResponse(execution: Execution$1): Execution;
+    toRequest(): Execution$1;
+}
+
+declare const NodeTypes: typeof TaskNode.TaskTypeCase;
+type NodeType = TaskNode.TaskTypeCase;
+type NodeData = ETHTransferNode.AsObject | ContractWriteNode$1.AsObject | ContractReadNode.AsObject | GraphQLQueryNode.AsObject | RestAPINode.AsObject | BranchNode.AsObject | FilterNode.AsObject | LoopNode.AsObject | CustomCodeNode.AsObject;
+type NodeProps = Omit<TaskNode.AsObject, "ethTransfer" | "contractWrite" | "contractRead" | "graphqlDataQuery" | "restApi" | "branch" | "filter" | "loop" | "customCode"> & {
+    type: TaskNode.TaskTypeCase;
+    data: NodeData;
+};
+declare class Node implements NodeProps {
+    id: string;
+    name: string;
+    type: NodeType;
+    data: NodeData;
+    constructor(props: NodeProps);
+    static getTypeAndData(obj: TaskNode.AsObject): {
+        type: NodeType;
+        data: NodeData;
+    };
+    toRequest(): TaskNode;
+}
+
+type EdgeProps = TaskEdge.AsObject;
+declare class Edge implements EdgeProps {
+    id: string;
+    source: string;
+    target: string;
+    constructor(edge: EdgeProps);
+    static fromResponse(edge: TaskEdge): Edge;
+    toRequest(): TaskEdge;
+}
+
+declare const TriggerTypes: typeof TaskTrigger.TriggerTypeCase;
+type TriggerType = TaskTrigger.TriggerTypeCase;
+type TriggerData = FixedEpochCondition.AsObject | CronCondition.AsObject | BlockCondition.AsObject | EventCondition.AsObject | null;
+type TriggerProps = Omit<TaskTrigger.AsObject, "manual" | "fixedTime" | "cron" | "block" | "event"> & {
+    type: TriggerType;
+    data: TriggerData;
+};
+declare class Trigger implements TriggerProps {
+    name: string;
+    type: TriggerType;
+    data: TriggerData;
+    /**
+     * Create an instance of Trigger from user inputs
+     * @param props
+     */
+    constructor(props: TriggerProps);
+    toRequest(): TaskTrigger;
+}
+
+declare const WorkflowStatuses: typeof TaskStatus;
+type WorkflowStatus = TaskStatus;
+type WorkflowProps = Omit<Task.AsObject, "id" | "owner" | "completedAt" | "status" | "executionsList" | "memo" | "trigger" | "nodesList" | "edgesList"> & {
+    id?: string;
+    owner?: string;
+    completedAt?: number;
+    status?: WorkflowStatus;
+    memo?: string;
+    trigger: Trigger;
+    nodes: Node[];
+    edges: Edge[];
+    executions?: Execution[];
+};
+declare class Workflow implements WorkflowProps {
+    smartWalletAddress: string;
+    trigger: Trigger;
+    nodes: Node[];
+    edges: Edge[];
+    startAt: number;
+    expiredAt: number;
+    maxExecution: number;
+    id?: string;
+    owner?: string;
+    memo?: string;
+    executions?: Execution[];
+    completedAt?: number;
+    status?: WorkflowStatus;
+    /**
+     * Create an instance of Workflow from user inputs
+     * @param props
+     */
+    constructor(props: WorkflowProps);
+    /**
+     * Create an instance of Workflow from AVS getTask response
+     * @param res
+     * @returns
+     */
+    static fromResponse(obj: Task): Workflow;
+    toRequest(): CreateTaskReq;
+}
+
+type BlockTriggerDataType = BlockCondition.AsObject;
+type BlockTriggerProps = TriggerProps & {
+    data: BlockTriggerDataType;
+};
+declare class BlockTrigger extends Trigger {
+    constructor(props: BlockTriggerProps);
+    toRequest(): TaskTrigger;
+    static fromResponse(raw: TaskTrigger): BlockTrigger;
+}
+
+declare class NodeFactory {
+    static create(props: NodeProps): Node;
+    static createNodes(props: NodeProps[]): Node[];
+    static fromResponse(raw: TaskNode): Node;
+}
+
+declare class TriggerFactory {
+    /**
+     * Static factory method to create Trigger instances
+     * @param props
+     * @returns
+     */
+    static create(props: TriggerProps): Trigger;
+    /**
+     * Create an instance of Trigger from AVS getTask or listTasks response
+     * @param trigger
+     * @returns
+     */
+    static fromResponse(raw: TaskTrigger): Trigger;
+}
+
+type ContractWriteNodeData = ContractWriteNode$1.AsObject;
+type ContractWriteNodeProps = NodeProps & {
+    data: ContractWriteNodeData;
+};
+declare class ContractWriteNode extends Node {
+    constructor(props: ContractWriteNodeProps);
+    static fromResponse(raw: TaskNode): ContractWriteNode;
+    toRequest(): TaskNode;
 }
 
 type Environment = "production" | "development" | "staging";
@@ -1164,49 +1309,6 @@ interface GetKeyResponse {
 }
 interface ClientOption {
     endpoint: string;
-}
-interface TaskTrigger {
-    triggerType: number;
-    manual?: boolean;
-    cron?: {
-        schedule: string[];
-    };
-    event?: {
-        expression: string;
-    };
-    fixedTime?: {
-        epochs: number[];
-    };
-    block?: {
-        interval: number;
-    };
-}
-interface TaskNode {
-    taskType: number;
-    id: string;
-    name: string;
-    ethTransfer?: any;
-    contractWrite?: any;
-    contractRead?: any;
-    restApi?: any;
-    customCode?: any;
-    branch?: any;
-    filter?: any;
-}
-interface TaskType {
-    id: string;
-    owner: string;
-    smartWalletAddress: string;
-    trigger: TaskTrigger;
-    nodes: TaskNode[];
-    edges: TaskEdge[];
-    startAt: number;
-    expiredAt: number;
-    memo: string;
-    completedAt: number;
-    status: number;
-    maxExecution: number;
-    executions: Execution[];
 }
 interface CreateTaskResponse {
     id: string;
@@ -1238,40 +1340,6 @@ interface TriggerMark {
     txHash?: string;
     epoch?: number;
 }
-interface ExecutionStep {
-    outputData: string;
-    log: string;
-}
-interface Execution {
-    epoch: number;
-    success: boolean;
-    error: string;
-    triggerMark?: TriggerMark;
-    result: string;
-    steps: ExecutionStep[];
-}
-interface TaskEdge {
-    id: string;
-    source: string;
-    target: string;
-}
-
-declare class Task implements TaskType {
-    id: string;
-    status: number;
-    owner: string;
-    smartWalletAddress: string;
-    trigger: TaskTrigger;
-    nodes: TaskNode[];
-    edges: TaskEdge[];
-    startAt: number;
-    expiredAt: number;
-    memo: string;
-    completedAt: number;
-    maxExecution: number;
-    executions: Execution[];
-    constructor(task: Task$1);
-}
 
 declare class BaseClient {
     readonly endpoint: string;
@@ -1286,13 +1354,14 @@ declare class BaseClient {
 }
 declare class Client extends BaseClient {
     constructor(config: ClientOption);
-    listSmartWallets(options: RequestOptions): Promise<SmartWallet[]>;
+    getWallets(options: RequestOptions): Promise<SmartWallet[]>;
     createWallet({ salt, factoryAddress }: CreateWalletReq, options: RequestOptions): Promise<SmartWallet>;
-    createTask(payload: any, options: RequestOptions): Promise<string>;
-    listTasks(address: string, options: RequestOptions): Promise<Task[]>;
-    getTask(id: string, options: RequestOptions): Promise<TaskType>;
-    cancelTask(id: string, options: RequestOptions): Promise<boolean>;
-    deleteTask(id: string, options: RequestOptions): Promise<boolean>;
+    submitWorkflow(workflow: Workflow, options: RequestOptions): Promise<string>;
+    createWorkflow(props: WorkflowProps): Workflow;
+    getWorkflows(address: string, options: RequestOptions): Promise<Workflow[]>;
+    getWorkflow(id: string, options: RequestOptions): Promise<Workflow>;
+    cancelWorkflow(id: string, options: RequestOptions): Promise<boolean>;
+    deleteWorkflow(id: string, options: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type Execution, type ExecutionStep, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskEdge, type TaskNode, type TaskTrigger, type TaskType, type TriggerMark, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, type CancelTaskResponse, type ClientOption, ContractWriteNode, type ContractWriteNodeProps, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, Edge, type EdgeProps, type Environment, Execution, type GetKeyResponse, type ListTasksResponse, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, type SmartWallet, Trigger, TriggerFactory, type TriggerMark, type TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };

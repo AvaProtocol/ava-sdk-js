@@ -4,23 +4,15 @@ import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 
-import { erc20TransferTask } from "./fixture";
+import { WorkflowTemplate } from "./fixture";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Get environment variables with type safety
-const {
-  TEST_API_KEY,
-  TEST_PRIVATE_KEY,
-  TOKEN_CONTRACT,
-  ORACLE_CONTRACT,
-  ENDPOINT,
-} = {
+const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
-  TEST_PRIVATE_KEY: requireEnvVar('TEST_PRIVATE_KEY'),
-  TOKEN_CONTRACT: requireEnvVar("TOKEN_CONTRACT"),
-  ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
+  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
@@ -44,7 +36,7 @@ describe("listTasks Tests", () => {
   describe("Auth with Signature", () => {
     let authKey: string;
     let smartWalletAddress: string;
-    let createdTaskId: string;
+    let workflowId: string;
 
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
@@ -57,13 +49,13 @@ describe("listTasks Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const listSmartWalletsRes = await client.listSmartWallets({ authKey });
+      const listSmartWalletsRes = await client.getWallets({ authKey });
       smartWalletAddress = listSmartWalletsRes[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      createdTaskId = await client.createTask(
-        { ...erc20TransferTask, smartWalletAddress },
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
       queueTaskCleanup(createdTaskId);
@@ -72,19 +64,23 @@ describe("listTasks Tests", () => {
     afterAll(async() => await teardown(client, authKey));
 
     test("should list tasks when authenticated with signature", async () => {
-      const result = await client.listTasks(smartWalletAddress, { authKey });
+      const result = await client.getWorkflows(smartWalletAddress, {
+        authKey,
+      });
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThanOrEqual(1);
-      expect(result.some((task) => task.id === createdTaskId)).toBe(true);
+      expect(result.some((task) => task.id === workflowId)).toBe(true);
     });
 
     test("should throw error when not sending a valid smart wallet address", async () => {
       await expect(
-        client.listTasks(ownerAddress, { authKey })
+        client.getWorkflows(ownerAddress, { authKey })
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
 
       await expect(
-        client.listTasks("0x000000000000000000000000000000000000dead", { authKey })
+        client.getWorkflows("0x000000000000000000000000000000000000dead", {
+          authKey,
+        })
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
   });
@@ -92,21 +88,25 @@ describe("listTasks Tests", () => {
   describe("Auth with API key", () => {
     let authKey: string;
     let smartWalletAddress: string;
-    let createdTaskId: string;
+    let workflowId: string;
 
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(ownerAddress, TEST_API_KEY, EXPIRED_AT);
+      const res = await client.authWithAPIKey(
+        ownerAddress,
+        TEST_API_KEY,
+        EXPIRED_AT
+      );
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const listSmartWalletsRes = await client.listSmartWallets({ authKey });
+      const listSmartWalletsRes = await client.getWallets({ authKey });
       smartWalletAddress = listSmartWalletsRes[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      createdTaskId = await client.createTask(
-        { ...erc20TransferTask, smartWalletAddress },
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
       queueTaskCleanup(createdTaskId);
@@ -115,19 +115,21 @@ describe("listTasks Tests", () => {
     afterAll(async() => await teardown(client, authKey));
 
     test("should list tasks when authenticated with API key", async () => {
-      const result = await client.listTasks(smartWalletAddress, { authKey });
+      const result = await client.getWorkflows(smartWalletAddress, { authKey });
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThanOrEqual(1);
-      expect(result.some((task) => task.id === createdTaskId)).toBe(true);
+      expect(result.some((task) => task.id === workflowId)).toBe(true);
     });
 
     test("should throw error when not sending a valid smart wallet address using API key", async () => {
       await expect(
-        client.listTasks(ownerAddress, { authKey })
+        client.getWorkflows(ownerAddress, { authKey })
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
 
       await expect(
-        client.listTasks("0x000000000000000000000000000000000000dead", { authKey })
+        client.getWorkflows("0x000000000000000000000000000000000000dead", {
+          authKey,
+        })
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
   });
@@ -135,7 +137,7 @@ describe("listTasks Tests", () => {
   describe("Without authentication", () => {
     let smartWalletAddress: string;
     let authKey: string;
-    
+
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
       const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
@@ -147,14 +149,14 @@ describe("listTasks Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const listSmartWalletsRes = await client.listSmartWallets({ authKey });
+      const listSmartWalletsRes = await client.getWallets({ authKey });
       smartWalletAddress = listSmartWalletsRes[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
     test("should throw error when listing tasks without authentication", async () => {
       await expect(
-        client.listTasks(smartWalletAddress, { authKey: "" })
+        client.getWorkflows(smartWalletAddress, { authKey: "" })
       ).rejects.toThrow("missing auth header");
     });
   });
