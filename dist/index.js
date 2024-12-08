@@ -55,6 +55,7 @@ var require_avs_pb = __commonJS({
     goog.object.extend(proto, google_protobuf_timestamp_pb);
     var google_protobuf_wrappers_pb = require("google-protobuf/google/protobuf/wrappers_pb.js");
     goog.object.extend(proto, google_protobuf_wrappers_pb);
+    goog.exportSymbol("proto.aggregator.AckMessageReq", null, global);
     goog.exportSymbol("proto.aggregator.BlockCondition", null, global);
     goog.exportSymbol("proto.aggregator.BranchNode", null, global);
     goog.exportSymbol("proto.aggregator.Checkin", null, global);
@@ -68,12 +69,13 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.CreateWalletReq", null, global);
     goog.exportSymbol("proto.aggregator.CreateWalletResp", null, global);
     goog.exportSymbol("proto.aggregator.CronCondition", null, global);
+    goog.exportSymbol("proto.aggregator.CustomCodeLang", null, global);
     goog.exportSymbol("proto.aggregator.CustomCodeNode", null, global);
-    goog.exportSymbol("proto.aggregator.CustomCodeType", null, global);
     goog.exportSymbol("proto.aggregator.ETHTransferNode", null, global);
     goog.exportSymbol("proto.aggregator.Error", null, global);
     goog.exportSymbol("proto.aggregator.EventCondition", null, global);
     goog.exportSymbol("proto.aggregator.Execution", null, global);
+    goog.exportSymbol("proto.aggregator.Execution.Step", null, global);
     goog.exportSymbol("proto.aggregator.FilterNode", null, global);
     goog.exportSymbol("proto.aggregator.FixedEpochCondition", null, global);
     goog.exportSymbol("proto.aggregator.GetKeyReq", null, global);
@@ -85,12 +87,17 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.ListWalletReq", null, global);
     goog.exportSymbol("proto.aggregator.ListWalletResp", null, global);
     goog.exportSymbol("proto.aggregator.LoopNode", null, global);
+    goog.exportSymbol("proto.aggregator.LoopNode.RunnerCase", null, global);
+    goog.exportSymbol("proto.aggregator.MessageOp", null, global);
     goog.exportSymbol("proto.aggregator.NonceRequest", null, global);
     goog.exportSymbol("proto.aggregator.NonceResp", null, global);
+    goog.exportSymbol("proto.aggregator.NotifyTriggersReq", null, global);
+    goog.exportSymbol("proto.aggregator.NotifyTriggersResp", null, global);
     goog.exportSymbol("proto.aggregator.RestAPINode", null, global);
     goog.exportSymbol("proto.aggregator.SmartWallet", null, global);
-    goog.exportSymbol("proto.aggregator.SyncTasksReq", null, global);
-    goog.exportSymbol("proto.aggregator.SyncTasksResp", null, global);
+    goog.exportSymbol("proto.aggregator.SyncMessagesReq", null, global);
+    goog.exportSymbol("proto.aggregator.SyncMessagesResp", null, global);
+    goog.exportSymbol("proto.aggregator.SyncMessagesResp.TaskMetadata", null, global);
     goog.exportSymbol("proto.aggregator.Task", null, global);
     goog.exportSymbol("proto.aggregator.TaskEdge", null, global);
     goog.exportSymbol("proto.aggregator.TaskNode", null, global);
@@ -98,8 +105,7 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.TaskStatus", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger.TriggerTypeCase", null, global);
-    goog.exportSymbol("proto.aggregator.UpdateChecksReq", null, global);
-    goog.exportSymbol("proto.aggregator.UpdateChecksResp", null, global);
+    goog.exportSymbol("proto.aggregator.TriggerMark", null, global);
     proto.aggregator.IdReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
@@ -128,12 +134,33 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.CheckinResp.displayName = "proto.aggregator.CheckinResp";
     }
-    proto.aggregator.SyncTasksReq = function(opt_data) {
+    proto.aggregator.SyncMessagesReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.SyncTasksReq, jspb.Message);
+    goog.inherits(proto.aggregator.SyncMessagesReq, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.SyncTasksReq.displayName = "proto.aggregator.SyncTasksReq";
+      proto.aggregator.SyncMessagesReq.displayName = "proto.aggregator.SyncMessagesReq";
+    }
+    proto.aggregator.SyncMessagesResp = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.SyncMessagesResp, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.SyncMessagesResp.displayName = "proto.aggregator.SyncMessagesResp";
+    }
+    proto.aggregator.SyncMessagesResp.TaskMetadata = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.SyncMessagesResp.TaskMetadata, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.SyncMessagesResp.TaskMetadata.displayName = "proto.aggregator.SyncMessagesResp.TaskMetadata";
+    }
+    proto.aggregator.AckMessageReq = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.AckMessageReq, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.AckMessageReq.displayName = "proto.aggregator.AckMessageReq";
     }
     proto.aggregator.FixedEpochCondition = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.FixedEpochCondition.repeatedFields_, null);
@@ -169,13 +196,6 @@ var require_avs_pb = __commonJS({
     goog.inherits(proto.aggregator.TaskTrigger, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.TaskTrigger.displayName = "proto.aggregator.TaskTrigger";
-    }
-    proto.aggregator.SyncTasksResp = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
-    };
-    goog.inherits(proto.aggregator.SyncTasksResp, jspb.Message);
-    if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.SyncTasksResp.displayName = "proto.aggregator.SyncTasksResp";
     }
     proto.aggregator.ETHTransferNode = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -241,7 +261,7 @@ var require_avs_pb = __commonJS({
       proto.aggregator.FilterNode.displayName = "proto.aggregator.FilterNode";
     }
     proto.aggregator.LoopNode = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+      jspb.Message.initialize(this, opt_data, 0, -1, null, proto.aggregator.LoopNode.oneofGroups_);
     };
     goog.inherits(proto.aggregator.LoopNode, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
@@ -262,11 +282,18 @@ var require_avs_pb = __commonJS({
       proto.aggregator.TaskNode.displayName = "proto.aggregator.TaskNode";
     }
     proto.aggregator.Execution = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+      jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Execution.repeatedFields_, null);
     };
     goog.inherits(proto.aggregator.Execution, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.Execution.displayName = "proto.aggregator.Execution";
+    }
+    proto.aggregator.Execution.Step = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.Execution.Step, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.Execution.Step.displayName = "proto.aggregator.Execution.Step";
     }
     proto.aggregator.Task = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Task.repeatedFields_, null);
@@ -352,19 +379,26 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.KeyResp.displayName = "proto.aggregator.KeyResp";
     }
-    proto.aggregator.UpdateChecksReq = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.UpdateChecksReq.repeatedFields_, null);
-    };
-    goog.inherits(proto.aggregator.UpdateChecksReq, jspb.Message);
-    if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.UpdateChecksReq.displayName = "proto.aggregator.UpdateChecksReq";
-    }
-    proto.aggregator.UpdateChecksResp = function(opt_data) {
+    proto.aggregator.TriggerMark = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.UpdateChecksResp, jspb.Message);
+    goog.inherits(proto.aggregator.TriggerMark, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.UpdateChecksResp.displayName = "proto.aggregator.UpdateChecksResp";
+      proto.aggregator.TriggerMark.displayName = "proto.aggregator.TriggerMark";
+    }
+    proto.aggregator.NotifyTriggersReq = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.NotifyTriggersReq, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.NotifyTriggersReq.displayName = "proto.aggregator.NotifyTriggersReq";
+    }
+    proto.aggregator.NotifyTriggersResp = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.NotifyTriggersResp, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.NotifyTriggersResp.displayName = "proto.aggregator.NotifyTriggersResp";
     }
     proto.aggregator.CreateWalletReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -844,14 +878,14 @@ var require_avs_pb = __commonJS({
       return jspb.Message.getField(this, 1) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.SyncTasksReq.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.SyncTasksReq.toObject(opt_includeInstance, this);
+      proto.aggregator.SyncMessagesReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.SyncMessagesReq.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.SyncTasksReq.toObject = function(includeInstance, msg) {
+      proto.aggregator.SyncMessagesReq.toObject = function(includeInstance, msg) {
         var f, obj = {
           id: jspb.Message.getFieldWithDefault(msg, 1, ""),
           address: jspb.Message.getFieldWithDefault(msg, 2, ""),
-          signature: jspb.Message.getFieldWithDefault(msg, 3, ""),
+          signature: msg.getSignature_asB64(),
           monotonicClock: jspb.Message.getFieldWithDefault(msg, 4, 0)
         };
         if (includeInstance) {
@@ -860,12 +894,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.SyncTasksReq.deserializeBinary = function(bytes) {
+    proto.aggregator.SyncMessagesReq.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.SyncTasksReq();
-      return proto.aggregator.SyncTasksReq.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.SyncMessagesReq();
+      return proto.aggregator.SyncMessagesReq.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.SyncTasksReq.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.SyncMessagesReq.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -888,8 +922,8 @@ var require_avs_pb = __commonJS({
             break;
           case 3:
             var value = (
-              /** @type {string} */
-              reader.readString()
+              /** @type {!Uint8Array} */
+              reader.readBytes()
             );
             msg.setSignature(value);
             break;
@@ -907,12 +941,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.SyncTasksReq.prototype.serializeBinary = function() {
+    proto.aggregator.SyncMessagesReq.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.SyncTasksReq.serializeBinaryToWriter(this, writer);
+      proto.aggregator.SyncMessagesReq.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.SyncTasksReq.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.SyncMessagesReq.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getId();
       if (f.length > 0) {
@@ -928,9 +962,9 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getSignature();
+      f = message.getSignature_asU8();
       if (f.length > 0) {
-        writer.writeString(
+        writer.writeBytes(
           3,
           f
         );
@@ -943,41 +977,379 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.SyncTasksReq.prototype.getId = function() {
+    proto.aggregator.SyncMessagesReq.prototype.getId = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.SyncTasksReq.prototype.setId = function(value) {
+    proto.aggregator.SyncMessagesReq.prototype.setId = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.SyncTasksReq.prototype.getAddress = function() {
+    proto.aggregator.SyncMessagesReq.prototype.getAddress = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 2, "")
       );
     };
-    proto.aggregator.SyncTasksReq.prototype.setAddress = function(value) {
+    proto.aggregator.SyncMessagesReq.prototype.setAddress = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
-    proto.aggregator.SyncTasksReq.prototype.getSignature = function() {
+    proto.aggregator.SyncMessagesReq.prototype.getSignature = function() {
       return (
-        /** @type {string} */
+        /** @type {!(string|Uint8Array)} */
         jspb.Message.getFieldWithDefault(this, 3, "")
       );
     };
-    proto.aggregator.SyncTasksReq.prototype.setSignature = function(value) {
-      return jspb.Message.setProto3StringField(this, 3, value);
+    proto.aggregator.SyncMessagesReq.prototype.getSignature_asB64 = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.bytesAsB64(
+          this.getSignature()
+        )
+      );
     };
-    proto.aggregator.SyncTasksReq.prototype.getMonotonicClock = function() {
+    proto.aggregator.SyncMessagesReq.prototype.getSignature_asU8 = function() {
+      return (
+        /** @type {!Uint8Array} */
+        jspb.Message.bytesAsU8(
+          this.getSignature()
+        )
+      );
+    };
+    proto.aggregator.SyncMessagesReq.prototype.setSignature = function(value) {
+      return jspb.Message.setProto3BytesField(this, 3, value);
+    };
+    proto.aggregator.SyncMessagesReq.prototype.getMonotonicClock = function() {
       return (
         /** @type {number} */
         jspb.Message.getFieldWithDefault(this, 4, 0)
       );
     };
-    proto.aggregator.SyncTasksReq.prototype.setMonotonicClock = function(value) {
+    proto.aggregator.SyncMessagesReq.prototype.setMonotonicClock = function(value) {
       return jspb.Message.setProto3IntField(this, 4, value);
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.SyncMessagesResp.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.SyncMessagesResp.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.SyncMessagesResp.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          op: jspb.Message.getFieldWithDefault(msg, 2, 0),
+          taskMetadata: (f = msg.getTaskMetadata()) && proto.aggregator.SyncMessagesResp.TaskMetadata.toObject(includeInstance, f)
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.SyncMessagesResp.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.SyncMessagesResp();
+      return proto.aggregator.SyncMessagesResp.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.SyncMessagesResp.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setId(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {!proto.aggregator.MessageOp} */
+              reader.readEnum()
+            );
+            msg.setOp(value);
+            break;
+          case 3:
+            var value = new proto.aggregator.SyncMessagesResp.TaskMetadata();
+            reader.readMessage(value, proto.aggregator.SyncMessagesResp.TaskMetadata.deserializeBinaryFromReader);
+            msg.setTaskMetadata(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.SyncMessagesResp.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.SyncMessagesResp.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.SyncMessagesResp.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getId();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+      f = message.getOp();
+      if (f !== 0) {
+        writer.writeEnum(
+          2,
+          f
+        );
+      }
+      f = message.getTaskMetadata();
+      if (f != null) {
+        writer.writeMessage(
+          3,
+          f,
+          proto.aggregator.SyncMessagesResp.TaskMetadata.serializeBinaryToWriter
+        );
+      }
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.SyncMessagesResp.TaskMetadata.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.SyncMessagesResp.TaskMetadata.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          taskId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          remain: jspb.Message.getFieldWithDefault(msg, 2, 0),
+          expiredAt: jspb.Message.getFieldWithDefault(msg, 3, 0),
+          trigger: (f = msg.getTrigger()) && proto.aggregator.TaskTrigger.toObject(includeInstance, f)
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.SyncMessagesResp.TaskMetadata.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.SyncMessagesResp.TaskMetadata();
+      return proto.aggregator.SyncMessagesResp.TaskMetadata.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setTaskId(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {number} */
+              reader.readInt64()
+            );
+            msg.setRemain(value);
+            break;
+          case 3:
+            var value = (
+              /** @type {number} */
+              reader.readInt64()
+            );
+            msg.setExpiredAt(value);
+            break;
+          case 4:
+            var value = new proto.aggregator.TaskTrigger();
+            reader.readMessage(value, proto.aggregator.TaskTrigger.deserializeBinaryFromReader);
+            msg.setTrigger(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.SyncMessagesResp.TaskMetadata.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getTaskId();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+      f = message.getRemain();
+      if (f !== 0) {
+        writer.writeInt64(
+          2,
+          f
+        );
+      }
+      f = message.getExpiredAt();
+      if (f !== 0) {
+        writer.writeInt64(
+          3,
+          f
+        );
+      }
+      f = message.getTrigger();
+      if (f != null) {
+        writer.writeMessage(
+          4,
+          f,
+          proto.aggregator.TaskTrigger.serializeBinaryToWriter
+        );
+      }
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.getTaskId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.setTaskId = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.getRemain = function() {
+      return (
+        /** @type {number} */
+        jspb.Message.getFieldWithDefault(this, 2, 0)
+      );
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.setRemain = function(value) {
+      return jspb.Message.setProto3IntField(this, 2, value);
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.getExpiredAt = function() {
+      return (
+        /** @type {number} */
+        jspb.Message.getFieldWithDefault(this, 3, 0)
+      );
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.setExpiredAt = function(value) {
+      return jspb.Message.setProto3IntField(this, 3, value);
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.getTrigger = function() {
+      return (
+        /** @type{?proto.aggregator.TaskTrigger} */
+        jspb.Message.getWrapperField(this, proto.aggregator.TaskTrigger, 4)
+      );
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.setTrigger = function(value) {
+      return jspb.Message.setWrapperField(this, 4, value);
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.clearTrigger = function() {
+      return this.setTrigger(void 0);
+    };
+    proto.aggregator.SyncMessagesResp.TaskMetadata.prototype.hasTrigger = function() {
+      return jspb.Message.getField(this, 4) != null;
+    };
+    proto.aggregator.SyncMessagesResp.prototype.getId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.SyncMessagesResp.prototype.setId = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    proto.aggregator.SyncMessagesResp.prototype.getOp = function() {
+      return (
+        /** @type {!proto.aggregator.MessageOp} */
+        jspb.Message.getFieldWithDefault(this, 2, 0)
+      );
+    };
+    proto.aggregator.SyncMessagesResp.prototype.setOp = function(value) {
+      return jspb.Message.setProto3EnumField(this, 2, value);
+    };
+    proto.aggregator.SyncMessagesResp.prototype.getTaskMetadata = function() {
+      return (
+        /** @type{?proto.aggregator.SyncMessagesResp.TaskMetadata} */
+        jspb.Message.getWrapperField(this, proto.aggregator.SyncMessagesResp.TaskMetadata, 3)
+      );
+    };
+    proto.aggregator.SyncMessagesResp.prototype.setTaskMetadata = function(value) {
+      return jspb.Message.setWrapperField(this, 3, value);
+    };
+    proto.aggregator.SyncMessagesResp.prototype.clearTaskMetadata = function() {
+      return this.setTaskMetadata(void 0);
+    };
+    proto.aggregator.SyncMessagesResp.prototype.hasTaskMetadata = function() {
+      return jspb.Message.getField(this, 3) != null;
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.AckMessageReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.AckMessageReq.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.AckMessageReq.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          id: jspb.Message.getFieldWithDefault(msg, 1, "")
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.AckMessageReq.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.AckMessageReq();
+      return proto.aggregator.AckMessageReq.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.AckMessageReq.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setId(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.AckMessageReq.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.AckMessageReq.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.AckMessageReq.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getId();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+    };
+    proto.aggregator.AckMessageReq.prototype.getId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.AckMessageReq.prototype.setId = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
     };
     proto.aggregator.FixedEpochCondition.repeatedFields_ = [1];
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1251,14 +1623,14 @@ var require_avs_pb = __commonJS({
     proto.aggregator.EventCondition.prototype.setExpression = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.TaskTrigger.oneofGroups_ = [[1, 2, 3, 4, 5]];
+    proto.aggregator.TaskTrigger.oneofGroups_ = [[2, 3, 4, 5, 6]];
     proto.aggregator.TaskTrigger.TriggerTypeCase = {
       TRIGGER_TYPE_NOT_SET: 0,
-      MANUAL: 1,
-      FIXED_TIME: 2,
-      CRON: 3,
-      BLOCK: 4,
-      EVENT: 5
+      MANUAL: 2,
+      FIXED_TIME: 3,
+      CRON: 4,
+      BLOCK: 5,
+      EVENT: 6
     };
     proto.aggregator.TaskTrigger.prototype.getTriggerTypeCase = function() {
       return (
@@ -1272,7 +1644,8 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
         var f, obj = {
-          manual: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
+          name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
           fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedEpochCondition.toObject(includeInstance, f),
           cron: (f = msg.getCron()) && proto.aggregator.CronCondition.toObject(includeInstance, f),
           block: (f = msg.getBlock()) && proto.aggregator.BlockCondition.toObject(includeInstance, f),
@@ -1298,27 +1671,34 @@ var require_avs_pb = __commonJS({
         switch (field) {
           case 1:
             var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setName(value);
+            break;
+          case 2:
+            var value = (
               /** @type {boolean} */
               reader.readBool()
             );
             msg.setManual(value);
             break;
-          case 2:
+          case 3:
             var value = new proto.aggregator.FixedEpochCondition();
             reader.readMessage(value, proto.aggregator.FixedEpochCondition.deserializeBinaryFromReader);
             msg.setFixedTime(value);
             break;
-          case 3:
+          case 4:
             var value = new proto.aggregator.CronCondition();
             reader.readMessage(value, proto.aggregator.CronCondition.deserializeBinaryFromReader);
             msg.setCron(value);
             break;
-          case 4:
+          case 5:
             var value = new proto.aggregator.BlockCondition();
             reader.readMessage(value, proto.aggregator.BlockCondition.deserializeBinaryFromReader);
             msg.setBlock(value);
             break;
-          case 5:
+          case 6:
             var value = new proto.aggregator.EventCondition();
             reader.readMessage(value, proto.aggregator.EventCondition.deserializeBinaryFromReader);
             msg.setEvent(value);
@@ -1337,18 +1717,25 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
+      f = message.getName();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
       f = /** @type {boolean} */
-      jspb.Message.getField(message, 1);
+      jspb.Message.getField(message, 2);
       if (f != null) {
         writer.writeBool(
-          1,
+          2,
           f
         );
       }
       f = message.getFixedTime();
       if (f != null) {
         writer.writeMessage(
-          2,
+          3,
           f,
           proto.aggregator.FixedEpochCondition.serializeBinaryToWriter
         );
@@ -1356,7 +1743,7 @@ var require_avs_pb = __commonJS({
       f = message.getCron();
       if (f != null) {
         writer.writeMessage(
-          3,
+          4,
           f,
           proto.aggregator.CronCondition.serializeBinaryToWriter
         );
@@ -1364,7 +1751,7 @@ var require_avs_pb = __commonJS({
       f = message.getBlock();
       if (f != null) {
         writer.writeMessage(
-          4,
+          5,
           f,
           proto.aggregator.BlockCondition.serializeBinaryToWriter
         );
@@ -1372,203 +1759,95 @@ var require_avs_pb = __commonJS({
       f = message.getEvent();
       if (f != null) {
         writer.writeMessage(
-          5,
+          6,
           f,
           proto.aggregator.EventCondition.serializeBinaryToWriter
         );
       }
     };
-    proto.aggregator.TaskTrigger.prototype.getManual = function() {
-      return (
-        /** @type {boolean} */
-        jspb.Message.getBooleanFieldWithDefault(this, 1, false)
-      );
-    };
-    proto.aggregator.TaskTrigger.prototype.setManual = function(value) {
-      return jspb.Message.setOneofField(this, 1, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
-    };
-    proto.aggregator.TaskTrigger.prototype.clearManual = function() {
-      return jspb.Message.setOneofField(this, 1, proto.aggregator.TaskTrigger.oneofGroups_[0], void 0);
-    };
-    proto.aggregator.TaskTrigger.prototype.hasManual = function() {
-      return jspb.Message.getField(this, 1) != null;
-    };
-    proto.aggregator.TaskTrigger.prototype.getFixedTime = function() {
-      return (
-        /** @type{?proto.aggregator.FixedEpochCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.FixedEpochCondition, 2)
-      );
-    };
-    proto.aggregator.TaskTrigger.prototype.setFixedTime = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
-    };
-    proto.aggregator.TaskTrigger.prototype.clearFixedTime = function() {
-      return this.setFixedTime(void 0);
-    };
-    proto.aggregator.TaskTrigger.prototype.hasFixedTime = function() {
-      return jspb.Message.getField(this, 2) != null;
-    };
-    proto.aggregator.TaskTrigger.prototype.getCron = function() {
-      return (
-        /** @type{?proto.aggregator.CronCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.CronCondition, 3)
-      );
-    };
-    proto.aggregator.TaskTrigger.prototype.setCron = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 3, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
-    };
-    proto.aggregator.TaskTrigger.prototype.clearCron = function() {
-      return this.setCron(void 0);
-    };
-    proto.aggregator.TaskTrigger.prototype.hasCron = function() {
-      return jspb.Message.getField(this, 3) != null;
-    };
-    proto.aggregator.TaskTrigger.prototype.getBlock = function() {
-      return (
-        /** @type{?proto.aggregator.BlockCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.BlockCondition, 4)
-      );
-    };
-    proto.aggregator.TaskTrigger.prototype.setBlock = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 4, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
-    };
-    proto.aggregator.TaskTrigger.prototype.clearBlock = function() {
-      return this.setBlock(void 0);
-    };
-    proto.aggregator.TaskTrigger.prototype.hasBlock = function() {
-      return jspb.Message.getField(this, 4) != null;
-    };
-    proto.aggregator.TaskTrigger.prototype.getEvent = function() {
-      return (
-        /** @type{?proto.aggregator.EventCondition} */
-        jspb.Message.getWrapperField(this, proto.aggregator.EventCondition, 5)
-      );
-    };
-    proto.aggregator.TaskTrigger.prototype.setEvent = function(value) {
-      return jspb.Message.setOneofWrapperField(this, 5, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
-    };
-    proto.aggregator.TaskTrigger.prototype.clearEvent = function() {
-      return this.setEvent(void 0);
-    };
-    proto.aggregator.TaskTrigger.prototype.hasEvent = function() {
-      return jspb.Message.getField(this, 5) != null;
-    };
-    if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.SyncTasksResp.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.SyncTasksResp.toObject(opt_includeInstance, this);
-      };
-      proto.aggregator.SyncTasksResp.toObject = function(includeInstance, msg) {
-        var f, obj = {
-          id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-          checktype: jspb.Message.getFieldWithDefault(msg, 2, ""),
-          trigger: (f = msg.getTrigger()) && proto.aggregator.TaskTrigger.toObject(includeInstance, f)
-        };
-        if (includeInstance) {
-          obj.$jspbMessageInstance = msg;
-        }
-        return obj;
-      };
-    }
-    proto.aggregator.SyncTasksResp.deserializeBinary = function(bytes) {
-      var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.SyncTasksResp();
-      return proto.aggregator.SyncTasksResp.deserializeBinaryFromReader(msg, reader);
-    };
-    proto.aggregator.SyncTasksResp.deserializeBinaryFromReader = function(msg, reader) {
-      while (reader.nextField()) {
-        if (reader.isEndGroup()) {
-          break;
-        }
-        var field = reader.getFieldNumber();
-        switch (field) {
-          case 1:
-            var value = (
-              /** @type {string} */
-              reader.readString()
-            );
-            msg.setId(value);
-            break;
-          case 2:
-            var value = (
-              /** @type {string} */
-              reader.readString()
-            );
-            msg.setChecktype(value);
-            break;
-          case 3:
-            var value = new proto.aggregator.TaskTrigger();
-            reader.readMessage(value, proto.aggregator.TaskTrigger.deserializeBinaryFromReader);
-            msg.setTrigger(value);
-            break;
-          default:
-            reader.skipField();
-            break;
-        }
-      }
-      return msg;
-    };
-    proto.aggregator.SyncTasksResp.prototype.serializeBinary = function() {
-      var writer = new jspb.BinaryWriter();
-      proto.aggregator.SyncTasksResp.serializeBinaryToWriter(this, writer);
-      return writer.getResultBuffer();
-    };
-    proto.aggregator.SyncTasksResp.serializeBinaryToWriter = function(message, writer) {
-      var f = void 0;
-      f = message.getId();
-      if (f.length > 0) {
-        writer.writeString(
-          1,
-          f
-        );
-      }
-      f = message.getChecktype();
-      if (f.length > 0) {
-        writer.writeString(
-          2,
-          f
-        );
-      }
-      f = message.getTrigger();
-      if (f != null) {
-        writer.writeMessage(
-          3,
-          f,
-          proto.aggregator.TaskTrigger.serializeBinaryToWriter
-        );
-      }
-    };
-    proto.aggregator.SyncTasksResp.prototype.getId = function() {
+    proto.aggregator.TaskTrigger.prototype.getName = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.SyncTasksResp.prototype.setId = function(value) {
+    proto.aggregator.TaskTrigger.prototype.setName = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.SyncTasksResp.prototype.getChecktype = function() {
+    proto.aggregator.TaskTrigger.prototype.getManual = function() {
       return (
-        /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 2, "")
+        /** @type {boolean} */
+        jspb.Message.getBooleanFieldWithDefault(this, 2, false)
       );
     };
-    proto.aggregator.SyncTasksResp.prototype.setChecktype = function(value) {
-      return jspb.Message.setProto3StringField(this, 2, value);
+    proto.aggregator.TaskTrigger.prototype.setManual = function(value) {
+      return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
-    proto.aggregator.SyncTasksResp.prototype.getTrigger = function() {
+    proto.aggregator.TaskTrigger.prototype.clearManual = function() {
+      return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], void 0);
+    };
+    proto.aggregator.TaskTrigger.prototype.hasManual = function() {
+      return jspb.Message.getField(this, 2) != null;
+    };
+    proto.aggregator.TaskTrigger.prototype.getFixedTime = function() {
       return (
-        /** @type{?proto.aggregator.TaskTrigger} */
-        jspb.Message.getWrapperField(this, proto.aggregator.TaskTrigger, 3)
+        /** @type{?proto.aggregator.FixedEpochCondition} */
+        jspb.Message.getWrapperField(this, proto.aggregator.FixedEpochCondition, 3)
       );
     };
-    proto.aggregator.SyncTasksResp.prototype.setTrigger = function(value) {
-      return jspb.Message.setWrapperField(this, 3, value);
+    proto.aggregator.TaskTrigger.prototype.setFixedTime = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 3, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
     };
-    proto.aggregator.SyncTasksResp.prototype.clearTrigger = function() {
-      return this.setTrigger(void 0);
+    proto.aggregator.TaskTrigger.prototype.clearFixedTime = function() {
+      return this.setFixedTime(void 0);
     };
-    proto.aggregator.SyncTasksResp.prototype.hasTrigger = function() {
+    proto.aggregator.TaskTrigger.prototype.hasFixedTime = function() {
       return jspb.Message.getField(this, 3) != null;
+    };
+    proto.aggregator.TaskTrigger.prototype.getCron = function() {
+      return (
+        /** @type{?proto.aggregator.CronCondition} */
+        jspb.Message.getWrapperField(this, proto.aggregator.CronCondition, 4)
+      );
+    };
+    proto.aggregator.TaskTrigger.prototype.setCron = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 4, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+    };
+    proto.aggregator.TaskTrigger.prototype.clearCron = function() {
+      return this.setCron(void 0);
+    };
+    proto.aggregator.TaskTrigger.prototype.hasCron = function() {
+      return jspb.Message.getField(this, 4) != null;
+    };
+    proto.aggregator.TaskTrigger.prototype.getBlock = function() {
+      return (
+        /** @type{?proto.aggregator.BlockCondition} */
+        jspb.Message.getWrapperField(this, proto.aggregator.BlockCondition, 5)
+      );
+    };
+    proto.aggregator.TaskTrigger.prototype.setBlock = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 5, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+    };
+    proto.aggregator.TaskTrigger.prototype.clearBlock = function() {
+      return this.setBlock(void 0);
+    };
+    proto.aggregator.TaskTrigger.prototype.hasBlock = function() {
+      return jspb.Message.getField(this, 5) != null;
+    };
+    proto.aggregator.TaskTrigger.prototype.getEvent = function() {
+      return (
+        /** @type{?proto.aggregator.EventCondition} */
+        jspb.Message.getWrapperField(this, proto.aggregator.EventCondition, 6)
+      );
+    };
+    proto.aggregator.TaskTrigger.prototype.setEvent = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 6, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+    };
+    proto.aggregator.TaskTrigger.prototype.clearEvent = function() {
+      return this.setEvent(void 0);
+    };
+    proto.aggregator.TaskTrigger.prototype.hasEvent = function() {
+      return jspb.Message.getField(this, 6) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.ETHTransferNode.prototype.toObject = function(opt_includeInstance) {
@@ -2140,7 +2419,7 @@ var require_avs_pb = __commonJS({
       };
       proto.aggregator.CustomCodeNode.toObject = function(includeInstance, msg) {
         var f, obj = {
-          type: jspb.Message.getFieldWithDefault(msg, 1, 0),
+          lang: jspb.Message.getFieldWithDefault(msg, 1, 0),
           source: jspb.Message.getFieldWithDefault(msg, 2, "")
         };
         if (includeInstance) {
@@ -2163,10 +2442,10 @@ var require_avs_pb = __commonJS({
         switch (field) {
           case 1:
             var value = (
-              /** @type {!proto.aggregator.CustomCodeType} */
+              /** @type {!proto.aggregator.CustomCodeLang} */
               reader.readEnum()
             );
-            msg.setType(value);
+            msg.setLang(value);
             break;
           case 2:
             var value = (
@@ -2189,7 +2468,7 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.CustomCodeNode.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getType();
+      f = message.getLang();
       if (f !== 0) {
         writer.writeEnum(
           1,
@@ -2204,13 +2483,13 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.CustomCodeNode.prototype.getType = function() {
+    proto.aggregator.CustomCodeNode.prototype.getLang = function() {
       return (
-        /** @type {!proto.aggregator.CustomCodeType} */
+        /** @type {!proto.aggregator.CustomCodeLang} */
         jspb.Message.getFieldWithDefault(this, 1, 0)
       );
     };
-    proto.aggregator.CustomCodeNode.prototype.setType = function(value) {
+    proto.aggregator.CustomCodeNode.prototype.setLang = function(value) {
       return jspb.Message.setProto3EnumField(this, 1, value);
     };
     proto.aggregator.CustomCodeNode.prototype.getSource = function() {
@@ -2472,14 +2751,37 @@ var require_avs_pb = __commonJS({
     proto.aggregator.FilterNode.prototype.setExpression = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
+    proto.aggregator.LoopNode.oneofGroups_ = [[10, 11, 12, 13, 14, 15]];
+    proto.aggregator.LoopNode.RunnerCase = {
+      RUNNER_NOT_SET: 0,
+      ETH_TRANSFER: 10,
+      CONTRACT_WRITE: 11,
+      CONTRACT_READ: 12,
+      GRAPHQL_DATA_QUERY: 13,
+      REST_API: 14,
+      CUSTOM_CODE: 15
+    };
+    proto.aggregator.LoopNode.prototype.getRunnerCase = function() {
+      return (
+        /** @type {proto.aggregator.LoopNode.RunnerCase} */
+        jspb.Message.computeOneofCase(this, proto.aggregator.LoopNode.oneofGroups_[0])
+      );
+    };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.LoopNode.prototype.toObject = function(opt_includeInstance) {
         return proto.aggregator.LoopNode.toObject(opt_includeInstance, this);
       };
       proto.aggregator.LoopNode.toObject = function(includeInstance, msg) {
         var f, obj = {
-          iterVar: jspb.Message.getFieldWithDefault(msg, 1, ""),
-          iterKey: jspb.Message.getFieldWithDefault(msg, 2, "")
+          input: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          iterVal: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          iterKey: jspb.Message.getFieldWithDefault(msg, 3, ""),
+          ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.toObject(includeInstance, f),
+          contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.toObject(includeInstance, f),
+          contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.toObject(includeInstance, f),
+          graphqlDataQuery: (f = msg.getGraphqlDataQuery()) && proto.aggregator.GraphQLQueryNode.toObject(includeInstance, f),
+          restApi: (f = msg.getRestApi()) && proto.aggregator.RestAPINode.toObject(includeInstance, f),
+          customCode: (f = msg.getCustomCode()) && proto.aggregator.CustomCodeNode.toObject(includeInstance, f)
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -2504,14 +2806,51 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.setIterVar(value);
+            msg.setInput(value);
             break;
           case 2:
             var value = (
               /** @type {string} */
               reader.readString()
             );
+            msg.setIterVal(value);
+            break;
+          case 3:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
             msg.setIterKey(value);
+            break;
+          case 10:
+            var value = new proto.aggregator.ETHTransferNode();
+            reader.readMessage(value, proto.aggregator.ETHTransferNode.deserializeBinaryFromReader);
+            msg.setEthTransfer(value);
+            break;
+          case 11:
+            var value = new proto.aggregator.ContractWriteNode();
+            reader.readMessage(value, proto.aggregator.ContractWriteNode.deserializeBinaryFromReader);
+            msg.setContractWrite(value);
+            break;
+          case 12:
+            var value = new proto.aggregator.ContractReadNode();
+            reader.readMessage(value, proto.aggregator.ContractReadNode.deserializeBinaryFromReader);
+            msg.setContractRead(value);
+            break;
+          case 13:
+            var value = new proto.aggregator.GraphQLQueryNode();
+            reader.readMessage(value, proto.aggregator.GraphQLQueryNode.deserializeBinaryFromReader);
+            msg.setGraphqlDataQuery(value);
+            break;
+          case 14:
+            var value = new proto.aggregator.RestAPINode();
+            reader.readMessage(value, proto.aggregator.RestAPINode.deserializeBinaryFromReader);
+            msg.setRestApi(value);
+            break;
+          case 15:
+            var value = new proto.aggregator.CustomCodeNode();
+            reader.readMessage(value, proto.aggregator.CustomCodeNode.deserializeBinaryFromReader);
+            msg.setCustomCode(value);
             break;
           default:
             reader.skipField();
@@ -2527,38 +2866,192 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.LoopNode.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getIterVar();
+      f = message.getInput();
       if (f.length > 0) {
         writer.writeString(
           1,
           f
         );
       }
-      f = message.getIterKey();
+      f = message.getIterVal();
       if (f.length > 0) {
         writer.writeString(
           2,
           f
         );
       }
+      f = message.getIterKey();
+      if (f.length > 0) {
+        writer.writeString(
+          3,
+          f
+        );
+      }
+      f = message.getEthTransfer();
+      if (f != null) {
+        writer.writeMessage(
+          10,
+          f,
+          proto.aggregator.ETHTransferNode.serializeBinaryToWriter
+        );
+      }
+      f = message.getContractWrite();
+      if (f != null) {
+        writer.writeMessage(
+          11,
+          f,
+          proto.aggregator.ContractWriteNode.serializeBinaryToWriter
+        );
+      }
+      f = message.getContractRead();
+      if (f != null) {
+        writer.writeMessage(
+          12,
+          f,
+          proto.aggregator.ContractReadNode.serializeBinaryToWriter
+        );
+      }
+      f = message.getGraphqlDataQuery();
+      if (f != null) {
+        writer.writeMessage(
+          13,
+          f,
+          proto.aggregator.GraphQLQueryNode.serializeBinaryToWriter
+        );
+      }
+      f = message.getRestApi();
+      if (f != null) {
+        writer.writeMessage(
+          14,
+          f,
+          proto.aggregator.RestAPINode.serializeBinaryToWriter
+        );
+      }
+      f = message.getCustomCode();
+      if (f != null) {
+        writer.writeMessage(
+          15,
+          f,
+          proto.aggregator.CustomCodeNode.serializeBinaryToWriter
+        );
+      }
     };
-    proto.aggregator.LoopNode.prototype.getIterVar = function() {
+    proto.aggregator.LoopNode.prototype.getInput = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.LoopNode.prototype.setIterVar = function(value) {
+    proto.aggregator.LoopNode.prototype.setInput = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.LoopNode.prototype.getIterKey = function() {
+    proto.aggregator.LoopNode.prototype.getIterVal = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 2, "")
       );
     };
-    proto.aggregator.LoopNode.prototype.setIterKey = function(value) {
+    proto.aggregator.LoopNode.prototype.setIterVal = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
+    };
+    proto.aggregator.LoopNode.prototype.getIterKey = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 3, "")
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setIterKey = function(value) {
+      return jspb.Message.setProto3StringField(this, 3, value);
+    };
+    proto.aggregator.LoopNode.prototype.getEthTransfer = function() {
+      return (
+        /** @type{?proto.aggregator.ETHTransferNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.ETHTransferNode, 10)
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setEthTransfer = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 10, proto.aggregator.LoopNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.LoopNode.prototype.clearEthTransfer = function() {
+      return this.setEthTransfer(void 0);
+    };
+    proto.aggregator.LoopNode.prototype.hasEthTransfer = function() {
+      return jspb.Message.getField(this, 10) != null;
+    };
+    proto.aggregator.LoopNode.prototype.getContractWrite = function() {
+      return (
+        /** @type{?proto.aggregator.ContractWriteNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.ContractWriteNode, 11)
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setContractWrite = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 11, proto.aggregator.LoopNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.LoopNode.prototype.clearContractWrite = function() {
+      return this.setContractWrite(void 0);
+    };
+    proto.aggregator.LoopNode.prototype.hasContractWrite = function() {
+      return jspb.Message.getField(this, 11) != null;
+    };
+    proto.aggregator.LoopNode.prototype.getContractRead = function() {
+      return (
+        /** @type{?proto.aggregator.ContractReadNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.ContractReadNode, 12)
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setContractRead = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 12, proto.aggregator.LoopNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.LoopNode.prototype.clearContractRead = function() {
+      return this.setContractRead(void 0);
+    };
+    proto.aggregator.LoopNode.prototype.hasContractRead = function() {
+      return jspb.Message.getField(this, 12) != null;
+    };
+    proto.aggregator.LoopNode.prototype.getGraphqlDataQuery = function() {
+      return (
+        /** @type{?proto.aggregator.GraphQLQueryNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.GraphQLQueryNode, 13)
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setGraphqlDataQuery = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 13, proto.aggregator.LoopNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.LoopNode.prototype.clearGraphqlDataQuery = function() {
+      return this.setGraphqlDataQuery(void 0);
+    };
+    proto.aggregator.LoopNode.prototype.hasGraphqlDataQuery = function() {
+      return jspb.Message.getField(this, 13) != null;
+    };
+    proto.aggregator.LoopNode.prototype.getRestApi = function() {
+      return (
+        /** @type{?proto.aggregator.RestAPINode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.RestAPINode, 14)
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setRestApi = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 14, proto.aggregator.LoopNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.LoopNode.prototype.clearRestApi = function() {
+      return this.setRestApi(void 0);
+    };
+    proto.aggregator.LoopNode.prototype.hasRestApi = function() {
+      return jspb.Message.getField(this, 14) != null;
+    };
+    proto.aggregator.LoopNode.prototype.getCustomCode = function() {
+      return (
+        /** @type{?proto.aggregator.CustomCodeNode} */
+        jspb.Message.getWrapperField(this, proto.aggregator.CustomCodeNode, 15)
+      );
+    };
+    proto.aggregator.LoopNode.prototype.setCustomCode = function(value) {
+      return jspb.Message.setOneofWrapperField(this, 15, proto.aggregator.LoopNode.oneofGroups_[0], value);
+    };
+    proto.aggregator.LoopNode.prototype.clearCustomCode = function() {
+      return this.setCustomCode(void 0);
+    };
+    proto.aggregator.LoopNode.prototype.hasCustomCode = function() {
+      return jspb.Message.getField(this, 15) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.TaskEdge.prototype.toObject = function(opt_includeInstance) {
@@ -3040,6 +3533,7 @@ var require_avs_pb = __commonJS({
     proto.aggregator.TaskNode.prototype.hasCustomCode = function() {
       return jspb.Message.getField(this, 18) != null;
     };
+    proto.aggregator.Execution.repeatedFields_ = [6];
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.Execution.prototype.toObject = function(opt_includeInstance) {
         return proto.aggregator.Execution.toObject(opt_includeInstance, this);
@@ -3047,8 +3541,15 @@ var require_avs_pb = __commonJS({
       proto.aggregator.Execution.toObject = function(includeInstance, msg) {
         var f, obj = {
           epoch: jspb.Message.getFieldWithDefault(msg, 1, 0),
-          userOpHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
-          error: jspb.Message.getFieldWithDefault(msg, 3, "")
+          success: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+          error: jspb.Message.getFieldWithDefault(msg, 3, ""),
+          triggerMark: (f = msg.getTriggerMark()) && proto.aggregator.TriggerMark.toObject(includeInstance, f),
+          result: jspb.Message.getFieldWithDefault(msg, 5, ""),
+          stepsList: jspb.Message.toObjectList(
+            msg.getStepsList(),
+            proto.aggregator.Execution.Step.toObject,
+            includeInstance
+          )
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -3077,10 +3578,10 @@ var require_avs_pb = __commonJS({
             break;
           case 2:
             var value = (
-              /** @type {string} */
-              reader.readString()
+              /** @type {boolean} */
+              reader.readBool()
             );
-            msg.setUserOpHash(value);
+            msg.setSuccess(value);
             break;
           case 3:
             var value = (
@@ -3088,6 +3589,23 @@ var require_avs_pb = __commonJS({
               reader.readString()
             );
             msg.setError(value);
+            break;
+          case 4:
+            var value = new proto.aggregator.TriggerMark();
+            reader.readMessage(value, proto.aggregator.TriggerMark.deserializeBinaryFromReader);
+            msg.setTriggerMark(value);
+            break;
+          case 5:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setResult(value);
+            break;
+          case 6:
+            var value = new proto.aggregator.Execution.Step();
+            reader.readMessage(value, proto.aggregator.Execution.Step.deserializeBinaryFromReader);
+            msg.addSteps(value);
             break;
           default:
             reader.skipField();
@@ -3110,9 +3628,9 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getUserOpHash();
-      if (f.length > 0) {
-        writer.writeString(
+      f = message.getSuccess();
+      if (f) {
+        writer.writeBool(
           2,
           f
         );
@@ -3124,6 +3642,189 @@ var require_avs_pb = __commonJS({
           f
         );
       }
+      f = message.getTriggerMark();
+      if (f != null) {
+        writer.writeMessage(
+          4,
+          f,
+          proto.aggregator.TriggerMark.serializeBinaryToWriter
+        );
+      }
+      f = message.getResult();
+      if (f.length > 0) {
+        writer.writeString(
+          5,
+          f
+        );
+      }
+      f = message.getStepsList();
+      if (f.length > 0) {
+        writer.writeRepeatedMessage(
+          6,
+          f,
+          proto.aggregator.Execution.Step.serializeBinaryToWriter
+        );
+      }
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.Execution.Step.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.Execution.Step.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.Execution.Step.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          nodeId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          success: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+          outputData: jspb.Message.getFieldWithDefault(msg, 3, ""),
+          log: jspb.Message.getFieldWithDefault(msg, 4, ""),
+          error: jspb.Message.getFieldWithDefault(msg, 5, "")
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.Execution.Step.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.Execution.Step();
+      return proto.aggregator.Execution.Step.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.Execution.Step.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setNodeId(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {boolean} */
+              reader.readBool()
+            );
+            msg.setSuccess(value);
+            break;
+          case 3:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setOutputData(value);
+            break;
+          case 4:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setLog(value);
+            break;
+          case 5:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setError(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.Execution.Step.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.Execution.Step.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.Execution.Step.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getNodeId();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+      f = message.getSuccess();
+      if (f) {
+        writer.writeBool(
+          2,
+          f
+        );
+      }
+      f = message.getOutputData();
+      if (f.length > 0) {
+        writer.writeString(
+          3,
+          f
+        );
+      }
+      f = message.getLog();
+      if (f.length > 0) {
+        writer.writeString(
+          4,
+          f
+        );
+      }
+      f = message.getError();
+      if (f.length > 0) {
+        writer.writeString(
+          5,
+          f
+        );
+      }
+    };
+    proto.aggregator.Execution.Step.prototype.getNodeId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.Execution.Step.prototype.setNodeId = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    proto.aggregator.Execution.Step.prototype.getSuccess = function() {
+      return (
+        /** @type {boolean} */
+        jspb.Message.getBooleanFieldWithDefault(this, 2, false)
+      );
+    };
+    proto.aggregator.Execution.Step.prototype.setSuccess = function(value) {
+      return jspb.Message.setProto3BooleanField(this, 2, value);
+    };
+    proto.aggregator.Execution.Step.prototype.getOutputData = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 3, "")
+      );
+    };
+    proto.aggregator.Execution.Step.prototype.setOutputData = function(value) {
+      return jspb.Message.setProto3StringField(this, 3, value);
+    };
+    proto.aggregator.Execution.Step.prototype.getLog = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 4, "")
+      );
+    };
+    proto.aggregator.Execution.Step.prototype.setLog = function(value) {
+      return jspb.Message.setProto3StringField(this, 4, value);
+    };
+    proto.aggregator.Execution.Step.prototype.getError = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 5, "")
+      );
+    };
+    proto.aggregator.Execution.Step.prototype.setError = function(value) {
+      return jspb.Message.setProto3StringField(this, 5, value);
     };
     proto.aggregator.Execution.prototype.getEpoch = function() {
       return (
@@ -3134,14 +3835,14 @@ var require_avs_pb = __commonJS({
     proto.aggregator.Execution.prototype.setEpoch = function(value) {
       return jspb.Message.setProto3IntField(this, 1, value);
     };
-    proto.aggregator.Execution.prototype.getUserOpHash = function() {
+    proto.aggregator.Execution.prototype.getSuccess = function() {
       return (
-        /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 2, "")
+        /** @type {boolean} */
+        jspb.Message.getBooleanFieldWithDefault(this, 2, false)
       );
     };
-    proto.aggregator.Execution.prototype.setUserOpHash = function(value) {
-      return jspb.Message.setProto3StringField(this, 2, value);
+    proto.aggregator.Execution.prototype.setSuccess = function(value) {
+      return jspb.Message.setProto3BooleanField(this, 2, value);
     };
     proto.aggregator.Execution.prototype.getError = function() {
       return (
@@ -3151,6 +3852,45 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.Execution.prototype.setError = function(value) {
       return jspb.Message.setProto3StringField(this, 3, value);
+    };
+    proto.aggregator.Execution.prototype.getTriggerMark = function() {
+      return (
+        /** @type{?proto.aggregator.TriggerMark} */
+        jspb.Message.getWrapperField(this, proto.aggregator.TriggerMark, 4)
+      );
+    };
+    proto.aggregator.Execution.prototype.setTriggerMark = function(value) {
+      return jspb.Message.setWrapperField(this, 4, value);
+    };
+    proto.aggregator.Execution.prototype.clearTriggerMark = function() {
+      return this.setTriggerMark(void 0);
+    };
+    proto.aggregator.Execution.prototype.hasTriggerMark = function() {
+      return jspb.Message.getField(this, 4) != null;
+    };
+    proto.aggregator.Execution.prototype.getResult = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 5, "")
+      );
+    };
+    proto.aggregator.Execution.prototype.setResult = function(value) {
+      return jspb.Message.setProto3StringField(this, 5, value);
+    };
+    proto.aggregator.Execution.prototype.getStepsList = function() {
+      return (
+        /** @type{!Array<!proto.aggregator.Execution.Step>} */
+        jspb.Message.getRepeatedWrapperField(this, proto.aggregator.Execution.Step, 6)
+      );
+    };
+    proto.aggregator.Execution.prototype.setStepsList = function(value) {
+      return jspb.Message.setRepeatedWrapperField(this, 6, value);
+    };
+    proto.aggregator.Execution.prototype.addSteps = function(opt_value, opt_index) {
+      return jspb.Message.addToRepeatedWrapperField(this, 6, opt_value, proto.aggregator.Execution.Step, opt_index);
+    };
+    proto.aggregator.Execution.prototype.clearStepsList = function() {
+      return this.setStepsList([]);
     };
     proto.aggregator.Task.repeatedFields_ = [11, 12, 13];
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -4573,16 +5313,15 @@ var require_avs_pb = __commonJS({
     proto.aggregator.KeyResp.prototype.setKey = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.UpdateChecksReq.repeatedFields_ = [3];
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.UpdateChecksReq.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.UpdateChecksReq.toObject(opt_includeInstance, this);
+      proto.aggregator.TriggerMark.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.TriggerMark.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.UpdateChecksReq.toObject = function(includeInstance, msg) {
+      proto.aggregator.TriggerMark.toObject = function(includeInstance, msg) {
         var f, obj = {
-          address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-          signature: jspb.Message.getFieldWithDefault(msg, 2, ""),
-          idList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? void 0 : f
+          blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0),
+          logIndex: jspb.Message.getFieldWithDefault(msg, 2, 0),
+          txHash: jspb.Message.getFieldWithDefault(msg, 3, "")
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -4590,12 +5329,125 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.UpdateChecksReq.deserializeBinary = function(bytes) {
+    proto.aggregator.TriggerMark.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.UpdateChecksReq();
-      return proto.aggregator.UpdateChecksReq.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.TriggerMark();
+      return proto.aggregator.TriggerMark.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.UpdateChecksReq.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.TriggerMark.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {number} */
+              reader.readUint64()
+            );
+            msg.setBlockNumber(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {number} */
+              reader.readUint64()
+            );
+            msg.setLogIndex(value);
+            break;
+          case 3:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setTxHash(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.TriggerMark.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.TriggerMark.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.TriggerMark.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getBlockNumber();
+      if (f !== 0) {
+        writer.writeUint64(
+          1,
+          f
+        );
+      }
+      f = message.getLogIndex();
+      if (f !== 0) {
+        writer.writeUint64(
+          2,
+          f
+        );
+      }
+      f = message.getTxHash();
+      if (f.length > 0) {
+        writer.writeString(
+          3,
+          f
+        );
+      }
+    };
+    proto.aggregator.TriggerMark.prototype.getBlockNumber = function() {
+      return (
+        /** @type {number} */
+        jspb.Message.getFieldWithDefault(this, 1, 0)
+      );
+    };
+    proto.aggregator.TriggerMark.prototype.setBlockNumber = function(value) {
+      return jspb.Message.setProto3IntField(this, 1, value);
+    };
+    proto.aggregator.TriggerMark.prototype.getLogIndex = function() {
+      return (
+        /** @type {number} */
+        jspb.Message.getFieldWithDefault(this, 2, 0)
+      );
+    };
+    proto.aggregator.TriggerMark.prototype.setLogIndex = function(value) {
+      return jspb.Message.setProto3IntField(this, 2, value);
+    };
+    proto.aggregator.TriggerMark.prototype.getTxHash = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 3, "")
+      );
+    };
+    proto.aggregator.TriggerMark.prototype.setTxHash = function(value) {
+      return jspb.Message.setProto3StringField(this, 3, value);
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.NotifyTriggersReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.NotifyTriggersReq.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.NotifyTriggersReq.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          signature: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          taskId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+          triggerMarker: (f = msg.getTriggerMarker()) && proto.aggregator.TriggerMark.toObject(includeInstance, f)
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.NotifyTriggersReq.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.NotifyTriggersReq();
+      return proto.aggregator.NotifyTriggersReq.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.NotifyTriggersReq.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -4621,7 +5473,12 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.addId(value);
+            msg.setTaskId(value);
+            break;
+          case 4:
+            var value = new proto.aggregator.TriggerMark();
+            reader.readMessage(value, proto.aggregator.TriggerMark.deserializeBinaryFromReader);
+            msg.setTriggerMarker(value);
             break;
           default:
             reader.skipField();
@@ -4630,12 +5487,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.UpdateChecksReq.prototype.serializeBinary = function() {
+    proto.aggregator.NotifyTriggersReq.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.UpdateChecksReq.serializeBinaryToWriter(this, writer);
+      proto.aggregator.NotifyTriggersReq.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.UpdateChecksReq.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.NotifyTriggersReq.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getAddress();
       if (f.length > 0) {
@@ -4651,52 +5508,69 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getIdList();
+      f = message.getTaskId();
       if (f.length > 0) {
-        writer.writeRepeatedString(
+        writer.writeString(
           3,
           f
         );
       }
+      f = message.getTriggerMarker();
+      if (f != null) {
+        writer.writeMessage(
+          4,
+          f,
+          proto.aggregator.TriggerMark.serializeBinaryToWriter
+        );
+      }
     };
-    proto.aggregator.UpdateChecksReq.prototype.getAddress = function() {
+    proto.aggregator.NotifyTriggersReq.prototype.getAddress = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 1, "")
       );
     };
-    proto.aggregator.UpdateChecksReq.prototype.setAddress = function(value) {
+    proto.aggregator.NotifyTriggersReq.prototype.setAddress = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.UpdateChecksReq.prototype.getSignature = function() {
+    proto.aggregator.NotifyTriggersReq.prototype.getSignature = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 2, "")
       );
     };
-    proto.aggregator.UpdateChecksReq.prototype.setSignature = function(value) {
+    proto.aggregator.NotifyTriggersReq.prototype.setSignature = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
-    proto.aggregator.UpdateChecksReq.prototype.getIdList = function() {
+    proto.aggregator.NotifyTriggersReq.prototype.getTaskId = function() {
       return (
-        /** @type {!Array<string>} */
-        jspb.Message.getRepeatedField(this, 3)
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 3, "")
       );
     };
-    proto.aggregator.UpdateChecksReq.prototype.setIdList = function(value) {
-      return jspb.Message.setField(this, 3, value || []);
+    proto.aggregator.NotifyTriggersReq.prototype.setTaskId = function(value) {
+      return jspb.Message.setProto3StringField(this, 3, value);
     };
-    proto.aggregator.UpdateChecksReq.prototype.addId = function(value, opt_index) {
-      return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
+    proto.aggregator.NotifyTriggersReq.prototype.getTriggerMarker = function() {
+      return (
+        /** @type{?proto.aggregator.TriggerMark} */
+        jspb.Message.getWrapperField(this, proto.aggregator.TriggerMark, 4)
+      );
     };
-    proto.aggregator.UpdateChecksReq.prototype.clearIdList = function() {
-      return this.setIdList([]);
+    proto.aggregator.NotifyTriggersReq.prototype.setTriggerMarker = function(value) {
+      return jspb.Message.setWrapperField(this, 4, value);
+    };
+    proto.aggregator.NotifyTriggersReq.prototype.clearTriggerMarker = function() {
+      return this.setTriggerMarker(void 0);
+    };
+    proto.aggregator.NotifyTriggersReq.prototype.hasTriggerMarker = function() {
+      return jspb.Message.getField(this, 4) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.UpdateChecksResp.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.UpdateChecksResp.toObject(opt_includeInstance, this);
+      proto.aggregator.NotifyTriggersResp.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.NotifyTriggersResp.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.UpdateChecksResp.toObject = function(includeInstance, msg) {
+      proto.aggregator.NotifyTriggersResp.toObject = function(includeInstance, msg) {
         var f, obj = {
           updatedAt: (f = msg.getUpdatedAt()) && google_protobuf_timestamp_pb.Timestamp.toObject(includeInstance, f)
         };
@@ -4706,12 +5580,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.UpdateChecksResp.deserializeBinary = function(bytes) {
+    proto.aggregator.NotifyTriggersResp.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.UpdateChecksResp();
-      return proto.aggregator.UpdateChecksResp.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.NotifyTriggersResp();
+      return proto.aggregator.NotifyTriggersResp.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.UpdateChecksResp.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.NotifyTriggersResp.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -4730,12 +5604,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.UpdateChecksResp.prototype.serializeBinary = function() {
+    proto.aggregator.NotifyTriggersResp.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.UpdateChecksResp.serializeBinaryToWriter(this, writer);
+      proto.aggregator.NotifyTriggersResp.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.UpdateChecksResp.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.NotifyTriggersResp.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getUpdatedAt();
       if (f != null) {
@@ -4746,19 +5620,19 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.UpdateChecksResp.prototype.getUpdatedAt = function() {
+    proto.aggregator.NotifyTriggersResp.prototype.getUpdatedAt = function() {
       return (
         /** @type{?proto.google.protobuf.Timestamp} */
         jspb.Message.getWrapperField(this, google_protobuf_timestamp_pb.Timestamp, 1)
       );
     };
-    proto.aggregator.UpdateChecksResp.prototype.setUpdatedAt = function(value) {
+    proto.aggregator.NotifyTriggersResp.prototype.setUpdatedAt = function(value) {
       return jspb.Message.setWrapperField(this, 1, value);
     };
-    proto.aggregator.UpdateChecksResp.prototype.clearUpdatedAt = function() {
+    proto.aggregator.NotifyTriggersResp.prototype.clearUpdatedAt = function() {
       return this.setUpdatedAt(void 0);
     };
-    proto.aggregator.UpdateChecksResp.prototype.hasUpdatedAt = function() {
+    proto.aggregator.NotifyTriggersResp.prototype.hasUpdatedAt = function() {
       return jspb.Message.getField(this, 1) != null;
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -4961,6 +5835,13 @@ var require_avs_pb = __commonJS({
     proto.aggregator.CreateWalletResp.prototype.setFactoryAddress = function(value) {
       return jspb.Message.setProto3StringField(this, 3, value);
     };
+    proto.aggregator.MessageOp = {
+      UNSET: 0,
+      MONITORTASKTRIGGER: 1,
+      CANCELTASK: 2,
+      DELETETASK: 3,
+      COMPLETEDTASK: 4
+    };
     proto.aggregator.Error = {
       UNKNOWERROR: 0,
       RPCNODEERROR: 1e3,
@@ -4978,7 +5859,7 @@ var require_avs_pb = __commonJS({
       CANCELED: 3,
       EXECUTING: 4
     };
-    proto.aggregator.CustomCodeType = {
+    proto.aggregator.CustomCodeLang = {
       JAVASCRIPT: 0
     };
     goog.object.extend(exports2, proto.aggregator);
@@ -4993,6 +5874,15 @@ var require_avs_grpc_pb = __commonJS({
     var avs_pb3 = require_avs_pb();
     var google_protobuf_timestamp_pb = require("google-protobuf/google/protobuf/timestamp_pb.js");
     var google_protobuf_wrappers_pb = require("google-protobuf/google/protobuf/wrappers_pb.js");
+    function serialize_aggregator_AckMessageReq(arg) {
+      if (!(arg instanceof avs_pb3.AckMessageReq)) {
+        throw new Error("Expected argument of type aggregator.AckMessageReq");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_AckMessageReq(buffer_arg) {
+      return avs_pb3.AckMessageReq.deserializeBinary(new Uint8Array(buffer_arg));
+    }
     function serialize_aggregator_Checkin(arg) {
       if (!(arg instanceof avs_pb3.Checkin)) {
         throw new Error("Expected argument of type aggregator.Checkin");
@@ -5128,23 +6018,41 @@ var require_avs_grpc_pb = __commonJS({
     function deserialize_aggregator_NonceResp(buffer_arg) {
       return avs_pb3.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
-    function serialize_aggregator_SyncTasksReq(arg) {
-      if (!(arg instanceof avs_pb3.SyncTasksReq)) {
-        throw new Error("Expected argument of type aggregator.SyncTasksReq");
+    function serialize_aggregator_NotifyTriggersReq(arg) {
+      if (!(arg instanceof avs_pb3.NotifyTriggersReq)) {
+        throw new Error("Expected argument of type aggregator.NotifyTriggersReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
-    function deserialize_aggregator_SyncTasksReq(buffer_arg) {
-      return avs_pb3.SyncTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
+    function deserialize_aggregator_NotifyTriggersReq(buffer_arg) {
+      return avs_pb3.NotifyTriggersReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
-    function serialize_aggregator_SyncTasksResp(arg) {
-      if (!(arg instanceof avs_pb3.SyncTasksResp)) {
-        throw new Error("Expected argument of type aggregator.SyncTasksResp");
+    function serialize_aggregator_NotifyTriggersResp(arg) {
+      if (!(arg instanceof avs_pb3.NotifyTriggersResp)) {
+        throw new Error("Expected argument of type aggregator.NotifyTriggersResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
-    function deserialize_aggregator_SyncTasksResp(buffer_arg) {
-      return avs_pb3.SyncTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+    function deserialize_aggregator_NotifyTriggersResp(buffer_arg) {
+      return avs_pb3.NotifyTriggersResp.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_SyncMessagesReq(arg) {
+      if (!(arg instanceof avs_pb3.SyncMessagesReq)) {
+        throw new Error("Expected argument of type aggregator.SyncMessagesReq");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_SyncMessagesReq(buffer_arg) {
+      return avs_pb3.SyncMessagesReq.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_SyncMessagesResp(arg) {
+      if (!(arg instanceof avs_pb3.SyncMessagesResp)) {
+        throw new Error("Expected argument of type aggregator.SyncMessagesResp");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_SyncMessagesResp(buffer_arg) {
+      return avs_pb3.SyncMessagesResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Task(arg) {
       if (!(arg instanceof avs_pb3.Task)) {
@@ -5154,24 +6062,6 @@ var require_avs_grpc_pb = __commonJS({
     }
     function deserialize_aggregator_Task(buffer_arg) {
       return avs_pb3.Task.deserializeBinary(new Uint8Array(buffer_arg));
-    }
-    function serialize_aggregator_UpdateChecksReq(arg) {
-      if (!(arg instanceof avs_pb3.UpdateChecksReq)) {
-        throw new Error("Expected argument of type aggregator.UpdateChecksReq");
-      }
-      return Buffer.from(arg.serializeBinary());
-    }
-    function deserialize_aggregator_UpdateChecksReq(buffer_arg) {
-      return avs_pb3.UpdateChecksReq.deserializeBinary(new Uint8Array(buffer_arg));
-    }
-    function serialize_aggregator_UpdateChecksResp(arg) {
-      if (!(arg instanceof avs_pb3.UpdateChecksResp)) {
-        throw new Error("Expected argument of type aggregator.UpdateChecksResp");
-      }
-      return Buffer.from(arg.serializeBinary());
-    }
-    function deserialize_aggregator_UpdateChecksResp(buffer_arg) {
-      return avs_pb3.UpdateChecksResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_google_protobuf_BoolValue(arg) {
       if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
@@ -5284,10 +6174,13 @@ var require_avs_grpc_pb = __commonJS({
         requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_google_protobuf_BoolValue,
         responseDeserialize: deserialize_google_protobuf_BoolValue
-      },
+      }
+    };
+    exports2.AggregatorClient = grpc2.makeGenericClientConstructor(AggregatorService);
+    var NodeService = exports2.NodeService = {
       // Operator endpoint
       ping: {
-        path: "/aggregator.Aggregator/Ping",
+        path: "/aggregator.Node/Ping",
         requestStream: false,
         responseStream: false,
         requestType: avs_pb3.Checkin,
@@ -5297,30 +6190,41 @@ var require_avs_grpc_pb = __commonJS({
         responseSerialize: serialize_aggregator_CheckinResp,
         responseDeserialize: deserialize_aggregator_CheckinResp
       },
-      syncTasks: {
-        path: "/aggregator.Aggregator/SyncTasks",
+      syncMessages: {
+        path: "/aggregator.Node/SyncMessages",
         requestStream: false,
         responseStream: true,
-        requestType: avs_pb3.SyncTasksReq,
-        responseType: avs_pb3.SyncTasksResp,
-        requestSerialize: serialize_aggregator_SyncTasksReq,
-        requestDeserialize: deserialize_aggregator_SyncTasksReq,
-        responseSerialize: serialize_aggregator_SyncTasksResp,
-        responseDeserialize: deserialize_aggregator_SyncTasksResp
+        requestType: avs_pb3.SyncMessagesReq,
+        responseType: avs_pb3.SyncMessagesResp,
+        requestSerialize: serialize_aggregator_SyncMessagesReq,
+        requestDeserialize: deserialize_aggregator_SyncMessagesReq,
+        responseSerialize: serialize_aggregator_SyncMessagesResp,
+        responseDeserialize: deserialize_aggregator_SyncMessagesResp
       },
-      updateChecks: {
-        path: "/aggregator.Aggregator/UpdateChecks",
+      ack: {
+        path: "/aggregator.Node/Ack",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb3.UpdateChecksReq,
-        responseType: avs_pb3.UpdateChecksResp,
-        requestSerialize: serialize_aggregator_UpdateChecksReq,
-        requestDeserialize: deserialize_aggregator_UpdateChecksReq,
-        responseSerialize: serialize_aggregator_UpdateChecksResp,
-        responseDeserialize: deserialize_aggregator_UpdateChecksResp
+        requestType: avs_pb3.AckMessageReq,
+        responseType: google_protobuf_wrappers_pb.BoolValue,
+        requestSerialize: serialize_aggregator_AckMessageReq,
+        requestDeserialize: deserialize_aggregator_AckMessageReq,
+        responseSerialize: serialize_google_protobuf_BoolValue,
+        responseDeserialize: deserialize_google_protobuf_BoolValue
+      },
+      notifyTriggers: {
+        path: "/aggregator.Node/NotifyTriggers",
+        requestStream: false,
+        responseStream: false,
+        requestType: avs_pb3.NotifyTriggersReq,
+        responseType: avs_pb3.NotifyTriggersResp,
+        requestSerialize: serialize_aggregator_NotifyTriggersReq,
+        requestDeserialize: deserialize_aggregator_NotifyTriggersReq,
+        responseSerialize: serialize_aggregator_NotifyTriggersResp,
+        responseDeserialize: deserialize_aggregator_NotifyTriggersResp
       }
     };
-    exports2.AggregatorClient = grpc2.makeGenericClientConstructor(AggregatorService);
+    exports2.NodeClient = grpc2.makeGenericClientConstructor(NodeService);
   }
 });
 
@@ -5561,8 +6465,11 @@ var Task = class {
     this.executions = task.getExecutionsList().map((execution) => {
       return {
         epoch: execution.getEpoch(),
-        userOpHash: execution.getUserOpHash(),
-        error: execution.getError()
+        success: execution.getSuccess(),
+        error: execution.getError(),
+        triggerMark: execution.getTriggerMark()?.toObject(),
+        result: execution.getResult(),
+        steps: execution.getStepsList().map((step) => step.toObject())
       };
     });
     this.maxExecution = task.getMaxExecution();

@@ -3,7 +3,7 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 
 import { erc20TransferTask } from "./fixture";
 
@@ -67,7 +67,11 @@ describe("cancelTask Tests", () => {
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+
+      queueTaskCleanup(createdTaskId);
     });
+
+    afterAll(async() => await teardown(client, authKey));
 
     test("should cancel task when authenticated with signature", async () => {
       const result = await client.cancelTask(createdTaskId, { authKey });
@@ -105,10 +109,15 @@ describe("cancelTask Tests", () => {
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+
+      queueTaskCleanup(createdTaskId);
     });
+
+    afterAll(async() => await teardown(client, authKey));
 
     test("should cancel task when authenticated with API key", async () => {
       const result = await client.cancelTask(createdTaskId, { authKey });
+      queueTaskCleanup(result);
       expect(result).toBe(true);
 
       const cancelTask = await client.getTask(createdTaskId, { authKey });
@@ -150,7 +159,10 @@ describe("cancelTask Tests", () => {
         },
         { authKey }
       );
+      queueTaskCleanup(createdTaskId);
     });
+
+    afterAll(async() => await teardown(client, authKey));
 
     test("should throw error when canceling a task without authentication", async () => {
       await expect(client.cancelTask(createdTaskId, { authKey: "" })).rejects.toThrow("missing auth header");

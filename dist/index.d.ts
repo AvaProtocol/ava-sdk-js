@@ -1,7 +1,6 @@
 import * as grpc from '@grpc/grpc-js';
 import { Metadata } from '@grpc/grpc-js';
 import * as jspb from 'google-protobuf';
-import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as google_protobuf_wrappers_pb from 'google-protobuf/google/protobuf/wrappers_pb';
 
 declare const getKeyRequestMessage: (address: string, expiredAt: number) => string;
@@ -28,130 +27,6 @@ declare class IdReq extends jspb.Message {
 declare namespace IdReq {
     export type AsObject = {
         id: string,
-    }
-}
-
-declare class Checkin extends jspb.Message { 
-    getId(): string;
-    setId(value: string): Checkin;
-    getAddress(): string;
-    setAddress(value: string): Checkin;
-    getSignature(): string;
-    setSignature(value: string): Checkin;
-
-    hasStatus(): boolean;
-    clearStatus(): void;
-    getStatus(): Checkin.Status | undefined;
-    setStatus(value?: Checkin.Status): Checkin;
-    getVersion(): string;
-    setVersion(value: string): Checkin;
-    getMetricsport(): number;
-    setMetricsport(value: number): Checkin;
-    getRemoteip(): string;
-    setRemoteip(value: string): Checkin;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): Checkin.AsObject;
-    static toObject(includeInstance: boolean, msg: Checkin): Checkin.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: Checkin, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): Checkin;
-    static deserializeBinaryFromReader(message: Checkin, reader: jspb.BinaryReader): Checkin;
-}
-
-declare namespace Checkin {
-    export type AsObject = {
-        id: string,
-        address: string,
-        signature: string,
-        status?: Checkin.Status.AsObject,
-        version: string,
-        metricsport: number,
-        remoteip: string,
-    }
-
-
-    export class Status extends jspb.Message { 
-        getUptime(): number;
-        setUptime(value: number): Status;
-        getQueuedepth(): number;
-        setQueuedepth(value: number): Status;
-
-        hasLastHeartbeat(): boolean;
-        clearLastHeartbeat(): void;
-        getLastHeartbeat(): google_protobuf_timestamp_pb.Timestamp | undefined;
-        setLastHeartbeat(value?: google_protobuf_timestamp_pb.Timestamp): Status;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): Status.AsObject;
-        static toObject(includeInstance: boolean, msg: Status): Status.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: Status, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): Status;
-        static deserializeBinaryFromReader(message: Status, reader: jspb.BinaryReader): Status;
-    }
-
-    export namespace Status {
-        export type AsObject = {
-            uptime: number,
-            queuedepth: number,
-            lastHeartbeat?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        }
-    }
-
-}
-
-declare class CheckinResp extends jspb.Message { 
-
-    hasUpdatedAt(): boolean;
-    clearUpdatedAt(): void;
-    getUpdatedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setUpdatedAt(value?: google_protobuf_timestamp_pb.Timestamp): CheckinResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CheckinResp.AsObject;
-    static toObject(includeInstance: boolean, msg: CheckinResp): CheckinResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CheckinResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CheckinResp;
-    static deserializeBinaryFromReader(message: CheckinResp, reader: jspb.BinaryReader): CheckinResp;
-}
-
-declare namespace CheckinResp {
-    export type AsObject = {
-        updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
-}
-
-declare class SyncTasksReq extends jspb.Message { 
-    getId(): string;
-    setId(value: string): SyncTasksReq;
-    getAddress(): string;
-    setAddress(value: string): SyncTasksReq;
-    getSignature(): string;
-    setSignature(value: string): SyncTasksReq;
-    getMonotonicClock(): number;
-    setMonotonicClock(value: number): SyncTasksReq;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SyncTasksReq.AsObject;
-    static toObject(includeInstance: boolean, msg: SyncTasksReq): SyncTasksReq.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SyncTasksReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SyncTasksReq;
-    static deserializeBinaryFromReader(message: SyncTasksReq, reader: jspb.BinaryReader): SyncTasksReq;
-}
-
-declare namespace SyncTasksReq {
-    export type AsObject = {
-        id: string,
-        address: string,
-        signature: string,
-        monotonicClock: number,
     }
 }
 
@@ -240,6 +115,8 @@ declare namespace EventCondition {
 }
 
 declare class TaskTrigger$1 extends jspb.Message { 
+    getName(): string;
+    setName(value: string): TaskTrigger$1;
 
     hasManual(): boolean;
     clearManual(): void;
@@ -280,6 +157,7 @@ declare class TaskTrigger$1 extends jspb.Message {
 
 declare namespace TaskTrigger$1 {
     export type AsObject = {
+        name: string,
         manual: boolean,
         fixedTime?: FixedEpochCondition.AsObject,
         cron?: CronCondition.AsObject,
@@ -289,42 +167,13 @@ declare namespace TaskTrigger$1 {
 
     export enum TriggerTypeCase {
         TRIGGER_TYPE_NOT_SET = 0,
-        MANUAL = 1,
-        FIXED_TIME = 2,
-        CRON = 3,
-        BLOCK = 4,
-        EVENT = 5,
+        MANUAL = 2,
+        FIXED_TIME = 3,
+        CRON = 4,
+        BLOCK = 5,
+        EVENT = 6,
     }
 
-}
-
-declare class SyncTasksResp extends jspb.Message { 
-    getId(): string;
-    setId(value: string): SyncTasksResp;
-    getChecktype(): string;
-    setChecktype(value: string): SyncTasksResp;
-
-    hasTrigger(): boolean;
-    clearTrigger(): void;
-    getTrigger(): TaskTrigger$1 | undefined;
-    setTrigger(value?: TaskTrigger$1): SyncTasksResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SyncTasksResp.AsObject;
-    static toObject(includeInstance: boolean, msg: SyncTasksResp): SyncTasksResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SyncTasksResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SyncTasksResp;
-    static deserializeBinaryFromReader(message: SyncTasksResp, reader: jspb.BinaryReader): SyncTasksResp;
-}
-
-declare namespace SyncTasksResp {
-    export type AsObject = {
-        id: string,
-        checktype: string,
-        trigger?: TaskTrigger$1.AsObject,
-    }
 }
 
 declare class ETHTransferNode extends jspb.Message { 
@@ -462,8 +311,8 @@ declare namespace RestAPINode {
 }
 
 declare class CustomCodeNode extends jspb.Message { 
-    getType(): CustomCodeType;
-    setType(value: CustomCodeType): CustomCodeNode;
+    getLang(): CustomCodeLang;
+    setLang(value: CustomCodeLang): CustomCodeNode;
     getSource(): string;
     setSource(value: string): CustomCodeNode;
 
@@ -479,7 +328,7 @@ declare class CustomCodeNode extends jspb.Message {
 
 declare namespace CustomCodeNode {
     export type AsObject = {
-        type: CustomCodeType,
+        lang: CustomCodeLang,
         source: string,
     }
 }
@@ -553,10 +402,44 @@ declare namespace FilterNode {
 }
 
 declare class LoopNode extends jspb.Message { 
-    getIterVar(): string;
-    setIterVar(value: string): LoopNode;
+    getInput(): string;
+    setInput(value: string): LoopNode;
+    getIterVal(): string;
+    setIterVal(value: string): LoopNode;
     getIterKey(): string;
     setIterKey(value: string): LoopNode;
+
+    hasEthTransfer(): boolean;
+    clearEthTransfer(): void;
+    getEthTransfer(): ETHTransferNode | undefined;
+    setEthTransfer(value?: ETHTransferNode): LoopNode;
+
+    hasContractWrite(): boolean;
+    clearContractWrite(): void;
+    getContractWrite(): ContractWriteNode | undefined;
+    setContractWrite(value?: ContractWriteNode): LoopNode;
+
+    hasContractRead(): boolean;
+    clearContractRead(): void;
+    getContractRead(): ContractReadNode | undefined;
+    setContractRead(value?: ContractReadNode): LoopNode;
+
+    hasGraphqlDataQuery(): boolean;
+    clearGraphqlDataQuery(): void;
+    getGraphqlDataQuery(): GraphQLQueryNode | undefined;
+    setGraphqlDataQuery(value?: GraphQLQueryNode): LoopNode;
+
+    hasRestApi(): boolean;
+    clearRestApi(): void;
+    getRestApi(): RestAPINode | undefined;
+    setRestApi(value?: RestAPINode): LoopNode;
+
+    hasCustomCode(): boolean;
+    clearCustomCode(): void;
+    getCustomCode(): CustomCodeNode | undefined;
+    setCustomCode(value?: CustomCodeNode): LoopNode;
+
+    getRunnerCase(): LoopNode.RunnerCase;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): LoopNode.AsObject;
@@ -570,9 +453,27 @@ declare class LoopNode extends jspb.Message {
 
 declare namespace LoopNode {
     export type AsObject = {
-        iterVar: string,
+        input: string,
+        iterVal: string,
         iterKey: string,
+        ethTransfer?: ETHTransferNode.AsObject,
+        contractWrite?: ContractWriteNode.AsObject,
+        contractRead?: ContractReadNode.AsObject,
+        graphqlDataQuery?: GraphQLQueryNode.AsObject,
+        restApi?: RestAPINode.AsObject,
+        customCode?: CustomCodeNode.AsObject,
     }
+
+    export enum RunnerCase {
+        RUNNER_NOT_SET = 0,
+        ETH_TRANSFER = 10,
+        CONTRACT_WRITE = 11,
+        CONTRACT_READ = 12,
+        GRAPHQL_DATA_QUERY = 13,
+        REST_API = 14,
+        CUSTOM_CODE = 15,
+    }
+
 }
 
 declare class TaskEdge$1 extends jspb.Message { 
@@ -697,10 +598,21 @@ declare namespace TaskNode$1 {
 declare class Execution$1 extends jspb.Message { 
     getEpoch(): number;
     setEpoch(value: number): Execution$1;
-    getUserOpHash(): string;
-    setUserOpHash(value: string): Execution$1;
+    getSuccess(): boolean;
+    setSuccess(value: boolean): Execution$1;
     getError(): string;
     setError(value: string): Execution$1;
+
+    hasTriggerMark(): boolean;
+    clearTriggerMark(): void;
+    getTriggerMark(): TriggerMark$1 | undefined;
+    setTriggerMark(value?: TriggerMark$1): Execution$1;
+    getResult(): string;
+    setResult(value: string): Execution$1;
+    clearStepsList(): void;
+    getStepsList(): Array<Execution$1.Step>;
+    setStepsList(value: Array<Execution$1.Step>): Execution$1;
+    addSteps(value?: Execution$1.Step, index?: number): Execution$1.Step;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Execution$1.AsObject;
@@ -715,9 +627,46 @@ declare class Execution$1 extends jspb.Message {
 declare namespace Execution$1 {
     export type AsObject = {
         epoch: number,
-        userOpHash: string,
+        success: boolean,
         error: string,
+        triggerMark?: TriggerMark$1.AsObject,
+        result: string,
+        stepsList: Array<Execution$1.Step.AsObject>,
     }
+
+
+    export class Step extends jspb.Message { 
+        getNodeId(): string;
+        setNodeId(value: string): Step;
+        getSuccess(): boolean;
+        setSuccess(value: boolean): Step;
+        getOutputData(): string;
+        setOutputData(value: string): Step;
+        getLog(): string;
+        setLog(value: string): Step;
+        getError(): string;
+        setError(value: string): Step;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Step.AsObject;
+        static toObject(includeInstance: boolean, msg: Step): Step.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Step, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Step;
+        static deserializeBinaryFromReader(message: Step, reader: jspb.BinaryReader): Step;
+    }
+
+    export namespace Step {
+        export type AsObject = {
+            nodeId: string,
+            success: boolean,
+            outputData: string,
+            log: string,
+            error: string,
+        }
+    }
+
 }
 
 declare class Task$1 extends jspb.Message { 
@@ -1052,54 +1001,29 @@ declare namespace KeyResp {
     }
 }
 
-declare class UpdateChecksReq extends jspb.Message { 
-    getAddress(): string;
-    setAddress(value: string): UpdateChecksReq;
-    getSignature(): string;
-    setSignature(value: string): UpdateChecksReq;
-    clearIdList(): void;
-    getIdList(): Array<string>;
-    setIdList(value: Array<string>): UpdateChecksReq;
-    addId(value: string, index?: number): string;
+declare class TriggerMark$1 extends jspb.Message { 
+    getBlockNumber(): number;
+    setBlockNumber(value: number): TriggerMark$1;
+    getLogIndex(): number;
+    setLogIndex(value: number): TriggerMark$1;
+    getTxHash(): string;
+    setTxHash(value: string): TriggerMark$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UpdateChecksReq.AsObject;
-    static toObject(includeInstance: boolean, msg: UpdateChecksReq): UpdateChecksReq.AsObject;
+    toObject(includeInstance?: boolean): TriggerMark$1.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerMark$1): TriggerMark$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UpdateChecksReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UpdateChecksReq;
-    static deserializeBinaryFromReader(message: UpdateChecksReq, reader: jspb.BinaryReader): UpdateChecksReq;
+    static serializeBinaryToWriter(message: TriggerMark$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerMark$1;
+    static deserializeBinaryFromReader(message: TriggerMark$1, reader: jspb.BinaryReader): TriggerMark$1;
 }
 
-declare namespace UpdateChecksReq {
+declare namespace TriggerMark$1 {
     export type AsObject = {
-        address: string,
-        signature: string,
-        idList: Array<string>,
-    }
-}
-
-declare class UpdateChecksResp extends jspb.Message { 
-
-    hasUpdatedAt(): boolean;
-    clearUpdatedAt(): void;
-    getUpdatedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setUpdatedAt(value?: google_protobuf_timestamp_pb.Timestamp): UpdateChecksResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UpdateChecksResp.AsObject;
-    static toObject(includeInstance: boolean, msg: UpdateChecksResp): UpdateChecksResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UpdateChecksResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UpdateChecksResp;
-    static deserializeBinaryFromReader(message: UpdateChecksResp, reader: jspb.BinaryReader): UpdateChecksResp;
-}
-
-declare namespace UpdateChecksResp {
-    export type AsObject = {
-        updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        blockNumber: number,
+        logIndex: number,
+        txHash: string,
     }
 }
 
@@ -1160,7 +1084,7 @@ declare enum TaskStatus {
     EXECUTING = 4,
 }
 
-declare enum CustomCodeType {
+declare enum CustomCodeLang {
     JAVASCRIPT = 0,
 }
 
@@ -1197,14 +1121,6 @@ interface IAggregatorClient {
     deleteTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
-    ping(request: Checkin, callback: (error: grpc.ServiceError | null, response: CheckinResp) => void): grpc.ClientUnaryCall;
-    ping(request: Checkin, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: CheckinResp) => void): grpc.ClientUnaryCall;
-    ping(request: Checkin, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: CheckinResp) => void): grpc.ClientUnaryCall;
-    syncTasks(request: SyncTasksReq, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<SyncTasksResp>;
-    syncTasks(request: SyncTasksReq, metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<SyncTasksResp>;
-    updateChecks(request: UpdateChecksReq, callback: (error: grpc.ServiceError | null, response: UpdateChecksResp) => void): grpc.ClientUnaryCall;
-    updateChecks(request: UpdateChecksReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: UpdateChecksResp) => void): grpc.ClientUnaryCall;
-    updateChecks(request: UpdateChecksReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: UpdateChecksResp) => void): grpc.ClientUnaryCall;
 }
 
 declare class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -1236,14 +1152,6 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public deleteTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
-    public ping(request: Checkin, callback: (error: grpc.ServiceError | null, response: CheckinResp) => void): grpc.ClientUnaryCall;
-    public ping(request: Checkin, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: CheckinResp) => void): grpc.ClientUnaryCall;
-    public ping(request: Checkin, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: CheckinResp) => void): grpc.ClientUnaryCall;
-    public syncTasks(request: SyncTasksReq, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<SyncTasksResp>;
-    public syncTasks(request: SyncTasksReq, metadata?: grpc.Metadata, options?: Partial<grpc.CallOptions>): grpc.ClientReadableStream<SyncTasksResp>;
-    public updateChecks(request: UpdateChecksReq, callback: (error: grpc.ServiceError | null, response: UpdateChecksResp) => void): grpc.ClientUnaryCall;
-    public updateChecks(request: UpdateChecksReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: UpdateChecksResp) => void): grpc.ClientUnaryCall;
-    public updateChecks(request: UpdateChecksReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: UpdateChecksResp) => void): grpc.ClientUnaryCall;
 }
 
 type Environment = "production" | "development" | "staging";
@@ -1324,10 +1232,23 @@ interface CreateWalletReq {
     salt: string;
     factoryAddress?: string;
 }
+interface TriggerMark {
+    blockNumber?: number;
+    logIndex?: number;
+    txHash?: string;
+    epoch?: number;
+}
+interface ExecutionStep {
+    outputData: string;
+    log: string;
+}
 interface Execution {
     epoch: number;
-    userOpHash: string;
+    success: boolean;
     error: string;
+    triggerMark?: TriggerMark;
+    result: string;
+    steps: ExecutionStep[];
 }
 interface TaskEdge {
     id: string;
@@ -1374,4 +1295,4 @@ declare class Client extends BaseClient {
     deleteTask(id: string, options: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type Execution, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskEdge, type TaskNode, type TaskTrigger, type TaskType, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, type CancelTaskResponse, type ClientOption, type CreateTaskResponse, type CreateWalletReq, type DeleteTaskResponse, type Environment, type Execution, type ExecutionStep, type GetKeyResponse, type ListTasksResponse, type RequestOptions, type SmartWallet, type TaskEdge, type TaskNode, type TaskTrigger, type TaskType, type TriggerMark, Client as default, getKeyRequestMessage };

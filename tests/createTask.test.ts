@@ -3,7 +3,7 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 
 import { erc20TransferTask, multiNodeBranchingTask } from "./fixture";
 
@@ -61,11 +61,14 @@ describe("createTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
+    afterAll(async() => await teardown(client, authKey));
+
     test("should create a task when authenticated with signature", async () => {
       const result = await client.createTask(
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+      queueTaskCleanup(result);
       console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveLength(26);
@@ -90,6 +93,7 @@ describe("createTask Tests", () => {
         },
         { authKey }
       );
+      queueTaskCleanup(result);
 
       const task = await client.getTask(result, { authKey });
       expect(task.id).toEqual(result);
@@ -115,6 +119,7 @@ describe("createTask Tests", () => {
         },
         { authKey }
       );
+      queueTaskCleanup(result);
 
       const task = await client.getTask(result, { authKey });
       expect(task.id).toEqual(result);
@@ -139,6 +144,7 @@ describe("createTask Tests", () => {
         },
         { authKey }
       );
+      queueTaskCleanup(result);
 
       const task = await client.getTask(result, { authKey });
       expect(task.id).toEqual(result);
@@ -163,6 +169,7 @@ describe("createTask Tests", () => {
         },
         { authKey }
       );
+      queueTaskCleanup(result);
 
       const task = await client.getTask(result, { authKey });
       expect(task.id).toEqual(result);
@@ -189,6 +196,7 @@ describe("createTask Tests", () => {
         },
         { authKey }
       );
+      queueTaskCleanup(result);
 
       const task = await client.getTask(result, { authKey });
       expect(task.id).toEqual(result);
@@ -208,7 +216,7 @@ describe("createTask Tests", () => {
           smartWalletAddress,
         },
         { authKey });
-
+      queueTaskCleanup(result);
       const task = await client.getTask(result, { authKey });
 
       expect(task.id).toEqual(result);
@@ -247,11 +255,15 @@ describe("createTask Tests", () => {
       console.log(`Smart wallet created: ${smartWalletAddress}`);
     });
 
+    afterAll(async() => await teardown(client, authKey));
+
     test("should create a task when authenticated with API key", async () => {
       const result = await client.createTask(
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+      queueTaskCleanup(result);
+
       console.log("Create task result:", result);
       expect(result).toBeDefined();
       expect(result).toHaveLength(26);

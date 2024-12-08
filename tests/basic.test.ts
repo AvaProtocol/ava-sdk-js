@@ -3,7 +3,7 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 import { erc20TransferTask, DUMMY_PRIVATE_KEY  } from "./fixture";
 
 // Update the dotenv configuration
@@ -121,6 +121,8 @@ describe("Basic Tests", () => {
       authKey = result.authKey;
     });
 
+    afterAll(async() => await teardown(client, authKey));
+
     test("createWallet", async () => {
       const result = await client.createWallet({salt: "123"}, { authKey });
       expect(result?.address).toHaveLength(42);
@@ -139,6 +141,7 @@ describe("Basic Tests", () => {
 
     test("createTask", async () => {
       const result = await client.createTask(erc20TransferTask, { authKey });
+      queueTaskCleanup(result);
 
       expect(result).toBeDefined();
       expect(result).toHaveLength(26);
@@ -149,6 +152,8 @@ describe("Basic Tests", () => {
       expect(result).toHaveLength(26);
 
       const task = await client.getTask(result, { authKey });
+      queueTaskCleanup(result);
+
       expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
       expect(task.nodes).toHaveLength(1);
       expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
@@ -162,9 +167,11 @@ describe("Basic Tests", () => {
 
       // populate tasks for default wallet and the custom salt smart wallet above
       const result1 = await client.createTask({...erc20TransferTask, memo: 'task1 test', smartWalletAddress: smartWallet.address}, { authKey });
+      queueTaskCleanup(result1);
       const tasks1 = await client.listTasks(smartWallet.address, { authKey });
 
       const result2 = await client.createTask({...erc20TransferTask, memo: 'default wallet test'}, { authKey });
+      queueTaskCleanup(result2);
       const tasks2 = await client.listTasks("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41", { authKey });
 
       expect(tasks1.length).toBeGreaterThanOrEqual(1);
@@ -183,6 +190,7 @@ describe("Basic Tests", () => {
 
     test("cancelTask", async () => {
       const result = await client.createTask(erc20TransferTask, { authKey });
+      queueTaskCleanup(result);
       const task = await client.getTask(result, { authKey });
       expect(task.status).toEqual( avs_pb.TaskStatus.ACTIVE);
 

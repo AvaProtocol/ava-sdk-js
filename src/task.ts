@@ -1,5 +1,5 @@
 import * as avs_pb from "../grpc_codegen/avs_pb";
-import { TaskType, TaskTrigger, Execution, TaskEdge, TaskNode } from "./types";
+import { TaskType, TaskTrigger, Execution, ExecutionStep, TaskEdge, TaskNode, TriggerMark } from "./types";
 import { triggerFromGRPC, nodeFromGRPC, taskEdgeFromGRPC } from "./builder";
 
 class Task implements TaskType {
@@ -33,8 +33,11 @@ class Task implements TaskType {
     this.executions = task.getExecutionsList().map(execution => {
        return {
          epoch: execution.getEpoch(),
-         userOpHash: execution.getUserOpHash(),
+         success: execution.getSuccess(),
          error: execution.getError(),
+         triggerMark: execution.getTriggerMark()?.toObject() as TriggerMark,
+         result: execution.getResult(),
+         steps: execution.getStepsList().map(step => step.toObject() as ExecutionStep)
        } 
     });
     this.maxExecution = task.getMaxExecution();

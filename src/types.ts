@@ -93,10 +93,25 @@ export interface CreateWalletReq {
   factoryAddress?: string;
 }
 
+export interface TriggerMark {
+  blockNumber?: number;
+  logIndex?: number;
+  txHash?: string;
+  epoch?: number;
+}
+
+export interface ExecutionStep {
+  outputData: string;
+  log: string;
+}
+
 export interface Execution {
   epoch: number;
-  userOpHash: string;
+  success: boolean;
   error: string;
+  triggerMark?: TriggerMark;
+  result: string;
+  steps: ExecutionStep[];
 }
 
 export interface TaskEdge {

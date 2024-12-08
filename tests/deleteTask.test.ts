@@ -2,7 +2,7 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
 
 import { erc20TransferTask } from "./fixture";
 
@@ -155,7 +155,10 @@ describe("deleteTask Tests", () => {
         { ...erc20TransferTask, smartWalletAddress },
         { authKey }
       );
+      queueTaskCleanup(createdTaskId);
     });
+
+    afterAll(async() => await teardown(client, authKey));
 
     test("should throw error when deleting a task without authentication", async () => {
       await expect(client.deleteTask(createdTaskId, { authKey: "" })).rejects.toThrow("missing auth header");
