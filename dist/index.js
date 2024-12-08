@@ -7072,29 +7072,6 @@ var Client = class extends BaseClient {
     const result = await this._callRPC("createTask", request, options);
     return result.getId();
   }
-  // async create(payload: any, options: RequestOptions): Promise<string> {
-  //   const request = new avs_pb.CreateTaskReq();
-  //   // TODO: add client side validation
-  //   request.setSmartWalletAddress(payload.smartWalletAddress);
-  //   request.setStartAt(payload.startAt);
-  //   request.setExpiredAt(payload.expiredAt || -1);
-  //   request.setMemo(payload.memo || "");
-  //   request.setMaxExecution(payload.maxExecution || 0);
-  //   request.setTrigger(buildTrigger(payload.trigger));
-  //   for (const node of payload.nodes) {
-  //     request.addNodes(buildTaskNode(node));
-  //   }
-  //   const edges = [];
-  //   for (const edge of payload.edges) {
-  //     edges.push(buildTaskEdge(edge));
-  //   }
-  //   request.setEdgesList(edges);
-  //   const result = await this._callRPC<
-  //     avs_pb.CreateTaskResp,
-  //     avs_pb.CreateTaskReq
-  //   >("createTask", request, options);
-  //   return workflow;
-  // }
   createWorkflow(props) {
     return new workflow_default(props);
   }
