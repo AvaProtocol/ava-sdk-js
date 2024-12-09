@@ -1,13 +1,14 @@
 import * as _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client, {
-  Node,
   Edge,
-  BlockTrigger,
   Workflow,
   NodeFactory,
   TriggerFactory,
   TriggerTypes,
+  WorkflowStatuses,
+  NodeTypes,
+  BranchNodeData,
 } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
@@ -26,24 +27,16 @@ import {
   WorkflowTemplate,
   NodesTemplate,
   EdgesTemplate,
-  multiNodeBranchingTask,
+  MultiNodeWithBranch,
 } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Get environment variables with type safety
-const {
-  TEST_API_KEY,
-  TEST_PRIVATE_KEY,
-  TOKEN_CONTRACT,
-  ORACLE_CONTRACT,
-  ENDPOINT,
-} = {
+const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  TOKEN_CONTRACT: requireEnvVar("TOKEN_CONTRACT"),
-  ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
@@ -150,6 +143,7 @@ describe("createTask Tests", () => {
         client.createWorkflow(workflowData),
         { authKey }
       );
+
       queueWorkflowForCleanup(createdWorkflows, submitResult);
 
       const getResult = await client.getWorkflow(submitResult, { authKey });
@@ -175,6 +169,7 @@ describe("createTask Tests", () => {
         client.createWorkflow(workflowData),
         { authKey }
       );
+
       queueWorkflowForCleanup(createdWorkflows, submitResult);
 
       const task = await client.getWorkflow(submitResult, { authKey });
@@ -185,11 +180,12 @@ describe("createTask Tests", () => {
     });
 
     test("create event trigger", async () => {
-      const branchNode = {
+      const branchNode = NodeFactory.create({
+        name: "branchCheckTokenAmount",
+        type: NodeTypes.BRANCH,
         id: ulid(),
-        name: "checkAmount",
-        branch: {
-          conditions: [
+        data: {
+          conditionsList: [
             {
               id: ulid(),
               type: "if",
@@ -212,183 +208,193 @@ describe("createTask Tests", () => {
             },
           ],
         },
-      };
+      });
 
-      const restApiNode = {
-        id: ulid(),
+      const restApiNode = NodeFactory.create({
         name: "notification",
-        rest_api: {
+        type: NodeTypes.REST_API,
+        id: ulid(),
+        data: {
           url: "https://api.telegram.org/bot{{notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
           method: "POST",
+          headersMap: [["content-type", "application/json"]],
           body: `JSON.stringify({
-              chat_id:-4609037622,
-              text: \`Congrat, your walllet [\${trigger1.data.to_address}](https://sepolia.etherscan.io/address/\${trigger1.data.to_address}) received \\\`\${trigger1.data.value_formatted}\\\` [\${trigger1.data.token_symbol}](https://sepolia.etherscan.io/token/\${trigger1.data.address}) at [\${trigger1.data.transaction_hash}](sepolia.etherscan.io/tx/\${trigger1.data.transaction_hash})\`
+              chat_id: -4609037622,
+              text: \`
+                Congrat, your wallet 
+                [\${trigger1.data.to_address}](https://sepolia.etherscan.io/address/\${trigger1.data.to_address}) 
+                received \\\`\${trigger1.data.value_formatted}\\\` 
+                [\${trigger1.data.token_symbol}](https://sepolia.etherscan.io/token/\${trigger1.data.address}) 
+                at [\${trigger1.data.transaction_hash}](https://sepolia.etherscan.io/tx/\${trigger1.data.transaction_hash})
+              \`
             })`,
-          headers: {
-            "content-type": "application/json",
-          },
         },
-      };
+      });
 
-      const nodes = [branchNode, restApiNode];
-
-      const edges = [
-        {
-          id: ulid(),
-          source: "__TRIGGER__",
-          target: branchNode.id,
-        },
-        {
-          id: ulid(),
-          source: `${branchNode.id}.${branchNode.branch.conditions[0].id}`,
-          target: restApiNode.id,
-        },
-      ];
-
-      const expression = `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${smartWalletAddress}"`;
-
-      const trigger = {
-        triggerType: avs_pb.TaskTrigger.TriggerTypeCase.EVENT,
-        event: { expression },
-      };
-
-      const payload = {
+      const workflowData = {
+        ...WorkflowTemplate,
         smartWalletAddress,
-        nodes,
-        edges,
-        trigger,
-        startAt: Math.floor(Date.now() / 1000) + 30,
-        expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-        maxExecution: 1,
-        memo: `Create event trigger memo`,
+        nodes: [branchNode, restApiNode],
+        edges: [
+          new Edge({
+            id: ulid(),
+            source: "__TRIGGER__",
+            target: branchNode.id,
+          }),
+          new Edge({
+            id: ulid(),
+            source: `${branchNode.id}.${
+              (branchNode.data as BranchNodeData).conditionsList[0].id
+            }`,
+            target: restApiNode.id,
+          }),
+        ],
+        trigger: TriggerFactory.create({
+          name: "eventTrigger",
+          type: TriggerTypes.EVENT,
+          data: {
+            expression: `
+              trigger1.data.topics[0] == 
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" 
+              && trigger1.data.topics[2] == "${smartWalletAddress}"
+            `,
+          },
+        }),
       };
 
-      console.log("createTask payload", util.inspect(payload, false, 8, true));
+      console.log("workflowData", util.inspect(workflowData, false, 8, true));
 
-      const result = await client.createWorkflow(payload);
-
-      const task = await client.getWorkflow(result, { authKey });
-      console.log("createTask task", util.inspect(task, false, 8, true));
-      expect(task.id).toEqual(result);
-      expect(task.status).toEqual(WorkflowStatus.ACTIVE);
-      expect(task.nodesList).toHaveLength(2);
-
-      console.log(
-        "task.nodesList[0]",
-        util.inspect(task.nodesList[0], false, 8, true)
+      const submitResult = await client.submitWorkflow(
+        client.createWorkflow(workflowData),
+        { authKey }
       );
-      queueTaskCleanup(result);
 
-      // TODO: .triggerType doesn’t exist on the task.trigger yet
-      // Reference: https://github.com/AvaProtocol/EigenLayer-AVS/issues/49
-      // expect(task.trigger.triggerType).toEqual(
-      //   avs_pb.TaskTrigger.TriggerTypeCase.EVENT
-      // );
-      expect(task.trigger.event?.expression).toEqual(expression);
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
+
+      const task = await client.getWorkflow(submitResult, { authKey });
+
+      compareResults(
+        {
+          ...workflowData,
+          smartWalletAddress,
+          status: WorkflowStatuses.ACTIVE,
+          id: submitResult,
+          owner: ownerAddress,
+        },
+        task
+      );
     });
 
     test("create manual trigger", async () => {
-      const result = await client.createWorkflow(
-        {
+      const manualTrigger = TriggerFactory.create({
+        name: "manualTrigger",
+        type: TriggerTypes.MANUAL,
+        data: null,
+      });
+      const submitResult = await client.submitWorkflow(
+        client.createWorkflow({
           ...WorkflowTemplate,
           smartWalletAddress,
-          // https://crontab.guru/ for syntax
-          trigger: {
-            manual: true,
-          },
-        },
+          trigger: manualTrigger,
+        }),
         { authKey }
       );
-      queueTaskCleanup(result);
 
-      const task = await client.getWorkflow(result, { authKey });
-      expect(task.id).toEqual(result);
-      expect(task.status).toEqual(WorkflowStatus.ACTIVE);
-      expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(
-        WorkflowTemplate.nodes[0].contractWrite.contractAddress
-      );
-      expect(task.nodes[0].contractWrite.callData).toEqual(
-        WorkflowTemplate.nodes[0].contractWrite.callData
-      );
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
 
-      expect(task.trigger.triggerType).toEqual(
-        avs_pb.TaskTrigger.TriggerTypeCase.MANUAL
+      const task = await client.getWorkflow(submitResult, { authKey });
+
+      compareResults(
+        {
+          ...WorkflowTemplate,
+          trigger: manualTrigger,
+          smartWalletAddress,
+          status: WorkflowStatuses.ACTIVE,
+          id: submitResult,
+          owner: ownerAddress,
+        },
+        task
       );
-      expect(task.trigger.manual).toBe(true);
     });
 
     test("create block trigger", async () => {
-      const result = await client.createWorkflow(
+      const submitResult = await client.submitWorkflow(
+        client.createWorkflow({
+          ...WorkflowTemplate,
+          smartWalletAddress,
+          trigger: TriggerFactory.create({
+            name: "blockTrigger",
+            type: TriggerTypes.BLOCK,
+            data: { interval: 102 },
+          }),
+        }),
+        { authKey }
+      );
+
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
+
+      const task = await client.getWorkflow(submitResult, { authKey });
+      compareResults(
         {
           ...WorkflowTemplate,
           smartWalletAddress,
-          // https://crontab.guru/ for syntax
-          trigger: {
-            block: {
-              interval: 102,
-            },
-          },
+          status: WorkflowStatuses.ACTIVE,
+          id: submitResult,
+          owner: ownerAddress,
         },
-        { authKey }
+        task
       );
-      queueTaskCleanup(result);
-
-      const task = await client.getWorkflow(result, { authKey });
-      expect(task.id).toEqual(result);
-      expect(task.status).toEqual(WorkflowStatus.ACTIVE);
-      expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(
-        WorkflowTemplate.nodes[0].contractWrite.contractAddress
-      );
-      expect(task.nodes[0].contractWrite.callData).toEqual(
-        WorkflowTemplate.nodes[0].contractWrite.callData
-      );
-
-      expect(task.trigger.triggerType).toEqual(
-        avs_pb.TaskTrigger.TriggerTypeCase.BLOCK
-      );
-      expect(task.trigger.block.interval).toEqual(102);
     });
 
     test("create complex task with multi nodes and edge", async () => {
-      const result = await client.createWorkflow(
-        {
-          ...multiNodeBranchingTask,
-          smartWalletAddress,
-        },
+      const workflowData = {
+        ...MultiNodeWithBranch,
+        smartWalletAddress,
+      };
+
+      console.log("workflowData", util.inspect(workflowData, false, 8, true));
+
+      const submitResult = await client.submitWorkflow(
+        client.createWorkflow(workflowData),
         { authKey }
       );
 
-      // TODO: there was a cleanup after creation
-      console.log("getTask result", result);
-      const task = await client.getWorkflow(result, { authKey });
+      queueWorkflowForCleanup(createdWorkflows, submitResult);
+
+      const task = await client.getWorkflow(submitResult, { authKey });
       console.log("getTask task", task);
 
-      expect(task.id).toEqual(result);
-      expect(task.status).toEqual(WorkflowStatus.ACTIVE);
-      expect(task.nodes).toHaveLength(6);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(
-        WorkflowTemplate.nodes[0].contractWrite.contractAddress
+      compareResults(
+        {
+          ...MultiNodeWithBranch,
+          smartWalletAddress,
+          status: WorkflowStatuses.ACTIVE,
+          id: submitResult,
+          owner: ownerAddress,
+        },
+        task
       );
-      expect(task.nodes[0].contractWrite.callData).toEqual(
-        WorkflowTemplate.nodes[0].contractWrite.callData
-      );
-
-      expect(task.nodes[5].branch.conditions).toHaveLength(3);
-      expect(task.nodes[5].branch.conditions[0].type).toEqual("if");
-      expect(task.nodes[5].branch.conditions[1].type).toEqual("if");
-      expect(task.nodes[5].branch.conditions[2].type).toEqual("else");
-
-      expect(task.edges).toHaveLength(6);
-      expect(task.edges[3].source).toEqual("t100.b1");
-      expect(task.edges[4].source).toEqual("t100.b2");
-
-      expect(task.trigger.triggerType).toEqual(
-        avs_pb.TaskTrigger.TriggerTypeCase.BLOCK
-      );
-      expect(task.trigger.block.interval).toEqual(5);
     });
+
+    // TODO: add detailed verification for each node in the workflow
+    // expect(task.nodes[0].contractWrite.contractAddress).toEqual(
+    //   WorkflowTemplate.nodes[0].contractWrite.contractAddress
+    // );
+    // expect(task.nodes[0].contractWrite.callData).toEqual(
+    //   WorkflowTemplate.nodes[0].contractWrite.callData
+    // );
+
+    // expect(task.nodes[5].branch.conditions).toHaveLength(3);
+    // expect(task.nodes[5].branch.conditions[0].type).toEqual("if");
+    // expect(task.nodes[5].branch.conditions[1].type).toEqual("if");
+    // expect(task.nodes[5].branch.conditions[2].type).toEqual("else");
+
+    // expect(task.edges).toHaveLength(6);
+    // expect(task.edges[3].source).toEqual("t100.b1");
+    // expect(task.edges[4].source).toEqual("t100.b2");
+
+    // expect(task.trigger.type).toEqual(TriggerTypes.BLOCK);
+    // expect(task.trigger.data.interval).toEqual(5);
   });
 
   describe("Auth with API key", () => {
@@ -443,11 +449,14 @@ describe("createTask Tests", () => {
 
   describe("Without authentication", () => {
     let smartWalletAddress: string;
-    let authKey: string;
+    const emptyAuthKey: string = "";
 
     test("should throw error when creating a task without authentication", async () => {
       await expect(
-        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress })
+        client.submitWorkflow(
+          client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
+          { authKey: emptyAuthKey }
+        )
       ).rejects.toThrow("missing auth header");
     });
   });

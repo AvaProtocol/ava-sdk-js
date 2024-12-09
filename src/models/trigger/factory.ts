@@ -57,3 +57,19 @@ class TriggerFactory {
 }
 
 export default TriggerFactory;
+
+export {
+  Trigger,
+  TriggerProps,
+  TriggerTypes,
+  BlockTrigger,
+  BlockTriggerProps,
+  CronTrigger,
+  CronTriggerProps,
+  EventTrigger,
+  EventTriggerProps,
+  FixedTimeTrigger,
+  FixedTimeTriggerProps,
+  ManualTrigger,
+  ManualTriggerProps,
+};

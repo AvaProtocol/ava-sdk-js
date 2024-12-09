@@ -1,18 +1,31 @@
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
-import ContractWriteNode, { ContractWriteNodeProps } from "./contractWrite";
-import CustomCodeNode from "./customCode";
-import GraphQLQueryNode from "./graphqlQuery";
-import Node, { NodeProps, NodeTypes } from "./interface";
 import _ from "lodash";
-import RestAPINode from "./restApi";
-import ContractReadNode from "./contractRead";
-import ETHTransferNode from "./ethTransfer";
+import ContractWriteNode, { ContractWriteNodeProps } from "./contractWrite";
+import CustomCodeNode, { CustomCodeLangs, CustomCodeNodeProps } from "./customCode";
+import GraphQLQueryNode, { GraphQLQueryNodeProps } from "./graphqlQuery";
+import Node, { NodeProps, NodeTypes } from "./interface";
+import RestAPINode, { RestAPINodeProps } from "./restApi";
+import ContractReadNode, { ContractReadNodeProps } from "./contractRead";
+import ETHTransferNode, { ETHTransferNodeProps } from "./ethTransfer";
+import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
 
 class NodeFactory {
   static create(props: NodeProps): Node {
     switch (props.type) {
       case NodeTypes.CONTRACT_WRITE:
         return new ContractWriteNode(props as ContractWriteNodeProps);
+      case NodeTypes.REST_API:
+        return new RestAPINode(props as RestAPINodeProps);
+      case NodeTypes.CUSTOM_CODE:
+        return new CustomCodeNode(props as CustomCodeNodeProps);
+      case NodeTypes.CONTRACT_READ:
+        return new ContractReadNode(props as ContractReadNodeProps);
+      case NodeTypes.ETH_TRANSFER:
+        return new ETHTransferNode(props as ETHTransferNodeProps);
+      case NodeTypes.GRAPHQL_DATA_QUERY:
+        return new GraphQLQueryNode(props as GraphQLQueryNodeProps);
+      case NodeTypes.BRANCH:
+        return new BranchNode(props as BranchNodeProps);
       default:
         throw new Error(`Unsupported node type: ${props.type}`);
     }
@@ -23,11 +36,6 @@ class NodeFactory {
   }
 
   static fromResponse(raw: avs_pb.TaskNode): Node {
-    console.log("NodeFactory.fromResponse.raw:", raw.toObject());
-    console.log(
-      "NodeFactory.fromResponse.!!raw.getContractWrite():",
-      !!raw.getContractWrite()
-    );
     switch (true) {
       case !!raw.getEthTransfer():
         return ETHTransferNode.fromResponse(raw);
@@ -41,6 +49,8 @@ class NodeFactory {
         return RestAPINode.fromResponse(raw);
       case !!raw.getCustomCode():
         return CustomCodeNode.fromResponse(raw);
+      case !!raw.getBranch():
+        return BranchNode.fromResponse(raw);
       default:
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
@@ -48,3 +58,24 @@ class NodeFactory {
 }
 
 export default NodeFactory;
+
+export {
+  Node,
+  NodeTypes,
+  ContractWriteNode,
+  ContractWriteNodeProps,
+  ContractReadNode,
+  ContractReadNodeProps,
+  BranchNode,
+  BranchNodeProps,
+  BranchNodeData,
+  ETHTransferNode,
+  ETHTransferNodeProps,
+  GraphQLQueryNode,
+  GraphQLQueryNodeProps,
+  RestAPINode,
+  RestAPINodeProps,
+  CustomCodeNode,
+  CustomCodeNodeProps,
+  CustomCodeLangs,
+};

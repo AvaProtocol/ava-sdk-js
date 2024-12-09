@@ -5871,197 +5871,197 @@ var require_avs_grpc_pb = __commonJS({
   "grpc_codegen/avs_grpc_pb.js"(exports) {
     "use strict";
     var grpc2 = __require("@grpc/grpc-js");
-    var avs_pb18 = require_avs_pb();
+    var avs_pb19 = require_avs_pb();
     var google_protobuf_timestamp_pb = __require("google-protobuf/google/protobuf/timestamp_pb.js");
     var google_protobuf_wrappers_pb = __require("google-protobuf/google/protobuf/wrappers_pb.js");
     function serialize_aggregator_AckMessageReq(arg) {
-      if (!(arg instanceof avs_pb18.AckMessageReq)) {
+      if (!(arg instanceof avs_pb19.AckMessageReq)) {
         throw new Error("Expected argument of type aggregator.AckMessageReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_AckMessageReq(buffer_arg) {
-      return avs_pb18.AckMessageReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.AckMessageReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Checkin(arg) {
-      if (!(arg instanceof avs_pb18.Checkin)) {
+      if (!(arg instanceof avs_pb19.Checkin)) {
         throw new Error("Expected argument of type aggregator.Checkin");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Checkin(buffer_arg) {
-      return avs_pb18.Checkin.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.Checkin.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CheckinResp(arg) {
-      if (!(arg instanceof avs_pb18.CheckinResp)) {
+      if (!(arg instanceof avs_pb19.CheckinResp)) {
         throw new Error("Expected argument of type aggregator.CheckinResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CheckinResp(buffer_arg) {
-      return avs_pb18.CheckinResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CheckinResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateTaskReq(arg) {
-      if (!(arg instanceof avs_pb18.CreateTaskReq)) {
+      if (!(arg instanceof avs_pb19.CreateTaskReq)) {
         throw new Error("Expected argument of type aggregator.CreateTaskReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskReq(buffer_arg) {
-      return avs_pb18.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateTaskResp(arg) {
-      if (!(arg instanceof avs_pb18.CreateTaskResp)) {
+      if (!(arg instanceof avs_pb19.CreateTaskResp)) {
         throw new Error("Expected argument of type aggregator.CreateTaskResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskResp(buffer_arg) {
-      return avs_pb18.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateWalletReq(arg) {
-      if (!(arg instanceof avs_pb18.CreateWalletReq)) {
+      if (!(arg instanceof avs_pb19.CreateWalletReq)) {
         throw new Error("Expected argument of type aggregator.CreateWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateWalletReq(buffer_arg) {
-      return avs_pb18.CreateWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CreateWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateWalletResp(arg) {
-      if (!(arg instanceof avs_pb18.CreateWalletResp)) {
+      if (!(arg instanceof avs_pb19.CreateWalletResp)) {
         throw new Error("Expected argument of type aggregator.CreateWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateWalletResp(buffer_arg) {
-      return avs_pb18.CreateWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CreateWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetKeyReq(arg) {
-      if (!(arg instanceof avs_pb18.GetKeyReq)) {
+      if (!(arg instanceof avs_pb19.GetKeyReq)) {
         throw new Error("Expected argument of type aggregator.GetKeyReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetKeyReq(buffer_arg) {
-      return avs_pb18.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_IdReq(arg) {
-      if (!(arg instanceof avs_pb18.IdReq)) {
+      if (!(arg instanceof avs_pb19.IdReq)) {
         throw new Error("Expected argument of type aggregator.IdReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_IdReq(buffer_arg) {
-      return avs_pb18.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_KeyResp(arg) {
-      if (!(arg instanceof avs_pb18.KeyResp)) {
+      if (!(arg instanceof avs_pb19.KeyResp)) {
         throw new Error("Expected argument of type aggregator.KeyResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_KeyResp(buffer_arg) {
-      return avs_pb18.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksReq(arg) {
-      if (!(arg instanceof avs_pb18.ListTasksReq)) {
+      if (!(arg instanceof avs_pb19.ListTasksReq)) {
         throw new Error("Expected argument of type aggregator.ListTasksReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksReq(buffer_arg) {
-      return avs_pb18.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksResp(arg) {
-      if (!(arg instanceof avs_pb18.ListTasksResp)) {
+      if (!(arg instanceof avs_pb19.ListTasksResp)) {
         throw new Error("Expected argument of type aggregator.ListTasksResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksResp(buffer_arg) {
-      return avs_pb18.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListWalletReq(arg) {
-      if (!(arg instanceof avs_pb18.ListWalletReq)) {
+      if (!(arg instanceof avs_pb19.ListWalletReq)) {
         throw new Error("Expected argument of type aggregator.ListWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListWalletReq(buffer_arg) {
-      return avs_pb18.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListWalletResp(arg) {
-      if (!(arg instanceof avs_pb18.ListWalletResp)) {
+      if (!(arg instanceof avs_pb19.ListWalletResp)) {
         throw new Error("Expected argument of type aggregator.ListWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListWalletResp(buffer_arg) {
-      return avs_pb18.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceRequest(arg) {
-      if (!(arg instanceof avs_pb18.NonceRequest)) {
+      if (!(arg instanceof avs_pb19.NonceRequest)) {
         throw new Error("Expected argument of type aggregator.NonceRequest");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceRequest(buffer_arg) {
-      return avs_pb18.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceResp(arg) {
-      if (!(arg instanceof avs_pb18.NonceResp)) {
+      if (!(arg instanceof avs_pb19.NonceResp)) {
         throw new Error("Expected argument of type aggregator.NonceResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceResp(buffer_arg) {
-      return avs_pb18.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NotifyTriggersReq(arg) {
-      if (!(arg instanceof avs_pb18.NotifyTriggersReq)) {
+      if (!(arg instanceof avs_pb19.NotifyTriggersReq)) {
         throw new Error("Expected argument of type aggregator.NotifyTriggersReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NotifyTriggersReq(buffer_arg) {
-      return avs_pb18.NotifyTriggersReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.NotifyTriggersReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NotifyTriggersResp(arg) {
-      if (!(arg instanceof avs_pb18.NotifyTriggersResp)) {
+      if (!(arg instanceof avs_pb19.NotifyTriggersResp)) {
         throw new Error("Expected argument of type aggregator.NotifyTriggersResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NotifyTriggersResp(buffer_arg) {
-      return avs_pb18.NotifyTriggersResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.NotifyTriggersResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_SyncMessagesReq(arg) {
-      if (!(arg instanceof avs_pb18.SyncMessagesReq)) {
+      if (!(arg instanceof avs_pb19.SyncMessagesReq)) {
         throw new Error("Expected argument of type aggregator.SyncMessagesReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_SyncMessagesReq(buffer_arg) {
-      return avs_pb18.SyncMessagesReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.SyncMessagesReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_SyncMessagesResp(arg) {
-      if (!(arg instanceof avs_pb18.SyncMessagesResp)) {
+      if (!(arg instanceof avs_pb19.SyncMessagesResp)) {
         throw new Error("Expected argument of type aggregator.SyncMessagesResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_SyncMessagesResp(buffer_arg) {
-      return avs_pb18.SyncMessagesResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.SyncMessagesResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Task(arg) {
-      if (!(arg instanceof avs_pb18.Task)) {
+      if (!(arg instanceof avs_pb19.Task)) {
         throw new Error("Expected argument of type aggregator.Task");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Task(buffer_arg) {
-      return avs_pb18.Task.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.Task.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_google_protobuf_BoolValue(arg) {
       if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
@@ -6078,8 +6078,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetKey",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.GetKeyReq,
-        responseType: avs_pb18.KeyResp,
+        requestType: avs_pb19.GetKeyReq,
+        responseType: avs_pb19.KeyResp,
         requestSerialize: serialize_aggregator_GetKeyReq,
         requestDeserialize: deserialize_aggregator_GetKeyReq,
         responseSerialize: serialize_aggregator_KeyResp,
@@ -6090,8 +6090,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetNonce",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.NonceRequest,
-        responseType: avs_pb18.NonceResp,
+        requestType: avs_pb19.NonceRequest,
+        responseType: avs_pb19.NonceResp,
         requestSerialize: serialize_aggregator_NonceRequest,
         requestDeserialize: deserialize_aggregator_NonceRequest,
         responseSerialize: serialize_aggregator_NonceResp,
@@ -6101,8 +6101,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CreateWallet",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.CreateWalletReq,
-        responseType: avs_pb18.CreateWalletResp,
+        requestType: avs_pb19.CreateWalletReq,
+        responseType: avs_pb19.CreateWalletResp,
         requestSerialize: serialize_aggregator_CreateWalletReq,
         requestDeserialize: deserialize_aggregator_CreateWalletReq,
         responseSerialize: serialize_aggregator_CreateWalletResp,
@@ -6112,8 +6112,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListWallets",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.ListWalletReq,
-        responseType: avs_pb18.ListWalletResp,
+        requestType: avs_pb19.ListWalletReq,
+        responseType: avs_pb19.ListWalletResp,
         requestSerialize: serialize_aggregator_ListWalletReq,
         requestDeserialize: deserialize_aggregator_ListWalletReq,
         responseSerialize: serialize_aggregator_ListWalletResp,
@@ -6124,8 +6124,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CreateTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.CreateTaskReq,
-        responseType: avs_pb18.CreateTaskResp,
+        requestType: avs_pb19.CreateTaskReq,
+        responseType: avs_pb19.CreateTaskResp,
         requestSerialize: serialize_aggregator_CreateTaskReq,
         requestDeserialize: deserialize_aggregator_CreateTaskReq,
         responseSerialize: serialize_aggregator_CreateTaskResp,
@@ -6135,8 +6135,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListTasks",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.ListTasksReq,
-        responseType: avs_pb18.ListTasksResp,
+        requestType: avs_pb19.ListTasksReq,
+        responseType: avs_pb19.ListTasksResp,
         requestSerialize: serialize_aggregator_ListTasksReq,
         requestDeserialize: deserialize_aggregator_ListTasksReq,
         responseSerialize: serialize_aggregator_ListTasksResp,
@@ -6146,8 +6146,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.IdReq,
-        responseType: avs_pb18.Task,
+        requestType: avs_pb19.IdReq,
+        responseType: avs_pb19.Task,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_aggregator_Task,
@@ -6157,7 +6157,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CancelTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.IdReq,
+        requestType: avs_pb19.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
@@ -6168,7 +6168,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/DeleteTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.IdReq,
+        requestType: avs_pb19.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
@@ -6183,8 +6183,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Node/Ping",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.Checkin,
-        responseType: avs_pb18.CheckinResp,
+        requestType: avs_pb19.Checkin,
+        responseType: avs_pb19.CheckinResp,
         requestSerialize: serialize_aggregator_Checkin,
         requestDeserialize: deserialize_aggregator_Checkin,
         responseSerialize: serialize_aggregator_CheckinResp,
@@ -6194,8 +6194,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Node/SyncMessages",
         requestStream: false,
         responseStream: true,
-        requestType: avs_pb18.SyncMessagesReq,
-        responseType: avs_pb18.SyncMessagesResp,
+        requestType: avs_pb19.SyncMessagesReq,
+        responseType: avs_pb19.SyncMessagesResp,
         requestSerialize: serialize_aggregator_SyncMessagesReq,
         requestDeserialize: deserialize_aggregator_SyncMessagesReq,
         responseSerialize: serialize_aggregator_SyncMessagesResp,
@@ -6205,7 +6205,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Node/Ack",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.AckMessageReq,
+        requestType: avs_pb19.AckMessageReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_AckMessageReq,
         requestDeserialize: deserialize_aggregator_AckMessageReq,
@@ -6216,8 +6216,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Node/NotifyTriggers",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb18.NotifyTriggersReq,
-        responseType: avs_pb18.NotifyTriggersResp,
+        requestType: avs_pb19.NotifyTriggersReq,
+        responseType: avs_pb19.NotifyTriggersResp,
         requestSerialize: serialize_aggregator_NotifyTriggersReq,
         requestDeserialize: deserialize_aggregator_NotifyTriggersReq,
         responseSerialize: serialize_aggregator_NotifyTriggersResp,
@@ -6240,10 +6240,10 @@ var getKeyRequestMessage = (address, expiredAt) => {
 
 // src/index.ts
 var import_avs_grpc_pb = __toESM(require_avs_grpc_pb());
-var avs_pb17 = __toESM(require_avs_pb());
+var avs_pb18 = __toESM(require_avs_pb());
 
 // src/models/workflow.ts
-var avs_pb16 = __toESM(require_avs_pb());
+var avs_pb17 = __toESM(require_avs_pb());
 import _3 from "lodash";
 
 // src/models/execution.ts
@@ -6361,11 +6361,6 @@ var interface_default = Trigger;
 var BlockTrigger = class _BlockTrigger extends interface_default {
   constructor(props) {
     super({ ...props, type: TriggerTypes.BLOCK, data: props.data });
-    console.log("BlockTrigger.constructor.props:", {
-      ...props,
-      type: TriggerTypes.BLOCK,
-      data: props.data
-    });
   }
   toRequest() {
     const request = new avs_pb4.TaskTrigger();
@@ -6376,12 +6371,10 @@ var BlockTrigger = class _BlockTrigger extends interface_default {
     const condition = new avs_pb4.BlockCondition();
     condition.setInterval(this.data.interval);
     request.setBlock(condition);
-    console.log("Trigger.toRequest.request:", request.toObject());
     return request;
   }
   static fromResponse(raw) {
     const obj = raw.toObject();
-    console.log("BlockTrigger.fromResponse.obj:", obj);
     return new _BlockTrigger({
       ...obj,
       type: TriggerTypes.BLOCK,
@@ -6572,6 +6565,9 @@ var TriggerFactory = class {
 };
 var factory_default = TriggerFactory;
 
+// src/models/node/factory.ts
+import _2 from "lodash";
+
 // src/models/node/interface.ts
 var avs_pb9 = __toESM(require_avs_pb());
 import _ from "lodash";
@@ -6665,6 +6661,7 @@ var contractWrite_default = ContractWriteNode2;
 
 // src/models/node/customCode.ts
 var avs_pb11 = __toESM(require_avs_pb());
+var CustomCodeLangs = avs_pb11.CustomCodeLang;
 var CustomCodeNode2 = class _CustomCodeNode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.CUSTOM_CODE, data: props.data });
@@ -6725,9 +6722,6 @@ var GraphQLQueryNode2 = class _GraphQLQueryNode extends interface_default2 {
   }
 };
 var graphqlQuery_default = GraphQLQueryNode2;
-
-// src/models/node/factory.ts
-import _2 from "lodash";
 
 // src/models/node/restApi.ts
 var avs_pb13 = __toESM(require_avs_pb());
@@ -6819,12 +6813,59 @@ var ETHTransferNode2 = class _ETHTransferNode extends interface_default2 {
 };
 var ethTransfer_default = ETHTransferNode2;
 
+// src/models/node/branch.ts
+var avs_pb16 = __toESM(require_avs_pb());
+var BranchNode2 = class _BranchNode extends interface_default2 {
+  constructor(props) {
+    super({ ...props, type: NodeTypes.BRANCH, data: props.data });
+  }
+  static fromResponse(raw) {
+    const obj = raw.toObject();
+    return new _BranchNode({
+      ...obj,
+      type: NodeTypes.BRANCH,
+      data: raw.getBranch().toObject()
+    });
+  }
+  toRequest() {
+    const request = new avs_pb16.TaskNode();
+    request.setId(this.id);
+    request.setName(this.name);
+    const nodeData = new avs_pb16.BranchNode();
+    nodeData.setConditionsList(
+      this.data.conditionsList.map((condition) => {
+        const conditionObj = new avs_pb16.Condition();
+        conditionObj.setId(condition.id);
+        conditionObj.setType(condition.type);
+        return conditionObj;
+      })
+    );
+    request.setBranch(nodeData);
+    return request;
+  }
+  // TODO: do we need a getConditionId() to avoid exporting BranchNodeData?
+};
+var branch_default = BranchNode2;
+
 // src/models/node/factory.ts
 var NodeFactory = class {
   static create(props) {
+    console.log("props", props);
     switch (props.type) {
       case NodeTypes.CONTRACT_WRITE:
         return new contractWrite_default(props);
+      case NodeTypes.REST_API:
+        return new restApi_default(props);
+      case NodeTypes.CUSTOM_CODE:
+        return new customCode_default(props);
+      case NodeTypes.CONTRACT_READ:
+        return new contractRead_default(props);
+      case NodeTypes.ETH_TRANSFER:
+        return new ethTransfer_default(props);
+      case NodeTypes.GRAPHQL_DATA_QUERY:
+        return new graphqlQuery_default(props);
+      case NodeTypes.BRANCH:
+        return new branch_default(props);
       default:
         throw new Error(`Unsupported node type: ${props.type}`);
     }
@@ -6833,11 +6874,6 @@ var NodeFactory = class {
     return _2.map(props, (node) => this.create(node));
   }
   static fromResponse(raw) {
-    console.log("NodeFactory.fromResponse.raw:", raw.toObject());
-    console.log(
-      "NodeFactory.fromResponse.!!raw.getContractWrite():",
-      !!raw.getContractWrite()
-    );
     switch (true) {
       case !!raw.getEthTransfer():
         return ethTransfer_default.fromResponse(raw);
@@ -6851,6 +6887,8 @@ var NodeFactory = class {
         return restApi_default.fromResponse(raw);
       case !!raw.getCustomCode():
         return customCode_default.fromResponse(raw);
+      case !!raw.getBranch():
+        return branch_default.fromResponse(raw);
       default:
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
@@ -6859,7 +6897,7 @@ var NodeFactory = class {
 var factory_default2 = NodeFactory;
 
 // src/models/workflow.ts
-var WorkflowStatuses = avs_pb16.TaskStatus;
+var WorkflowStatuses = avs_pb17.TaskStatus;
 var Workflow = class _Workflow {
   /**
    * Create an instance of Workflow from user inputs
@@ -6933,7 +6971,7 @@ var Workflow = class _Workflow {
     return workflow;
   }
   toRequest() {
-    const request = new avs_pb16.CreateTaskReq();
+    const request = new avs_pb17.CreateTaskReq();
     request.setSmartWalletAddress(this.smartWalletAddress);
     request.setTrigger(this.trigger.toRequest());
     _3.map(this.nodes, (node) => request.addNodes(node.toRequest()));
@@ -6976,7 +7014,7 @@ var BaseClient = class {
   }
   // When using the APIkey, depends on scope of the key, it may have access to one ore more account
   async authWithAPIKey(address, apiKey, expiredAtEpoch) {
-    const request = new avs_pb17.GetKeyReq();
+    const request = new avs_pb18.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
@@ -6985,7 +7023,7 @@ var BaseClient = class {
   }
   // This flow can be used where the signature is generate from outside, such as in front-end and pass in
   async authWithSignature(address, signature, expiredAtEpoch) {
-    const request = new avs_pb17.GetKeyReq();
+    const request = new avs_pb18.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
@@ -7031,12 +7069,12 @@ var Client = class extends BaseClient {
     super(config);
   }
   async getWallets(options) {
-    const request = new avs_pb17.ListWalletReq();
+    const request = new avs_pb18.ListWalletReq();
     const result = await this._callRPC("listWallets", request, options);
     return result.getWalletsList().map((item) => item.toObject());
   }
   async createWallet({ salt, factoryAddress }, options) {
-    const request = new avs_pb17.CreateWalletReq();
+    const request = new avs_pb18.CreateWalletReq();
     request.setSalt(salt);
     if (factoryAddress) {
       request.setFactoryAddress(factoryAddress);
@@ -7057,14 +7095,14 @@ var Client = class extends BaseClient {
     return new workflow_default(props);
   }
   async getWorkflows(address, options) {
-    const request = new avs_pb17.ListTasksReq();
+    const request = new avs_pb18.ListTasksReq();
     request.setSmartWalletAddress(address);
     const result = await this._callRPC("listTasks", request, options);
     return result.getTasksList().map((item) => workflow_default.fromResponse(item));
   }
   // TODO: specify the return type to match client’s requirements
   async getWorkflow(id, options) {
-    const request = new avs_pb17.IdReq();
+    const request = new avs_pb18.IdReq();
     request.setId(id);
     const result = await this._callRPC(
       "getTask",
@@ -7074,7 +7112,7 @@ var Client = class extends BaseClient {
     return workflow_default.fromResponse(result);
   }
   async cancelWorkflow(id, options) {
-    const request = new avs_pb17.IdReq();
+    const request = new avs_pb18.IdReq();
     request.setId(id);
     const result = await this._callRPC(
       "cancelTask",
@@ -7084,7 +7122,7 @@ var Client = class extends BaseClient {
     return result.getValue();
   }
   async deleteWorkflow(id, options) {
-    const request = new avs_pb17.IdReq();
+    const request = new avs_pb18.IdReq();
     request.setId(id);
     const result = await this._callRPC(
       "deleteTask",
@@ -7097,12 +7135,23 @@ var Client = class extends BaseClient {
 export {
   AUTH_KEY_HEADER,
   block_default as BlockTrigger,
+  branch_default as BranchNode,
+  contractRead_default as ContractReadNode,
   contractWrite_default as ContractWriteNode,
+  cron_default as CronTrigger,
+  CustomCodeLangs,
+  customCode_default as CustomCodeNode,
+  ethTransfer_default as ETHTransferNode,
   edge_default as Edge,
+  event_default as EventTrigger,
   execution_default as Execution,
+  fixedTime_default as FixedTimeTrigger,
+  graphqlQuery_default as GraphQLQueryNode,
+  manual_default as ManualTrigger,
   interface_default2 as Node,
   factory_default2 as NodeFactory,
   NodeTypes,
+  restApi_default as RestAPINode,
   interface_default as Trigger,
   factory_default as TriggerFactory,
   TriggerTypes,

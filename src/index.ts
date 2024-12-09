@@ -20,6 +20,10 @@ import TriggerFactory from "./models/trigger/factory";
 import ContractWriteNode, {
   ContractWriteNodeProps,
 } from "./models/node/contractWrite";
+import ContractReadNode, {
+  ContractReadNodeProps,
+} from "./models/node/contractRead";
+import BranchNode, { BranchNodeProps } from "./models/node/branch";
 
 import {
   AUTH_KEY_HEADER,
@@ -264,23 +268,12 @@ export default class Client extends BaseClient {
 
 // Export types for easier use
 export * from "./types";
-export { Workflow, WorkflowStatuses, Edge, Execution };
-export {
-  NodeFactory,
-  Node,
-  NodeTypes,
-  NodeProps,
-  ContractWriteNode,
-  ContractWriteNodeProps,
-};
-export {
-  TriggerFactory,
-  Trigger,
-  TriggerTypes,
-  BlockTrigger,
-  BlockTriggerProps,
-};
+export * from "./models/node/factory";
+export * from "./models/trigger/factory";
+
+export { Workflow, WorkflowStatuses, Edge, Execution, NodeFactory, TriggerFactory };
 export type { WorkflowProps, NodeType, EdgeProps, TriggerType, WorkflowStatus };
 
 // Add this line at the end of the file
 export { getKeyRequestMessage };
+
