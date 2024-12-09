@@ -6850,7 +6850,6 @@ var branch_default = BranchNode2;
 // src/models/node/factory.ts
 var NodeFactory = class {
   static create(props) {
-    console.log("props", props);
     switch (props.type) {
       case NodeTypes.CONTRACT_WRITE:
         return new contractWrite_default(props);
