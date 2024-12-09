@@ -6,7 +6,7 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueWorkflowForCleanup,
+  queueForRemoval,
   removeCreatedWorkflows,
 } from "./utils";
 
@@ -162,7 +162,7 @@ describe("deleteTask Tests", () => {
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(async () =>

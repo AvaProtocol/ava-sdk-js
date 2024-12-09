@@ -19,7 +19,7 @@ import {
   generateSignature,
   requireEnvVar,
   removeCreatedWorkflows,
-  queueWorkflowForCleanup,
+  queueForRemoval,
   compareResults,
 } from "./utils";
 
@@ -111,7 +111,7 @@ describe("createTask Tests", () => {
       const result = await client.submitWorkflow(workflow, { authKey });
       console.log("Create workflow.result:", result);
 
-      queueWorkflowForCleanup(createdWorkflows, result);
+      queueForRemoval(createdWorkflows, result);
 
       expect(result).toBeDefined();
       expect(typeof result).toBe("string");
@@ -144,7 +144,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       const getResult = await client.getWorkflow(submitResult, { authKey });
 
@@ -170,7 +170,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       const task = await client.getWorkflow(submitResult, { authKey });
       compareResults(
@@ -269,7 +269,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       const task = await client.getWorkflow(submitResult, { authKey });
 
@@ -300,7 +300,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       const task = await client.getWorkflow(submitResult, { authKey });
 
@@ -331,7 +331,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       const task = await client.getWorkflow(submitResult, { authKey });
       compareResults(
@@ -359,7 +359,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       const task = await client.getWorkflow(submitResult, { authKey });
       console.log("getTask task", task);
@@ -427,7 +427,7 @@ describe("createTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, submitResult);
+      queueForRemoval(createdWorkflows, submitResult);
 
       console.log("Create task result:", submitResult);
       expect(submitResult).toBeDefined();

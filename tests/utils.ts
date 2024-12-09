@@ -38,7 +38,7 @@ export function requireEnvVar(name: string): string {
 }
 
 // Add a workflow to the list of created workflows for cleanup, or removal later
-export const queueWorkflowForCleanup = (
+export const queueForRemoval = (
   workflowIds: Map<string, boolean>,
   workflowId: string
 ) => {
@@ -98,7 +98,7 @@ export const compareResults = (
   expect(actual.edges).toHaveLength(expected.edges.length);
   expect(actual.startAt).toEqual(expected.startAt);
   expect(actual.expiredAt).toEqual(expected.expiredAt);
-  // expect(actual.maxExecution).toBe(expected.maxExecution);
+  expect(actual.maxExecution).toBe(expected.maxExecution);
   expect(actual.status).toBe(WorkflowStatuses.ACTIVE);
   expect(actual.id).toBe(expected.id);
   expect(actual.owner).toBe(expected.owner);

@@ -6,7 +6,7 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueWorkflowForCleanup,
+  queueForRemoval,
   removeCreatedWorkflows,
   compareResults,
 } from "./utils";
@@ -159,7 +159,7 @@ describe("Basic Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, createResult);
+      queueForRemoval(createdWorkflows, createResult);
 
       expect(createResult).toBeDefined();
       expect(createResult).toHaveLength(26);
@@ -188,7 +188,7 @@ describe("Basic Tests", () => {
         task
       );
 
-      queueWorkflowForCleanup(createdWorkflows, createResult);
+      queueForRemoval(createdWorkflows, createResult);
     });
 
     test("listTask", async () => {
@@ -217,7 +217,7 @@ describe("Basic Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, createdId1);
+      queueForRemoval(createdWorkflows, createdId1);
 
       console.log("Getting workflows for wallet:", walletSalt0);
       const listResult1 = await client.getWorkflows(walletSalt0!, {
@@ -232,7 +232,7 @@ describe("Basic Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, createdId2);
+      queueForRemoval(createdWorkflows, createdId2);
 
       console.log("Getting workflows for wallet:", walletSalt345);
       const listResult2 = await client.getWorkflows(walletSalt345, { authKey });
@@ -274,7 +274,7 @@ describe("Basic Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, createResult);
+      queueForRemoval(createdWorkflows, createResult);
 
       const workflow = await client.getWorkflow(createResult, { authKey });
       expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);

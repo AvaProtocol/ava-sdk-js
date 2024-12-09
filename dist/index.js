@@ -6346,43 +6346,8 @@ var Trigger = class {
     this.type = props.type;
     this.data = props.data;
   }
-  // static getTypeAndData(obj: avs_pb.TaskTrigger.AsObject): {
-  //   type: TriggerType;
-  //   data: TriggerData;
-  // } {
-  //   switch (true) {
-  //     case !!obj.fixedTime:
-  //       return {
-  //         type: TriggerTypes.FIXED_TIME,
-  //         data: obj.fixedTime,
-  //       };
-  //     case !!obj.cron:
-  //       return { type: TriggerTypes.CRON, data: obj.cron };
-  //     case !!obj.block:
-  //       return { type: TriggerTypes.BLOCK, data: obj.block };
-  //     case !!obj.event:
-  //       return { type: TriggerTypes.EVENT, data: obj.event };
-  //     case !!obj.manual:
-  //       return { type: TriggerTypes.MANUAL, data: null };
-  //     default:
-  //       throw new Error("Unknown trigger type");
-  //   }
-  // }
-  // /**
-  //  * Create an instance of Trigger from AVS getTask response
-  //  * @param trigger
-  //  */
-  // static fromResponse(trigger: avs_pb.TaskTrigger): Trigger {
-  //   const raw = trigger.toObject() as avs_pb.TaskTrigger.AsObject;
-  //   const { type, data } = Trigger.getTypeAndData(raw);
-  //   return new Trigger({
-  //     name: raw.name,
-  //     type: type,
-  //     data: data,
-  //   });
-  // }
   toRequest() {
-    throw new Error("Not implemented");
+    throw new Error("Method not implemented.");
   }
 };
 var interface_default = Trigger;
@@ -6609,43 +6574,6 @@ var Node = class {
     this.type = props.type;
     this.data = props.data;
   }
-  static getTypeAndData(obj) {
-    switch (true) {
-      case !!obj.ethTransfer:
-        return { type: NodeTypes.ETH_TRANSFER, data: obj.ethTransfer };
-      case !!obj.contractWrite:
-        return { type: NodeTypes.CONTRACT_WRITE, data: obj.contractWrite };
-      case !!obj.contractRead:
-        return { type: NodeTypes.CONTRACT_READ, data: obj.contractRead };
-      case !!obj.graphqlDataQuery:
-        return {
-          type: NodeTypes.GRAPHQL_DATA_QUERY,
-          data: obj.graphqlDataQuery
-        };
-      case !!obj.restApi:
-        return { type: NodeTypes.REST_API, data: obj.restApi };
-      case !!obj.branch:
-        return { type: NodeTypes.BRANCH, data: obj.branch };
-      case !!obj.filter:
-        return { type: NodeTypes.FILTER, data: obj.filter };
-      case !!obj.loop:
-        return { type: NodeTypes.LOOP, data: obj.loop };
-      case !!obj.customCode:
-        return { type: NodeTypes.CUSTOM_CODE, data: obj.customCode };
-      default:
-        throw new Error("Unknown node type");
-    }
-  }
-  // static fromResponse(res: avs_pb.TaskNode): Node {
-  //   const raw = res.toObject() as avs_pb.TaskNode.AsObject;
-  //   const { type, data } = Node.getTypeAndData(raw);
-  //   return new Node({
-  //     id: raw.id,
-  //     name: raw.name,
-  //     type: type,
-  //     data: data,
-  //   });
-  // }
   toRequest() {
     const request = new avs_pb9.TaskNode();
     console.log("Node.toRequest.request:", request);
@@ -6950,25 +6878,6 @@ var Workflow = class _Workflow {
     this.completedAt = props.completedAt;
     this.executions = props.executions;
   }
-  // /**
-  //  * Create an instance of Workflow from user inputs
-  //  * @param props
-  //  */
-  // constructor(props: RequiredWorkflowProps) {
-  //   if (!props.trigger) {
-  //     throw new Error("Trigger is undefined in new Workflow()");
-  //   }
-  //   this.smartWalletAddress = props.smartWalletAddress;
-  //   this.trigger = new Trigger(props.trigger);
-  //   this.nodes = _.map(props.nodes, (node) => new Node(node));
-  //   this.edges = _.map(props.edges, (edge) => new Edge(edge));
-  //   this.startAt = props.startAt;
-  //   this.expiredAt = props.expiredAt;
-  //   this.maxExecution = props.maxExecution;
-  //   // Optional fields
-  //   this.memo = props.memo;
-  //   // Ignored fields: status, completedAt, executionsList
-  // }
   /**
    * Create an instance of Workflow from AVS getTask response
    * @param res
@@ -6976,7 +6885,10 @@ var Workflow = class _Workflow {
    */
   static fromResponse(obj) {
     const trigger = factory_default.fromResponse(obj.getTrigger());
-    const nodes = import_lodash3.default.map(obj.getNodesList(), (node) => factory_default2.fromResponse(node));
+    const nodes = import_lodash3.default.map(
+      obj.getNodesList(),
+      (node) => factory_default2.fromResponse(node)
+    );
     const edges = import_lodash3.default.map(obj.getEdgesList(), (edge) => edge_default.fromResponse(edge));
     const executions = import_lodash3.default.map(
       obj.getExecutionsList(),

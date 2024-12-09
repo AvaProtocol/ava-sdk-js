@@ -42,50 +42,6 @@ class Node implements NodeProps {
     this.data = props.data;
   }
 
-  static getTypeAndData(obj: avs_pb.TaskNode.AsObject): {
-    type: NodeType;
-    data: NodeData;
-  } {
-    switch (true) {
-      case !!obj.ethTransfer:
-        return { type: NodeTypes.ETH_TRANSFER, data: obj.ethTransfer };
-      case !!obj.contractWrite:
-        return { type: NodeTypes.CONTRACT_WRITE, data: obj.contractWrite };
-      case !!obj.contractRead:
-        return { type: NodeTypes.CONTRACT_READ, data: obj.contractRead };
-      case !!obj.graphqlDataQuery:
-        return {
-          type: NodeTypes.GRAPHQL_DATA_QUERY,
-          data: obj.graphqlDataQuery,
-        };
-      case !!obj.restApi:
-        return { type: NodeTypes.REST_API, data: obj.restApi };
-      case !!obj.branch:
-        return { type: NodeTypes.BRANCH, data: obj.branch };
-      case !!obj.filter:
-        return { type: NodeTypes.FILTER, data: obj.filter };
-      case !!obj.loop:
-        return { type: NodeTypes.LOOP, data: obj.loop };
-      case !!obj.customCode:
-        return { type: NodeTypes.CUSTOM_CODE, data: obj.customCode };
-      default:
-        throw new Error("Unknown node type");
-    }
-  }
-
-  // static fromResponse(res: avs_pb.TaskNode): Node {
-  //   const raw = res.toObject() as avs_pb.TaskNode.AsObject;
-
-  //   const { type, data } = Node.getTypeAndData(raw);
-
-  //   return new Node({
-  //     id: raw.id,
-  //     name: raw.name,
-  //     type: type,
-  //     data: data,
-  //   });
-  // }
-
   toRequest(): avs_pb.TaskNode {
     const request = new avs_pb.TaskNode();
     console.log("Node.toRequest.request:", request);

@@ -1181,10 +1181,6 @@ declare class Node implements NodeProps {
     type: NodeType;
     data: NodeData;
     constructor(props: NodeProps);
-    static getTypeAndData(obj: TaskNode.AsObject): {
-        type: NodeType;
-        data: NodeData;
-    };
     toRequest(): TaskNode;
 }
 

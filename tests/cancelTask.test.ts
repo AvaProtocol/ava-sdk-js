@@ -6,7 +6,7 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueWorkflowForCleanup,
+  queueForRemoval,
   removeCreatedWorkflows,
 } from "./utils";
 
@@ -69,7 +69,7 @@ describe("cancelTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(
@@ -119,7 +119,7 @@ describe("cancelTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(
@@ -170,7 +170,7 @@ describe("cancelTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(

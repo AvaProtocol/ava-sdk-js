@@ -6,7 +6,7 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueWorkflowForCleanup,
+  queueForRemoval,
   compareResults,
   removeCreatedWorkflows,
 } from "./utils";
@@ -69,7 +69,7 @@ describe("getTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(async () =>
@@ -129,7 +129,7 @@ describe("getTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(async () =>
@@ -187,7 +187,7 @@ describe("getTask Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(async () =>

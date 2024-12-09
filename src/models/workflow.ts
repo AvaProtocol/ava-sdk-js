@@ -1,10 +1,9 @@
 import _ from "lodash";
 import * as avs_pb from "../../grpc_codegen/avs_pb";
-import { nodeFromGRPC } from "../builder";
-import Execution, { ExecutionProps } from "./execution";
-import Node, { NodeProps } from "./node/interface";
-import Edge, { EdgeProps } from "./edge";
-import Trigger, { TriggerProps } from "./trigger/interface";
+import Execution from "./execution";
+import Node from "./node/interface";
+import Edge from "./edge";
+import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
@@ -78,29 +77,6 @@ class Workflow implements WorkflowProps {
     this.executions = props.executions;
   }
 
-  // /**
-  //  * Create an instance of Workflow from user inputs
-  //  * @param props
-  //  */
-  // constructor(props: RequiredWorkflowProps) {
-  //   if (!props.trigger) {
-  //     throw new Error("Trigger is undefined in new Workflow()");
-  //   }
-
-  //   this.smartWalletAddress = props.smartWalletAddress;
-  //   this.trigger = new Trigger(props.trigger);
-  //   this.nodes = _.map(props.nodes, (node) => new Node(node));
-  //   this.edges = _.map(props.edges, (edge) => new Edge(edge));
-  //   this.startAt = props.startAt;
-  //   this.expiredAt = props.expiredAt;
-  //   this.maxExecution = props.maxExecution;
-
-  //   // Optional fields
-  //   this.memo = props.memo;
-
-  //   // Ignored fields: status, completedAt, executionsList
-  // }
-
   /**
    * Create an instance of Workflow from AVS getTask response
    * @param res
@@ -108,7 +84,9 @@ class Workflow implements WorkflowProps {
    */
   static fromResponse(obj: avs_pb.Task): Workflow {
     const trigger = TriggerFactory.fromResponse(obj.getTrigger()!);
-    const nodes = _.map(obj.getNodesList(), (node) => NodeFactory.fromResponse(node));
+    const nodes = _.map(obj.getNodesList(), (node) =>
+      NodeFactory.fromResponse(node)
+    );
     const edges = _.map(obj.getEdgesList(), (edge) => Edge.fromResponse(edge));
     const executions = _.map(obj.getExecutionsList(), (item) =>
       Execution.fromResponse(item)

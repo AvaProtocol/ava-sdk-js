@@ -6,7 +6,7 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueWorkflowForCleanup,
+  queueForRemoval,
   removeCreatedWorkflows,
 } from "./utils";
 import { WorkflowTemplate } from "./templates";
@@ -67,7 +67,7 @@ describe("listTasks Tests", () => {
         { authKey }
       );
 
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(async () =>
@@ -120,7 +120,7 @@ describe("listTasks Tests", () => {
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueWorkflowForCleanup(createdWorkflows, workflowId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
     afterAll(async () =>

@@ -1,6 +1,3 @@
-import _ from "lodash";
-import * as avs_pb from "../grpc_codegen/avs_pb";
-
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
@@ -54,17 +51,3 @@ export interface TriggerMark {
   txHash?: string;
   epoch?: number;
 }
-
-// export interface ExecutionStep {
-//   outputData: string;
-//   log: string;
-// }
-
-// export interface Execution {
-//   epoch: number;
-//   success: boolean;
-//   error: string;
-//   triggerMark?: TriggerMark;
-//   result: string;
-//   steps: ExecutionStep[];
-// }
