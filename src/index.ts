@@ -1,33 +1,30 @@
 import _ from "lodash";
-import { ethers } from "ethers";
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
-import Task from "./task";
+import Workflow, {
+  WorkflowProps,
+  WorkflowStatus,
+  WorkflowStatuses,
+} from "./models/workflow";
+import { NodeProps, NodeType } from "./models/node/interface";
+import Edge, { EdgeProps } from "./models/edge";
+import { TriggerType } from "./models/trigger/interface";
+import Execution from "./models/execution";
+import NodeFactory from "./models/node/factory";
+import TriggerFactory from "./models/trigger/factory";
+
 import {
   AUTH_KEY_HEADER,
-  CancelTaskResponse,
-  DeleteTaskResponse,
   RequestOptions,
-  TaskType,
   ClientOption,
-  CreateTaskResponse,
   CreateWalletReq,
   SmartWallet,
   GetKeyResponse,
-  ListTasksResponse,
 } from "./types";
-
-import {
-  buildContractRead,
-  buildContractWrite,
-  buildTaskEdge,
-  buildTrigger,
-  buildTaskNode,
-} from "./builder";
 
 class BaseClient {
   readonly endpoint: string;
@@ -95,7 +92,7 @@ class BaseClient {
     request.setSignature(signature);
 
     // when exchanging the key, we don't set the token yet
-    let result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
+    const result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );
@@ -154,9 +151,7 @@ export default class Client extends BaseClient {
     super(config);
   }
 
-  async listSmartWallets(
-    options: RequestOptions,
-  ): Promise<SmartWallet[]> {
+  async getWallets(options: RequestOptions): Promise<SmartWallet[]> {
     const request = new avs_pb.ListWalletReq();
 
     const result = await this._callRPC<
@@ -164,15 +159,12 @@ export default class Client extends BaseClient {
       avs_pb.ListWalletReq
     >("listWallets", request, options);
 
-    return result.getWalletsList().map(item => item.toObject());
+    return result.getWalletsList().map((item) => item.toObject());
   }
 
   async createWallet(
-    {
-      salt,
-      factoryAddress
-    }: CreateWalletReq,
-    options: RequestOptions,
+    { salt, factoryAddress }: CreateWalletReq,
+    options: RequestOptions
   ): Promise<SmartWallet> {
     const request = new avs_pb.CreateWalletReq();
     request.setSalt(salt);
@@ -189,29 +181,14 @@ export default class Client extends BaseClient {
       address: result.getAddress(),
       salt: result.getSalt(),
       factory: result.getFactoryAddress(),
-    }
+    };
   }
 
-  async createTask(payload: any, options: RequestOptions): Promise<string> {
-    const request = new avs_pb.CreateTaskReq();
-    // TODO: add client side validation
-    request.setSmartWalletAddress(payload.smartWalletAddress);
-    request.setStartAt(payload.startAt);
-    request.setExpiredAt(payload.expiredAt || -1);
-    request.setMemo(payload.memo || "");
-    request.setMaxExecution(payload.maxExecution || 0);
-
-    request.setTrigger(buildTrigger(payload.trigger));
-
-    for (const node of payload.nodes) {
-      request.addNodes(buildTaskNode(node));
-    }
-
-    const edges = [];
-    for (const edge of payload.edges) {
-      edges.push(buildTaskEdge(edge));
-    }
-    request.setEdgesList(edges);
+  async submitWorkflow(
+    workflow: Workflow,
+    options: RequestOptions
+  ): Promise<string> {
+    const request = workflow.toRequest();
 
     const result = await this._callRPC<
       avs_pb.CreateTaskResp,
@@ -221,7 +198,14 @@ export default class Client extends BaseClient {
     return result.getId();
   }
 
-  async listTasks(address: string, options: RequestOptions): Promise<Task[]> {
+  createWorkflow(props: WorkflowProps): Workflow {
+    return new Workflow(props);
+  }
+
+  async getWorkflows(
+    address: string,
+    options: RequestOptions
+  ): Promise<Workflow[]> {
     const request = new avs_pb.ListTasksReq();
     request.setSmartWalletAddress(address);
 
@@ -230,11 +214,11 @@ export default class Client extends BaseClient {
       avs_pb.ListTasksReq
     >("listTasks", request, options);
 
-    return result.getTasksList().map(item => new Task(item));
+    return result.getTasksList().map((item) => Workflow.fromResponse(item));
   }
 
   // TODO: specify the return type to match client’s requirements
-  async getTask(id: string, options: RequestOptions): Promise<TaskType> {
+  async getWorkflow(id: string, options: RequestOptions): Promise<Workflow> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
@@ -244,10 +228,10 @@ export default class Client extends BaseClient {
       options
     );
 
-    return new Task(result);
+    return Workflow.fromResponse(result);
   }
 
-  async cancelTask(id: string, options: RequestOptions): Promise<boolean> {
+  async cancelWorkflow(id: string, options: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
@@ -260,7 +244,7 @@ export default class Client extends BaseClient {
     return result.getValue();
   }
 
-  async deleteTask(id: string, options: RequestOptions): Promise<boolean> {
+  async deleteWorkflow(id: string, options: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
@@ -276,6 +260,25 @@ export default class Client extends BaseClient {
 
 // Export types for easier use
 export * from "./types";
+export * from "./models/node/factory";
+export * from "./models/trigger/factory";
+
+export {
+  Workflow,
+  WorkflowStatuses,
+  Edge,
+  Execution,
+  NodeFactory,
+  TriggerFactory,
+};
+export type {
+  WorkflowProps,
+  NodeType,
+  NodeProps,
+  EdgeProps,
+  TriggerType,
+  WorkflowStatus,
+};
 
 // Add this line at the end of the file
 export { getKeyRequestMessage };

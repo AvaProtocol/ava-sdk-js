@@ -2,27 +2,28 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
+import {
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  queueForRemoval,
+  removeCreatedWorkflows,
+} from "./utils";
 
-import { erc20TransferTask } from "./fixture";
+import { WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Get environment variables with type safety
-const {
-  TEST_API_KEY,
-  TEST_PRIVATE_KEY,
-  TOKEN_CONTRACT,
-  ORACLE_CONTRACT,
-  ENDPOINT,
-} = {
+const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
-  TEST_PRIVATE_KEY: requireEnvVar('TEST_PRIVATE_KEY'),
-  TOKEN_CONTRACT: requireEnvVar("TOKEN_CONTRACT"),
-  ORACLE_CONTRACT: requireEnvVar("ORACLE_CONTRACT"),
+  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
+const createdWorkflows: Map<string, boolean> = new Map();
 
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -44,7 +45,7 @@ describe("deleteTask Tests", () => {
   describe("Auth with Signature", () => {
     let authKey: string;
     let smartWalletAddress: string;
-    let createdTaskId: string;
+    let workflowId: string;
 
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
@@ -57,82 +58,88 @@ describe("deleteTask Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const result = await client.listSmartWallets({ authKey });
+      const result = await client.getWallets({ authKey });
       smartWalletAddress = result[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      createdTaskId  = await client.createTask(
-        { ...erc20TransferTask, smartWalletAddress },
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
     });
 
     test("should delete task when authenticated with signature", async () => {
-      const result = await client.deleteTask(createdTaskId, { authKey });
+      const result = await client.deleteWorkflow(workflowId, { authKey });
       expect(result).toBe(true);
 
-      const listRes = await client.listTasks(smartWalletAddress, { authKey });
+      const listRes = await client.getWorkflows(smartWalletAddress, {
+        authKey,
+      });
       expect(Array.isArray(listRes)).toBe(true);
-      expect(listRes.some((task) => task.id === createdTaskId)).toBe(
-        false
-      );
+      expect(listRes.some((task) => task.id === workflowId)).toBe(false);
     });
 
     test("should throw error when deleting an non-existent task", async () => {
       // This fails because the current error message is "2 UNKNOWN: Key not found", which is not a clear error message
-      await expect(client.deleteTask("non-existent-task-id", { authKey }))
-        .rejects.toThrow("5 NOT_FOUND: task not found");
+      await expect(
+        client.deleteWorkflow("non-existent-task-id", { authKey })
+      ).rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
 
   describe("Auth with API key", () => {
     let authKey: string;
     let smartWalletAddress: string;
-    let createdTaskId: string;
+    let workflowId: string;
 
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(ownerAddress, TEST_API_KEY, EXPIRED_AT);
+      const res = await client.authWithAPIKey(
+        ownerAddress,
+        TEST_API_KEY,
+        EXPIRED_AT
+      );
       authKey = res.authKey;
       console.log("Got key exchange...", authKey);
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const getAddressesRes = await client.listSmartWallets({ authKey });
+      const getAddressesRes = await client.getWallets({ authKey });
       smartWalletAddress = getAddressesRes[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      createdTaskId = await client.createTask(
-        { ...erc20TransferTask, smartWalletAddress },
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
 
-      console.log("crate task", createdTaskId);
+      console.log("crate task", workflowId);
     });
 
     test("should delete task when authenticated with API key", async () => {
       console.log("delete task with authkey...", authKey);
-      const result = await client.deleteTask(createdTaskId, { authKey });
+      const result = await client.deleteWorkflow(workflowId, { authKey });
       expect(result).toBe(true);
 
-      const listRes = await client.listTasks(smartWalletAddress, { authKey });
+      const listRes = await client.getWorkflows(smartWalletAddress, {
+        authKey,
+      });
       expect(Array.isArray(listRes)).toBe(true);
-      expect(listRes.some((task) => task.id === createdTaskId)).toBe(
-        false
-      );
+      expect(listRes.some((task) => task.id === workflowId)).toBe(false);
     });
 
     test("should throw error when deleting an non-existent task", async () => {
-      await expect(client.deleteTask("non-existent-task-id", { authKey }))
-        .rejects.toThrow("5 NOT_FOUND: task not found");
+      await expect(
+        client.deleteWorkflow("non-existent-task-id", { authKey })
+      ).rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
 
   describe("Without authentication", () => {
     let smartWalletAddress: string;
     let authKey: string;
-    let createdTaskId: string;
+    let workflowId: string;
 
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
@@ -145,23 +152,27 @@ describe("deleteTask Tests", () => {
       authKey = res.authKey;
 
       console.log(`Retrieving smart wallet for owner ${ownerAddress} ...`);
-      const getAddressesRes = await client.listSmartWallets({ authKey });
+      const getAddressesRes = await client.getWallets({ authKey });
       console.log(`got wallet`, getAddressesRes);
       smartWalletAddress = getAddressesRes[0].address;
       console.log(`Smart wallet created: ${smartWalletAddress}`);
 
       console.log("Creating a task to use for the following tests");
-      createdTaskId = await client.createTask(
-        { ...erc20TransferTask, smartWalletAddress },
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
       );
-      queueTaskCleanup(createdTaskId);
+      queueForRemoval(createdWorkflows, workflowId);
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(async () =>
+      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("should throw error when deleting a task without authentication", async () => {
-      await expect(client.deleteTask(createdTaskId, { authKey: "" })).rejects.toThrow("missing auth header");
+      await expect(
+        client.deleteWorkflow(workflowId, { authKey: "" })
+      ).rejects.toThrow("missing auth header");
     });
   });
 });
