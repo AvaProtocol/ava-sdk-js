@@ -510,6 +510,7 @@ export class RestAPINode extends jspb.Message {
 export namespace RestAPINode {
     export type AsObject = {
         url: string,
+
         headersMap: Array<[string, string]>,
         body: string,
         method: string,
@@ -932,7 +933,7 @@ export namespace Task {
         memo: string,
         completedAt: number,
         maxExecution: number,
-        status: avs_pb.TaskStatus,
+        status: TaskStatus,
         trigger?: TaskTrigger.AsObject,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
