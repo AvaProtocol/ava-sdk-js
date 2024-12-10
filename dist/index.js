@@ -6968,7 +6968,7 @@ var BaseClient = class {
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
-    let result = await this._callAnonRPC(
+    const result = await this._callAnonRPC(
       "getKey",
       request
     );

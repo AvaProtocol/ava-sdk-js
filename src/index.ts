@@ -10,20 +10,12 @@ import Workflow, {
   WorkflowStatus,
   WorkflowStatuses,
 } from "./models/workflow";
-import Node, { NodeProps, NodeType, NodeTypes } from "./models/node/interface";
+import { NodeProps, NodeType } from "./models/node/interface";
 import Edge, { EdgeProps } from "./models/edge";
-import Trigger, { TriggerType, TriggerTypes } from "./models/trigger/interface";
-import BlockTrigger, { BlockTriggerProps } from "./models/trigger/block";
+import { TriggerType } from "./models/trigger/interface";
 import Execution from "./models/execution";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
-import ContractWriteNode, {
-  ContractWriteNodeProps,
-} from "./models/node/contractWrite";
-import ContractReadNode, {
-  ContractReadNodeProps,
-} from "./models/node/contractRead";
-import BranchNode, { BranchNodeProps } from "./models/node/branch";
 
 import {
   AUTH_KEY_HEADER,
@@ -100,7 +92,7 @@ class BaseClient {
     request.setSignature(signature);
 
     // when exchanging the key, we don't set the token yet
-    let result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
+    const result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );
@@ -271,9 +263,22 @@ export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
-export { Workflow, WorkflowStatuses, Edge, Execution, NodeFactory, TriggerFactory };
-export type { WorkflowProps, NodeType, EdgeProps, TriggerType, WorkflowStatus };
+export {
+  Workflow,
+  WorkflowStatuses,
+  Edge,
+  Execution,
+  NodeFactory,
+  TriggerFactory,
+};
+export type {
+  WorkflowProps,
+  NodeType,
+  NodeProps,
+  EdgeProps,
+  TriggerType,
+  WorkflowStatus,
+};
 
 // Add this line at the end of the file
 export { getKeyRequestMessage };
-
