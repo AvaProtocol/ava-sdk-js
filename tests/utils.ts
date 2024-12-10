@@ -5,7 +5,7 @@ import Client, {
   WorkflowStatuses,
 } from "../dist";
 import { ethers } from "ethers";
-import _ from "lodash";
+import { UlidMonotonic } from "id128";
 
 // Get wallet address from private key
 export async function getAddress(privateKey: string): Promise<string> {
@@ -103,3 +103,10 @@ export const compareResults = (
   expect(actual.id).toBe(expected.id);
   expect(actual.owner).toBe(expected.owner);
 };
+
+/**
+ * Generate a unique id for each node or branch condition; currently we are using id128 for sortable ulid
+ * @returns string
+ */
+export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
+

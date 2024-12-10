@@ -12,7 +12,6 @@ import Client, {
 } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { ulid } from "ulid";
 import util from "util";
 import {
   getAddress,
@@ -21,6 +20,7 @@ import {
   removeCreatedWorkflows,
   queueForRemoval,
   compareResults,
+  getNextId,
 } from "./utils";
 
 import {
@@ -183,11 +183,11 @@ describe("createTask Tests", () => {
       const branchNode = NodeFactory.create({
         name: "branchCheckTokenAmount",
         type: NodeTypes.BRANCH,
-        id: ulid(),
+        id: getNextId(),
         data: {
           conditionsList: [
             {
-              id: ulid(),
+              id: getNextId(),
               type: "if",
               expression: `
                    // usdc
@@ -213,7 +213,7 @@ describe("createTask Tests", () => {
       const restApiNode = NodeFactory.create({
         name: "notification",
         type: NodeTypes.REST_API,
-        id: ulid(),
+        id: getNextId(),
         data: {
           url: "https://api.telegram.org/bot{{notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
           method: "POST",
@@ -237,12 +237,12 @@ describe("createTask Tests", () => {
         nodes: [branchNode, restApiNode],
         edges: [
           new Edge({
-            id: ulid(),
+            id: getNextId(),
             source: "__TRIGGER__",
             target: branchNode.id,
           }),
           new Edge({
-            id: ulid(),
+            id: getNextId(),
             source: `${branchNode.id}.${
               (branchNode.data as BranchNodeData).conditionsList[0].id
             }`,

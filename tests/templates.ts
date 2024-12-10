@@ -1,13 +1,11 @@
 import _ from "lodash";
-import { UlidMonotonic } from "id128";
 import {
   Edge,
   NodeFactory,
   NodeTypes,
+  NodeProps,
   TriggerFactory,
   TriggerTypes,
-  BlockTriggerProps,
-  NodeProps,
   ContractWriteNodeProps,
   ContractReadNodeProps,
   ETHTransferNodeProps,
@@ -17,14 +15,14 @@ import {
   BranchNodeProps,
   CustomCodeLangs,
 } from "../dist";
-
+import { getNextId } from "./utils";
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
 
 /**
  * Node templates
  */
 const contractWriteNodeProps: ContractWriteNodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "transfer token",
   type: NodeTypes.CONTRACT_WRITE,
   data: {
@@ -45,7 +43,7 @@ const contractWriteNodeProps: ContractWriteNodeProps = {
 };
 
 const contractReadNodeProps: ContractReadNodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "read token balance",
   type: NodeTypes.CONTRACT_READ,
   data: {
@@ -66,7 +64,7 @@ const contractReadNodeProps: ContractReadNodeProps = {
 };
 
 const ethTransferNodeProps: ETHTransferNodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "send eth",
   type: NodeTypes.ETH_TRANSFER,
   data: {
@@ -76,7 +74,7 @@ const ethTransferNodeProps: ETHTransferNodeProps = {
 };
 
 const restApiNodeProps: RestAPINodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "rest api call",
   type: NodeTypes.REST_API,
   data: {
@@ -88,7 +86,7 @@ const restApiNodeProps: RestAPINodeProps = {
 };
 
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "graphql call",
   type: NodeTypes.GRAPHQL_DATA_QUERY,
   data: {
@@ -99,7 +97,7 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
 };
 
 const branchNodeProps: BranchNodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "branch",
   type: NodeTypes.BRANCH,
   data: {
@@ -112,7 +110,7 @@ const branchNodeProps: BranchNodeProps = {
 };
 
 const customCodeNodeProps: CustomCodeNodeProps = {
-  id: UlidMonotonic.generate().toCanonical(),
+  id: getNextId(),
   name: "custom code",
   type: NodeTypes.CUSTOM_CODE,
   data: {
@@ -124,7 +122,7 @@ const customCodeNodeProps: CustomCodeNodeProps = {
 export const NodesTemplate: NodeProps[] = [contractWriteNodeProps];
 export const EdgesTemplate = [
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: "__TRIGGER__",
     target: NodesTemplate[0].id,
   },
@@ -157,32 +155,32 @@ const nodes = [
 
 const edges = [
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: "__TRIGGER__",
     target: nodes[0].id,
   },
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: nodes[0].id,
     target: nodes[1].id,
   },
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: nodes[1].id,
     target: nodes[2].id,
   },
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: nodes[2].id,
     target: nodes[3].id,
   },
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: nodes[3].id,
     target: nodes[4].id,
   },
   {
-    id: UlidMonotonic.generate().toCanonical(),
+    id: getNextId(),
     source: nodes[3].id,
     target: nodes[4].id,
   },
