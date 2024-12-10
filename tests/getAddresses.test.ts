@@ -66,14 +66,18 @@ describe("listSmartWalletses Tests", () => {
     test("create wallet is idempotent", async () => {
       const salt1 = "12345";
       const salt2 = "0";
-      const createdWallet1 = await client.createWallet({ salt: salt1 }, { authKey });
-      const createdWallet2 = await client.createWallet({ salt: salt2 }, { authKey });
+
+      // Intentially creating duplicate wallets with the same salt
+      await client.createWallet({ salt: salt1 }, { authKey });
+      await client.createWallet({ salt: salt1 }, { authKey });
+      await client.createWallet({ salt: salt2 }, { authKey });
+      await client.createWallet({ salt: salt2 }, { authKey });
 
       const wallets = await client.getWallets({ authKey });
 
-      // Make sure the created wallets have correponding salts
-      expect(wallets.find((item) => item.address === createdWallet1.address)?.salt).toEqual(salt1);
-      expect(wallets.find((item) => item.address === createdWallet2.address)?.salt).toEqual(salt2);
+      // Make sure the same salt are not creating duplicate wallets
+      expect(wallets.filter((item) => item.salt === salt1)).toHaveLength(1);
+      expect(wallets.filter((item) => item.salt === salt2)).toHaveLength(1);
     });
   });
 
