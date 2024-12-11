@@ -596,8 +596,12 @@ declare namespace TaskNode {
 }
 
 declare class Execution$1 extends jspb.Message { 
-    getEpoch(): number;
-    setEpoch(value: number): Execution$1;
+    getId(): string;
+    setId(value: string): Execution$1;
+    getStartAt(): number;
+    setStartAt(value: number): Execution$1;
+    getEndAt(): number;
+    setEndAt(value: number): Execution$1;
     getSuccess(): boolean;
     setSuccess(value: boolean): Execution$1;
     getError(): string;
@@ -626,7 +630,9 @@ declare class Execution$1 extends jspb.Message {
 
 declare namespace Execution$1 {
     export type AsObject = {
-        epoch: number,
+        id: string,
+        startAt: number,
+        endAt: number,
         success: boolean,
         error: string,
         triggerMark?: TriggerMark$1.AsObject,
@@ -646,6 +652,10 @@ declare namespace Execution$1 {
         setLog(value: string): Step;
         getError(): string;
         setError(value: string): Step;
+        getStartAt(): number;
+        setStartAt(value: number): Step;
+        getEndAt(): number;
+        setEndAt(value: number): Step;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Step.AsObject;
@@ -664,6 +674,8 @@ declare namespace Execution$1 {
             outputData: string,
             log: string,
             error: string,
+            startAt: number,
+            endAt: number,
         }
     }
 
@@ -686,6 +698,10 @@ declare class Task extends jspb.Message {
     setCompletedAt(value: number): Task;
     getMaxExecution(): number;
     setMaxExecution(value: number): Task;
+    getTotalExecution(): number;
+    setTotalExecution(value: number): Task;
+    getLastRanAt(): number;
+    setLastRanAt(value: number): Task;
     getStatus(): TaskStatus;
     setStatus(value: TaskStatus): Task;
 
@@ -701,10 +717,6 @@ declare class Task extends jspb.Message {
     getEdgesList(): Array<TaskEdge>;
     setEdgesList(value: Array<TaskEdge>): Task;
     addEdges(value?: TaskEdge, index?: number): TaskEdge;
-    clearExecutionsList(): void;
-    getExecutionsList(): Array<Execution$1>;
-    setExecutionsList(value: Array<Execution$1>): Task;
-    addExecutions(value?: Execution$1, index?: number): Execution$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Task.AsObject;
@@ -726,11 +738,12 @@ declare namespace Task {
         memo: string,
         completedAt: number,
         maxExecution: number,
+        totalExecution: number,
+        lastRanAt: number,
         status: TaskStatus,
         trigger?: TaskTrigger.AsObject,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
-        executionsList: Array<Execution$1.AsObject>,
     }
 }
 
@@ -916,6 +929,10 @@ declare namespace ListWalletResp {
 declare class ListTasksReq extends jspb.Message { 
     getSmartWalletAddress(): string;
     setSmartWalletAddress(value: string): ListTasksReq;
+    getCursor(): string;
+    setCursor(value: string): ListTasksReq;
+    getItemPerPage(): number;
+    setItemPerPage(value: number): ListTasksReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksReq.AsObject;
@@ -930,14 +947,18 @@ declare class ListTasksReq extends jspb.Message {
 declare namespace ListTasksReq {
     export type AsObject = {
         smartWalletAddress: string,
+        cursor: string,
+        itemPerPage: number,
     }
 }
 
 declare class ListTasksResp extends jspb.Message { 
     clearTasksList(): void;
-    getTasksList(): Array<Task>;
-    setTasksList(value: Array<Task>): ListTasksResp;
-    addTasks(value?: Task, index?: number): Task;
+    getTasksList(): Array<ListTasksResp.Item>;
+    setTasksList(value: Array<ListTasksResp.Item>): ListTasksResp;
+    addTasks(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
+    getCursor(): string;
+    setCursor(value: string): ListTasksResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -951,7 +972,117 @@ declare class ListTasksResp extends jspb.Message {
 
 declare namespace ListTasksResp {
     export type AsObject = {
-        tasksList: Array<Task.AsObject>,
+        tasksList: Array<ListTasksResp.Item.AsObject>,
+        cursor: string,
+    }
+
+
+    export class Item extends jspb.Message { 
+        getId(): string;
+        setId(value: string): Item;
+        getOwner(): string;
+        setOwner(value: string): Item;
+        getSmartWalletAddress(): string;
+        setSmartWalletAddress(value: string): Item;
+        getStartAt(): number;
+        setStartAt(value: number): Item;
+        getExpiredAt(): number;
+        setExpiredAt(value: number): Item;
+        getMemo(): string;
+        setMemo(value: string): Item;
+        getCompletedAt(): number;
+        setCompletedAt(value: number): Item;
+        getMaxExecution(): number;
+        setMaxExecution(value: number): Item;
+        getTotalExecution(): number;
+        setTotalExecution(value: number): Item;
+        getLastRanAt(): number;
+        setLastRanAt(value: number): Item;
+        getStatus(): TaskStatus;
+        setStatus(value: TaskStatus): Item;
+
+        hasTrigger(): boolean;
+        clearTrigger(): void;
+        getTrigger(): TaskTrigger | undefined;
+        setTrigger(value?: TaskTrigger): Item;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Item.AsObject;
+        static toObject(includeInstance: boolean, msg: Item): Item.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Item, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Item;
+        static deserializeBinaryFromReader(message: Item, reader: jspb.BinaryReader): Item;
+    }
+
+    export namespace Item {
+        export type AsObject = {
+            id: string,
+            owner: string,
+            smartWalletAddress: string,
+            startAt: number,
+            expiredAt: number,
+            memo: string,
+            completedAt: number,
+            maxExecution: number,
+            totalExecution: number,
+            lastRanAt: number,
+            status: TaskStatus,
+            trigger?: TaskTrigger.AsObject,
+        }
+    }
+
+}
+
+declare class ListExecutionsReq extends jspb.Message { 
+    getId(): string;
+    setId(value: string): ListExecutionsReq;
+    getCursor(): string;
+    setCursor(value: string): ListExecutionsReq;
+    getItemPerPage(): number;
+    setItemPerPage(value: number): ListExecutionsReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ListExecutionsReq.AsObject;
+    static toObject(includeInstance: boolean, msg: ListExecutionsReq): ListExecutionsReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ListExecutionsReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListExecutionsReq;
+    static deserializeBinaryFromReader(message: ListExecutionsReq, reader: jspb.BinaryReader): ListExecutionsReq;
+}
+
+declare namespace ListExecutionsReq {
+    export type AsObject = {
+        id: string,
+        cursor: string,
+        itemPerPage: number,
+    }
+}
+
+declare class ListExecutionsResp extends jspb.Message { 
+    clearExecutionsList(): void;
+    getExecutionsList(): Array<Execution$1>;
+    setExecutionsList(value: Array<Execution$1>): ListExecutionsResp;
+    addExecutions(value?: Execution$1, index?: number): Execution$1;
+    getCursor(): string;
+    setCursor(value: string): ListExecutionsResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ListExecutionsResp.AsObject;
+    static toObject(includeInstance: boolean, msg: ListExecutionsResp): ListExecutionsResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ListExecutionsResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListExecutionsResp;
+    static deserializeBinaryFromReader(message: ListExecutionsResp, reader: jspb.BinaryReader): ListExecutionsResp;
+}
+
+declare namespace ListExecutionsResp {
+    export type AsObject = {
+        executionsList: Array<Execution$1.AsObject>,
+        cursor: string,
     }
 }
 
@@ -1115,6 +1246,9 @@ interface IAggregatorClient {
     getTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
     getTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
     getTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
+    listExecutions(request: ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -1146,27 +1280,15 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public getTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
     public getTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
     public getTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Task) => void): grpc.ClientUnaryCall;
+    public listExecutions(request: ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    public listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    public listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
-}
-
-type ExecutionProps = Execution$1.AsObject;
-type TriggerMarkProps = TriggerMark$1.AsObject;
-type StepProps = Execution$1.Step.AsObject;
-declare class Execution implements ExecutionProps {
-    epoch: number;
-    success: boolean;
-    error: string;
-    triggerMark?: TriggerMarkProps;
-    result: string;
-    stepsList: Array<StepProps>;
-    constructor(props: ExecutionProps);
-    static fromResponse(execution: Execution$1): Execution;
-    toRequest(): Execution$1;
 }
 
 declare const NodeTypes: typeof TaskNode.TaskTypeCase;
@@ -1216,7 +1338,7 @@ declare class Trigger implements TriggerProps {
 
 declare const WorkflowStatuses: typeof TaskStatus;
 type WorkflowStatus = TaskStatus;
-type WorkflowProps = Omit<Task.AsObject, "id" | "owner" | "completedAt" | "status" | "executionsList" | "memo" | "trigger" | "nodesList" | "edgesList"> & {
+type WorkflowProps = Omit<Task.AsObject, "id" | "owner" | "completedAt" | "status" | "executionsList" | "memo" | "trigger" | "nodesList" | "edgesList" | "totalExecution" | "lastRanAt"> & {
     id?: string;
     owner?: string;
     completedAt?: number;
@@ -1225,7 +1347,8 @@ type WorkflowProps = Omit<Task.AsObject, "id" | "owner" | "completedAt" | "statu
     trigger: Trigger;
     nodes: Node[];
     edges: Edge[];
-    executions?: Execution[];
+    totalExecution?: number;
+    lastRanAt?: number;
 };
 declare class Workflow implements WorkflowProps {
     smartWalletAddress: string;
@@ -1238,9 +1361,10 @@ declare class Workflow implements WorkflowProps {
     id?: string;
     owner?: string;
     memo?: string;
-    executions?: Execution[];
     completedAt?: number;
     status?: WorkflowStatus;
+    totalExecution?: number;
+    lastRanAt?: number;
     /**
      * Create an instance of Workflow from user inputs
      * @param props
@@ -1252,7 +1376,44 @@ declare class Workflow implements WorkflowProps {
      * @returns
      */
     static fromResponse(obj: Task): Workflow;
+    /**
+     * Create an instance of Workflow with only selected fields
+     * @param obj
+     */
+    static fromListResponse(obj: ListTasksResp.Item): Workflow;
     toRequest(): CreateTaskReq;
+}
+
+type StepProps = Execution$1.Step.AsObject;
+declare class Step implements StepProps {
+    nodeId: string;
+    success: boolean;
+    outputData: string;
+    log: string;
+    error: string;
+    startAt: number;
+    endAt: number;
+    constructor(props: StepProps);
+    static fromResponse(step: Execution$1.Step): Step;
+    toRequest(): Execution$1.Step;
+}
+
+type ExecutionProps = Omit<Execution$1.AsObject, "stepsList"> & {
+    stepsList: Step[];
+};
+type TriggerMarkProps = TriggerMark$1.AsObject;
+declare class Execution implements ExecutionProps {
+    id: string;
+    startAt: number;
+    endAt: number;
+    success: boolean;
+    error: string;
+    triggerMark?: TriggerMarkProps;
+    result: string;
+    stepsList: Step[];
+    constructor(props: ExecutionProps);
+    static fromResponse(execution: Execution$1): Execution;
+    toRequest(): Execution$1;
 }
 
 type ContractWriteNodeData = ContractWriteNode$1.AsObject;
@@ -1453,7 +1614,14 @@ declare class Client extends BaseClient {
     createWallet({ salt, factoryAddress }: CreateWalletReq, options: RequestOptions): Promise<SmartWallet>;
     submitWorkflow(workflow: Workflow, options: RequestOptions): Promise<string>;
     createWorkflow(props: WorkflowProps): Workflow;
-    getWorkflows(address: string, options: RequestOptions): Promise<Workflow[]>;
+    getWorkflows(address: string, cursor: string, limit: number, options: RequestOptions): Promise<{
+        cursor: string;
+        result: Workflow[];
+    }>;
+    getExecutions(workflowId: string, cursor: string, limit: number, options: RequestOptions): Promise<{
+        cursor: string;
+        result: Execution[];
+    }>;
     getWorkflow(id: string, options: RequestOptions): Promise<Workflow>;
     cancelWorkflow(id: string, options: RequestOptions): Promise<boolean>;
     deleteWorkflow(id: string, options: RequestOptions): Promise<boolean>;

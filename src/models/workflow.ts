@@ -21,6 +21,8 @@ export type WorkflowProps = Omit<
   | "trigger"
   | "nodesList"
   | "edgesList"
+  | "totalExecution"
+  | "lastRanAt"
 > & {
   id?: string;
   owner?: string;
@@ -30,7 +32,8 @@ export type WorkflowProps = Omit<
   trigger: Trigger;
   nodes: Node[];
   edges: Edge[];
-  executions?: Execution[];
+  totalExecution?: number;
+  lastRanAt?: number;
 };
 
 class Workflow implements WorkflowProps {
@@ -47,9 +50,10 @@ class Workflow implements WorkflowProps {
   owner?: string;
 
   memo?: string;
-  executions?: Execution[];
   completedAt?: number;
   status?: WorkflowStatus;
+  totalExecution?: number;
+  lastRanAt?: number;
 
   /**
    * Create an instance of Workflow from user inputs
@@ -74,7 +78,8 @@ class Workflow implements WorkflowProps {
     this.memo = props.memo;
     this.status = props.status;
     this.completedAt = props.completedAt;
-    this.executions = props.executions;
+    this.totalExecution = props.totalExecution;
+    this.lastRanAt = props.lastRanAt;
   }
 
   /**
@@ -84,13 +89,19 @@ class Workflow implements WorkflowProps {
    */
   static fromResponse(obj: avs_pb.Task): Workflow {
     const trigger = TriggerFactory.fromResponse(obj.getTrigger()!);
+
+    if (!trigger) {
+      throw new Error("Trigger is undefined in fromResponse()");
+    }
+
     const nodes = _.map(obj.getNodesList(), (node) =>
       NodeFactory.fromResponse(node)
     );
+
     const edges = _.map(obj.getEdgesList(), (edge) => Edge.fromResponse(edge));
-    const executions = _.map(obj.getExecutionsList(), (item) =>
-      Execution.fromResponse(item)
-    );
+    // const executions = _.map(obj.getExecutionsList(), (item) =>
+    //   Execution.fromResponse(item)
+    // );
 
     const workflow = new Workflow({
       id: obj.getId(),
@@ -105,10 +116,40 @@ class Workflow implements WorkflowProps {
       memo: obj.getMemo(),
       status: obj.getStatus(),
       completedAt: obj.getCompletedAt(),
-      executions,
+      totalExecution: obj.getTotalExecution(),
+      lastRanAt: obj.getLastRanAt(),
     });
 
     return workflow;
+  }
+
+  /**
+   * Create an instance of Workflow with only selected fields
+   * @param obj
+   */
+  static fromListResponse(obj: avs_pb.ListTasksResp.Item): Workflow {
+    const trigger = TriggerFactory.fromResponse(obj.getTrigger()!);
+
+    if (!trigger) {
+      throw new Error("Trigger is undefined in fromListResponse()");
+    }
+
+    return new Workflow({
+      id: obj.getId(),
+      smartWalletAddress: obj.getSmartWalletAddress(),
+      trigger: trigger,
+      startAt: obj.getStartAt(),
+      expiredAt: obj.getExpiredAt(),
+      maxExecution: obj.getMaxExecution(),
+      nodes: [],
+      edges: [],
+      owner: undefined,
+      completedAt: undefined,
+      status: undefined,
+      memo: undefined,
+      totalExecution: undefined,
+      lastRanAt: undefined,
+    });
   }
 
   toRequest(): avs_pb.CreateTaskReq {

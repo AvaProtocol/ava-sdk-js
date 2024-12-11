@@ -73,11 +73,11 @@ describe("deleteTask Tests", () => {
       const result = await client.deleteWorkflow(workflowId, { authKey });
       expect(result).toBe(true);
 
-      const listRes = await client.getWorkflows(smartWalletAddress, {
+      const listRes = await client.getWorkflows(smartWalletAddress, "", 100, {
         authKey,
       });
-      expect(Array.isArray(listRes)).toBe(true);
-      expect(listRes.some((task) => task.id === workflowId)).toBe(false);
+      expect(Array.isArray(listRes.result)).toBe(true);
+      expect(listRes.result.some((task) => task.id === workflowId)).toBe(false);
     });
 
     test("should throw error when deleting an non-existent task", async () => {
@@ -122,11 +122,11 @@ describe("deleteTask Tests", () => {
       const result = await client.deleteWorkflow(workflowId, { authKey });
       expect(result).toBe(true);
 
-      const listRes = await client.getWorkflows(smartWalletAddress, {
+      const listRes = await client.getWorkflows(smartWalletAddress, "", 100, {
         authKey,
       });
-      expect(Array.isArray(listRes)).toBe(true);
-      expect(listRes.some((task) => task.id === workflowId)).toBe(false);
+      expect(Array.isArray(listRes.result)).toBe(true);
+      expect(listRes.result.some((task) => task.id === workflowId)).toBe(false);
     });
 
     test("should throw error when deleting an non-existent task", async () => {
@@ -165,8 +165,9 @@ describe("deleteTask Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
     });
 
-    afterAll(async () =>
-      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
     );
 
     test("should throw error when deleting a task without authentication", async () => {

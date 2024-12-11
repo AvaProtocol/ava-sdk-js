@@ -1,20 +1,27 @@
 import * as avs_pb from "../../grpc_codegen/avs_pb";
 import { TriggerMark } from "../../grpc_codegen/avs_pb";
+import Step from "./step";
 
-export type ExecutionProps = avs_pb.Execution.AsObject;
+export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList"> & {
+  stepsList: Step[];
+};
 export type TriggerMarkProps = avs_pb.TriggerMark.AsObject;
 export type StepProps = avs_pb.Execution.Step.AsObject;
 
 class Execution implements ExecutionProps {
-  epoch: number;
+  id: string;
+  startAt: number;
+  endAt: number;
   success: boolean;
   error: string;
   triggerMark?: TriggerMarkProps;
   result: string;
-  stepsList: Array<StepProps>;
+  stepsList: Step[];
 
   constructor(props: ExecutionProps) {
-    this.epoch = props.epoch;
+    this.id = props.id;
+    this.startAt = props.startAt;
+    this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
     this.triggerMark = props.triggerMark;
@@ -23,14 +30,32 @@ class Execution implements ExecutionProps {
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
-    return new Execution(execution.toObject());
+    return new Execution({
+      id: execution.getId(),
+      startAt: execution.getStartAt(),
+      endAt: execution.getEndAt(),
+      success: execution.getSuccess(),
+      error: execution.getError(),
+      triggerMark: {
+        blockNumber: execution.getTriggerMark()?.getBlockNumber() ?? 0,
+        logIndex: execution.getTriggerMark()?.getLogIndex() ?? 0,
+        txHash: execution.getTriggerMark()?.getTxHash() ?? "",
+      },
+      result: execution.getResult(),
+      stepsList: execution
+        .getStepsList()
+        .map((step) => Step.fromResponse(step)),
+    });
   }
 
   toRequest(): avs_pb.Execution {
     const execution = new avs_pb.Execution();
-    execution.setEpoch(this.epoch);
+    execution.setId(this.id);
+    execution.setStartAt(this.startAt);
+    execution.setEndAt(this.endAt);
     execution.setSuccess(this.success);
     execution.setError(this.error);
+    execution.setStepsList(this.stepsList.map((step) => step.toRequest()));
 
     if (this.triggerMark) {
       const triggerMark = new TriggerMark();

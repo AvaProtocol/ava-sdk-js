@@ -204,17 +204,50 @@ export default class Client extends BaseClient {
 
   async getWorkflows(
     address: string,
+    cursor: string,
+    limit: number,
     options: RequestOptions
-  ): Promise<Workflow[]> {
+  ): Promise<{ cursor: string; result: Workflow[] }> {
     const request = new avs_pb.ListTasksReq();
     request.setSmartWalletAddress(address);
+    request.setCursor(cursor);
+    request.setItemPerPage(limit);
 
     const result = await this._callRPC<
       avs_pb.ListTasksResp,
       avs_pb.ListTasksReq
     >("listTasks", request, options);
 
-    return result.getTasksList().map((item) => Workflow.fromResponse(item));
+    return {
+      cursor: result.getCursor(),
+      result: result
+        .getTasksList()
+        .map((item) => Workflow.fromListResponse(item)),
+    };
+  }
+
+  async getExecutions(
+    workflowId: string,
+    cursor: string,
+    limit: number,
+    options: RequestOptions
+  ): Promise<{ cursor: string; result: Execution[] }> {
+    const request = new avs_pb.ListExecutionsReq();
+    request.setId(workflowId);
+    request.setCursor(cursor);
+    request.setItemPerPage(limit);
+
+    const result = await this._callRPC<
+      avs_pb.ListExecutionsResp,
+      avs_pb.ListExecutionsReq
+    >("listExecutions", request, options);
+
+    return {
+      cursor: result.getCursor(),
+      result: result
+        .getExecutionsList()
+        .map((item) => Execution.fromResponse(item)),
+    };
   }
 
   // TODO: specify the return type to match client’s requirements
@@ -268,6 +301,8 @@ export {
   WorkflowStatuses,
   Edge,
   Execution,
+  NodeFactory,
+  TriggerFactory,
 };
 
 export type { WorkflowProps, WorkflowStatus, EdgeProps };
