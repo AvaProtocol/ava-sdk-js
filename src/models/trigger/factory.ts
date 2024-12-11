@@ -4,7 +4,7 @@ import { BlockTriggerProps } from "./block";
 import CronTrigger, { CronTriggerProps } from "./cron";
 import EventTrigger, { EventTriggerProps } from "./event";
 import FixedTimeTrigger, { FixedTimeTriggerProps } from "./fixedTime";
-import Trigger, { TriggerTypes } from "./interface";
+import Trigger, { TriggerType, TriggerTypes } from "./interface";
 
 import { TriggerProps } from "./interface";
 import ManualTrigger, { ManualTriggerProps } from "./manual";
@@ -60,16 +60,20 @@ export default TriggerFactory;
 
 export {
   Trigger,
-  TriggerProps,
   TriggerTypes,
   BlockTrigger,
-  BlockTriggerProps,
   CronTrigger,
-  CronTriggerProps,
   EventTrigger,
-  EventTriggerProps,
   FixedTimeTrigger,
-  FixedTimeTriggerProps,
   ManualTrigger,
+};
+
+export type {
+  TriggerProps,
+  TriggerType,
+  BlockTriggerProps,
+  CronTriggerProps,
+  EventTriggerProps,
+  FixedTimeTriggerProps,
   ManualTriggerProps,
 };

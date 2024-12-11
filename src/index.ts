@@ -268,17 +268,9 @@ export {
   WorkflowStatuses,
   Edge,
   Execution,
-  NodeFactory,
-  TriggerFactory,
 };
-export type {
-  WorkflowProps,
-  NodeType,
-  NodeProps,
-  EdgeProps,
-  TriggerType,
-  WorkflowStatus,
-};
+
+export type { WorkflowProps, WorkflowStatus, EdgeProps };
 
 // Add this line at the end of the file
 export { getKeyRequestMessage };

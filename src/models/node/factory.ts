@@ -1,9 +1,12 @@
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
 import _ from "lodash";
 import ContractWriteNode, { ContractWriteNodeProps } from "./contractWrite";
-import CustomCodeNode, { CustomCodeLangs, CustomCodeNodeProps } from "./customCode";
+import CustomCodeNode, {
+  CustomCodeLangs,
+  CustomCodeNodeProps,
+} from "./customCode";
 import GraphQLQueryNode, { GraphQLQueryNodeProps } from "./graphqlQuery";
-import Node, { NodeProps, NodeTypes } from "./interface";
+import Node, { NodeProps, NodeType, NodeTypes } from "./interface";
 import RestAPINode, { RestAPINodeProps } from "./restApi";
 import ContractReadNode, { ContractReadNodeProps } from "./contractRead";
 import ETHTransferNode, { ETHTransferNodeProps } from "./ethTransfer";
@@ -63,19 +66,24 @@ export {
   Node,
   NodeTypes,
   ContractWriteNode,
-  ContractWriteNodeProps,
   ContractReadNode,
-  ContractReadNodeProps,
   BranchNode,
+  ETHTransferNode,
+  GraphQLQueryNode,
+  RestAPINode,
+  CustomCodeNode,
+  CustomCodeLangs,
+};
+
+export type {
+  NodeType,
+  NodeProps,
+  ContractWriteNodeProps,
+  ContractReadNodeProps,
   BranchNodeProps,
   BranchNodeData,
-  ETHTransferNode,
   ETHTransferNodeProps,
-  GraphQLQueryNode,
   GraphQLQueryNodeProps,
-  RestAPINode,
   RestAPINodeProps,
-  CustomCodeNode,
   CustomCodeNodeProps,
-  CustomCodeLangs,
 };
