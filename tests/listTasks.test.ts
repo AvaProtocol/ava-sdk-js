@@ -70,28 +70,34 @@ describe("listTasks Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
     });
 
-    afterAll(async () =>
-      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
     );
 
     test("should list tasks when authenticated with signature", async () => {
-      const result = await client.getWorkflows(smartWalletAddress, {
+      const res = await client.getWorkflows(smartWalletAddress, "", 100, {
         authKey,
       });
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThanOrEqual(1);
-      expect(result.some((task) => task.id === workflowId)).toBe(true);
+      expect(Array.isArray(res.result)).toBe(true);
+      expect(res.result.length).toBeGreaterThanOrEqual(1);
+      expect(res.result.some((task) => task.id === workflowId)).toBe(true);
     });
 
     test("should throw error when not sending a valid smart wallet address", async () => {
       await expect(
-        client.getWorkflows(ownerAddress, { authKey })
+        client.getWorkflows(ownerAddress, "", 100, { authKey })
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
 
       await expect(
-        client.getWorkflows("0x000000000000000000000000000000000000dead", {
-          authKey,
-        })
+        client.getWorkflows(
+          "0x000000000000000000000000000000000000dead",
+          "",
+          100,
+          {
+            authKey,
+          }
+        )
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
   });
@@ -123,26 +129,34 @@ describe("listTasks Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
     });
 
-    afterAll(async () =>
-      await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
     );
 
     test("should list tasks when authenticated with API key", async () => {
-      const result = await client.getWorkflows(smartWalletAddress, { authKey });
-      expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBeGreaterThanOrEqual(1);
-      expect(result.some((task) => task.id === workflowId)).toBe(true);
+      const res = await client.getWorkflows(smartWalletAddress, "", 100, {
+        authKey,
+      });
+      expect(Array.isArray(res.result)).toBe(true);
+      expect(res.result.length).toBeGreaterThanOrEqual(1);
+      expect(res.result.some((task) => task.id === workflowId)).toBe(true);
     });
 
     test("should throw error when not sending a valid smart wallet address using API key", async () => {
       await expect(
-        client.getWorkflows(ownerAddress, { authKey })
+        client.getWorkflows(ownerAddress, "", 100, { authKey })
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
 
       await expect(
-        client.getWorkflows("0x000000000000000000000000000000000000dead", {
-          authKey,
-        })
+        client.getWorkflows(
+          "0x000000000000000000000000000000000000dead",
+          "",
+          100,
+          {
+            authKey,
+          }
+        )
       ).rejects.toThrow("3 INVALID_ARGUMENT: invalid smart account address");
     });
   });
@@ -169,7 +183,7 @@ describe("listTasks Tests", () => {
 
     test("should throw error when listing tasks without authentication", async () => {
       await expect(
-        client.getWorkflows(smartWalletAddress, { authKey: "" })
+        client.getWorkflows(smartWalletAddress, "", 100, { authKey: "" })
       ).rejects.toThrow("missing auth header");
     });
   });

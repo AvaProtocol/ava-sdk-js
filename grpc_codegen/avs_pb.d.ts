@@ -5,7 +5,6 @@
 /* eslint-disable */
 
 import * as jspb from "google-protobuf";
-import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
 export class IdReq extends jspb.Message { 
@@ -23,215 +22,6 @@ export class IdReq extends jspb.Message {
 }
 
 export namespace IdReq {
-    export type AsObject = {
-        id: string,
-    }
-}
-
-export class Checkin extends jspb.Message { 
-    getId(): string;
-    setId(value: string): Checkin;
-    getAddress(): string;
-    setAddress(value: string): Checkin;
-    getSignature(): string;
-    setSignature(value: string): Checkin;
-
-    hasStatus(): boolean;
-    clearStatus(): void;
-    getStatus(): Checkin.Status | undefined;
-    setStatus(value?: Checkin.Status): Checkin;
-    getVersion(): string;
-    setVersion(value: string): Checkin;
-    getMetricsport(): number;
-    setMetricsport(value: number): Checkin;
-    getRemoteip(): string;
-    setRemoteip(value: string): Checkin;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): Checkin.AsObject;
-    static toObject(includeInstance: boolean, msg: Checkin): Checkin.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: Checkin, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): Checkin;
-    static deserializeBinaryFromReader(message: Checkin, reader: jspb.BinaryReader): Checkin;
-}
-
-export namespace Checkin {
-    export type AsObject = {
-        id: string,
-        address: string,
-        signature: string,
-        status?: Checkin.Status.AsObject,
-        version: string,
-        metricsport: number,
-        remoteip: string,
-    }
-
-
-    export class Status extends jspb.Message { 
-        getUptime(): number;
-        setUptime(value: number): Status;
-        getQueuedepth(): number;
-        setQueuedepth(value: number): Status;
-
-        hasLastHeartbeat(): boolean;
-        clearLastHeartbeat(): void;
-        getLastHeartbeat(): google_protobuf_timestamp_pb.Timestamp | undefined;
-        setLastHeartbeat(value?: google_protobuf_timestamp_pb.Timestamp): Status;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): Status.AsObject;
-        static toObject(includeInstance: boolean, msg: Status): Status.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: Status, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): Status;
-        static deserializeBinaryFromReader(message: Status, reader: jspb.BinaryReader): Status;
-    }
-
-    export namespace Status {
-        export type AsObject = {
-            uptime: number,
-            queuedepth: number,
-            lastHeartbeat?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        }
-    }
-
-}
-
-export class CheckinResp extends jspb.Message { 
-
-    hasUpdatedAt(): boolean;
-    clearUpdatedAt(): void;
-    getUpdatedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setUpdatedAt(value?: google_protobuf_timestamp_pb.Timestamp): CheckinResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CheckinResp.AsObject;
-    static toObject(includeInstance: boolean, msg: CheckinResp): CheckinResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CheckinResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CheckinResp;
-    static deserializeBinaryFromReader(message: CheckinResp, reader: jspb.BinaryReader): CheckinResp;
-}
-
-export namespace CheckinResp {
-    export type AsObject = {
-        updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
-}
-
-export class SyncMessagesReq extends jspb.Message { 
-    getId(): string;
-    setId(value: string): SyncMessagesReq;
-    getAddress(): string;
-    setAddress(value: string): SyncMessagesReq;
-    getSignature(): Uint8Array | string;
-    getSignature_asU8(): Uint8Array;
-    getSignature_asB64(): string;
-    setSignature(value: Uint8Array | string): SyncMessagesReq;
-    getMonotonicClock(): number;
-    setMonotonicClock(value: number): SyncMessagesReq;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SyncMessagesReq.AsObject;
-    static toObject(includeInstance: boolean, msg: SyncMessagesReq): SyncMessagesReq.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SyncMessagesReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SyncMessagesReq;
-    static deserializeBinaryFromReader(message: SyncMessagesReq, reader: jspb.BinaryReader): SyncMessagesReq;
-}
-
-export namespace SyncMessagesReq {
-    export type AsObject = {
-        id: string,
-        address: string,
-        signature: Uint8Array | string,
-        monotonicClock: number,
-    }
-}
-
-export class SyncMessagesResp extends jspb.Message { 
-    getId(): string;
-    setId(value: string): SyncMessagesResp;
-    getOp(): MessageOp;
-    setOp(value: MessageOp): SyncMessagesResp;
-
-    hasTaskMetadata(): boolean;
-    clearTaskMetadata(): void;
-    getTaskMetadata(): SyncMessagesResp.TaskMetadata | undefined;
-    setTaskMetadata(value?: SyncMessagesResp.TaskMetadata): SyncMessagesResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SyncMessagesResp.AsObject;
-    static toObject(includeInstance: boolean, msg: SyncMessagesResp): SyncMessagesResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SyncMessagesResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SyncMessagesResp;
-    static deserializeBinaryFromReader(message: SyncMessagesResp, reader: jspb.BinaryReader): SyncMessagesResp;
-}
-
-export namespace SyncMessagesResp {
-    export type AsObject = {
-        id: string,
-        op: MessageOp,
-        taskMetadata?: SyncMessagesResp.TaskMetadata.AsObject,
-    }
-
-
-    export class TaskMetadata extends jspb.Message { 
-        getTaskId(): string;
-        setTaskId(value: string): TaskMetadata;
-        getRemain(): number;
-        setRemain(value: number): TaskMetadata;
-        getExpiredAt(): number;
-        setExpiredAt(value: number): TaskMetadata;
-
-        hasTrigger(): boolean;
-        clearTrigger(): void;
-        getTrigger(): TaskTrigger | undefined;
-        setTrigger(value?: TaskTrigger): TaskMetadata;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): TaskMetadata.AsObject;
-        static toObject(includeInstance: boolean, msg: TaskMetadata): TaskMetadata.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: TaskMetadata, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): TaskMetadata;
-        static deserializeBinaryFromReader(message: TaskMetadata, reader: jspb.BinaryReader): TaskMetadata;
-    }
-
-    export namespace TaskMetadata {
-        export type AsObject = {
-            taskId: string,
-            remain: number,
-            expiredAt: number,
-            trigger?: TaskTrigger.AsObject,
-        }
-    }
-
-}
-
-export class AckMessageReq extends jspb.Message { 
-    getId(): string;
-    setId(value: string): AckMessageReq;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): AckMessageReq.AsObject;
-    static toObject(includeInstance: boolean, msg: AckMessageReq): AckMessageReq.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: AckMessageReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): AckMessageReq;
-    static deserializeBinaryFromReader(message: AckMessageReq, reader: jspb.BinaryReader): AckMessageReq;
-}
-
-export namespace AckMessageReq {
     export type AsObject = {
         id: string,
     }
@@ -803,8 +593,12 @@ export namespace TaskNode {
 }
 
 export class Execution extends jspb.Message { 
-    getEpoch(): number;
-    setEpoch(value: number): Execution;
+    getId(): string;
+    setId(value: string): Execution;
+    getStartAt(): number;
+    setStartAt(value: number): Execution;
+    getEndAt(): number;
+    setEndAt(value: number): Execution;
     getSuccess(): boolean;
     setSuccess(value: boolean): Execution;
     getError(): string;
@@ -833,7 +627,9 @@ export class Execution extends jspb.Message {
 
 export namespace Execution {
     export type AsObject = {
-        epoch: number,
+        id: string,
+        startAt: number,
+        endAt: number,
         success: boolean,
         error: string,
         triggerMark?: TriggerMark.AsObject,
@@ -853,6 +649,10 @@ export namespace Execution {
         setLog(value: string): Step;
         getError(): string;
         setError(value: string): Step;
+        getStartAt(): number;
+        setStartAt(value: number): Step;
+        getEndAt(): number;
+        setEndAt(value: number): Step;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Step.AsObject;
@@ -871,6 +671,8 @@ export namespace Execution {
             outputData: string,
             log: string,
             error: string,
+            startAt: number,
+            endAt: number,
         }
     }
 
@@ -893,6 +695,10 @@ export class Task extends jspb.Message {
     setCompletedAt(value: number): Task;
     getMaxExecution(): number;
     setMaxExecution(value: number): Task;
+    getTotalExecution(): number;
+    setTotalExecution(value: number): Task;
+    getLastRanAt(): number;
+    setLastRanAt(value: number): Task;
     getStatus(): TaskStatus;
     setStatus(value: TaskStatus): Task;
 
@@ -908,10 +714,6 @@ export class Task extends jspb.Message {
     getEdgesList(): Array<TaskEdge>;
     setEdgesList(value: Array<TaskEdge>): Task;
     addEdges(value?: TaskEdge, index?: number): TaskEdge;
-    clearExecutionsList(): void;
-    getExecutionsList(): Array<Execution>;
-    setExecutionsList(value: Array<Execution>): Task;
-    addExecutions(value?: Execution, index?: number): Execution;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Task.AsObject;
@@ -933,11 +735,12 @@ export namespace Task {
         memo: string,
         completedAt: number,
         maxExecution: number,
+        totalExecution: number,
+        lastRanAt: number,
         status: TaskStatus,
         trigger?: TaskTrigger.AsObject,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
-        executionsList: Array<Execution.AsObject>,
     }
 }
 
@@ -1123,6 +926,10 @@ export namespace ListWalletResp {
 export class ListTasksReq extends jspb.Message { 
     getSmartWalletAddress(): string;
     setSmartWalletAddress(value: string): ListTasksReq;
+    getCursor(): string;
+    setCursor(value: string): ListTasksReq;
+    getItemPerPage(): number;
+    setItemPerPage(value: number): ListTasksReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksReq.AsObject;
@@ -1137,14 +944,18 @@ export class ListTasksReq extends jspb.Message {
 export namespace ListTasksReq {
     export type AsObject = {
         smartWalletAddress: string,
+        cursor: string,
+        itemPerPage: number,
     }
 }
 
 export class ListTasksResp extends jspb.Message { 
     clearTasksList(): void;
-    getTasksList(): Array<Task>;
-    setTasksList(value: Array<Task>): ListTasksResp;
-    addTasks(value?: Task, index?: number): Task;
+    getTasksList(): Array<ListTasksResp.Item>;
+    setTasksList(value: Array<ListTasksResp.Item>): ListTasksResp;
+    addTasks(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
+    getCursor(): string;
+    setCursor(value: string): ListTasksResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -1158,7 +969,117 @@ export class ListTasksResp extends jspb.Message {
 
 export namespace ListTasksResp {
     export type AsObject = {
-        tasksList: Array<Task.AsObject>,
+        tasksList: Array<ListTasksResp.Item.AsObject>,
+        cursor: string,
+    }
+
+
+    export class Item extends jspb.Message { 
+        getId(): string;
+        setId(value: string): Item;
+        getOwner(): string;
+        setOwner(value: string): Item;
+        getSmartWalletAddress(): string;
+        setSmartWalletAddress(value: string): Item;
+        getStartAt(): number;
+        setStartAt(value: number): Item;
+        getExpiredAt(): number;
+        setExpiredAt(value: number): Item;
+        getMemo(): string;
+        setMemo(value: string): Item;
+        getCompletedAt(): number;
+        setCompletedAt(value: number): Item;
+        getMaxExecution(): number;
+        setMaxExecution(value: number): Item;
+        getTotalExecution(): number;
+        setTotalExecution(value: number): Item;
+        getLastRanAt(): number;
+        setLastRanAt(value: number): Item;
+        getStatus(): TaskStatus;
+        setStatus(value: TaskStatus): Item;
+
+        hasTrigger(): boolean;
+        clearTrigger(): void;
+        getTrigger(): TaskTrigger | undefined;
+        setTrigger(value?: TaskTrigger): Item;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Item.AsObject;
+        static toObject(includeInstance: boolean, msg: Item): Item.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Item, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Item;
+        static deserializeBinaryFromReader(message: Item, reader: jspb.BinaryReader): Item;
+    }
+
+    export namespace Item {
+        export type AsObject = {
+            id: string,
+            owner: string,
+            smartWalletAddress: string,
+            startAt: number,
+            expiredAt: number,
+            memo: string,
+            completedAt: number,
+            maxExecution: number,
+            totalExecution: number,
+            lastRanAt: number,
+            status: TaskStatus,
+            trigger?: TaskTrigger.AsObject,
+        }
+    }
+
+}
+
+export class ListExecutionsReq extends jspb.Message { 
+    getId(): string;
+    setId(value: string): ListExecutionsReq;
+    getCursor(): string;
+    setCursor(value: string): ListExecutionsReq;
+    getItemPerPage(): number;
+    setItemPerPage(value: number): ListExecutionsReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ListExecutionsReq.AsObject;
+    static toObject(includeInstance: boolean, msg: ListExecutionsReq): ListExecutionsReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ListExecutionsReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListExecutionsReq;
+    static deserializeBinaryFromReader(message: ListExecutionsReq, reader: jspb.BinaryReader): ListExecutionsReq;
+}
+
+export namespace ListExecutionsReq {
+    export type AsObject = {
+        id: string,
+        cursor: string,
+        itemPerPage: number,
+    }
+}
+
+export class ListExecutionsResp extends jspb.Message { 
+    clearExecutionsList(): void;
+    getExecutionsList(): Array<Execution>;
+    setExecutionsList(value: Array<Execution>): ListExecutionsResp;
+    addExecutions(value?: Execution, index?: number): Execution;
+    getCursor(): string;
+    setCursor(value: string): ListExecutionsResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ListExecutionsResp.AsObject;
+    static toObject(includeInstance: boolean, msg: ListExecutionsResp): ListExecutionsResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ListExecutionsResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListExecutionsResp;
+    static deserializeBinaryFromReader(message: ListExecutionsResp, reader: jspb.BinaryReader): ListExecutionsResp;
+}
+
+export namespace ListExecutionsResp {
+    export type AsObject = {
+        executionsList: Array<Execution.AsObject>,
+        cursor: string,
     }
 }
 
@@ -1234,61 +1155,6 @@ export namespace TriggerMark {
     }
 }
 
-export class NotifyTriggersReq extends jspb.Message { 
-    getAddress(): string;
-    setAddress(value: string): NotifyTriggersReq;
-    getSignature(): string;
-    setSignature(value: string): NotifyTriggersReq;
-    getTaskId(): string;
-    setTaskId(value: string): NotifyTriggersReq;
-
-    hasTriggerMarker(): boolean;
-    clearTriggerMarker(): void;
-    getTriggerMarker(): TriggerMark | undefined;
-    setTriggerMarker(value?: TriggerMark): NotifyTriggersReq;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): NotifyTriggersReq.AsObject;
-    static toObject(includeInstance: boolean, msg: NotifyTriggersReq): NotifyTriggersReq.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: NotifyTriggersReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): NotifyTriggersReq;
-    static deserializeBinaryFromReader(message: NotifyTriggersReq, reader: jspb.BinaryReader): NotifyTriggersReq;
-}
-
-export namespace NotifyTriggersReq {
-    export type AsObject = {
-        address: string,
-        signature: string,
-        taskId: string,
-        triggerMarker?: TriggerMark.AsObject,
-    }
-}
-
-export class NotifyTriggersResp extends jspb.Message { 
-
-    hasUpdatedAt(): boolean;
-    clearUpdatedAt(): void;
-    getUpdatedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setUpdatedAt(value?: google_protobuf_timestamp_pb.Timestamp): NotifyTriggersResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): NotifyTriggersResp.AsObject;
-    static toObject(includeInstance: boolean, msg: NotifyTriggersResp): NotifyTriggersResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: NotifyTriggersResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): NotifyTriggersResp;
-    static deserializeBinaryFromReader(message: NotifyTriggersResp, reader: jspb.BinaryReader): NotifyTriggersResp;
-}
-
-export namespace NotifyTriggersResp {
-    export type AsObject = {
-        updatedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-    }
-}
-
 export class CreateWalletReq extends jspb.Message { 
     getSalt(): string;
     setSalt(value: string): CreateWalletReq;
@@ -1336,14 +1202,6 @@ export namespace CreateWalletResp {
         salt: string,
         factoryAddress: string,
     }
-}
-
-export enum MessageOp {
-    UNSET = 0,
-    MONITORTASKTRIGGER = 1,
-    CANCELTASK = 2,
-    DELETETASK = 3,
-    COMPLETEDTASK = 4,
 }
 
 export enum Error {

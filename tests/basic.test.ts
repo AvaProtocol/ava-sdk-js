@@ -220,7 +220,7 @@ describe("Basic Tests", () => {
       queueForRemoval(createdWorkflows, createdId1);
 
       console.log("Getting workflows for wallet:", walletSalt0);
-      const listResult1 = await client.getWorkflows(walletSalt0!, {
+      const listResult1 = await client.getWorkflows(walletSalt0!, "", 100, {
         authKey,
       });
 
@@ -235,20 +235,22 @@ describe("Basic Tests", () => {
       queueForRemoval(createdWorkflows, createdId2);
 
       console.log("Getting workflows for wallet:", walletSalt345);
-      const listResult2 = await client.getWorkflows(walletSalt345, { authKey });
+      const listResult2 = await client.getWorkflows(walletSalt345, "", 100, {
+        authKey,
+      });
 
       console.log("listResult1:", listResult1);
       console.log("listResult2:", listResult2);
-      expect(listResult1.length).toBeGreaterThanOrEqual(1);
-      expect(listResult2.length).toBeGreaterThanOrEqual(1);
+      expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
+      expect(listResult2.result.length).toBeGreaterThanOrEqual(1);
 
-      const foundFirstWorkflow = listResult1.find(
+      const foundFirstWorkflow = listResult1.result.find(
         (item) => item.id === createdId1
       );
       expect(foundFirstWorkflow?.id).toEqual(createdId1);
       expect(foundFirstWorkflow?.smartWalletAddress).toEqual(walletSalt0);
 
-      const foundSecondWorkflow = listResult2.find(
+      const foundSecondWorkflow = listResult2.result.find(
         (item) => item.id === createdId2
       );
       expect(foundSecondWorkflow?.id).toEqual(createdId2);
@@ -256,12 +258,12 @@ describe("Basic Tests", () => {
 
       // Not found the second workflow in the first list, since the are from different wallets
       expect(
-        listResult1.find((item) => item.id === createdId2)
+        listResult1.result.find((item) => item.id === createdId2)
       ).toBeUndefined();
 
       // Not found the first workflow in the second list, since the are from different wallets
       expect(
-        listResult2.find((item) => item.id === createdId1)
+        listResult2.result.find((item) => item.id === createdId1)
       ).toBeUndefined();
     });
 
