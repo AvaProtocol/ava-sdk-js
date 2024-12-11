@@ -1,28 +1,29 @@
-import * as avs_pb from "../grpc_codegen/avs_pb";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "../dist";
+import Client, { WorkflowStatuses } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar, queueTaskCleanup, teardown } from "./utils";
-import { erc20TransferTask, DUMMY_PRIVATE_KEY  } from "./fixture";
+import {
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  queueForRemoval,
+  removeCreatedWorkflows,
+  compareResults,
+} from "./utils";
+import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Get environment variables with type safety
-const {
-  TEST_API_KEY,
-  TEST_PRIVATE_KEY,
-  TOKEN_CONTRACT,
-  ORACLE_CONTRACT,
-  ENDPOINT,
-} = {
-  TEST_API_KEY: requireEnvVar('TEST_API_KEY'),
-  TEST_PRIVATE_KEY: requireEnvVar('TEST_PRIVATE_KEY'),
-  TOKEN_CONTRACT: requireEnvVar('TOKEN_CONTRACT'),
-  ORACLE_CONTRACT: requireEnvVar('ORACLE_CONTRACT'),
-  ENDPOINT: requireEnvVar('ENDPOINT'),
+const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
+  TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
+  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
+  ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
+const createdWorkflows: Map<string, boolean> = new Map();
 
 // Define EXPIRED_AT as a constant
 const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
@@ -43,7 +44,11 @@ describe("Basic Tests", () => {
   });
 
   test("should authenticate and return valid JWT token when using API key", async () => {
-    const res = await client.authWithAPIKey(walletAddress, TEST_API_KEY, EXPIRED_AT);
+    const res = await client.authWithAPIKey(
+      walletAddress,
+      TEST_API_KEY,
+      EXPIRED_AT
+    );
 
     expect(res).toBeDefined();
     expect(res).toHaveProperty("authKey");
@@ -99,7 +104,6 @@ describe("Basic Tests", () => {
   describe("Authenticated Tests", () => {
     let walletAddress: string;
     let client: Client;
-    let createdTaskId: string; // Add this line to declare the variable
     let authKey: string;
 
     beforeAll(async () => {
@@ -108,8 +112,8 @@ describe("Basic Tests", () => {
         endpoint: ENDPOINT,
       });
 
-      walletAddress = await getAddress(DUMMY_PRIVATE_KEY);
-      const signature = await generateSignature(DUMMY_PRIVATE_KEY, EXPIRED_AT);
+      walletAddress = await getAddress(TEST_PRIVATE_KEY);
+      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
 
       if (!signature) {
         throw new Error(
@@ -117,103 +121,197 @@ describe("Basic Tests", () => {
         );
       }
 
-      const result = await client.authWithSignature(walletAddress, signature, EXPIRED_AT);
+      const result = await client.authWithSignature(
+        walletAddress,
+        signature,
+        EXPIRED_AT
+      );
       authKey = result.authKey;
     });
 
-    afterAll(async() => await teardown(client, authKey));
+    afterAll(
+      async () =>
+        await removeCreatedWorkflows(client, authKey, createdWorkflows)
+    );
 
     test("createWallet", async () => {
-      const result = await client.createWallet({salt: "123"}, { authKey });
+      const result = await client.createWallet({ salt: "123" }, { authKey });
       expect(result?.address).toHaveLength(42);
       expect(result?.salt).toEqual("123");
-      expect(result?.factory).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
+      expect(result?.factory).toEqual(FACTORY_ADDRESS);
     });
 
     test("listSmartWallets", async () => {
-      const wallets = await client.listSmartWallets({ authKey });
+      const wallets = await client.getWallets({ authKey });
       expect(wallets.length).toBeGreaterThanOrEqual(1);
 
-      expect(wallets[0].address).toEqual("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41");
+      expect(wallets[0].address).toBeDefined();
       expect(wallets[0].salt).toEqual("0");
-      expect(wallets[0].factory).toEqual("0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7");
+      expect(wallets[0].factory).toEqual(FACTORY_ADDRESS);
     });
 
-    test("createTask", async () => {
-      const result = await client.createTask(erc20TransferTask, { authKey });
-      queueTaskCleanup(result);
+    test("createWorkflow", async () => {
+      const wallets = await client.getWallets({ authKey });
+      const smartWalletAddress = wallets[0].address;
 
-      expect(result).toBeDefined();
-      expect(result).toHaveLength(26);
+      const createResult = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
+        { authKey }
+      );
+
+      queueForRemoval(createdWorkflows, createResult);
+
+      expect(createResult).toBeDefined();
+      expect(createResult).toHaveLength(26);
     });
 
     test("getTask", async () => {
-      const result = await client.createTask(erc20TransferTask, { authKey });
-      expect(result).toHaveLength(26);
+      const wallets = await client.getWallets({ authKey });
+      const smartWalletAddress = wallets[0].address;
 
-      const task = await client.getTask(result, { authKey });
-      queueTaskCleanup(result);
+      const createResult = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
+        { authKey }
+      );
 
-      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
-      expect(task.nodes).toHaveLength(1);
-      expect(task.nodes[0].contractWrite.contractAddress).toEqual(erc20TransferTask.nodes[0].contractWrite.contractAddress);
-      expect(task.nodes[0].contractWrite.callData).toEqual(erc20TransferTask.nodes[0].contractWrite.callData);
-      expect(task.trigger.block.interval).toEqual(5);
+      expect(createResult).toHaveLength(26);
+
+      const task = await client.getWorkflow(createResult, { authKey });
+      compareResults(
+        {
+          ...WorkflowTemplate,
+          smartWalletAddress,
+          id: createResult,
+          status: WorkflowStatuses.ACTIVE,
+          owner: walletAddress,
+        },
+        task
+      );
+
+      queueForRemoval(createdWorkflows, createResult);
     });
 
     test("listTask", async () => {
-      // ensure the smart wallet is created
-      const smartWallet = await client.createWallet({salt: "345"}, { authKey });
+      // Remove any workflows created in previous tests
+      await removeCreatedWorkflows(client, authKey, createdWorkflows);
+
+      const smartWallet = await client.createWallet(
+        { salt: "345" },
+        { authKey }
+      );
+
+      const wallets = await client.getWallets({ authKey });
+      const walletSalt0 = wallets?.find((item) => item.salt === "0")?.address;
+      const walletSalt345 = smartWallet.address;
+
+      // Ensure the wallets are defined before proceeding
+      expect(walletSalt0).toBeDefined();
+      expect(walletSalt345).toBeDefined();
 
       // populate tasks for default wallet and the custom salt smart wallet above
-      const result1 = await client.createTask({...erc20TransferTask, memo: 'task1 test', smartWalletAddress: smartWallet.address}, { authKey });
-      queueTaskCleanup(result1);
-      const tasks1 = await client.listTasks(smartWallet.address, { authKey });
+      const createdId1 = await client.submitWorkflow(
+        client.createWorkflow({
+          ...WorkflowTemplate,
+          smartWalletAddress: walletSalt0!,
+        }),
+        { authKey }
+      );
 
-      const result2 = await client.createTask({...erc20TransferTask, memo: 'default wallet test'}, { authKey });
-      queueTaskCleanup(result2);
-      const tasks2 = await client.listTasks("0x6B5103D06B53Cc2386243A09f4EAf3140f4FaD41", { authKey });
+      queueForRemoval(createdWorkflows, createdId1);
 
-      expect(tasks1.length).toBeGreaterThanOrEqual(1);
-      expect(tasks2.length).toBeGreaterThanOrEqual(1);
+      console.log("Getting workflows for wallet:", walletSalt0);
+      const listResult1 = await client.getWorkflows(walletSalt0!, {
+        authKey,
+      });
 
-      const task1 = tasks1.find(t => t.id == result1);
-      expect(tasks1.find(t => t.id == result2)).toBe(undefined);
-      expect(task1?.id).toEqual(result1);
-      expect(task1?.memo).toEqual('task1 test');
+      const createdId2 = await client.submitWorkflow(
+        client.createWorkflow({
+          ...WorkflowTemplate,
+          smartWalletAddress: walletSalt345,
+        }),
+        { authKey }
+      );
 
-      const task2 = tasks2.find(t => t.id == result2);
-      expect(tasks2.find(t => t.id == result1)).toBe(undefined);
-      expect(task2?.id).toEqual(result2);
-      expect(task2?.memo).toEqual('default wallet test');
+      queueForRemoval(createdWorkflows, createdId2);
+
+      console.log("Getting workflows for wallet:", walletSalt345);
+      const listResult2 = await client.getWorkflows(walletSalt345, { authKey });
+
+      console.log("listResult1:", listResult1);
+      console.log("listResult2:", listResult2);
+      expect(listResult1.length).toBeGreaterThanOrEqual(1);
+      expect(listResult2.length).toBeGreaterThanOrEqual(1);
+
+      const foundFirstWorkflow = listResult1.find(
+        (item) => item.id === createdId1
+      );
+      expect(foundFirstWorkflow?.id).toEqual(createdId1);
+      expect(foundFirstWorkflow?.smartWalletAddress).toEqual(walletSalt0);
+
+      const foundSecondWorkflow = listResult2.find(
+        (item) => item.id === createdId2
+      );
+      expect(foundSecondWorkflow?.id).toEqual(createdId2);
+      expect(foundSecondWorkflow?.smartWalletAddress).toEqual(walletSalt345);
+
+      // Not found the second workflow in the first list, since the are from different wallets
+      expect(
+        listResult1.find((item) => item.id === createdId2)
+      ).toBeUndefined();
+
+      // Not found the first workflow in the second list, since the are from different wallets
+      expect(
+        listResult2.find((item) => item.id === createdId1)
+      ).toBeUndefined();
     });
 
     test("cancelTask", async () => {
-      const result = await client.createTask(erc20TransferTask, { authKey });
-      queueTaskCleanup(result);
-      const task = await client.getTask(result, { authKey });
-      expect(task.status).toEqual( avs_pb.TaskStatus.ACTIVE);
+      const wallets = await client.getWallets({ authKey });
+      const smartWalletAddress = wallets[0].address;
 
-      const cancelResult = await client.cancelTask(task.id, { authKey });
+      const createResult = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
+        { authKey }
+      );
+
+      queueForRemoval(createdWorkflows, createResult);
+
+      const workflow = await client.getWorkflow(createResult, { authKey });
+      expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
+
+      const cancelResult = await client.cancelWorkflow(createResult, {
+        authKey,
+      });
       expect(cancelResult).toEqual(true);
-      const updatedTask = await client.getTask(task.id, { authKey });
-      expect(updatedTask.status).toEqual( avs_pb.TaskStatus.CANCELED);
+      const updatedWorkflow = await client.getWorkflow(createResult, {
+        authKey,
+      });
+
+      expect(updatedWorkflow.status).toEqual(WorkflowStatuses.CANCELED);
     });
 
     test("deleteTask", async () => {
-      const result = await client.createTask(erc20TransferTask, { authKey });
-      const task = await client.getTask(result, { authKey });
-      expect(task.status).toEqual(avs_pb.TaskStatus.ACTIVE);
-      expect(task.id).toHaveLength(26);
+      const wallets = await client.getWallets({ authKey });
+      const smartWalletAddress = wallets[0].address;
 
-      const deleteResult = await client.deleteTask(task.id, { authKey });
+      const createResult = await client.submitWorkflow(
+        client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
+        { authKey }
+      );
+
+      const workflow = await client.getWorkflow(createResult, { authKey });
+      expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow.id).toHaveLength(26);
+
+      const deleteResult = await client.deleteWorkflow(createResult, {
+        authKey,
+      });
+
       expect(deleteResult).toEqual(true);
-      try {
-        await client.getTask(task.id, { authKey });
-      } catch  (e) {
-        expect(e.code).toEqual(5);
-        expect(e.message).toEqual('5 NOT_FOUND: task not found');
-      }
+
+      await expect(async () => {
+        await client.getWorkflow(workflow.id!, { authKey });
+      }).rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
 });

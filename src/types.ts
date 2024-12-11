@@ -1,5 +1,3 @@
-import { TaskStatus } from "../grpc_codegen/avs_pb";
-import _ from "lodash";
 // Define the environment type
 export type Environment = "production" | "development" | "staging";
 
@@ -15,52 +13,6 @@ export interface GetKeyResponse {
 
 export interface ClientOption {
   endpoint: string;
-}
-
-export interface TaskTrigger {
-  triggerType: number;
-  manual?: boolean;
-  cron?: {
-    schedule: string[];
-  };
-  event?: {
-    expression: string;
-  };
-  fixedTime?: {
-    epochs: number[],
-  }
-  block?: {
-    interval: number;
-  }
-}
-
-export interface TaskNode {
-  taskType: number;
-  id: string;
-  name: string;
-  ethTransfer?: any;
-  contractWrite?: any;
-  contractRead?: any;
-  restApi?: any;
-  customCode?: any;
-  branch?: any;
-  filter?: any;
-}
-
-export interface TaskType {
-  id: string;
-  owner: string;
-  smartWalletAddress: string;
-  trigger: TaskTrigger;
-  nodes:  TaskNode[];
-  edges: TaskEdge[];
-  startAt: number;
-  expiredAt: number;
-  memo: string;
-  completedAt: number;
-  status: number;
-  maxExecution: number;
-  executions: Execution[];
 }
 
 export interface CreateTaskResponse {
@@ -98,24 +50,4 @@ export interface TriggerMark {
   logIndex?: number;
   txHash?: string;
   epoch?: number;
-}
-
-export interface ExecutionStep {
-  outputData: string;
-  log: string;
-}
-
-export interface Execution {
-  epoch: number;
-  success: boolean;
-  error: string;
-  triggerMark?: TriggerMark;
-  result: string;
-  steps: ExecutionStep[];
-}
-
-export interface TaskEdge {
-  id: string;
-  source: string;
-  target: string;
 }
