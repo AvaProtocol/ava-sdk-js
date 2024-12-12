@@ -27,28 +27,6 @@ function deserialize_aggregator_CreateTaskResp(buffer_arg) {
   return avs_pb.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_CreateWalletReq(arg) {
-  if (!(arg instanceof avs_pb.CreateWalletReq)) {
-    throw new Error('Expected argument of type aggregator.CreateWalletReq');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_CreateWalletReq(buffer_arg) {
-  return avs_pb.CreateWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_CreateWalletResp(arg) {
-  if (!(arg instanceof avs_pb.CreateWalletResp)) {
-    throw new Error('Expected argument of type aggregator.CreateWalletResp');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_CreateWalletResp(buffer_arg) {
-  return avs_pb.CreateWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 function serialize_aggregator_GetKeyReq(arg) {
   if (!(arg instanceof avs_pb.GetKeyReq)) {
     throw new Error('Expected argument of type aggregator.GetKeyReq');
@@ -58,6 +36,28 @@ function serialize_aggregator_GetKeyReq(arg) {
 
 function deserialize_aggregator_GetKeyReq(buffer_arg) {
   return avs_pb.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetWalletReq(arg) {
+  if (!(arg instanceof avs_pb.GetWalletReq)) {
+    throw new Error('Expected argument of type aggregator.GetWalletReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetWalletReq(buffer_arg) {
+  return avs_pb.GetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetWalletResp(arg) {
+  if (!(arg instanceof avs_pb.GetWalletResp)) {
+    throw new Error('Expected argument of type aggregator.GetWalletResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetWalletResp(buffer_arg) {
+  return avs_pb.GetWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_IdReq(arg) {
@@ -181,6 +181,28 @@ function deserialize_aggregator_Task(buffer_arg) {
   return avs_pb.Task.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_UserTriggerTaskReq(arg) {
+  if (!(arg instanceof avs_pb.UserTriggerTaskReq)) {
+    throw new Error('Expected argument of type aggregator.UserTriggerTaskReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_UserTriggerTaskReq(buffer_arg) {
+  return avs_pb.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_UserTriggerTaskResp(arg) {
+  if (!(arg instanceof avs_pb.UserTriggerTaskResp)) {
+    throw new Error('Expected argument of type aggregator.UserTriggerTaskResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_UserTriggerTaskResp(buffer_arg) {
+  return avs_pb.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_google_protobuf_BoolValue(arg) {
   if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
     throw new Error('Expected argument of type google.protobuf.BoolValue');
@@ -194,7 +216,7 @@ function deserialize_google_protobuf_BoolValue(buffer_arg) {
 
 
 var AggregatorService = exports.AggregatorService = {
-  // Auth
+  // Exchange for an Auth Key to authenticate in subsequent request
 getKey: {
     path: '/aggregator.Aggregator/GetKey',
     requestStream: false,
@@ -206,7 +228,7 @@ getKey: {
     responseSerialize: serialize_aggregator_KeyResp,
     responseDeserialize: deserialize_aggregator_KeyResp,
   },
-  // Smart Acccount
+  // Smart Acccount Operation
 getNonce: {
     path: '/aggregator.Aggregator/GetNonce',
     requestStream: false,
@@ -218,16 +240,16 @@ getNonce: {
     responseSerialize: serialize_aggregator_NonceResp,
     responseDeserialize: deserialize_aggregator_NonceResp,
   },
-  createWallet: {
-    path: '/aggregator.Aggregator/CreateWallet',
+  getWallet: {
+    path: '/aggregator.Aggregator/GetWallet',
     requestStream: false,
     responseStream: false,
-    requestType: avs_pb.CreateWalletReq,
-    responseType: avs_pb.CreateWalletResp,
-    requestSerialize: serialize_aggregator_CreateWalletReq,
-    requestDeserialize: deserialize_aggregator_CreateWalletReq,
-    responseSerialize: serialize_aggregator_CreateWalletResp,
-    responseDeserialize: deserialize_aggregator_CreateWalletResp,
+    requestType: avs_pb.GetWalletReq,
+    responseType: avs_pb.GetWalletResp,
+    requestSerialize: serialize_aggregator_GetWalletReq,
+    requestDeserialize: deserialize_aggregator_GetWalletReq,
+    responseSerialize: serialize_aggregator_GetWalletResp,
+    responseDeserialize: deserialize_aggregator_GetWalletResp,
   },
   listWallets: {
     path: '/aggregator.Aggregator/ListWallets',
@@ -240,7 +262,7 @@ getNonce: {
     responseSerialize: serialize_aggregator_ListWalletResp,
     responseDeserialize: deserialize_aggregator_ListWalletResp,
   },
-  // Task Management
+  // Task Management Operation
 createTask: {
     path: '/aggregator.Aggregator/CreateTask',
     requestStream: false,
@@ -306,6 +328,17 @@ createTask: {
     requestDeserialize: deserialize_aggregator_IdReq,
     responseSerialize: serialize_google_protobuf_BoolValue,
     responseDeserialize: deserialize_google_protobuf_BoolValue,
+  },
+  triggerTask: {
+    path: '/aggregator.Aggregator/TriggerTask',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.UserTriggerTaskReq,
+    responseType: avs_pb.UserTriggerTaskResp,
+    requestSerialize: serialize_aggregator_UserTriggerTaskReq,
+    requestDeserialize: deserialize_aggregator_UserTriggerTaskReq,
+    responseSerialize: serialize_aggregator_UserTriggerTaskResp,
+    responseDeserialize: deserialize_aggregator_UserTriggerTaskResp,
   },
 };
 

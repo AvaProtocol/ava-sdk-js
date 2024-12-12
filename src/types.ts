@@ -40,7 +40,7 @@ export interface SmartWallet {
   factory: string;
 }
 
-export interface CreateWalletReq {
+export interface GetWalletReq {
   salt: string;
   factoryAddress?: string;
 }

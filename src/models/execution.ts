@@ -40,6 +40,7 @@ class Execution implements ExecutionProps {
         blockNumber: execution.getTriggerMark()?.getBlockNumber() ?? 0,
         logIndex: execution.getTriggerMark()?.getLogIndex() ?? 0,
         txHash: execution.getTriggerMark()?.getTxHash() ?? "",
+        epoch: execution.getTriggerMark()?.getEpoch() ?? 0,
       },
       result: execution.getResult(),
       stepsList: execution

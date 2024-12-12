@@ -88,7 +88,7 @@ const restApiNodeProps: RestAPINodeProps = {
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   id: getNextId(),
   name: "graphql call",
-  type: NodeTypes.GRAPHQL_DATA_QUERY,
+  type: NodeTypes.GRAPHQL_QUERY,
   data: {
     url: "http://endpoint003",
     query: `foo bar`,

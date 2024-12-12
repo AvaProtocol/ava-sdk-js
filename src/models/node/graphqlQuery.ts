@@ -12,7 +12,7 @@ class GraphQLQueryNode extends Node {
   constructor(props: GraphQLQueryNodeProps) {
     super({
       ...props,
-      type: NodeTypes.GRAPHQL_DATA_QUERY,
+      type: NodeTypes.GRAPHQL_QUERY,
       data: props.data,
     });
   }
@@ -22,8 +22,8 @@ class GraphQLQueryNode extends Node {
     const obj = raw.toObject() as unknown as GraphQLQueryNodeProps;
     return new GraphQLQueryNode({
       ...obj,
-      type: NodeTypes.GRAPHQL_DATA_QUERY,
-      data: raw.getGraphqlDataQuery()!.toObject() as GraphQLQueryNodeData,
+      type: NodeTypes.GRAPHQL_QUERY,
+      data: raw.getGraphqlQuery()!.toObject() as GraphQLQueryNodeData,
     });
   }
 
@@ -42,7 +42,7 @@ class GraphQLQueryNode extends Node {
       variablesMap.set(key, value);
     });
 
-    request.setGraphqlDataQuery(nodeData);
+    request.setGraphqlQuery(nodeData);
 
     return request;
   }

@@ -2,7 +2,7 @@ import * as avs_pb from "../../../grpc_codegen/avs_pb";
 export const TriggerTypes = avs_pb.TaskTrigger.TriggerTypeCase;
 export type TriggerType = avs_pb.TaskTrigger.TriggerTypeCase;
 export type TriggerData =
-  | avs_pb.FixedEpochCondition.AsObject
+  | avs_pb.FixedTimeCondition.AsObject
   | avs_pb.CronCondition.AsObject
   | avs_pb.BlockCondition.AsObject
   | avs_pb.EventCondition.AsObject

@@ -30,23 +30,23 @@ declare namespace IdReq {
     }
 }
 
-declare class FixedEpochCondition extends jspb.Message { 
+declare class FixedTimeCondition extends jspb.Message { 
     clearEpochsList(): void;
     getEpochsList(): Array<number>;
-    setEpochsList(value: Array<number>): FixedEpochCondition;
+    setEpochsList(value: Array<number>): FixedTimeCondition;
     addEpochs(value: number, index?: number): number;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): FixedEpochCondition.AsObject;
-    static toObject(includeInstance: boolean, msg: FixedEpochCondition): FixedEpochCondition.AsObject;
+    toObject(includeInstance?: boolean): FixedTimeCondition.AsObject;
+    static toObject(includeInstance: boolean, msg: FixedTimeCondition): FixedTimeCondition.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: FixedEpochCondition, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): FixedEpochCondition;
-    static deserializeBinaryFromReader(message: FixedEpochCondition, reader: jspb.BinaryReader): FixedEpochCondition;
+    static serializeBinaryToWriter(message: FixedTimeCondition, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): FixedTimeCondition;
+    static deserializeBinaryFromReader(message: FixedTimeCondition, reader: jspb.BinaryReader): FixedTimeCondition;
 }
 
-declare namespace FixedEpochCondition {
+declare namespace FixedTimeCondition {
     export type AsObject = {
         epochsList: Array<number>,
     }
@@ -125,8 +125,8 @@ declare class TaskTrigger extends jspb.Message {
 
     hasFixedTime(): boolean;
     clearFixedTime(): void;
-    getFixedTime(): FixedEpochCondition | undefined;
-    setFixedTime(value?: FixedEpochCondition): TaskTrigger;
+    getFixedTime(): FixedTimeCondition | undefined;
+    setFixedTime(value?: FixedTimeCondition): TaskTrigger;
 
     hasCron(): boolean;
     clearCron(): void;
@@ -159,7 +159,7 @@ declare namespace TaskTrigger {
     export type AsObject = {
         name: string,
         manual: boolean,
-        fixedTime?: FixedEpochCondition.AsObject,
+        fixedTime?: FixedTimeCondition.AsObject,
         cron?: CronCondition.AsObject,
         block?: BlockCondition.AsObject,
         event?: EventCondition.AsObject,
@@ -232,6 +232,8 @@ declare class ContractReadNode$1 extends jspb.Message {
     setCallData(value: string): ContractReadNode$1;
     getContractAbi(): string;
     setContractAbi(value: string): ContractReadNode$1;
+    getMethod(): string;
+    setMethod(value: string): ContractReadNode$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractReadNode$1.AsObject;
@@ -248,6 +250,7 @@ declare namespace ContractReadNode$1 {
         contractAddress: string,
         callData: string,
         contractAbi: string,
+        method: string,
     }
 }
 
@@ -523,10 +526,10 @@ declare class TaskNode extends jspb.Message {
     getContractRead(): ContractReadNode$1 | undefined;
     setContractRead(value?: ContractReadNode$1): TaskNode;
 
-    hasGraphqlDataQuery(): boolean;
-    clearGraphqlDataQuery(): void;
-    getGraphqlDataQuery(): GraphQLQueryNode$1 | undefined;
-    setGraphqlDataQuery(value?: GraphQLQueryNode$1): TaskNode;
+    hasGraphqlQuery(): boolean;
+    clearGraphqlQuery(): void;
+    getGraphqlQuery(): GraphQLQueryNode$1 | undefined;
+    setGraphqlQuery(value?: GraphQLQueryNode$1): TaskNode;
 
     hasRestApi(): boolean;
     clearRestApi(): void;
@@ -572,7 +575,7 @@ declare namespace TaskNode {
         ethTransfer?: ETHTransferNode$1.AsObject,
         contractWrite?: ContractWriteNode$1.AsObject,
         contractRead?: ContractReadNode$1.AsObject,
-        graphqlDataQuery?: GraphQLQueryNode$1.AsObject,
+        graphqlQuery?: GraphQLQueryNode$1.AsObject,
         restApi?: RestAPINode$1.AsObject,
         branch?: BranchNode$1.AsObject,
         filter?: FilterNode.AsObject,
@@ -585,7 +588,7 @@ declare namespace TaskNode {
         ETH_TRANSFER = 10,
         CONTRACT_WRITE = 11,
         CONTRACT_READ = 12,
-        GRAPHQL_DATA_QUERY = 13,
+        GRAPHQL_QUERY = 13,
         REST_API = 14,
         BRANCH = 15,
         FILTER = 16,
@@ -905,10 +908,10 @@ declare namespace SmartWallet$1 {
 }
 
 declare class ListWalletResp extends jspb.Message { 
-    clearWalletsList(): void;
-    getWalletsList(): Array<SmartWallet$1>;
-    setWalletsList(value: Array<SmartWallet$1>): ListWalletResp;
-    addWallets(value?: SmartWallet$1, index?: number): SmartWallet$1;
+    clearItemsList(): void;
+    getItemsList(): Array<SmartWallet$1>;
+    setItemsList(value: Array<SmartWallet$1>): ListWalletResp;
+    addItems(value?: SmartWallet$1, index?: number): SmartWallet$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListWalletResp.AsObject;
@@ -922,7 +925,7 @@ declare class ListWalletResp extends jspb.Message {
 
 declare namespace ListWalletResp {
     export type AsObject = {
-        walletsList: Array<SmartWallet$1.AsObject>,
+        itemsList: Array<SmartWallet$1.AsObject>,
     }
 }
 
@@ -953,10 +956,10 @@ declare namespace ListTasksReq {
 }
 
 declare class ListTasksResp extends jspb.Message { 
-    clearTasksList(): void;
-    getTasksList(): Array<ListTasksResp.Item>;
-    setTasksList(value: Array<ListTasksResp.Item>): ListTasksResp;
-    addTasks(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
+    clearItemsList(): void;
+    getItemsList(): Array<ListTasksResp.Item>;
+    setItemsList(value: Array<ListTasksResp.Item>): ListTasksResp;
+    addItems(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
     getCursor(): string;
     setCursor(value: string): ListTasksResp;
 
@@ -972,7 +975,7 @@ declare class ListTasksResp extends jspb.Message {
 
 declare namespace ListTasksResp {
     export type AsObject = {
-        tasksList: Array<ListTasksResp.Item.AsObject>,
+        itemsList: Array<ListTasksResp.Item.AsObject>,
         cursor: string,
     }
 
@@ -1062,10 +1065,10 @@ declare namespace ListExecutionsReq {
 }
 
 declare class ListExecutionsResp extends jspb.Message { 
-    clearExecutionsList(): void;
-    getExecutionsList(): Array<Execution$1>;
-    setExecutionsList(value: Array<Execution$1>): ListExecutionsResp;
-    addExecutions(value?: Execution$1, index?: number): Execution$1;
+    clearItemsList(): void;
+    getItemsList(): Array<Execution$1>;
+    setItemsList(value: Array<Execution$1>): ListExecutionsResp;
+    addItems(value?: Execution$1, index?: number): Execution$1;
     getCursor(): string;
     setCursor(value: string): ListExecutionsResp;
 
@@ -1081,7 +1084,7 @@ declare class ListExecutionsResp extends jspb.Message {
 
 declare namespace ListExecutionsResp {
     export type AsObject = {
-        executionsList: Array<Execution$1.AsObject>,
+        itemsList: Array<Execution$1.AsObject>,
         cursor: string,
     }
 }
@@ -1139,6 +1142,8 @@ declare class TriggerMark$1 extends jspb.Message {
     setLogIndex(value: number): TriggerMark$1;
     getTxHash(): string;
     setTxHash(value: string): TriggerMark$1;
+    getEpoch(): number;
+    setEpoch(value: number): TriggerMark$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TriggerMark$1.AsObject;
@@ -1155,55 +1160,111 @@ declare namespace TriggerMark$1 {
         blockNumber: number,
         logIndex: number,
         txHash: string,
+        epoch: number,
     }
 }
 
-declare class CreateWalletReq$1 extends jspb.Message { 
+declare class GetWalletReq$1 extends jspb.Message { 
     getSalt(): string;
-    setSalt(value: string): CreateWalletReq$1;
+    setSalt(value: string): GetWalletReq$1;
     getFactoryAddress(): string;
-    setFactoryAddress(value: string): CreateWalletReq$1;
+    setFactoryAddress(value: string): GetWalletReq$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CreateWalletReq$1.AsObject;
-    static toObject(includeInstance: boolean, msg: CreateWalletReq$1): CreateWalletReq$1.AsObject;
+    toObject(includeInstance?: boolean): GetWalletReq$1.AsObject;
+    static toObject(includeInstance: boolean, msg: GetWalletReq$1): GetWalletReq$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CreateWalletReq$1, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CreateWalletReq$1;
-    static deserializeBinaryFromReader(message: CreateWalletReq$1, reader: jspb.BinaryReader): CreateWalletReq$1;
+    static serializeBinaryToWriter(message: GetWalletReq$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetWalletReq$1;
+    static deserializeBinaryFromReader(message: GetWalletReq$1, reader: jspb.BinaryReader): GetWalletReq$1;
 }
 
-declare namespace CreateWalletReq$1 {
+declare namespace GetWalletReq$1 {
     export type AsObject = {
         salt: string,
         factoryAddress: string,
     }
 }
 
-declare class CreateWalletResp extends jspb.Message { 
+declare class GetWalletResp extends jspb.Message { 
     getAddress(): string;
-    setAddress(value: string): CreateWalletResp;
+    setAddress(value: string): GetWalletResp;
     getSalt(): string;
-    setSalt(value: string): CreateWalletResp;
+    setSalt(value: string): GetWalletResp;
     getFactoryAddress(): string;
-    setFactoryAddress(value: string): CreateWalletResp;
+    setFactoryAddress(value: string): GetWalletResp;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CreateWalletResp.AsObject;
-    static toObject(includeInstance: boolean, msg: CreateWalletResp): CreateWalletResp.AsObject;
+    toObject(includeInstance?: boolean): GetWalletResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetWalletResp): GetWalletResp.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CreateWalletResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CreateWalletResp;
-    static deserializeBinaryFromReader(message: CreateWalletResp, reader: jspb.BinaryReader): CreateWalletResp;
+    static serializeBinaryToWriter(message: GetWalletResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetWalletResp;
+    static deserializeBinaryFromReader(message: GetWalletResp, reader: jspb.BinaryReader): GetWalletResp;
 }
 
-declare namespace CreateWalletResp {
+declare namespace GetWalletResp {
     export type AsObject = {
         address: string,
         salt: string,
         factoryAddress: string,
+    }
+}
+
+declare class UserTriggerTaskReq extends jspb.Message { 
+    getTaskId(): string;
+    setTaskId(value: string): UserTriggerTaskReq;
+
+    hasTriggerMark(): boolean;
+    clearTriggerMark(): void;
+    getTriggerMark(): TriggerMark$1 | undefined;
+    setTriggerMark(value?: TriggerMark$1): UserTriggerTaskReq;
+    getRunInline(): boolean;
+    setRunInline(value: boolean): UserTriggerTaskReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UserTriggerTaskReq.AsObject;
+    static toObject(includeInstance: boolean, msg: UserTriggerTaskReq): UserTriggerTaskReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UserTriggerTaskReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UserTriggerTaskReq;
+    static deserializeBinaryFromReader(message: UserTriggerTaskReq, reader: jspb.BinaryReader): UserTriggerTaskReq;
+}
+
+declare namespace UserTriggerTaskReq {
+    export type AsObject = {
+        taskId: string,
+        triggerMark?: TriggerMark$1.AsObject,
+        runInline: boolean,
+    }
+}
+
+declare class UserTriggerTaskResp extends jspb.Message { 
+    getResult(): boolean;
+    setResult(value: boolean): UserTriggerTaskResp;
+    getExecutionId(): string;
+    setExecutionId(value: string): UserTriggerTaskResp;
+    getJobId(): string;
+    setJobId(value: string): UserTriggerTaskResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
+    static toObject(includeInstance: boolean, msg: UserTriggerTaskResp): UserTriggerTaskResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UserTriggerTaskResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UserTriggerTaskResp;
+    static deserializeBinaryFromReader(message: UserTriggerTaskResp, reader: jspb.BinaryReader): UserTriggerTaskResp;
+}
+
+declare namespace UserTriggerTaskResp {
+    export type AsObject = {
+        result: boolean,
+        executionId: string,
+        jobId: string,
     }
 }
 
@@ -1231,9 +1292,9 @@ interface IAggregatorClient {
     getNonce(request: NonceRequest, callback: (error: grpc.ServiceError | null, response: NonceResp) => void): grpc.ClientUnaryCall;
     getNonce(request: NonceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: NonceResp) => void): grpc.ClientUnaryCall;
     getNonce(request: NonceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: NonceResp) => void): grpc.ClientUnaryCall;
-    createWallet(request: CreateWalletReq$1, callback: (error: grpc.ServiceError | null, response: CreateWalletResp) => void): grpc.ClientUnaryCall;
-    createWallet(request: CreateWalletReq$1, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: CreateWalletResp) => void): grpc.ClientUnaryCall;
-    createWallet(request: CreateWalletReq$1, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: CreateWalletResp) => void): grpc.ClientUnaryCall;
+    getWallet(request: GetWalletReq$1, callback: (error: grpc.ServiceError | null, response: GetWalletResp) => void): grpc.ClientUnaryCall;
+    getWallet(request: GetWalletReq$1, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: GetWalletResp) => void): grpc.ClientUnaryCall;
+    getWallet(request: GetWalletReq$1, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: GetWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: ListWalletReq, callback: (error: grpc.ServiceError | null, response: ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListWalletResp) => void): grpc.ClientUnaryCall;
@@ -1255,6 +1316,9 @@ interface IAggregatorClient {
     deleteTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+    triggerTask(request: UserTriggerTaskReq, callback: (error: grpc.ServiceError | null, response: UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: UserTriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: UserTriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
 }
 
 declare class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -1265,9 +1329,9 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public getNonce(request: NonceRequest, callback: (error: grpc.ServiceError | null, response: NonceResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: NonceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: NonceResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: NonceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: NonceResp) => void): grpc.ClientUnaryCall;
-    public createWallet(request: CreateWalletReq$1, callback: (error: grpc.ServiceError | null, response: CreateWalletResp) => void): grpc.ClientUnaryCall;
-    public createWallet(request: CreateWalletReq$1, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: CreateWalletResp) => void): grpc.ClientUnaryCall;
-    public createWallet(request: CreateWalletReq$1, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: CreateWalletResp) => void): grpc.ClientUnaryCall;
+    public getWallet(request: GetWalletReq$1, callback: (error: grpc.ServiceError | null, response: GetWalletResp) => void): grpc.ClientUnaryCall;
+    public getWallet(request: GetWalletReq$1, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: GetWalletResp) => void): grpc.ClientUnaryCall;
+    public getWallet(request: GetWalletReq$1, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: GetWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: ListWalletReq, callback: (error: grpc.ServiceError | null, response: ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListWalletResp) => void): grpc.ClientUnaryCall;
@@ -1289,6 +1353,9 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public deleteTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: UserTriggerTaskReq, callback: (error: grpc.ServiceError | null, response: UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: UserTriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: UserTriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
 }
 
 declare const NodeTypes: typeof TaskNode.TaskTypeCase;
@@ -1319,7 +1386,7 @@ declare class Edge implements EdgeProps {
 
 declare const TriggerTypes: typeof TaskTrigger.TriggerTypeCase;
 type TriggerType = TaskTrigger.TriggerTypeCase;
-type TriggerData = FixedEpochCondition.AsObject | CronCondition.AsObject | BlockCondition.AsObject | EventCondition.AsObject | null;
+type TriggerData = FixedTimeCondition.AsObject | CronCondition.AsObject | BlockCondition.AsObject | EventCondition.AsObject | null;
 type TriggerProps = Omit<TaskTrigger.AsObject, "manual" | "fixedTime" | "cron" | "block" | "event"> & {
     type: TriggerType;
     data: TriggerData;
@@ -1523,7 +1590,7 @@ declare class EventTrigger extends Trigger {
     static fromResponse(raw: TaskTrigger): EventTrigger;
 }
 
-type FixedTimeTriggerDataType = FixedEpochCondition.AsObject;
+type FixedTimeTriggerDataType = FixedTimeCondition.AsObject;
 type FixedTimeTriggerProps = TriggerProps & {
     data: FixedTimeTriggerDataType;
 };
@@ -1586,7 +1653,7 @@ interface SmartWallet {
     salt: string;
     factory: string;
 }
-interface CreateWalletReq {
+interface GetWalletReq {
     salt: string;
     factoryAddress?: string;
 }
@@ -1611,7 +1678,7 @@ declare class BaseClient {
 declare class Client extends BaseClient {
     constructor(config: ClientOption);
     getWallets(options: RequestOptions): Promise<SmartWallet[]>;
-    createWallet({ salt, factoryAddress }: CreateWalletReq, options: RequestOptions): Promise<SmartWallet>;
+    createWallet({ salt, factoryAddress }: GetWalletReq, options: RequestOptions): Promise<SmartWallet>;
     submitWorkflow(workflow: Workflow, options: RequestOptions): Promise<string>;
     createWorkflow(props: WorkflowProps): Workflow;
     getWorkflows(address: string, cursor: string, limit: number, options: RequestOptions): Promise<{
@@ -1627,4 +1694,4 @@ declare class Client extends BaseClient {
     deleteWorkflow(id: string, options: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type CancelTaskResponse, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, type CreateTaskResponse, type CreateWalletReq, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, type DeleteTaskResponse, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetKeyResponse, GraphQLQueryNode, type GraphQLQueryNodeProps, type ListTasksResponse, ManualTrigger, type ManualTriggerProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerMark, type TriggerProps, type TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type CancelTaskResponse, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, type CreateTaskResponse, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, type DeleteTaskResponse, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetKeyResponse, type GetWalletReq, GraphQLQueryNode, type GraphQLQueryNodeProps, type ListTasksResponse, ManualTrigger, type ManualTriggerProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerMark, type TriggerProps, type TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };

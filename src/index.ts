@@ -21,7 +21,7 @@ import {
   AUTH_KEY_HEADER,
   RequestOptions,
   ClientOption,
-  CreateWalletReq,
+  GetWalletReq,
   SmartWallet,
   GetKeyResponse,
 } from "./types";
@@ -159,23 +159,23 @@ export default class Client extends BaseClient {
       avs_pb.ListWalletReq
     >("listWallets", request, options);
 
-    return result.getWalletsList().map((item) => item.toObject());
+    return result.getItemsList().map((item) => item.toObject());
   }
 
   async createWallet(
-    { salt, factoryAddress }: CreateWalletReq,
+    { salt, factoryAddress }: GetWalletReq,
     options: RequestOptions
   ): Promise<SmartWallet> {
-    const request = new avs_pb.CreateWalletReq();
+    const request = new avs_pb.GetWalletReq();
     request.setSalt(salt);
     if (factoryAddress) {
       request.setFactoryAddress(factoryAddress);
     }
 
     const result = await this._callRPC<
-      avs_pb.CreateWalletResp,
-      avs_pb.CreateWalletReq
-    >("createWallet", request, options);
+      avs_pb.GetWalletResp,
+      avs_pb.GetWalletReq
+    >("getWallet", request, options);
 
     return {
       address: result.getAddress(),
@@ -221,7 +221,7 @@ export default class Client extends BaseClient {
     return {
       cursor: result.getCursor(),
       result: result
-        .getTasksList()
+        .getItemsList()
         .map((item) => Workflow.fromListResponse(item)),
     };
   }
@@ -245,7 +245,7 @@ export default class Client extends BaseClient {
     return {
       cursor: result.getCursor(),
       result: result
-        .getExecutionsList()
+        .getItemsList()
         .map((item) => Execution.fromResponse(item)),
     };
   }
