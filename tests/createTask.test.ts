@@ -262,8 +262,6 @@ describe("createTask Tests", () => {
         }),
       };
 
-      console.log("workflowData", util.inspect(workflowData, false, 8, true));
-
       const submitResult = await client.submitWorkflow(
         client.createWorkflow(workflowData),
         { authKey }
@@ -276,38 +274,6 @@ describe("createTask Tests", () => {
       compareResults(
         {
           ...workflowData,
-          smartWalletAddress,
-          status: WorkflowStatuses.ACTIVE,
-          id: submitResult,
-          owner: ownerAddress,
-        },
-        task
-      );
-    });
-
-    test("create manual trigger", async () => {
-      const manualTrigger = TriggerFactory.create({
-        name: "manualTrigger",
-        type: TriggerTypes.MANUAL,
-        data: null,
-      });
-      const submitResult = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress,
-          trigger: manualTrigger,
-        }),
-        { authKey }
-      );
-
-      queueForRemoval(createdWorkflows, submitResult);
-
-      const task = await client.getWorkflow(submitResult, { authKey });
-
-      compareResults(
-        {
-          ...WorkflowTemplate,
-          trigger: manualTrigger,
           smartWalletAddress,
           status: WorkflowStatuses.ACTIVE,
           id: submitResult,
@@ -351,8 +317,6 @@ describe("createTask Tests", () => {
         ...MultiNodeWithBranch,
         smartWalletAddress,
       };
-
-      console.log("workflowData", util.inspect(workflowData, false, 8, true));
 
       const submitResult = await client.submitWorkflow(
         client.createWorkflow(workflowData),

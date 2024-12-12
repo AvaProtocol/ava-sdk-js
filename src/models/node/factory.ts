@@ -25,7 +25,7 @@ class NodeFactory {
         return new ContractReadNode(props as ContractReadNodeProps);
       case NodeTypes.ETH_TRANSFER:
         return new ETHTransferNode(props as ETHTransferNodeProps);
-      case NodeTypes.GRAPHQL_DATA_QUERY:
+      case NodeTypes.GRAPHQL_QUERY:
         return new GraphQLQueryNode(props as GraphQLQueryNodeProps);
       case NodeTypes.BRANCH:
         return new BranchNode(props as BranchNodeProps);
@@ -46,7 +46,7 @@ class NodeFactory {
         return ContractReadNode.fromResponse(raw);
       case !!raw.getContractWrite():
         return ContractWriteNode.fromResponse(raw);
-      case !!raw.getGraphqlDataQuery():
+      case !!raw.getGraphqlQuery():
         return GraphQLQueryNode.fromResponse(raw);
       case !!raw.getRestApi():
         return RestAPINode.fromResponse(raw);

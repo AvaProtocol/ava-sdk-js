@@ -134,8 +134,11 @@ describe("Basic Tests", () => {
         await removeCreatedWorkflows(client, authKey, createdWorkflows)
     );
 
-    test("createWallet", async () => {
-      const result = await client.createWallet({ salt: "123" }, { authKey });
+    test("addWallet", async () => {
+      const result = await client.addWallet(
+        { salt: "123", factoryAddress: FACTORY_ADDRESS },
+        { authKey }
+      );
       expect(result?.address).toHaveLength(42);
       expect(result?.salt).toEqual("123");
       expect(result?.factory).toEqual(FACTORY_ADDRESS);
@@ -195,14 +198,14 @@ describe("Basic Tests", () => {
       // Remove any workflows created in previous tests
       await removeCreatedWorkflows(client, authKey, createdWorkflows);
 
-      const smartWallet = await client.createWallet(
-        { salt: "345" },
+      const addResponse = await client.addWallet(
+        { salt: "345", factoryAddress: FACTORY_ADDRESS },
         { authKey }
       );
 
       const wallets = await client.getWallets({ authKey });
       const walletSalt0 = wallets?.find((item) => item.salt === "0")?.address;
-      const walletSalt345 = smartWallet.address;
+      const walletSalt345 = addResponse.address;
 
       // Ensure the wallets are defined before proceeding
       expect(walletSalt0).toBeDefined();
@@ -299,7 +302,7 @@ describe("Basic Tests", () => {
       const createResult = await client.submitWorkflow(
         client.createWorkflow({ ...WorkflowTemplate, smartWalletAddress }),
         { authKey }
-      );
+      ); 
 
       const workflow = await client.getWorkflow(createResult, { authKey });
       expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
