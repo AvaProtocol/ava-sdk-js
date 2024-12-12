@@ -301,57 +301,73 @@ export default class Client extends BaseClient {
     return Workflow.fromResponse(result);
   }
 
+  /**
+   * Manually trigger a workflow by its Id, and manual trigger data input
+   * @param id - The Id of the workflow
+   * @param triggerType - The trigger type of the workflow
+   * @param triggerData - The data of the trigger
+   * @param isBlocking - Whether the trigger is blocking
+   * @param options - Request options
+   * @returns {Promise<avs_pb.UserTriggerTaskResp>} - The response from the trigger workflow call
+   */
   async triggerWorkflow(
-    workflowId: string,
-    triggerType: TriggerType,
-    triggerMark: avs_pb.TriggerMark.AsObject,
-    isBlocking: boolean = false,
+    {
+      id,
+      triggerType,
+      triggerData,
+      isBlocking = false,
+    }: {
+      id: string;
+      triggerType: TriggerType;
+      triggerData: avs_pb.TriggerMark.AsObject;
+      isBlocking: boolean;
+    },
     options: RequestOptions
   ): Promise<avs_pb.UserTriggerTaskResp> {
     const request = new avs_pb.UserTriggerTaskReq();
 
     // Construct the manual trigger based on the workflow’s trigger type
-    const triggerData = new avs_pb.TriggerMark();
+    const metadata = new avs_pb.TriggerMark();
 
     switch (triggerType) {
       case TriggerTypes.FIXED_TIME:
-        if (!triggerMark.epoch) {
+        if (!triggerData.epoch) {
           throw new Error("Epoch is required for fixed time trigger");
         }
-        triggerData.setEpoch(triggerMark.epoch);
+        metadata.setEpoch(triggerData.epoch);
         break;
       case TriggerTypes.CRON:
-        if (!triggerMark.epoch) {
+        if (!triggerData.epoch) {
           throw new Error("Epoch is required for cron trigger");
         }
-        triggerData.setEpoch(triggerMark.epoch);
+        metadata.setEpoch(triggerData.epoch);
         break;
       case TriggerTypes.BLOCK:
-        if (!triggerMark.blockNumber) {
+        if (!triggerData.blockNumber) {
           throw new Error("Block number is required for block trigger");
         }
-        triggerData.setBlockNumber(triggerMark.blockNumber);
+        metadata.setBlockNumber(triggerData.blockNumber);
         break;
       case TriggerTypes.EVENT:
         if (
-          !triggerMark.blockNumber ||
-          !triggerMark.logIndex ||
-          !triggerMark.txHash
+          !triggerData.blockNumber ||
+          !triggerData.logIndex ||
+          !triggerData.txHash
         ) {
           throw new Error(
             "Block number, log index, and tx hash are required for event trigger"
           );
         }
 
-        triggerData.setBlockNumber(triggerMark.blockNumber);
-        triggerData.setLogIndex(triggerMark.logIndex);
-        triggerData.setTxHash(triggerMark.txHash);
+        metadata.setBlockNumber(triggerData.blockNumber);
+        metadata.setLogIndex(triggerData.logIndex);
+        metadata.setTxHash(triggerData.txHash);
 
         break;
     }
 
-    request.setTaskId(workflowId);
-    request.setTriggerMark(triggerData);
+    request.setTaskId(id);
+    request.setTriggerMark(metadata);
     request.setRunInline(isBlocking);
 
     const result = await this._callRPC<
