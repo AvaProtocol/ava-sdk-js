@@ -1,4 +1,5 @@
 // Define the environment type
+import * as avs_pb from "../grpc_codegen/avs_pb";
 export type Environment = "production" | "development" | "staging";
 
 export const AUTH_KEY_HEADER = "authkey";
@@ -15,39 +16,4 @@ export interface ClientOption {
   endpoint: string;
 }
 
-export interface CreateTaskResponse {
-  id: string;
-}
-
-export interface ListTasksResponse {
-  tasks: {
-    id: string;
-    status: string;
-  }[];
-}
-
-export interface CancelTaskResponse {
-  value: boolean;
-}
-
-export interface DeleteTaskResponse {
-  value: boolean;
-}
-
-export interface SmartWallet {
-  address: string;
-  salt: string;
-  factory: string;
-}
-
-export interface CreateWalletReq {
-  salt: string;
-  factoryAddress?: string;
-}
-
-export interface TriggerMark {
-  blockNumber?: number;
-  logIndex?: number;
-  txHash?: string;
-  epoch?: number;
-}
+export type SmartWallet = avs_pb.SmartWallet.AsObject;

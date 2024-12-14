@@ -27,23 +27,23 @@ export namespace IdReq {
     }
 }
 
-export class FixedEpochCondition extends jspb.Message { 
+export class FixedTimeCondition extends jspb.Message { 
     clearEpochsList(): void;
     getEpochsList(): Array<number>;
-    setEpochsList(value: Array<number>): FixedEpochCondition;
+    setEpochsList(value: Array<number>): FixedTimeCondition;
     addEpochs(value: number, index?: number): number;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): FixedEpochCondition.AsObject;
-    static toObject(includeInstance: boolean, msg: FixedEpochCondition): FixedEpochCondition.AsObject;
+    toObject(includeInstance?: boolean): FixedTimeCondition.AsObject;
+    static toObject(includeInstance: boolean, msg: FixedTimeCondition): FixedTimeCondition.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: FixedEpochCondition, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): FixedEpochCondition;
-    static deserializeBinaryFromReader(message: FixedEpochCondition, reader: jspb.BinaryReader): FixedEpochCondition;
+    static serializeBinaryToWriter(message: FixedTimeCondition, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): FixedTimeCondition;
+    static deserializeBinaryFromReader(message: FixedTimeCondition, reader: jspb.BinaryReader): FixedTimeCondition;
 }
 
-export namespace FixedEpochCondition {
+export namespace FixedTimeCondition {
     export type AsObject = {
         epochsList: Array<number>,
     }
@@ -122,8 +122,8 @@ export class TaskTrigger extends jspb.Message {
 
     hasFixedTime(): boolean;
     clearFixedTime(): void;
-    getFixedTime(): FixedEpochCondition | undefined;
-    setFixedTime(value?: FixedEpochCondition): TaskTrigger;
+    getFixedTime(): FixedTimeCondition | undefined;
+    setFixedTime(value?: FixedTimeCondition): TaskTrigger;
 
     hasCron(): boolean;
     clearCron(): void;
@@ -156,7 +156,7 @@ export namespace TaskTrigger {
     export type AsObject = {
         name: string,
         manual: boolean,
-        fixedTime?: FixedEpochCondition.AsObject,
+        fixedTime?: FixedTimeCondition.AsObject,
         cron?: CronCondition.AsObject,
         block?: BlockCondition.AsObject,
         event?: EventCondition.AsObject,
@@ -229,6 +229,8 @@ export class ContractReadNode extends jspb.Message {
     setCallData(value: string): ContractReadNode;
     getContractAbi(): string;
     setContractAbi(value: string): ContractReadNode;
+    getMethod(): string;
+    setMethod(value: string): ContractReadNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractReadNode.AsObject;
@@ -245,6 +247,7 @@ export namespace ContractReadNode {
         contractAddress: string,
         callData: string,
         contractAbi: string,
+        method: string,
     }
 }
 
@@ -520,10 +523,10 @@ export class TaskNode extends jspb.Message {
     getContractRead(): ContractReadNode | undefined;
     setContractRead(value?: ContractReadNode): TaskNode;
 
-    hasGraphqlDataQuery(): boolean;
-    clearGraphqlDataQuery(): void;
-    getGraphqlDataQuery(): GraphQLQueryNode | undefined;
-    setGraphqlDataQuery(value?: GraphQLQueryNode): TaskNode;
+    hasGraphqlQuery(): boolean;
+    clearGraphqlQuery(): void;
+    getGraphqlQuery(): GraphQLQueryNode | undefined;
+    setGraphqlQuery(value?: GraphQLQueryNode): TaskNode;
 
     hasRestApi(): boolean;
     clearRestApi(): void;
@@ -569,7 +572,7 @@ export namespace TaskNode {
         ethTransfer?: ETHTransferNode.AsObject,
         contractWrite?: ContractWriteNode.AsObject,
         contractRead?: ContractReadNode.AsObject,
-        graphqlDataQuery?: GraphQLQueryNode.AsObject,
+        graphqlQuery?: GraphQLQueryNode.AsObject,
         restApi?: RestAPINode.AsObject,
         branch?: BranchNode.AsObject,
         filter?: FilterNode.AsObject,
@@ -582,7 +585,7 @@ export namespace TaskNode {
         ETH_TRANSFER = 10,
         CONTRACT_WRITE = 11,
         CONTRACT_READ = 12,
-        GRAPHQL_DATA_QUERY = 13,
+        GRAPHQL_QUERY = 13,
         REST_API = 14,
         BRANCH = 15,
         FILTER = 16,
@@ -902,10 +905,10 @@ export namespace SmartWallet {
 }
 
 export class ListWalletResp extends jspb.Message { 
-    clearWalletsList(): void;
-    getWalletsList(): Array<SmartWallet>;
-    setWalletsList(value: Array<SmartWallet>): ListWalletResp;
-    addWallets(value?: SmartWallet, index?: number): SmartWallet;
+    clearItemsList(): void;
+    getItemsList(): Array<SmartWallet>;
+    setItemsList(value: Array<SmartWallet>): ListWalletResp;
+    addItems(value?: SmartWallet, index?: number): SmartWallet;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListWalletResp.AsObject;
@@ -919,7 +922,7 @@ export class ListWalletResp extends jspb.Message {
 
 export namespace ListWalletResp {
     export type AsObject = {
-        walletsList: Array<SmartWallet.AsObject>,
+        itemsList: Array<SmartWallet.AsObject>,
     }
 }
 
@@ -950,10 +953,10 @@ export namespace ListTasksReq {
 }
 
 export class ListTasksResp extends jspb.Message { 
-    clearTasksList(): void;
-    getTasksList(): Array<ListTasksResp.Item>;
-    setTasksList(value: Array<ListTasksResp.Item>): ListTasksResp;
-    addTasks(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
+    clearItemsList(): void;
+    getItemsList(): Array<ListTasksResp.Item>;
+    setItemsList(value: Array<ListTasksResp.Item>): ListTasksResp;
+    addItems(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
     getCursor(): string;
     setCursor(value: string): ListTasksResp;
 
@@ -969,7 +972,7 @@ export class ListTasksResp extends jspb.Message {
 
 export namespace ListTasksResp {
     export type AsObject = {
-        tasksList: Array<ListTasksResp.Item.AsObject>,
+        itemsList: Array<ListTasksResp.Item.AsObject>,
         cursor: string,
     }
 
@@ -1059,10 +1062,10 @@ export namespace ListExecutionsReq {
 }
 
 export class ListExecutionsResp extends jspb.Message { 
-    clearExecutionsList(): void;
-    getExecutionsList(): Array<Execution>;
-    setExecutionsList(value: Array<Execution>): ListExecutionsResp;
-    addExecutions(value?: Execution, index?: number): Execution;
+    clearItemsList(): void;
+    getItemsList(): Array<Execution>;
+    setItemsList(value: Array<Execution>): ListExecutionsResp;
+    addItems(value?: Execution, index?: number): Execution;
     getCursor(): string;
     setCursor(value: string): ListExecutionsResp;
 
@@ -1078,7 +1081,7 @@ export class ListExecutionsResp extends jspb.Message {
 
 export namespace ListExecutionsResp {
     export type AsObject = {
-        executionsList: Array<Execution.AsObject>,
+        itemsList: Array<Execution.AsObject>,
         cursor: string,
     }
 }
@@ -1136,6 +1139,8 @@ export class TriggerMark extends jspb.Message {
     setLogIndex(value: number): TriggerMark;
     getTxHash(): string;
     setTxHash(value: string): TriggerMark;
+    getEpoch(): number;
+    setEpoch(value: number): TriggerMark;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TriggerMark.AsObject;
@@ -1152,55 +1157,111 @@ export namespace TriggerMark {
         blockNumber: number,
         logIndex: number,
         txHash: string,
+        epoch: number,
     }
 }
 
-export class CreateWalletReq extends jspb.Message { 
+export class GetWalletReq extends jspb.Message { 
     getSalt(): string;
-    setSalt(value: string): CreateWalletReq;
+    setSalt(value: string): GetWalletReq;
     getFactoryAddress(): string;
-    setFactoryAddress(value: string): CreateWalletReq;
+    setFactoryAddress(value: string): GetWalletReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CreateWalletReq.AsObject;
-    static toObject(includeInstance: boolean, msg: CreateWalletReq): CreateWalletReq.AsObject;
+    toObject(includeInstance?: boolean): GetWalletReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetWalletReq): GetWalletReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CreateWalletReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CreateWalletReq;
-    static deserializeBinaryFromReader(message: CreateWalletReq, reader: jspb.BinaryReader): CreateWalletReq;
+    static serializeBinaryToWriter(message: GetWalletReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetWalletReq;
+    static deserializeBinaryFromReader(message: GetWalletReq, reader: jspb.BinaryReader): GetWalletReq;
 }
 
-export namespace CreateWalletReq {
+export namespace GetWalletReq {
     export type AsObject = {
         salt: string,
         factoryAddress: string,
     }
 }
 
-export class CreateWalletResp extends jspb.Message { 
+export class GetWalletResp extends jspb.Message { 
     getAddress(): string;
-    setAddress(value: string): CreateWalletResp;
+    setAddress(value: string): GetWalletResp;
     getSalt(): string;
-    setSalt(value: string): CreateWalletResp;
+    setSalt(value: string): GetWalletResp;
     getFactoryAddress(): string;
-    setFactoryAddress(value: string): CreateWalletResp;
+    setFactoryAddress(value: string): GetWalletResp;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CreateWalletResp.AsObject;
-    static toObject(includeInstance: boolean, msg: CreateWalletResp): CreateWalletResp.AsObject;
+    toObject(includeInstance?: boolean): GetWalletResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetWalletResp): GetWalletResp.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CreateWalletResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CreateWalletResp;
-    static deserializeBinaryFromReader(message: CreateWalletResp, reader: jspb.BinaryReader): CreateWalletResp;
+    static serializeBinaryToWriter(message: GetWalletResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetWalletResp;
+    static deserializeBinaryFromReader(message: GetWalletResp, reader: jspb.BinaryReader): GetWalletResp;
 }
 
-export namespace CreateWalletResp {
+export namespace GetWalletResp {
     export type AsObject = {
         address: string,
         salt: string,
         factoryAddress: string,
+    }
+}
+
+export class UserTriggerTaskReq extends jspb.Message { 
+    getTaskId(): string;
+    setTaskId(value: string): UserTriggerTaskReq;
+
+    hasTriggerMark(): boolean;
+    clearTriggerMark(): void;
+    getTriggerMark(): TriggerMark | undefined;
+    setTriggerMark(value?: TriggerMark): UserTriggerTaskReq;
+    getRunInline(): boolean;
+    setRunInline(value: boolean): UserTriggerTaskReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UserTriggerTaskReq.AsObject;
+    static toObject(includeInstance: boolean, msg: UserTriggerTaskReq): UserTriggerTaskReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UserTriggerTaskReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UserTriggerTaskReq;
+    static deserializeBinaryFromReader(message: UserTriggerTaskReq, reader: jspb.BinaryReader): UserTriggerTaskReq;
+}
+
+export namespace UserTriggerTaskReq {
+    export type AsObject = {
+        taskId: string,
+        triggerMark?: TriggerMark.AsObject,
+        runInline: boolean,
+    }
+}
+
+export class UserTriggerTaskResp extends jspb.Message { 
+    getResult(): boolean;
+    setResult(value: boolean): UserTriggerTaskResp;
+    getExecutionId(): string;
+    setExecutionId(value: string): UserTriggerTaskResp;
+    getJobId(): string;
+    setJobId(value: string): UserTriggerTaskResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
+    static toObject(includeInstance: boolean, msg: UserTriggerTaskResp): UserTriggerTaskResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UserTriggerTaskResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UserTriggerTaskResp;
+    static deserializeBinaryFromReader(message: UserTriggerTaskResp, reader: jspb.BinaryReader): UserTriggerTaskResp;
+}
+
+export namespace UserTriggerTaskResp {
+    export type AsObject = {
+        result: boolean,
+        executionId: string,
+        jobId: string,
     }
 }
 

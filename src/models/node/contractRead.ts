@@ -2,7 +2,7 @@ import { NodeProps, NodeTypes } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
 
-// Required props for constructor: id, name, type and data: { contractAddress, callData, contractAbi }
+// Required props for constructor: id, name, type and data: { contractAddress, callData, contractAbi, method }
 type ContractReadNodeData = avs_pb.ContractReadNode.AsObject;
 export type ContractReadNodeProps = NodeProps & {
   data: ContractReadNodeData;
@@ -35,6 +35,7 @@ class ContractReadNode extends Node {
     );
     nodeData.setCallData((this.data as ContractReadNodeData).callData);
     nodeData.setContractAbi((this.data as ContractReadNodeData).contractAbi);
+    nodeData.setMethod((this.data as ContractReadNodeData).method);
 
     request.setContractRead(nodeData);
 

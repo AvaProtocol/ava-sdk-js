@@ -40,6 +40,7 @@ class Execution implements ExecutionProps {
         blockNumber: execution.getTriggerMark()?.getBlockNumber() ?? 0,
         logIndex: execution.getTriggerMark()?.getLogIndex() ?? 0,
         txHash: execution.getTriggerMark()?.getTxHash() ?? "",
+        epoch: execution.getTriggerMark()?.getEpoch() ?? 0,
       },
       result: execution.getResult(),
       stepsList: execution
@@ -62,6 +63,7 @@ class Execution implements ExecutionProps {
       triggerMark.setBlockNumber(this.triggerMark.blockNumber);
       triggerMark.setLogIndex(this.triggerMark.logIndex);
       triggerMark.setTxHash(this.triggerMark.txHash);
+      triggerMark.setEpoch(this.triggerMark.epoch);
       execution.setTriggerMark(triggerMark);
     }
 

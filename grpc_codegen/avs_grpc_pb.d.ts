@@ -11,7 +11,7 @@ import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wr
 interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     getKey: IAggregatorService_IGetKey;
     getNonce: IAggregatorService_IGetNonce;
-    createWallet: IAggregatorService_ICreateWallet;
+    getWallet: IAggregatorService_IGetWallet;
     listWallets: IAggregatorService_IListWallets;
     createTask: IAggregatorService_ICreateTask;
     listTasks: IAggregatorService_IListTasks;
@@ -19,6 +19,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     listExecutions: IAggregatorService_IListExecutions;
     cancelTask: IAggregatorService_ICancelTask;
     deleteTask: IAggregatorService_IDeleteTask;
+    triggerTask: IAggregatorService_ITriggerTask;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -39,14 +40,14 @@ interface IAggregatorService_IGetNonce extends grpc.MethodDefinition<avs_pb.Nonc
     responseSerialize: grpc.serialize<avs_pb.NonceResp>;
     responseDeserialize: grpc.deserialize<avs_pb.NonceResp>;
 }
-interface IAggregatorService_ICreateWallet extends grpc.MethodDefinition<avs_pb.CreateWalletReq, avs_pb.CreateWalletResp> {
-    path: "/aggregator.Aggregator/CreateWallet";
+interface IAggregatorService_IGetWallet extends grpc.MethodDefinition<avs_pb.GetWalletReq, avs_pb.GetWalletResp> {
+    path: "/aggregator.Aggregator/GetWallet";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<avs_pb.CreateWalletReq>;
-    requestDeserialize: grpc.deserialize<avs_pb.CreateWalletReq>;
-    responseSerialize: grpc.serialize<avs_pb.CreateWalletResp>;
-    responseDeserialize: grpc.deserialize<avs_pb.CreateWalletResp>;
+    requestSerialize: grpc.serialize<avs_pb.GetWalletReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetWalletReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetWalletResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetWalletResp>;
 }
 interface IAggregatorService_IListWallets extends grpc.MethodDefinition<avs_pb.ListWalletReq, avs_pb.ListWalletResp> {
     path: "/aggregator.Aggregator/ListWallets";
@@ -111,13 +112,22 @@ interface IAggregatorService_IDeleteTask extends grpc.MethodDefinition<avs_pb.Id
     responseSerialize: grpc.serialize<google_protobuf_wrappers_pb.BoolValue>;
     responseDeserialize: grpc.deserialize<google_protobuf_wrappers_pb.BoolValue>;
 }
+interface IAggregatorService_ITriggerTask extends grpc.MethodDefinition<avs_pb.UserTriggerTaskReq, avs_pb.UserTriggerTaskResp> {
+    path: "/aggregator.Aggregator/TriggerTask";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.UserTriggerTaskReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.UserTriggerTaskReq>;
+    responseSerialize: grpc.serialize<avs_pb.UserTriggerTaskResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.UserTriggerTaskResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
 export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getKey: grpc.handleUnaryCall<avs_pb.GetKeyReq, avs_pb.KeyResp>;
     getNonce: grpc.handleUnaryCall<avs_pb.NonceRequest, avs_pb.NonceResp>;
-    createWallet: grpc.handleUnaryCall<avs_pb.CreateWalletReq, avs_pb.CreateWalletResp>;
+    getWallet: grpc.handleUnaryCall<avs_pb.GetWalletReq, avs_pb.GetWalletResp>;
     listWallets: grpc.handleUnaryCall<avs_pb.ListWalletReq, avs_pb.ListWalletResp>;
     createTask: grpc.handleUnaryCall<avs_pb.CreateTaskReq, avs_pb.CreateTaskResp>;
     listTasks: grpc.handleUnaryCall<avs_pb.ListTasksReq, avs_pb.ListTasksResp>;
@@ -125,6 +135,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     listExecutions: grpc.handleUnaryCall<avs_pb.ListExecutionsReq, avs_pb.ListExecutionsResp>;
     cancelTask: grpc.handleUnaryCall<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue>;
     deleteTask: grpc.handleUnaryCall<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue>;
+    triggerTask: grpc.handleUnaryCall<avs_pb.UserTriggerTaskReq, avs_pb.UserTriggerTaskResp>;
 }
 
 export interface IAggregatorClient {
@@ -134,9 +145,9 @@ export interface IAggregatorClient {
     getNonce(request: avs_pb.NonceRequest, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
-    createWallet(request: avs_pb.CreateWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateWalletResp) => void): grpc.ClientUnaryCall;
-    createWallet(request: avs_pb.CreateWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateWalletResp) => void): grpc.ClientUnaryCall;
-    createWallet(request: avs_pb.CreateWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateWalletResp) => void): grpc.ClientUnaryCall;
+    getWallet(request: avs_pb.GetWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
@@ -158,6 +169,9 @@ export interface IAggregatorClient {
     deleteTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+    triggerTask(request: avs_pb.UserTriggerTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -168,9 +182,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getNonce(request: avs_pb.NonceRequest, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
-    public createWallet(request: avs_pb.CreateWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateWalletResp) => void): grpc.ClientUnaryCall;
-    public createWallet(request: avs_pb.CreateWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateWalletResp) => void): grpc.ClientUnaryCall;
-    public createWallet(request: avs_pb.CreateWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateWalletResp) => void): grpc.ClientUnaryCall;
+    public getWallet(request: avs_pb.GetWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    public getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    public getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
@@ -192,4 +206,7 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public deleteTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: avs_pb.UserTriggerTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
 }

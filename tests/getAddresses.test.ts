@@ -56,7 +56,7 @@ describe("listSmartWalletses Tests", () => {
 
     test("should include custom salt wallet when getting address with smartWallet using signature", async () => {
       const randomSalt = "12345";
-      await client.createWallet({ salt: randomSalt }, { authKey });
+      await client.addWallet({ salt: randomSalt }, { authKey });
 
       const wallets = await client.getWallets({ authKey });
       expect(wallets.length).toBeGreaterThanOrEqual(2);
@@ -68,10 +68,10 @@ describe("listSmartWalletses Tests", () => {
       const salt2 = "0";
 
       // Intentially creating duplicate wallets with the same salt
-      await client.createWallet({ salt: salt1 }, { authKey });
-      await client.createWallet({ salt: salt1 }, { authKey });
-      await client.createWallet({ salt: salt2 }, { authKey });
-      await client.createWallet({ salt: salt2 }, { authKey });
+      await client.addWallet({ salt: salt1 }, { authKey });
+      await client.addWallet({ salt: salt1 }, { authKey });
+      await client.addWallet({ salt: salt2 }, { authKey });
+      await client.addWallet({ salt: salt2 }, { authKey });
 
       const wallets = await client.getWallets({ authKey });
 
@@ -103,7 +103,7 @@ describe("listSmartWalletses Tests", () => {
 
     test("should include custom salt wallet when getting address with API key", async () => {
       const randomSalt = "78910";
-      await client.createWallet({ salt: randomSalt }, { authKey });
+      await client.addWallet({ salt: randomSalt }, { authKey });
 
       const wallets = await client.getWallets({ authKey });
       expect(wallets.length).toBeGreaterThanOrEqual(2);

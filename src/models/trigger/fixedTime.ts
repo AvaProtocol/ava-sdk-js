@@ -2,7 +2,7 @@ import * as avs_pb from "../../../grpc_codegen/avs_pb";
 import Trigger, { TriggerProps, TriggerTypes } from "./interface";
 
 // Required props for constructor: id, name,type and data: { epoch }
-export type FixedTimeTriggerDataType = avs_pb.FixedEpochCondition.AsObject;
+export type FixedTimeTriggerDataType = avs_pb.FixedTimeCondition.AsObject;
 export type FixedTimeTriggerProps = TriggerProps & {
   data: FixedTimeTriggerDataType;
 };
@@ -26,7 +26,7 @@ class FixedTimeTrigger extends Trigger {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
 
-    const condition = new avs_pb.FixedEpochCondition();
+    const condition = new avs_pb.FixedTimeCondition();
     condition.setEpochsList((this.data as FixedTimeTriggerDataType).epochsList);
     request.setFixedTime(condition);
 

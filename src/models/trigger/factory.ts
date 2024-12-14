@@ -5,9 +5,7 @@ import CronTrigger, { CronTriggerProps } from "./cron";
 import EventTrigger, { EventTriggerProps } from "./event";
 import FixedTimeTrigger, { FixedTimeTriggerProps } from "./fixedTime";
 import Trigger, { TriggerType, TriggerTypes } from "./interface";
-
 import { TriggerProps } from "./interface";
-import ManualTrigger, { ManualTriggerProps } from "./manual";
 
 class TriggerFactory {
   /**
@@ -25,8 +23,6 @@ class TriggerFactory {
         return new EventTrigger(props as EventTriggerProps);
       case TriggerTypes.FIXED_TIME:
         return new FixedTimeTrigger(props as FixedTimeTriggerProps);
-      case TriggerTypes.MANUAL:
-        return new ManualTrigger(props as ManualTriggerProps);
     }
 
     // Add more conditions for other subclasses
@@ -48,8 +44,6 @@ class TriggerFactory {
         return BlockTrigger.fromResponse(raw);
       case !!raw.getEvent():
         return EventTrigger.fromResponse(raw);
-      case !!raw.getManual():
-        return ManualTrigger.fromResponse(raw);
       default:
         throw new Error("Unknown trigger type");
     }
@@ -65,7 +59,6 @@ export {
   CronTrigger,
   EventTrigger,
   FixedTimeTrigger,
-  ManualTrigger,
 };
 
 export type {
@@ -75,5 +68,4 @@ export type {
   CronTriggerProps,
   EventTriggerProps,
   FixedTimeTriggerProps,
-  ManualTriggerProps,
 };
