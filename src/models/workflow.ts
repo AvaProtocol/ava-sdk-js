@@ -83,7 +83,7 @@ class Workflow implements WorkflowProps {
   }
 
   /**
-   * Create an instance of Workflow from AVS getTask response
+   * Create an instance of Workflow from AVS getWorkflow response
    * @param res
    * @returns
    */
@@ -171,8 +171,6 @@ class Workflow implements WorkflowProps {
     if (this.memo) {
       request.setMemo(this.memo);
     }
-
-    console.log("Workflow.toRequest.request:", request.toObject());
 
     return request;
   }

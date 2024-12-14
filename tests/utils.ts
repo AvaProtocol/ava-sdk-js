@@ -6,6 +6,15 @@ import Client, {
 } from "../dist";
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
+import dotenv from "dotenv";
+import path from "path";
+
+// Update the dotenv configuration
+dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+
+const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
+
+console.log("CHAIN_ENDPOINT", CHAIN_ENDPOINT);
 
 // Get wallet address from private key
 export async function getAddress(privateKey: string): Promise<string> {
@@ -40,19 +49,22 @@ export function requireEnvVar(name: string): string {
 // Add a workflow to the list of created workflows for cleanup, or removal later
 export const queueForRemoval = (
   workflowIds: Map<string, boolean>,
-  workflowId: string
+  createdIds: string | string[]
 ) => {
-  if (workflowIds.has(workflowId)) {
-    return;
-  }
+  const ids = Array.isArray(createdIds) ? createdIds : [createdIds];
 
-  workflowIds.set(workflowId, false);
+  ids.forEach((id) => {
+    if (workflowIds.has(id)) {
+      return;
+    }
+
+    workflowIds.set(id, false);
+  });
 };
 
 // Remove all workflows from the list of created workflows
 export const removeCreatedWorkflows = async (
   client: Client,
-  authKey: string,
   workflowIds: Map<string, boolean>
 ): Promise<void> => {
   await Promise.all(
@@ -65,7 +77,7 @@ export const removeCreatedWorkflows = async (
       workflowIds.set(workflowId, true);
 
       try {
-        await client.deleteWorkflow(workflowId, { authKey });
+        await client.deleteWorkflow(workflowId);
       } catch (error) {
         console.warn(
           `Cannot cleanup workflowId ${workflowId}. Please remove it manually.`,
@@ -84,6 +96,24 @@ export const removeCreatedWorkflows = async (
       workflowIds
     );
   }
+};
+
+export const cleanupWorkflows = async (
+  client: Client,
+  smartWalletAddress: string
+) => {
+  const workflowArray = await client.getWorkflows(smartWalletAddress, {
+    limit: 1000,
+  });
+
+  // Filter out undefined ids and convert the array to a Map
+  const workflowIds = new Map(
+    workflowArray.result
+      .filter((item) => item.id !== undefined)
+      .map((item) => [item.id as string, false])
+  );
+
+  await removeCreatedWorkflows(client, workflowIds);
 };
 
 // Compare the expected and actual workflow results; usually called after getWorkflow()
@@ -110,3 +140,14 @@ export const compareResults = (
  */
 export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
 
+export const getChainEndpoint = (): string => {
+  return requireEnvVar("CHAIN_ENDPOINT");
+};
+
+// Function to get the current block number
+export const getBlockNumber = async (): Promise<number> => {
+  const chainEndpoint = getChainEndpoint();
+  const provider = new ethers.JsonRpcProvider(chainEndpoint);
+  const blockNumber = await provider.getBlockNumber();
+  return blockNumber;
+};

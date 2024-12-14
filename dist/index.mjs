@@ -96,7 +96,7 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.TaskStatus", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger.TriggerTypeCase", null, global);
-    goog.exportSymbol("proto.aggregator.TriggerMark", null, global);
+    goog.exportSymbol("proto.aggregator.TriggerMetadata", null, global);
     goog.exportSymbol("proto.aggregator.UserTriggerTaskReq", null, global);
     goog.exportSymbol("proto.aggregator.UserTriggerTaskResp", null, global);
     proto.aggregator.IdReq = function(opt_data) {
@@ -344,12 +344,12 @@ var require_avs_pb = __commonJS({
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.KeyResp.displayName = "proto.aggregator.KeyResp";
     }
-    proto.aggregator.TriggerMark = function(opt_data) {
+    proto.aggregator.TriggerMetadata = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
     };
-    goog.inherits(proto.aggregator.TriggerMark, jspb.Message);
+    goog.inherits(proto.aggregator.TriggerMetadata, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
-      proto.aggregator.TriggerMark.displayName = "proto.aggregator.TriggerMark";
+      proto.aggregator.TriggerMetadata.displayName = "proto.aggregator.TriggerMetadata";
     }
     proto.aggregator.GetWalletReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -2661,7 +2661,7 @@ var require_avs_pb = __commonJS({
           endAt: jspb.Message.getFieldWithDefault(msg, 3, 0),
           success: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
           error: jspb.Message.getFieldWithDefault(msg, 5, ""),
-          triggerMark: (f = msg.getTriggerMark()) && proto.aggregator.TriggerMark.toObject(includeInstance, f),
+          triggerMetadata: (f = msg.getTriggerMetadata()) && proto.aggregator.TriggerMetadata.toObject(includeInstance, f),
           result: jspb.Message.getFieldWithDefault(msg, 7, ""),
           stepsList: jspb.Message.toObjectList(
             msg.getStepsList(),
@@ -2723,9 +2723,9 @@ var require_avs_pb = __commonJS({
             msg.setError(value);
             break;
           case 6:
-            var value = new proto.aggregator.TriggerMark();
-            reader.readMessage(value, proto.aggregator.TriggerMark.deserializeBinaryFromReader);
-            msg.setTriggerMark(value);
+            var value = new proto.aggregator.TriggerMetadata();
+            reader.readMessage(value, proto.aggregator.TriggerMetadata.deserializeBinaryFromReader);
+            msg.setTriggerMetadata(value);
             break;
           case 7:
             var value = (
@@ -2788,12 +2788,12 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getTriggerMark();
+      f = message.getTriggerMetadata();
       if (f != null) {
         writer.writeMessage(
           6,
           f,
-          proto.aggregator.TriggerMark.serializeBinaryToWriter
+          proto.aggregator.TriggerMetadata.serializeBinaryToWriter
         );
       }
       f = message.getResult();
@@ -3065,19 +3065,19 @@ var require_avs_pb = __commonJS({
     proto.aggregator.Execution.prototype.setError = function(value) {
       return jspb.Message.setProto3StringField(this, 5, value);
     };
-    proto.aggregator.Execution.prototype.getTriggerMark = function() {
+    proto.aggregator.Execution.prototype.getTriggerMetadata = function() {
       return (
-        /** @type{?proto.aggregator.TriggerMark} */
-        jspb.Message.getWrapperField(this, proto.aggregator.TriggerMark, 6)
+        /** @type{?proto.aggregator.TriggerMetadata} */
+        jspb.Message.getWrapperField(this, proto.aggregator.TriggerMetadata, 6)
       );
     };
-    proto.aggregator.Execution.prototype.setTriggerMark = function(value) {
+    proto.aggregator.Execution.prototype.setTriggerMetadata = function(value) {
       return jspb.Message.setWrapperField(this, 6, value);
     };
-    proto.aggregator.Execution.prototype.clearTriggerMark = function() {
-      return this.setTriggerMark(void 0);
+    proto.aggregator.Execution.prototype.clearTriggerMetadata = function() {
+      return this.setTriggerMetadata(void 0);
     };
-    proto.aggregator.Execution.prototype.hasTriggerMark = function() {
+    proto.aggregator.Execution.prototype.hasTriggerMetadata = function() {
       return jspb.Message.getField(this, 6) != null;
     };
     proto.aggregator.Execution.prototype.getResult = function() {
@@ -5156,10 +5156,10 @@ var require_avs_pb = __commonJS({
       return jspb.Message.setProto3StringField(this, 1, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
-      proto.aggregator.TriggerMark.prototype.toObject = function(opt_includeInstance) {
-        return proto.aggregator.TriggerMark.toObject(opt_includeInstance, this);
+      proto.aggregator.TriggerMetadata.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.TriggerMetadata.toObject(opt_includeInstance, this);
       };
-      proto.aggregator.TriggerMark.toObject = function(includeInstance, msg) {
+      proto.aggregator.TriggerMetadata.toObject = function(includeInstance, msg) {
         var f, obj = {
           blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0),
           logIndex: jspb.Message.getFieldWithDefault(msg, 2, 0),
@@ -5172,12 +5172,12 @@ var require_avs_pb = __commonJS({
         return obj;
       };
     }
-    proto.aggregator.TriggerMark.deserializeBinary = function(bytes) {
+    proto.aggregator.TriggerMetadata.deserializeBinary = function(bytes) {
       var reader = new jspb.BinaryReader(bytes);
-      var msg = new proto.aggregator.TriggerMark();
-      return proto.aggregator.TriggerMark.deserializeBinaryFromReader(msg, reader);
+      var msg = new proto.aggregator.TriggerMetadata();
+      return proto.aggregator.TriggerMetadata.deserializeBinaryFromReader(msg, reader);
     };
-    proto.aggregator.TriggerMark.deserializeBinaryFromReader = function(msg, reader) {
+    proto.aggregator.TriggerMetadata.deserializeBinaryFromReader = function(msg, reader) {
       while (reader.nextField()) {
         if (reader.isEndGroup()) {
           break;
@@ -5219,12 +5219,12 @@ var require_avs_pb = __commonJS({
       }
       return msg;
     };
-    proto.aggregator.TriggerMark.prototype.serializeBinary = function() {
+    proto.aggregator.TriggerMetadata.prototype.serializeBinary = function() {
       var writer = new jspb.BinaryWriter();
-      proto.aggregator.TriggerMark.serializeBinaryToWriter(this, writer);
+      proto.aggregator.TriggerMetadata.serializeBinaryToWriter(this, writer);
       return writer.getResultBuffer();
     };
-    proto.aggregator.TriggerMark.serializeBinaryToWriter = function(message, writer) {
+    proto.aggregator.TriggerMetadata.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
       f = message.getBlockNumber();
       if (f !== 0) {
@@ -5255,40 +5255,40 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.TriggerMark.prototype.getBlockNumber = function() {
+    proto.aggregator.TriggerMetadata.prototype.getBlockNumber = function() {
       return (
         /** @type {number} */
         jspb.Message.getFieldWithDefault(this, 1, 0)
       );
     };
-    proto.aggregator.TriggerMark.prototype.setBlockNumber = function(value) {
+    proto.aggregator.TriggerMetadata.prototype.setBlockNumber = function(value) {
       return jspb.Message.setProto3IntField(this, 1, value);
     };
-    proto.aggregator.TriggerMark.prototype.getLogIndex = function() {
+    proto.aggregator.TriggerMetadata.prototype.getLogIndex = function() {
       return (
         /** @type {number} */
         jspb.Message.getFieldWithDefault(this, 2, 0)
       );
     };
-    proto.aggregator.TriggerMark.prototype.setLogIndex = function(value) {
+    proto.aggregator.TriggerMetadata.prototype.setLogIndex = function(value) {
       return jspb.Message.setProto3IntField(this, 2, value);
     };
-    proto.aggregator.TriggerMark.prototype.getTxHash = function() {
+    proto.aggregator.TriggerMetadata.prototype.getTxHash = function() {
       return (
         /** @type {string} */
         jspb.Message.getFieldWithDefault(this, 3, "")
       );
     };
-    proto.aggregator.TriggerMark.prototype.setTxHash = function(value) {
+    proto.aggregator.TriggerMetadata.prototype.setTxHash = function(value) {
       return jspb.Message.setProto3StringField(this, 3, value);
     };
-    proto.aggregator.TriggerMark.prototype.getEpoch = function() {
+    proto.aggregator.TriggerMetadata.prototype.getEpoch = function() {
       return (
         /** @type {number} */
         jspb.Message.getFieldWithDefault(this, 4, 0)
       );
     };
-    proto.aggregator.TriggerMark.prototype.setEpoch = function(value) {
+    proto.aggregator.TriggerMetadata.prototype.setEpoch = function(value) {
       return jspb.Message.setProto3IntField(this, 4, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -5498,8 +5498,8 @@ var require_avs_pb = __commonJS({
       proto.aggregator.UserTriggerTaskReq.toObject = function(includeInstance, msg) {
         var f, obj = {
           taskId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-          triggerMark: (f = msg.getTriggerMark()) && proto.aggregator.TriggerMark.toObject(includeInstance, f),
-          runInline: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
+          triggerMetadata: (f = msg.getTriggerMetadata()) && proto.aggregator.TriggerMetadata.toObject(includeInstance, f),
+          isBlocking: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -5527,16 +5527,16 @@ var require_avs_pb = __commonJS({
             msg.setTaskId(value);
             break;
           case 2:
-            var value = new proto.aggregator.TriggerMark();
-            reader.readMessage(value, proto.aggregator.TriggerMark.deserializeBinaryFromReader);
-            msg.setTriggerMark(value);
+            var value = new proto.aggregator.TriggerMetadata();
+            reader.readMessage(value, proto.aggregator.TriggerMetadata.deserializeBinaryFromReader);
+            msg.setTriggerMetadata(value);
             break;
           case 3:
             var value = (
               /** @type {boolean} */
               reader.readBool()
             );
-            msg.setRunInline(value);
+            msg.setIsBlocking(value);
             break;
           default:
             reader.skipField();
@@ -5559,15 +5559,15 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getTriggerMark();
+      f = message.getTriggerMetadata();
       if (f != null) {
         writer.writeMessage(
           2,
           f,
-          proto.aggregator.TriggerMark.serializeBinaryToWriter
+          proto.aggregator.TriggerMetadata.serializeBinaryToWriter
         );
       }
-      f = message.getRunInline();
+      f = message.getIsBlocking();
       if (f) {
         writer.writeBool(
           3,
@@ -5584,28 +5584,28 @@ var require_avs_pb = __commonJS({
     proto.aggregator.UserTriggerTaskReq.prototype.setTaskId = function(value) {
       return jspb.Message.setProto3StringField(this, 1, value);
     };
-    proto.aggregator.UserTriggerTaskReq.prototype.getTriggerMark = function() {
+    proto.aggregator.UserTriggerTaskReq.prototype.getTriggerMetadata = function() {
       return (
-        /** @type{?proto.aggregator.TriggerMark} */
-        jspb.Message.getWrapperField(this, proto.aggregator.TriggerMark, 2)
+        /** @type{?proto.aggregator.TriggerMetadata} */
+        jspb.Message.getWrapperField(this, proto.aggregator.TriggerMetadata, 2)
       );
     };
-    proto.aggregator.UserTriggerTaskReq.prototype.setTriggerMark = function(value) {
+    proto.aggregator.UserTriggerTaskReq.prototype.setTriggerMetadata = function(value) {
       return jspb.Message.setWrapperField(this, 2, value);
     };
-    proto.aggregator.UserTriggerTaskReq.prototype.clearTriggerMark = function() {
-      return this.setTriggerMark(void 0);
+    proto.aggregator.UserTriggerTaskReq.prototype.clearTriggerMetadata = function() {
+      return this.setTriggerMetadata(void 0);
     };
-    proto.aggregator.UserTriggerTaskReq.prototype.hasTriggerMark = function() {
+    proto.aggregator.UserTriggerTaskReq.prototype.hasTriggerMetadata = function() {
       return jspb.Message.getField(this, 2) != null;
     };
-    proto.aggregator.UserTriggerTaskReq.prototype.getRunInline = function() {
+    proto.aggregator.UserTriggerTaskReq.prototype.getIsBlocking = function() {
       return (
         /** @type {boolean} */
         jspb.Message.getBooleanFieldWithDefault(this, 3, false)
       );
     };
-    proto.aggregator.UserTriggerTaskReq.prototype.setRunInline = function(value) {
+    proto.aggregator.UserTriggerTaskReq.prototype.setIsBlocking = function(value) {
       return jspb.Message.setProto3BooleanField(this, 3, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -5749,169 +5749,169 @@ var require_avs_grpc_pb = __commonJS({
   "grpc_codegen/avs_grpc_pb.js"(exports) {
     "use strict";
     var grpc2 = __require("@grpc/grpc-js");
-    var avs_pb19 = require_avs_pb();
+    var avs_pb20 = require_avs_pb();
     var google_protobuf_wrappers_pb = __require("google-protobuf/google/protobuf/wrappers_pb.js");
     function serialize_aggregator_CreateTaskReq(arg) {
-      if (!(arg instanceof avs_pb19.CreateTaskReq)) {
+      if (!(arg instanceof avs_pb20.CreateTaskReq)) {
         throw new Error("Expected argument of type aggregator.CreateTaskReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskReq(buffer_arg) {
-      return avs_pb19.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateTaskResp(arg) {
-      if (!(arg instanceof avs_pb19.CreateTaskResp)) {
+      if (!(arg instanceof avs_pb20.CreateTaskResp)) {
         throw new Error("Expected argument of type aggregator.CreateTaskResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskResp(buffer_arg) {
-      return avs_pb19.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetKeyReq(arg) {
-      if (!(arg instanceof avs_pb19.GetKeyReq)) {
+      if (!(arg instanceof avs_pb20.GetKeyReq)) {
         throw new Error("Expected argument of type aggregator.GetKeyReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetKeyReq(buffer_arg) {
-      return avs_pb19.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetWalletReq(arg) {
-      if (!(arg instanceof avs_pb19.GetWalletReq)) {
+      if (!(arg instanceof avs_pb20.GetWalletReq)) {
         throw new Error("Expected argument of type aggregator.GetWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetWalletReq(buffer_arg) {
-      return avs_pb19.GetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.GetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetWalletResp(arg) {
-      if (!(arg instanceof avs_pb19.GetWalletResp)) {
+      if (!(arg instanceof avs_pb20.GetWalletResp)) {
         throw new Error("Expected argument of type aggregator.GetWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetWalletResp(buffer_arg) {
-      return avs_pb19.GetWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.GetWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_IdReq(arg) {
-      if (!(arg instanceof avs_pb19.IdReq)) {
+      if (!(arg instanceof avs_pb20.IdReq)) {
         throw new Error("Expected argument of type aggregator.IdReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_IdReq(buffer_arg) {
-      return avs_pb19.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_KeyResp(arg) {
-      if (!(arg instanceof avs_pb19.KeyResp)) {
+      if (!(arg instanceof avs_pb20.KeyResp)) {
         throw new Error("Expected argument of type aggregator.KeyResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_KeyResp(buffer_arg) {
-      return avs_pb19.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListExecutionsReq(arg) {
-      if (!(arg instanceof avs_pb19.ListExecutionsReq)) {
+      if (!(arg instanceof avs_pb20.ListExecutionsReq)) {
         throw new Error("Expected argument of type aggregator.ListExecutionsReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListExecutionsReq(buffer_arg) {
-      return avs_pb19.ListExecutionsReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.ListExecutionsReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListExecutionsResp(arg) {
-      if (!(arg instanceof avs_pb19.ListExecutionsResp)) {
+      if (!(arg instanceof avs_pb20.ListExecutionsResp)) {
         throw new Error("Expected argument of type aggregator.ListExecutionsResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListExecutionsResp(buffer_arg) {
-      return avs_pb19.ListExecutionsResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.ListExecutionsResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksReq(arg) {
-      if (!(arg instanceof avs_pb19.ListTasksReq)) {
+      if (!(arg instanceof avs_pb20.ListTasksReq)) {
         throw new Error("Expected argument of type aggregator.ListTasksReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksReq(buffer_arg) {
-      return avs_pb19.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksResp(arg) {
-      if (!(arg instanceof avs_pb19.ListTasksResp)) {
+      if (!(arg instanceof avs_pb20.ListTasksResp)) {
         throw new Error("Expected argument of type aggregator.ListTasksResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksResp(buffer_arg) {
-      return avs_pb19.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListWalletReq(arg) {
-      if (!(arg instanceof avs_pb19.ListWalletReq)) {
+      if (!(arg instanceof avs_pb20.ListWalletReq)) {
         throw new Error("Expected argument of type aggregator.ListWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListWalletReq(buffer_arg) {
-      return avs_pb19.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListWalletResp(arg) {
-      if (!(arg instanceof avs_pb19.ListWalletResp)) {
+      if (!(arg instanceof avs_pb20.ListWalletResp)) {
         throw new Error("Expected argument of type aggregator.ListWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListWalletResp(buffer_arg) {
-      return avs_pb19.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceRequest(arg) {
-      if (!(arg instanceof avs_pb19.NonceRequest)) {
+      if (!(arg instanceof avs_pb20.NonceRequest)) {
         throw new Error("Expected argument of type aggregator.NonceRequest");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceRequest(buffer_arg) {
-      return avs_pb19.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceResp(arg) {
-      if (!(arg instanceof avs_pb19.NonceResp)) {
+      if (!(arg instanceof avs_pb20.NonceResp)) {
         throw new Error("Expected argument of type aggregator.NonceResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceResp(buffer_arg) {
-      return avs_pb19.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Task(arg) {
-      if (!(arg instanceof avs_pb19.Task)) {
+      if (!(arg instanceof avs_pb20.Task)) {
         throw new Error("Expected argument of type aggregator.Task");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Task(buffer_arg) {
-      return avs_pb19.Task.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.Task.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_UserTriggerTaskReq(arg) {
-      if (!(arg instanceof avs_pb19.UserTriggerTaskReq)) {
+      if (!(arg instanceof avs_pb20.UserTriggerTaskReq)) {
         throw new Error("Expected argument of type aggregator.UserTriggerTaskReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_UserTriggerTaskReq(buffer_arg) {
-      return avs_pb19.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_UserTriggerTaskResp(arg) {
-      if (!(arg instanceof avs_pb19.UserTriggerTaskResp)) {
+      if (!(arg instanceof avs_pb20.UserTriggerTaskResp)) {
         throw new Error("Expected argument of type aggregator.UserTriggerTaskResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_UserTriggerTaskResp(buffer_arg) {
-      return avs_pb19.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb20.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_google_protobuf_BoolValue(arg) {
       if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
@@ -5928,8 +5928,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetKey",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.GetKeyReq,
-        responseType: avs_pb19.KeyResp,
+        requestType: avs_pb20.GetKeyReq,
+        responseType: avs_pb20.KeyResp,
         requestSerialize: serialize_aggregator_GetKeyReq,
         requestDeserialize: deserialize_aggregator_GetKeyReq,
         responseSerialize: serialize_aggregator_KeyResp,
@@ -5940,8 +5940,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetNonce",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.NonceRequest,
-        responseType: avs_pb19.NonceResp,
+        requestType: avs_pb20.NonceRequest,
+        responseType: avs_pb20.NonceResp,
         requestSerialize: serialize_aggregator_NonceRequest,
         requestDeserialize: deserialize_aggregator_NonceRequest,
         responseSerialize: serialize_aggregator_NonceResp,
@@ -5951,8 +5951,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetWallet",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.GetWalletReq,
-        responseType: avs_pb19.GetWalletResp,
+        requestType: avs_pb20.GetWalletReq,
+        responseType: avs_pb20.GetWalletResp,
         requestSerialize: serialize_aggregator_GetWalletReq,
         requestDeserialize: deserialize_aggregator_GetWalletReq,
         responseSerialize: serialize_aggregator_GetWalletResp,
@@ -5962,8 +5962,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListWallets",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.ListWalletReq,
-        responseType: avs_pb19.ListWalletResp,
+        requestType: avs_pb20.ListWalletReq,
+        responseType: avs_pb20.ListWalletResp,
         requestSerialize: serialize_aggregator_ListWalletReq,
         requestDeserialize: deserialize_aggregator_ListWalletReq,
         responseSerialize: serialize_aggregator_ListWalletResp,
@@ -5974,8 +5974,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CreateTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.CreateTaskReq,
-        responseType: avs_pb19.CreateTaskResp,
+        requestType: avs_pb20.CreateTaskReq,
+        responseType: avs_pb20.CreateTaskResp,
         requestSerialize: serialize_aggregator_CreateTaskReq,
         requestDeserialize: deserialize_aggregator_CreateTaskReq,
         responseSerialize: serialize_aggregator_CreateTaskResp,
@@ -5985,8 +5985,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListTasks",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.ListTasksReq,
-        responseType: avs_pb19.ListTasksResp,
+        requestType: avs_pb20.ListTasksReq,
+        responseType: avs_pb20.ListTasksResp,
         requestSerialize: serialize_aggregator_ListTasksReq,
         requestDeserialize: deserialize_aggregator_ListTasksReq,
         responseSerialize: serialize_aggregator_ListTasksResp,
@@ -5996,8 +5996,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.IdReq,
-        responseType: avs_pb19.Task,
+        requestType: avs_pb20.IdReq,
+        responseType: avs_pb20.Task,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_aggregator_Task,
@@ -6007,8 +6007,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListExecutions",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.ListExecutionsReq,
-        responseType: avs_pb19.ListExecutionsResp,
+        requestType: avs_pb20.ListExecutionsReq,
+        responseType: avs_pb20.ListExecutionsResp,
         requestSerialize: serialize_aggregator_ListExecutionsReq,
         requestDeserialize: deserialize_aggregator_ListExecutionsReq,
         responseSerialize: serialize_aggregator_ListExecutionsResp,
@@ -6018,7 +6018,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CancelTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.IdReq,
+        requestType: avs_pb20.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
@@ -6029,7 +6029,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/DeleteTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.IdReq,
+        requestType: avs_pb20.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
@@ -6040,8 +6040,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/TriggerTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb19.UserTriggerTaskReq,
-        responseType: avs_pb19.UserTriggerTaskResp,
+        requestType: avs_pb20.UserTriggerTaskReq,
+        responseType: avs_pb20.UserTriggerTaskResp,
         requestSerialize: serialize_aggregator_UserTriggerTaskReq,
         requestDeserialize: deserialize_aggregator_UserTriggerTaskReq,
         responseSerialize: serialize_aggregator_UserTriggerTaskResp,
@@ -6053,7 +6053,7 @@ var require_avs_grpc_pb = __commonJS({
 });
 
 // src/index.ts
-import _4 from "lodash";
+import _5 from "lodash";
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 
@@ -6064,7 +6064,7 @@ var getKeyRequestMessage = (address, expiredAt) => {
 
 // src/index.ts
 var import_avs_grpc_pb = __toESM(require_avs_grpc_pb());
-var avs_pb18 = __toESM(require_avs_pb());
+var avs_pb19 = __toESM(require_avs_pb());
 
 // src/models/workflow.ts
 var avs_pb15 = __toESM(require_avs_pb());
@@ -6266,7 +6266,7 @@ var TriggerFactory = class {
     throw new Error("Unsupported trigger type");
   }
   /**
-   * Create an instance of Trigger from AVS getTask or listTasks response
+   * Create an instance of Trigger from AVS getWorkflow or getWorkflows response
    * @param trigger
    * @returns
    */
@@ -6608,7 +6608,7 @@ var Workflow = class _Workflow {
     this.lastRanAt = props.lastRanAt;
   }
   /**
-   * Create an instance of Workflow from AVS getTask response
+   * Create an instance of Workflow from AVS getWorkflow response
    * @param res
    * @returns
    */
@@ -6678,18 +6678,98 @@ var Workflow = class _Workflow {
     if (this.memo) {
       request.setMemo(this.memo);
     }
-    console.log("Workflow.toRequest.request:", request.toObject());
     return request;
   }
 };
 var workflow_default = Workflow;
 
 // src/models/execution.ts
-var avs_pb17 = __toESM(require_avs_pb());
-var import_avs_pb = __toESM(require_avs_pb());
+var avs_pb18 = __toESM(require_avs_pb());
+
+// src/models/trigger/metadata.ts
+var avs_pb16 = __toESM(require_avs_pb());
+import _4 from "lodash";
+var TriggerMetadata2 = class _TriggerMetadata {
+  constructor(props) {
+    console.log("constructor.props", props);
+    this.type = props.type;
+    switch (props.type) {
+      case TriggerTypes.FIXED_TIME:
+      case TriggerTypes.CRON:
+        this.epoch = props.epoch;
+        break;
+      case TriggerTypes.BLOCK:
+        this.blockNumber = props.blockNumber;
+        break;
+      case TriggerTypes.EVENT:
+        this.blockNumber = props.blockNumber;
+        this.logIndex = props.logIndex;
+        this.txHash = props.txHash;
+        break;
+      default:
+        throw new Error("Unsupported trigger type");
+    }
+  }
+  static fromResponse(data) {
+    if (!data) {
+      return void 0;
+    }
+    console.log("fromResponse.data", data.toObject());
+    let type;
+    if (data.getEpoch() !== 0) {
+      type = TriggerTypes.FIXED_TIME;
+    } else if (data.getBlockNumber() !== 0) {
+      if (data.getLogIndex() !== 0 && !_4.isEmpty(data.getTxHash())) {
+        type = TriggerTypes.EVENT;
+      } else {
+        type = TriggerTypes.BLOCK;
+      }
+    } else {
+      throw new Error("Unable to determine trigger type from response");
+    }
+    return new _TriggerMetadata({
+      type,
+      blockNumber: data.getBlockNumber(),
+      epoch: data.getEpoch(),
+      logIndex: data.getLogIndex(),
+      txHash: data.getTxHash()
+    });
+  }
+  toRequest() {
+    const request = new avs_pb16.TriggerMetadata();
+    switch (this.type) {
+      case TriggerTypes.FIXED_TIME:
+      case TriggerTypes.CRON:
+        if (this.epoch) {
+          request.setEpoch(this.epoch);
+        }
+        break;
+      case TriggerTypes.BLOCK:
+        if (this.blockNumber) {
+          request.setBlockNumber(this.blockNumber);
+        }
+        break;
+      case TriggerTypes.EVENT:
+        if (this.blockNumber) {
+          request.setBlockNumber(this.blockNumber);
+        }
+        if (this.logIndex) {
+          request.setLogIndex(this.logIndex);
+        }
+        if (this.txHash) {
+          request.setTxHash(this.txHash);
+        }
+        break;
+      default:
+        throw new Error("Unsupported trigger type");
+    }
+    return request;
+  }
+};
+var metadata_default = TriggerMetadata2;
 
 // src/models/step.ts
-var avs_pb16 = __toESM(require_avs_pb());
+var avs_pb17 = __toESM(require_avs_pb());
 var Step = class _Step {
   constructor(props) {
     this.nodeId = props.nodeId;
@@ -6712,7 +6792,7 @@ var Step = class _Step {
     });
   }
   toRequest() {
-    const step = new avs_pb16.Execution.Step();
+    const step = new avs_pb17.Execution.Step();
     step.setNodeId(this.nodeId);
     step.setSuccess(this.success);
     step.setOutputData(this.outputData);
@@ -6733,7 +6813,7 @@ var Execution3 = class _Execution {
     this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
-    this.triggerMark = props.triggerMark;
+    this.triggerMetadata = props.triggerMetadata;
     this.result = props.result;
     this.stepsList = props.stepsList;
   }
@@ -6744,31 +6824,23 @@ var Execution3 = class _Execution {
       endAt: execution.getEndAt(),
       success: execution.getSuccess(),
       error: execution.getError(),
-      triggerMark: {
-        blockNumber: execution.getTriggerMark()?.getBlockNumber() ?? 0,
-        logIndex: execution.getTriggerMark()?.getLogIndex() ?? 0,
-        txHash: execution.getTriggerMark()?.getTxHash() ?? "",
-        epoch: execution.getTriggerMark()?.getEpoch() ?? 0
-      },
+      triggerMetadata: metadata_default.fromResponse(
+        execution.getTriggerMetadata()
+      ),
       result: execution.getResult(),
       stepsList: execution.getStepsList().map((step) => step_default.fromResponse(step))
     });
   }
   toRequest() {
-    const execution = new avs_pb17.Execution();
+    const execution = new avs_pb18.Execution();
     execution.setId(this.id);
     execution.setStartAt(this.startAt);
     execution.setEndAt(this.endAt);
     execution.setSuccess(this.success);
     execution.setError(this.error);
     execution.setStepsList(this.stepsList.map((step) => step.toRequest()));
-    if (this.triggerMark) {
-      const triggerMark = new import_avs_pb.TriggerMark();
-      triggerMark.setBlockNumber(this.triggerMark.blockNumber);
-      triggerMark.setLogIndex(this.triggerMark.logIndex);
-      triggerMark.setTxHash(this.triggerMark.txHash);
-      triggerMark.setEpoch(this.triggerMark.epoch);
-      execution.setTriggerMark(triggerMark);
+    if (this.triggerMetadata) {
+      execution.setTriggerMetadata(this.triggerMetadata.toRequest());
     }
     execution.setResult(this.result);
     return execution;
@@ -6778,6 +6850,7 @@ var execution_default = Execution3;
 
 // src/types.ts
 var AUTH_KEY_HEADER = "authkey";
+var DEFAULT_LIMIT = 10;
 
 // src/index.ts
 var BaseClient = class {
@@ -6787,8 +6860,14 @@ var BaseClient = class {
       this.endpoint,
       grpc.credentials.createInsecure()
     );
+    this.factoryAddress = opts.factoryAddress;
     this.metadata = new Metadata();
   }
+  /**
+   * Check if the auth key is valid by decoding the JWT token and checking the expiration
+   * @param key - The auth key
+   * @returns {boolean} - Whether the auth key is valid
+   */
   isAuthKeyValid(key) {
     try {
       const [, payload] = key.split(".");
@@ -6800,46 +6879,82 @@ var BaseClient = class {
       return false;
     }
   }
-  // When using the APIkey, depends on scope of the key, it may have access to one ore more account
+  /**
+   * The API key could retrieve a wallet’s authKey by skipping its signature verification
+   * @param address - The address of the EOA wallet
+   * @param apiKey - The API key
+   * @param expiredAtEpoch - The expiration epoch
+   * @returns {Promise<GetKeyResponse>} - The response from the auth call
+   */
   async authWithAPIKey(address, apiKey, expiredAtEpoch) {
-    const request = new avs_pb18.GetKeyReq();
+    const request = new avs_pb19.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
-    const result = await this._callAnonRPC("getKey", request);
+    const result = await this.sendGrpcRequest("getKey", request);
     return { authKey: result.getKey() };
   }
-  // This flow can be used where the signature is generate from outside, such as in front-end and pass in
+  /**
+   * Getting an authKey from the server by verifying the signature of an EOA wallet
+   * @param address - The address of the EOA wallet
+   * @param signature - The signature of the EOA wallet
+   * @param expiredAtEpoch - The expiration epoch
+   * @returns {Promise<GetKeyResponse>} - The response from the auth call
+   */
   async authWithSignature(address, signature, expiredAtEpoch) {
-    const request = new avs_pb18.GetKeyReq();
+    const request = new avs_pb19.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
-    const result = await this._callAnonRPC(
+    const result = await this.sendGrpcRequest(
       "getKey",
       request
     );
     return { authKey: result.getKey() };
   }
-  _callRPC(method, request, options) {
-    const metadata = _4.cloneDeep(this.metadata);
-    if (!options?.authKey) {
-      throw new Error("missing auth header");
-    }
-    metadata.set(AUTH_KEY_HEADER, options.authKey);
-    return new Promise((resolve, reject) => {
-      this.rpcClient[method].bind(this.rpcClient)(
-        request,
-        metadata,
-        (error, response) => {
-          if (error) reject(error);
-          else resolve(response);
-        }
-      );
-    });
+  /**
+   * The client could choose to store the authKey and use it for all requests; setting it to undefined will unset the authKey
+   * The authKey can be overridden at the request level by request options
+   * @param authKey - The auth key
+   */
+  setAuthKey(authKey) {
+    this.authKey = authKey;
   }
-  _callAnonRPC(method, request, options) {
-    const metadata = _4.cloneDeep(this.metadata);
+  /**
+   * Get the auth key if it’s set in the client
+   * @returns {string | undefined} - The auth key
+   */
+  getAuthKey() {
+    return this.authKey;
+  }
+  /**
+   * Set the factory address of smart wallets for the client
+   * @param address - The factory address
+   */
+  setFactoryAddress(address) {
+    this.factoryAddress = address;
+  }
+  /**
+   * Get the factory address if it’s set in the client
+   * @returns {string | undefined} - The factory address
+   */
+  getFactoryAddress() {
+    return this.factoryAddress;
+  }
+  /**
+   * Send a gRPC request with an auth key
+   * @param method - The method name
+   * @param request - The request message
+   * @param options - The request options
+   * @returns {Promise<TResponse>} - The response from the gRPC call
+   */
+  sendGrpcRequest(method, request, options) {
+    const metadata = _5.cloneDeep(this.metadata);
+    if (options?.authKey) {
+      metadata.set(AUTH_KEY_HEADER, options.authKey);
+    } else if (this.authKey) {
+      metadata.set(AUTH_KEY_HEADER, this.authKey);
+    }
     return new Promise((resolve, reject) => {
       this.rpcClient[method].bind(this.rpcClient)(
         request,
@@ -6857,29 +6972,31 @@ var Client = class extends BaseClient {
     super(config);
   }
   /**
-   * Get the list of smart wallets; new wallets can be added to the list by calling `addWallet`
+   * Get the list of smart wallets; new wallets can be added to the list by calling `getWallet`
    * @param {RequestOptions} options - Request options
    * @returns {Promise<SmartWallet[]>} - The list of SmartWallet objects
    */
   async getWallets(options) {
-    const request = new avs_pb18.ListWalletReq();
-    const result = await this._callRPC("listWallets", request, options);
+    const request = new avs_pb19.ListWalletReq();
+    const result = await this.sendGrpcRequest("listWallets", request, options);
     return result.getItemsList().map((item) => item.toObject());
   }
   /**
    * Add a new smart wallet address to the wallet list
    * @param {string} salt - The salt for the wallet
-   * @param {string} factoryAddress - Factory address for the wallet
+   * @param {string} factoryAddress - Factory address for the wallet; if not provided, the address stored in the client will be used
    * @param {RequestOptions} options - Request options
    * @returns {Promise<SmartWallet>} - The added SmartWallet object
    */
-  async addWallet({ salt, factoryAddress }, options) {
-    const request = new avs_pb18.GetWalletReq();
+  async getWallet({ salt, factoryAddress }, options) {
+    const request = new avs_pb19.GetWalletReq();
     request.setSalt(salt);
     if (factoryAddress) {
       request.setFactoryAddress(factoryAddress);
+    } else if (this.factoryAddress) {
+      request.setFactoryAddress(this.factoryAddress);
     }
-    const result = await this._callRPC("getWallet", request, options);
+    const result = await this.sendGrpcRequest("getWallet", request, options);
     return {
       address: result.getAddress(),
       salt: result.getSalt(),
@@ -6894,7 +7011,7 @@ var Client = class extends BaseClient {
    */
   async submitWorkflow(workflow, options) {
     const request = workflow.toRequest();
-    const result = await this._callRPC("createTask", request, options);
+    const result = await this.sendGrpcRequest("createTask", request, options);
     return result.getId();
   }
   createWorkflow(props) {
@@ -6908,12 +7025,14 @@ var Client = class extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
    */
-  async getWorkflows(address, cursor, limit, options) {
-    const request = new avs_pb18.ListTasksReq();
+  async getWorkflows(address, options) {
+    const request = new avs_pb19.ListTasksReq();
     request.setSmartWalletAddress(address);
-    request.setCursor(cursor);
-    request.setItemPerPage(limit);
-    const result = await this._callRPC("listTasks", request, options);
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
+    }
+    request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
+    const result = await this.sendGrpcRequest("listTasks", request, options);
     return {
       cursor: result.getCursor(),
       result: result.getItemsList().map((item) => workflow_default.fromListResponse(item))
@@ -6922,17 +7041,20 @@ var Client = class extends BaseClient {
   /**
    * Get the list of executions for a workflow
    * @param {string} workflowId - The Id of the workflow
-   * @param {string} cursor - The cursor for the list
-   * @param {number} limit - The limit for the list
-   * @param {RequestOptions} options - Request options
+   * @param {GetExecutionsRequest} options - Request options
+   * @param {string} [options.cursor] - The cursor for pagination
+   * @param {number} [options.limit] - The page limit of the response; default is 10
+   * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
    */
-  async getExecutions(workflowId, cursor, limit, options) {
-    const request = new avs_pb18.ListExecutionsReq();
+  async getExecutions(workflowId, options) {
+    const request = new avs_pb19.ListExecutionsReq();
     request.setId(workflowId);
-    request.setCursor(cursor);
-    request.setItemPerPage(limit);
-    const result = await this._callRPC("listExecutions", request, options);
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
+    }
+    request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
+    const result = await this.sendGrpcRequest("listExecutions", request, options);
     return {
       cursor: result.getCursor(),
       result: result.getItemsList().map((item) => execution_default.fromResponse(item))
@@ -6945,53 +7067,34 @@ var Client = class extends BaseClient {
    * @returns {Promise<Workflow>} - The Workflow object
    */
   async getWorkflow(id, options) {
-    const request = new avs_pb18.IdReq();
+    const request = new avs_pb19.IdReq();
     request.setId(id);
-    const result = await this._callRPC(
+    const result = await this.sendGrpcRequest(
       "getTask",
       request,
       options
     );
     return workflow_default.fromResponse(result);
   }
-  async triggerWorkflow(workflowId, triggerType, triggerMark, isBlocking = false, options) {
-    const request = new avs_pb18.UserTriggerTaskReq();
-    const triggerData = new avs_pb18.TriggerMark();
-    switch (triggerType) {
-      case TriggerTypes.FIXED_TIME:
-        if (!triggerMark.epoch) {
-          throw new Error("Epoch is required for fixed time trigger");
-        }
-        triggerData.setEpoch(triggerMark.epoch);
-        break;
-      case TriggerTypes.CRON:
-        if (!triggerMark.epoch) {
-          throw new Error("Epoch is required for cron trigger");
-        }
-        triggerData.setEpoch(triggerMark.epoch);
-        break;
-      case TriggerTypes.BLOCK:
-        if (!triggerMark.blockNumber) {
-          throw new Error("Block number is required for block trigger");
-        }
-        triggerData.setBlockNumber(triggerMark.blockNumber);
-        break;
-      case TriggerTypes.EVENT:
-        if (!triggerMark.blockNumber || !triggerMark.logIndex || !triggerMark.txHash) {
-          throw new Error(
-            "Block number, log index, and tx hash are required for event trigger"
-          );
-        }
-        triggerData.setBlockNumber(triggerMark.blockNumber);
-        triggerData.setLogIndex(triggerMark.logIndex);
-        triggerData.setTxHash(triggerMark.txHash);
-        break;
-    }
-    request.setTaskId(workflowId);
-    request.setTriggerMark(triggerData);
-    request.setRunInline(isBlocking);
-    const result = await this._callRPC("userTriggerTask", request, options);
-    return result;
+  /**
+   * Manually trigger a workflow by its Id, and manual trigger data input
+   * @param id - The Id of the workflow
+   * @param triggerData - The data of the trigger
+   * @param isBlocking - Whether the trigger is blocking
+   * @param options - Request options
+   * @returns {Promise<avs_pb.UserTriggerTaskResp>} - The response from the trigger workflow call
+   */
+  async triggerWorkflow({
+    id,
+    data,
+    isBlocking = false
+  }, options) {
+    const request = new avs_pb19.UserTriggerTaskReq();
+    request.setTaskId(id);
+    request.setTriggerMetadata(new metadata_default(data).toRequest());
+    request.setIsBlocking(isBlocking);
+    const result = await this.sendGrpcRequest("triggerTask", request, options);
+    return result.toObject();
   }
   /**
    * Cancel a workflow by its Id
@@ -7000,9 +7103,9 @@ var Client = class extends BaseClient {
    * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
    */
   async cancelWorkflow(id, options) {
-    const request = new avs_pb18.IdReq();
+    const request = new avs_pb19.IdReq();
     request.setId(id);
-    const result = await this._callRPC(
+    const result = await this.sendGrpcRequest(
       "cancelTask",
       request,
       options
@@ -7016,9 +7119,9 @@ var Client = class extends BaseClient {
    * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
    */
   async deleteWorkflow(id, options) {
-    const request = new avs_pb18.IdReq();
+    const request = new avs_pb19.IdReq();
     request.setId(id);
-    const result = await this._callRPC(
+    const result = await this.sendGrpcRequest(
       "deleteTask",
       request,
       options
@@ -7035,6 +7138,7 @@ export {
   cron_default as CronTrigger,
   CustomCodeLangs,
   customCode_default as CustomCodeNode,
+  DEFAULT_LIMIT,
   ethTransfer_default as ETHTransferNode,
   edge_default as Edge,
   event_default as EventTrigger,
