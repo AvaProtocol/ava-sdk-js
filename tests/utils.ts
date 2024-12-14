@@ -140,13 +140,12 @@ export const compareResults = (
  */
 export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
 
-export const getChainEndpoint = (): string => {
-  return requireEnvVar("CHAIN_ENDPOINT");
-};
-
-// Function to get the current block number
+/**
+ * Get the current block number from the chain endpoint 
+ * @returns number
+ */
 export const getBlockNumber = async (): Promise<number> => {
-  const chainEndpoint = getChainEndpoint();
+  const chainEndpoint = requireEnvVar("CHAIN_ENDPOINT");
   const provider = new ethers.JsonRpcProvider(chainEndpoint);
   const blockNumber = await provider.getBlockNumber();
   return blockNumber;
