@@ -6681,6 +6681,7 @@ var Workflow = class _Workflow {
     }
     return new _Workflow({
       id: obj.getId(),
+      owner: obj.getOwner(),
       smartWalletAddress: obj.getSmartWalletAddress(),
       trigger,
       startAt: obj.getStartAt(),
@@ -6688,12 +6689,11 @@ var Workflow = class _Workflow {
       maxExecution: obj.getMaxExecution(),
       nodes: [],
       edges: [],
-      owner: void 0,
-      completedAt: void 0,
-      status: void 0,
-      memo: void 0,
-      totalExecution: void 0,
-      lastRanAt: void 0
+      completedAt: obj.getCompletedAt(),
+      status: obj.getStatus(),
+      memo: obj.getMemo(),
+      totalExecution: obj.getTotalExecution(),
+      lastRanAt: obj.getLastRanAt()
     });
   }
   toRequest() {
@@ -7063,6 +7063,7 @@ var Client = class extends BaseClient {
     }
     request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
     const result = await this.sendGrpcRequest("listTasks", request, options);
+    console.log("result", result.toObject());
     return {
       cursor: result.getCursor(),
       result: result.getItemsList().map((item) => workflow_default.fromListResponse(item))

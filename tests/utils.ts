@@ -8,7 +8,7 @@ import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import dotenv from "dotenv";
 import path from "path";
-
+import _ from "lodash";
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
@@ -129,9 +129,27 @@ export const compareResults = (
   expect(actual.startAt).toEqual(expected.startAt);
   expect(actual.expiredAt).toEqual(expected.expiredAt);
   expect(actual.maxExecution).toBe(expected.maxExecution);
-  expect(actual.status).toBe(WorkflowStatuses.ACTIVE);
+  expect(actual.status).toBe(expected.status || WorkflowStatuses.ACTIVE);
   expect(actual.id).toBe(expected.id);
   expect(actual.owner).toBe(expected.owner);
+};
+
+export const compareListResults = (
+  expected: WorkflowProps,
+  actual: Workflow[]
+): void => {
+  _.each(actual, (workflow) => {
+    expect(workflow.owner).toBe(expected.owner);
+    expect(workflow.smartWalletAddress).toEqual(expected.smartWalletAddress);
+    expect(workflow.trigger.type).toEqual(expected.trigger.type);
+    expect(workflow.startAt).toEqual(expected.startAt);
+    expect(workflow.expiredAt).toEqual(expected.expiredAt);
+    expect(workflow.maxExecution).toBe(expected.maxExecution);
+    expect(workflow.status).toBe(expected.status);
+    expect(typeof workflow.id).toBe("string");
+    expect(typeof workflow.totalExecution).toBe("number");
+    expect(typeof workflow.lastRanAt).toBe("number");
+  });
 };
 
 /**
@@ -141,7 +159,7 @@ export const compareResults = (
 export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
 
 /**
- * Get the current block number from the chain endpoint 
+ * Get the current block number from the chain endpoint
  * @returns number
  */
 export const getBlockNumber = async (): Promise<number> => {

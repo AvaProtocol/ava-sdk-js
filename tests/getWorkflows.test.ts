@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "../dist";
+import Client, { Workflow, WorkflowStatuses } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
@@ -10,6 +10,8 @@ import {
   queueForRemoval,
   removeCreatedWorkflows,
   cleanupWorkflows,
+  compareResults,
+  compareListResults,
 } from "./utils";
 import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
@@ -64,11 +66,21 @@ describe("getWorkflows Tests", () => {
     expect(Array.isArray(res.result)).toBe(true);
     expect(res.result.length).toBeGreaterThanOrEqual(1);
     expect(res.result.some((task) => task.id === workflowId)).toBe(true);
+
+    compareListResults(
+      {
+        ...WorkflowTemplate,
+        smartWalletAddress: wallet.address,
+        owner: ownerAddress,
+        status: WorkflowStatuses.ACTIVE,
+      },
+      res.result
+    );
   });
 
   test("options.limit returns the correct number of workflows", async () => {
     const totalCount = 4;
-    const countFirstPage = 1
+    const countFirstPage = 1;
 
     const wallet = await client.getWallet({ salt: "0" });
     await cleanupWorkflows(client, wallet.address);
