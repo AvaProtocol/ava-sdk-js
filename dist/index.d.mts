@@ -610,10 +610,10 @@ declare class Execution$1 extends jspb.Message {
     getError(): string;
     setError(value: string): Execution$1;
 
-    hasTriggerMark(): boolean;
-    clearTriggerMark(): void;
-    getTriggerMark(): TriggerMark | undefined;
-    setTriggerMark(value?: TriggerMark): Execution$1;
+    hasTriggerMetadata(): boolean;
+    clearTriggerMetadata(): void;
+    getTriggerMetadata(): TriggerMetadata$1 | undefined;
+    setTriggerMetadata(value?: TriggerMetadata$1): Execution$1;
     getResult(): string;
     setResult(value: string): Execution$1;
     clearStepsList(): void;
@@ -638,7 +638,7 @@ declare namespace Execution$1 {
         endAt: number,
         success: boolean,
         error: string,
-        triggerMark?: TriggerMark.AsObject,
+        triggerMetadata?: TriggerMetadata$1.AsObject,
         result: string,
         stepsList: Array<Execution$1.Step.AsObject>,
     }
@@ -1135,27 +1135,27 @@ declare namespace KeyResp {
     }
 }
 
-declare class TriggerMark extends jspb.Message { 
+declare class TriggerMetadata$1 extends jspb.Message { 
     getBlockNumber(): number;
-    setBlockNumber(value: number): TriggerMark;
+    setBlockNumber(value: number): TriggerMetadata$1;
     getLogIndex(): number;
-    setLogIndex(value: number): TriggerMark;
+    setLogIndex(value: number): TriggerMetadata$1;
     getTxHash(): string;
-    setTxHash(value: string): TriggerMark;
+    setTxHash(value: string): TriggerMetadata$1;
     getEpoch(): number;
-    setEpoch(value: number): TriggerMark;
+    setEpoch(value: number): TriggerMetadata$1;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TriggerMark.AsObject;
-    static toObject(includeInstance: boolean, msg: TriggerMark): TriggerMark.AsObject;
+    toObject(includeInstance?: boolean): TriggerMetadata$1.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerMetadata$1): TriggerMetadata$1.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TriggerMark, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TriggerMark;
-    static deserializeBinaryFromReader(message: TriggerMark, reader: jspb.BinaryReader): TriggerMark;
+    static serializeBinaryToWriter(message: TriggerMetadata$1, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerMetadata$1;
+    static deserializeBinaryFromReader(message: TriggerMetadata$1, reader: jspb.BinaryReader): TriggerMetadata$1;
 }
 
-declare namespace TriggerMark {
+declare namespace TriggerMetadata$1 {
     export type AsObject = {
         blockNumber: number,
         logIndex: number,
@@ -1217,12 +1217,12 @@ declare class UserTriggerTaskReq extends jspb.Message {
     getTaskId(): string;
     setTaskId(value: string): UserTriggerTaskReq;
 
-    hasTriggerMark(): boolean;
-    clearTriggerMark(): void;
-    getTriggerMark(): TriggerMark | undefined;
-    setTriggerMark(value?: TriggerMark): UserTriggerTaskReq;
-    getRunInline(): boolean;
-    setRunInline(value: boolean): UserTriggerTaskReq;
+    hasTriggerMetadata(): boolean;
+    clearTriggerMetadata(): void;
+    getTriggerMetadata(): TriggerMetadata$1 | undefined;
+    setTriggerMetadata(value?: TriggerMetadata$1): UserTriggerTaskReq;
+    getIsBlocking(): boolean;
+    setIsBlocking(value: boolean): UserTriggerTaskReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserTriggerTaskReq.AsObject;
@@ -1237,8 +1237,8 @@ declare class UserTriggerTaskReq extends jspb.Message {
 declare namespace UserTriggerTaskReq {
     export type AsObject = {
         taskId: string,
-        triggerMark?: TriggerMark.AsObject,
-        runInline: boolean,
+        triggerMetadata?: TriggerMetadata$1.AsObject,
+        isBlocking: boolean,
     }
 }
 
@@ -1438,7 +1438,7 @@ declare class Workflow implements WorkflowProps {
      */
     constructor(props: WorkflowProps);
     /**
-     * Create an instance of Workflow from AVS getTask response
+     * Create an instance of Workflow from AVS getWorkflow response
      * @param res
      * @returns
      */
@@ -1449,6 +1449,32 @@ declare class Workflow implements WorkflowProps {
      */
     static fromListResponse(obj: ListTasksResp.Item): Workflow;
     toRequest(): CreateTaskReq;
+}
+
+type TriggerMetadataProps = {
+    type: TaskTrigger.TriggerTypeCase.FIXED_TIME;
+    epoch: number;
+} | {
+    type: TaskTrigger.TriggerTypeCase.CRON;
+    epoch: number;
+} | {
+    type: TaskTrigger.TriggerTypeCase.BLOCK;
+    blockNumber: number;
+} | {
+    type: TaskTrigger.TriggerTypeCase.EVENT;
+    blockNumber: number;
+    logIndex: number;
+    txHash: string;
+};
+declare class TriggerMetadata {
+    type: TriggerType;
+    blockNumber?: number;
+    epoch?: number;
+    logIndex?: number;
+    txHash?: string;
+    constructor(props: TriggerMetadataProps);
+    static fromResponse(data: TriggerMetadata$1 | undefined): TriggerMetadata | undefined;
+    toRequest(): TriggerMetadata$1;
 }
 
 type StepProps = Execution$1.Step.AsObject;
@@ -1465,17 +1491,17 @@ declare class Step implements StepProps {
     toRequest(): Execution$1.Step;
 }
 
-type ExecutionProps = Omit<Execution$1.AsObject, "stepsList"> & {
+type ExecutionProps = Omit<Execution$1.AsObject, "stepsList" | "triggerMetadata"> & {
     stepsList: Step[];
+    triggerMetadata: TriggerMetadata | undefined;
 };
-type TriggerMarkProps = TriggerMark.AsObject;
 declare class Execution implements ExecutionProps {
     id: string;
     startAt: number;
     endAt: number;
     success: boolean;
     error: string;
-    triggerMark?: TriggerMarkProps;
+    triggerMetadata: TriggerMetadata | undefined;
     result: string;
     stepsList: Step[];
     constructor(props: ExecutionProps);
@@ -1608,7 +1634,7 @@ declare class TriggerFactory {
      */
     static create(props: TriggerProps): Trigger;
     /**
-     * Create an instance of Trigger from AVS getTask or listTasks response
+     * Create an instance of Trigger from AVS getWorkflow or getWorkflows response
      * @param trigger
      * @returns
      */
@@ -1617,14 +1643,28 @@ declare class TriggerFactory {
 
 type Environment = "production" | "development" | "staging";
 declare const AUTH_KEY_HEADER = "authkey";
+declare const DEFAULT_LIMIT = 10;
 interface RequestOptions {
-    authKey: string;
+    authKey?: string;
+}
+interface GetExecutionsRequest extends RequestOptions {
+    cursor?: string;
+    limit?: number;
+}
+interface GetWorkflowsRequest extends RequestOptions {
+    cursor?: string;
+    limit?: number;
 }
 interface GetKeyResponse {
     authKey: string;
 }
+interface GetWalletRequest {
+    salt: string;
+    factoryAddress?: string;
+}
 interface ClientOption {
     endpoint: string;
+    factoryAddress?: string;
 }
 type SmartWallet = SmartWallet$1.AsObject;
 
@@ -1632,36 +1672,84 @@ declare class BaseClient {
     readonly endpoint: string;
     readonly rpcClient: AggregatorClient;
     protected metadata: Metadata;
+    protected factoryAddress?: string;
+    protected authKey?: string;
     constructor(opts: ClientOption);
+    /**
+     * Check if the auth key is valid by decoding the JWT token and checking the expiration
+     * @param key - The auth key
+     * @returns {boolean} - Whether the auth key is valid
+     */
     isAuthKeyValid(key: string): boolean;
+    /**
+     * The API key could retrieve a wallet’s authKey by skipping its signature verification
+     * @param address - The address of the EOA wallet
+     * @param apiKey - The API key
+     * @param expiredAtEpoch - The expiration epoch
+     * @returns {Promise<GetKeyResponse>} - The response from the auth call
+     */
     authWithAPIKey(address: string, apiKey: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
+    /**
+     * Getting an authKey from the server by verifying the signature of an EOA wallet
+     * @param address - The address of the EOA wallet
+     * @param signature - The signature of the EOA wallet
+     * @param expiredAtEpoch - The expiration epoch
+     * @returns {Promise<GetKeyResponse>} - The response from the auth call
+     */
     authWithSignature(address: string, signature: string, expiredAtEpoch: number): Promise<GetKeyResponse>;
-    protected _callRPC<TResponse, TRequest>(method: string, request: TRequest | any, options?: RequestOptions): Promise<TResponse>;
-    protected _callAnonRPC<TResponse, TRequest>(method: string, request: TRequest | any, options?: RequestOptions): Promise<TResponse>;
+    /**
+     * The client could choose to store the authKey and use it for all requests; setting it to undefined will unset the authKey
+     * The authKey can be overridden at the request level by request options
+     * @param authKey - The auth key
+     */
+    setAuthKey(authKey: string | undefined): void;
+    /**
+     * Get the auth key if it’s set in the client
+     * @returns {string | undefined} - The auth key
+     */
+    getAuthKey(): string | undefined;
+    /**
+     * Set the factory address of smart wallets for the client
+     * @param address - The factory address
+     */
+    setFactoryAddress(address: string): void;
+    /**
+     * Get the factory address if it’s set in the client
+     * @returns {string | undefined} - The factory address
+     */
+    getFactoryAddress(): string | undefined;
+    /**
+     * Send a gRPC request with an auth key
+     * @param method - The method name
+     * @param request - The request message
+     * @param options - The request options
+     * @returns {Promise<TResponse>} - The response from the gRPC call
+     */
+    protected sendGrpcRequest<TResponse, TRequest>(method: string, request: TRequest | any, options?: RequestOptions): Promise<TResponse>;
 }
 declare class Client extends BaseClient {
     constructor(config: ClientOption);
     /**
-     * Get the list of smart wallets; new wallets can be added to the list by calling `addWallet`
+     * Get the list of smart wallets; new wallets can be added to the list by calling `getWallet`
      * @param {RequestOptions} options - Request options
      * @returns {Promise<SmartWallet[]>} - The list of SmartWallet objects
      */
-    getWallets(options: RequestOptions): Promise<SmartWallet[]>;
+    getWallets(options?: RequestOptions): Promise<SmartWallet[]>;
     /**
      * Add a new smart wallet address to the wallet list
      * @param {string} salt - The salt for the wallet
-     * @param {string} factoryAddress - Factory address for the wallet
+     * @param {string} factoryAddress - Factory address for the wallet; if not provided, the address stored in the client will be used
      * @param {RequestOptions} options - Request options
      * @returns {Promise<SmartWallet>} - The added SmartWallet object
      */
-    addWallet({ salt, factoryAddress }: GetWalletReq.AsObject, options: RequestOptions): Promise<SmartWallet>;
+    getWallet({ salt, factoryAddress }: GetWalletRequest, options?: RequestOptions): Promise<SmartWallet>;
     /**
      * Submit a workflow to the AVS server; once the workflow is submitted, it cannot be modified
      * @param {Workflow} workflow - Workflow object to submit
      * @param {RequestOptions} options - Request options
      * @returns {Promise<string>} - The Id of the submitted workflow
      */
-    submitWorkflow(workflow: Workflow, options: RequestOptions): Promise<string>;
+    submitWorkflow(workflow: Workflow, options?: RequestOptions): Promise<string>;
     createWorkflow(props: WorkflowProps): Workflow;
     /**
      * Get the list of workflows; new workflows can be created by calling `submitWorkflow`
@@ -1671,19 +1759,20 @@ declare class Client extends BaseClient {
      * @param {RequestOptions} options - Request options
      * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
      */
-    getWorkflows(address: string, cursor: string, limit: number, options: RequestOptions): Promise<{
+    getWorkflows(address: string, options?: GetWorkflowsRequest): Promise<{
         cursor: string;
         result: Workflow[];
     }>;
     /**
      * Get the list of executions for a workflow
      * @param {string} workflowId - The Id of the workflow
-     * @param {string} cursor - The cursor for the list
-     * @param {number} limit - The limit for the list
-     * @param {RequestOptions} options - Request options
+     * @param {GetExecutionsRequest} options - Request options
+     * @param {string} [options.cursor] - The cursor for pagination
+     * @param {number} [options.limit] - The page limit of the response; default is 10
+     * @param {string} [options.authKey] - The auth key for the request
      * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
      */
-    getExecutions(workflowId: string, cursor: string, limit: number, options: RequestOptions): Promise<{
+    getExecutions(workflowId: string, options?: GetExecutionsRequest): Promise<{
         cursor: string;
         result: Execution[];
     }>;
@@ -1693,22 +1782,34 @@ declare class Client extends BaseClient {
      * @param {RequestOptions} options - Request options
      * @returns {Promise<Workflow>} - The Workflow object
      */
-    getWorkflow(id: string, options: RequestOptions): Promise<Workflow>;
-    triggerWorkflow(workflowId: string, triggerType: TriggerType, triggerMark: TriggerMark.AsObject, isBlocking: boolean | undefined, options: RequestOptions): Promise<UserTriggerTaskResp>;
+    getWorkflow(id: string, options?: RequestOptions): Promise<Workflow>;
+    /**
+     * Manually trigger a workflow by its Id, and manual trigger data input
+     * @param id - The Id of the workflow
+     * @param triggerData - The data of the trigger
+     * @param isBlocking - Whether the trigger is blocking
+     * @param options - Request options
+     * @returns {Promise<avs_pb.UserTriggerTaskResp>} - The response from the trigger workflow call
+     */
+    triggerWorkflow({ id, data, isBlocking, }: {
+        id: string;
+        data: TriggerMetadataProps;
+        isBlocking: boolean;
+    }, options?: RequestOptions): Promise<UserTriggerTaskResp.AsObject>;
     /**
      * Cancel a workflow by its Id
      * @param {string} id - The Id of the workflow
      * @param {RequestOptions} options - Request options
      * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
      */
-    cancelWorkflow(id: string, options: RequestOptions): Promise<boolean>;
+    cancelWorkflow(id: string, options?: RequestOptions): Promise<boolean>;
     /**
      * Delete a workflow by its Id
      * @param {string} id - The Id of the workflow
      * @param {RequestOptions} options - Request options
      * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
      */
-    deleteWorkflow(id: string, options: RequestOptions): Promise<boolean>;
+    deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetKeyResponse, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, type TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, type TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };

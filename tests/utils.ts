@@ -6,6 +6,15 @@ import Client, {
 } from "../dist";
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
+import dotenv from "dotenv";
+import path from "path";
+import _ from "lodash";
+// Update the dotenv configuration
+dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+
+const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
+
+console.log("CHAIN_ENDPOINT", CHAIN_ENDPOINT);
 
 // Get wallet address from private key
 export async function getAddress(privateKey: string): Promise<string> {
@@ -40,19 +49,22 @@ export function requireEnvVar(name: string): string {
 // Add a workflow to the list of created workflows for cleanup, or removal later
 export const queueForRemoval = (
   workflowIds: Map<string, boolean>,
-  workflowId: string
+  createdIds: string | string[]
 ) => {
-  if (workflowIds.has(workflowId)) {
-    return;
-  }
+  const ids = Array.isArray(createdIds) ? createdIds : [createdIds];
 
-  workflowIds.set(workflowId, false);
+  ids.forEach((id) => {
+    if (workflowIds.has(id)) {
+      return;
+    }
+
+    workflowIds.set(id, false);
+  });
 };
 
 // Remove all workflows from the list of created workflows
 export const removeCreatedWorkflows = async (
   client: Client,
-  authKey: string,
   workflowIds: Map<string, boolean>
 ): Promise<void> => {
   await Promise.all(
@@ -65,7 +77,7 @@ export const removeCreatedWorkflows = async (
       workflowIds.set(workflowId, true);
 
       try {
-        await client.deleteWorkflow(workflowId, { authKey });
+        await client.deleteWorkflow(workflowId);
       } catch (error) {
         console.warn(
           `Cannot cleanup workflowId ${workflowId}. Please remove it manually.`,
@@ -86,6 +98,24 @@ export const removeCreatedWorkflows = async (
   }
 };
 
+export const cleanupWorkflows = async (
+  client: Client,
+  smartWalletAddress: string
+) => {
+  const workflowArray = await client.getWorkflows(smartWalletAddress, {
+    limit: 1000,
+  });
+
+  // Filter out undefined ids and convert the array to a Map
+  const workflowIds = new Map(
+    workflowArray.result
+      .filter((item) => item.id !== undefined)
+      .map((item) => [item.id as string, false])
+  );
+
+  await removeCreatedWorkflows(client, workflowIds);
+};
+
 // Compare the expected and actual workflow results; usually called after getWorkflow()
 export const compareResults = (
   expected: WorkflowProps,
@@ -99,9 +129,27 @@ export const compareResults = (
   expect(actual.startAt).toEqual(expected.startAt);
   expect(actual.expiredAt).toEqual(expected.expiredAt);
   expect(actual.maxExecution).toBe(expected.maxExecution);
-  expect(actual.status).toBe(WorkflowStatuses.ACTIVE);
+  expect(actual.status).toBe(expected.status || WorkflowStatuses.ACTIVE);
   expect(actual.id).toBe(expected.id);
   expect(actual.owner).toBe(expected.owner);
+};
+
+export const compareListResults = (
+  expected: WorkflowProps,
+  actual: Workflow[]
+): void => {
+  _.each(actual, (workflow) => {
+    expect(workflow.owner).toBe(expected.owner);
+    expect(workflow.smartWalletAddress).toEqual(expected.smartWalletAddress);
+    expect(workflow.trigger.type).toEqual(expected.trigger.type);
+    expect(workflow.startAt).toEqual(expected.startAt);
+    expect(workflow.expiredAt).toEqual(expected.expiredAt);
+    expect(workflow.maxExecution).toBe(expected.maxExecution);
+    expect(workflow.status).toBe(expected.status);
+    expect(typeof workflow.id).toBe("string");
+    expect(typeof workflow.totalExecution).toBe("number");
+    expect(typeof workflow.lastRanAt).toBe("number");
+  });
 };
 
 /**
@@ -110,3 +158,13 @@ export const compareResults = (
  */
 export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
 
+/**
+ * Get the current block number from the chain endpoint
+ * @returns number
+ */
+export const getBlockNumber = async (): Promise<number> => {
+  const chainEndpoint = requireEnvVar("CHAIN_ENDPOINT");
+  const provider = new ethers.JsonRpcProvider(chainEndpoint);
+  const blockNumber = await provider.getBlockNumber();
+  return blockNumber;
+};

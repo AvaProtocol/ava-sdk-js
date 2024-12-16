@@ -24,13 +24,22 @@ import {
   ClientOption,
   SmartWallet,
   GetKeyResponse,
+  GetWalletRequest,
+  GetExecutionsRequest,
+  GetWorkflowsRequest,
+  DEFAULT_LIMIT,
 } from "./types";
+import TriggerMetadata, {
+  TriggerMetadataProps,
+} from "./models/trigger/metadata";
 
 class BaseClient {
   readonly endpoint: string;
 
   readonly rpcClient;
   protected metadata: Metadata;
+  protected factoryAddress?: string;
+  protected authKey?: string;
 
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
@@ -39,10 +48,17 @@ class BaseClient {
       grpc.credentials.createInsecure()
     );
 
+    this.factoryAddress = opts.factoryAddress;
+
     // Create a new Metadata object for request headers
     this.metadata = new Metadata();
   }
 
+  /**
+   * Check if the auth key is valid by decoding the JWT token and checking the expiration
+   * @param key - The auth key
+   * @returns {boolean} - Whether the auth key is valid
+   */
   public isAuthKeyValid(key: string): boolean {
     try {
       // Decode the JWT token (without verifying the signature)
@@ -51,6 +67,7 @@ class BaseClient {
 
       // Check if the token has expired
       const currentTimestamp = Math.floor(Date.now() / 1000);
+
       return decodedPayload.exp > currentTimestamp;
     } catch (error) {
       console.error("Error validating auth key:", error);
@@ -58,7 +75,13 @@ class BaseClient {
     }
   }
 
-  // When using the APIkey, depends on scope of the key, it may have access to one ore more account
+  /**
+   * The API key could retrieve a wallet’s authKey by skipping its signature verification
+   * @param address - The address of the EOA wallet
+   * @param apiKey - The API key
+   * @param expiredAtEpoch - The expiration epoch
+   * @returns {Promise<GetKeyResponse>} - The response from the auth call
+   */
   async authWithAPIKey(
     address: string,
     apiKey: string,
@@ -71,7 +94,7 @@ class BaseClient {
     request.setSignature(apiKey);
 
     // when exchanging the key, we don't set the token yet
-    const result: avs_pb.KeyResp = await this._callAnonRPC<
+    const result: avs_pb.KeyResp = await this.sendGrpcRequest<
       avs_pb.KeyResp,
       avs_pb.GetKeyReq
     >("getKey", request);
@@ -79,7 +102,13 @@ class BaseClient {
     return { authKey: result.getKey() };
   }
 
-  // This flow can be used where the signature is generate from outside, such as in front-end and pass in
+  /**
+   * Getting an authKey from the server by verifying the signature of an EOA wallet
+   * @param address - The address of the EOA wallet
+   * @param signature - The signature of the EOA wallet
+   * @param expiredAtEpoch - The expiration epoch
+   * @returns {Promise<GetKeyResponse>} - The response from the auth call
+   */
   async authWithSignature(
     address: string,
     signature: string,
@@ -92,7 +121,7 @@ class BaseClient {
     request.setSignature(signature);
 
     // when exchanging the key, we don't set the token yet
-    const result = await this._callAnonRPC<avs_pb.KeyResp, avs_pb.GetKeyReq>(
+    const result = await this.sendGrpcRequest<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );
@@ -100,7 +129,47 @@ class BaseClient {
     return { authKey: result.getKey() };
   }
 
-  protected _callRPC<TResponse, TRequest>(
+  /**
+   * The client could choose to store the authKey and use it for all requests; setting it to undefined will unset the authKey
+   * The authKey can be overridden at the request level by request options
+   * @param authKey - The auth key
+   */
+  public setAuthKey(authKey: string | undefined) {
+    this.authKey = authKey;
+  }
+
+  /**
+   * Get the auth key if it’s set in the client
+   * @returns {string | undefined} - The auth key
+   */
+  public getAuthKey(): string | undefined {
+    return this.authKey;
+  }
+
+  /**
+   * Set the factory address of smart wallets for the client
+   * @param address - The factory address
+   */
+  public setFactoryAddress(address: string) {
+    this.factoryAddress = address;
+  }
+
+  /**
+   * Get the factory address if it’s set in the client
+   * @returns {string | undefined} - The factory address
+   */
+  public getFactoryAddress(): string | undefined {
+    return this.factoryAddress;
+  }
+
+  /**
+   * Send a gRPC request with an auth key
+   * @param method - The method name
+   * @param request - The request message
+   * @param options - The request options
+   * @returns {Promise<TResponse>} - The response from the gRPC call
+   */
+  protected sendGrpcRequest<TResponse, TRequest>(
     method: string,
     request: TRequest | any,
     options?: RequestOptions
@@ -108,34 +177,15 @@ class BaseClient {
     // Clone the existing metadata from the client
     const metadata = _.cloneDeep(this.metadata);
 
-    if (!options?.authKey) {
-      throw new Error("missing auth header");
+    if (options?.authKey) {
+      metadata.set(AUTH_KEY_HEADER, options.authKey);
+    } else if (this.authKey) {
+      metadata.set(AUTH_KEY_HEADER, this.authKey);
     }
-    metadata.set(AUTH_KEY_HEADER, options.authKey);
 
     return new Promise((resolve, reject) => {
       (this.rpcClient as any)[method].bind(this.rpcClient)(
         request as any,
-        metadata,
-        (error: any, response: TResponse) => {
-          if (error) reject(error);
-          else resolve(response);
-        }
-      );
-    });
-  }
-
-  protected _callAnonRPC<TResponse, TRequest>(
-    method: string,
-    request: TRequest | any,
-    options?: RequestOptions
-  ): Promise<TResponse> {
-    // Clone the existing metadata from the client
-    const metadata = _.cloneDeep(this.metadata);
-
-    return new Promise((resolve, reject) => {
-      (this.rpcClient as any)[method].bind(this.rpcClient)(
-        request,
         metadata,
         (error: any, response: TResponse) => {
           if (error) reject(error);
@@ -152,14 +202,14 @@ export default class Client extends BaseClient {
   }
 
   /**
-   * Get the list of smart wallets; new wallets can be added to the list by calling `addWallet`
+   * Get the list of smart wallets; new wallets can be added to the list by calling `getWallet`
    * @param {RequestOptions} options - Request options
    * @returns {Promise<SmartWallet[]>} - The list of SmartWallet objects
    */
-  async getWallets(options: RequestOptions): Promise<SmartWallet[]> {
+  async getWallets(options?: RequestOptions): Promise<SmartWallet[]> {
     const request = new avs_pb.ListWalletReq();
 
-    const result = await this._callRPC<
+    const result = await this.sendGrpcRequest<
       avs_pb.ListWalletResp,
       avs_pb.ListWalletReq
     >("listWallets", request, options);
@@ -170,21 +220,24 @@ export default class Client extends BaseClient {
   /**
    * Add a new smart wallet address to the wallet list
    * @param {string} salt - The salt for the wallet
-   * @param {string} factoryAddress - Factory address for the wallet
+   * @param {string} factoryAddress - Factory address for the wallet; if not provided, the address stored in the client will be used
    * @param {RequestOptions} options - Request options
    * @returns {Promise<SmartWallet>} - The added SmartWallet object
    */
-  async addWallet(
-    { salt, factoryAddress }: avs_pb.GetWalletReq.AsObject,
-    options: RequestOptions
+  async getWallet(
+    { salt, factoryAddress }: GetWalletRequest,
+    options?: RequestOptions
   ): Promise<SmartWallet> {
     const request = new avs_pb.GetWalletReq();
     request.setSalt(salt);
+
     if (factoryAddress) {
       request.setFactoryAddress(factoryAddress);
+    } else if (this.factoryAddress) {
+      request.setFactoryAddress(this.factoryAddress);
     }
 
-    const result = await this._callRPC<
+    const result = await this.sendGrpcRequest<
       avs_pb.GetWalletResp,
       avs_pb.GetWalletReq
     >("getWallet", request, options);
@@ -204,11 +257,11 @@ export default class Client extends BaseClient {
    */
   async submitWorkflow(
     workflow: Workflow,
-    options: RequestOptions
+    options?: RequestOptions
   ): Promise<string> {
     const request = workflow.toRequest();
 
-    const result = await this._callRPC<
+    const result = await this.sendGrpcRequest<
       avs_pb.CreateTaskResp,
       avs_pb.CreateTaskReq
     >("createTask", request, options);
@@ -230,16 +283,18 @@ export default class Client extends BaseClient {
    */
   async getWorkflows(
     address: string,
-    cursor: string,
-    limit: number,
-    options: RequestOptions
+    options?: GetWorkflowsRequest
   ): Promise<{ cursor: string; result: Workflow[] }> {
     const request = new avs_pb.ListTasksReq();
     request.setSmartWalletAddress(address);
-    request.setCursor(cursor);
-    request.setItemPerPage(limit);
 
-    const result = await this._callRPC<
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
+    }
+
+    request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
+
+    const result = await this.sendGrpcRequest<
       avs_pb.ListTasksResp,
       avs_pb.ListTasksReq
     >("listTasks", request, options);
@@ -255,23 +310,26 @@ export default class Client extends BaseClient {
   /**
    * Get the list of executions for a workflow
    * @param {string} workflowId - The Id of the workflow
-   * @param {string} cursor - The cursor for the list
-   * @param {number} limit - The limit for the list
-   * @param {RequestOptions} options - Request options
+   * @param {GetExecutionsRequest} options - Request options
+   * @param {string} [options.cursor] - The cursor for pagination
+   * @param {number} [options.limit] - The page limit of the response; default is 10
+   * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
    */
   async getExecutions(
     workflowId: string,
-    cursor: string,
-    limit: number,
-    options: RequestOptions
+    options?: GetExecutionsRequest
   ): Promise<{ cursor: string; result: Execution[] }> {
     const request = new avs_pb.ListExecutionsReq();
     request.setId(workflowId);
-    request.setCursor(cursor);
-    request.setItemPerPage(limit);
 
-    const result = await this._callRPC<
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
+    }
+
+    request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
+
+    const result = await this.sendGrpcRequest<
       avs_pb.ListExecutionsResp,
       avs_pb.ListExecutionsReq
     >("listExecutions", request, options);
@@ -288,11 +346,11 @@ export default class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Workflow>} - The Workflow object
    */
-  async getWorkflow(id: string, options: RequestOptions): Promise<Workflow> {
+  async getWorkflow(id: string, options?: RequestOptions): Promise<Workflow> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this._callRPC<avs_pb.Task, avs_pb.IdReq>(
+    const result = await this.sendGrpcRequest<avs_pb.Task, avs_pb.IdReq>(
       "getTask",
       request,
       options
@@ -304,7 +362,6 @@ export default class Client extends BaseClient {
   /**
    * Manually trigger a workflow by its Id, and manual trigger data input
    * @param id - The Id of the workflow
-   * @param triggerType - The trigger type of the workflow
    * @param triggerData - The data of the trigger
    * @param isBlocking - Whether the trigger is blocking
    * @param options - Request options
@@ -313,69 +370,27 @@ export default class Client extends BaseClient {
   async triggerWorkflow(
     {
       id,
-      triggerType,
-      triggerData,
+      data,
       isBlocking = false,
     }: {
       id: string;
-      triggerType: TriggerType;
-      triggerData: avs_pb.TriggerMark.AsObject;
+      data: TriggerMetadataProps;
       isBlocking: boolean;
     },
-    options: RequestOptions
-  ): Promise<avs_pb.UserTriggerTaskResp> {
+    options?: RequestOptions
+  ): Promise<avs_pb.UserTriggerTaskResp.AsObject> {
     const request = new avs_pb.UserTriggerTaskReq();
 
-    // Construct the manual trigger based on the workflow’s trigger type
-    const metadata = new avs_pb.TriggerMark();
-
-    switch (triggerType) {
-      case TriggerTypes.FIXED_TIME:
-        if (!triggerData.epoch) {
-          throw new Error("Epoch is required for fixed time trigger");
-        }
-        metadata.setEpoch(triggerData.epoch);
-        break;
-      case TriggerTypes.CRON:
-        if (!triggerData.epoch) {
-          throw new Error("Epoch is required for cron trigger");
-        }
-        metadata.setEpoch(triggerData.epoch);
-        break;
-      case TriggerTypes.BLOCK:
-        if (!triggerData.blockNumber) {
-          throw new Error("Block number is required for block trigger");
-        }
-        metadata.setBlockNumber(triggerData.blockNumber);
-        break;
-      case TriggerTypes.EVENT:
-        if (
-          !triggerData.blockNumber ||
-          !triggerData.logIndex ||
-          !triggerData.txHash
-        ) {
-          throw new Error(
-            "Block number, log index, and tx hash are required for event trigger"
-          );
-        }
-
-        metadata.setBlockNumber(triggerData.blockNumber);
-        metadata.setLogIndex(triggerData.logIndex);
-        metadata.setTxHash(triggerData.txHash);
-
-        break;
-    }
-
     request.setTaskId(id);
-    request.setTriggerMark(metadata);
-    request.setRunInline(isBlocking);
+    request.setTriggerMetadata(new TriggerMetadata(data).toRequest());
+    request.setIsBlocking(isBlocking);
 
-    const result = await this._callRPC<
+    const result = await this.sendGrpcRequest<
       avs_pb.UserTriggerTaskResp,
       avs_pb.UserTriggerTaskReq
-    >("userTriggerTask", request, options);
+    >("triggerTask", request, options);
 
-    return result;
+    return result.toObject();
   }
 
   /**
@@ -384,11 +399,11 @@ export default class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
    */
-  async cancelWorkflow(id: string, options: RequestOptions): Promise<boolean> {
+  async cancelWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this._callRPC<BoolValue, avs_pb.IdReq>(
+    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
       "cancelTask",
       request,
       options
@@ -403,11 +418,11 @@ export default class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
    */
-  async deleteWorkflow(id: string, options: RequestOptions): Promise<boolean> {
+  async deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this._callRPC<BoolValue, avs_pb.IdReq>(
+    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
       "deleteTask",
       request,
       options

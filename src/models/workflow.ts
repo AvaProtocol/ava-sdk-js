@@ -83,7 +83,7 @@ class Workflow implements WorkflowProps {
   }
 
   /**
-   * Create an instance of Workflow from AVS getTask response
+   * Create an instance of Workflow from AVS getWorkflow response
    * @param res
    * @returns
    */
@@ -136,6 +136,7 @@ class Workflow implements WorkflowProps {
 
     return new Workflow({
       id: obj.getId(),
+      owner: obj.getOwner(),
       smartWalletAddress: obj.getSmartWalletAddress(),
       trigger: trigger,
       startAt: obj.getStartAt(),
@@ -143,12 +144,11 @@ class Workflow implements WorkflowProps {
       maxExecution: obj.getMaxExecution(),
       nodes: [],
       edges: [],
-      owner: undefined,
-      completedAt: undefined,
-      status: undefined,
-      memo: undefined,
-      totalExecution: undefined,
-      lastRanAt: undefined,
+      completedAt: obj.getCompletedAt(),
+      status: obj.getStatus(),
+      memo: obj.getMemo(),
+      totalExecution: obj.getTotalExecution(),
+      lastRanAt: obj.getLastRanAt(),
     });
   }
 
@@ -171,8 +171,6 @@ class Workflow implements WorkflowProps {
     if (this.memo) {
       request.setMemo(this.memo);
     }
-
-    console.log("Workflow.toRequest.request:", request.toObject());
 
     return request;
   }
