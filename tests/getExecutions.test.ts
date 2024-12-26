@@ -73,20 +73,39 @@ describe("getExecutions Tests", () => {
     );
     queueForRemoval(createdWorkflows, workflowId);
 
+    // Get the first page of executions with limit:1
+    let executions = await client.getExecutions([workflowId], {
+      limit: countFirstPage,
+    });
+    expect(executions.result.length).toBe(0);
+    expect(executions.hasMore).toBe(false);
+    
     // Manually trigger the workflow with block number + 20
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
         type: TriggerTypes.BLOCK,
-        blockNumber: blockNumber + repeatCount * blockInterval,
+        blockNumber: blockNumber,
       },
       isBlocking: true,
     });
 
+    // trigger the test {repeatCount} extra time more
+    for(let i = 0; i < repeatCount; i++){
+      await client.triggerWorkflow({
+        id: workflowId,
+        data: {
+          type: TriggerTypes.BLOCK,
+          blockNumber: blockNumber + repeatCount +1
+        },
+        isBlocking: true,
+      });
+    }
+
     console.log("triggerWorkflow.result", result);
 
     // Get the first page of executions with limit:1
-    const executions = await client.getExecutions(workflowId, {
+    executions = await client.getExecutions([workflowId], {
       limit: countFirstPage,
     });
 
@@ -95,10 +114,11 @@ describe("getExecutions Tests", () => {
     expect(Array.isArray(executions.result)).toBe(true);
     expect(executions.result.length).toBe(countFirstPage);
     expect(executions).toHaveProperty("cursor");
+    expect(executions.hasMore).toBe(true);
     const firstCursor = executions.cursor;
 
     // Get the list of workflows with limit:2 and cursor
-    const executions2 = await client.getExecutions(workflowId, {
+    const executions2 = await client.getExecutions([workflowId], {
       limit: repeatCount,
       cursor: firstCursor,
     });
@@ -107,7 +127,8 @@ describe("getExecutions Tests", () => {
 
     // Verify that the count of the second return is totalCount - limit
     expect(Array.isArray(executions2.result)).toBe(true);
-    expect(executions2.result.length).toBe(repeatCount - countFirstPage);
+    expect(executions2.result.length).toBe(repeatCount);
+    expect(executions2.hasMore).toBe(false);
     const secondCursor = executions2.cursor;
 
     // Make sure there’s no overlap between the two lists
@@ -117,14 +138,6 @@ describe("getExecutions Tests", () => {
         executions2.result.map((item) => item.id)
       ).length
     ).toBe(0);
-
-    // Get the list of workflows with limit:4 and no cursor
-    const executions3 = await client.getExecutions(workflowId, {
-      limit: repeatCount,
-      cursor: secondCursor,
-    });
-
-    expect(executions3.result.length).toBe(0);
   });
 
   test("options.cursor works as pagination", async () => {
@@ -150,20 +163,20 @@ describe("getExecutions Tests", () => {
     );
     queueForRemoval(createdWorkflows, workflowId);
 
-    // Manually trigger the workflow with block number + 15, which should generate 3 executions
-    const result = await client.triggerWorkflow({
-      id: workflowId,
-      data: {
-        type: TriggerTypes.BLOCK,
-        blockNumber: blockNumber + repeatCount * blockInterval,
-      },
-      isBlocking: true,
-    });
-
-    console.log("triggerWorkflow.result", result);
+    for (let i =0; i < 3; i++) {
+      // Manually trigger the workflow 3 times
+      await client.triggerWorkflow({
+        id: workflowId,
+        data: {
+          type: TriggerTypes.BLOCK,
+          blockNumber: blockNumber + i,
+        },
+        isBlocking: true,
+      });
+    }
 
     // Get the first page of executions with limit:1
-    const executions = await client.getExecutions(workflowId, {
+    const executions = await client.getExecutions([workflowId], {
       limit,
     });
 
@@ -172,10 +185,11 @@ describe("getExecutions Tests", () => {
     expect(Array.isArray(executions.result)).toBe(true);
     expect(executions.result.length).toBe(limit);
     expect(executions).toHaveProperty("cursor");
+    expect(executions.hasMore).toBe(true);
     const firstCursor = executions.cursor;
 
     // Get the list of workflows with limit:2 and cursor
-    const executions2 = await client.getExecutions(workflowId, {
+    const executions2 = await client.getExecutions([workflowId], {
       limit,
       cursor: firstCursor,
     });
@@ -195,18 +209,7 @@ describe("getExecutions Tests", () => {
     // Make sure the cursor is different from the first cursor and an empty string due to reaching the end of the list
     expect(executions2.cursor).not.toBe(firstCursor);
     expect(executions2.cursor).toBe("");
-
-    const secondCursor = executions2.cursor;
-
-    // Pass the second cursor again to get the next list result
-    const executions3 = await client.getExecutions(workflowId, {
-      limit,
-      cursor: secondCursor,
-    });
-
-    console.log("executions3", executions3);
-
-    expect(executions3.result.length).toBe(0);
+    expect(executions2.hasMore).toBe(false);
   });
 
   test("should throw error with a non-existent cursor", async () => {
@@ -239,12 +242,11 @@ describe("getExecutions Tests", () => {
     });
 
     // Invalid cursor should throw INVALID_ARGUMENT
-    const executions = await client.getExecutions(workflowId, {
-      cursor: "invalid-cursor",
-    });
-
-    console.log("executions", executions);
-    expect(executions.result.length).toBe(0);
+    await expect(
+      client.getExecutions([workflowId], {
+        cursor: "invalid-cursor",
+      })
+    ).rejects.toThrowError(/cursor is not valid/);
   });
 
   test("should throw error with an invalid limit", async () => {
@@ -277,11 +279,10 @@ describe("getExecutions Tests", () => {
     });
 
     // Invalid limit should throw INVALID_ARGUMENT
-    const executions = await client.getExecutions(workflowId, {
-      limit: -1,
-    });
-
-    console.log("executions", executions);
-    expect(executions.result.length).toBe(0);
+    await expect(
+      client.getExecutions([workflowId], {
+        limit: -1,
+      })
+    ).rejects.toThrowError(/item per page is not valid/);
   });
 });
