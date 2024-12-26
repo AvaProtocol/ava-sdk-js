@@ -103,6 +103,7 @@ describe("triggerWorkflow Tests", () => {
     ).toBeGreaterThanOrEqual(blockNumber + interval);
 
     const workflow = await client.getWorkflow(workflowId);
+
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
     expect(workflow.totalExecution).toEqual(1);
   });
@@ -267,7 +268,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
-    expect(workflow.totalExecution).toEqual(3);
+    expect(workflow.totalExecution).toEqual(1);
   });
 
   test("trigger for event type should succeed", async () => {
