@@ -96,7 +96,7 @@ describe("getAddresses Tests", () => {
     client.setFactoryAddress(invalidAddress);
     expect(client.getFactoryAddress()).toEqual(invalidAddress);
 
-    const getResult = await client.getWallet({ salt: "0" });
-    expect(getResult).rejects.toThrow();
+    await expect(client.getWallet({ salt: "0", factoryAddress: "0x1234" })).rejects.toThrow(/invalid factory address/);
+    await expect(client.getWallet({ salt: "0" })).rejects.toThrow(/invalid factory address/);
   });
 });

@@ -927,8 +927,10 @@ export namespace ListWalletResp {
 }
 
 export class ListTasksReq extends jspb.Message { 
-    getSmartWalletAddress(): string;
-    setSmartWalletAddress(value: string): ListTasksReq;
+    clearSmartWalletAddressList(): void;
+    getSmartWalletAddressList(): Array<string>;
+    setSmartWalletAddressList(value: Array<string>): ListTasksReq;
+    addSmartWalletAddress(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListTasksReq;
     getItemPerPage(): number;
@@ -946,7 +948,7 @@ export class ListTasksReq extends jspb.Message {
 
 export namespace ListTasksReq {
     export type AsObject = {
-        smartWalletAddress: string,
+        smartWalletAddressList: Array<string>,
         cursor: string,
         itemPerPage: number,
     }
@@ -959,6 +961,8 @@ export class ListTasksResp extends jspb.Message {
     addItems(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
     getCursor(): string;
     setCursor(value: string): ListTasksResp;
+    getHasMore(): boolean;
+    setHasMore(value: boolean): ListTasksResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -974,6 +978,7 @@ export namespace ListTasksResp {
     export type AsObject = {
         itemsList: Array<ListTasksResp.Item.AsObject>,
         cursor: string,
+        hasMore: boolean,
     }
 
 
@@ -1036,8 +1041,10 @@ export namespace ListTasksResp {
 }
 
 export class ListExecutionsReq extends jspb.Message { 
-    getId(): string;
-    setId(value: string): ListExecutionsReq;
+    clearTaskIdsList(): void;
+    getTaskIdsList(): Array<string>;
+    setTaskIdsList(value: Array<string>): ListExecutionsReq;
+    addTaskIds(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListExecutionsReq;
     getItemPerPage(): number;
@@ -1055,7 +1062,7 @@ export class ListExecutionsReq extends jspb.Message {
 
 export namespace ListExecutionsReq {
     export type AsObject = {
-        id: string,
+        taskIdsList: Array<string>,
         cursor: string,
         itemPerPage: number,
     }
@@ -1068,6 +1075,8 @@ export class ListExecutionsResp extends jspb.Message {
     addItems(value?: Execution, index?: number): Execution;
     getCursor(): string;
     setCursor(value: string): ListExecutionsResp;
+    getHasMore(): boolean;
+    setHasMore(value: boolean): ListExecutionsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListExecutionsResp.AsObject;
@@ -1083,6 +1092,7 @@ export namespace ListExecutionsResp {
     export type AsObject = {
         itemsList: Array<Execution.AsObject>,
         cursor: string,
+        hasMore: boolean,
     }
 }
 

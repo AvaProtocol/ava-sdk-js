@@ -284,7 +284,7 @@ export default class Client extends BaseClient {
   async getWorkflows(
     addresses: string[],
     options?: GetWorkflowsRequest
-  ): Promise<{ cursor: string; result: Workflow[] }> {
+  ): Promise<{ cursor: string; result: Workflow[]; hasMore: boolean }> {
     const request = new avs_pb.ListTasksReq();
     for (const a of addresses) {
       request.addSmartWalletAddress(a);
@@ -303,6 +303,7 @@ export default class Client extends BaseClient {
 
     return {
       cursor: result.getCursor(),
+      hasMore: result.getHasMore(),
       result: result
         .getItemsList()
         .map((item) => Workflow.fromListResponse(item)),

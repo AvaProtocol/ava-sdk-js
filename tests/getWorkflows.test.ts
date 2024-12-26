@@ -58,31 +58,28 @@ describe("getWorkflows Tests", () => {
       client.createWorkflow({
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
+        memo: "test 123",
       })
     );
     queueForRemoval(createdWorkflows, workflowId);
 
-    const res = await client.getWorkflows(wallet.address);
+    const res = await client.getWorkflows([wallet.address]);
     expect(Array.isArray(res.result)).toBe(true);
     expect(res.result.length).toBeGreaterThanOrEqual(1);
     expect(res.result.some((task) => task.id === workflowId)).toBe(true);
+    const result = res.result.find((task) => task.id === workflowId);
 
-    compareListResults(
-      {
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-        owner: ownerAddress,
-        status: WorkflowStatuses.ACTIVE,
-      },
-      res.result
-    );
+    expect(result.id).toEqual(workflowId);
+    expect(result.memo).toEqual("test 123");
+    expect(result.startAt).toEqual(WorkflowTemplate.startAt);
+    expect(result.maxExecution).toEqual(WorkflowTemplate.maxExecution);
   });
 
   test("options.limit returns the correct number of workflows", async () => {
     const totalCount = 4;
     const countFirstPage = 1;
 
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: Math.round(Math.random() * 100000000000) });
     await cleanupWorkflows(client, wallet.address);
 
     // Create 4 workflows
@@ -103,19 +100,19 @@ describe("getWorkflows Tests", () => {
     const workflowIds = await Promise.all(workflowPromises);
     queueForRemoval(createdWorkflows, workflowIds);
 
-    // Get the list of workflows with limit:2
-
-    const listResponse = await client.getWorkflows(wallet.address, {
+    // Get the list of workflows with limit:countFirstPage
+    const listResponse = await client.getWorkflows([wallet.address], {
       limit: countFirstPage,
     });
     expect(listResponse.result.length).toBe(countFirstPage);
     expect(listResponse).toHaveProperty("cursor");
-    console.log("listResponse", listResponse);
-
+    expect(listResponse.hasMore).toBe(true);
+    // because of our usage of ulid, this is fixed length
     const firstCursor = listResponse.cursor;
+    expect(firstCursor).toHaveLength(60);
 
     // Get the list of workflows with limit:2 and cursor
-    const listResponse2 = await client.getWorkflows(wallet.address, {
+    const listResponse2 = await client.getWorkflows([wallet.address], {
       limit: totalCount,
       cursor: firstCursor,
     });
@@ -123,6 +120,7 @@ describe("getWorkflows Tests", () => {
     // Verify that the count of the second return is totalCount - limit
     expect(Array.isArray(listResponse2.result)).toBe(true);
     expect(listResponse2.result.length).toBe(totalCount - countFirstPage);
+    expect(listResponse2.hasMore).toBe(false);
 
     // Make sure there’s no overlap between the two lists
     expect(
@@ -133,18 +131,20 @@ describe("getWorkflows Tests", () => {
     ).toBe(0);
 
     // Get the list of workflows with limit:4 and no cursor
-    const listResponse3 = await client.getWorkflows(wallet.address, {
+    const listResponse3 = await client.getWorkflows([wallet.address], {
       limit: totalCount,
     });
 
     expect(listResponse3.result.length).toBe(totalCount);
+    expect(listResponse3.hasMore).toBe(false);
   });
 
   test("options.cursor works as pagination", async () => {
     const totalCount = 3;
     const limit = 2;
 
-    const wallet = await client.getWallet({ salt: "0" });
+    // jest runs test in parallel across files. If there are other test in other file that adds task to the same smart wallet, the return of listing workflow will become undeterministic ahead of time. by using a dedicated salt here we ensure other activity won't interfer with this test
+    const wallet = await client.getWallet({ salt: Math.round(Math.random() * 100000000000).toString() });
     await cleanupWorkflows(client, wallet.address);
 
     // Create 3 workflows
@@ -166,21 +166,20 @@ describe("getWorkflows Tests", () => {
     queueForRemoval(createdWorkflows, workflowIds);
 
     // Get the list of workflows with limit:2
-    const listResponse = await client.getWorkflows(wallet.address, { limit });
+    const listResponse = await client.getWorkflows([wallet.address], { limit });
     expect(Array.isArray(listResponse.result)).toBe(true);
     expect(listResponse.result.length).toBe(limit);
     expect(listResponse).toHaveProperty("cursor");
-    console.log("listResponse", listResponse);
 
-    // Make sure the returned ids are in the list of created ids
     _.each(listResponse.result, (item) => {
       expect(_.includes(workflowIds, item.id)).toBe(true);
     });
 
+
     const firstCursor = listResponse.cursor;
 
     // Get the list of workflows with limit:2 and cursor
-    const listResponse2 = await client.getWorkflows(wallet.address, {
+    const listResponse2 = await client.getWorkflows([wallet.address], {
       limit,
       cursor: firstCursor,
     });
@@ -205,41 +204,32 @@ describe("getWorkflows Tests", () => {
     // Make sure the cursor is different from the first cursor and an empty string due to reaching the end of the list
     expect(listResponse2.cursor).not.toBe(firstCursor);
     expect(listResponse2.cursor).toBe("");
-
-    const secondCursor = listResponse2.cursor;
-
-    // Pass the second cursor again to get the next list result
-    const listResponse3 = await client.getWorkflows(wallet.address, {
-      limit,
-      cursor: secondCursor,
-    });
-
-    expect(listResponse3.result.length).toBe(0);
+    expect(listResponse2.hasMore).toBe(false);
   });
 
   test("should throw error when not sending a valid smart wallet address", async () => {
     // User’s EOA address should throw INVALID_ARGUMENT
-    await expect(client.getWorkflows(ownerAddress)).rejects.toThrowError(
+    await expect(client.getWorkflows([ownerAddress])).rejects.toThrowError(
       /INVALID_ARGUMENT/i
     );
 
     // Invalid wallet address should throw INVALID_ARGUMENT
     await expect(
-      client.getWorkflows("0x000000000000000000000000000000000000dead")
+      client.getWorkflows(["0x000000000000000000000000000000000000dead"])
     ).rejects.toThrowError(/INVALID_ARGUMENT/i);
   });
 
   test("should throw error with an invalid cursor", async () => {
     // Invalid cursor should throw INVALID_ARGUMENT
     await expect(
-      client.getWorkflows(ownerAddress, { cursor: "invalid-cursor" })
+      client.getWorkflows([ownerAddress], { cursor: "invalid-cursor" })
     ).rejects.toThrowError(/INVALID_ARGUMENT/i);
   });
 
   test("should throw error with an invalid limit", async () => {
     // Invalid limit should throw INVALID_ARGUMENT
     await expect(
-      client.getWorkflows(ownerAddress, { limit: -1 })
+      client.getWorkflows([ownerAddress], { limit: -1 })
     ).rejects.toThrowError(/INVALID_ARGUMENT/i);
   });
 });

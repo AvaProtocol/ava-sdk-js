@@ -930,8 +930,10 @@ declare namespace ListWalletResp {
 }
 
 declare class ListTasksReq extends jspb.Message { 
-    getSmartWalletAddress(): string;
-    setSmartWalletAddress(value: string): ListTasksReq;
+    clearSmartWalletAddressList(): void;
+    getSmartWalletAddressList(): Array<string>;
+    setSmartWalletAddressList(value: Array<string>): ListTasksReq;
+    addSmartWalletAddress(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListTasksReq;
     getItemPerPage(): number;
@@ -949,7 +951,7 @@ declare class ListTasksReq extends jspb.Message {
 
 declare namespace ListTasksReq {
     export type AsObject = {
-        smartWalletAddress: string,
+        smartWalletAddressList: Array<string>,
         cursor: string,
         itemPerPage: number,
     }
@@ -962,6 +964,8 @@ declare class ListTasksResp extends jspb.Message {
     addItems(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
     getCursor(): string;
     setCursor(value: string): ListTasksResp;
+    getHasMore(): boolean;
+    setHasMore(value: boolean): ListTasksResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -977,6 +981,7 @@ declare namespace ListTasksResp {
     export type AsObject = {
         itemsList: Array<ListTasksResp.Item.AsObject>,
         cursor: string,
+        hasMore: boolean,
     }
 
 
@@ -1039,8 +1044,10 @@ declare namespace ListTasksResp {
 }
 
 declare class ListExecutionsReq extends jspb.Message { 
-    getId(): string;
-    setId(value: string): ListExecutionsReq;
+    clearTaskIdsList(): void;
+    getTaskIdsList(): Array<string>;
+    setTaskIdsList(value: Array<string>): ListExecutionsReq;
+    addTaskIds(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListExecutionsReq;
     getItemPerPage(): number;
@@ -1058,7 +1065,7 @@ declare class ListExecutionsReq extends jspb.Message {
 
 declare namespace ListExecutionsReq {
     export type AsObject = {
-        id: string,
+        taskIdsList: Array<string>,
         cursor: string,
         itemPerPage: number,
     }
@@ -1071,6 +1078,8 @@ declare class ListExecutionsResp extends jspb.Message {
     addItems(value?: Execution$1, index?: number): Execution$1;
     getCursor(): string;
     setCursor(value: string): ListExecutionsResp;
+    getHasMore(): boolean;
+    setHasMore(value: boolean): ListExecutionsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListExecutionsResp.AsObject;
@@ -1086,6 +1095,7 @@ declare namespace ListExecutionsResp {
     export type AsObject = {
         itemsList: Array<Execution$1.AsObject>,
         cursor: string,
+        hasMore: boolean,
     }
 }
 
@@ -1759,22 +1769,24 @@ declare class Client extends BaseClient {
      * @param {RequestOptions} options - Request options
      * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
      */
-    getWorkflows(address: string, options?: GetWorkflowsRequest): Promise<{
+    getWorkflows(addresses: string[], options?: GetWorkflowsRequest): Promise<{
         cursor: string;
         result: Workflow[];
+        hasMore: boolean;
     }>;
     /**
-     * Get the list of executions for a workflow
-     * @param {string} workflowId - The Id of the workflow
+     * Get the list of executions for multiple workflow given in the workflows argument.
+     * @param {string[]} workflows - The list of workflow ids to fetch execution for
      * @param {GetExecutionsRequest} options - Request options
      * @param {string} [options.cursor] - The cursor for pagination
      * @param {number} [options.limit] - The page limit of the response; default is 10
      * @param {string} [options.authKey] - The auth key for the request
      * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
      */
-    getExecutions(workflowId: string, options?: GetExecutionsRequest): Promise<{
+    getExecutions(workflows: string[], options?: GetExecutionsRequest): Promise<{
         cursor: string;
         result: Execution[];
+        hasMore: boolean;
     }>;
     /**
      * Get a workflow by its Id
