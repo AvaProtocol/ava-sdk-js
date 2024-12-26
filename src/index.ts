@@ -282,11 +282,13 @@ export default class Client extends BaseClient {
    * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
    */
   async getWorkflows(
-    address: string,
+    addresses: string[],
     options?: GetWorkflowsRequest
   ): Promise<{ cursor: string; result: Workflow[] }> {
     const request = new avs_pb.ListTasksReq();
-    request.setSmartWalletAddress(address);
+    for (const a of addresses) {
+      request.addSmartWalletAddress(a);
+    }
 
     if (options?.cursor) {
       request.setCursor(options.cursor);
@@ -308,8 +310,8 @@ export default class Client extends BaseClient {
   }
 
   /**
-   * Get the list of executions for a workflow
-   * @param {string} workflowId - The Id of the workflow
+   * Get the list of executions for multiple workflow given in the workflows argument.
+   * @param {string[]} workflows - The list of workflow ids to fetch execution for
    * @param {GetExecutionsRequest} options - Request options
    * @param {string} [options.cursor] - The cursor for pagination
    * @param {number} [options.limit] - The page limit of the response; default is 10
@@ -317,13 +319,14 @@ export default class Client extends BaseClient {
    * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
    */
   async getExecutions(
-    workflowId: string,
+    workflows: string[],
     options?: GetExecutionsRequest
-  ): Promise<{ cursor: string; result: Execution[] }> {
+  ): Promise<{ cursor: string; result: Execution[], hasMore: boolean; }> {
     const request = new avs_pb.ListExecutionsReq();
-    request.setId(workflowId);
+    request.setTaskIdsList(workflows);
 
-    if (options?.cursor) {
+    // Cusor is implemenent similarly to moral
+    if (options?.cursor && options?.cursor != "") {
       request.setCursor(options.cursor);
     }
 
@@ -337,6 +340,7 @@ export default class Client extends BaseClient {
     return {
       cursor: result.getCursor(),
       result: result.getItemsList().map((item) => Execution.fromResponse(item)),
+      hasMore: result.getHasMore(),
     };
   }
 
