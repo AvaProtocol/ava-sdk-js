@@ -1154,6 +1154,8 @@ declare class TriggerMetadata$1 extends jspb.Message {
     setTxHash(value: string): TriggerMetadata$1;
     getEpoch(): number;
     setEpoch(value: number): TriggerMetadata$1;
+    getType(): TriggerMetadata$1.TriggerType;
+    setType(value: TriggerMetadata$1.TriggerType): TriggerMetadata$1;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TriggerMetadata$1.AsObject;
@@ -1171,7 +1173,18 @@ declare namespace TriggerMetadata$1 {
         logIndex: number,
         txHash: string,
         epoch: number,
+        type: TriggerMetadata$1.TriggerType,
     }
+
+    export enum TriggerType {
+    UNSET = 0,
+    MANUAL = 2,
+    FIXEDTIME = 3,
+    CRON = 4,
+    BLOCK = 5,
+    EVENT = 6,
+    }
+
 }
 
 declare class GetWalletReq extends jspb.Message { 
@@ -1824,4 +1837,4 @@ declare class Client extends BaseClient {
     deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, type TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };

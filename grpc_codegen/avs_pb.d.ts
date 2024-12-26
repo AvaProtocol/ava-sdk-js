@@ -1151,6 +1151,8 @@ export class TriggerMetadata extends jspb.Message {
     setTxHash(value: string): TriggerMetadata;
     getEpoch(): number;
     setEpoch(value: number): TriggerMetadata;
+    getType(): TriggerMetadata.TriggerType;
+    setType(value: TriggerMetadata.TriggerType): TriggerMetadata;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TriggerMetadata.AsObject;
@@ -1168,7 +1170,18 @@ export namespace TriggerMetadata {
         logIndex: number,
         txHash: string,
         epoch: number,
+        type: TriggerMetadata.TriggerType,
     }
+
+    export enum TriggerType {
+    UNSET = 0,
+    MANUAL = 2,
+    FIXEDTIME = 3,
+    CRON = 4,
+    BLOCK = 5,
+    EVENT = 6,
+    }
+
 }
 
 export class GetWalletReq extends jspb.Message { 

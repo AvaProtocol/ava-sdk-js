@@ -100,7 +100,10 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].success).toEqual(true);
     expect(
       executions2.result[0].triggerMetadata?.blockNumber
-    ).toBeGreaterThanOrEqual(blockNumber + interval);
+    ).toEqual(blockNumber + interval);
+    expect(
+        executions2.result[0].triggerMetadata.type
+    ).toEqual(TriggerTypes.BLOCK);
 
     const workflow = await client.getWorkflow(workflowId);
 
@@ -146,10 +149,11 @@ describe("triggerWorkflow Tests", () => {
 
     // The list should now contain one execution, the id from manual trigger should matched
     const executions2 = await client.getExecutions([workflowId]);
-
     expect(executions2.result[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
+    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.CRON);
+    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch+60);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.totalExecution).toEqual(1);
@@ -201,6 +205,8 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
     expect(workflow.totalExecution).toEqual(1);
+    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch+300);
+    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.FIXED_TIME);
   });
 
   test("trigger for event type should succeed", async () => {
@@ -249,6 +255,9 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
     expect(workflow.totalExecution).toEqual(1);
+    expect(executions2.result[0].triggerMetadata.blockNumber).toEqual(blockNumber+5);
+    expect(executions2.result[0].triggerMetadata.txHash).toEqual("0x1234567890");
+    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.EVENT);
   });
 
   test("should throw trigger an non-existent workflow Id", async () => {

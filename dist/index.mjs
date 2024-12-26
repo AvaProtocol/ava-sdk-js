@@ -97,6 +97,7 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.TaskTrigger", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger.TriggerTypeCase", null, global);
     goog.exportSymbol("proto.aggregator.TriggerMetadata", null, global);
+    goog.exportSymbol("proto.aggregator.TriggerMetadata.TriggerType", null, global);
     goog.exportSymbol("proto.aggregator.UserTriggerTaskReq", null, global);
     goog.exportSymbol("proto.aggregator.UserTriggerTaskResp", null, global);
     proto.aggregator.IdReq = function(opt_data) {
@@ -5226,7 +5227,8 @@ var require_avs_pb = __commonJS({
           blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0),
           logIndex: jspb.Message.getFieldWithDefault(msg, 2, 0),
           txHash: jspb.Message.getFieldWithDefault(msg, 3, ""),
-          epoch: jspb.Message.getFieldWithDefault(msg, 4, 0)
+          epoch: jspb.Message.getFieldWithDefault(msg, 4, 0),
+          type: jspb.Message.getFieldWithDefault(msg, 5, 0)
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -5274,6 +5276,13 @@ var require_avs_pb = __commonJS({
             );
             msg.setEpoch(value);
             break;
+          case 5:
+            var value = (
+              /** @type {!proto.aggregator.TriggerMetadata.TriggerType} */
+              reader.readEnum()
+            );
+            msg.setType(value);
+            break;
           default:
             reader.skipField();
             break;
@@ -5316,6 +5325,21 @@ var require_avs_pb = __commonJS({
           f
         );
       }
+      f = message.getType();
+      if (f !== 0) {
+        writer.writeEnum(
+          5,
+          f
+        );
+      }
+    };
+    proto.aggregator.TriggerMetadata.TriggerType = {
+      UNSET: 0,
+      MANUAL: 2,
+      FIXEDTIME: 3,
+      CRON: 4,
+      BLOCK: 5,
+      EVENT: 6
     };
     proto.aggregator.TriggerMetadata.prototype.getBlockNumber = function() {
       return (
@@ -5352,6 +5376,15 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.TriggerMetadata.prototype.setEpoch = function(value) {
       return jspb.Message.setProto3IntField(this, 4, value);
+    };
+    proto.aggregator.TriggerMetadata.prototype.getType = function() {
+      return (
+        /** @type {!proto.aggregator.TriggerMetadata.TriggerType} */
+        jspb.Message.getFieldWithDefault(this, 5, 0)
+      );
+    };
+    proto.aggregator.TriggerMetadata.prototype.setType = function(value) {
+      return jspb.Message.setProto3EnumField(this, 5, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.GetWalletReq.prototype.toObject = function(opt_includeInstance) {
@@ -6115,7 +6148,7 @@ var require_avs_grpc_pb = __commonJS({
 });
 
 // src/index.ts
-import _5 from "lodash";
+import _4 from "lodash";
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 
@@ -6750,10 +6783,8 @@ var avs_pb18 = __toESM(require_avs_pb());
 
 // src/models/trigger/metadata.ts
 var avs_pb16 = __toESM(require_avs_pb());
-import _4 from "lodash";
 var TriggerMetadata2 = class _TriggerMetadata {
   constructor(props) {
-    console.log("constructor.props", props);
     this.type = props.type;
     switch (props.type) {
       case TriggerTypes.FIXED_TIME:
@@ -6776,17 +6807,8 @@ var TriggerMetadata2 = class _TriggerMetadata {
     if (!data) {
       return void 0;
     }
-    console.log("fromResponse.data", data.toObject());
-    let type;
-    if (data.getEpoch() !== 0) {
-      type = TriggerTypes.FIXED_TIME;
-    } else if (data.getBlockNumber() !== 0) {
-      if (data.getLogIndex() !== 0 && !_4.isEmpty(data.getTxHash())) {
-        type = TriggerTypes.EVENT;
-      } else {
-        type = TriggerTypes.BLOCK;
-      }
-    } else {
+    let type = data.getType();
+    if (type != avs_pb16.TaskTrigger.TriggerTypeCase.FIXED_TIME && type != avs_pb16.TaskTrigger.TriggerTypeCase.CRON && type != avs_pb16.TaskTrigger.TriggerTypeCase.BLOCK && type != avs_pb16.TaskTrigger.TriggerTypeCase.EVENT) {
       throw new Error("Unable to determine trigger type from response");
     }
     return new _TriggerMetadata({
@@ -7011,7 +7033,7 @@ var BaseClient = class {
    * @returns {Promise<TResponse>} - The response from the gRPC call
    */
   sendGrpcRequest(method, request, options) {
-    const metadata = _5.cloneDeep(this.metadata);
+    const metadata = _4.cloneDeep(this.metadata);
     if (options?.authKey) {
       metadata.set(AUTH_KEY_HEADER, options.authKey);
     } else if (this.authKey) {
