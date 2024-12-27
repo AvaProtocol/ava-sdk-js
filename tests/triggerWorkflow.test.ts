@@ -260,6 +260,50 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.EVENT);
   });
 
+  test("trigger return correct execution id in blocking mode", async () => {
+    const wallet = await client.getWallet({ salt: "0" });
+    await cleanupWorkflows(client, wallet.address);
+    const epoch = Math.floor(Date.now() / 1000);
+
+    // Create a cron trigger with a schedule of every minute
+    const trigger = TriggerFactory.create({
+      name: "cronTrigger",
+      type: TriggerTypes.CRON,
+      data: { scheduleList: ["* * * * *"] },
+    });
+
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...WorkflowTemplate,
+        trigger,
+        smartWalletAddress: wallet.address,
+      })
+    );
+    queueForRemoval(createdWorkflows, workflowId);
+
+    const executions = await client.getExecutions([workflowId]);
+
+    // The list should be empty because the workflow has not been executed yet
+    expect(Array.isArray(executions.result)).toBe(true);
+    expect(executions.result.length).toEqual(0);
+
+    const result = await client.triggerWorkflow({
+      id: workflowId,
+      data: {
+        type: TriggerTypes.CRON,
+        epoch: epoch + 60, // set epoch to 1 minute later
+      },
+      isBlocking: true,
+    });
+
+    // The list should now contain one execution, the id from manual trigger should matched
+    const execution = await client.getExecution(workflowId, result.executionId);
+    expect(execution.id).toEqual(result.executionId);
+    expect(execution.triggerMetadata.type).toEqual(TriggerTypes.CRON);
+    expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
+  });
+
+
   test("should throw trigger an non-existent workflow Id", async () => {
     const wallet = await client.getWallet({ salt: "0" });
     const blockNumber = await getBlockNumber();

@@ -1096,6 +1096,29 @@ export namespace ListExecutionsResp {
     }
 }
 
+export class GetExecutionReq extends jspb.Message { 
+    getTaskId(): string;
+    setTaskId(value: string): GetExecutionReq;
+    getExecutionId(): string;
+    setExecutionId(value: string): GetExecutionReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetExecutionReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetExecutionReq): GetExecutionReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetExecutionReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetExecutionReq;
+    static deserializeBinaryFromReader(message: GetExecutionReq, reader: jspb.BinaryReader): GetExecutionReq;
+}
+
+export namespace GetExecutionReq {
+    export type AsObject = {
+        taskId: string,
+        executionId: string,
+    }
+}
+
 export class GetKeyReq extends jspb.Message { 
     getOwner(): string;
     setOwner(value: string): GetKeyReq;
@@ -1267,8 +1290,6 @@ export class UserTriggerTaskResp extends jspb.Message {
     setResult(value: boolean): UserTriggerTaskResp;
     getExecutionId(): string;
     setExecutionId(value: string): UserTriggerTaskResp;
-    getJobId(): string;
-    setJobId(value: string): UserTriggerTaskResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
@@ -1284,7 +1305,6 @@ export namespace UserTriggerTaskResp {
     export type AsObject = {
         result: boolean,
         executionId: string,
-        jobId: string,
     }
 }
 

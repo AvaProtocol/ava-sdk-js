@@ -346,6 +346,30 @@ export default class Client extends BaseClient {
   }
 
   /**
+   * Get a single execution for given workflow and execution id
+   * @param {string} workflowId - The workflow id
+   * @param {string} executionId - The exectuion id
+   * @param {GetExecutionsRequest} options - Request options
+   * @returns {Promise<Execution>} - The result execution if it is existed
+   */
+  async getExecution(
+    taskId: string,
+    executionId: string,
+    options?: RequestOptions 
+  ): Promise<Execution> {
+    const request = new avs_pb.GetExecutionReq();
+    request.setTaskId(taskId);
+    request.setExecutionId(executionId);
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.Execution,
+      avs_pb.GetExecutionReq
+    >("getExecution", request, options);
+
+    return Execution.fromResponse(result);
+  }
+
+  /**
    * Get a workflow by its Id
    * @param {string} id - The Id of the workflow
    * @param {RequestOptions} options - Request options

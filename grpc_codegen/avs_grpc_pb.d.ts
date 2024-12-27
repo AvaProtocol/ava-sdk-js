@@ -17,6 +17,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     listTasks: IAggregatorService_IListTasks;
     getTask: IAggregatorService_IGetTask;
     listExecutions: IAggregatorService_IListExecutions;
+    getExecution: IAggregatorService_IGetExecution;
     cancelTask: IAggregatorService_ICancelTask;
     deleteTask: IAggregatorService_IDeleteTask;
     triggerTask: IAggregatorService_ITriggerTask;
@@ -94,6 +95,15 @@ interface IAggregatorService_IListExecutions extends grpc.MethodDefinition<avs_p
     responseSerialize: grpc.serialize<avs_pb.ListExecutionsResp>;
     responseDeserialize: grpc.deserialize<avs_pb.ListExecutionsResp>;
 }
+interface IAggregatorService_IGetExecution extends grpc.MethodDefinition<avs_pb.GetExecutionReq, avs_pb.Execution> {
+    path: "/aggregator.Aggregator/GetExecution";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetExecutionReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetExecutionReq>;
+    responseSerialize: grpc.serialize<avs_pb.Execution>;
+    responseDeserialize: grpc.deserialize<avs_pb.Execution>;
+}
 interface IAggregatorService_ICancelTask extends grpc.MethodDefinition<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue> {
     path: "/aggregator.Aggregator/CancelTask";
     requestStream: false;
@@ -133,6 +143,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     listTasks: grpc.handleUnaryCall<avs_pb.ListTasksReq, avs_pb.ListTasksResp>;
     getTask: grpc.handleUnaryCall<avs_pb.IdReq, avs_pb.Task>;
     listExecutions: grpc.handleUnaryCall<avs_pb.ListExecutionsReq, avs_pb.ListExecutionsResp>;
+    getExecution: grpc.handleUnaryCall<avs_pb.GetExecutionReq, avs_pb.Execution>;
     cancelTask: grpc.handleUnaryCall<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue>;
     deleteTask: grpc.handleUnaryCall<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue>;
     triggerTask: grpc.handleUnaryCall<avs_pb.UserTriggerTaskReq, avs_pb.UserTriggerTaskResp>;
@@ -163,6 +174,9 @@ export interface IAggregatorClient {
     listExecutions(request: avs_pb.ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListExecutionsResp) => void): grpc.ClientUnaryCall;
     listExecutions(request: avs_pb.ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListExecutionsResp) => void): grpc.ClientUnaryCall;
     listExecutions(request: avs_pb.ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    getExecution(request: avs_pb.GetExecutionReq, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    getExecution(request: avs_pb.GetExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    getExecution(request: avs_pb.GetExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
     cancelTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -200,6 +214,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public listExecutions(request: avs_pb.ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public listExecutions(request: avs_pb.ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public listExecutions(request: avs_pb.ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    public getExecution(request: avs_pb.GetExecutionReq, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    public getExecution(request: avs_pb.GetExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    public getExecution(request: avs_pb.GetExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
     public cancelTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;

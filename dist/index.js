@@ -70,6 +70,7 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.Execution.Step", null, global);
     goog.exportSymbol("proto.aggregator.FilterNode", null, global);
     goog.exportSymbol("proto.aggregator.FixedTimeCondition", null, global);
+    goog.exportSymbol("proto.aggregator.GetExecutionReq", null, global);
     goog.exportSymbol("proto.aggregator.GetKeyReq", null, global);
     goog.exportSymbol("proto.aggregator.GetWalletReq", null, global);
     goog.exportSymbol("proto.aggregator.GetWalletResp", null, global);
@@ -330,6 +331,13 @@ var require_avs_pb = __commonJS({
     goog.inherits(proto.aggregator.ListExecutionsResp, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.ListExecutionsResp.displayName = "proto.aggregator.ListExecutionsResp";
+    }
+    proto.aggregator.GetExecutionReq = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.GetExecutionReq, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.GetExecutionReq.displayName = "proto.aggregator.GetExecutionReq";
     }
     proto.aggregator.GetKeyReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -5043,6 +5051,94 @@ var require_avs_pb = __commonJS({
       return jspb.Message.setProto3BooleanField(this, 4, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.GetExecutionReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.GetExecutionReq.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.GetExecutionReq.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          taskId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          executionId: jspb.Message.getFieldWithDefault(msg, 2, "")
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.GetExecutionReq.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.GetExecutionReq();
+      return proto.aggregator.GetExecutionReq.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.GetExecutionReq.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setTaskId(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setExecutionId(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.GetExecutionReq.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.GetExecutionReq.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.GetExecutionReq.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getTaskId();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+      f = message.getExecutionId();
+      if (f.length > 0) {
+        writer.writeString(
+          2,
+          f
+        );
+      }
+    };
+    proto.aggregator.GetExecutionReq.prototype.getTaskId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.GetExecutionReq.prototype.setTaskId = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    proto.aggregator.GetExecutionReq.prototype.getExecutionId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 2, "")
+      );
+    };
+    proto.aggregator.GetExecutionReq.prototype.setExecutionId = function(value) {
+      return jspb.Message.setProto3StringField(this, 2, value);
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.GetKeyReq.prototype.toObject = function(opt_includeInstance) {
         return proto.aggregator.GetKeyReq.toObject(opt_includeInstance, this);
       };
@@ -5710,8 +5806,7 @@ var require_avs_pb = __commonJS({
       proto.aggregator.UserTriggerTaskResp.toObject = function(includeInstance, msg) {
         var f, obj = {
           result: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
-          executionId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-          jobId: jspb.Message.getFieldWithDefault(msg, 3, "")
+          executionId: jspb.Message.getFieldWithDefault(msg, 2, "")
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -5745,13 +5840,6 @@ var require_avs_pb = __commonJS({
             );
             msg.setExecutionId(value);
             break;
-          case 3:
-            var value = (
-              /** @type {string} */
-              reader.readString()
-            );
-            msg.setJobId(value);
-            break;
           default:
             reader.skipField();
             break;
@@ -5780,13 +5868,6 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getJobId();
-      if (f.length > 0) {
-        writer.writeString(
-          3,
-          f
-        );
-      }
     };
     proto.aggregator.UserTriggerTaskResp.prototype.getResult = function() {
       return (
@@ -5805,15 +5886,6 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.UserTriggerTaskResp.prototype.setExecutionId = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
-    };
-    proto.aggregator.UserTriggerTaskResp.prototype.getJobId = function() {
-      return (
-        /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 3, "")
-      );
-    };
-    proto.aggregator.UserTriggerTaskResp.prototype.setJobId = function(value) {
-      return jspb.Message.setProto3StringField(this, 3, value);
     };
     proto.aggregator.Error = {
       UNKNOWERROR: 0,
@@ -5863,6 +5935,24 @@ var require_avs_grpc_pb = __commonJS({
     }
     function deserialize_aggregator_CreateTaskResp(buffer_arg) {
       return avs_pb20.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_Execution(arg) {
+      if (!(arg instanceof avs_pb20.Execution)) {
+        throw new Error("Expected argument of type aggregator.Execution");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_Execution(buffer_arg) {
+      return avs_pb20.Execution.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_GetExecutionReq(arg) {
+      if (!(arg instanceof avs_pb20.GetExecutionReq)) {
+        throw new Error("Expected argument of type aggregator.GetExecutionReq");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_GetExecutionReq(buffer_arg) {
+      return avs_pb20.GetExecutionReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetKeyReq(arg) {
       if (!(arg instanceof avs_pb20.GetKeyReq)) {
@@ -6108,6 +6198,17 @@ var require_avs_grpc_pb = __commonJS({
         requestDeserialize: deserialize_aggregator_ListExecutionsReq,
         responseSerialize: serialize_aggregator_ListExecutionsResp,
         responseDeserialize: deserialize_aggregator_ListExecutionsResp
+      },
+      getExecution: {
+        path: "/aggregator.Aggregator/GetExecution",
+        requestStream: false,
+        responseStream: false,
+        requestType: avs_pb20.GetExecutionReq,
+        responseType: avs_pb20.Execution,
+        requestSerialize: serialize_aggregator_GetExecutionReq,
+        requestDeserialize: deserialize_aggregator_GetExecutionReq,
+        responseSerialize: serialize_aggregator_Execution,
+        responseDeserialize: deserialize_aggregator_Execution
       },
       cancelTask: {
         path: "/aggregator.Aggregator/CancelTask",
@@ -7177,6 +7278,20 @@ var Client = class extends BaseClient {
       result: result.getItemsList().map((item) => execution_default.fromResponse(item)),
       hasMore: result.getHasMore()
     };
+  }
+  /**
+   * Get a single execution for given workflow and execution id
+   * @param {string} workflowId - The workflow id
+   * @param {string} executionId - The exectuion id
+   * @param {GetExecutionsRequest} options - Request options
+   * @returns {Promise<Execution>} - The result execution if it is existed
+   */
+  async getExecution(taskId, executionId, options) {
+    const request = new avs_pb19.GetExecutionReq();
+    request.setTaskId(taskId);
+    request.setExecutionId(executionId);
+    const result = await this.sendGrpcRequest("getExecution", request, options);
+    return execution_default.fromResponse(result);
   }
   /**
    * Get a workflow by its Id

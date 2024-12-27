@@ -1099,6 +1099,29 @@ declare namespace ListExecutionsResp {
     }
 }
 
+declare class GetExecutionReq extends jspb.Message { 
+    getTaskId(): string;
+    setTaskId(value: string): GetExecutionReq;
+    getExecutionId(): string;
+    setExecutionId(value: string): GetExecutionReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetExecutionReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetExecutionReq): GetExecutionReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetExecutionReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetExecutionReq;
+    static deserializeBinaryFromReader(message: GetExecutionReq, reader: jspb.BinaryReader): GetExecutionReq;
+}
+
+declare namespace GetExecutionReq {
+    export type AsObject = {
+        taskId: string,
+        executionId: string,
+    }
+}
+
 declare class GetKeyReq extends jspb.Message { 
     getOwner(): string;
     setOwner(value: string): GetKeyReq;
@@ -1270,8 +1293,6 @@ declare class UserTriggerTaskResp extends jspb.Message {
     setResult(value: boolean): UserTriggerTaskResp;
     getExecutionId(): string;
     setExecutionId(value: string): UserTriggerTaskResp;
-    getJobId(): string;
-    setJobId(value: string): UserTriggerTaskResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
@@ -1287,7 +1308,6 @@ declare namespace UserTriggerTaskResp {
     export type AsObject = {
         result: boolean,
         executionId: string,
-        jobId: string,
     }
 }
 
@@ -1333,6 +1353,9 @@ interface IAggregatorClient {
     listExecutions(request: ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    getExecution(request: GetExecutionReq, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    getExecution(request: GetExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    getExecution(request: GetExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -1370,6 +1393,9 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public listExecutions(request: ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
+    public getExecution(request: GetExecutionReq, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    public getExecution(request: GetExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    public getExecution(request: GetExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -1801,6 +1827,14 @@ declare class Client extends BaseClient {
         result: Execution[];
         hasMore: boolean;
     }>;
+    /**
+     * Get a single execution for given workflow and execution id
+     * @param {string} workflowId - The workflow id
+     * @param {string} executionId - The exectuion id
+     * @param {GetExecutionsRequest} options - Request options
+     * @returns {Promise<Execution>} - The result execution if it is existed
+     */
+    getExecution(taskId: string, executionId: string, options?: RequestOptions): Promise<Execution>;
     /**
      * Get a workflow by its Id
      * @param {string} id - The Id of the workflow
