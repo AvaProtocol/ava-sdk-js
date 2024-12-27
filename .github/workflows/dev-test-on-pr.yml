@@ -12,6 +12,7 @@ jobs:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
       # TODO: remove this before merge
       # Pin to this branch to have all the fix
