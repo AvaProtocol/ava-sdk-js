@@ -13,13 +13,17 @@ jobs:
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: "localhost:2206"
-    
+      # TODO: remove this before merge
+      # Pin to this branch to have all the fix
+      AVS_BUILD_VERSION: passing-result-to-subsequent-steps
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
  
     - name: Bring up docker compose
       run: |
+
         docker compose up -d
         
     - name: Debug environment variables
