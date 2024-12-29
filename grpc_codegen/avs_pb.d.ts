@@ -607,10 +607,10 @@ export class Execution extends jspb.Message {
     getError(): string;
     setError(value: string): Execution;
 
-    hasTriggerMark(): boolean;
-    clearTriggerMark(): void;
-    getTriggerMark(): TriggerMark | undefined;
-    setTriggerMark(value?: TriggerMark): Execution;
+    hasTriggerMetadata(): boolean;
+    clearTriggerMetadata(): void;
+    getTriggerMetadata(): TriggerMetadata | undefined;
+    setTriggerMetadata(value?: TriggerMetadata): Execution;
     getResult(): string;
     setResult(value: string): Execution;
     clearStepsList(): void;
@@ -635,7 +635,7 @@ export namespace Execution {
         endAt: number,
         success: boolean,
         error: string,
-        triggerMark?: TriggerMark.AsObject,
+        triggerMetadata?: TriggerMetadata.AsObject,
         result: string,
         stepsList: Array<Execution.Step.AsObject>,
     }
@@ -1132,27 +1132,27 @@ export namespace KeyResp {
     }
 }
 
-export class TriggerMark extends jspb.Message { 
+export class TriggerMetadata extends jspb.Message { 
     getBlockNumber(): number;
-    setBlockNumber(value: number): TriggerMark;
+    setBlockNumber(value: number): TriggerMetadata;
     getLogIndex(): number;
-    setLogIndex(value: number): TriggerMark;
+    setLogIndex(value: number): TriggerMetadata;
     getTxHash(): string;
-    setTxHash(value: string): TriggerMark;
+    setTxHash(value: string): TriggerMetadata;
     getEpoch(): number;
-    setEpoch(value: number): TriggerMark;
+    setEpoch(value: number): TriggerMetadata;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TriggerMark.AsObject;
-    static toObject(includeInstance: boolean, msg: TriggerMark): TriggerMark.AsObject;
+    toObject(includeInstance?: boolean): TriggerMetadata.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerMetadata): TriggerMetadata.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TriggerMark, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TriggerMark;
-    static deserializeBinaryFromReader(message: TriggerMark, reader: jspb.BinaryReader): TriggerMark;
+    static serializeBinaryToWriter(message: TriggerMetadata, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerMetadata;
+    static deserializeBinaryFromReader(message: TriggerMetadata, reader: jspb.BinaryReader): TriggerMetadata;
 }
 
-export namespace TriggerMark {
+export namespace TriggerMetadata {
     export type AsObject = {
         blockNumber: number,
         logIndex: number,
@@ -1214,12 +1214,12 @@ export class UserTriggerTaskReq extends jspb.Message {
     getTaskId(): string;
     setTaskId(value: string): UserTriggerTaskReq;
 
-    hasTriggerMark(): boolean;
-    clearTriggerMark(): void;
-    getTriggerMark(): TriggerMark | undefined;
-    setTriggerMark(value?: TriggerMark): UserTriggerTaskReq;
-    getRunInline(): boolean;
-    setRunInline(value: boolean): UserTriggerTaskReq;
+    hasTriggerMetadata(): boolean;
+    clearTriggerMetadata(): void;
+    getTriggerMetadata(): TriggerMetadata | undefined;
+    setTriggerMetadata(value?: TriggerMetadata): UserTriggerTaskReq;
+    getIsBlocking(): boolean;
+    setIsBlocking(value: boolean): UserTriggerTaskReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserTriggerTaskReq.AsObject;
@@ -1234,8 +1234,8 @@ export class UserTriggerTaskReq extends jspb.Message {
 export namespace UserTriggerTaskReq {
     export type AsObject = {
         taskId: string,
-        triggerMark?: TriggerMark.AsObject,
-        runInline: boolean,
+        triggerMetadata?: TriggerMetadata.AsObject,
+        isBlocking: boolean,
     }
 }
 

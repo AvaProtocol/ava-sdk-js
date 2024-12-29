@@ -30,7 +30,7 @@ class TriggerFactory {
   }
 
   /**
-   * Create an instance of Trigger from AVS getTask or listTasks response
+   * Create an instance of Trigger from AVS getWorkflow or getWorkflows response
    * @param trigger
    * @returns
    */

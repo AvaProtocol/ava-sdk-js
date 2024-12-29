@@ -1,11 +1,14 @@
 import * as avs_pb from "../../grpc_codegen/avs_pb";
-import { TriggerMark } from "../../grpc_codegen/avs_pb";
+import TriggerMetadata, { TriggerMetadataProps } from "./trigger/metadata";
 import Step from "./step";
 
-export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList"> & {
+export type ExecutionProps = Omit<
+  avs_pb.Execution.AsObject,
+  "stepsList" | "triggerMetadata"
+> & {
   stepsList: Step[];
+  triggerMetadata: TriggerMetadata | undefined;
 };
-export type TriggerMarkProps = avs_pb.TriggerMark.AsObject;
 export type StepProps = avs_pb.Execution.Step.AsObject;
 
 class Execution implements ExecutionProps {
@@ -14,7 +17,7 @@ class Execution implements ExecutionProps {
   endAt: number;
   success: boolean;
   error: string;
-  triggerMark?: TriggerMarkProps;
+  triggerMetadata: TriggerMetadata | undefined;
   result: string;
   stepsList: Step[];
 
@@ -24,7 +27,7 @@ class Execution implements ExecutionProps {
     this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
-    this.triggerMark = props.triggerMark;
+    this.triggerMetadata = props.triggerMetadata;
     this.result = props.result;
     this.stepsList = props.stepsList;
   }
@@ -36,12 +39,9 @@ class Execution implements ExecutionProps {
       endAt: execution.getEndAt(),
       success: execution.getSuccess(),
       error: execution.getError(),
-      triggerMark: {
-        blockNumber: execution.getTriggerMark()?.getBlockNumber() ?? 0,
-        logIndex: execution.getTriggerMark()?.getLogIndex() ?? 0,
-        txHash: execution.getTriggerMark()?.getTxHash() ?? "",
-        epoch: execution.getTriggerMark()?.getEpoch() ?? 0,
-      },
+      triggerMetadata: TriggerMetadata.fromResponse(
+        execution.getTriggerMetadata()
+      ),
       result: execution.getResult(),
       stepsList: execution
         .getStepsList()
@@ -58,13 +58,8 @@ class Execution implements ExecutionProps {
     execution.setError(this.error);
     execution.setStepsList(this.stepsList.map((step) => step.toRequest()));
 
-    if (this.triggerMark) {
-      const triggerMark = new TriggerMark();
-      triggerMark.setBlockNumber(this.triggerMark.blockNumber);
-      triggerMark.setLogIndex(this.triggerMark.logIndex);
-      triggerMark.setTxHash(this.triggerMark.txHash);
-      triggerMark.setEpoch(this.triggerMark.epoch);
-      execution.setTriggerMark(triggerMark);
+    if (this.triggerMetadata) {
+      execution.setTriggerMetadata(this.triggerMetadata.toRequest());
     }
 
     execution.setResult(this.result);
