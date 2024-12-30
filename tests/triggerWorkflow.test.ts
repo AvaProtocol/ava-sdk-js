@@ -303,7 +303,6 @@ describe("triggerWorkflow Tests", () => {
     expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
   });
 
-
   test("should throw trigger an non-existent workflow Id", async () => {
     const wallet = await client.getWallet({ salt: "0" });
     const blockNumber = await getBlockNumber();
