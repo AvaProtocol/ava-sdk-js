@@ -15,6 +15,7 @@ jobs:
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
     
     steps:
     - name: Checkout repository
