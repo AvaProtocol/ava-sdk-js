@@ -142,7 +142,7 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, createdId1);
 
       console.log("Getting workflows for wallet:", wallet.address);
-      const listResult1 = await client.getWorkflows(wallet.address);
+      const listResult1 = await client.getWorkflows([wallet.address]);
       expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -333,7 +333,7 @@ describe("Authentication Tests", () => {
       );
       queueForRemoval(createdWorkflows, createdId1);
 
-      const listResult1 = await client.getWorkflows(wallet.address);
+      const listResult1 = await client.getWorkflows([wallet.address]);
       expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
 
       const createdId2 = await client.submitWorkflow(
@@ -345,7 +345,7 @@ describe("Authentication Tests", () => {
       );
       queueForRemoval(createdWorkflows, createdId2);
 
-      const listResult2 = await client.getWorkflows(wallet.address);
+      const listResult2 = await client.getWorkflows([wallet.address]);
       expect(listResult2.result.length).toBeGreaterThanOrEqual(2);
     });
 
@@ -563,7 +563,7 @@ describe("Authentication Tests", () => {
 
     test("getWorkflows should throw error", async () => {
       client.setAuthKey(undefined);
-      await expect(client.getWorkflows(eoaAddress)).rejects.toThrowError(
+      await expect(client.getWorkflows([eoaAddress])).rejects.toThrowError(
         /unauthenticated/i
       );
     });

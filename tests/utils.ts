@@ -102,7 +102,7 @@ export const cleanupWorkflows = async (
   client: Client,
   smartWalletAddress: string
 ) => {
-  const workflowArray = await client.getWorkflows(smartWalletAddress, {
+  const workflowArray = await client.getWorkflows([smartWalletAddress], {
     limit: 1000,
   });
 

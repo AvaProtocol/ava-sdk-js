@@ -70,6 +70,7 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.Execution.Step", null, global);
     goog.exportSymbol("proto.aggregator.FilterNode", null, global);
     goog.exportSymbol("proto.aggregator.FixedTimeCondition", null, global);
+    goog.exportSymbol("proto.aggregator.GetExecutionReq", null, global);
     goog.exportSymbol("proto.aggregator.GetKeyReq", null, global);
     goog.exportSymbol("proto.aggregator.GetWalletReq", null, global);
     goog.exportSymbol("proto.aggregator.GetWalletResp", null, global);
@@ -97,6 +98,7 @@ var require_avs_pb = __commonJS({
     goog.exportSymbol("proto.aggregator.TaskTrigger", null, global);
     goog.exportSymbol("proto.aggregator.TaskTrigger.TriggerTypeCase", null, global);
     goog.exportSymbol("proto.aggregator.TriggerMetadata", null, global);
+    goog.exportSymbol("proto.aggregator.TriggerMetadata.TriggerType", null, global);
     goog.exportSymbol("proto.aggregator.UserTriggerTaskReq", null, global);
     goog.exportSymbol("proto.aggregator.UserTriggerTaskResp", null, global);
     proto.aggregator.IdReq = function(opt_data) {
@@ -296,7 +298,7 @@ var require_avs_pb = __commonJS({
       proto.aggregator.ListWalletResp.displayName = "proto.aggregator.ListWalletResp";
     }
     proto.aggregator.ListTasksReq = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+      jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ListTasksReq.repeatedFields_, null);
     };
     goog.inherits(proto.aggregator.ListTasksReq, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
@@ -317,7 +319,7 @@ var require_avs_pb = __commonJS({
       proto.aggregator.ListTasksResp.Item.displayName = "proto.aggregator.ListTasksResp.Item";
     }
     proto.aggregator.ListExecutionsReq = function(opt_data) {
-      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+      jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ListExecutionsReq.repeatedFields_, null);
     };
     goog.inherits(proto.aggregator.ListExecutionsReq, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
@@ -329,6 +331,13 @@ var require_avs_pb = __commonJS({
     goog.inherits(proto.aggregator.ListExecutionsResp, jspb.Message);
     if (goog.DEBUG && !COMPILED) {
       proto.aggregator.ListExecutionsResp.displayName = "proto.aggregator.ListExecutionsResp";
+    }
+    proto.aggregator.GetExecutionReq = function(opt_data) {
+      jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+    };
+    goog.inherits(proto.aggregator.GetExecutionReq, jspb.Message);
+    if (goog.DEBUG && !COMPILED) {
+      proto.aggregator.GetExecutionReq.displayName = "proto.aggregator.GetExecutionReq";
     }
     proto.aggregator.GetKeyReq = function(opt_data) {
       jspb.Message.initialize(this, opt_data, 0, -1, null, null);
@@ -4226,13 +4235,14 @@ var require_avs_pb = __commonJS({
     proto.aggregator.ListWalletResp.prototype.clearItemsList = function() {
       return this.setItemsList([]);
     };
+    proto.aggregator.ListTasksReq.repeatedFields_ = [1];
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.ListTasksReq.prototype.toObject = function(opt_includeInstance) {
         return proto.aggregator.ListTasksReq.toObject(opt_includeInstance, this);
       };
       proto.aggregator.ListTasksReq.toObject = function(includeInstance, msg) {
         var f, obj = {
-          smartWalletAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          smartWalletAddressList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? void 0 : f,
           cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
           itemPerPage: jspb.Message.getFieldWithDefault(msg, 3, 0)
         };
@@ -4259,7 +4269,7 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.setSmartWalletAddress(value);
+            msg.addSmartWalletAddress(value);
             break;
           case 2:
             var value = (
@@ -4289,9 +4299,9 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.ListTasksReq.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getSmartWalletAddress();
+      f = message.getSmartWalletAddressList();
       if (f.length > 0) {
-        writer.writeString(
+        writer.writeRepeatedString(
           1,
           f
         );
@@ -4311,14 +4321,20 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.ListTasksReq.prototype.getSmartWalletAddress = function() {
+    proto.aggregator.ListTasksReq.prototype.getSmartWalletAddressList = function() {
       return (
-        /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 1, "")
+        /** @type {!Array<string>} */
+        jspb.Message.getRepeatedField(this, 1)
       );
     };
-    proto.aggregator.ListTasksReq.prototype.setSmartWalletAddress = function(value) {
-      return jspb.Message.setProto3StringField(this, 1, value);
+    proto.aggregator.ListTasksReq.prototype.setSmartWalletAddressList = function(value) {
+      return jspb.Message.setField(this, 1, value || []);
+    };
+    proto.aggregator.ListTasksReq.prototype.addSmartWalletAddress = function(value, opt_index) {
+      return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+    };
+    proto.aggregator.ListTasksReq.prototype.clearSmartWalletAddressList = function() {
+      return this.setSmartWalletAddressList([]);
     };
     proto.aggregator.ListTasksReq.prototype.getCursor = function() {
       return (
@@ -4350,7 +4366,8 @@ var require_avs_pb = __commonJS({
             proto.aggregator.ListTasksResp.Item.toObject,
             includeInstance
           ),
-          cursor: jspb.Message.getFieldWithDefault(msg, 2, "")
+          cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          hasMore: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -4382,6 +4399,13 @@ var require_avs_pb = __commonJS({
             );
             msg.setCursor(value);
             break;
+          case 3:
+            var value = (
+              /** @type {boolean} */
+              reader.readBool()
+            );
+            msg.setHasMore(value);
+            break;
           default:
             reader.skipField();
             break;
@@ -4408,6 +4432,13 @@ var require_avs_pb = __commonJS({
       if (f.length > 0) {
         writer.writeString(
           2,
+          f
+        );
+      }
+      f = message.getHasMore();
+      if (f) {
+        writer.writeBool(
+          3,
           f
         );
       }
@@ -4769,13 +4800,23 @@ var require_avs_pb = __commonJS({
     proto.aggregator.ListTasksResp.prototype.setCursor = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
+    proto.aggregator.ListTasksResp.prototype.getHasMore = function() {
+      return (
+        /** @type {boolean} */
+        jspb.Message.getBooleanFieldWithDefault(this, 3, false)
+      );
+    };
+    proto.aggregator.ListTasksResp.prototype.setHasMore = function(value) {
+      return jspb.Message.setProto3BooleanField(this, 3, value);
+    };
+    proto.aggregator.ListExecutionsReq.repeatedFields_ = [1];
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.ListExecutionsReq.prototype.toObject = function(opt_includeInstance) {
         return proto.aggregator.ListExecutionsReq.toObject(opt_includeInstance, this);
       };
       proto.aggregator.ListExecutionsReq.toObject = function(includeInstance, msg) {
         var f, obj = {
-          id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          taskIdsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? void 0 : f,
           cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
           itemPerPage: jspb.Message.getFieldWithDefault(msg, 3, 0)
         };
@@ -4802,7 +4843,7 @@ var require_avs_pb = __commonJS({
               /** @type {string} */
               reader.readString()
             );
-            msg.setId(value);
+            msg.addTaskIds(value);
             break;
           case 2:
             var value = (
@@ -4832,9 +4873,9 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.ListExecutionsReq.serializeBinaryToWriter = function(message, writer) {
       var f = void 0;
-      f = message.getId();
+      f = message.getTaskIdsList();
       if (f.length > 0) {
-        writer.writeString(
+        writer.writeRepeatedString(
           1,
           f
         );
@@ -4854,14 +4895,20 @@ var require_avs_pb = __commonJS({
         );
       }
     };
-    proto.aggregator.ListExecutionsReq.prototype.getId = function() {
+    proto.aggregator.ListExecutionsReq.prototype.getTaskIdsList = function() {
       return (
-        /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 1, "")
+        /** @type {!Array<string>} */
+        jspb.Message.getRepeatedField(this, 1)
       );
     };
-    proto.aggregator.ListExecutionsReq.prototype.setId = function(value) {
-      return jspb.Message.setProto3StringField(this, 1, value);
+    proto.aggregator.ListExecutionsReq.prototype.setTaskIdsList = function(value) {
+      return jspb.Message.setField(this, 1, value || []);
+    };
+    proto.aggregator.ListExecutionsReq.prototype.addTaskIds = function(value, opt_index) {
+      return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+    };
+    proto.aggregator.ListExecutionsReq.prototype.clearTaskIdsList = function() {
+      return this.setTaskIdsList([]);
     };
     proto.aggregator.ListExecutionsReq.prototype.getCursor = function() {
       return (
@@ -4893,7 +4940,8 @@ var require_avs_pb = __commonJS({
             proto.aggregator.Execution.toObject,
             includeInstance
           ),
-          cursor: jspb.Message.getFieldWithDefault(msg, 2, "")
+          cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
+          hasMore: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -4925,6 +4973,13 @@ var require_avs_pb = __commonJS({
             );
             msg.setCursor(value);
             break;
+          case 4:
+            var value = (
+              /** @type {boolean} */
+              reader.readBool()
+            );
+            msg.setHasMore(value);
+            break;
           default:
             reader.skipField();
             break;
@@ -4954,6 +5009,13 @@ var require_avs_pb = __commonJS({
           f
         );
       }
+      f = message.getHasMore();
+      if (f) {
+        writer.writeBool(
+          4,
+          f
+        );
+      }
     };
     proto.aggregator.ListExecutionsResp.prototype.getItemsList = function() {
       return (
@@ -4977,6 +5039,103 @@ var require_avs_pb = __commonJS({
       );
     };
     proto.aggregator.ListExecutionsResp.prototype.setCursor = function(value) {
+      return jspb.Message.setProto3StringField(this, 2, value);
+    };
+    proto.aggregator.ListExecutionsResp.prototype.getHasMore = function() {
+      return (
+        /** @type {boolean} */
+        jspb.Message.getBooleanFieldWithDefault(this, 4, false)
+      );
+    };
+    proto.aggregator.ListExecutionsResp.prototype.setHasMore = function(value) {
+      return jspb.Message.setProto3BooleanField(this, 4, value);
+    };
+    if (jspb.Message.GENERATE_TO_OBJECT) {
+      proto.aggregator.GetExecutionReq.prototype.toObject = function(opt_includeInstance) {
+        return proto.aggregator.GetExecutionReq.toObject(opt_includeInstance, this);
+      };
+      proto.aggregator.GetExecutionReq.toObject = function(includeInstance, msg) {
+        var f, obj = {
+          taskId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+          executionId: jspb.Message.getFieldWithDefault(msg, 2, "")
+        };
+        if (includeInstance) {
+          obj.$jspbMessageInstance = msg;
+        }
+        return obj;
+      };
+    }
+    proto.aggregator.GetExecutionReq.deserializeBinary = function(bytes) {
+      var reader = new jspb.BinaryReader(bytes);
+      var msg = new proto.aggregator.GetExecutionReq();
+      return proto.aggregator.GetExecutionReq.deserializeBinaryFromReader(msg, reader);
+    };
+    proto.aggregator.GetExecutionReq.deserializeBinaryFromReader = function(msg, reader) {
+      while (reader.nextField()) {
+        if (reader.isEndGroup()) {
+          break;
+        }
+        var field = reader.getFieldNumber();
+        switch (field) {
+          case 1:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setTaskId(value);
+            break;
+          case 2:
+            var value = (
+              /** @type {string} */
+              reader.readString()
+            );
+            msg.setExecutionId(value);
+            break;
+          default:
+            reader.skipField();
+            break;
+        }
+      }
+      return msg;
+    };
+    proto.aggregator.GetExecutionReq.prototype.serializeBinary = function() {
+      var writer = new jspb.BinaryWriter();
+      proto.aggregator.GetExecutionReq.serializeBinaryToWriter(this, writer);
+      return writer.getResultBuffer();
+    };
+    proto.aggregator.GetExecutionReq.serializeBinaryToWriter = function(message, writer) {
+      var f = void 0;
+      f = message.getTaskId();
+      if (f.length > 0) {
+        writer.writeString(
+          1,
+          f
+        );
+      }
+      f = message.getExecutionId();
+      if (f.length > 0) {
+        writer.writeString(
+          2,
+          f
+        );
+      }
+    };
+    proto.aggregator.GetExecutionReq.prototype.getTaskId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 1, "")
+      );
+    };
+    proto.aggregator.GetExecutionReq.prototype.setTaskId = function(value) {
+      return jspb.Message.setProto3StringField(this, 1, value);
+    };
+    proto.aggregator.GetExecutionReq.prototype.getExecutionId = function() {
+      return (
+        /** @type {string} */
+        jspb.Message.getFieldWithDefault(this, 2, "")
+      );
+    };
+    proto.aggregator.GetExecutionReq.prototype.setExecutionId = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -5164,7 +5323,8 @@ var require_avs_pb = __commonJS({
           blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0),
           logIndex: jspb.Message.getFieldWithDefault(msg, 2, 0),
           txHash: jspb.Message.getFieldWithDefault(msg, 3, ""),
-          epoch: jspb.Message.getFieldWithDefault(msg, 4, 0)
+          epoch: jspb.Message.getFieldWithDefault(msg, 4, 0),
+          type: jspb.Message.getFieldWithDefault(msg, 5, 0)
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -5212,6 +5372,13 @@ var require_avs_pb = __commonJS({
             );
             msg.setEpoch(value);
             break;
+          case 5:
+            var value = (
+              /** @type {!proto.aggregator.TriggerMetadata.TriggerType} */
+              reader.readEnum()
+            );
+            msg.setType(value);
+            break;
           default:
             reader.skipField();
             break;
@@ -5254,6 +5421,21 @@ var require_avs_pb = __commonJS({
           f
         );
       }
+      f = message.getType();
+      if (f !== 0) {
+        writer.writeEnum(
+          5,
+          f
+        );
+      }
+    };
+    proto.aggregator.TriggerMetadata.TriggerType = {
+      UNSET: 0,
+      MANUAL: 2,
+      FIXEDTIME: 3,
+      CRON: 4,
+      BLOCK: 5,
+      EVENT: 6
     };
     proto.aggregator.TriggerMetadata.prototype.getBlockNumber = function() {
       return (
@@ -5290,6 +5472,15 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.TriggerMetadata.prototype.setEpoch = function(value) {
       return jspb.Message.setProto3IntField(this, 4, value);
+    };
+    proto.aggregator.TriggerMetadata.prototype.getType = function() {
+      return (
+        /** @type {!proto.aggregator.TriggerMetadata.TriggerType} */
+        jspb.Message.getFieldWithDefault(this, 5, 0)
+      );
+    };
+    proto.aggregator.TriggerMetadata.prototype.setType = function(value) {
+      return jspb.Message.setProto3EnumField(this, 5, value);
     };
     if (jspb.Message.GENERATE_TO_OBJECT) {
       proto.aggregator.GetWalletReq.prototype.toObject = function(opt_includeInstance) {
@@ -5615,8 +5806,7 @@ var require_avs_pb = __commonJS({
       proto.aggregator.UserTriggerTaskResp.toObject = function(includeInstance, msg) {
         var f, obj = {
           result: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
-          executionId: jspb.Message.getFieldWithDefault(msg, 2, ""),
-          jobId: jspb.Message.getFieldWithDefault(msg, 3, "")
+          executionId: jspb.Message.getFieldWithDefault(msg, 2, "")
         };
         if (includeInstance) {
           obj.$jspbMessageInstance = msg;
@@ -5650,13 +5840,6 @@ var require_avs_pb = __commonJS({
             );
             msg.setExecutionId(value);
             break;
-          case 3:
-            var value = (
-              /** @type {string} */
-              reader.readString()
-            );
-            msg.setJobId(value);
-            break;
           default:
             reader.skipField();
             break;
@@ -5685,13 +5868,6 @@ var require_avs_pb = __commonJS({
           f
         );
       }
-      f = message.getJobId();
-      if (f.length > 0) {
-        writer.writeString(
-          3,
-          f
-        );
-      }
     };
     proto.aggregator.UserTriggerTaskResp.prototype.getResult = function() {
       return (
@@ -5710,15 +5886,6 @@ var require_avs_pb = __commonJS({
     };
     proto.aggregator.UserTriggerTaskResp.prototype.setExecutionId = function(value) {
       return jspb.Message.setProto3StringField(this, 2, value);
-    };
-    proto.aggregator.UserTriggerTaskResp.prototype.getJobId = function() {
-      return (
-        /** @type {string} */
-        jspb.Message.getFieldWithDefault(this, 3, "")
-      );
-    };
-    proto.aggregator.UserTriggerTaskResp.prototype.setJobId = function(value) {
-      return jspb.Message.setProto3StringField(this, 3, value);
     };
     proto.aggregator.Error = {
       UNKNOWERROR: 0,
@@ -5768,6 +5935,24 @@ var require_avs_grpc_pb = __commonJS({
     }
     function deserialize_aggregator_CreateTaskResp(buffer_arg) {
       return avs_pb20.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_Execution(arg) {
+      if (!(arg instanceof avs_pb20.Execution)) {
+        throw new Error("Expected argument of type aggregator.Execution");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_Execution(buffer_arg) {
+      return avs_pb20.Execution.deserializeBinary(new Uint8Array(buffer_arg));
+    }
+    function serialize_aggregator_GetExecutionReq(arg) {
+      if (!(arg instanceof avs_pb20.GetExecutionReq)) {
+        throw new Error("Expected argument of type aggregator.GetExecutionReq");
+      }
+      return Buffer.from(arg.serializeBinary());
+    }
+    function deserialize_aggregator_GetExecutionReq(buffer_arg) {
+      return avs_pb20.GetExecutionReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetKeyReq(arg) {
       if (!(arg instanceof avs_pb20.GetKeyReq)) {
@@ -6014,6 +6199,17 @@ var require_avs_grpc_pb = __commonJS({
         responseSerialize: serialize_aggregator_ListExecutionsResp,
         responseDeserialize: deserialize_aggregator_ListExecutionsResp
       },
+      getExecution: {
+        path: "/aggregator.Aggregator/GetExecution",
+        requestStream: false,
+        responseStream: false,
+        requestType: avs_pb20.GetExecutionReq,
+        responseType: avs_pb20.Execution,
+        requestSerialize: serialize_aggregator_GetExecutionReq,
+        requestDeserialize: deserialize_aggregator_GetExecutionReq,
+        responseSerialize: serialize_aggregator_Execution,
+        responseDeserialize: deserialize_aggregator_Execution
+      },
       cancelTask: {
         path: "/aggregator.Aggregator/CancelTask",
         requestStream: false,
@@ -6053,7 +6249,7 @@ var require_avs_grpc_pb = __commonJS({
 });
 
 // src/index.ts
-import _5 from "lodash";
+import _4 from "lodash";
 import * as grpc from "@grpc/grpc-js";
 import { Metadata } from "@grpc/grpc-js";
 
@@ -6688,10 +6884,8 @@ var avs_pb18 = __toESM(require_avs_pb());
 
 // src/models/trigger/metadata.ts
 var avs_pb16 = __toESM(require_avs_pb());
-import _4 from "lodash";
 var TriggerMetadata2 = class _TriggerMetadata {
   constructor(props) {
-    console.log("constructor.props", props);
     this.type = props.type;
     switch (props.type) {
       case TriggerTypes.FIXED_TIME:
@@ -6714,17 +6908,8 @@ var TriggerMetadata2 = class _TriggerMetadata {
     if (!data) {
       return void 0;
     }
-    console.log("fromResponse.data", data.toObject());
-    let type;
-    if (data.getEpoch() !== 0) {
-      type = TriggerTypes.FIXED_TIME;
-    } else if (data.getBlockNumber() !== 0) {
-      if (data.getLogIndex() !== 0 && !_4.isEmpty(data.getTxHash())) {
-        type = TriggerTypes.EVENT;
-      } else {
-        type = TriggerTypes.BLOCK;
-      }
-    } else {
+    let type = data.getType();
+    if (type != avs_pb16.TaskTrigger.TriggerTypeCase.FIXED_TIME && type != avs_pb16.TaskTrigger.TriggerTypeCase.CRON && type != avs_pb16.TaskTrigger.TriggerTypeCase.BLOCK && type != avs_pb16.TaskTrigger.TriggerTypeCase.EVENT) {
       throw new Error("Unable to determine trigger type from response");
     }
     return new _TriggerMetadata({
@@ -6949,7 +7134,7 @@ var BaseClient = class {
    * @returns {Promise<TResponse>} - The response from the gRPC call
    */
   sendGrpcRequest(method, request, options) {
-    const metadata = _5.cloneDeep(this.metadata);
+    const metadata = _4.cloneDeep(this.metadata);
     if (options?.authKey) {
       metadata.set(AUTH_KEY_HEADER, options.authKey);
     } else if (this.authKey) {
@@ -7025,41 +7210,58 @@ var Client = class extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
    */
-  async getWorkflows(address, options) {
+  async getWorkflows(addresses, options) {
     const request = new avs_pb19.ListTasksReq();
-    request.setSmartWalletAddress(address);
+    for (const a of addresses) {
+      request.addSmartWalletAddress(a);
+    }
     if (options?.cursor) {
       request.setCursor(options.cursor);
     }
     request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
     const result = await this.sendGrpcRequest("listTasks", request, options);
-    console.log("result", result.toObject());
     return {
       cursor: result.getCursor(),
+      hasMore: result.getHasMore(),
       result: result.getItemsList().map((item) => workflow_default.fromListResponse(item))
     };
   }
   /**
-   * Get the list of executions for a workflow
-   * @param {string} workflowId - The Id of the workflow
+   * Get the list of executions for multiple workflow given in the workflows argument.
+   * @param {string[]} workflows - The list of workflow ids to fetch execution for
    * @param {GetExecutionsRequest} options - Request options
    * @param {string} [options.cursor] - The cursor for pagination
    * @param {number} [options.limit] - The page limit of the response; default is 10
    * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
    */
-  async getExecutions(workflowId, options) {
+  async getExecutions(workflows, options) {
     const request = new avs_pb19.ListExecutionsReq();
-    request.setId(workflowId);
-    if (options?.cursor) {
+    request.setTaskIdsList(workflows);
+    if (options?.cursor && options?.cursor != "") {
       request.setCursor(options.cursor);
     }
     request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
     const result = await this.sendGrpcRequest("listExecutions", request, options);
     return {
       cursor: result.getCursor(),
-      result: result.getItemsList().map((item) => execution_default.fromResponse(item))
+      result: result.getItemsList().map((item) => execution_default.fromResponse(item)),
+      hasMore: result.getHasMore()
     };
+  }
+  /**
+   * Get a single execution for given workflow and execution id
+   * @param {string} workflowId - The workflow id
+   * @param {string} executionId - The exectuion id
+   * @param {GetExecutionsRequest} options - Request options
+   * @returns {Promise<Execution>} - The result execution if it is existed
+   */
+  async getExecution(taskId, executionId, options) {
+    const request = new avs_pb19.GetExecutionReq();
+    request.setTaskId(taskId);
+    request.setExecutionId(executionId);
+    const result = await this.sendGrpcRequest("getExecution", request, options);
+    return execution_default.fromResponse(result);
   }
   /**
    * Get a workflow by its Id

@@ -12,14 +12,19 @@ jobs:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
-    
+      # TODO: remove this before merge
+      # Pin to this branch to have all the fix
+      AVS_BUILD_VERSION: passing-result-to-subsequent-steps
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
  
     - name: Bring up docker compose
       run: |
+
         docker compose up -d
         
     - name: Debug environment variables

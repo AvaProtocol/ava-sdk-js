@@ -66,7 +66,7 @@ describe("deleteWorkflow Tests", () => {
     const result = await client.deleteWorkflow(workflowId);
     expect(result).toBe(true);
 
-    const listRes = await client.getWorkflows(wallet.address);
+    const listRes = await client.getWorkflows([wallet.address]);
 
     expect(Array.isArray(listRes.result)).toBe(true);
     expect(listRes.result.some((task) => task.id === workflowId)).toBe(false);

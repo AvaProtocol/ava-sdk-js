@@ -75,7 +75,7 @@ describe("triggerWorkflow Tests", () => {
     );
     queueForRemoval(createdWorkflows, workflowId);
 
-    const executions = await client.getExecutions(workflowId);
+    const executions = await client.getExecutions([workflowId]);
 
     // The list should be empty because the workflow has not been executed yet
     expect(Array.isArray(executions.result)).toBe(true);
@@ -92,7 +92,7 @@ describe("triggerWorkflow Tests", () => {
     });
 
     // The list should now contain one execution
-    const executions2 = await client.getExecutions(workflowId);
+    const executions2 = await client.getExecutions([workflowId]);
 
     // Verify that the execution is successfully triggered at block number + 5
     expect(Array.isArray(executions2.result)).toBe(true);
@@ -100,9 +100,13 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].success).toEqual(true);
     expect(
       executions2.result[0].triggerMetadata?.blockNumber
-    ).toBeGreaterThanOrEqual(blockNumber + interval);
+    ).toEqual(blockNumber + interval);
+    expect(
+        executions2.result[0].triggerMetadata.type
+    ).toEqual(TriggerTypes.BLOCK);
 
     const workflow = await client.getWorkflow(workflowId);
+
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
     expect(workflow.totalExecution).toEqual(1);
   });
@@ -128,13 +132,12 @@ describe("triggerWorkflow Tests", () => {
     );
     queueForRemoval(createdWorkflows, workflowId);
 
-    const executions = await client.getExecutions(workflowId);
+    const executions = await client.getExecutions([workflowId]);
 
     // The list should be empty because the workflow has not been executed yet
     expect(Array.isArray(executions.result)).toBe(true);
     expect(executions.result.length).toEqual(0);
 
-    // Manually trigger the workflow; no need to wait because we are setting the epoch to 1 minute later
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
@@ -144,78 +147,15 @@ describe("triggerWorkflow Tests", () => {
       isBlocking: true,
     });
 
-    // The isBlocking:true does not give enough information about the execution;
-    // Since it’s blocking, could we get an indicator: does the execution reaches the final node?
-    //
-    // triggerWorkflow.result { result: true, executionId: '01JF1X8N37K3FZBNNR8DPX7DSY', jobId: '' }
-    console.log("triggerWorkflow.result", result);
-
-    // The list should now contain one execution
-    const executions2 = await client.getExecutions(workflowId);
+    // The list should now contain one execution, the id from manual trigger should matched
+    const executions2 = await client.getExecutions([workflowId]);
+    expect(executions2.result[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
+    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.CRON);
+    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch+60);
 
-    // Is success:true enough to determine the workflow is completed?
-    // Could we get the workflow id from the response?
-    //
-    // executions2 {
-    //   cursor: '',
-    //   result: [
-    //     _Execution {
-    //       id: '01JF1X8N37K3FZBNNR8DPX7DSY',
-    //       startAt: 1734157292,
-    //       endAt: 1734157292,
-    //       success: true,
-    //       error: '',
-    //       triggerMetadata: [_TriggerMetadata],
-    //       result: '',
-    //       stepsList: []
-    //     }
-    //   ]
-    // }
-    console.log("executions2", executions2);
-
-    // The workflow status should be COMPLETED since maxExecution is 1
     const workflow = await client.getWorkflow(workflowId);
-    console.log("workflow", workflow);
-
-    // The workflow has the below invalid fields:
-    // status: Completed, lastRanAt, totalExecution, completedAt
-    //
-    // Example:
-    // workflow _Workflow {
-    //   smartWalletAddress: '0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49',
-    //   trigger: _CronTrigger {
-    //     name: 'cronTrigger',
-    //     type: 4,
-    //     data: { scheduleList: [Array] }
-    //   },
-    //   nodes: [
-    //     _ContractWriteNode {
-    //       id: '01JF1X8MPW4SDK81DGFRHMP6SR',
-    //       name: 'transfer token',
-    //       type: 11,
-    //       data: [Object]
-    //     }
-    //   ],
-    //   edges: [
-    //     _Edge {
-    //       id: '01JF1X8MPW4SH5CG00VFPJM2EC',
-    //       source: '__TRIGGER__',
-    //       target: '01JF1X8MPW4SDK81DGFRHMP6SR'
-    //     }
-    //   ],
-    //   startAt: 1734157322,
-    //   expiredAt: 1736749292,
-    //   maxExecution: 1,
-    //   id: '01JF1X8N33F3NFSAB2W62B9FW4',
-    //   owner: '0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788',
-    //   memo: '',
-    //   status: 0,
-    //   completedAt: 0,
-    //   totalExecution: 0,
-    //   lastRanAt: 0
-    // }
     expect(workflow.totalExecution).toEqual(1);
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
   });
@@ -243,7 +183,7 @@ describe("triggerWorkflow Tests", () => {
     queueForRemoval(createdWorkflows, workflowId);
 
     // The list should be empty because the workflow has not been executed yet
-    const executions = await client.getExecutions(workflowId);
+    const executions = await client.getExecutions([workflowId]);
     expect(Array.isArray(executions.result)).toBe(true);
     expect(executions.result.length).toEqual(0);
 
@@ -257,24 +197,21 @@ describe("triggerWorkflow Tests", () => {
       isBlocking: true,
     });
 
-    console.log("triggerWorkflow result", result);
-
     // The list should now contain one execution
-    const executions2 = await client.getExecutions(workflowId);
-    console.log("executions2", executions2);
+    const executions2 = await client.getExecutions([workflowId]);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
-    expect(workflow.totalExecution).toEqual(3);
+    expect(workflow.totalExecution).toEqual(1);
+    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch+300);
+    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.FIXED_TIME);
   });
 
   test("trigger for event type should succeed", async () => {
     const wallet = await client.getWallet({ salt: "0" });
     const blockNumber = await getBlockNumber();
-
-    console.log("blockNumber", blockNumber);
 
     const trigger = TriggerFactory.create({
       name: "eventTrigger",
@@ -294,7 +231,7 @@ describe("triggerWorkflow Tests", () => {
     queueForRemoval(createdWorkflows, workflowId);
 
     // The list should be empty because the workflow has not been executed yet
-    const executions = await client.getExecutions(workflowId);
+    const executions = await client.getExecutions([workflowId]);
     expect(Array.isArray(executions.result)).toBe(true);
     expect(executions.result.length).toEqual(0);
 
@@ -310,17 +247,60 @@ describe("triggerWorkflow Tests", () => {
       isBlocking: true,
     });
 
-    console.log("triggerWorkflow result", result);
-
     // The list should now contain one execution
-    const executions2 = await client.getExecutions(workflowId);
-    console.log("executions2", executions2);
+    const executions2 = await client.getExecutions([workflowId]);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
     expect(workflow.totalExecution).toEqual(1);
+    expect(executions2.result[0].triggerMetadata.blockNumber).toEqual(blockNumber+5);
+    expect(executions2.result[0].triggerMetadata.txHash).toEqual("0x1234567890");
+    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.EVENT);
+  });
+
+  test("trigger return correct execution id in blocking mode", async () => {
+    const wallet = await client.getWallet({ salt: "0" });
+    await cleanupWorkflows(client, wallet.address);
+    const epoch = Math.floor(Date.now() / 1000);
+
+    // Create a cron trigger with a schedule of every minute
+    const trigger = TriggerFactory.create({
+      name: "cronTrigger",
+      type: TriggerTypes.CRON,
+      data: { scheduleList: ["* * * * *"] },
+    });
+
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...WorkflowTemplate,
+        trigger,
+        smartWalletAddress: wallet.address,
+      })
+    );
+    queueForRemoval(createdWorkflows, workflowId);
+
+    const executions = await client.getExecutions([workflowId]);
+
+    // The list should be empty because the workflow has not been executed yet
+    expect(Array.isArray(executions.result)).toBe(true);
+    expect(executions.result.length).toEqual(0);
+
+    const result = await client.triggerWorkflow({
+      id: workflowId,
+      data: {
+        type: TriggerTypes.CRON,
+        epoch: epoch + 60, // set epoch to 1 minute later
+      },
+      isBlocking: true,
+    });
+
+    // The list should now contain one execution, the id from manual trigger should matched
+    const execution = await client.getExecution(workflowId, result.executionId);
+    expect(execution.id).toEqual(result.executionId);
+    expect(execution.triggerMetadata.type).toEqual(TriggerTypes.CRON);
+    expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
   });
 
   test("should throw trigger an non-existent workflow Id", async () => {

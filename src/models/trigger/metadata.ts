@@ -23,7 +23,6 @@ class TriggerMetadata {
   txHash?: string;
 
   constructor(props: TriggerMetadataProps) {
-    console.log("constructor.props", props);
     this.type = props.type;
     // Configure metadata based on trigger type
     switch (props.type) {
@@ -50,19 +49,8 @@ class TriggerMetadata {
     if (!data) {
       return undefined;
     }
-    console.log("fromResponse.data", data.toObject());
-
-    let type: TriggerType;
-
-    if (data.getEpoch() !== 0) {
-      type = TriggerTypes.FIXED_TIME;
-    } else if (data.getBlockNumber() !== 0) {
-      if (data.getLogIndex() !== 0 && !_.isEmpty(data.getTxHash())) {
-        type = TriggerTypes.EVENT;
-      } else {
-        type = TriggerTypes.BLOCK;
-      }
-    } else {
+    let type = data.getType() as unknown as avs_pb.TaskTrigger.TriggerTypeCase;
+    if (type != avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME && type != avs_pb.TaskTrigger.TriggerTypeCase.CRON && type != avs_pb.TaskTrigger.TriggerTypeCase.BLOCK && type !=avs_pb.TaskTrigger.TriggerTypeCase.EVENT) {
       throw new Error("Unable to determine trigger type from response");
     }
 
