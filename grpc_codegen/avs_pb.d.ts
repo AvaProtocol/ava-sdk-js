@@ -856,8 +856,8 @@ export namespace NonceResp {
 }
 
 export class ListWalletReq extends jspb.Message { 
-    getFactory(): string;
-    setFactory(value: string): ListWalletReq;
+    getFactoryAddress(): string;
+    setFactoryAddress(value: string): ListWalletReq;
     getSalt(): string;
     setSalt(value: string): ListWalletReq;
 
@@ -873,7 +873,7 @@ export class ListWalletReq extends jspb.Message {
 
 export namespace ListWalletReq {
     export type AsObject = {
-        factory: string,
+        factoryAddress: string,
         salt: string,
     }
 }
@@ -1096,26 +1096,46 @@ export namespace ListExecutionsResp {
     }
 }
 
-export class GetExecutionReq extends jspb.Message { 
+export class ExecutionReq extends jspb.Message { 
     getTaskId(): string;
-    setTaskId(value: string): GetExecutionReq;
+    setTaskId(value: string): ExecutionReq;
     getExecutionId(): string;
-    setExecutionId(value: string): GetExecutionReq;
+    setExecutionId(value: string): ExecutionReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): GetExecutionReq.AsObject;
-    static toObject(includeInstance: boolean, msg: GetExecutionReq): GetExecutionReq.AsObject;
+    toObject(includeInstance?: boolean): ExecutionReq.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecutionReq): ExecutionReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: GetExecutionReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): GetExecutionReq;
-    static deserializeBinaryFromReader(message: GetExecutionReq, reader: jspb.BinaryReader): GetExecutionReq;
+    static serializeBinaryToWriter(message: ExecutionReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecutionReq;
+    static deserializeBinaryFromReader(message: ExecutionReq, reader: jspb.BinaryReader): ExecutionReq;
 }
 
-export namespace GetExecutionReq {
+export namespace ExecutionReq {
     export type AsObject = {
         taskId: string,
         executionId: string,
+    }
+}
+
+export class ExecutionStatusResp extends jspb.Message { 
+    getStatus(): ExecutionStatus;
+    setStatus(value: ExecutionStatus): ExecutionStatusResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ExecutionStatusResp.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecutionStatusResp): ExecutionStatusResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ExecutionStatusResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecutionStatusResp;
+    static deserializeBinaryFromReader(message: ExecutionStatusResp, reader: jspb.BinaryReader): ExecutionStatusResp;
+}
+
+export namespace ExecutionStatusResp {
+    export type AsObject = {
+        status: ExecutionStatus,
     }
 }
 
@@ -1286,10 +1306,10 @@ export namespace UserTriggerTaskReq {
 }
 
 export class UserTriggerTaskResp extends jspb.Message { 
-    getResult(): boolean;
-    setResult(value: boolean): UserTriggerTaskResp;
     getExecutionId(): string;
     setExecutionId(value: string): UserTriggerTaskResp;
+    getStatus(): ExecutionStatus;
+    setStatus(value: ExecutionStatus): UserTriggerTaskResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
@@ -1303,8 +1323,8 @@ export class UserTriggerTaskResp extends jspb.Message {
 
 export namespace UserTriggerTaskResp {
     export type AsObject = {
-        result: boolean,
         executionId: string,
+        status: ExecutionStatus,
     }
 }
 
@@ -1317,6 +1337,7 @@ export enum Error {
     SMARTWALLETNOTFOUNDERROR = 6001,
     TASKDATACORRUPTED = 7000,
     TASKDATAMISSINGERROR = 7001,
+    TASKTRIGGERERROR = 7003,
 }
 
 export enum TaskStatus {
@@ -1325,6 +1346,11 @@ export enum TaskStatus {
     FAILED = 2,
     CANCELED = 3,
     EXECUTING = 4,
+}
+
+export enum ExecutionStatus {
+    QUEUED = 0,
+    FINISHED = 2,
 }
 
 export enum CustomCodeLang {

@@ -357,16 +357,43 @@ export default class Client extends BaseClient {
     executionId: string,
     options?: RequestOptions 
   ): Promise<Execution> {
-    const request = new avs_pb.GetExecutionReq();
+    const request = new avs_pb.ExecutionReq();
     request.setTaskId(taskId);
     request.setExecutionId(executionId);
 
     const result = await this.sendGrpcRequest<
       avs_pb.Execution,
-      avs_pb.GetExecutionReq
+      avs_pb.ExecutionReq
     >("getExecution", request, options);
 
     return Execution.fromResponse(result);
+  }
+
+  /**
+   * Get status of an execution.
+   *
+   * When a task is trigger in async manner, it has not run yet, so the data isn't available to return in GetExecution. Calling GetExecution will return in execution not found. We can instad call getExecutionStatus to check whether the execution is finished or not.
+   *
+   * @param {string} workflowId - The workflow id
+   * @param {string} executionId - The exectuion id
+   * @param {GetExecutionsRequest} options - Request options
+   * @returns {Promise<ExecutionStatus>} - The result execution if it is existed
+   */
+  async getExecutionStatus(
+    taskId: string,
+    executionId: string,
+    options?: RequestOptions 
+  ): Promise<avs_pb.ExecutionStatus> {
+    const request = new avs_pb.ExecutionReq();
+    request.setTaskId(taskId);
+    request.setExecutionId(executionId);
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.ExecutionStatusResp,
+      avs_pb.ExecutionReq
+    >("getExecutionStatus", request, options);
+
+    return result.getStatus();
   }
 
   /**

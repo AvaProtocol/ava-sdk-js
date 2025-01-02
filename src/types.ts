@@ -34,3 +34,5 @@ export interface ClientOption {
 }
 
 export type SmartWallet = avs_pb.SmartWallet.AsObject;
+
+export const ExecutionStatus = avs_pb.ExecutionStatus;

@@ -859,8 +859,8 @@ declare namespace NonceResp {
 }
 
 declare class ListWalletReq extends jspb.Message { 
-    getFactory(): string;
-    setFactory(value: string): ListWalletReq;
+    getFactoryAddress(): string;
+    setFactoryAddress(value: string): ListWalletReq;
     getSalt(): string;
     setSalt(value: string): ListWalletReq;
 
@@ -876,7 +876,7 @@ declare class ListWalletReq extends jspb.Message {
 
 declare namespace ListWalletReq {
     export type AsObject = {
-        factory: string,
+        factoryAddress: string,
         salt: string,
     }
 }
@@ -1099,26 +1099,46 @@ declare namespace ListExecutionsResp {
     }
 }
 
-declare class GetExecutionReq extends jspb.Message { 
+declare class ExecutionReq extends jspb.Message { 
     getTaskId(): string;
-    setTaskId(value: string): GetExecutionReq;
+    setTaskId(value: string): ExecutionReq;
     getExecutionId(): string;
-    setExecutionId(value: string): GetExecutionReq;
+    setExecutionId(value: string): ExecutionReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): GetExecutionReq.AsObject;
-    static toObject(includeInstance: boolean, msg: GetExecutionReq): GetExecutionReq.AsObject;
+    toObject(includeInstance?: boolean): ExecutionReq.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecutionReq): ExecutionReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: GetExecutionReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): GetExecutionReq;
-    static deserializeBinaryFromReader(message: GetExecutionReq, reader: jspb.BinaryReader): GetExecutionReq;
+    static serializeBinaryToWriter(message: ExecutionReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecutionReq;
+    static deserializeBinaryFromReader(message: ExecutionReq, reader: jspb.BinaryReader): ExecutionReq;
 }
 
-declare namespace GetExecutionReq {
+declare namespace ExecutionReq {
     export type AsObject = {
         taskId: string,
         executionId: string,
+    }
+}
+
+declare class ExecutionStatusResp extends jspb.Message { 
+    getStatus(): ExecutionStatus$1;
+    setStatus(value: ExecutionStatus$1): ExecutionStatusResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ExecutionStatusResp.AsObject;
+    static toObject(includeInstance: boolean, msg: ExecutionStatusResp): ExecutionStatusResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ExecutionStatusResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ExecutionStatusResp;
+    static deserializeBinaryFromReader(message: ExecutionStatusResp, reader: jspb.BinaryReader): ExecutionStatusResp;
+}
+
+declare namespace ExecutionStatusResp {
+    export type AsObject = {
+        status: ExecutionStatus$1,
     }
 }
 
@@ -1289,10 +1309,10 @@ declare namespace UserTriggerTaskReq {
 }
 
 declare class UserTriggerTaskResp extends jspb.Message { 
-    getResult(): boolean;
-    setResult(value: boolean): UserTriggerTaskResp;
     getExecutionId(): string;
     setExecutionId(value: string): UserTriggerTaskResp;
+    getStatus(): ExecutionStatus$1;
+    setStatus(value: ExecutionStatus$1): UserTriggerTaskResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
@@ -1306,8 +1326,8 @@ declare class UserTriggerTaskResp extends jspb.Message {
 
 declare namespace UserTriggerTaskResp {
     export type AsObject = {
-        result: boolean,
         executionId: string,
+        status: ExecutionStatus$1,
     }
 }
 
@@ -1317,6 +1337,11 @@ declare enum TaskStatus {
     FAILED = 2,
     CANCELED = 3,
     EXECUTING = 4,
+}
+
+declare enum ExecutionStatus$1 {
+    QUEUED = 0,
+    FINISHED = 2,
 }
 
 declare enum CustomCodeLang {
@@ -1353,9 +1378,12 @@ interface IAggregatorClient {
     listExecutions(request: ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
-    getExecution(request: GetExecutionReq, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
-    getExecution(request: GetExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
-    getExecution(request: GetExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    getExecution(request: ExecutionReq, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    getExecution(request: ExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    getExecution(request: ExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    getExecutionStatus(request: ExecutionReq, callback: (error: grpc.ServiceError | null, response: ExecutionStatusResp) => void): grpc.ClientUnaryCall;
+    getExecutionStatus(request: ExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ExecutionStatusResp) => void): grpc.ClientUnaryCall;
+    getExecutionStatus(request: ExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ExecutionStatusResp) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -1393,9 +1421,12 @@ declare class AggregatorClient extends grpc.Client implements IAggregatorClient 
     public listExecutions(request: ListExecutionsReq, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
     public listExecutions(request: ListExecutionsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ListExecutionsResp) => void): grpc.ClientUnaryCall;
-    public getExecution(request: GetExecutionReq, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
-    public getExecution(request: GetExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
-    public getExecution(request: GetExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    public getExecution(request: ExecutionReq, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    public getExecution(request: ExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    public getExecution(request: ExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: Execution$1) => void): grpc.ClientUnaryCall;
+    public getExecutionStatus(request: ExecutionReq, callback: (error: grpc.ServiceError | null, response: ExecutionStatusResp) => void): grpc.ClientUnaryCall;
+    public getExecutionStatus(request: ExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: ExecutionStatusResp) => void): grpc.ClientUnaryCall;
+    public getExecutionStatus(request: ExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: ExecutionStatusResp) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public cancelTask(request: IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -1716,6 +1747,7 @@ interface ClientOption {
     factoryAddress?: string;
 }
 type SmartWallet = SmartWallet$1.AsObject;
+declare const ExecutionStatus: typeof ExecutionStatus$1;
 
 declare class BaseClient {
     readonly endpoint: string;
@@ -1836,6 +1868,17 @@ declare class Client extends BaseClient {
      */
     getExecution(taskId: string, executionId: string, options?: RequestOptions): Promise<Execution>;
     /**
+     * Get status of an execution.
+     *
+     * When a task is trigger in async manner, it has not run yet, so the data isn't available to return in GetExecution. Calling GetExecution will return in execution not found. We can instad call getExecutionStatus to check whether the execution is finished or not.
+     *
+     * @param {string} workflowId - The workflow id
+     * @param {string} executionId - The exectuion id
+     * @param {GetExecutionsRequest} options - Request options
+     * @returns {Promise<ExecutionStatus>} - The result execution if it is existed
+     */
+    getExecutionStatus(taskId: string, executionId: string, options?: RequestOptions): Promise<ExecutionStatus$1>;
+    /**
      * Get a workflow by its Id
      * @param {string} id - The Id of the workflow
      * @param {RequestOptions} options - Request options
@@ -1871,4 +1914,4 @@ declare class Client extends BaseClient {
     deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, ExecutionStatus, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };

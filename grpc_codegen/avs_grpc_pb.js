@@ -38,15 +38,26 @@ function deserialize_aggregator_Execution(buffer_arg) {
   return avs_pb.Execution.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_GetExecutionReq(arg) {
-  if (!(arg instanceof avs_pb.GetExecutionReq)) {
-    throw new Error('Expected argument of type aggregator.GetExecutionReq');
+function serialize_aggregator_ExecutionReq(arg) {
+  if (!(arg instanceof avs_pb.ExecutionReq)) {
+    throw new Error('Expected argument of type aggregator.ExecutionReq');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_GetExecutionReq(buffer_arg) {
-  return avs_pb.GetExecutionReq.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_ExecutionReq(buffer_arg) {
+  return avs_pb.ExecutionReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_ExecutionStatusResp(arg) {
+  if (!(arg instanceof avs_pb.ExecutionStatusResp)) {
+    throw new Error('Expected argument of type aggregator.ExecutionStatusResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_ExecutionStatusResp(buffer_arg) {
+  return avs_pb.ExecutionStatusResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_GetKeyReq(arg) {
@@ -333,12 +344,23 @@ createTask: {
     path: '/aggregator.Aggregator/GetExecution',
     requestStream: false,
     responseStream: false,
-    requestType: avs_pb.GetExecutionReq,
+    requestType: avs_pb.ExecutionReq,
     responseType: avs_pb.Execution,
-    requestSerialize: serialize_aggregator_GetExecutionReq,
-    requestDeserialize: deserialize_aggregator_GetExecutionReq,
+    requestSerialize: serialize_aggregator_ExecutionReq,
+    requestDeserialize: deserialize_aggregator_ExecutionReq,
     responseSerialize: serialize_aggregator_Execution,
     responseDeserialize: deserialize_aggregator_Execution,
+  },
+  getExecutionStatus: {
+    path: '/aggregator.Aggregator/GetExecutionStatus',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.ExecutionReq,
+    responseType: avs_pb.ExecutionStatusResp,
+    requestSerialize: serialize_aggregator_ExecutionReq,
+    requestDeserialize: deserialize_aggregator_ExecutionReq,
+    responseSerialize: serialize_aggregator_ExecutionStatusResp,
+    responseDeserialize: deserialize_aggregator_ExecutionStatusResp,
   },
   cancelTask: {
     path: '/aggregator.Aggregator/CancelTask',
