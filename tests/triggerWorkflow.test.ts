@@ -3,6 +3,7 @@ import Client, {
   TriggerFactory,
   TriggerTypes,
   WorkflowStatuses,
+  ExecutionStatus,
 } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
@@ -301,7 +302,45 @@ describe("triggerWorkflow Tests", () => {
     expect(execution.id).toEqual(result.executionId);
     expect(execution.triggerMetadata.type).toEqual(TriggerTypes.CRON);
     expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
+
+    const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
+    expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
   });
+
+  test("trigger async return id and pending status", async () => {
+    const wallet = await client.getWallet({ salt: "0" });
+    await cleanupWorkflows(client, wallet.address);
+    const epoch = Math.floor(Date.now() / 1000);
+
+    // Create a cron trigger with a schedule of every minute
+    const trigger = TriggerFactory.create({
+      name: "cronTrigger",
+      type: TriggerTypes.CRON,
+      data: { scheduleList: ["* * * * *"] },
+    });
+
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...WorkflowTemplate,
+        trigger,
+        smartWalletAddress: wallet.address,
+      })
+    );
+    queueForRemoval(createdWorkflows, workflowId);
+
+    const result = await client.triggerWorkflow({
+      id: workflowId,
+      data: {
+        type: TriggerTypes.CRON,
+        epoch: epoch + 60, // set epoch to 1 minute later
+      },
+      isBlocking: false,
+    });
+
+    expect(result.status).toEqual(ExecutionStatus.QUEUED);
+    expect(result.executionId).toHaveLength(26);
+  });
+
 
   test("should throw trigger an non-existent workflow Id", async () => {
     const wallet = await client.getWallet({ salt: "0" });
