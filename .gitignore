@@ -4,6 +4,7 @@ jspm_packages/
 
 # Build outputs
 build/
+dist/
 out/
 *.tsbuildinfo
 
