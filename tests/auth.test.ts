@@ -1,12 +1,4 @@
-import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, {
-  Edge,
-  NodeFactory,
-  TriggerFactory,
-  TriggerTypes,
-  Workflow,
-  WorkflowStatus,
-} from "../dist";
+import Client, { WorkflowStatus } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -17,13 +9,7 @@ import {
   removeCreatedWorkflows,
   compareResults,
 } from "./utils";
-import {
-  EdgesTemplate,
-  EXPIRED_AT,
-  FACTORY_ADDRESS,
-  NodesTemplate,
-  WorkflowTemplate,
-} from "./templates";
+import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });

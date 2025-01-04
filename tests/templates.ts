@@ -5,7 +5,7 @@ import {
   NodeTypes,
   NodeProps,
   TriggerFactory,
-  TriggerTypes,
+  TriggerType,
   ContractWriteNodeProps,
   ContractReadNodeProps,
   ETHTransferNodeProps,
@@ -138,7 +138,7 @@ export const WorkflowTemplate = {
   edges: _.map(EdgesTemplate, (edge) => new Edge(edge)),
   trigger: TriggerFactory.create({
     name: "blockTrigger",
-    type: TriggerTypes.BLOCK,
+    type: TriggerType.Block,
     data: { interval: 5 },
   }),
   startAt: Math.floor(Date.now() / 1000) + 30,
@@ -193,7 +193,7 @@ export const MultiNodeWithBranch = {
   edges: _.map(edges, (edge) => new Edge(edge)),
   trigger: TriggerFactory.create({
     name: "blockTrigger",
-    type: TriggerTypes.BLOCK,
+    type: TriggerType.Block,
     data: { interval: 5 },
   }),
   startAt: Math.floor(Date.now() / 1000) + 30,

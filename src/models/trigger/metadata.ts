@@ -1,19 +1,38 @@
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
-import type { TriggerType } from "./interface";
-import { TriggerTypes } from "./interface";
+import { TriggerType } from "../../types";
 import _ from "lodash";
 
 // Union type for all possible trigger data
 export type TriggerMetadataProps =
-  | { type: avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME; epoch: number }
-  | { type: avs_pb.TaskTrigger.TriggerTypeCase.CRON; epoch: number }
-  | { type: avs_pb.TaskTrigger.TriggerTypeCase.BLOCK; blockNumber: number }
+  | { type: TriggerType.FixedTime; epoch: number }
+  | { type: TriggerType.Cron; epoch: number }
+  | { type: TriggerType.Block; blockNumber: number }
   | {
-      type: avs_pb.TaskTrigger.TriggerTypeCase.EVENT;
+      type: TriggerType.Event;
       blockNumber: number;
       logIndex: number;
       txHash: string;
-    };
+    }
+  | { type: TriggerType.Manual }
+  | { type: TriggerType.Unset };
+
+// Convert the number values of gRPC TriggerType to string values of TriggerType
+const convertTriggerType = (
+  grpcType: avs_pb.TriggerMetadata.TriggerType
+): TriggerType => {
+  const conversionMap: {
+    [key in avs_pb.TriggerMetadata.TriggerType]: TriggerType;
+  } = {
+    [avs_pb.TriggerMetadata.TriggerType.FIXEDTIME]: TriggerType.FixedTime,
+    [avs_pb.TriggerMetadata.TriggerType.CRON]: TriggerType.Cron,
+    [avs_pb.TriggerMetadata.TriggerType.BLOCK]: TriggerType.Block,
+    [avs_pb.TriggerMetadata.TriggerType.EVENT]: TriggerType.Event,
+    [avs_pb.TriggerMetadata.TriggerType.MANUAL]: TriggerType.Manual,
+    [avs_pb.TriggerMetadata.TriggerType.UNSET]: TriggerType.Unset,
+  };
+
+  return conversionMap[grpcType];
+};
 
 class TriggerMetadata {
   type: TriggerType;
@@ -24,16 +43,17 @@ class TriggerMetadata {
 
   constructor(props: TriggerMetadataProps) {
     this.type = props.type;
+
     // Configure metadata based on trigger type
     switch (props.type) {
-      case TriggerTypes.FIXED_TIME:
-      case TriggerTypes.CRON:
+      case TriggerType.FixedTime:
+      case TriggerType.Cron:
         this.epoch = props.epoch;
         break;
-      case TriggerTypes.BLOCK:
+      case TriggerType.Block:
         this.blockNumber = props.blockNumber;
         break;
-      case TriggerTypes.EVENT:
+      case TriggerType.Event:
         this.blockNumber = props.blockNumber;
         this.logIndex = props.logIndex;
         this.txHash = props.txHash;
@@ -49,13 +69,9 @@ class TriggerMetadata {
     if (!data) {
       return undefined;
     }
-    let type = data.getType() as unknown as avs_pb.TaskTrigger.TriggerTypeCase;
-    if (type != avs_pb.TaskTrigger.TriggerTypeCase.FIXED_TIME && type != avs_pb.TaskTrigger.TriggerTypeCase.CRON && type != avs_pb.TaskTrigger.TriggerTypeCase.BLOCK && type !=avs_pb.TaskTrigger.TriggerTypeCase.EVENT) {
-      throw new Error("Unable to determine trigger type from response");
-    }
 
     return new TriggerMetadata({
-      type,
+      type: convertTriggerType(data.getType()),
       blockNumber: data.getBlockNumber(),
       epoch: data.getEpoch(),
       logIndex: data.getLogIndex(),
@@ -67,18 +83,26 @@ class TriggerMetadata {
     const request = new avs_pb.TriggerMetadata();
 
     switch (this.type) {
-      case TriggerTypes.FIXED_TIME:
-      case TriggerTypes.CRON:
+      case TriggerType.FixedTime:
+        request.setType(avs_pb.TriggerMetadata.TriggerType.FIXEDTIME);
         if (this.epoch) {
           request.setEpoch(this.epoch);
         }
         break;
-      case TriggerTypes.BLOCK:
+      case TriggerType.Cron:
+        request.setType(avs_pb.TriggerMetadata.TriggerType.CRON);
+        if (this.epoch) {
+          request.setEpoch(this.epoch);
+        }
+        break;
+      case TriggerType.Block:
+        request.setType(avs_pb.TriggerMetadata.TriggerType.BLOCK);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
         break;
-      case TriggerTypes.EVENT:
+      case TriggerType.Event:
+        request.setType(avs_pb.TriggerMetadata.TriggerType.EVENT);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
@@ -88,6 +112,12 @@ class TriggerMetadata {
         if (this.txHash) {
           request.setTxHash(this.txHash);
         }
+        break;
+      case TriggerType.Manual:
+        request.setType(avs_pb.TriggerMetadata.TriggerType.MANUAL);
+        break;
+      case TriggerType.Unset:
+        request.setType(avs_pb.TriggerMetadata.TriggerType.UNSET);
         break;
       default:
         throw new Error("Unsupported trigger type");

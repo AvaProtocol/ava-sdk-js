@@ -1433,25 +1433,6 @@ declare class Edge implements EdgeProps {
     toRequest(): TaskEdge;
 }
 
-declare const TriggerTypes: typeof TaskTrigger.TriggerTypeCase;
-type TriggerType = TaskTrigger.TriggerTypeCase;
-type TriggerData = FixedTimeCondition.AsObject | CronCondition.AsObject | BlockCondition.AsObject | EventCondition.AsObject | null;
-type TriggerProps = Omit<TaskTrigger.AsObject, "manual" | "fixedTime" | "cron" | "block" | "event"> & {
-    type: TriggerType;
-    data: TriggerData;
-};
-declare class Trigger implements TriggerProps {
-    name: string;
-    type: TriggerType;
-    data: TriggerData;
-    /**
-     * Create an instance of Trigger from user inputs
-     * @param props
-     */
-    constructor(props: TriggerProps);
-    toRequest(): TaskTrigger;
-}
-
 type Environment = "production" | "development" | "staging";
 declare const AUTH_KEY_HEADER = "authkey";
 declare const DEFAULT_LIMIT = 10;
@@ -1484,7 +1465,32 @@ declare enum WorkflowStatus {
     Canceled = "canceled",
     Executing = "executing"
 }
+declare enum TriggerType {
+    Manual = "manual",
+    FixedTime = "fixed_time",
+    Cron = "cron",
+    Block = "block",
+    Event = "event",
+    Unset = "unset"
+}
 type SmartWallet = SmartWallet$1.AsObject;
+
+type TriggerData = FixedTimeCondition.AsObject | CronCondition.AsObject | BlockCondition.AsObject | EventCondition.AsObject | null;
+type TriggerProps = Omit<TaskTrigger.AsObject, "manual" | "fixedTime" | "cron" | "block" | "event"> & {
+    type: TriggerType;
+    data: TriggerData;
+};
+declare class Trigger implements TriggerProps {
+    name: string;
+    type: TriggerType;
+    data: TriggerData;
+    /**
+     * Create an instance of Trigger from user inputs
+     * @param props
+     */
+    constructor(props: TriggerProps);
+    toRequest(): TaskTrigger;
+}
 
 type WorkflowProps = Omit<Task.AsObject, "id" | "owner" | "completedAt" | "status" | "executionsList" | "memo" | "trigger" | "nodesList" | "edgesList" | "totalExecution" | "lastRanAt"> & {
     id?: string;
@@ -1533,19 +1539,23 @@ declare class Workflow implements WorkflowProps {
 }
 
 type TriggerMetadataProps = {
-    type: TaskTrigger.TriggerTypeCase.FIXED_TIME;
+    type: TriggerType.FixedTime;
     epoch: number;
 } | {
-    type: TaskTrigger.TriggerTypeCase.CRON;
+    type: TriggerType.Cron;
     epoch: number;
 } | {
-    type: TaskTrigger.TriggerTypeCase.BLOCK;
+    type: TriggerType.Block;
     blockNumber: number;
 } | {
-    type: TaskTrigger.TriggerTypeCase.EVENT;
+    type: TriggerType.Event;
     blockNumber: number;
     logIndex: number;
     txHash: string;
+} | {
+    type: TriggerType.Manual;
+} | {
+    type: TriggerType.Unset;
 };
 declare class TriggerMetadata {
     type: TriggerType;
@@ -1876,4 +1886,4 @@ declare class Client extends BaseClient {
     deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, TriggerTypes, Workflow, type WorkflowProps, WorkflowStatus, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, Workflow, type WorkflowProps, WorkflowStatus, Client as default, getKeyRequestMessage };

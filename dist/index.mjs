@@ -5916,187 +5916,187 @@ var require_avs_grpc_pb = __commonJS({
   "grpc_codegen/avs_grpc_pb.js"(exports) {
     "use strict";
     var grpc2 = __require("@grpc/grpc-js");
-    var avs_pb20 = require_avs_pb();
+    var avs_pb19 = require_avs_pb();
     var google_protobuf_wrappers_pb = __require("google-protobuf/google/protobuf/wrappers_pb.js");
     function serialize_aggregator_CreateTaskReq(arg) {
-      if (!(arg instanceof avs_pb20.CreateTaskReq)) {
+      if (!(arg instanceof avs_pb19.CreateTaskReq)) {
         throw new Error("Expected argument of type aggregator.CreateTaskReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskReq(buffer_arg) {
-      return avs_pb20.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CreateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_CreateTaskResp(arg) {
-      if (!(arg instanceof avs_pb20.CreateTaskResp)) {
+      if (!(arg instanceof avs_pb19.CreateTaskResp)) {
         throw new Error("Expected argument of type aggregator.CreateTaskResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_CreateTaskResp(buffer_arg) {
-      return avs_pb20.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Execution(arg) {
-      if (!(arg instanceof avs_pb20.Execution)) {
+      if (!(arg instanceof avs_pb19.Execution)) {
         throw new Error("Expected argument of type aggregator.Execution");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Execution(buffer_arg) {
-      return avs_pb20.Execution.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.Execution.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetExecutionReq(arg) {
-      if (!(arg instanceof avs_pb20.GetExecutionReq)) {
+      if (!(arg instanceof avs_pb19.GetExecutionReq)) {
         throw new Error("Expected argument of type aggregator.GetExecutionReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetExecutionReq(buffer_arg) {
-      return avs_pb20.GetExecutionReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.GetExecutionReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetKeyReq(arg) {
-      if (!(arg instanceof avs_pb20.GetKeyReq)) {
+      if (!(arg instanceof avs_pb19.GetKeyReq)) {
         throw new Error("Expected argument of type aggregator.GetKeyReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetKeyReq(buffer_arg) {
-      return avs_pb20.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetWalletReq(arg) {
-      if (!(arg instanceof avs_pb20.GetWalletReq)) {
+      if (!(arg instanceof avs_pb19.GetWalletReq)) {
         throw new Error("Expected argument of type aggregator.GetWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetWalletReq(buffer_arg) {
-      return avs_pb20.GetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.GetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_GetWalletResp(arg) {
-      if (!(arg instanceof avs_pb20.GetWalletResp)) {
+      if (!(arg instanceof avs_pb19.GetWalletResp)) {
         throw new Error("Expected argument of type aggregator.GetWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_GetWalletResp(buffer_arg) {
-      return avs_pb20.GetWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.GetWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_IdReq(arg) {
-      if (!(arg instanceof avs_pb20.IdReq)) {
+      if (!(arg instanceof avs_pb19.IdReq)) {
         throw new Error("Expected argument of type aggregator.IdReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_IdReq(buffer_arg) {
-      return avs_pb20.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.IdReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_KeyResp(arg) {
-      if (!(arg instanceof avs_pb20.KeyResp)) {
+      if (!(arg instanceof avs_pb19.KeyResp)) {
         throw new Error("Expected argument of type aggregator.KeyResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_KeyResp(buffer_arg) {
-      return avs_pb20.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.KeyResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListExecutionsReq(arg) {
-      if (!(arg instanceof avs_pb20.ListExecutionsReq)) {
+      if (!(arg instanceof avs_pb19.ListExecutionsReq)) {
         throw new Error("Expected argument of type aggregator.ListExecutionsReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListExecutionsReq(buffer_arg) {
-      return avs_pb20.ListExecutionsReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListExecutionsReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListExecutionsResp(arg) {
-      if (!(arg instanceof avs_pb20.ListExecutionsResp)) {
+      if (!(arg instanceof avs_pb19.ListExecutionsResp)) {
         throw new Error("Expected argument of type aggregator.ListExecutionsResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListExecutionsResp(buffer_arg) {
-      return avs_pb20.ListExecutionsResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListExecutionsResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksReq(arg) {
-      if (!(arg instanceof avs_pb20.ListTasksReq)) {
+      if (!(arg instanceof avs_pb19.ListTasksReq)) {
         throw new Error("Expected argument of type aggregator.ListTasksReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksReq(buffer_arg) {
-      return avs_pb20.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListTasksReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListTasksResp(arg) {
-      if (!(arg instanceof avs_pb20.ListTasksResp)) {
+      if (!(arg instanceof avs_pb19.ListTasksResp)) {
         throw new Error("Expected argument of type aggregator.ListTasksResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListTasksResp(buffer_arg) {
-      return avs_pb20.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListTasksResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListWalletReq(arg) {
-      if (!(arg instanceof avs_pb20.ListWalletReq)) {
+      if (!(arg instanceof avs_pb19.ListWalletReq)) {
         throw new Error("Expected argument of type aggregator.ListWalletReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListWalletReq(buffer_arg) {
-      return avs_pb20.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_ListWalletResp(arg) {
-      if (!(arg instanceof avs_pb20.ListWalletResp)) {
+      if (!(arg instanceof avs_pb19.ListWalletResp)) {
         throw new Error("Expected argument of type aggregator.ListWalletResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_ListWalletResp(buffer_arg) {
-      return avs_pb20.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.ListWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceRequest(arg) {
-      if (!(arg instanceof avs_pb20.NonceRequest)) {
+      if (!(arg instanceof avs_pb19.NonceRequest)) {
         throw new Error("Expected argument of type aggregator.NonceRequest");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceRequest(buffer_arg) {
-      return avs_pb20.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.NonceRequest.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_NonceResp(arg) {
-      if (!(arg instanceof avs_pb20.NonceResp)) {
+      if (!(arg instanceof avs_pb19.NonceResp)) {
         throw new Error("Expected argument of type aggregator.NonceResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_NonceResp(buffer_arg) {
-      return avs_pb20.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_Task(arg) {
-      if (!(arg instanceof avs_pb20.Task)) {
+      if (!(arg instanceof avs_pb19.Task)) {
         throw new Error("Expected argument of type aggregator.Task");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_Task(buffer_arg) {
-      return avs_pb20.Task.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.Task.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_UserTriggerTaskReq(arg) {
-      if (!(arg instanceof avs_pb20.UserTriggerTaskReq)) {
+      if (!(arg instanceof avs_pb19.UserTriggerTaskReq)) {
         throw new Error("Expected argument of type aggregator.UserTriggerTaskReq");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_UserTriggerTaskReq(buffer_arg) {
-      return avs_pb20.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_aggregator_UserTriggerTaskResp(arg) {
-      if (!(arg instanceof avs_pb20.UserTriggerTaskResp)) {
+      if (!(arg instanceof avs_pb19.UserTriggerTaskResp)) {
         throw new Error("Expected argument of type aggregator.UserTriggerTaskResp");
       }
       return Buffer.from(arg.serializeBinary());
     }
     function deserialize_aggregator_UserTriggerTaskResp(buffer_arg) {
-      return avs_pb20.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+      return avs_pb19.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
     }
     function serialize_google_protobuf_BoolValue(arg) {
       if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
@@ -6113,8 +6113,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetKey",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.GetKeyReq,
-        responseType: avs_pb20.KeyResp,
+        requestType: avs_pb19.GetKeyReq,
+        responseType: avs_pb19.KeyResp,
         requestSerialize: serialize_aggregator_GetKeyReq,
         requestDeserialize: deserialize_aggregator_GetKeyReq,
         responseSerialize: serialize_aggregator_KeyResp,
@@ -6125,8 +6125,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetNonce",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.NonceRequest,
-        responseType: avs_pb20.NonceResp,
+        requestType: avs_pb19.NonceRequest,
+        responseType: avs_pb19.NonceResp,
         requestSerialize: serialize_aggregator_NonceRequest,
         requestDeserialize: deserialize_aggregator_NonceRequest,
         responseSerialize: serialize_aggregator_NonceResp,
@@ -6136,8 +6136,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetWallet",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.GetWalletReq,
-        responseType: avs_pb20.GetWalletResp,
+        requestType: avs_pb19.GetWalletReq,
+        responseType: avs_pb19.GetWalletResp,
         requestSerialize: serialize_aggregator_GetWalletReq,
         requestDeserialize: deserialize_aggregator_GetWalletReq,
         responseSerialize: serialize_aggregator_GetWalletResp,
@@ -6147,8 +6147,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListWallets",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.ListWalletReq,
-        responseType: avs_pb20.ListWalletResp,
+        requestType: avs_pb19.ListWalletReq,
+        responseType: avs_pb19.ListWalletResp,
         requestSerialize: serialize_aggregator_ListWalletReq,
         requestDeserialize: deserialize_aggregator_ListWalletReq,
         responseSerialize: serialize_aggregator_ListWalletResp,
@@ -6159,8 +6159,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CreateTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.CreateTaskReq,
-        responseType: avs_pb20.CreateTaskResp,
+        requestType: avs_pb19.CreateTaskReq,
+        responseType: avs_pb19.CreateTaskResp,
         requestSerialize: serialize_aggregator_CreateTaskReq,
         requestDeserialize: deserialize_aggregator_CreateTaskReq,
         responseSerialize: serialize_aggregator_CreateTaskResp,
@@ -6170,8 +6170,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListTasks",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.ListTasksReq,
-        responseType: avs_pb20.ListTasksResp,
+        requestType: avs_pb19.ListTasksReq,
+        responseType: avs_pb19.ListTasksResp,
         requestSerialize: serialize_aggregator_ListTasksReq,
         requestDeserialize: deserialize_aggregator_ListTasksReq,
         responseSerialize: serialize_aggregator_ListTasksResp,
@@ -6181,8 +6181,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.IdReq,
-        responseType: avs_pb20.Task,
+        requestType: avs_pb19.IdReq,
+        responseType: avs_pb19.Task,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
         responseSerialize: serialize_aggregator_Task,
@@ -6192,8 +6192,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/ListExecutions",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.ListExecutionsReq,
-        responseType: avs_pb20.ListExecutionsResp,
+        requestType: avs_pb19.ListExecutionsReq,
+        responseType: avs_pb19.ListExecutionsResp,
         requestSerialize: serialize_aggregator_ListExecutionsReq,
         requestDeserialize: deserialize_aggregator_ListExecutionsReq,
         responseSerialize: serialize_aggregator_ListExecutionsResp,
@@ -6203,8 +6203,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/GetExecution",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.GetExecutionReq,
-        responseType: avs_pb20.Execution,
+        requestType: avs_pb19.GetExecutionReq,
+        responseType: avs_pb19.Execution,
         requestSerialize: serialize_aggregator_GetExecutionReq,
         requestDeserialize: deserialize_aggregator_GetExecutionReq,
         responseSerialize: serialize_aggregator_Execution,
@@ -6214,7 +6214,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/CancelTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.IdReq,
+        requestType: avs_pb19.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
@@ -6225,7 +6225,7 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/DeleteTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.IdReq,
+        requestType: avs_pb19.IdReq,
         responseType: google_protobuf_wrappers_pb.BoolValue,
         requestSerialize: serialize_aggregator_IdReq,
         requestDeserialize: deserialize_aggregator_IdReq,
@@ -6236,8 +6236,8 @@ var require_avs_grpc_pb = __commonJS({
         path: "/aggregator.Aggregator/TriggerTask",
         requestStream: false,
         responseStream: false,
-        requestType: avs_pb20.UserTriggerTaskReq,
-        responseType: avs_pb20.UserTriggerTaskResp,
+        requestType: avs_pb19.UserTriggerTaskReq,
+        responseType: avs_pb19.UserTriggerTaskResp,
         requestSerialize: serialize_aggregator_UserTriggerTaskReq,
         requestDeserialize: deserialize_aggregator_UserTriggerTaskReq,
         responseSerialize: serialize_aggregator_UserTriggerTaskResp,
@@ -6260,10 +6260,10 @@ var getKeyRequestMessage = (address, expiredAt) => {
 
 // src/index.ts
 var import_avs_grpc_pb = __toESM(require_avs_grpc_pb());
-var avs_pb19 = __toESM(require_avs_pb());
+var avs_pb18 = __toESM(require_avs_pb());
 
 // src/models/workflow.ts
-var avs_pb15 = __toESM(require_avs_pb());
+var avs_pb14 = __toESM(require_avs_pb());
 import _3 from "lodash";
 
 // src/models/edge.ts
@@ -6288,11 +6288,9 @@ var Edge = class _Edge {
 var edge_default = Edge;
 
 // src/models/trigger/block.ts
-var avs_pb3 = __toESM(require_avs_pb());
+var avs_pb2 = __toESM(require_avs_pb());
 
 // src/models/trigger/interface.ts
-var avs_pb2 = __toESM(require_avs_pb());
-var TriggerTypes = avs_pb2.TaskTrigger.TriggerTypeCase;
 var Trigger = class {
   /**
    * Create an instance of Trigger from user inputs
@@ -6309,18 +6307,39 @@ var Trigger = class {
 };
 var interface_default = Trigger;
 
+// src/types.ts
+var AUTH_KEY_HEADER = "authkey";
+var DEFAULT_LIMIT = 10;
+var WorkflowStatus = /* @__PURE__ */ ((WorkflowStatus2) => {
+  WorkflowStatus2["Active"] = "active";
+  WorkflowStatus2["Completed"] = "completed";
+  WorkflowStatus2["Failed"] = "failed";
+  WorkflowStatus2["Canceled"] = "canceled";
+  WorkflowStatus2["Executing"] = "executing";
+  return WorkflowStatus2;
+})(WorkflowStatus || {});
+var TriggerType = /* @__PURE__ */ ((TriggerType2) => {
+  TriggerType2["Manual"] = "manual";
+  TriggerType2["FixedTime"] = "fixed_time";
+  TriggerType2["Cron"] = "cron";
+  TriggerType2["Block"] = "block";
+  TriggerType2["Event"] = "event";
+  TriggerType2["Unset"] = "unset";
+  return TriggerType2;
+})(TriggerType || {});
+
 // src/models/trigger/block.ts
 var BlockTrigger = class _BlockTrigger extends interface_default {
   constructor(props) {
-    super({ ...props, type: TriggerTypes.BLOCK, data: props.data });
+    super({ ...props, type: "block" /* Block */, data: props.data });
   }
   toRequest() {
-    const request = new avs_pb3.TaskTrigger();
+    const request = new avs_pb2.TaskTrigger();
     request.setName(this.name);
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
-    const condition = new avs_pb3.BlockCondition();
+    const condition = new avs_pb2.BlockCondition();
     condition.setInterval(this.data.interval);
     request.setBlock(condition);
     return request;
@@ -6329,7 +6348,7 @@ var BlockTrigger = class _BlockTrigger extends interface_default {
     const obj = raw.toObject();
     return new _BlockTrigger({
       ...obj,
-      type: TriggerTypes.BLOCK,
+      type: "block" /* Block */,
       data: raw.getBlock().toObject()
     });
   }
@@ -6337,23 +6356,23 @@ var BlockTrigger = class _BlockTrigger extends interface_default {
 var block_default = BlockTrigger;
 
 // src/models/trigger/cron.ts
-var avs_pb4 = __toESM(require_avs_pb());
+var avs_pb3 = __toESM(require_avs_pb());
 var CronTrigger = class _CronTrigger extends interface_default {
   constructor(props) {
-    super({ ...props, type: TriggerTypes.CRON, data: props.data });
+    super({ ...props, type: "cron" /* Cron */, data: props.data });
     console.log("CronTrigger.constructor.props:", {
       ...props,
-      type: TriggerTypes.CRON,
+      type: "cron" /* Cron */,
       data: props.data
     });
   }
   toRequest() {
-    const request = new avs_pb4.TaskTrigger();
+    const request = new avs_pb3.TaskTrigger();
     request.setName(this.name);
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
-    const condition = new avs_pb4.CronCondition();
+    const condition = new avs_pb3.CronCondition();
     condition.setScheduleList(this.data.scheduleList);
     request.setCron(condition);
     console.log("CronTrigger.toRequest.request:", request.toObject());
@@ -6364,7 +6383,7 @@ var CronTrigger = class _CronTrigger extends interface_default {
     console.log("CronTrigger.fromResponse.obj:", obj);
     return new _CronTrigger({
       ...obj,
-      type: TriggerTypes.CRON,
+      type: "cron" /* Cron */,
       data: raw.getCron().toObject()
     });
   }
@@ -6372,23 +6391,23 @@ var CronTrigger = class _CronTrigger extends interface_default {
 var cron_default = CronTrigger;
 
 // src/models/trigger/event.ts
-var avs_pb5 = __toESM(require_avs_pb());
+var avs_pb4 = __toESM(require_avs_pb());
 var EventTrigger = class _EventTrigger extends interface_default {
   constructor(props) {
-    super({ ...props, type: TriggerTypes.EVENT, data: props.data });
+    super({ ...props, type: "event" /* Event */, data: props.data });
     console.log("EventTrigger.constructor.props:", {
       ...props,
-      type: TriggerTypes.EVENT,
+      type: "event" /* Event */,
       data: props.data
     });
   }
   toRequest() {
-    const request = new avs_pb5.TaskTrigger();
+    const request = new avs_pb4.TaskTrigger();
     request.setName(this.name);
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
-    const condition = new avs_pb5.EventCondition();
+    const condition = new avs_pb4.EventCondition();
     condition.setExpression(this.data.expression);
     request.setEvent(condition);
     console.log("EventTrigger.toRequest.request:", request.toObject());
@@ -6399,7 +6418,7 @@ var EventTrigger = class _EventTrigger extends interface_default {
     console.log("EventTrigger.fromResponse.obj:", obj);
     return new _EventTrigger({
       ...obj,
-      type: TriggerTypes.EVENT,
+      type: "event" /* Event */,
       data: raw.getEvent().toObject()
     });
   }
@@ -6407,23 +6426,23 @@ var EventTrigger = class _EventTrigger extends interface_default {
 var event_default = EventTrigger;
 
 // src/models/trigger/fixedTime.ts
-var avs_pb6 = __toESM(require_avs_pb());
+var avs_pb5 = __toESM(require_avs_pb());
 var FixedTimeTrigger = class _FixedTimeTrigger extends interface_default {
   constructor(props) {
-    super({ ...props, type: TriggerTypes.FIXED_TIME, data: props.data });
+    super({ ...props, type: "fixed_time" /* FixedTime */, data: props.data });
     console.log("FixedTimeTrigger.constructor.props:", {
       ...props,
-      type: TriggerTypes.FIXED_TIME,
+      type: "fixed_time" /* FixedTime */,
       data: props.data
     });
   }
   toRequest() {
-    const request = new avs_pb6.TaskTrigger();
+    const request = new avs_pb5.TaskTrigger();
     request.setName(this.name);
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
-    const condition = new avs_pb6.FixedTimeCondition();
+    const condition = new avs_pb5.FixedTimeCondition();
     condition.setEpochsList(this.data.epochsList);
     request.setFixedTime(condition);
     console.log("FixedTimeTrigger.toRequest.request:", request.toObject());
@@ -6434,7 +6453,7 @@ var FixedTimeTrigger = class _FixedTimeTrigger extends interface_default {
     console.log("FixedTimeTrigger.fromResponse.obj:", obj);
     return new _FixedTimeTrigger({
       ...obj,
-      type: TriggerTypes.FIXED_TIME,
+      type: "fixed_time" /* FixedTime */,
       data: raw.getFixedTime().toObject()
     });
   }
@@ -6450,13 +6469,13 @@ var TriggerFactory = class {
    */
   static create(props) {
     switch (props.type) {
-      case TriggerTypes.BLOCK:
+      case "block" /* Block */:
         return new block_default(props);
-      case TriggerTypes.CRON:
+      case "cron" /* Cron */:
         return new cron_default(props);
-      case TriggerTypes.EVENT:
+      case "event" /* Event */:
         return new event_default(props);
-      case TriggerTypes.FIXED_TIME:
+      case "fixed_time" /* FixedTime */:
         return new fixedTime_default(props);
     }
     throw new Error("Unsupported trigger type");
@@ -6487,9 +6506,9 @@ var factory_default = TriggerFactory;
 import _2 from "lodash";
 
 // src/models/node/interface.ts
-var avs_pb7 = __toESM(require_avs_pb());
+var avs_pb6 = __toESM(require_avs_pb());
 import _ from "lodash";
-var NodeTypes = avs_pb7.TaskNode.TaskTypeCase;
+var NodeTypes = avs_pb6.TaskNode.TaskTypeCase;
 var Node = class {
   constructor(props) {
     this.id = props.id;
@@ -6498,10 +6517,10 @@ var Node = class {
     this.data = props.data;
   }
   toRequest() {
-    const request = new avs_pb7.TaskNode();
+    const request = new avs_pb6.TaskNode();
     console.log("Node.toRequest.request:", request);
     const raw = request.serializeBinary();
-    const parsed = avs_pb7.TaskNode.deserializeBinary(raw);
+    const parsed = avs_pb6.TaskNode.deserializeBinary(raw);
     if (!_.isEqual(request, parsed)) {
       throw new Error("Invalid request object");
     }
@@ -6511,7 +6530,7 @@ var Node = class {
 var interface_default2 = Node;
 
 // src/models/node/contractWrite.ts
-var avs_pb8 = __toESM(require_avs_pb());
+var avs_pb7 = __toESM(require_avs_pb());
 var ContractWriteNode2 = class _ContractWriteNode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.CONTRACT_WRITE, data: props.data });
@@ -6525,10 +6544,10 @@ var ContractWriteNode2 = class _ContractWriteNode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb8.TaskNode();
+    const request = new avs_pb7.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb8.ContractWriteNode();
+    const nodeData = new avs_pb7.ContractWriteNode();
     nodeData.setContractAddress(
       this.data.contractAddress
     );
@@ -6541,8 +6560,8 @@ var ContractWriteNode2 = class _ContractWriteNode extends interface_default2 {
 var contractWrite_default = ContractWriteNode2;
 
 // src/models/node/customCode.ts
-var avs_pb9 = __toESM(require_avs_pb());
-var CustomCodeLangs = avs_pb9.CustomCodeLang;
+var avs_pb8 = __toESM(require_avs_pb());
+var CustomCodeLangs = avs_pb8.CustomCodeLang;
 var CustomCodeNode2 = class _CustomCodeNode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.CUSTOM_CODE, data: props.data });
@@ -6556,10 +6575,10 @@ var CustomCodeNode2 = class _CustomCodeNode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb9.TaskNode();
+    const request = new avs_pb8.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb9.CustomCodeNode();
+    const nodeData = new avs_pb8.CustomCodeNode();
     nodeData.setLang(this.data.lang);
     nodeData.setSource(this.data.source);
     request.setCustomCode(nodeData);
@@ -6569,7 +6588,7 @@ var CustomCodeNode2 = class _CustomCodeNode extends interface_default2 {
 var customCode_default = CustomCodeNode2;
 
 // src/models/node/graphqlQuery.ts
-var avs_pb10 = __toESM(require_avs_pb());
+var avs_pb9 = __toESM(require_avs_pb());
 var GraphQLQueryNode2 = class _GraphQLQueryNode extends interface_default2 {
   constructor(props) {
     super({
@@ -6587,10 +6606,10 @@ var GraphQLQueryNode2 = class _GraphQLQueryNode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb10.TaskNode();
+    const request = new avs_pb9.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb10.GraphQLQueryNode();
+    const nodeData = new avs_pb9.GraphQLQueryNode();
     nodeData.setUrl(this.data.url);
     nodeData.setQuery(this.data.query);
     const variables = this.data.variablesMap;
@@ -6605,7 +6624,7 @@ var GraphQLQueryNode2 = class _GraphQLQueryNode extends interface_default2 {
 var graphqlQuery_default = GraphQLQueryNode2;
 
 // src/models/node/restApi.ts
-var avs_pb11 = __toESM(require_avs_pb());
+var avs_pb10 = __toESM(require_avs_pb());
 var RestAPINode2 = class _RestAPINode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.REST_API, data: props.data });
@@ -6619,10 +6638,10 @@ var RestAPINode2 = class _RestAPINode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb11.TaskNode();
+    const request = new avs_pb10.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb11.RestAPINode();
+    const nodeData = new avs_pb10.RestAPINode();
     nodeData.setUrl(this.data.url);
     nodeData.setMethod(this.data.method);
     nodeData.setBody(this.data.body);
@@ -6638,7 +6657,7 @@ var RestAPINode2 = class _RestAPINode extends interface_default2 {
 var restApi_default = RestAPINode2;
 
 // src/models/node/contractRead.ts
-var avs_pb12 = __toESM(require_avs_pb());
+var avs_pb11 = __toESM(require_avs_pb());
 var ContractReadNode2 = class _ContractReadNode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.CONTRACT_READ, data: props.data });
@@ -6652,10 +6671,10 @@ var ContractReadNode2 = class _ContractReadNode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb12.TaskNode();
+    const request = new avs_pb11.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb12.ContractReadNode();
+    const nodeData = new avs_pb11.ContractReadNode();
     nodeData.setContractAddress(
       this.data.contractAddress
     );
@@ -6669,7 +6688,7 @@ var ContractReadNode2 = class _ContractReadNode extends interface_default2 {
 var contractRead_default = ContractReadNode2;
 
 // src/models/node/ethTransfer.ts
-var avs_pb13 = __toESM(require_avs_pb());
+var avs_pb12 = __toESM(require_avs_pb());
 var ETHTransferNode2 = class _ETHTransferNode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.ETH_TRANSFER, data: props.data });
@@ -6683,10 +6702,10 @@ var ETHTransferNode2 = class _ETHTransferNode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb13.TaskNode();
+    const request = new avs_pb12.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb13.ETHTransferNode();
+    const nodeData = new avs_pb12.ETHTransferNode();
     nodeData.setDestination(this.data.destination);
     nodeData.setAmount(this.data.amount);
     request.setEthTransfer(nodeData);
@@ -6696,7 +6715,7 @@ var ETHTransferNode2 = class _ETHTransferNode extends interface_default2 {
 var ethTransfer_default = ETHTransferNode2;
 
 // src/models/node/branch.ts
-var avs_pb14 = __toESM(require_avs_pb());
+var avs_pb13 = __toESM(require_avs_pb());
 var BranchNode2 = class _BranchNode extends interface_default2 {
   constructor(props) {
     super({ ...props, type: NodeTypes.BRANCH, data: props.data });
@@ -6710,13 +6729,13 @@ var BranchNode2 = class _BranchNode extends interface_default2 {
     });
   }
   toRequest() {
-    const request = new avs_pb14.TaskNode();
+    const request = new avs_pb13.TaskNode();
     request.setId(this.id);
     request.setName(this.name);
-    const nodeData = new avs_pb14.BranchNode();
+    const nodeData = new avs_pb13.BranchNode();
     nodeData.setConditionsList(
       this.data.conditionsList.map((condition) => {
-        const conditionObj = new avs_pb14.Condition();
+        const conditionObj = new avs_pb13.Condition();
         conditionObj.setId(condition.id);
         conditionObj.setType(condition.type);
         return conditionObj;
@@ -6777,26 +6796,14 @@ var NodeFactory = class {
 };
 var factory_default2 = NodeFactory;
 
-// src/types.ts
-var AUTH_KEY_HEADER = "authkey";
-var DEFAULT_LIMIT = 10;
-var WorkflowStatus = /* @__PURE__ */ ((WorkflowStatus3) => {
-  WorkflowStatus3["Active"] = "active";
-  WorkflowStatus3["Completed"] = "completed";
-  WorkflowStatus3["Failed"] = "failed";
-  WorkflowStatus3["Canceled"] = "canceled";
-  WorkflowStatus3["Executing"] = "executing";
-  return WorkflowStatus3;
-})(WorkflowStatus || {});
-
 // src/models/workflow.ts
 function convertStatusToString(status) {
   const conversionMap = {
-    [avs_pb15.TaskStatus.ACTIVE]: "active" /* Active */,
-    [avs_pb15.TaskStatus.COMPLETED]: "completed" /* Completed */,
-    [avs_pb15.TaskStatus.FAILED]: "failed" /* Failed */,
-    [avs_pb15.TaskStatus.CANCELED]: "canceled" /* Canceled */,
-    [avs_pb15.TaskStatus.EXECUTING]: "executing" /* Executing */
+    [avs_pb14.TaskStatus.ACTIVE]: "active" /* Active */,
+    [avs_pb14.TaskStatus.COMPLETED]: "completed" /* Completed */,
+    [avs_pb14.TaskStatus.FAILED]: "failed" /* Failed */,
+    [avs_pb14.TaskStatus.CANCELED]: "canceled" /* Canceled */,
+    [avs_pb14.TaskStatus.EXECUTING]: "executing" /* Executing */
   };
   return conversionMap[status];
 }
@@ -6884,7 +6891,7 @@ var Workflow = class _Workflow {
     });
   }
   toRequest() {
-    const request = new avs_pb15.CreateTaskReq();
+    const request = new avs_pb14.CreateTaskReq();
     request.setSmartWalletAddress(this.smartWalletAddress);
     request.setTrigger(this.trigger.toRequest());
     _3.map(this.nodes, (node) => request.addNodes(node.toRequest()));
@@ -6901,22 +6908,33 @@ var Workflow = class _Workflow {
 var workflow_default = Workflow;
 
 // src/models/execution.ts
-var avs_pb18 = __toESM(require_avs_pb());
+var avs_pb17 = __toESM(require_avs_pb());
 
 // src/models/trigger/metadata.ts
-var avs_pb16 = __toESM(require_avs_pb());
+var avs_pb15 = __toESM(require_avs_pb());
+var convertTriggerType = (grpcType) => {
+  const conversionMap = {
+    [avs_pb15.TriggerMetadata.TriggerType.FIXEDTIME]: "fixed_time" /* FixedTime */,
+    [avs_pb15.TriggerMetadata.TriggerType.CRON]: "cron" /* Cron */,
+    [avs_pb15.TriggerMetadata.TriggerType.BLOCK]: "block" /* Block */,
+    [avs_pb15.TriggerMetadata.TriggerType.EVENT]: "event" /* Event */,
+    [avs_pb15.TriggerMetadata.TriggerType.MANUAL]: "manual" /* Manual */,
+    [avs_pb15.TriggerMetadata.TriggerType.UNSET]: "unset" /* Unset */
+  };
+  return conversionMap[grpcType];
+};
 var TriggerMetadata2 = class _TriggerMetadata {
   constructor(props) {
     this.type = props.type;
     switch (props.type) {
-      case TriggerTypes.FIXED_TIME:
-      case TriggerTypes.CRON:
+      case "fixed_time" /* FixedTime */:
+      case "cron" /* Cron */:
         this.epoch = props.epoch;
         break;
-      case TriggerTypes.BLOCK:
+      case "block" /* Block */:
         this.blockNumber = props.blockNumber;
         break;
-      case TriggerTypes.EVENT:
+      case "event" /* Event */:
         this.blockNumber = props.blockNumber;
         this.logIndex = props.logIndex;
         this.txHash = props.txHash;
@@ -6929,12 +6947,8 @@ var TriggerMetadata2 = class _TriggerMetadata {
     if (!data) {
       return void 0;
     }
-    let type = data.getType();
-    if (type != avs_pb16.TaskTrigger.TriggerTypeCase.FIXED_TIME && type != avs_pb16.TaskTrigger.TriggerTypeCase.CRON && type != avs_pb16.TaskTrigger.TriggerTypeCase.BLOCK && type != avs_pb16.TaskTrigger.TriggerTypeCase.EVENT) {
-      throw new Error("Unable to determine trigger type from response");
-    }
     return new _TriggerMetadata({
-      type,
+      type: convertTriggerType(data.getType()),
       blockNumber: data.getBlockNumber(),
       epoch: data.getEpoch(),
       logIndex: data.getLogIndex(),
@@ -6942,20 +6956,28 @@ var TriggerMetadata2 = class _TriggerMetadata {
     });
   }
   toRequest() {
-    const request = new avs_pb16.TriggerMetadata();
+    const request = new avs_pb15.TriggerMetadata();
     switch (this.type) {
-      case TriggerTypes.FIXED_TIME:
-      case TriggerTypes.CRON:
+      case "fixed_time" /* FixedTime */:
+        request.setType(avs_pb15.TriggerMetadata.TriggerType.FIXEDTIME);
         if (this.epoch) {
           request.setEpoch(this.epoch);
         }
         break;
-      case TriggerTypes.BLOCK:
+      case "cron" /* Cron */:
+        request.setType(avs_pb15.TriggerMetadata.TriggerType.CRON);
+        if (this.epoch) {
+          request.setEpoch(this.epoch);
+        }
+        break;
+      case "block" /* Block */:
+        request.setType(avs_pb15.TriggerMetadata.TriggerType.BLOCK);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
         break;
-      case TriggerTypes.EVENT:
+      case "event" /* Event */:
+        request.setType(avs_pb15.TriggerMetadata.TriggerType.EVENT);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
@@ -6966,6 +6988,12 @@ var TriggerMetadata2 = class _TriggerMetadata {
           request.setTxHash(this.txHash);
         }
         break;
+      case "manual" /* Manual */:
+        request.setType(avs_pb15.TriggerMetadata.TriggerType.MANUAL);
+        break;
+      case "unset" /* Unset */:
+        request.setType(avs_pb15.TriggerMetadata.TriggerType.UNSET);
+        break;
       default:
         throw new Error("Unsupported trigger type");
     }
@@ -6975,7 +7003,7 @@ var TriggerMetadata2 = class _TriggerMetadata {
 var metadata_default = TriggerMetadata2;
 
 // src/models/step.ts
-var avs_pb17 = __toESM(require_avs_pb());
+var avs_pb16 = __toESM(require_avs_pb());
 var Step = class _Step {
   constructor(props) {
     this.nodeId = props.nodeId;
@@ -6998,7 +7026,7 @@ var Step = class _Step {
     });
   }
   toRequest() {
-    const step = new avs_pb17.Execution.Step();
+    const step = new avs_pb16.Execution.Step();
     step.setNodeId(this.nodeId);
     step.setSuccess(this.success);
     step.setOutputData(this.outputData);
@@ -7038,7 +7066,7 @@ var Execution3 = class _Execution {
     });
   }
   toRequest() {
-    const execution = new avs_pb18.Execution();
+    const execution = new avs_pb17.Execution();
     execution.setId(this.id);
     execution.setStartAt(this.startAt);
     execution.setEndAt(this.endAt);
@@ -7089,7 +7117,7 @@ var BaseClient = class {
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithAPIKey(address, apiKey, expiredAtEpoch) {
-    const request = new avs_pb19.GetKeyReq();
+    const request = new avs_pb18.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(apiKey);
@@ -7104,7 +7132,7 @@ var BaseClient = class {
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithSignature(address, signature, expiredAtEpoch) {
-    const request = new avs_pb19.GetKeyReq();
+    const request = new avs_pb18.GetKeyReq();
     request.setOwner(address);
     request.setExpiredAt(expiredAtEpoch);
     request.setSignature(signature);
@@ -7179,7 +7207,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<SmartWallet[]>} - The list of SmartWallet objects
    */
   async getWallets(options) {
-    const request = new avs_pb19.ListWalletReq();
+    const request = new avs_pb18.ListWalletReq();
     const result = await this.sendGrpcRequest("listWallets", request, options);
     return result.getItemsList().map((item) => item.toObject());
   }
@@ -7191,7 +7219,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<SmartWallet>} - The added SmartWallet object
    */
   async getWallet({ salt, factoryAddress }, options) {
-    const request = new avs_pb19.GetWalletReq();
+    const request = new avs_pb18.GetWalletReq();
     request.setSalt(salt);
     if (factoryAddress) {
       request.setFactoryAddress(factoryAddress);
@@ -7228,7 +7256,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
    */
   async getWorkflows(addresses, options) {
-    const request = new avs_pb19.ListTasksReq();
+    const request = new avs_pb18.ListTasksReq();
     for (const a of addresses) {
       request.addSmartWalletAddress(a);
     }
@@ -7253,7 +7281,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
    */
   async getExecutions(workflows, options) {
-    const request = new avs_pb19.ListExecutionsReq();
+    const request = new avs_pb18.ListExecutionsReq();
     request.setTaskIdsList(workflows);
     if (options?.cursor && options?.cursor != "") {
       request.setCursor(options.cursor);
@@ -7274,7 +7302,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<Execution>} - The result execution if it is existed
    */
   async getExecution(taskId, executionId, options) {
-    const request = new avs_pb19.GetExecutionReq();
+    const request = new avs_pb18.GetExecutionReq();
     request.setTaskId(taskId);
     request.setExecutionId(executionId);
     const result = await this.sendGrpcRequest("getExecution", request, options);
@@ -7287,7 +7315,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<Workflow>} - The Workflow object
    */
   async getWorkflow(id, options) {
-    const request = new avs_pb19.IdReq();
+    const request = new avs_pb18.IdReq();
     request.setId(id);
     const result = await this.sendGrpcRequest(
       "getTask",
@@ -7309,7 +7337,7 @@ var Client = class extends BaseClient {
     data,
     isBlocking = false
   }, options) {
-    const request = new avs_pb19.UserTriggerTaskReq();
+    const request = new avs_pb18.UserTriggerTaskReq();
     request.setTaskId(id);
     request.setTriggerMetadata(new metadata_default(data).toRequest());
     request.setIsBlocking(isBlocking);
@@ -7323,7 +7351,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
    */
   async cancelWorkflow(id, options) {
-    const request = new avs_pb19.IdReq();
+    const request = new avs_pb18.IdReq();
     request.setId(id);
     const result = await this.sendGrpcRequest(
       "cancelTask",
@@ -7339,7 +7367,7 @@ var Client = class extends BaseClient {
    * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
    */
   async deleteWorkflow(id, options) {
-    const request = new avs_pb19.IdReq();
+    const request = new avs_pb18.IdReq();
     request.setId(id);
     const result = await this.sendGrpcRequest(
       "deleteTask",
@@ -7371,7 +7399,7 @@ export {
   restApi_default as RestAPINode,
   interface_default as Trigger,
   factory_default as TriggerFactory,
-  TriggerTypes,
+  TriggerType,
   workflow_default as Workflow,
   WorkflowStatus,
   Client as default,

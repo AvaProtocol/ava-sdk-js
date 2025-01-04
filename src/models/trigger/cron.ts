@@ -1,17 +1,17 @@
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
-import Trigger, { TriggerProps, TriggerTypes } from "./interface";
-
+import Trigger, { TriggerProps } from "./interface";
+import { TriggerType } from "../../types";
 // Required props for constructor: id, name, type and data: { scheduleList }
 export type CronTriggerDataType = avs_pb.CronCondition.AsObject;
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
-    super({ ...props, type: TriggerTypes.CRON, data: props.data });
+    super({ ...props, type: TriggerType.Cron, data: props.data });
 
     console.log("CronTrigger.constructor.props:", {
       ...props,
-      type: TriggerTypes.CRON,
+      type: TriggerType.Cron,
       data: props.data,
     });
   }
@@ -40,7 +40,7 @@ class CronTrigger extends Trigger {
     console.log("CronTrigger.fromResponse.obj:", obj);
     return new CronTrigger({
       ...obj,
-      type: TriggerTypes.CRON,
+      type: TriggerType.Cron,
       data: raw.getCron()!.toObject() as CronTriggerDataType,
     });
   }

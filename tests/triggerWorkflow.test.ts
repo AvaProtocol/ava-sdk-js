@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { TriggerFactory, TriggerTypes, WorkflowStatus } from "../dist";
+import Client, { TriggerFactory, TriggerType, WorkflowStatus } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
@@ -58,7 +58,7 @@ describe("triggerWorkflow Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "blockTrigger",
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: { interval },
     });
 
@@ -81,7 +81,7 @@ describe("triggerWorkflow Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.BLOCK,
+        type: TriggerType.Block,
         blockNumber: blockNumber + interval, // block interval in the workflow template
       },
       isBlocking: true,
@@ -97,8 +97,8 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].triggerMetadata?.blockNumber).toEqual(
       blockNumber + interval
     );
-    expect(executions2.result[0].triggerMetadata.type).toEqual(
-      TriggerTypes.BLOCK
+    expect(executions2.result[0].triggerMetadata?.type).toEqual(
+      TriggerType.Block
     );
 
     const workflow = await client.getWorkflow(workflowId);
@@ -115,7 +115,7 @@ describe("triggerWorkflow Tests", () => {
     // Create a cron trigger with a schedule of every minute
     const trigger = TriggerFactory.create({
       name: "cronTrigger",
-      type: TriggerTypes.CRON,
+      type: TriggerType.Cron,
       data: { scheduleList: ["* * * * *"] },
     });
 
@@ -137,7 +137,7 @@ describe("triggerWorkflow Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.CRON,
+        type: TriggerType.Cron,
         epoch: epoch + 60, // set epoch to 1 minute later
       },
       isBlocking: true,
@@ -148,10 +148,10 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
-    expect(executions2.result[0].triggerMetadata.type).toEqual(
-      TriggerTypes.CRON
+    expect(executions2.result[0].triggerMetadata?.type).toEqual(
+      TriggerType.Cron
     );
-    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch + 60);
+    expect(executions2.result[0].triggerMetadata?.epoch).toEqual(epoch + 60);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.totalExecution).toEqual(1);
@@ -164,7 +164,7 @@ describe("triggerWorkflow Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "fixedTimeTrigger",
-      type: TriggerTypes.FIXED_TIME,
+      type: TriggerType.FixedTime,
       data: { epochsList: [epoch + 60, epoch + 120, epoch + 180] }, // one per minute for the next 3 minutes
     });
 
@@ -189,7 +189,7 @@ describe("triggerWorkflow Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.FIXED_TIME,
+        type: TriggerType.FixedTime,
         epoch: epoch + 300, // 5 minutes later
       },
       isBlocking: true,
@@ -203,9 +203,9 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.totalExecution).toEqual(1);
-    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch + 300);
-    expect(executions2.result[0].triggerMetadata.type).toEqual(
-      TriggerTypes.FIXED_TIME
+    expect(executions2.result[0].triggerMetadata?.epoch).toEqual(epoch + 300);
+    expect(executions2.result[0].triggerMetadata?.type).toEqual(
+      TriggerType.FixedTime
     );
   });
 
@@ -215,7 +215,7 @@ describe("triggerWorkflow Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "eventTrigger",
-      type: TriggerTypes.EVENT,
+      type: TriggerType.Event,
       data: {
         expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${wallet.address.toLowerCase()}"`,
       },
@@ -239,7 +239,7 @@ describe("triggerWorkflow Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.EVENT,
+        type: TriggerType.Event,
         blockNumber: blockNumber + 5,
         logIndex: 0,
         txHash: "0x1234567890",
@@ -255,14 +255,14 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.totalExecution).toEqual(1);
-    expect(executions2.result[0].triggerMetadata.blockNumber).toEqual(
+    expect(executions2.result[0].triggerMetadata?.blockNumber).toEqual(
       blockNumber + 5
     );
-    expect(executions2.result[0].triggerMetadata.txHash).toEqual(
+    expect(executions2.result[0].triggerMetadata?.txHash).toEqual(
       "0x1234567890"
     );
-    expect(executions2.result[0].triggerMetadata.type).toEqual(
-      TriggerTypes.EVENT
+    expect(executions2.result[0].triggerMetadata?.type).toEqual(
+      TriggerType.Event
     );
   });
 
@@ -274,7 +274,7 @@ describe("triggerWorkflow Tests", () => {
     // Create a cron trigger with a schedule of every minute
     const trigger = TriggerFactory.create({
       name: "cronTrigger",
-      type: TriggerTypes.CRON,
+      type: TriggerType.Cron,
       data: { scheduleList: ["* * * * *"] },
     });
 
@@ -296,7 +296,7 @@ describe("triggerWorkflow Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.CRON,
+        type: TriggerType.Cron,
         epoch: epoch + 60, // set epoch to 1 minute later
       },
       isBlocking: true,
@@ -305,8 +305,8 @@ describe("triggerWorkflow Tests", () => {
     // The list should now contain one execution, the id from manual trigger should matched
     const execution = await client.getExecution(workflowId, result.executionId);
     expect(execution.id).toEqual(result.executionId);
-    expect(execution.triggerMetadata.type).toEqual(TriggerTypes.CRON);
-    expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
+    expect(execution.triggerMetadata?.type).toEqual(TriggerType.Cron);
+    expect(execution.triggerMetadata?.epoch).toEqual(epoch + 60);
   });
 
   test("should throw trigger an non-existent workflow Id", async () => {
@@ -317,7 +317,7 @@ describe("triggerWorkflow Tests", () => {
       client.triggerWorkflow({
         id: "non-existent-workflow-id",
         data: {
-          type: TriggerTypes.BLOCK,
+          type: TriggerType.Block,
           blockNumber: blockNumber + 5,
         },
         isBlocking: true,

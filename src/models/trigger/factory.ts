@@ -4,9 +4,9 @@ import { BlockTriggerProps } from "./block";
 import CronTrigger, { CronTriggerProps } from "./cron";
 import EventTrigger, { EventTriggerProps } from "./event";
 import FixedTimeTrigger, { FixedTimeTriggerProps } from "./fixedTime";
-import Trigger, { TriggerType, TriggerTypes } from "./interface";
+import Trigger from "./interface";
 import { TriggerProps } from "./interface";
-
+import { TriggerType } from "../../types";
 class TriggerFactory {
   /**
    * Static factory method to create Trigger instances
@@ -15,13 +15,13 @@ class TriggerFactory {
    */
   static create(props: TriggerProps): Trigger {
     switch (props.type) {
-      case TriggerTypes.BLOCK:
+      case TriggerType.Block:
         return new BlockTrigger(props as BlockTriggerProps);
-      case TriggerTypes.CRON:
+      case TriggerType.Cron:
         return new CronTrigger(props as CronTriggerProps);
-      case TriggerTypes.EVENT:
+      case TriggerType.Event:
         return new EventTrigger(props as EventTriggerProps);
-      case TriggerTypes.FIXED_TIME:
+      case TriggerType.FixedTime:
         return new FixedTimeTrigger(props as FixedTimeTriggerProps);
     }
 
@@ -54,7 +54,7 @@ export default TriggerFactory;
 
 export {
   Trigger,
-  TriggerTypes,
+  TriggerType,
   BlockTrigger,
   CronTrigger,
   EventTrigger,
@@ -63,7 +63,6 @@ export {
 
 export type {
   TriggerProps,
-  TriggerType,
   BlockTriggerProps,
   CronTriggerProps,
   EventTriggerProps,
