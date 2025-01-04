@@ -1,66 +1,23 @@
 {
-  "name": "@avaprotocol/sdk-js",
+  "name": "@avaprotocol/root",
   "version": "1.2.1-dev.8",
-  "description": "A JavaScript/TypeScript SDK designed to simplify integration with Ava Protocol's AVS",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "package.json"
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "author": "Vinh Nguyen (https://github.com/v9n), Chris Li (https://github.com/chrisli30)",
-  "license": "Apache-2.0",
-  "engines": {
-    "node": ">=20.18.0"
-  },
   "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version",
     "proto-download": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/main/protobuf/avs.proto > grpc_codegen/avs.proto",
     "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./grpc_codegen --proto_path=./grpc_codegen grpc_codegen/avs.proto",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
     "gen-apikey": "sh -c 'API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey) && echo \"Generated API key for tests: $API_KEY\" && echo \"Writing to .env.test to replace the TEST_API_KEY env variable\" && sed -i \"\" -e \"s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/\" .env.test && echo \"Done.\"'",
+    "build": "yarn workspaces run build",
+    "clean": "yarn workspaces run clean",
     "test": "jest --config jest.config.cjs",
-    "test:select": "npm run test -- --testNamePattern",
-    "changeset": "changeset",
-    "version": "changeset version"
-  },
-  "dependencies": {
-    "@grpc/grpc-js": "^1.11.3",
-    "@grpc/proto-loader": "^0.7.13",
-    "dotenv": "^16.4.5",
-    "ethers": "^6.13.2",
-    "google-protobuf": "^3.21.4",
-    "id128": "^1.6.6",
-    "lodash": "^4.17.21"
+    "test:select": "npm run test -- --testNamePattern"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@babel/preset-typescript": "^7.26.0",
-    "@changesets/cli": "^2.27.9",
-    "@eslint/js": "^9.16.0",
-    "@jest/globals": "^29.7.0",
-    "@types/google-protobuf": "^3.15.12",
-    "@types/jest": "^29.5.13",
-    "@types/lodash": "^4.17.12",
-    "@typescript-eslint/eslint-plugin": "^8.17.0",
-    "@typescript-eslint/parser": "^8.17.0",
-    "babel-jest": "^29.7.0",
-    "eslint": "^9.16.0",
-    "globals": "^15.13.0",
-    "grpc_tools_node_protoc_ts": "^5.3.3",
-    "grpc-tools": "^1.12.4",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.2"
+    "@changesets/cli": "^2.27.9"
   },
   "type": "commonjs"
 }

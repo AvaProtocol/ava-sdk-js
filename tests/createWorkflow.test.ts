@@ -9,7 +9,7 @@ import Client, {
   WorkflowStatus,
   NodeTypes,
   BranchNodeData,
-} from "../dist";
+} from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
 import {

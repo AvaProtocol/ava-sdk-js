@@ -1,4 +1,4 @@
-import * as avs_pb from "../../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 import _ from "lodash";
 export type EdgeProps = avs_pb.TaskEdge.AsObject;
 

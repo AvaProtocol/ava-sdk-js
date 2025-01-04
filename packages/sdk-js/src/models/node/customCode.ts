@@ -1,6 +1,6 @@
 import { NodeProps, NodeTypes } from "./interface";
 import Node from "./interface";
-import * as avs_pb from "../../../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 
 // Required props for constructor: id, name, type and data: { lang: CustomCodeLang, source: string }
 type CustomCodeNodeData = avs_pb.CustomCodeNode.AsObject;

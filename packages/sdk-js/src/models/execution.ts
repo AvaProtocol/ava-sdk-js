@@ -1,4 +1,4 @@
-import * as avs_pb from "../../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 import TriggerMetadata, { TriggerMetadataProps } from "./trigger/metadata";
 import Step from "./step";
 

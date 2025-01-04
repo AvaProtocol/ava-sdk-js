@@ -1,5 +1,5 @@
 import _ from "lodash";
-import * as avs_pb from "../../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Execution from "./execution";
 import Node from "./node/interface";
 import Edge from "./edge";

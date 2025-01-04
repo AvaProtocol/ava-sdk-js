@@ -1,4 +1,4 @@
-import * as avs_pb from "../../../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 import BlockTrigger from "./block";
 import { BlockTriggerProps } from "./block";
 import CronTrigger, { CronTriggerProps } from "./cron";

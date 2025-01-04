@@ -1,4 +1,4 @@
-import * as avs_pb from "../../../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 import _ from "lodash";
 export const NodeTypes = avs_pb.TaskNode.TaskTypeCase; // an enum of node types
 export type NodeType = avs_pb.TaskNode.TaskTypeCase;

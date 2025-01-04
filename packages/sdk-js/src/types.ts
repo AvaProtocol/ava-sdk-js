@@ -1,5 +1,5 @@
 // Define the environment type
-import * as avs_pb from "../grpc_codegen/avs_pb";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 export type Environment = "production" | "development" | "staging";
 
 export const AUTH_KEY_HEADER = "authkey";

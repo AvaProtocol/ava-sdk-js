@@ -14,7 +14,7 @@ import {
   GraphQLQueryNodeProps,
   BranchNodeProps,
   CustomCodeLangs,
-} from "../dist";
+} from "@/sdk-js/dist";
 import { getNextId } from "./utils";
 
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
