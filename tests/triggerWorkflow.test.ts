@@ -1,9 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, {
-  TriggerFactory,
-  TriggerTypes,
-  WorkflowStatuses,
-} from "../dist";
+import Client, { TriggerFactory, TriggerTypes, WorkflowStatus } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
@@ -98,16 +94,16 @@ describe("triggerWorkflow Tests", () => {
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
     expect(executions2.result[0].success).toEqual(true);
-    expect(
-      executions2.result[0].triggerMetadata?.blockNumber
-    ).toEqual(blockNumber + interval);
-    expect(
-        executions2.result[0].triggerMetadata.type
-    ).toEqual(TriggerTypes.BLOCK);
+    expect(executions2.result[0].triggerMetadata?.blockNumber).toEqual(
+      blockNumber + interval
+    );
+    expect(executions2.result[0].triggerMetadata.type).toEqual(
+      TriggerTypes.BLOCK
+    );
 
     const workflow = await client.getWorkflow(workflowId);
 
-    expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
+    expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.totalExecution).toEqual(1);
   });
 
@@ -152,12 +148,14 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
-    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.CRON);
-    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch+60);
+    expect(executions2.result[0].triggerMetadata.type).toEqual(
+      TriggerTypes.CRON
+    );
+    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch + 60);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.totalExecution).toEqual(1);
-    expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
+    expect(workflow.status).toEqual(WorkflowStatus.Completed);
   });
 
   test("trigger for fixed time type should succeed", async () => {
@@ -203,10 +201,12 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result.length).toEqual(1);
 
     const workflow = await client.getWorkflow(workflowId);
-    expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
+    expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.totalExecution).toEqual(1);
-    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch+300);
-    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.FIXED_TIME);
+    expect(executions2.result[0].triggerMetadata.epoch).toEqual(epoch + 300);
+    expect(executions2.result[0].triggerMetadata.type).toEqual(
+      TriggerTypes.FIXED_TIME
+    );
   });
 
   test("trigger for event type should succeed", async () => {
@@ -253,11 +253,17 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result.length).toEqual(1);
 
     const workflow = await client.getWorkflow(workflowId);
-    expect(workflow.status).toEqual(WorkflowStatuses.COMPLETED);
+    expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.totalExecution).toEqual(1);
-    expect(executions2.result[0].triggerMetadata.blockNumber).toEqual(blockNumber+5);
-    expect(executions2.result[0].triggerMetadata.txHash).toEqual("0x1234567890");
-    expect(executions2.result[0].triggerMetadata.type).toEqual(TriggerTypes.EVENT);
+    expect(executions2.result[0].triggerMetadata.blockNumber).toEqual(
+      blockNumber + 5
+    );
+    expect(executions2.result[0].triggerMetadata.txHash).toEqual(
+      "0x1234567890"
+    );
+    expect(executions2.result[0].triggerMetadata.type).toEqual(
+      TriggerTypes.EVENT
+    );
   });
 
   test("trigger return correct execution id in blocking mode", async () => {

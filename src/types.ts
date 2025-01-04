@@ -33,4 +33,12 @@ export interface ClientOption {
   factoryAddress?: string;
 }
 
+export enum WorkflowStatus {
+  Active = "active",
+  Completed = "completed",
+  Failed = "failed",
+  Canceled = "canceled",
+  Executing = "executing",
+}
+
 export type SmartWallet = avs_pb.SmartWallet.AsObject;

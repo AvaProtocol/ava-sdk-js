@@ -6274,7 +6274,7 @@ __export(src_exports, {
   TriggerFactory: () => factory_default,
   TriggerTypes: () => TriggerTypes,
   Workflow: () => workflow_default,
-  WorkflowStatuses: () => WorkflowStatuses,
+  WorkflowStatus: () => WorkflowStatus,
   default: () => Client,
   getKeyRequestMessage: () => getKeyRequestMessage
 });
@@ -6807,8 +6807,29 @@ var NodeFactory = class {
 };
 var factory_default2 = NodeFactory;
 
+// src/types.ts
+var AUTH_KEY_HEADER = "authkey";
+var DEFAULT_LIMIT = 10;
+var WorkflowStatus = /* @__PURE__ */ ((WorkflowStatus3) => {
+  WorkflowStatus3["Active"] = "active";
+  WorkflowStatus3["Completed"] = "completed";
+  WorkflowStatus3["Failed"] = "failed";
+  WorkflowStatus3["Canceled"] = "canceled";
+  WorkflowStatus3["Executing"] = "executing";
+  return WorkflowStatus3;
+})(WorkflowStatus || {});
+
 // src/models/workflow.ts
-var WorkflowStatuses = avs_pb15.TaskStatus;
+function convertStatusToString(status) {
+  const conversionMap = {
+    [avs_pb15.TaskStatus.ACTIVE]: "active" /* Active */,
+    [avs_pb15.TaskStatus.COMPLETED]: "completed" /* Completed */,
+    [avs_pb15.TaskStatus.FAILED]: "failed" /* Failed */,
+    [avs_pb15.TaskStatus.CANCELED]: "canceled" /* Canceled */,
+    [avs_pb15.TaskStatus.EXECUTING]: "executing" /* Executing */
+  };
+  return conversionMap[status];
+}
 var Workflow = class _Workflow {
   /**
    * Create an instance of Workflow from user inputs
@@ -6859,7 +6880,7 @@ var Workflow = class _Workflow {
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
       memo: obj.getMemo(),
-      status: obj.getStatus(),
+      status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
       totalExecution: obj.getTotalExecution(),
       lastRanAt: obj.getLastRanAt()
@@ -6886,7 +6907,7 @@ var Workflow = class _Workflow {
       nodes: [],
       edges: [],
       completedAt: obj.getCompletedAt(),
-      status: obj.getStatus(),
+      status: convertStatusToString(obj.getStatus()),
       memo: obj.getMemo(),
       totalExecution: obj.getTotalExecution(),
       lastRanAt: obj.getLastRanAt()
@@ -7062,10 +7083,6 @@ var Execution3 = class _Execution {
   }
 };
 var execution_default = Execution3;
-
-// src/types.ts
-var AUTH_KEY_HEADER = "authkey";
-var DEFAULT_LIMIT = 10;
 
 // src/index.ts
 var BaseClient = class {
@@ -7387,6 +7404,6 @@ var Client = class extends BaseClient {
   TriggerFactory,
   TriggerTypes,
   Workflow,
-  WorkflowStatuses,
+  WorkflowStatus,
   getKeyRequestMessage
 });

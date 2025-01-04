@@ -7,9 +7,23 @@ import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
+import { WorkflowStatus } from "../types";
 
-export const WorkflowStatuses = avs_pb.TaskStatus;
-export type WorkflowStatus = avs_pb.TaskStatus;
+// Function to convert TaskStatus to string
+export function convertStatusToString(
+  status: avs_pb.TaskStatus
+): WorkflowStatus {
+  const conversionMap: { [key in avs_pb.TaskStatus]: WorkflowStatus } = {
+    [avs_pb.TaskStatus.ACTIVE]: WorkflowStatus.Active,
+    [avs_pb.TaskStatus.COMPLETED]: WorkflowStatus.Completed,
+    [avs_pb.TaskStatus.FAILED]: WorkflowStatus.Failed,
+    [avs_pb.TaskStatus.CANCELED]: WorkflowStatus.Canceled,
+    [avs_pb.TaskStatus.EXECUTING]: WorkflowStatus.Executing,
+  };
+
+  return conversionMap[status] as WorkflowStatus;
+}
+
 export type WorkflowProps = Omit<
   avs_pb.Task.AsObject,
   | "id"
@@ -114,7 +128,7 @@ class Workflow implements WorkflowProps {
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
       memo: obj.getMemo(),
-      status: obj.getStatus(),
+      status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
       totalExecution: obj.getTotalExecution(),
       lastRanAt: obj.getLastRanAt(),
@@ -145,7 +159,7 @@ class Workflow implements WorkflowProps {
       nodes: [],
       edges: [],
       completedAt: obj.getCompletedAt(),
-      status: obj.getStatus(),
+      status: convertStatusToString(obj.getStatus()),
       memo: obj.getMemo(),
       totalExecution: obj.getTotalExecution(),
       lastRanAt: obj.getLastRanAt(),
@@ -176,4 +190,5 @@ class Workflow implements WorkflowProps {
   }
 }
 
+export { WorkflowStatus };
 export default Workflow;

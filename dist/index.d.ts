@@ -1452,8 +1452,40 @@ declare class Trigger implements TriggerProps {
     toRequest(): TaskTrigger;
 }
 
-declare const WorkflowStatuses: typeof TaskStatus;
-type WorkflowStatus = TaskStatus;
+type Environment = "production" | "development" | "staging";
+declare const AUTH_KEY_HEADER = "authkey";
+declare const DEFAULT_LIMIT = 10;
+interface RequestOptions {
+    authKey?: string;
+}
+interface GetExecutionsRequest extends RequestOptions {
+    cursor?: string;
+    limit?: number;
+}
+interface GetWorkflowsRequest extends RequestOptions {
+    cursor?: string;
+    limit?: number;
+}
+interface GetKeyResponse {
+    authKey: string;
+}
+interface GetWalletRequest {
+    salt: string;
+    factoryAddress?: string;
+}
+interface ClientOption {
+    endpoint: string;
+    factoryAddress?: string;
+}
+declare enum WorkflowStatus {
+    Active = "active",
+    Completed = "completed",
+    Failed = "failed",
+    Canceled = "canceled",
+    Executing = "executing"
+}
+type SmartWallet = SmartWallet$1.AsObject;
+
 type WorkflowProps = Omit<Task.AsObject, "id" | "owner" | "completedAt" | "status" | "executionsList" | "memo" | "trigger" | "nodesList" | "edgesList" | "totalExecution" | "lastRanAt"> & {
     id?: string;
     owner?: string;
@@ -1690,33 +1722,6 @@ declare class TriggerFactory {
     static fromResponse(raw: TaskTrigger): Trigger;
 }
 
-type Environment = "production" | "development" | "staging";
-declare const AUTH_KEY_HEADER = "authkey";
-declare const DEFAULT_LIMIT = 10;
-interface RequestOptions {
-    authKey?: string;
-}
-interface GetExecutionsRequest extends RequestOptions {
-    cursor?: string;
-    limit?: number;
-}
-interface GetWorkflowsRequest extends RequestOptions {
-    cursor?: string;
-    limit?: number;
-}
-interface GetKeyResponse {
-    authKey: string;
-}
-interface GetWalletRequest {
-    salt: string;
-    factoryAddress?: string;
-}
-interface ClientOption {
-    endpoint: string;
-    factoryAddress?: string;
-}
-type SmartWallet = SmartWallet$1.AsObject;
-
 declare class BaseClient {
     readonly endpoint: string;
     readonly rpcClient: AggregatorClient;
@@ -1871,4 +1876,4 @@ declare class Client extends BaseClient {
     deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean>;
 }
 
-export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, TriggerTypes, Workflow, type WorkflowProps, type WorkflowStatus, WorkflowStatuses, Client as default, getKeyRequestMessage };
+export { AUTH_KEY_HEADER, BlockTrigger, type BlockTriggerProps, BranchNode, type BranchNodeData, type BranchNodeProps, type ClientOption, ContractReadNode, type ContractReadNodeProps, ContractWriteNode, type ContractWriteNodeProps, CronTrigger, type CronTriggerProps, CustomCodeLangs, CustomCodeNode, type CustomCodeNodeProps, DEFAULT_LIMIT, ETHTransferNode, type ETHTransferNodeProps, Edge, type EdgeProps, type Environment, EventTrigger, type EventTriggerProps, Execution, FixedTimeTrigger, type FixedTimeTriggerProps, type GetExecutionsRequest, type GetKeyResponse, type GetWalletRequest, type GetWorkflowsRequest, GraphQLQueryNode, type GraphQLQueryNodeProps, Node, NodeFactory, type NodeProps, type NodeType, NodeTypes, type RequestOptions, RestAPINode, type RestAPINodeProps, type SmartWallet, Trigger, TriggerFactory, type TriggerProps, TriggerType, TriggerTypes, Workflow, type WorkflowProps, WorkflowStatus, Client as default, getKeyRequestMessage };

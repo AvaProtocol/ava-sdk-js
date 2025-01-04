@@ -6,7 +6,7 @@ import Client, {
   NodeFactory,
   TriggerFactory,
   TriggerTypes,
-  WorkflowStatuses,
+  WorkflowStatus,
   NodeTypes,
   BranchNodeData,
 } from "../dist";
@@ -262,7 +262,7 @@ describe("createWorkflow Tests", () => {
       {
         ...workflowData,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatuses.ACTIVE,
+        status: WorkflowStatus.Active,
         id: submitResult,
         owner: eoaAddress,
       },
@@ -291,7 +291,7 @@ describe("createWorkflow Tests", () => {
       {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatuses.ACTIVE,
+        status: WorkflowStatus.Active,
         id: submitResult,
         owner: eoaAddress,
       },
@@ -319,7 +319,7 @@ describe("createWorkflow Tests", () => {
       {
         ...MultiNodeWithBranch,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatuses.ACTIVE,
+        status: WorkflowStatus.Active,
         id: submitResult,
         owner: eoaAddress,
       },
