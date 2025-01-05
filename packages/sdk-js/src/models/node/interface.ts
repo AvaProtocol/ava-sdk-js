@@ -1,7 +1,27 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { NodeType } from "@avaprotocol/types";
 import _ from "lodash";
-export const NodeTypes = avs_pb.TaskNode.TaskTypeCase; // an enum of node types
-export type NodeType = avs_pb.TaskNode.TaskTypeCase;
+
+// Function to convert TaskStatus to string
+export function covertNodeTypeToString(
+  status: avs_pb.TaskNode.TaskTypeCase
+): NodeType {
+  const conversionMap: { [key in avs_pb.TaskNode.TaskTypeCase]: NodeType } = {
+    [avs_pb.TaskNode.TaskTypeCase.ETH_TRANSFER]: NodeType.ETHTransfer,
+    [avs_pb.TaskNode.TaskTypeCase.CONTRACT_WRITE]: NodeType.ContractWrite,
+    [avs_pb.TaskNode.TaskTypeCase.CONTRACT_READ]: NodeType.ContractRead,
+    [avs_pb.TaskNode.TaskTypeCase.GRAPHQL_QUERY]: NodeType.GraphQLQuery,
+    [avs_pb.TaskNode.TaskTypeCase.REST_API]: NodeType.RestAPI,
+    [avs_pb.TaskNode.TaskTypeCase.BRANCH]: NodeType.Branch,
+    [avs_pb.TaskNode.TaskTypeCase.FILTER]: NodeType.Filter,
+    [avs_pb.TaskNode.TaskTypeCase.LOOP]: NodeType.Loop,
+    [avs_pb.TaskNode.TaskTypeCase.CUSTOM_CODE]: NodeType.CustomCode,
+    [avs_pb.TaskNode.TaskTypeCase.TASK_TYPE_NOT_SET]: NodeType.Unset,
+  };
+
+  return conversionMap[status] as NodeType;
+}
+
 export type NodeData =
   | avs_pb.ETHTransferNode.AsObject
   | avs_pb.ContractWriteNode.AsObject
@@ -25,7 +45,7 @@ export type NodeProps = Omit<
   | "loop"
   | "customCode"
 > & {
-  type: avs_pb.TaskNode.TaskTypeCase;
+  type: NodeType;
   data: NodeData;
 };
 
@@ -44,7 +64,6 @@ class Node implements NodeProps {
 
   toRequest(): avs_pb.TaskNode {
     const request = new avs_pb.TaskNode();
-    console.log("Node.toRequest.request:", request);
     const raw = request.serializeBinary();
     const parsed = avs_pb.TaskNode.deserializeBinary(raw);
     if (!_.isEqual(request, parsed)) {

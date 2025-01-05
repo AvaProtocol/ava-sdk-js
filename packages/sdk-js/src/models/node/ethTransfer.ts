@@ -1,6 +1,7 @@
-import { NodeProps, NodeTypes } from "./interface";
+import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
 type ETHTransferNodeData = avs_pb.ETHTransferNode.AsObject;
@@ -10,7 +11,7 @@ export type ETHTransferNodeProps = NodeProps & {
 
 class ETHTransferNode extends Node {
   constructor(props: ETHTransferNodeProps) {
-    super({ ...props, type: NodeTypes.ETH_TRANSFER, data: props.data });
+    super({ ...props, type: NodeType.ETHTransfer, data: props.data });
   }
 
   static fromResponse(raw: avs_pb.TaskNode): ETHTransferNode {
@@ -18,7 +19,7 @@ class ETHTransferNode extends Node {
     const obj = raw.toObject() as unknown as ETHTransferNodeProps;
     return new ETHTransferNode({
       ...obj,
-      type: NodeTypes.ETH_TRANSFER,
+      type: NodeType.ETHTransfer,
       data: raw.getEthTransfer()!.toObject() as ETHTransferNodeData,
     });
   }

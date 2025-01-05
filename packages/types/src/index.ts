@@ -50,4 +50,17 @@ export enum TriggerType {
   Unset = "unset",
 }
 
+export enum NodeType {
+  ETHTransfer = "eth_transfer",
+  ContractWrite = "contract_write",
+  ContractRead = "contract_read",
+  GraphQLQuery = "graphql_query",
+  RestAPI = "rest_api",
+  Branch = "branch",
+  Filter = "filter",
+  Loop = "loop",
+  CustomCode = "custom_code",
+  Unset = "unset",
+}
+
 export type SmartWallet = avs_pb.SmartWallet.AsObject;

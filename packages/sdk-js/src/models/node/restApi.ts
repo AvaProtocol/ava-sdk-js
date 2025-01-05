@@ -1,6 +1,7 @@
-import { NodeProps, NodeTypes } from "./interface";
+import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
 type RestAPINodeData = avs_pb.RestAPINode.AsObject;
@@ -10,7 +11,7 @@ export type RestAPINodeProps = NodeProps & {
 
 class RestAPINode extends Node {
   constructor(props: RestAPINodeProps) {
-    super({ ...props, type: NodeTypes.REST_API, data: props.data });
+    super({ ...props, type: NodeType.RestAPI, data: props.data });
   }
 
   static fromResponse(raw: avs_pb.TaskNode): RestAPINode {
@@ -18,7 +19,7 @@ class RestAPINode extends Node {
     const obj = raw.toObject() as unknown as RestAPINodeProps;
     return new RestAPINode({
       ...obj,
-      type: NodeTypes.REST_API,
+      type: NodeType.RestAPI,
       data: raw.getRestApi()!.toObject() as RestAPINodeData,
     });
   }

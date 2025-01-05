@@ -6,28 +6,28 @@ import CustomCodeNode, {
   CustomCodeNodeProps,
 } from "./customCode";
 import GraphQLQueryNode, { GraphQLQueryNodeProps } from "./graphqlQuery";
-import Node, { NodeProps, NodeType, NodeTypes } from "./interface";
+import Node, { NodeProps } from "./interface";
 import RestAPINode, { RestAPINodeProps } from "./restApi";
 import ContractReadNode, { ContractReadNodeProps } from "./contractRead";
 import ETHTransferNode, { ETHTransferNodeProps } from "./ethTransfer";
 import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
-
+import { NodeType } from "@avaprotocol/types";
 class NodeFactory {
   static create(props: NodeProps): Node {
     switch (props.type) {
-      case NodeTypes.CONTRACT_WRITE:
+      case NodeType.ContractWrite:
         return new ContractWriteNode(props as ContractWriteNodeProps);
-      case NodeTypes.REST_API:
+      case NodeType.RestAPI:
         return new RestAPINode(props as RestAPINodeProps);
-      case NodeTypes.CUSTOM_CODE:
+      case NodeType.CustomCode:
         return new CustomCodeNode(props as CustomCodeNodeProps);
-      case NodeTypes.CONTRACT_READ:
+      case NodeType.ContractRead:
         return new ContractReadNode(props as ContractReadNodeProps);
-      case NodeTypes.ETH_TRANSFER:
+      case NodeType.ETHTransfer:
         return new ETHTransferNode(props as ETHTransferNodeProps);
-      case NodeTypes.GRAPHQL_QUERY:
+      case NodeType.GraphQLQuery:
         return new GraphQLQueryNode(props as GraphQLQueryNodeProps);
-      case NodeTypes.BRANCH:
+      case NodeType.Branch:
         return new BranchNode(props as BranchNodeProps);
       default:
         throw new Error(`Unsupported node type: ${props.type}`);
@@ -64,7 +64,6 @@ export default NodeFactory;
 
 export {
   Node,
-  NodeTypes,
   ContractWriteNode,
   ContractReadNode,
   BranchNode,
@@ -76,7 +75,6 @@ export {
 };
 
 export type {
-  NodeType,
   NodeProps,
   ContractWriteNodeProps,
   ContractReadNodeProps,

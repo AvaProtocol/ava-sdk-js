@@ -1,8 +1,9 @@
-import { NodeProps, NodeTypes } from "./interface";
+import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { NodeType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { lang: CustomCodeLang, source: string }
+// Required props for cons  tructor: id, name, type and data: { lang: CustomCodeLang, source: string }
 type CustomCodeNodeData = avs_pb.CustomCodeNode.AsObject;
 export const CustomCodeLangs = avs_pb.CustomCodeLang;
 export type CustomCodeNodeProps = NodeProps & {
@@ -11,7 +12,7 @@ export type CustomCodeNodeProps = NodeProps & {
 
 class CustomCodeNode extends Node {
   constructor(props: CustomCodeNodeProps) {
-    super({ ...props, type: NodeTypes.CUSTOM_CODE, data: props.data });
+    super({ ...props, type: NodeType.CustomCode, data: props.data });
   }
 
   static fromResponse(raw: avs_pb.TaskNode): CustomCodeNode {
@@ -19,7 +20,7 @@ class CustomCodeNode extends Node {
     const obj = raw.toObject() as unknown as CustomCodeNodeProps;
     return new CustomCodeNode({
       ...obj,
-      type: NodeTypes.CUSTOM_CODE,
+      type: NodeType.CustomCode,
       data: raw.getCustomCode()!.toObject() as CustomCodeNodeData,
     });
   }

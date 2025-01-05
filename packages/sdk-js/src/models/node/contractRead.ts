@@ -1,6 +1,7 @@
-import { NodeProps, NodeTypes } from "./interface";
+import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { contractAddress, callData, contractAbi, method }
 type ContractReadNodeData = avs_pb.ContractReadNode.AsObject;
@@ -10,7 +11,7 @@ export type ContractReadNodeProps = NodeProps & {
 
 class ContractReadNode extends Node {
   constructor(props: ContractReadNodeProps) {
-    super({ ...props, type: NodeTypes.CONTRACT_READ, data: props.data });
+    super({ ...props, type: NodeType.ContractRead, data: props.data });
   }
 
   static fromResponse(raw: avs_pb.TaskNode): ContractReadNode {
@@ -18,7 +19,7 @@ class ContractReadNode extends Node {
     const obj = raw.toObject() as unknown as ContractReadNodeProps;
     return new ContractReadNode({
       ...obj,
-      type: NodeTypes.CONTRACT_READ,
+      type: NodeType.ContractRead,
       data: raw.getContractRead()!.toObject() as ContractReadNodeData,
     });
   }

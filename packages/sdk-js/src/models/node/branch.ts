@@ -1,4 +1,5 @@
-import { NodeProps, NodeTypes } from "./interface";
+import { NodeProps } from "./interface";
+import { NodeType } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
@@ -10,7 +11,7 @@ export type BranchNodeProps = NodeProps & {
 
 class BranchNode extends Node {
   constructor(props: BranchNodeProps) {
-    super({ ...props, type: NodeTypes.BRANCH, data: props.data });
+    super({ ...props, type: NodeType.Branch, data: props.data });
   }
 
   static fromResponse(raw: avs_pb.TaskNode): BranchNode {
@@ -18,7 +19,7 @@ class BranchNode extends Node {
     const obj = raw.toObject() as unknown as BranchNodeProps;
     return new BranchNode({
       ...obj,
-      type: NodeTypes.BRANCH,
+      type: NodeType.Branch,
       data: raw.getBranch()!.toObject() as BranchNodeData,
     });
   }

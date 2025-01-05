@@ -7,9 +7,9 @@ import Client, {
   TriggerFactory,
   TriggerType,
   WorkflowStatus,
-  NodeTypes,
   BranchNodeData,
 } from "@/sdk-js/dist";
+import { NodeType } from "@avaprotocol/types";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -170,7 +170,7 @@ describe("createWorkflow Tests", () => {
     const wallet = await client.getWallet({ salt: "0" });
     const branchNode = NodeFactory.create({
       name: "branchCheckTokenAmount",
-      type: NodeTypes.BRANCH,
+      type: NodeType.Branch,
       id: getNextId(),
       data: {
         conditionsList: [
@@ -200,7 +200,7 @@ describe("createWorkflow Tests", () => {
 
     const restApiNode = NodeFactory.create({
       name: "notification",
-      type: NodeTypes.REST_API,
+      type: NodeType.RestAPI,
       id: getNextId(),
       data: {
         url: "https://api.telegram.org/bot{{notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
