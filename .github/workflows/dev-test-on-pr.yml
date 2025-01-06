@@ -49,6 +49,11 @@ jobs:
           sleep 5
         done
 
+    - name: Build typescript
+      run: |
+        npm run 
+        npm run build
+
     - name: Run tests againts local AVS
       run: |
         export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
