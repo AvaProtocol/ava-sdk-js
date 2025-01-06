@@ -10,7 +10,7 @@ import {
   removeCreatedWorkflows,
 } from "./utils";
 import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
-import { WorkflowStatuses } from "../dist";
+import { WorkflowStatus } from "../dist";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -68,7 +68,7 @@ describe("cancelWorkflow Tests", () => {
 
     const cancelResult = await client.getWorkflow(workflowId);
     expect(cancelResult.id).toEqual(workflowId);
-    expect(cancelResult.status).toEqual(WorkflowStatuses.CANCELED);
+    expect(cancelResult.status).toEqual(WorkflowStatus.Canceled);
   });
 
   test("should throw error when canceling an non-existent task", async () => {

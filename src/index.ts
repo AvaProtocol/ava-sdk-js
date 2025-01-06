@@ -5,18 +5,11 @@ import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "../grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "../grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
-import Workflow, {
-  WorkflowProps,
-  WorkflowStatus,
-  WorkflowStatuses,
-} from "./models/workflow";
+import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
 import Execution from "./models/execution";
 import NodeFactory from "./models/node/factory";
-import TriggerFactory, {
-  TriggerType,
-  TriggerTypes,
-} from "./models/trigger/factory";
+import TriggerFactory from "./models/trigger/factory";
 
 import {
   AUTH_KEY_HEADER,
@@ -322,7 +315,7 @@ export default class Client extends BaseClient {
   async getExecutions(
     workflows: string[],
     options?: GetExecutionsRequest
-  ): Promise<{ cursor: string; result: Execution[], hasMore: boolean; }> {
+  ): Promise<{ cursor: string; result: Execution[]; hasMore: boolean }> {
     const request = new avs_pb.ListExecutionsReq();
     request.setTaskIdsList(workflows);
 
@@ -355,7 +348,7 @@ export default class Client extends BaseClient {
   async getExecution(
     taskId: string,
     executionId: string,
-    options?: RequestOptions 
+    options?: RequestOptions
   ): Promise<Execution> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(taskId);
@@ -493,16 +486,9 @@ export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
-export {
-  Workflow,
-  WorkflowStatuses,
-  Edge,
-  Execution,
-  NodeFactory,
-  TriggerFactory,
-};
+export { Workflow, Edge, Execution, NodeFactory, TriggerFactory };
 
-export type { WorkflowProps, WorkflowStatus, EdgeProps };
+export type { WorkflowProps, EdgeProps };
 
 // Add this line at the end of the file
 export { getKeyRequestMessage };

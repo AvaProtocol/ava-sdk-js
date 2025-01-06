@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { Workflow, WorkflowStatuses } from "../dist";
+import Client, { Workflow, WorkflowStatus } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
@@ -69,10 +69,10 @@ describe("getWorkflows Tests", () => {
     expect(res.result.some((task) => task.id === workflowId)).toBe(true);
     const result = res.result.find((task) => task.id === workflowId);
 
-    expect(result.id).toEqual(workflowId);
-    expect(result.memo).toEqual("test 123");
-    expect(result.startAt).toEqual(WorkflowTemplate.startAt);
-    expect(result.maxExecution).toEqual(WorkflowTemplate.maxExecution);
+    expect(result?.id).toEqual(workflowId);
+    expect(result?.memo).toEqual("test 123");
+    expect(result?.startAt).toEqual(WorkflowTemplate.startAt);
+    expect(result?.maxExecution).toEqual(WorkflowTemplate.maxExecution);
   });
 
   test("options.limit returns the correct number of workflows", async () => {

@@ -1,5 +1,6 @@
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
-import Trigger, { TriggerProps, TriggerTypes } from "./interface";
+import Trigger, { TriggerProps } from "./interface";
+import { TriggerType } from "../../types";
 
 // Required props for constructor: id, name, type and data: { interval }
 export type BlockTriggerDataType = avs_pb.BlockCondition.AsObject;
@@ -7,7 +8,7 @@ export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
 
 class BlockTrigger extends Trigger {
   constructor(props: BlockTriggerProps) {
-    super({ ...props, type: TriggerTypes.BLOCK, data: props.data });
+    super({ ...props, type: TriggerType.Block, data: props.data });
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -31,7 +32,7 @@ class BlockTrigger extends Trigger {
 
     return new BlockTrigger({
       ...obj,
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: raw.getBlock()!.toObject() as BlockTriggerDataType,
     });
   }

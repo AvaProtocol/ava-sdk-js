@@ -2,7 +2,7 @@ import Client, {
   getKeyRequestMessage,
   Workflow,
   WorkflowProps,
-  WorkflowStatuses,
+  WorkflowStatus,
 } from "../dist";
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
@@ -129,7 +129,7 @@ export const compareResults = (
   expect(actual.startAt).toEqual(expected.startAt);
   expect(actual.expiredAt).toEqual(expected.expiredAt);
   expect(actual.maxExecution).toBe(expected.maxExecution);
-  expect(actual.status).toBe(expected.status || WorkflowStatuses.ACTIVE);
+  expect(actual.status).toBe(expected.status || WorkflowStatus.Active);
   expect(actual.id).toBe(expected.id);
   expect(actual.owner).toBe(expected.owner);
 };

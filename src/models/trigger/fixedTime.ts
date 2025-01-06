@@ -1,5 +1,6 @@
 import * as avs_pb from "../../../grpc_codegen/avs_pb";
-import Trigger, { TriggerProps, TriggerTypes } from "./interface";
+import Trigger, { TriggerProps } from "./interface";
+import { TriggerType } from "../../types";
 
 // Required props for constructor: id, name,type and data: { epoch }
 export type FixedTimeTriggerDataType = avs_pb.FixedTimeCondition.AsObject;
@@ -9,11 +10,11 @@ export type FixedTimeTriggerProps = TriggerProps & {
 
 class FixedTimeTrigger extends Trigger {
   constructor(props: FixedTimeTriggerProps) {
-    super({ ...props, type: TriggerTypes.FIXED_TIME, data: props.data });
+    super({ ...props, type: TriggerType.FixedTime, data: props.data });
 
     console.log("FixedTimeTrigger.constructor.props:", {
       ...props,
-      type: TriggerTypes.FIXED_TIME,
+      type: TriggerType.FixedTime,
       data: props.data,
     });
   }
@@ -42,7 +43,7 @@ class FixedTimeTrigger extends Trigger {
     console.log("FixedTimeTrigger.fromResponse.obj:", obj);
     return new FixedTimeTrigger({
       ...obj,
-      type: TriggerTypes.FIXED_TIME,
+      type: TriggerType.FixedTime,
       data: raw.getFixedTime()!.toObject() as FixedTimeTriggerDataType,
     });
   }

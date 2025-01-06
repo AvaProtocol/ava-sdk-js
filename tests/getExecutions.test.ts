@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { TriggerFactory, TriggerTypes } from "../dist";
+import Client, { TriggerFactory, TriggerType } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
@@ -62,7 +62,7 @@ describe("getExecutions Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "blockTrigger",
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: { interval: blockInterval },
     });
 
@@ -86,7 +86,7 @@ describe("getExecutions Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.BLOCK,
+        type: TriggerType.Block,
         blockNumber: blockNumber,
       },
       isBlocking: true,
@@ -97,7 +97,7 @@ describe("getExecutions Tests", () => {
       await client.triggerWorkflow({
         id: workflowId,
         data: {
-          type: TriggerTypes.BLOCK,
+          type: TriggerType.Block,
           blockNumber: blockNumber + repeatCount +1
         },
         isBlocking: true,
@@ -152,7 +152,7 @@ describe("getExecutions Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "blockTrigger",
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: { interval: blockInterval },
     });
 
@@ -170,7 +170,7 @@ describe("getExecutions Tests", () => {
       await client.triggerWorkflow({
         id: workflowId,
         data: {
-          type: TriggerTypes.BLOCK,
+          type: TriggerType.Block,
           blockNumber: blockNumber + i,
         },
         isBlocking: true,
@@ -220,7 +220,7 @@ describe("getExecutions Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "blockTrigger",
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: { interval: 5 },
     });
 
@@ -237,7 +237,7 @@ describe("getExecutions Tests", () => {
     await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.BLOCK,
+        type: TriggerType.Block,
         blockNumber: blockNumber + 5,
       },
       isBlocking: true,
@@ -257,7 +257,7 @@ describe("getExecutions Tests", () => {
 
     const trigger = TriggerFactory.create({
       name: "blockTrigger",
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: { interval: 5 },
     });
 
@@ -274,7 +274,7 @@ describe("getExecutions Tests", () => {
     await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.BLOCK,
+        type: TriggerType.Block,
         blockNumber: blockNumber + 5,
       },
       isBlocking: true,

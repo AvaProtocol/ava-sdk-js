@@ -1,12 +1,4 @@
-import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, {
-  Edge,
-  NodeFactory,
-  TriggerFactory,
-  TriggerTypes,
-  Workflow,
-  WorkflowStatuses,
-} from "../dist";
+import Client, { WorkflowStatus } from "../dist";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -17,13 +9,7 @@ import {
   removeCreatedWorkflows,
   compareResults,
 } from "./utils";
-import {
-  EdgesTemplate,
-  EXPIRED_AT,
-  FACTORY_ADDRESS,
-  NodesTemplate,
-  WorkflowTemplate,
-} from "./templates";
+import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -119,7 +105,7 @@ describe("Authentication Tests", () => {
           ...WorkflowTemplate,
           smartWalletAddress: wallet.address,
           id: createResult,
-          status: WorkflowStatuses.ACTIVE,
+          status: WorkflowStatus.Active,
           owner: eoaAddress,
         },
         getResponse
@@ -158,13 +144,13 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
 
       const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow.status).toEqual(WorkflowStatus.Active);
 
       const cancelResult = await client.cancelWorkflow(workflowId);
       expect(cancelResult).toEqual(true);
 
       const canceled = await client.getWorkflow(workflowId);
-      expect(canceled.status).toEqual(WorkflowStatuses.CANCELED);
+      expect(canceled.status).toEqual(WorkflowStatus.Canceled);
     });
 
     test("deleteWorkflow works with client.authKey", async () => {
@@ -179,7 +165,7 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
 
       const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow.status).toEqual(WorkflowStatus.Active);
 
       expect(await client.deleteWorkflow(workflowId)).toEqual(true);
 
@@ -295,7 +281,7 @@ describe("Authentication Tests", () => {
           ...WorkflowTemplate,
           smartWalletAddress: wallet.address,
           id: createResult,
-          status: WorkflowStatuses.ACTIVE,
+          status: WorkflowStatus.Active,
           owner: eoaAddress,
         },
         getResponse
@@ -310,7 +296,7 @@ describe("Authentication Tests", () => {
           ...WorkflowTemplate,
           smartWalletAddress: wallet.address,
           id: createResult,
-          status: WorkflowStatuses.ACTIVE,
+          status: WorkflowStatus.Active,
           owner: eoaAddress,
         },
         getResponse2
@@ -361,14 +347,14 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
 
       const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow.status).toEqual(WorkflowStatus.Active);
 
       expect(
         await client.cancelWorkflow(workflowId, { authKey: authKeyViaAPI })
       ).toEqual(true);
 
       const canceled = await client.getWorkflow(workflowId);
-      expect(canceled.status).toEqual(WorkflowStatuses.CANCELED);
+      expect(canceled.status).toEqual(WorkflowStatus.Canceled);
 
       const workflowId2 = await client.submitWorkflow(
         client.createWorkflow({
@@ -379,7 +365,7 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, workflowId2);
 
       const workflow2 = await client.getWorkflow(workflowId2);
-      expect(workflow2.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow2.status).toEqual(WorkflowStatus.Active);
 
       expect(
         await client.cancelWorkflow(workflowId2, {
@@ -388,7 +374,7 @@ describe("Authentication Tests", () => {
       ).toEqual(true);
 
       const canceled2 = await client.getWorkflow(workflowId2);
-      expect(canceled2.status).toEqual(WorkflowStatuses.CANCELED);
+      expect(canceled2.status).toEqual(WorkflowStatus.Canceled);
     });
 
     test("deleteWorkflow works with options.authKey", async () => {
@@ -403,7 +389,7 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
 
       const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow.status).toEqual(WorkflowStatus.Active);
 
       expect(
         await client.deleteWorkflow(workflowId, { authKey: authKeyViaAPI })
@@ -422,7 +408,7 @@ describe("Authentication Tests", () => {
       queueForRemoval(createdWorkflows, workflowId);
 
       const workflow2 = await client.getWorkflow(workflowId2);
-      expect(workflow2.status).toEqual(WorkflowStatuses.ACTIVE);
+      expect(workflow2.status).toEqual(WorkflowStatus.Active);
 
       expect(
         await client.deleteWorkflow(workflowId2, {

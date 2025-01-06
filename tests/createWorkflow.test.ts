@@ -5,8 +5,8 @@ import Client, {
   Workflow,
   NodeFactory,
   TriggerFactory,
-  TriggerTypes,
-  WorkflowStatuses,
+  TriggerType,
+  WorkflowStatus,
   NodeTypes,
   BranchNodeData,
 } from "../dist";
@@ -73,7 +73,7 @@ describe("createWorkflow Tests", () => {
   test("should create a task when authenticated with signature", async () => {
     console.log("TriggerFactory.create.inputs:", {
       name: "blockTrigger",
-      type: TriggerTypes.BLOCK,
+      type: TriggerType.Block,
       data: { interval: 5 },
     });
 
@@ -85,7 +85,7 @@ describe("createWorkflow Tests", () => {
       edges: _.map(EdgesTemplate, (edge) => new Edge(edge)),
       trigger: TriggerFactory.create({
         name: "blockTrigger",
-        type: TriggerTypes.BLOCK,
+        type: TriggerType.Block,
         data: { interval: 5 },
       }),
       startAt: WorkflowTemplate.startAt,
@@ -123,7 +123,7 @@ describe("createWorkflow Tests", () => {
       smartWalletAddress: wallet.address,
       trigger: TriggerFactory.create({
         name: "cronTrigger",
-        type: TriggerTypes.CRON,
+        type: TriggerType.Cron,
         data: { scheduleList: ["5 4 * * *", "5 0 * 8 *"] },
       }),
     };
@@ -148,7 +148,7 @@ describe("createWorkflow Tests", () => {
       smartWalletAddress: wallet.address,
       trigger: TriggerFactory.create({
         name: "fixedTimeTrigger",
-        type: TriggerTypes.FIXED_TIME,
+        type: TriggerType.FixedTime,
         data: { epochsList: [10, 20, 30] },
       }),
     };
@@ -239,7 +239,7 @@ describe("createWorkflow Tests", () => {
       ],
       trigger: TriggerFactory.create({
         name: "eventTrigger",
-        type: TriggerTypes.EVENT,
+        type: TriggerType.Event,
         data: {
           expression: `
               trigger1.data.topics[0] == 
@@ -262,7 +262,7 @@ describe("createWorkflow Tests", () => {
       {
         ...workflowData,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatuses.ACTIVE,
+        status: WorkflowStatus.Active,
         id: submitResult,
         owner: eoaAddress,
       },
@@ -278,7 +278,7 @@ describe("createWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
         trigger: TriggerFactory.create({
           name: "blockTrigger",
-          type: TriggerTypes.BLOCK,
+          type: TriggerType.Block,
           data: { interval: 102 },
         }),
       })
@@ -291,7 +291,7 @@ describe("createWorkflow Tests", () => {
       {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatuses.ACTIVE,
+        status: WorkflowStatus.Active,
         id: submitResult,
         owner: eoaAddress,
       },
@@ -319,7 +319,7 @@ describe("createWorkflow Tests", () => {
       {
         ...MultiNodeWithBranch,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatuses.ACTIVE,
+        status: WorkflowStatus.Active,
         id: submitResult,
         owner: eoaAddress,
       },
@@ -344,6 +344,6 @@ describe("createWorkflow Tests", () => {
   // expect(task.edges[3].source).toEqual("t100.b1");
   // expect(task.edges[4].source).toEqual("t100.b2");
 
-  // expect(task.trigger.type).toEqual(TriggerTypes.BLOCK);
+  // expect(task.trigger.type).toEqual(TriggerType.Block);
   // expect(task.trigger.data.interval).toEqual(5);
 });
