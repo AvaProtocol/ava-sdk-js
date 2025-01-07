@@ -16,7 +16,7 @@ jobs:
       ENDPOINT: "localhost:2206"
       # TODO: remove this before merge
       # Pin to this branch to have all the fix
-      AVS_BUILD_VERSION:  change-trigger-response
+      AVS_BUILD_VERSION: update-sdk
 
     steps:
     - name: Checkout repository
