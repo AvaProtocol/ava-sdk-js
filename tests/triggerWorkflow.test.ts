@@ -1,10 +1,11 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client, {
   TriggerFactory,
-  TriggerTypes,
-  WorkflowStatuses,
+  TriggerType,
   ExecutionStatus,
-} from "../dist";
+  WorkflowStatus,
+} from "@/sdk-js/dist";
+
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
@@ -310,7 +311,7 @@ describe("triggerWorkflow Tests", () => {
     // The list should now contain one execution, the id from manual trigger should matched
     const execution = await client.getExecution(workflowId, result.executionId);
     expect(execution.id).toEqual(result.executionId);
-    expect(execution.triggerMetadata.type).toEqual(TriggerTypes.CRON);
+    expect(execution.triggerMetadata.type).toEqual(TriggerType.Cron);
     expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
 
     const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
@@ -325,7 +326,7 @@ describe("triggerWorkflow Tests", () => {
     // Create a cron trigger with a schedule of every minute
     const trigger = TriggerFactory.create({
       name: "cronTrigger",
-      type: TriggerTypes.CRON,
+      type: TriggerType.Cron,
       data: { scheduleList: ["* * * * *"] },
     });
 
@@ -341,7 +342,7 @@ describe("triggerWorkflow Tests", () => {
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
-        type: TriggerTypes.CRON,
+        type: TriggerType.Cron,
         epoch: epoch + 60, // set epoch to 1 minute later
       },
       isBlocking: false,
