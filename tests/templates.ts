@@ -2,7 +2,6 @@ import _ from "lodash";
 import {
   Edge,
   NodeFactory,
-  NodeTypes,
   NodeProps,
   TriggerFactory,
   TriggerType,
@@ -14,9 +13,9 @@ import {
   GraphQLQueryNodeProps,
   BranchNodeProps,
   CustomCodeLangs,
-} from "../dist";
+} from "@/sdk-js/dist";
 import { getNextId } from "./utils";
-
+import { NodeType } from "@avaprotocol/types";
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
 export const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
 
@@ -26,7 +25,7 @@ export const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 ho
 const contractWriteNodeProps: ContractWriteNodeProps = {
   id: getNextId(),
   name: "transfer token",
-  type: NodeTypes.CONTRACT_WRITE,
+  type: NodeType.ContractWrite,
   data: {
     contractAddress: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     callData: "0x123cdef",
@@ -47,7 +46,7 @@ const contractWriteNodeProps: ContractWriteNodeProps = {
 const contractReadNodeProps: ContractReadNodeProps = {
   id: getNextId(),
   name: "read token balance",
-  type: NodeTypes.CONTRACT_READ,
+  type: NodeType.ContractRead,
   data: {
     contractAddress: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     callData: "0x123cdef",
@@ -69,7 +68,7 @@ const contractReadNodeProps: ContractReadNodeProps = {
 const ethTransferNodeProps: ETHTransferNodeProps = {
   id: getNextId(),
   name: "send eth",
-  type: NodeTypes.ETH_TRANSFER,
+  type: NodeType.ETHTransfer,
   data: {
     destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     amount: "0x123cdef",
@@ -79,7 +78,7 @@ const ethTransferNodeProps: ETHTransferNodeProps = {
 const restApiNodeProps: RestAPINodeProps = {
   id: getNextId(),
   name: "rest api call",
-  type: NodeTypes.REST_API,
+  type: NodeType.RestAPI,
   data: {
     url: "http://endpoint002",
     method: "post",
@@ -91,7 +90,7 @@ const restApiNodeProps: RestAPINodeProps = {
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   id: getNextId(),
   name: "graphql call",
-  type: NodeTypes.GRAPHQL_QUERY,
+  type: NodeType.GraphQLQuery,
   data: {
     url: "http://endpoint003",
     query: `foo bar`,
@@ -102,7 +101,7 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
 const branchNodeProps: BranchNodeProps = {
   id: getNextId(),
   name: "branch",
-  type: NodeTypes.BRANCH,
+  type: NodeType.Branch,
   data: {
     conditionsList: [
       { id: "b1", type: "if", expression: "foo >= 5" },
@@ -115,7 +114,7 @@ const branchNodeProps: BranchNodeProps = {
 const customCodeNodeProps: CustomCodeNodeProps = {
   id: getNextId(),
   name: "custom code",
-  type: NodeTypes.CUSTOM_CODE,
+  type: NodeType.CustomCode,
   data: {
     lang: CustomCodeLangs.JAVASCRIPT,
     source: "foo bar",

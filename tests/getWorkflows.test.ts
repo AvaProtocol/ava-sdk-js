@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { Workflow, WorkflowStatus } from "../dist";
+import Client, { Workflow, WorkflowStatus } from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";

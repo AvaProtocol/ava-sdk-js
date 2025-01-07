@@ -1,4 +1,5 @@
-import Client, { WorkflowStatus } from "../dist";
+import Client from "@/sdk-js/dist";
+import { WorkflowStatus } from "@/types/dist";
 import dotenv from "dotenv";
 import path from "path";
 import {

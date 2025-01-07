@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "../dist";
+import Client from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -10,7 +10,7 @@ import {
   removeCreatedWorkflows,
 } from "./utils";
 import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
-import { WorkflowStatus } from "../dist";
+import { WorkflowStatus } from "@/sdk-js/dist";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });

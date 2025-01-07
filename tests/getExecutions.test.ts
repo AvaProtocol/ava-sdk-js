@@ -1,5 +1,5 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { TriggerFactory, TriggerType } from "../dist";
+import Client, { TriggerFactory, TriggerType } from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
