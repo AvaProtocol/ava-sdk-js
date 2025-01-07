@@ -16,7 +16,7 @@ jobs:
       ENDPOINT: "localhost:2206"
       # TODO: remove this before merge
       # Pin to this branch to have all the fix
-      AVS_BUILD_VERSION: passing-result-to-subsequent-steps
+      AVS_BUILD_VERSION: update-sdk
 
     steps:
       - name: Checkout repository
@@ -53,4 +53,5 @@ jobs:
         run: |
           export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
           export ENDPOINT="localhost:2206"
+          yarn run build
           yarn test
