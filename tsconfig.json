@@ -6,10 +6,15 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "outDir": "./dist",
     "declaration": true,
     "rootDir": "./",
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "baseUrl": ".",
+    "paths": {
+      "@/grpc_codegen/*": ["grpc_codegen/*"],
+      "@/sdk-js/*": ["packages/sdk-js/*"],
+      "@/types/*": ["packages/types/*"]
+    }
   },
   "include": ["src/**/*", "grpc_codegen/**/*", "tests"],
   "ts-node": {

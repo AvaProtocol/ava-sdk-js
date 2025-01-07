@@ -3,7 +3,7 @@ import Client, {
   Workflow,
   WorkflowProps,
   WorkflowStatus,
-} from "../dist";
+} from "@/sdk-js/dist";
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import dotenv from "dotenv";
