@@ -36,11 +36,7 @@ jobs:
     - name: Install dependencies
       run: yarn install
 
-    - name: Build typescript
-      run: |
-        npm run 
-        npm run build
-
     - name: Run tests againts staging AVS
       run: |
+        yarn build
         yarn test 

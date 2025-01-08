@@ -50,5 +50,5 @@ jobs:
           export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
           export ENDPOINT="localhost:2206"
           # We need to run yarn build here because the test is still importing from dist
-          yarn run build
+          yarn build
           yarn test
