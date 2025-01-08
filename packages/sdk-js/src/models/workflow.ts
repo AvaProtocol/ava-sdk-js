@@ -31,7 +31,7 @@ export type WorkflowProps = Omit<
   | "completedAt"
   | "status"
   | "executionsList"
-  | "memo"
+  | "name"
   | "trigger"
   | "nodesList"
   | "edgesList"
@@ -42,7 +42,7 @@ export type WorkflowProps = Omit<
   owner?: string;
   completedAt?: number;
   status?: WorkflowStatus;
-  memo?: string;
+  name?: string;
   trigger: Trigger;
   nodes: Node[];
   edges: Edge[];
@@ -63,7 +63,7 @@ class Workflow implements WorkflowProps {
   id?: string; // Id is assigned by the server side, thus not required for initialization
   owner?: string;
 
-  memo?: string;
+  name?: string;
   completedAt?: number;
   status?: WorkflowStatus;
   totalExecution?: number;
@@ -89,7 +89,7 @@ class Workflow implements WorkflowProps {
     // Optional fields
     this.id = props.id;
     this.owner = props.owner;
-    this.memo = props.memo;
+    this.name = props.name;
     this.status = props.status;
     this.completedAt = props.completedAt;
     this.totalExecution = props.totalExecution;
@@ -127,7 +127,7 @@ class Workflow implements WorkflowProps {
       startAt: obj.getStartAt(),
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
-      memo: obj.getMemo(),
+      name: obj.getMemo(),
       status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
       totalExecution: obj.getTotalExecution(),
@@ -160,7 +160,7 @@ class Workflow implements WorkflowProps {
       edges: [],
       completedAt: obj.getCompletedAt(),
       status: convertStatusToString(obj.getStatus()),
-      memo: obj.getMemo(),
+      name: obj.getMemo(),
       totalExecution: obj.getTotalExecution(),
       lastRanAt: obj.getLastRanAt(),
     });
@@ -182,8 +182,8 @@ class Workflow implements WorkflowProps {
     request.setMaxExecution(this.maxExecution);
 
     // Optional fields
-    if (this.memo) {
-      request.setMemo(this.memo);
+    if (this.name) {
+      request.setMemo(this.name);
     }
 
     return request;
