@@ -127,7 +127,7 @@ class Workflow implements WorkflowProps {
       startAt: obj.getStartAt(),
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
-      name: obj.getMemo(),
+      name: obj.getName(),
       status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
       totalExecution: obj.getTotalExecution(),
@@ -160,7 +160,7 @@ class Workflow implements WorkflowProps {
       edges: [],
       completedAt: obj.getCompletedAt(),
       status: convertStatusToString(obj.getStatus()),
-      name: obj.getMemo(),
+      name: obj.getName(),
       totalExecution: obj.getTotalExecution(),
       lastRanAt: obj.getLastRanAt(),
     });
@@ -183,7 +183,7 @@ class Workflow implements WorkflowProps {
 
     // Optional fields
     if (this.name) {
-      request.setMemo(this.name);
+      request.setName(this.name);
     }
 
     return request;
