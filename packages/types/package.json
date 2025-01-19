@@ -10,11 +10,9 @@
     "package.json"
   ],
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.js"
   },
   "author": "Vinh Nguyen (https://github.com/v9n), Chris Li (https://github.com/chrisli30)",
   "license": "Apache-2.0",
