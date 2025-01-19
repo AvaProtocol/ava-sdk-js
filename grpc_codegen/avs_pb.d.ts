@@ -692,8 +692,8 @@ export class Task extends jspb.Message {
     setStartAt(value: number): Task;
     getExpiredAt(): number;
     setExpiredAt(value: number): Task;
-    getMemo(): string;
-    setMemo(value: string): Task;
+    getName(): string;
+    setName(value: string): Task;
     getCompletedAt(): number;
     setCompletedAt(value: number): Task;
     getMaxExecution(): number;
@@ -735,7 +735,7 @@ export namespace Task {
         smartWalletAddress: string,
         startAt: number,
         expiredAt: number,
-        memo: string,
+        name: string,
         completedAt: number,
         maxExecution: number,
         totalExecution: number,
@@ -761,8 +761,8 @@ export class CreateTaskReq extends jspb.Message {
     setMaxExecution(value: number): CreateTaskReq;
     getSmartWalletAddress(): string;
     setSmartWalletAddress(value: string): CreateTaskReq;
-    getMemo(): string;
-    setMemo(value: string): CreateTaskReq;
+    getName(): string;
+    setName(value: string): CreateTaskReq;
     clearNodesList(): void;
     getNodesList(): Array<TaskNode>;
     setNodesList(value: Array<TaskNode>): CreateTaskReq;
@@ -789,7 +789,7 @@ export namespace CreateTaskReq {
         expiredAt: number,
         maxExecution: number,
         smartWalletAddress: string,
-        memo: string,
+        name: string,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
     }
@@ -993,8 +993,8 @@ export namespace ListTasksResp {
         setStartAt(value: number): Item;
         getExpiredAt(): number;
         setExpiredAt(value: number): Item;
-        getMemo(): string;
-        setMemo(value: string): Item;
+        getName(): string;
+        setName(value: string): Item;
         getCompletedAt(): number;
         setCompletedAt(value: number): Item;
         getMaxExecution(): number;
@@ -1028,7 +1028,7 @@ export namespace ListTasksResp {
             smartWalletAddress: string,
             startAt: number,
             expiredAt: number,
-            memo: string,
+            name: string,
             completedAt: number,
             maxExecution: number,
             totalExecution: number,

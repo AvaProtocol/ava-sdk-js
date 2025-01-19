@@ -198,6 +198,6 @@ export const MultiNodeWithBranch = {
   }),
   startAt: Math.floor(Date.now() / 1000) + 30,
   expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-  memo: `Test task`,
+  name: `Test task`,
   maxExecution: 1,
 };

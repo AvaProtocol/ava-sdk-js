@@ -58,7 +58,7 @@ describe("getWorkflows Tests", () => {
       client.createWorkflow({
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-        memo: "test 123",
+        name: "test 123",
       })
     );
     queueForRemoval(createdWorkflows, workflowId);
@@ -70,7 +70,7 @@ describe("getWorkflows Tests", () => {
     const result = res.result.find((task) => task.id === workflowId);
 
     expect(result?.id).toEqual(workflowId);
-    expect(result?.memo).toEqual("test 123");
+    expect(result?.name).toEqual("test 123");
     expect(result?.startAt).toEqual(WorkflowTemplate.startAt);
     expect(result?.maxExecution).toEqual(WorkflowTemplate.maxExecution);
   });

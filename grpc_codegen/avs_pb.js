@@ -5809,7 +5809,7 @@ proto.aggregator.Task.toObject = function(includeInstance, msg) {
     smartWalletAddress: jspb.Message.getFieldWithDefault(msg, 3, ""),
     startAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
     expiredAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    memo: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 6, ""),
     completedAt: jspb.Message.getFieldWithDefault(msg, 7, 0),
     maxExecution: jspb.Message.getFieldWithDefault(msg, 8, 0),
     totalExecution: jspb.Message.getFieldWithDefault(msg, 9, 0),
@@ -5878,7 +5878,7 @@ proto.aggregator.Task.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
-      msg.setMemo(value);
+      msg.setName(value);
       break;
     case 7:
       var value = /** @type {number} */ (reader.readInt64());
@@ -5979,7 +5979,7 @@ proto.aggregator.Task.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getMemo();
+  f = message.getName();
   if (f.length > 0) {
     writer.writeString(
       6,
@@ -6139,10 +6139,10 @@ proto.aggregator.Task.prototype.setExpiredAt = function(value) {
 
 
 /**
- * optional string memo = 6;
+ * optional string name = 6;
  * @return {string}
  */
-proto.aggregator.Task.prototype.getMemo = function() {
+proto.aggregator.Task.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
 };
 
@@ -6151,7 +6151,7 @@ proto.aggregator.Task.prototype.getMemo = function() {
  * @param {string} value
  * @return {!proto.aggregator.Task} returns this
  */
-proto.aggregator.Task.prototype.setMemo = function(value) {
+proto.aggregator.Task.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
 };
 
@@ -6403,7 +6403,7 @@ proto.aggregator.CreateTaskReq.toObject = function(includeInstance, msg) {
     expiredAt: jspb.Message.getFieldWithDefault(msg, 3, 0),
     maxExecution: jspb.Message.getFieldWithDefault(msg, 4, 0),
     smartWalletAddress: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    memo: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 6, ""),
     nodesList: jspb.Message.toObjectList(msg.getNodesList(),
     proto.aggregator.TaskNode.toObject, includeInstance),
     edgesList: jspb.Message.toObjectList(msg.getEdgesList(),
@@ -6467,7 +6467,7 @@ proto.aggregator.CreateTaskReq.deserializeBinaryFromReader = function(msg, reade
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
-      msg.setMemo(value);
+      msg.setName(value);
       break;
     case 7:
       var value = new proto.aggregator.TaskNode;
@@ -6544,7 +6544,7 @@ proto.aggregator.CreateTaskReq.serializeBinaryToWriter = function(message, write
       f
     );
   }
-  f = message.getMemo();
+  f = message.getName();
   if (f.length > 0) {
     writer.writeString(
       6,
@@ -6680,10 +6680,10 @@ proto.aggregator.CreateTaskReq.prototype.setSmartWalletAddress = function(value)
 
 
 /**
- * optional string memo = 6;
+ * optional string name = 6;
  * @return {string}
  */
-proto.aggregator.CreateTaskReq.prototype.getMemo = function() {
+proto.aggregator.CreateTaskReq.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
 };
 
@@ -6692,7 +6692,7 @@ proto.aggregator.CreateTaskReq.prototype.getMemo = function() {
  * @param {string} value
  * @return {!proto.aggregator.CreateTaskReq} returns this
  */
-proto.aggregator.CreateTaskReq.prototype.setMemo = function(value) {
+proto.aggregator.CreateTaskReq.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
 };
 
@@ -8072,7 +8072,7 @@ proto.aggregator.ListTasksResp.Item.toObject = function(includeInstance, msg) {
     smartWalletAddress: jspb.Message.getFieldWithDefault(msg, 3, ""),
     startAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
     expiredAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    memo: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    name: jspb.Message.getFieldWithDefault(msg, 6, ""),
     completedAt: jspb.Message.getFieldWithDefault(msg, 7, 0),
     maxExecution: jspb.Message.getFieldWithDefault(msg, 8, 0),
     totalExecution: jspb.Message.getFieldWithDefault(msg, 9, 0),
@@ -8137,7 +8137,7 @@ proto.aggregator.ListTasksResp.Item.deserializeBinaryFromReader = function(msg, 
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
-      msg.setMemo(value);
+      msg.setName(value);
       break;
     case 7:
       var value = /** @type {number} */ (reader.readInt64());
@@ -8228,7 +8228,7 @@ proto.aggregator.ListTasksResp.Item.serializeBinaryToWriter = function(message, 
       f
     );
   }
-  f = message.getMemo();
+  f = message.getName();
   if (f.length > 0) {
     writer.writeString(
       6,
@@ -8372,10 +8372,10 @@ proto.aggregator.ListTasksResp.Item.prototype.setExpiredAt = function(value) {
 
 
 /**
- * optional string memo = 6;
+ * optional string name = 6;
  * @return {string}
  */
-proto.aggregator.ListTasksResp.Item.prototype.getMemo = function() {
+proto.aggregator.ListTasksResp.Item.prototype.getName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
 };
 
@@ -8384,7 +8384,7 @@ proto.aggregator.ListTasksResp.Item.prototype.getMemo = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListTasksResp.Item} returns this
  */
-proto.aggregator.ListTasksResp.Item.prototype.setMemo = function(value) {
+proto.aggregator.ListTasksResp.Item.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 6, value);
 };
 
