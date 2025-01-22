@@ -22,6 +22,7 @@ class FixedTimeTrigger extends Trigger {
   toRequest(): avs_pb.TaskTrigger {
     const request = new avs_pb.TaskTrigger();
     request.setName(this.name);
+    request.setId(this.id);
 
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);

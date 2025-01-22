@@ -28,11 +28,7 @@ describe("getAddresses Tests", () => {
 
     console.log("Authenticating with signature ...");
     const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-    const res = await client.authWithSignature(
-      eoaAddress,
-      signature,
-      EXPIRED_AT
-    );
+    const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
 

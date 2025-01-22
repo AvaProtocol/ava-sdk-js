@@ -5,6 +5,7 @@ import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
+import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
 import Execution from "./models/execution";
@@ -76,14 +77,27 @@ class BaseClient {
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithAPIKey(
-    address: string,
-    apiKey: string,
-    expiredAtEpoch: number
+    {
+      chainId,
+      address,
+      issuedAt,
+      expiredAt,
+      apiKey,
+    } : {
+      chainId: number;
+      address: string;
+      issuedAt: Date;
+      expiredAt: Date;
+      apiKey: string;
+    }
   ): Promise<GetKeyResponse> {
-    // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
+    request.setChainId(chainId);
     request.setOwner(address);
-    request.setExpiredAt(expiredAtEpoch);
+    const issueTs = Timestamp.fromDate(issuedAt);
+    const expiredTs = Timestamp.fromDate(expiredAt);
+    request.setIssuedAt(issueTs);
+    request.setExpiredAt(expiredTs);
     request.setSignature(apiKey);
 
     // when exchanging the key, we don't set the token yet
@@ -103,14 +117,28 @@ class BaseClient {
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithSignature(
-    address: string,
-    signature: string,
-    expiredAtEpoch: number
+    {
+      chainId,
+      address,
+      issuedAt,
+      expiredAt,
+      signature,
+    } : {
+      chainId: number;
+      address: string;
+      issuedAt: Date;
+      expiredAt: Date;
+      signature: string;
+    }
   ): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
+    request.setChainId(chainId);
     request.setOwner(address);
-    request.setExpiredAt(expiredAtEpoch);
+    const issueTs = Timestamp.fromDate(issuedAt);
+    const expiredTs = Timestamp.fromDate(expiredAt);
+    request.setIssuedAt(issueTs);
+    request.setExpiredAt(expiredTs);
     request.setSignature(signature);
 
     // when exchanging the key, we don't set the token yet

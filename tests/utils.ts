@@ -13,8 +13,8 @@ import _ from "lodash";
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
-
-console.log("CHAIN_ENDPOINT", CHAIN_ENDPOINT);
+const CHAIN_ID = parseInt(process.env.CHAIN_ID || 11155111);
+console.log("CHAIN_ENDPOINT", CHAIN_ENDPOINT, "CHAIN_ID", CHAIN_ID);
 
 // Get wallet address from private key
 export async function getAddress(privateKey: string): Promise<string> {
@@ -22,19 +22,45 @@ export async function getAddress(privateKey: string): Promise<string> {
   return wallet.address;
 }
 
+interface KeyRequest {
+  chainId: number;
+  address: string;
+  expiredAt: Date;
+  issuedAt: Date;
+  signature: string;
+}
+
 // Generate a signed message from a private key
 export async function generateSignature(
   privateKey: string,
-  expiredAt: number
-): Promise<string> {
+  expiredAtEpoch: number
+): Promise<KeyRequest> {
+  const chainId = CHAIN_ID;
   const wallet = new ethers.Wallet(privateKey);
-  const message = getKeyRequestMessage(wallet.address, expiredAt);
+  const issuedAt = new Date();
+  const expiredAt = new Date(expiredAtEpoch * 1000);
+  const message = getKeyRequestMessage(
+      chainId,
+      wallet.address,
+      issuedAt,
+      expiredAt);
 
-  // console.log("Signing message:", message, "Expired at:", expiredAt);
+  const signature = await wallet.signMessage(message);https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/migration-histories#committing-the-migration-history-to-source-control
 
-  const signature = await wallet.signMessage(message);
+  return { chainId, address: wallet.address, issuedAt, expiredAt, signature };
+}
 
-  return signature;
+// Helper function to generate api key message
+export async function generateAuthPayloadWithApiKey(
+  address: string,
+  apiKey: string,
+  expiredAtEpoch: number,
+): Promise<KeyRequest> {
+  const chainId = CHAIN_ID;
+  const issuedAt = new Date();
+  const expiredAt = new Date(expiredAtEpoch * 1000);
+
+  return { chainId, address, issuedAt, expiredAt, apiKey };
 }
 
 // Helper function to ensure environment variables are defined
@@ -124,6 +150,10 @@ export const compareResults = (
   expect(actual).toBeDefined();
   expect(actual.smartWalletAddress).toEqual(expected.smartWalletAddress);
   expect(actual.trigger.type).toEqual(expected.trigger.type);
+  expect(actual.trigger.id).toEqual(expected.trigger.id);
+  expect(actual.trigger.name).toEqual(expected.trigger.name);
+  expect(actual.trigger.expression).toEqual(expected.trigger.expression);
+  expect(actual.trigger.matcher).toEqual(expected.trigger.matcher);
   expect(actual.nodes).toHaveLength(expected.nodes.length);
   expect(actual.edges).toHaveLength(expected.edges.length);
   expect(actual.startAt).toEqual(expected.startAt);
@@ -167,4 +197,10 @@ export const getBlockNumber = async (): Promise<number> => {
   const provider = new ethers.JsonRpcProvider(chainEndpoint);
   const blockNumber = await provider.getBlockNumber();
   return blockNumber;
+};
+
+export const getChainId = async (): Promise<number> => {
+  const provider = new ethers.JsonRpcProvider(CHAIN_ENDPOINT);
+  const chainId = await provider.getNetwork();
+  return chainId;
 };
