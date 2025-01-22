@@ -51,7 +51,7 @@ export async function generateSignature(
 }
 
 // Helper function to generate api key message
-export async function generateAuthPayloadWithApiKey(
+export function generateAuthPayloadWithApiKey(
   address: string,
   apiKey: string,
   expiredAtEpoch: number,
