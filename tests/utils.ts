@@ -13,6 +13,7 @@ import _ from "lodash";
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
+// CHAIN_ID can be fetch from CHAIN_ID but when running test it hit RPC everytime to get that and slow the test so we just define in the env similar to how we define CHAIN_ENDPOINT
 const CHAIN_ID = parseInt(process.env.CHAIN_ID || 11155111);
 console.log("CHAIN_ENDPOINT", CHAIN_ENDPOINT, "CHAIN_ID", CHAIN_ID);
 
