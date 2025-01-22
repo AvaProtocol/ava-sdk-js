@@ -1,12 +1,31 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "../../types";
-// Required props for constructor: id, name, type and data: { expression }
+
+// Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
+// The trigger is an array of Condition, which can be topics, dateRage, etc.
+// We imply or operator among all conditions.
+// ```
+// [
+// { type: "topics"
+//   value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+//            null,
+//           "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788"],
+// },
+// {
+// type: "topics",
+// value:          ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+//            "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788",
+//       ]
+// }
+// ]
+// ```
 interface EventMatcher {
   type: string;
   value: string[];
 }
 
+// Required props for constructor: id, name, type and data: { expression }
 export type EventTriggerDataType = avs_pb.EventCondition.AsObject & {
   matcher?: EventMatcher[];
 }
