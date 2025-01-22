@@ -2,9 +2,15 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "../../types";
 // Required props for constructor: id, name, type and data: { expression }
-export type EventTriggerDataType = avs_pb.EventCondition.AsObject & {
-  matcher: any[];
+interface EventMatcher {
+  type: string;
+  value: string[];
 }
+
+export type EventTriggerDataType = avs_pb.EventCondition.AsObject & {
+  matcher?: EventMatcher[];
+}
+
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
 
 class EventTrigger extends Trigger {
@@ -57,7 +63,7 @@ class EventTrigger extends Trigger {
 
     console.log("EventTrigger.fromResponse.obj:", obj);
 
-    const data: any= {};
+    let data: EventTriggerDataType = {} as EventTriggerDataType;
     if (raw.getEvent()!.getExpression()) {
       data.expression = raw.getEvent()!.getExpression();
     }
