@@ -116,7 +116,7 @@ describe("getWorkflows Tests", () => {
     });
 
     console.log("FIRST PAGE", listResponse);
-    console.log("SECOND PAGE", listResponse);
+    console.log("SECOND PAGE", listResponse2);
 
     // Verify that the count of the second return is totalCount - limit
     expect(Array.isArray(listResponse2.result)).toBe(true);
