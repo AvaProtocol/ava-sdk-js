@@ -93,8 +93,10 @@ describe("getWorkflows Tests", () => {
       }
     );
 
+
     const workflowIds = await Promise.all(workflowPromises);
     queueForRemoval(createdWorkflows, workflowIds);
+    console.log("CREATED", workflowIds);
 
     // Get the list of workflows with limit:countFirstPage
     const listResponse = await client.getWorkflows([wallet.address], {
@@ -112,6 +114,9 @@ describe("getWorkflows Tests", () => {
       limit: totalCount,
       cursor: firstCursor,
     });
+
+    console.log("FIRST PAGE", listResponse);
+    console.log("SECOND PAGE", listResponse);
 
     // Verify that the count of the second return is totalCount - limit
     expect(Array.isArray(listResponse2.result)).toBe(true);
