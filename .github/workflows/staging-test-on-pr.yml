@@ -16,6 +16,7 @@ jobs:
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      RUN_ID: ${{ github.run_id }}
     
     steps:
     - name: Checkout repository
