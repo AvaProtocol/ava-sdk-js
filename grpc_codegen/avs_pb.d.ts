@@ -6,6 +6,7 @@
 
 import * as jspb from "google-protobuf";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
+import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 
 export class IdReq extends jspb.Message { 
     getId(): string;
@@ -92,6 +93,10 @@ export namespace BlockCondition {
 }
 
 export class EventCondition extends jspb.Message { 
+    clearMatcherList(): void;
+    getMatcherList(): Array<EventCondition.Matcher>;
+    setMatcherList(value: Array<EventCondition.Matcher>): EventCondition;
+    addMatcher(value?: EventCondition.Matcher, index?: number): EventCondition.Matcher;
     getExpression(): string;
     setExpression(value: string): EventCondition;
 
@@ -107,8 +112,36 @@ export class EventCondition extends jspb.Message {
 
 export namespace EventCondition {
     export type AsObject = {
+        matcherList: Array<EventCondition.Matcher.AsObject>,
         expression: string,
     }
+
+
+    export class Matcher extends jspb.Message { 
+        getType(): string;
+        setType(value: string): Matcher;
+        clearValueList(): void;
+        getValueList(): Array<string>;
+        setValueList(value: Array<string>): Matcher;
+        addValue(value: string, index?: number): string;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Matcher.AsObject;
+        static toObject(includeInstance: boolean, msg: Matcher): Matcher.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Matcher, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Matcher;
+        static deserializeBinaryFromReader(message: Matcher, reader: jspb.BinaryReader): Matcher;
+    }
+
+    export namespace Matcher {
+        export type AsObject = {
+            type: string,
+            valueList: Array<string>,
+        }
+    }
+
 }
 
 export class TaskTrigger extends jspb.Message { 
@@ -139,6 +172,8 @@ export class TaskTrigger extends jspb.Message {
     clearEvent(): void;
     getEvent(): EventCondition | undefined;
     setEvent(value?: EventCondition): TaskTrigger;
+    getId(): string;
+    setId(value: string): TaskTrigger;
 
     getTriggerTypeCase(): TaskTrigger.TriggerTypeCase;
 
@@ -160,6 +195,7 @@ export namespace TaskTrigger {
         cron?: CronCondition.AsObject,
         block?: BlockCondition.AsObject,
         event?: EventCondition.AsObject,
+        id: string,
     }
 
     export enum TriggerTypeCase {
@@ -384,6 +420,8 @@ export namespace BranchNode {
 export class FilterNode extends jspb.Message { 
     getExpression(): string;
     setExpression(value: string): FilterNode;
+    getInput(): string;
+    setInput(value: string): FilterNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): FilterNode.AsObject;
@@ -398,6 +436,7 @@ export class FilterNode extends jspb.Message {
 export namespace FilterNode {
     export type AsObject = {
         expression: string,
+        input: string,
     }
 }
 
@@ -1142,8 +1181,18 @@ export namespace ExecutionStatusResp {
 export class GetKeyReq extends jspb.Message { 
     getOwner(): string;
     setOwner(value: string): GetKeyReq;
-    getExpiredAt(): number;
-    setExpiredAt(value: number): GetKeyReq;
+    getChainId(): number;
+    setChainId(value: number): GetKeyReq;
+
+    hasIssuedAt(): boolean;
+    clearIssuedAt(): void;
+    getIssuedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setIssuedAt(value?: google_protobuf_timestamp_pb.Timestamp): GetKeyReq;
+
+    hasExpiredAt(): boolean;
+    clearExpiredAt(): void;
+    getExpiredAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
+    setExpiredAt(value?: google_protobuf_timestamp_pb.Timestamp): GetKeyReq;
     getSignature(): string;
     setSignature(value: string): GetKeyReq;
 
@@ -1160,7 +1209,9 @@ export class GetKeyReq extends jspb.Message {
 export namespace GetKeyReq {
     export type AsObject = {
         owner: string,
-        expiredAt: number,
+        chainId: number,
+        issuedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        expiredAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
         signature: string,
     }
 }

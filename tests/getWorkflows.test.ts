@@ -42,11 +42,7 @@ describe("getWorkflows Tests", () => {
     });
 
     const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-    const res = await client.authWithSignature(
-      ownerAddress,
-      signature,
-      EXPIRED_AT
-    );
+    const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
 
@@ -79,7 +75,8 @@ describe("getWorkflows Tests", () => {
     const totalCount = 4;
     const countFirstPage = 1;
 
-    const wallet = await client.getWallet({ salt: Math.round(Math.random() * 100000000000) });
+    // Isolated test of this account
+    const wallet = await client.getWallet({ salt: parseInt(process.env.RUN_ID || '112323') });
     await cleanupWorkflows(client, wallet.address);
 
     // Create 4 workflows
@@ -96,6 +93,7 @@ describe("getWorkflows Tests", () => {
         return workflowId;
       }
     );
+
 
     const workflowIds = await Promise.all(workflowPromises);
     queueForRemoval(createdWorkflows, workflowIds);

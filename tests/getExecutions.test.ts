@@ -11,7 +11,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
 } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate, defaultTriggerId } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -42,11 +42,7 @@ describe("getExecutions Tests", () => {
     });
 
     const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-    const res = await client.authWithSignature(
-      ownerAddress,
-      signature,
-      EXPIRED_AT
-    );
+    const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
 
@@ -61,6 +57,7 @@ describe("getExecutions Tests", () => {
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
       data: { interval: blockInterval },
@@ -151,6 +148,7 @@ describe("getExecutions Tests", () => {
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
       data: { interval: blockInterval },
@@ -219,6 +217,7 @@ describe("getExecutions Tests", () => {
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
       data: { interval: 5 },
@@ -256,6 +255,7 @@ describe("getExecutions Tests", () => {
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
       data: { interval: 5 },

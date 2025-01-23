@@ -4,6 +4,7 @@ package aggregator;
 option go_package = "./avsproto";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 message IdReq {
   string id = 1;
@@ -21,18 +22,37 @@ message BlockCondition {
   int64 interval = 1;
 }
 
-// An arbitrary expression to express the condition.
-// People can define condition example
-//   chainlinkPrice("address-of-eth-usd-pair") > 2644500 && queryContract("contractaddress", "callmsg")[2] < = 5
-// By allow arbitrary expression, people can mix and match to create conplex
-// condition that match their workload
-//
-// The function to be used need to be pre-defined on our task egnine runtime.
-// When a new block is build, our engine will execute these check
-//
-// The expression language is re-present by https://expr-lang.org/
+// EventCondition is a filter to match on an event. It's adhoc logic expression re-present in an array to match an ethereum event
 message EventCondition {
-  string expression = 1;
+  message Matcher {
+    // the type of Filter we support, right now, we support below value for 
+    //  - topics:
+    //  - address:
+     string type = 1;
+
+    // the payload of the type data to be mached. Each type will have different semantic meaning on how to match
+    // Given type=topics`. This value is the topic array, for every non null element of the array we perform an equal check
+    // If all are equal, the filter resolve to true
+    // 
+    // Example:
+    // To find all ERC20 transfer event into or out to wallet 0x5DD596C901987A2b28C38A9C1DfBf86fFFc15d77 we can do
+    // value = [
+    //   [
+    //     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+    //     "0x5DD596C901987A2b28C38A9C1DfBf86fFFc15d77", // tx out
+    //   ],
+    //   [
+    //     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+    //     null,
+    //     "0x5DD596C901987A2b28C38A9C1DfBf86fFFc15d77" // tx in
+    //   ],
+    // ]
+    repeated string value = 2;
+  }
+
+  // an array of filter to be mach, as soon as any element of the array mach, the trigger is fired.
+  repeated Matcher matcher = 1;
+  string expression = 2;
 }
 
 
@@ -53,6 +73,7 @@ message TaskTrigger {
     // support filter by event expression such as topic0, topic1, topoc2 and event_data and contract_address
     EventCondition     event   = 6;
   }
+  string id = 7;
 }
 
 // gRPC internal error code use up to 17, we extend and start from 1000 to avoid any conflict 
@@ -153,6 +174,8 @@ message BranchNode {
 message FilterNode {
   // Filter node acts like .select or .filter to pluck out element in an array that evaluate the expression to true
   string expression = 1;
+  // input is the id of the node that 
+  string input = 2;
 }
 
 // LoopNode currently not support, but we pre-defined to reverse the field id
@@ -164,7 +187,6 @@ message LoopNode {
   string iter_val = 2;
   string iter_key = 3;
 
-
   // inside the runner, it can access to the current value of the loop iteration through the iter_val/iter_key above
   oneof runner {
     // Transfer eth require no calldata etc, just a destination address and an eth amount to be sent
@@ -174,7 +196,7 @@ message LoopNode {
     // multicall to wrap many calls. in a contract write, we need to generate signature and send as userops.
     ContractWriteNode contract_write = 11;
     // read data fron a target contract
-    ContractReadNode contract_read = 12;
+    ContractReadNode  contract_read = 12;
     // Make call to a graphql endpoint
     GraphQLQueryNode  graphql_data_query = 13 ;
     // Make call to a HTTP endpoint
@@ -376,8 +398,10 @@ message ExecutionStatusResp {
 
 message GetKeyReq {
   string owner = 1;
-  int64  expired_at = 2;
-  string signature = 3;
+  int64  chain_id = 2;
+  google.protobuf.Timestamp issued_at = 3;
+  google.protobuf.Timestamp expired_at = 4;
+  string signature = 5;
 }
 
 message KeyResp {
@@ -390,8 +414,8 @@ message KeyResp {
 // In an event trigger, we will have the log_index, tx_hash and the block_number
 // In a time based trigger(cron/fixed time) we will have the epoch.
 //
-// TriggerMetadata is used to populate the `trigger.data` variable. Example, if this is a transfer
-// event, then you will have access to trigger1.data.from_address trigger1.data.value
+// TriggerMetadata is used to populate the `<trigger-name>.data` variable. Example, if this is a transfer
+// event, then you will have access to <trigger-name>.data.from_address or <trigger-name>.data.value
 message TriggerMetadata {
   uint64 block_number = 1;
   uint64 log_index    = 2;

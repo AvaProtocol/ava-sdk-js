@@ -19,6 +19,8 @@ import { NodeType } from "@avaprotocol/types";
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
 export const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
 
+export const defaultTriggerId = getNextId();
+
 /**
  * Node templates
  */
@@ -125,7 +127,7 @@ export const NodesTemplate: NodeProps[] = [contractWriteNodeProps];
 export const EdgesTemplate = [
   {
     id: getNextId(),
-    source: "__TRIGGER__",
+    source: defaultTriggerId,
     target: NodesTemplate[0].id,
   },
 ];
@@ -137,6 +139,7 @@ export const WorkflowTemplate = {
   nodes: NodeFactory.createNodes(NodesTemplate),
   edges: _.map(EdgesTemplate, (edge) => new Edge(edge)),
   trigger: TriggerFactory.create({
+    id: defaultTriggerId,
     name: "blockTrigger",
     type: TriggerType.Block,
     data: { interval: 5 },
@@ -158,7 +161,7 @@ const nodes = [
 const edges = [
   {
     id: getNextId(),
-    source: "__TRIGGER__",
+    source: defaultTriggerId,
     target: nodes[0].id,
   },
   {
@@ -192,6 +195,7 @@ export const MultiNodeWithBranch = {
   nodes: NodeFactory.createNodes(nodes),
   edges: _.map(edges, (edge) => new Edge(edge)),
   trigger: TriggerFactory.create({
+    id: defaultTriggerId,
     name: "blockTrigger",
     type: TriggerType.Block,
     data: { interval: 5 },

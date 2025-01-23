@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import {
   getAddress,
-  generateSignature,
+  generateSignature, generateAuthPayloadWithApiKey,
   requireEnvVar,
   queueForRemoval,
   removeCreatedWorkflows,
@@ -47,11 +47,7 @@ describe("Authentication Tests", () => {
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
       const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-      const res = await client.authWithSignature(
-        eoaAddress,
-        signature,
-        EXPIRED_AT
-      );
+      const res = await client.authWithSignature(signature);
 
       client.setAuthKey(res.authKey);
     });
@@ -155,7 +151,9 @@ describe("Authentication Tests", () => {
     });
 
     test("deleteWorkflow works with client.authKey", async () => {
-      const wallet = await client.getWallet({ salt: "0" });
+      const wallet = await client.getWallet(
+        { salt: "0" },
+      );
 
       const workflowId = await client.submitWorkflow(
         client.createWorkflow({
@@ -181,20 +179,16 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(
+      const res = await client.authWithAPIKey(await generateAuthPayloadWithApiKey(
         eoaAddress,
         TEST_API_KEY,
         EXPIRED_AT
-      );
+      ));
       authKeyViaAPI = res.authKey;
 
       console.log("Authenticating with signature ...");
       const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-      const res2 = await client.authWithSignature(
-        eoaAddress,
-        signature,
-        EXPIRED_AT
-      );
+      const res2 = await client.authWithSignature(signature);
 
       authKeyViaSignature = res2.authKey;
     });
@@ -237,7 +231,7 @@ describe("Authentication Tests", () => {
     });
 
     test("createWorkflow works with options.authKey", async () => {
-      const wallet = await client.getWallet({ salt: "345" });
+      const wallet = await client.getWallet({ salt: "345" }, { authKey: authKeyViaAPI });
 
       const workflowId = await client.submitWorkflow(
         client.createWorkflow({
@@ -263,7 +257,7 @@ describe("Authentication Tests", () => {
     });
 
     test("getWorkflow works with options.authKey", async () => {
-      const wallet = await client.getWallet({ salt: "0" });
+      const wallet = await client.getWallet({ salt: "0" }, { authKey:  authKeyViaAPI });
 
       const createResult = await client.submitWorkflow(
         client.createWorkflow({
@@ -428,20 +422,16 @@ describe("Authentication Tests", () => {
     beforeAll(async () => {
       // Prepare an auth key for the tests
       const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-      const res = await client.authWithSignature(
-        eoaAddress,
-        signature,
-        EXPIRED_AT
-      );
+      const res = await client.authWithSignature(signature);
       authKeyViaSignature = res.authKey;
     });
 
     test("should return auth key when using API key", async () => {
-      const res = await client.authWithAPIKey(
+      const res = await client.authWithAPIKey(await generateAuthPayloadWithApiKey(
         eoaAddress,
         TEST_API_KEY,
         EXPIRED_AT
-      );
+      ));
 
       expect(res).toBeDefined();
       expect(res).toHaveProperty("authKey");
@@ -473,11 +463,7 @@ describe("Authentication Tests", () => {
         );
       }
 
-      const res = await client.authWithSignature(
-        eoaAddress,
-        signature,
-        EXPIRED_AT
-      );
+      const res = await client.authWithSignature(signature);
 
       expect(res).toBeDefined();
       expect(res).toHaveProperty("authKey");

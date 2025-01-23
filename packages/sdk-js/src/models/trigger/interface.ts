@@ -17,6 +17,7 @@ export type TriggerProps = Omit<
 };
 
 class Trigger implements TriggerProps {
+  id: string;
   name: string;
   type: TriggerType;
   data: TriggerData;
@@ -26,6 +27,7 @@ class Trigger implements TriggerProps {
    * @param props
    */
   constructor(props: TriggerProps) {
+    this.id   = props.id;
     this.name = props.name;
     this.type = props.type;
     this.data = props.data;

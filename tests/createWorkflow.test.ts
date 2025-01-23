@@ -29,6 +29,7 @@ import {
   MultiNodeWithBranch,
   EXPIRED_AT,
   FACTORY_ADDRESS,
+  defaultTriggerId,
 } from "./templates";
 
 // Update the dotenv configuration
@@ -59,11 +60,7 @@ describe("createWorkflow Tests", () => {
 
     console.log("Authenticating with signature ...");
     const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-    const res = await client.authWithSignature(
-      eoaAddress,
-      signature,
-      EXPIRED_AT
-    );
+    const res = await client.authWithSignature(signature);
 
     client.setAuthKey(res.authKey);
   });
@@ -72,6 +69,7 @@ describe("createWorkflow Tests", () => {
 
   test("should create a task when authenticated with signature", async () => {
     console.log("TriggerFactory.create.inputs:", {
+      id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
       data: { interval: 5 },
@@ -84,6 +82,7 @@ describe("createWorkflow Tests", () => {
       nodes: NodeFactory.createNodes(NodesTemplate),
       edges: _.map(EdgesTemplate, (edge) => new Edge(edge)),
       trigger: TriggerFactory.create({
+        id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
         data: { interval: 5 },
@@ -122,6 +121,7 @@ describe("createWorkflow Tests", () => {
       ...WorkflowTemplate,
       smartWalletAddress: wallet.address,
       trigger: TriggerFactory.create({
+        id: defaultTriggerId,
         name: "cronTrigger",
         type: TriggerType.Cron,
         data: { scheduleList: ["5 4 * * *", "5 0 * 8 *"] },
@@ -147,6 +147,7 @@ describe("createWorkflow Tests", () => {
       ...WorkflowTemplate,
       smartWalletAddress: wallet.address,
       trigger: TriggerFactory.create({
+        id: defaultTriggerId,
         name: "fixedTimeTrigger",
         type: TriggerType.FixedTime,
         data: { epochsList: [10, 20, 30] },
@@ -226,7 +227,7 @@ describe("createWorkflow Tests", () => {
       edges: [
         new Edge({
           id: getNextId(),
-          source: "__TRIGGER__",
+          source: defaultTriggerId,
           target: branchNode.id,
         }),
         new Edge({
@@ -238,6 +239,7 @@ describe("createWorkflow Tests", () => {
         }),
       ],
       trigger: TriggerFactory.create({
+        id: defaultTriggerId,
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
@@ -270,6 +272,63 @@ describe("createWorkflow Tests", () => {
     );
   });
 
+  
+  test("create event trigger with topic matching", async () => {
+    const wallet = await client.getWallet({ salt: "0" });
+    const restApiNode = NodeFactory.create({
+      name: "notification",
+      type: NodeType.RestAPI,
+      id: getNextId(),
+      data: {
+        url: "https://httpbin.org/get",
+        method: "GET",
+        headersMap: [["content-type", "application/json"]],
+        body: `helloworld`,
+      },
+    });
+
+    const workflowData = {
+      ...WorkflowTemplate,
+      smartWalletAddress: wallet.address,
+      nodes: [restApiNode],
+      edges: [
+        new Edge({
+          id: getNextId(),
+          source: defaultTriggerId,
+          target: restApiNode.id,
+        }),
+      ],
+      trigger: TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "eventTrigger",
+        type: TriggerType.Event,
+        data: {
+          matcher: [
+            { type: "topics", value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", null, "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] },
+          ]
+        },
+      }),
+    };
+
+    const submitResult = await client.submitWorkflow(
+      client.createWorkflow(workflowData)
+    );
+
+    queueForRemoval(createdWorkflows, submitResult);
+
+    const task = await client.getWorkflow(submitResult);
+    compareResults(
+      {
+        ...workflowData,
+        smartWalletAddress: wallet.address,
+        status: WorkflowStatus.Active,
+        id: submitResult,
+        owner: eoaAddress,
+      },
+      task
+    );
+  });
+
   test("create block trigger", async () => {
     const wallet = await client.getWallet({ salt: "0" });
     const submitResult = await client.submitWorkflow(
@@ -277,6 +336,7 @@ describe("createWorkflow Tests", () => {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
         trigger: TriggerFactory.create({
+          id: defaultTriggerId,
           name: "blockTrigger",
           type: TriggerType.Block,
           data: { interval: 102 },

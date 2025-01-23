@@ -16,6 +16,14 @@ jobs:
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      # On staging env, when test run it may not cleanup data properly for multiple reasons.
+      # In the next run, especially on pagination test, the assumption about data is wrong.
+      # For those kind of particular test, we want to ensure a 100% unique salt across run
+      # One way to do so, is get this run_id from github action and use it as salt
+      # On local dev, we just default to a hard code number in the test to isolate its. data
+      # on local test is continously wipe out on every run so it isn't a problem like staging
+      # We may want to sweep and delete task data on those test account
+      RUN_ID: ${{ github.run_id }}
     
     steps:
     - name: Checkout repository

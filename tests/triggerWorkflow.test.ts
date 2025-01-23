@@ -18,7 +18,7 @@ import {
   cleanupWorkflows,
   getBlockNumber,
 } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate, defaultTriggerId } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -47,11 +47,7 @@ describe("triggerWorkflow Tests", () => {
     });
 
     const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-    const res = await client.authWithSignature(
-      ownerAddress,
-      signature,
-      EXPIRED_AT
-    );
+    const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
 
@@ -63,6 +59,7 @@ describe("triggerWorkflow Tests", () => {
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
       data: { interval },
@@ -120,6 +117,7 @@ describe("triggerWorkflow Tests", () => {
 
     // Create a cron trigger with a schedule of every minute
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
       data: { scheduleList: ["* * * * *"] },
@@ -169,6 +167,7 @@ describe("triggerWorkflow Tests", () => {
     const epoch = Math.floor(Date.now() / 1000);
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "fixedTimeTrigger",
       type: TriggerType.FixedTime,
       data: { epochsList: [epoch + 60, epoch + 120, epoch + 180] }, // one per minute for the next 3 minutes
@@ -220,6 +219,7 @@ describe("triggerWorkflow Tests", () => {
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "eventTrigger",
       type: TriggerType.Event,
       data: {
@@ -279,6 +279,7 @@ describe("triggerWorkflow Tests", () => {
 
     // Create a cron trigger with a schedule of every minute
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
       data: { scheduleList: ["* * * * *"] },
@@ -325,6 +326,7 @@ describe("triggerWorkflow Tests", () => {
 
     // Create a cron trigger with a schedule of every minute
     const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
       data: { scheduleList: ["* * * * *"] },
