@@ -76,7 +76,7 @@ describe("getWorkflows Tests", () => {
     const countFirstPage = 1;
 
     // Isolated test of this account
-    const wallet = await client.getWallet({ salt: 95034 + parseInt(process.env.RUN_ID || '1') });
+    const wallet = await client.getWallet({ salt: parseInt(process.env.RUN_ID || '112323') });
     await cleanupWorkflows(client, wallet.address);
 
     // Create 4 workflows
