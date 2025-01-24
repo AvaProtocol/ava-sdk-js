@@ -49,18 +49,18 @@ describe("getExecutions Tests", () => {
   afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
 
   test("options.limit returns the correct number of executions", async () => {
-    const countFirstPage = 1;
-    const blockInterval = 5;
+    const limitOneExecution = 1;
+    const triggerInterval = 5;
     const repeatCount = 4;
 
     const wallet = await client.getWallet({ salt });
-    const blockNumber = await getBlockNumber();
+    const currentBlockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
       id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
-      data: { interval: blockInterval },
+      data: { interval: triggerInterval },
     });
 
     const workflowId = await client.submitWorkflow(
@@ -68,50 +68,47 @@ describe("getExecutions Tests", () => {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
+        maxExecution: 1000, // Set a high maxExecution to ensure the workflow is not completed; otherwise, mannually triggering a completed workflow will fail
       })
     );
     queueForRemoval(createdWorkflows, workflowId);
 
     // Get the first page of executions with limit:1
     let executions = await client.getExecutions([workflowId], {
-      limit: countFirstPage,
+      limit: limitOneExecution,
     });
     expect(executions.result.length).toBe(0);
     expect(executions.hasMore).toBe(false);
-    
+        
     // Manually trigger the workflow with block number + 20
     const result = await client.triggerWorkflow({
       id: workflowId,
       data: {
         type: TriggerType.Block,
-        blockNumber: blockNumber,
+        blockNumber: currentBlockNumber + triggerInterval,
       },
       isBlocking: true,
     });
 
     // trigger the test {repeatCount} extra time more
-    for(let i = 0; i < repeatCount; i++){
+    for(let i = 1; i <= repeatCount; i++){
       await client.triggerWorkflow({
         id: workflowId,
         data: {
           type: TriggerType.Block,
-          blockNumber: blockNumber + repeatCount +1
+          blockNumber: currentBlockNumber + triggerInterval + repeatCount * triggerInterval,
         },
         isBlocking: true,
       });
     }
 
-    console.log("triggerWorkflow.result", result);
-
     // Get the first page of executions with limit:1
     executions = await client.getExecutions([workflowId], {
-      limit: countFirstPage,
+      limit: limitOneExecution,
     });
 
-    console.log("executions", executions);
-
     expect(Array.isArray(executions.result)).toBe(true);
-    expect(executions.result.length).toBe(countFirstPage);
+    expect(executions.result.length).toBe(limitOneExecution);
     expect(executions).toHaveProperty("cursor");
     expect(executions.hasMore).toBe(true);
     const firstCursor = executions.cursor;
@@ -122,15 +119,12 @@ describe("getExecutions Tests", () => {
       cursor: firstCursor,
     });
 
-    console.log("executions2", executions2);
-
     // Verify that the count of the second return is totalCount - limit
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toBe(repeatCount);
     expect(executions2.hasMore).toBe(false);
-    const secondCursor = executions2.cursor;
-
-    // Make sure there’s no overlap between the two lists
+    
+    // Make sure there's no overlap between the two lists
     expect(
       _.intersection(
         executions.result.map((item) => item.id),
@@ -159,6 +153,7 @@ describe("getExecutions Tests", () => {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
+        maxExecution: 1000, // Set a high maxExecution to ensure the workflow is not completed; otherwise, mannually triggering a completed workflow will fail
       })
     );
     queueForRemoval(createdWorkflows, workflowId);
@@ -198,7 +193,7 @@ describe("getExecutions Tests", () => {
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toBe(repeatCount - limit);
 
-    // Make sure there’s no overlap between the two lists
+    // Make sure there's no overlap between the two lists
     expect(
       _.intersection(
         executions.result.map((item) => item.id),

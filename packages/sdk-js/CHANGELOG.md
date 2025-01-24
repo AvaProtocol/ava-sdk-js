@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 1.3.3
+
+### Patch Changes
+
+- update the new auth method and trigger matcher array
+
 ## 1.3.2
 
 ### Patch Changes
