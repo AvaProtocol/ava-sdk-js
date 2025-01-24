@@ -11,7 +11,12 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
 } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate, defaultTriggerId } from "./templates";
+import {
+  EXPIRED_AT,
+  FACTORY_ADDRESS,
+  WorkflowTemplate,
+  defaultTriggerId,
+} from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -68,7 +73,7 @@ describe("getExecutions Tests", () => {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
-        maxExecution: 1000, // Set a high maxExecution to ensure the workflow is not completed; otherwise, mannually triggering a completed workflow will fail
+        maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
       })
     );
     queueForRemoval(createdWorkflows, workflowId);
@@ -79,7 +84,7 @@ describe("getExecutions Tests", () => {
     });
     expect(executions.result.length).toBe(0);
     expect(executions.hasMore).toBe(false);
-        
+
     // Manually trigger the workflow with block number + 20
     const result = await client.triggerWorkflow({
       id: workflowId,
@@ -91,12 +96,15 @@ describe("getExecutions Tests", () => {
     });
 
     // trigger the test {repeatCount} extra time more
-    for(let i = 1; i <= repeatCount; i++){
+    for (let i = 1; i <= repeatCount; i++) {
       await client.triggerWorkflow({
         id: workflowId,
         data: {
           type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval + repeatCount * triggerInterval,
+          blockNumber:
+            currentBlockNumber +
+            triggerInterval +
+            repeatCount * triggerInterval,
         },
         isBlocking: true,
       });
@@ -123,7 +131,7 @@ describe("getExecutions Tests", () => {
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toBe(repeatCount);
     expect(executions2.hasMore).toBe(false);
-    
+
     // Make sure there's no overlap between the two lists
     expect(
       _.intersection(
@@ -153,12 +161,12 @@ describe("getExecutions Tests", () => {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
-        maxExecution: 1000, // Set a high maxExecution to ensure the workflow is not completed; otherwise, mannually triggering a completed workflow will fail
+        maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
       })
     );
     queueForRemoval(createdWorkflows, workflowId);
 
-    for (let i =0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
       // Manually trigger the workflow 3 times
       await client.triggerWorkflow({
         id: workflowId,
