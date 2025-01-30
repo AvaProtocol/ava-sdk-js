@@ -6,6 +6,17 @@ var avs_pb = require('./avs_pb.js');
 var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 
+function serialize_aggregator_CreateOrUpdateSecretReq(arg) {
+  if (!(arg instanceof avs_pb.CreateOrUpdateSecretReq)) {
+    throw new Error('Expected argument of type aggregator.CreateOrUpdateSecretReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_CreateOrUpdateSecretReq(buffer_arg) {
+  return avs_pb.CreateOrUpdateSecretReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_CreateTaskReq(arg) {
   if (!(arg instanceof avs_pb.CreateTaskReq)) {
     throw new Error('Expected argument of type aggregator.CreateTaskReq');
@@ -26,6 +37,17 @@ function serialize_aggregator_CreateTaskResp(arg) {
 
 function deserialize_aggregator_CreateTaskResp(buffer_arg) {
   return avs_pb.CreateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_DeleteSecretReq(arg) {
+  if (!(arg instanceof avs_pb.DeleteSecretReq)) {
+    throw new Error('Expected argument of type aggregator.DeleteSecretReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_DeleteSecretReq(buffer_arg) {
+  return avs_pb.DeleteSecretReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_Execution(arg) {
@@ -136,6 +158,28 @@ function serialize_aggregator_ListExecutionsResp(arg) {
 
 function deserialize_aggregator_ListExecutionsResp(buffer_arg) {
   return avs_pb.ListExecutionsResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_ListSecretsReq(arg) {
+  if (!(arg instanceof avs_pb.ListSecretsReq)) {
+    throw new Error('Expected argument of type aggregator.ListSecretsReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_ListSecretsReq(buffer_arg) {
+  return avs_pb.ListSecretsReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_ListSecretsResp(arg) {
+  if (!(arg instanceof avs_pb.ListSecretsResp)) {
+    throw new Error('Expected argument of type aggregator.ListSecretsResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_ListSecretsResp(buffer_arg) {
+  return avs_pb.ListSecretsResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_ListTasksReq(arg) {
@@ -395,6 +439,57 @@ createTask: {
     requestDeserialize: deserialize_aggregator_UserTriggerTaskReq,
     responseSerialize: serialize_aggregator_UserTriggerTaskResp,
     responseDeserialize: deserialize_aggregator_UserTriggerTaskResp,
+  },
+  // CreateSecret allow you to define a secret to be used in your tasks. The secret can be used with a special syntax of ${{secrets.name }}.
+// You can decide whether to grant secret to a single workflow or many workflow, or all of your workflow
+// By default, your secret is available across all of your tasks.
+createSecret: {
+    path: '/aggregator.Aggregator/CreateSecret',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.CreateOrUpdateSecretReq,
+    responseType: google_protobuf_wrappers_pb.BoolValue,
+    requestSerialize: serialize_aggregator_CreateOrUpdateSecretReq,
+    requestDeserialize: deserialize_aggregator_CreateOrUpdateSecretReq,
+    responseSerialize: serialize_google_protobuf_BoolValue,
+    responseDeserialize: deserialize_google_protobuf_BoolValue,
+  },
+  deleteSecret: {
+    path: '/aggregator.Aggregator/DeleteSecret',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.DeleteSecretReq,
+    responseType: google_protobuf_wrappers_pb.BoolValue,
+    requestSerialize: serialize_aggregator_DeleteSecretReq,
+    requestDeserialize: deserialize_aggregator_DeleteSecretReq,
+    responseSerialize: serialize_google_protobuf_BoolValue,
+    responseDeserialize: deserialize_google_protobuf_BoolValue,
+  },
+  // Return all secrets belong to this user. Currently we don't support any fine tune or filter yet.
+// Only secret names and config data are returned. The secret value aren't returned.
+listSecrets: {
+    path: '/aggregator.Aggregator/ListSecrets',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.ListSecretsReq,
+    responseType: avs_pb.ListSecretsResp,
+    requestSerialize: serialize_aggregator_ListSecretsReq,
+    requestDeserialize: deserialize_aggregator_ListSecretsReq,
+    responseSerialize: serialize_aggregator_ListSecretsResp,
+    responseDeserialize: deserialize_aggregator_ListSecretsResp,
+  },
+  // For simplicity, currently only the user who create the secrets can update its value, or update its permission.
+// The current implementation is also limited, update is an override action, not an appending action. So when updating, you need to pass the whole payload
+updateSecret: {
+    path: '/aggregator.Aggregator/UpdateSecret',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.CreateOrUpdateSecretReq,
+    responseType: google_protobuf_wrappers_pb.BoolValue,
+    requestSerialize: serialize_aggregator_CreateOrUpdateSecretReq,
+    requestDeserialize: deserialize_aggregator_CreateOrUpdateSecretReq,
+    responseSerialize: serialize_google_protobuf_BoolValue,
+    responseDeserialize: deserialize_google_protobuf_BoolValue,
   },
 };
 
