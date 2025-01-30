@@ -13,6 +13,7 @@ import {
   GraphQLQueryNodeProps,
   BranchNodeProps,
   CustomCodeLangs,
+  FilterNodeProps,
 } from "@/sdk-js/dist";
 import { getNextId } from "./utils";
 import { NodeType } from "@avaprotocol/types";
@@ -77,15 +78,25 @@ const ethTransferNodeProps: ETHTransferNodeProps = {
   },
 };
 
-const restApiNodeProps: RestAPINodeProps = {
+export const restApiNodeProps: RestAPINodeProps = {
   id: getNextId(),
-  name: "rest api call",
+  name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
     url: "http://endpoint002",
     method: "post",
     body: `{"a":1}`,
     headersMap: [["Content-Type", "application/json"]],
+  },
+};
+
+export const filterNodeProps: FilterNodeProps  = {
+  id: getNextId(),
+  name: "filterNode",
+  type: NodeType.Filter,
+  data: {
+    input: "rest_api_call",
+    expression: "value >= 1",
   },
 };
 
@@ -205,3 +216,11 @@ export const MultiNodeWithBranch = {
   name: `Test task`,
   maxExecution: 1,
 };
+
+export const blockTriggerEvery5 = TriggerFactory.create({
+  id: defaultTriggerId,
+  name: "blockTrigger",
+  type: TriggerType.Block,
+  data: { interval: 5 },
+});
+

@@ -267,6 +267,11 @@ export default class Client extends BaseClient {
       address: result.getAddress(),
       salt: result.getSalt(),
       factory: result.getFactoryAddress(),
+      totalTaskCount: result.getTotalTaskCount(),
+      activeTaskCount: result.getActiveTaskCount(),
+      completedTaskCount: result.getCompletedTaskCount(),
+      failedTaskCount: result.getFailedTaskCount(),
+      canceledTaskCount: result.getCanceledTaskCount(),
     };
   }
 
