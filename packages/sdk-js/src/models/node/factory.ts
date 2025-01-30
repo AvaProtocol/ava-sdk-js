@@ -11,6 +11,7 @@ import RestAPINode, { RestAPINodeProps } from "./restApi";
 import ContractReadNode, { ContractReadNodeProps } from "./contractRead";
 import ETHTransferNode, { ETHTransferNodeProps } from "./ethTransfer";
 import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
+import FilterNode, { FilterNodeProps } from "./filter";
 import { NodeType } from "@avaprotocol/types";
 class NodeFactory {
   static create(props: NodeProps): Node {
@@ -29,6 +30,8 @@ class NodeFactory {
         return new GraphQLQueryNode(props as GraphQLQueryNodeProps);
       case NodeType.Branch:
         return new BranchNode(props as BranchNodeProps);
+      case NodeType.Filter:
+        return new FilterNode(props as FilterNodeProps);
       default:
         throw new Error(`Unsupported node type: ${props.type}`);
     }
@@ -54,6 +57,8 @@ class NodeFactory {
         return CustomCodeNode.fromResponse(raw);
       case !!raw.getBranch():
         return BranchNode.fromResponse(raw);
+      case !!raw.getFilter():
+        return FilterNode.fromResponse(raw);
       default:
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
@@ -72,6 +77,7 @@ export {
   RestAPINode,
   CustomCodeNode,
   CustomCodeLangs,
+  FilterNode,
 };
 
 export type {
@@ -84,4 +90,5 @@ export type {
   GraphQLQueryNodeProps,
   RestAPINodeProps,
   CustomCodeNodeProps,
+  FilterNodeProps,
 };

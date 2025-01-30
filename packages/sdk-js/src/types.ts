@@ -50,6 +50,12 @@ export enum TriggerType {
   Unset = "unset",
 }
 
-export type SmartWallet = avs_pb.SmartWallet.AsObject;
+export type SmartWallet = avs_pb.SmartWallet.AsObject & {
+  totalTaskCount?: number;
+  activeTaskCount?: number;
+  completedTaskCount?: number;
+  failedTaskCount?: number;
+  canceledTaskCount?: number;
+};
 
 export const ExecutionStatus = avs_pb.ExecutionStatus;

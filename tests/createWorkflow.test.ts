@@ -30,6 +30,9 @@ import {
   EXPIRED_AT,
   FACTORY_ADDRESS,
   defaultTriggerId,
+  blockTriggerEvery5,
+  restApiNodeProps,
+  filterNodeProps,
 } from "./templates";
 
 // Update the dotenv configuration
@@ -386,6 +389,45 @@ describe("createWorkflow Tests", () => {
       task
     );
   });
+
+  test("create filter node task", async () => {
+    const wallet = await client.getWallet({ salt: "0" });
+
+    const workflowData = {
+      smartWalletAddress: wallet.address,
+      nodes: NodeFactory.createNodes([restApiNodeProps, filterNodeProps]),
+      edges: [new Edge({id: getNextId(), source: defaultTriggerId, target: restApiNodeProps.id})],
+      trigger: blockTriggerEvery5,
+      startAt: WorkflowTemplate.startAt,
+      expiredAt: WorkflowTemplate.expiredAt,
+      maxExecution: 1,
+    }
+
+    const submitResult = await client.submitWorkflow(
+      client.createWorkflow(workflowData)
+    );
+
+    queueForRemoval(createdWorkflows, submitResult);
+
+    const task = await client.getWorkflow(submitResult);
+
+    compareResults(
+      {
+        smartWalletAddress: wallet.address,
+        status: WorkflowStatus.Active,
+        id: submitResult,
+        owner: eoaAddress,
+        nodes: NodeFactory.createNodes([restApiNodeProps, filterNodeProps]),
+        edges: [new Edge({id: getNextId(), source: defaultTriggerId, target: restApiNodeProps.id})],
+        trigger: blockTriggerEvery5,
+        startAt: WorkflowTemplate.startAt,
+        expiredAt: WorkflowTemplate.expiredAt,
+        maxExecution: 1,
+      },
+      task
+    );
+  });
+
 
   // TODO: add detailed verification for each node in the workflow
   // expect(task.nodes[0].contractWrite.contractAddress).toEqual(
