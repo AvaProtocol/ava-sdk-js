@@ -239,6 +239,8 @@ export class ContractWriteNode extends jspb.Message {
     setCallData(value: string): ContractWriteNode;
     getContractAbi(): string;
     setContractAbi(value: string): ContractWriteNode;
+    getMethod(): string;
+    setMethod(value: string): ContractWriteNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractWriteNode.AsObject;
@@ -255,6 +257,7 @@ export namespace ContractWriteNode {
         contractAddress: string,
         callData: string,
         contractAbi: string,
+        method: string,
     }
 }
 
@@ -1308,6 +1311,16 @@ export class GetWalletResp extends jspb.Message {
     setSalt(value: string): GetWalletResp;
     getFactoryAddress(): string;
     setFactoryAddress(value: string): GetWalletResp;
+    getTotalTaskCount(): number;
+    setTotalTaskCount(value: number): GetWalletResp;
+    getActiveTaskCount(): number;
+    setActiveTaskCount(value: number): GetWalletResp;
+    getCompletedTaskCount(): number;
+    setCompletedTaskCount(value: number): GetWalletResp;
+    getFailedTaskCount(): number;
+    setFailedTaskCount(value: number): GetWalletResp;
+    getCanceledTaskCount(): number;
+    setCanceledTaskCount(value: number): GetWalletResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): GetWalletResp.AsObject;
@@ -1324,6 +1337,11 @@ export namespace GetWalletResp {
         address: string,
         salt: string,
         factoryAddress: string,
+        totalTaskCount: number,
+        activeTaskCount: number,
+        completedTaskCount: number,
+        failedTaskCount: number,
+        canceledTaskCount: number,
     }
 }
 
@@ -1376,6 +1394,134 @@ export namespace UserTriggerTaskResp {
     export type AsObject = {
         executionId: string,
         status: ExecutionStatus,
+    }
+}
+
+export class CreateOrUpdateSecretReq extends jspb.Message { 
+    getName(): string;
+    setName(value: string): CreateOrUpdateSecretReq;
+    getSecret(): string;
+    setSecret(value: string): CreateOrUpdateSecretReq;
+    getWorkflowId(): string;
+    setWorkflowId(value: string): CreateOrUpdateSecretReq;
+    getOrgId(): string;
+    setOrgId(value: string): CreateOrUpdateSecretReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CreateOrUpdateSecretReq.AsObject;
+    static toObject(includeInstance: boolean, msg: CreateOrUpdateSecretReq): CreateOrUpdateSecretReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CreateOrUpdateSecretReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CreateOrUpdateSecretReq;
+    static deserializeBinaryFromReader(message: CreateOrUpdateSecretReq, reader: jspb.BinaryReader): CreateOrUpdateSecretReq;
+}
+
+export namespace CreateOrUpdateSecretReq {
+    export type AsObject = {
+        name: string,
+        secret: string,
+        workflowId: string,
+        orgId: string,
+    }
+}
+
+export class ListSecretsReq extends jspb.Message { 
+    getWorkflowId(): string;
+    setWorkflowId(value: string): ListSecretsReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ListSecretsReq.AsObject;
+    static toObject(includeInstance: boolean, msg: ListSecretsReq): ListSecretsReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ListSecretsReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListSecretsReq;
+    static deserializeBinaryFromReader(message: ListSecretsReq, reader: jspb.BinaryReader): ListSecretsReq;
+}
+
+export namespace ListSecretsReq {
+    export type AsObject = {
+        workflowId: string,
+    }
+}
+
+export class ListSecretsResp extends jspb.Message { 
+    clearItemsList(): void;
+    getItemsList(): Array<ListSecretsResp.ResponseSecret>;
+    setItemsList(value: Array<ListSecretsResp.ResponseSecret>): ListSecretsResp;
+    addItems(value?: ListSecretsResp.ResponseSecret, index?: number): ListSecretsResp.ResponseSecret;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ListSecretsResp.AsObject;
+    static toObject(includeInstance: boolean, msg: ListSecretsResp): ListSecretsResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ListSecretsResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ListSecretsResp;
+    static deserializeBinaryFromReader(message: ListSecretsResp, reader: jspb.BinaryReader): ListSecretsResp;
+}
+
+export namespace ListSecretsResp {
+    export type AsObject = {
+        itemsList: Array<ListSecretsResp.ResponseSecret.AsObject>,
+    }
+
+
+    export class ResponseSecret extends jspb.Message { 
+        getName(): string;
+        setName(value: string): ResponseSecret;
+        getScope(): string;
+        setScope(value: string): ResponseSecret;
+        getWorkflowId(): string;
+        setWorkflowId(value: string): ResponseSecret;
+        getOrgId(): string;
+        setOrgId(value: string): ResponseSecret;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): ResponseSecret.AsObject;
+        static toObject(includeInstance: boolean, msg: ResponseSecret): ResponseSecret.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: ResponseSecret, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): ResponseSecret;
+        static deserializeBinaryFromReader(message: ResponseSecret, reader: jspb.BinaryReader): ResponseSecret;
+    }
+
+    export namespace ResponseSecret {
+        export type AsObject = {
+            name: string,
+            scope: string,
+            workflowId: string,
+            orgId: string,
+        }
+    }
+
+}
+
+export class DeleteSecretReq extends jspb.Message { 
+    getName(): string;
+    setName(value: string): DeleteSecretReq;
+    getWorkflowId(): string;
+    setWorkflowId(value: string): DeleteSecretReq;
+    getOrgId(): string;
+    setOrgId(value: string): DeleteSecretReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DeleteSecretReq.AsObject;
+    static toObject(includeInstance: boolean, msg: DeleteSecretReq): DeleteSecretReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: DeleteSecretReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DeleteSecretReq;
+    static deserializeBinaryFromReader(message: DeleteSecretReq, reader: jspb.BinaryReader): DeleteSecretReq;
+}
+
+export namespace DeleteSecretReq {
+    export type AsObject = {
+        name: string,
+        workflowId: string,
+        orgId: string,
     }
 }
 

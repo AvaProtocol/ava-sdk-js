@@ -126,6 +126,7 @@ message ContractWriteNode {
 
   // abi is necessary to decode the return
   string contract_abi = 3;
+  string method = 4;
 }
 
 message ContractReadNode {
@@ -174,7 +175,8 @@ message BranchNode {
 message FilterNode {
   // Filter node acts like .select or .filter to pluck out element in an array that evaluate the expression to true
   string expression = 1;
-  // input is the id of the node that 
+  // input is the id of the node that we will fetch its value from and feed into the iteration.
+  // this input has to be an array. Currently we only know about the error at runtime
   string input = 2;
 }
 
@@ -448,6 +450,12 @@ message GetWalletResp {
   string address = 1;
   string salt = 2;
   string factory_address = 3;
+
+  uint64 total_task_count = 4;
+  uint64 active_task_count = 5;
+  uint64 completed_task_count = 6;
+  uint64 failed_task_count = 7;
+  uint64 canceled_task_count = 8;
 }
 
 message UserTriggerTaskReq {
@@ -467,6 +475,49 @@ message UserTriggerTaskResp {
   string execution_id = 1;
   ExecutionStatus status = 2;
 }
+
+message CreateOrUpdateSecretReq {
+  // name of the secret. it should be [a-zA-Z0-9_]+
+  string name = 1;
+
+  // value can be any valid unicode string
+  // Secret is the only thing we can change in an update. workflow and org id cannot be change
+  string secret = 2;
+
+  // A secret when define can be at these level
+  // - org: available to everything in the org. Currently this isn't supported yet. reserve for future use
+  // - user: available to all workflow of an user. This is the default level
+  // - workflow: available to a single workflow. To make a secret available to multiple workflow, either use org/user level or define them on other workflow.
+  string workflow_id = 3;
+  string org_id = 4;
+}
+
+message ListSecretsReq {
+  string workflow_id = 1;
+}
+
+message ListSecretsResp {
+  message ResponseSecret {
+    // when listing secret, we don't return its value, just secret and last update
+    string name = 1;
+    string scope = 2;
+
+    string workflow_id = 4;
+    string org_id = 5;
+  }
+  repeated ResponseSecret items = 1;
+}
+
+message DeleteSecretReq {
+  string name = 1;
+
+  // Delete the secret belong to the specific workflow. Without its, we delete the one belong to user
+  string workflow_id = 2;
+
+  // Delete the secret belong to the specific prg. Without its, we delete the one belong to user
+  string org_id = 3;
+}
+
 
 service Aggregator {
   // Exchange for an Auth Key to authenticate in subsequent request
@@ -489,4 +540,18 @@ service Aggregator {
   rpc CancelTask(IdReq)                 returns (google.protobuf.BoolValue) {};
   rpc DeleteTask(IdReq)                 returns (google.protobuf.BoolValue) {};
   rpc TriggerTask(UserTriggerTaskReq)   returns (UserTriggerTaskResp) {};
+
+  // CreateSecret allow you to define a secret to be used in your tasks. The secret can be used with a special syntax of ${{secrets.name }}.
+  // You can decide whether to grant secret to a single workflow or many workflow, or all of your workflow
+  // By default, your secret is available across all of your tasks.
+  rpc CreateSecret(CreateOrUpdateSecretReq) returns (google.protobuf.BoolValue) {};
+  rpc DeleteSecret(DeleteSecretReq) returns (google.protobuf.BoolValue) {};
+
+  // Return all secrets belong to this user. Currently we don't support any fine tune or filter yet.
+  // Only secret names and config data are returned. The secret value aren't returned.
+  rpc ListSecrets(ListSecretsReq) returns (ListSecretsResp) {};
+
+  // For simplicity, currently only the user who create the secrets can update its value, or update its permission.
+  // The current implementation is also limited, update is an override action, not an appending action. So when updating, you need to pass the whole payload
+  rpc UpdateSecret(CreateOrUpdateSecretReq) returns (google.protobuf.BoolValue) {};
 }
