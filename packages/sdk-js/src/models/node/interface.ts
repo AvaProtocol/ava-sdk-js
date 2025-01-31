@@ -63,14 +63,17 @@ class Node implements NodeProps {
   }
 
   toRequest(): avs_pb.TaskNode {
-    const request = new avs_pb.TaskNode();
-    const raw = request.serializeBinary();
-    const parsed = avs_pb.TaskNode.deserializeBinary(raw);
-    if (!_.isEqual(request, parsed)) {
-      throw new Error("Invalid request object");
-    }
+    // Since the interface is a base class, toRequest should never be called
+    throw new Error("Method not implemented.");
+  }
 
-    return request;
+  toJson(): Record<string, any> {
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      data: this.data,
+    }
   }
 }
 
