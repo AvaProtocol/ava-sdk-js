@@ -1,6 +1,6 @@
 {
   "name": "@avaprotocol/types",
-  "version": "0.9.4-dev.0",
+  "version": "0.9.3",
   "description": "Type definitions for Ava Protocol's AVS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
