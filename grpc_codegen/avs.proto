@@ -51,8 +51,7 @@ message EventCondition {
   }
 
   // an array of filter to be mach, as soon as any element of the array mach, the trigger is fired.
-  repeated Matcher matcher = 1;
-  string expression = 2;
+  string expression = 1;
 }
 
 
