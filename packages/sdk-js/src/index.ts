@@ -550,6 +550,7 @@ export default class Client extends BaseClient {
 
   async deleteSecret(params: DeleteSecretRequest, options?: RequestOptions): Promise<boolean> {
     const request = new avs_pb.DeleteSecretReq();
+    request.setName(params.name);
     if (params?.workflowId) {
       request.setWorkflowId(params.workflowId);
     }
@@ -561,15 +562,16 @@ export default class Client extends BaseClient {
 
     return result.getValue();
   }
-  // async updateSecret(secret: Secret, options?: RequestOptions): Promise<boolean> {
-  //   const request = secret.toRequest();
 
-  //   const result = await this.sendGrpcRequest<
-  //     avs_pb.CreateTaskResp,
-  //     avs_pb.CreateTaskReq
-  //   >("updateSecret", request, options);
-  //   return result.getId();
-  // }
+  async updateSecret(secret: Secret, options?: RequestOptions): Promise<boolean> {
+    const request = secret.toRequest();
+
+    const result = await this.sendGrpcRequest<
+      BoolValue,
+      avs_pb.CreateOrUpdateSecretReq
+    >("updateSecret", request, options);
+    return result.getValue();
+  }
 
 }
 
