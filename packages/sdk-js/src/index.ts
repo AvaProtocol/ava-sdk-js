@@ -11,6 +11,7 @@ import Edge, { EdgeProps } from "./models/edge";
 import Execution from "./models/execution";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
+import Secret from "./models/secret";
 
 import {
   AUTH_KEY_HEADER,
@@ -22,7 +23,10 @@ import {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
+  ListSecretRequest, ListSecretResponse,
+  DeleteSecretRequest
 } from "./types";
+
 import TriggerMetadata, {
   TriggerMetadataProps,
 } from "./models/trigger/metadata";
@@ -512,6 +516,61 @@ export default class Client extends BaseClient {
 
     return result.getValue();
   }
+
+  async createSecret(secret: Secret, options?: RequestOptions): Promise<boolean> {
+    const request = secret.toRequest();
+
+    const result = await this.sendGrpcRequest<
+      BoolValue,
+      avs_pb.CreateOrUpdateSecretReq
+    >("createSecret", request, options);
+
+    return result.getValue();
+  }
+
+  async listSecrets(params: ListSecretRequest, options?: RequestOptions): Promise<ListSecretResponse[]> {
+    const request = new avs_pb.ListSecretsReq();
+    if (params?.workflowId) {
+      request.setWorkflowId(params.workflowId);
+    }
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.ListSecretsResp,
+      avs_pb.ListSecretsReq
+    >("listSecrets", request, options);
+
+    return result.getItemsList().map((item) => {
+      return {
+        name: item.getName(),
+        workflowId: item.getWorkflowId(),
+        orgId: item.getOrgId(),
+      };
+    });
+  }
+
+  async deleteSecret(params: DeleteSecretRequest, options?: RequestOptions): Promise<boolean> {
+    const request = new avs_pb.DeleteSecretReq();
+    if (params?.workflowId) {
+      request.setWorkflowId(params.workflowId);
+    }
+
+    const result = await this.sendGrpcRequest<
+      BoolValue,
+      avs_pb.DeleteSecretReq
+    >("deleteSecret", request, options);
+
+    return result.getValue();
+  }
+  // async updateSecret(secret: Secret, options?: RequestOptions): Promise<boolean> {
+  //   const request = secret.toRequest();
+
+  //   const result = await this.sendGrpcRequest<
+  //     avs_pb.CreateTaskResp,
+  //     avs_pb.CreateTaskReq
+  //   >("updateSecret", request, options);
+  //   return result.getId();
+  // }
+
 }
 
 // Export types for easier use
@@ -519,7 +578,7 @@ export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
-export { Workflow, Edge, Execution, NodeFactory, TriggerFactory };
+export { Workflow, Edge, Execution, NodeFactory, TriggerFactory, Secret };
 
 export type { WorkflowProps, EdgeProps };
 
