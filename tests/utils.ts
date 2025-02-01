@@ -43,8 +43,9 @@ export async function generateSignature(
   const message = getKeyRequestMessage(
       chainId,
       wallet.address,
-      issuedAt,
-      expiredAt);
+      issuedAt.toISOString(),
+      expiredAt.toISOString()
+  );
 
   const signature = await wallet.signMessage(message);https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/migration-histories#committing-the-migration-history-to-source-control
 
