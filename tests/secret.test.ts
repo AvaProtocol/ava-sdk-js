@@ -43,7 +43,7 @@ describe("secret Tests", () => {
     });
     const signature2 = await generateSignature('0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293', EXPIRED_AT);
     const res2 = await client.authWithSignature(signature2);
-    client2.setAuthKey(res.authKey);
+    client2.setAuthKey(res2.authKey);
   });
 
   describe("create secret", () => {
@@ -96,7 +96,7 @@ describe("secret Tests", () => {
       const secrets2 = await client2.listSecrets();
       expect(
           secrets1.some(item => item.name === secret2.name)
-      ).toBeNull();
+      ).toBe(false);
     });
   });
 
@@ -122,6 +122,75 @@ describe("secret Tests", () => {
         secrets.some(item => item.name === secret1.name)
       ).toBe(false);
     });
+
+    it("delete at correct level", async() => {
+      const secret1 = new Secret({
+        name: `abc_${getNextId()}`,
+        secret: "value",
+      });
+      const secret2 = new Secret({
+        name: `def_${getNextId()}`,
+        secret: "value",
+        workflowId: getNextId(),
+      });
+
+      await client.createSecret(secret1);
+      await client.createSecret(secret2);
+      let secrets = await client.listSecrets();
+      expect(
+        secrets.some(item => item.name === secret1.name)
+      ).toBe(true);
+      expect(
+        secrets.some(item => item.name === secret2.name)
+      ).toBe(true);
+
+      const deleted= await client.deleteSecret({
+        name: secret2.name,
+        workflowId: secret2.workflowId,
+      });
+      expect(deleted).toBe(true);
+
+      secrets = await client.listSecrets();
+      expect(
+        secrets.some(item => item.name === secret1.name)
+      ).toBe(true);
+      expect(
+        secrets.some(item => item.name === secret2.name)
+      ).toBe(false);
+    });
+
+
+
   });
+
+  describe("updateSecret", () => {
+    // currently we cannot fetch back the value. we had test on the SDK to ensure that
+    // Here, we just want to make sure some the update call succesfully
+    it("update secret value succesfully", async() => {
+      const secret = new Secret({
+        name: `delete_${getNextId()}`,
+        secret: "value",
+      })
+      let result = await client.createSecret(secret);
+      expect(result).toBe(true);
+
+      let secrets = await client.listSecrets();
+      expect(
+        secrets.some(item => item.name === secret.name)
+      ).toBe(true);
+
+      secret.secret = "newvalue";
+      result = await client.updateSecret(secret);
+      expect(result).toBe(true);
+
+      secrets = await client.listSecrets();
+      expect(
+        secrets.some(item => item.name === secret.name)
+      ).toBe(true);
+
+
+    });
+  });
+
 
 });
