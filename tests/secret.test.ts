@@ -97,6 +97,9 @@ describe("secret Tests", () => {
       expect(
           secrets1.some(item => item.name === secret2.name)
       ).toBe(false);
+      expect(
+          secrets2.some(item => item.name === secret1.name)
+      ).toBe(false);
     });
   });
 
@@ -134,9 +137,12 @@ describe("secret Tests", () => {
         workflowId: getNextId(),
       });
 
+      // we create 2 secret at different level
       await client.createSecret(secret1);
       await client.createSecret(secret2);
+
       let secrets = await client.listSecrets();
+      // make sure we got both secret
       expect(
         secrets.some(item => item.name === secret1.name)
       ).toBe(true);
@@ -144,7 +150,8 @@ describe("secret Tests", () => {
         secrets.some(item => item.name === secret2.name)
       ).toBe(true);
 
-      const deleted= await client.deleteSecret({
+      // delete the one at workflow level and list again, make sure it delete the right one
+      const deleted = await client.deleteSecret({
         name: secret2.name,
         workflowId: secret2.workflowId,
       });
@@ -158,9 +165,6 @@ describe("secret Tests", () => {
         secrets.some(item => item.name === secret2.name)
       ).toBe(false);
     });
-
-
-
   });
 
   describe("updateSecret", () => {
