@@ -69,7 +69,7 @@ describe("getAddresses Tests", () => {
     client.setFactoryAddress(FACTORY_ADDRESS);
     expect(client.getFactoryAddress()).toEqual(FACTORY_ADDRESS);
 
-    const salt = parseInt(process.env.RUN_ID || Math.floor(Math.random() * 100000));
+    const salt = process.env.RUN_ID || `${new Date().getTime()}`;
     let wallet = await client.getWallet({ salt });
 
     const initialStat = {

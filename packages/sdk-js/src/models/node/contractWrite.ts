@@ -36,6 +36,7 @@ class ContractWriteNode extends Node {
     );
     nodeData.setCallData((this.data as ContractWriteNodeData).callData);
     nodeData.setContractAbi((this.data as ContractWriteNodeData).contractAbi);
+    nodeData.setMethod((this.data as ContractWriteNodeData).method);
 
     request.setContractWrite(nodeData);
 
