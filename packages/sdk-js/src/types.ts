@@ -59,3 +59,19 @@ export type SmartWallet = avs_pb.SmartWallet.AsObject & {
 };
 
 export const ExecutionStatus = avs_pb.ExecutionStatus;
+
+export interface ListSecretResponse {
+  name: string;
+  workflowId: string;
+  orgId: string;
+}
+
+export interface ListSecretRequest {
+  workflowId?: string;
+}
+
+export interface DeleteSecretRequest {
+  name: string;
+  workflowId: string;
+  orgId: string;
+}
