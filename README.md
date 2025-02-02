@@ -129,7 +129,7 @@ The NPM publishing of dev versions can be handled manually, since the test cases
 
    ```bash
    # Optionally, update version with dev tag in package.json
-   yarn workspace @avaprotocol/types version --prerelease --preid=dev
+   yarn workspace @avaprotocol/sdk-js version --prerelease --preid=dev
 
    # Publish to npm with dev tag
    npm publish --tag dev

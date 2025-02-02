@@ -1,6 +1,5 @@
 import _ from "lodash";
-import * as grpc from "@grpc/grpc-js";
-import { Metadata } from "@grpc/grpc-js";
+import { credentials, Metadata } from "@grpc/grpc-js";
 import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
@@ -43,7 +42,7 @@ class BaseClient {
     this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
       this.endpoint,
-      grpc.credentials.createInsecure()
+      credentials.createInsecure()
     );
 
     this.factoryAddress = opts.factoryAddress;
@@ -80,21 +79,19 @@ class BaseClient {
    * @param expiredAtEpoch - The expiration epoch
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
-  async authWithAPIKey(
-    {
-      chainId,
-      address,
-      issuedAt,
-      expiredAt,
-      apiKey,
-    } : {
-      chainId: number;
-      address: string;
-      issuedAt: Date;
-      expiredAt: Date;
-      apiKey: string;
-    }
-  ): Promise<GetKeyResponse> {
+  async authWithAPIKey({
+    chainId,
+    address,
+    issuedAt,
+    expiredAt,
+    apiKey,
+  }: {
+    chainId: number;
+    address: string;
+    issuedAt: Date;
+    expiredAt: Date;
+    apiKey: string;
+  }): Promise<GetKeyResponse> {
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
     request.setOwner(address);
@@ -120,21 +117,19 @@ class BaseClient {
    * @param expiredAtEpoch - The expiration epoch
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
-  async authWithSignature(
-    {
-      chainId,
-      address,
-      issuedAt,
-      expiredAt,
-      signature,
-    } : {
-      chainId: number;
-      address: string;
-      issuedAt: Date;
-      expiredAt: Date;
-      signature: string;
-    }
-  ): Promise<GetKeyResponse> {
+  async authWithSignature({
+    chainId,
+    address,
+    issuedAt,
+    expiredAt,
+    signature,
+  }: {
+    chainId: number;
+    address: string;
+    issuedAt: Date;
+    expiredAt: Date;
+    signature: string;
+  }): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
@@ -412,7 +407,7 @@ export default class Client extends BaseClient {
   async getExecutionStatus(
     taskId: string,
     executionId: string,
-    options?: RequestOptions 
+    options?: RequestOptions
   ): Promise<avs_pb.ExecutionStatus> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(taskId);
