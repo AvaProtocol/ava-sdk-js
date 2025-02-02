@@ -1,17 +1,30 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import _ from "lodash";
-import ContractWriteNode, { ContractWriteNodeProps } from "./contractWrite";
+import ContractWriteNode, {
+  ContractWriteNodeData,
+  ContractWriteNodeProps,
+} from "./contractWrite";
 import CustomCodeNode, {
   CustomCodeLangs,
+  CustomCodeNodeData,
   CustomCodeNodeProps,
 } from "./customCode";
-import GraphQLQueryNode, { GraphQLQueryNodeProps } from "./graphqlQuery";
+import GraphQLQueryNode, {
+  GraphQLQueryNodeData,
+  GraphQLQueryNodeProps,
+} from "./graphqlQuery";
 import Node, { NodeProps } from "./interface";
-import RestAPINode, { RestAPINodeProps } from "./restApi";
-import ContractReadNode, { ContractReadNodeProps } from "./contractRead";
-import ETHTransferNode, { ETHTransferNodeProps } from "./ethTransfer";
+import RestAPINode, { RestAPINodeData, RestAPINodeProps } from "./restApi";
+import ContractReadNode, {
+  ContractReadNodeData,
+  ContractReadNodeProps,
+} from "./contractRead";
+import ETHTransferNode, {
+  ETHTransferNodeData,
+  ETHTransferNodeProps,
+} from "./ethTransfer";
 import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
-import FilterNode, { FilterNodeProps } from "./filter";
+import FilterNode, { FilterNodeData, FilterNodeProps } from "./filter";
 import { NodeType } from "@avaprotocol/types";
 class NodeFactory {
   static create(props: NodeProps): Node {
@@ -67,6 +80,7 @@ class NodeFactory {
 
 export default NodeFactory;
 
+// Node object definitions
 export {
   Node,
   ContractWriteNode,
@@ -80,12 +94,24 @@ export {
   FilterNode,
 };
 
+// Data definitions of Node
+export type {
+  ContractWriteNodeData,
+  ContractReadNodeData,
+  BranchNodeData,
+  ETHTransferNodeData,
+  GraphQLQueryNodeData,
+  RestAPINodeData,
+  CustomCodeNodeData,
+  FilterNodeData,
+};
+
+// Node Props definitions
 export type {
   NodeProps,
   ContractWriteNodeProps,
   ContractReadNodeProps,
   BranchNodeProps,
-  BranchNodeData,
   ETHTransferNodeProps,
   GraphQLQueryNodeProps,
   RestAPINodeProps,
