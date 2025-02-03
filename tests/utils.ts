@@ -151,11 +151,10 @@ export const compareResults = (
 ): void => {
   expect(actual).toBeDefined();
   expect(actual.smartWalletAddress).toEqual(expected.smartWalletAddress);
-  expect(actual.trigger.type).toEqual(expected.trigger.type);
   expect(actual.trigger.id).toEqual(expected.trigger.id);
+  expect(actual.trigger.type).toEqual(expected.trigger.type);
   expect(actual.trigger.name).toEqual(expected.trigger.name);
-  expect(actual.trigger.expression).toEqual(expected.trigger.expression);
-  expect(actual.trigger.matcher).toEqual(expected.trigger.matcher);
+  expect(actual.trigger.data).toEqual(expected.trigger.data);
   expect(actual.nodes).toHaveLength(expected.nodes.length);
   expect(actual.edges).toHaveLength(expected.edges.length);
   expect(actual.startAt).toEqual(expected.startAt);
