@@ -176,7 +176,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.EventCondition = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.EventCondition.repeatedFields_, null);
 };
 goog.inherits(proto.aggregator.EventCondition, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1664,6 +1664,13 @@ proto.aggregator.BlockCondition.prototype.setInterval = function(value) {
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.EventCondition.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -1695,7 +1702,9 @@ proto.aggregator.EventCondition.prototype.toObject = function(opt_includeInstanc
  */
 proto.aggregator.EventCondition.toObject = function(includeInstance, msg) {
   var f, obj = {
-    expression: jspb.Message.getFieldWithDefault(msg, 1, "")
+    matcherList: jspb.Message.toObjectList(msg.getMatcherList(),
+    proto.aggregator.EventCondition.Matcher.toObject, includeInstance),
+    expression: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1733,6 +1742,11 @@ proto.aggregator.EventCondition.deserializeBinaryFromReader = function(msg, read
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = new proto.aggregator.EventCondition.Matcher;
+      reader.readMessage(value,proto.aggregator.EventCondition.Matcher.deserializeBinaryFromReader);
+      msg.addMatcher(value);
+      break;
+    case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setExpression(value);
       break;
@@ -1765,10 +1779,18 @@ proto.aggregator.EventCondition.prototype.serializeBinary = function() {
  */
 proto.aggregator.EventCondition.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getMatcherList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      1,
+      f,
+      proto.aggregator.EventCondition.Matcher.serializeBinaryToWriter
+    );
+  }
   f = message.getExpression();
   if (f.length > 0) {
     writer.writeString(
-      1,
+      2,
       f
     );
   }
@@ -1962,11 +1984,49 @@ proto.aggregator.EventCondition.Matcher.prototype.clearValueList = function() {
 
 
 /**
- * optional string expression = 1;
+ * repeated Matcher matcher = 1;
+ * @return {!Array<!proto.aggregator.EventCondition.Matcher>}
+ */
+proto.aggregator.EventCondition.prototype.getMatcherList = function() {
+  return /** @type{!Array<!proto.aggregator.EventCondition.Matcher>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.EventCondition.Matcher, 1));
+};
+
+
+/**
+ * @param {!Array<!proto.aggregator.EventCondition.Matcher>} value
+ * @return {!proto.aggregator.EventCondition} returns this
+*/
+proto.aggregator.EventCondition.prototype.setMatcherList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+};
+
+
+/**
+ * @param {!proto.aggregator.EventCondition.Matcher=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.EventCondition.Matcher}
+ */
+proto.aggregator.EventCondition.prototype.addMatcher = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.EventCondition.Matcher, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.EventCondition} returns this
+ */
+proto.aggregator.EventCondition.prototype.clearMatcherList = function() {
+  return this.setMatcherList([]);
+};
+
+
+/**
+ * optional string expression = 2;
  * @return {string}
  */
 proto.aggregator.EventCondition.prototype.getExpression = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
@@ -1975,7 +2035,7 @@ proto.aggregator.EventCondition.prototype.getExpression = function() {
  * @return {!proto.aggregator.EventCondition} returns this
  */
 proto.aggregator.EventCondition.prototype.setExpression = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 

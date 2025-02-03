@@ -306,11 +306,9 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: `
-              trigger1.data.topics[0] == 
-              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" 
-              && trigger1.data.topics[2] == "${wallet.address}"
-            `,
+          matcher: [
+            { type: "topics", value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", null, "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] },
+          ]
         },
       }),
     };

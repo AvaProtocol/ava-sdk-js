@@ -93,6 +93,10 @@ export namespace BlockCondition {
 }
 
 export class EventCondition extends jspb.Message { 
+    clearMatcherList(): void;
+    getMatcherList(): Array<EventCondition.Matcher>;
+    setMatcherList(value: Array<EventCondition.Matcher>): EventCondition;
+    addMatcher(value?: EventCondition.Matcher, index?: number): EventCondition.Matcher;
     getExpression(): string;
     setExpression(value: string): EventCondition;
 
@@ -108,6 +112,7 @@ export class EventCondition extends jspb.Message {
 
 export namespace EventCondition {
     export type AsObject = {
+        matcherList: Array<EventCondition.Matcher.AsObject>,
         expression: string,
     }
 

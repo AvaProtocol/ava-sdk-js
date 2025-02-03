@@ -25,14 +25,6 @@ class Edge implements EdgeProps {
 
     return edge;
   }
-
-  toJson(): Record<string, any> {
-    return {
-      id: this.id,
-      source: this.source,
-      target: this.target,
-    };
-  }
 }
 
 export default Edge;
