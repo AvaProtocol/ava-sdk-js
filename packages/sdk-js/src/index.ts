@@ -14,7 +14,7 @@ import {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-} from "@avaprotocol/types";
+} from "@/types/dist";
 
 import {
   AUTH_KEY_HEADER,

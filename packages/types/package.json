@@ -22,15 +22,13 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --dts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "typescript": "^5.4.2"
   },
   "devDependencies": {
-    "@types/google-protobuf": "^3.15.12",
-    "@types/lodash": "^4.17.12",
-    "tsup": "^8.0.2"
+    "@types/google-protobuf": "^3.15.12"
   },
   "publishConfig": {
     "access": "public"
