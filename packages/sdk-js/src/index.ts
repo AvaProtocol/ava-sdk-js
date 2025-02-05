@@ -10,11 +10,11 @@ import Execution from "./models/execution";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
-import {
+import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-} from "@/types/dist";
+} from "@avaprotocol/types";
 
 import {
   AUTH_KEY_HEADER,

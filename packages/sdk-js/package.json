@@ -24,7 +24,7 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@avaprotocol/types": "workspace:*",

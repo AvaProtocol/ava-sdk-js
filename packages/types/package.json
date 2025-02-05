@@ -22,7 +22,7 @@
   },
   "scripts": {
     "build": "tsup src/index.ts --dts",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "typescript": "^5.4.2"

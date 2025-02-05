@@ -105,7 +105,22 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
 
 ## Release Process
 
-This repository uses a two-step workflow process for creating new releases:
+### Releasing a new version for development
+
+Once a package is ready for a new version, we first publish a dev version and test it in local environment.
+
+1. Run `npm version prerelease --preid=dev` under either `packages/sdk-js` or `packages/types` to update the version in `package.json`.
+2. Run `npm publish --tag dev` under either `packages/sdk-js` or `packages/types` to publish the new dev version to NPM. Most importantly, this **bumps up version number** in `package.json` of `packages/types`.
+3. If the `types` package has a new version, since it is depended on by `sdk-js`, we need to make sure `sdk-js` can build with the new version.
+
+   1. `yarn run clean` **at the root folder** to remove existing node_modules folder and yarn.lock file.
+   2. Run `yarn install` under the root folder to re-install the dependencies. You should see a prompt asking the version of `@avaprotocol/types` to install. Choose the new version you just created in step 1.
+   3. Run `yarn build` under the root folder to build all packages.
+   4. Run `yarn run test` under the root folder to run all tests.
+
+### Publishing to NPM
+
+Once the dev version is tested and ready to be published to NPM, `changeset` can be used to create a new release for NPM.
 
 1. **Record changeset workflow**
 
@@ -117,29 +132,11 @@ This repository uses a two-step workflow process for creating new releases:
    - Examine the Pull Request created by the workflow, and merge it if everything looks correct. This will record any commits before it as a major, minor, or patch.
 
 2. **Create release workflow**
-   - Go to the "Actions" tab in GitHub and run the "Create Release" workflow. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
+   There are two ways to create a release:
+   - Manually create a release in the GitHub UI. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
+   - Automatically create a release when a PR is merged. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
 3. **Publish to NPM**
    - After the last step, the version number in `package.json` is updated and a git tag with the new version number is created. Now you can publish the production version to NPM using `npm publish`.
-
-### NPM Publishing Dev Versions
-
-The NPM publishing of dev versions can be handled manually, since the test cases reference the dist folder and don’t require a new version on NPM. NPM publish on dev tag is only required for testing the new version in a web app.
-
-1. Publish a dev version and test it in your local environment. The `npm publish` will use the version number in `package.json`, so run `npm version prerelease --preid=dev` first if you need a new version number.
-
-   ```bash
-   # Optionally, update version with dev tag in package.json
-   yarn workspace @avaprotocol/sdk-js version --prerelease --preid=dev
-
-   # Publish to npm with dev tag
-   npm publish --tag dev
-   ```
-
-2. Once tested, and a release is created using GitHub Actions, publish the production version to NPM:
-   ```bash
-   # Publish to npm with latest tag
-   npm publish
-   ```
 
 ### Utility Scripts
 
