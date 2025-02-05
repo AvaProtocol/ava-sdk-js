@@ -1,5 +1,6 @@
 // Define the environment type
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { getKeyRequestMessage, GetKeyRequest, GetKeyResponse } from "./auth";
 export type Environment = "production" | "development" | "staging";
 
 export const AUTH_KEY_HEADER = "authkey";
@@ -17,10 +18,6 @@ export interface GetExecutionsRequest extends RequestOptions {
 export interface GetWorkflowsRequest extends RequestOptions {
   cursor?: string;
   limit?: number;
-}
-
-export interface GetKeyResponse {
-  authKey: string;
 }
 
 export interface GetWalletRequest {
@@ -64,3 +61,4 @@ export enum NodeType {
 }
 
 export type SmartWallet = avs_pb.SmartWallet.AsObject;
+export { getKeyRequestMessage, GetKeyRequest, GetKeyResponse };
