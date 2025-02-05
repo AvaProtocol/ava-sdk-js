@@ -1,6 +1,5 @@
 import _ from "lodash";
 import { credentials, Metadata } from "@grpc/grpc-js";
-import { getKeyRequestMessage } from "./auth";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
@@ -11,19 +10,24 @@ import Execution from "./models/execution";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
+import {
+  GetKeyRequestApiKey,
+  GetKeyRequestSignature,
+  GetKeyResponse,
+} from "@avaprotocol/types";
 
 import {
   AUTH_KEY_HEADER,
   RequestOptions,
   ClientOption,
   SmartWallet,
-  GetKeyResponse,
   GetWalletRequest,
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
-  ListSecretRequest, ListSecretResponse,
-  DeleteSecretRequest
+  ListSecretRequest,
+  ListSecretResponse,
+  DeleteSecretRequest,
 } from "./types";
 
 import TriggerMetadata, {
@@ -74,9 +78,11 @@ class BaseClient {
 
   /**
    * The API key could retrieve a wallet’s authKey by skipping its signature verification
+   * @param chainId - The chain id
    * @param address - The address of the EOA wallet
+   * @param issuedAt - The issued at timestamp
+   * @param expiredAt - The expiration timestamp
    * @param apiKey - The API key
-   * @param expiredAtEpoch - The expiration epoch
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithAPIKey({
@@ -85,13 +91,7 @@ class BaseClient {
     issuedAt,
     expiredAt,
     apiKey,
-  }: {
-    chainId: number;
-    address: string;
-    issuedAt: Date;
-    expiredAt: Date;
-    apiKey: string;
-  }): Promise<GetKeyResponse> {
+  }: GetKeyRequestApiKey): Promise<GetKeyResponse> {
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
     request.setOwner(address);
@@ -112,9 +112,11 @@ class BaseClient {
 
   /**
    * Getting an authKey from the server by verifying the signature of an EOA wallet
+   * @param chainId - The chain id
    * @param address - The address of the EOA wallet
+   * @param issuedAt - The issued at timestamp
+   * @param expiredAt - The expiration timestamp
    * @param signature - The signature of the EOA wallet
-   * @param expiredAtEpoch - The expiration epoch
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithSignature({
@@ -123,13 +125,7 @@ class BaseClient {
     issuedAt,
     expiredAt,
     signature,
-  }: {
-    chainId: number;
-    address: string;
-    issuedAt: Date;
-    expiredAt: Date;
-    signature: string;
-  }): Promise<GetKeyResponse> {
+  }: GetKeyRequestSignature): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
@@ -512,7 +508,10 @@ export default class Client extends BaseClient {
     return result.getValue();
   }
 
-  async createSecret(secret: Secret, options?: RequestOptions): Promise<boolean> {
+  async createSecret(
+    secret: Secret,
+    options?: RequestOptions
+  ): Promise<boolean> {
     const request = secret.toRequest();
 
     const result = await this.sendGrpcRequest<
@@ -523,7 +522,10 @@ export default class Client extends BaseClient {
     return result.getValue();
   }
 
-  async listSecrets(params: ListSecretRequest, options?: RequestOptions): Promise<ListSecretResponse[]> {
+  async listSecrets(
+    params: ListSecretRequest,
+    options?: RequestOptions
+  ): Promise<ListSecretResponse[]> {
     const request = new avs_pb.ListSecretsReq();
     if (params?.workflowId) {
       request.setWorkflowId(params.workflowId);
@@ -543,7 +545,10 @@ export default class Client extends BaseClient {
     });
   }
 
-  async deleteSecret(params: DeleteSecretRequest, options?: RequestOptions): Promise<boolean> {
+  async deleteSecret(
+    params: DeleteSecretRequest,
+    options?: RequestOptions
+  ): Promise<boolean> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(params.name);
     if (params?.workflowId) {
@@ -558,7 +563,10 @@ export default class Client extends BaseClient {
     return result.getValue();
   }
 
-  async updateSecret(secret: Secret, options?: RequestOptions): Promise<boolean> {
+  async updateSecret(
+    secret: Secret,
+    options?: RequestOptions
+  ): Promise<boolean> {
     const request = secret.toRequest();
 
     const result = await this.sendGrpcRequest<
@@ -567,7 +575,6 @@ export default class Client extends BaseClient {
     >("updateSecret", request, options);
     return result.getValue();
   }
-
 }
 
 // Export types for easier use
@@ -578,6 +585,3 @@ export * from "./models/trigger/factory";
 export { Workflow, Edge, Execution, NodeFactory, TriggerFactory, Secret };
 
 export type { WorkflowProps, EdgeProps };
-
-// Add this line at the end of the file
-export { getKeyRequestMessage };

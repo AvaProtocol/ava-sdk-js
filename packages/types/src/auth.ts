@@ -19,12 +19,22 @@ export const getKeyRequestMessage = ({
   Wallet: ${address}`;
 };
 
-export interface GetKeyRequest {
+// Common interface for all get authKey requests
+interface GetKeyRequest {
   chainId: number;
   address: string;
   issuedAt: Date;
   expiredAt: Date;
+}
+
+// Get authKey request with signature
+export interface GetKeyRequestSignature extends GetKeyRequest {
   signature: string;
+}
+
+// Get authKey request with apiKey
+export interface GetKeyRequestApiKey extends GetKeyRequest {
+  apiKey: string;
 }
 
 export interface GetKeyResponse {
