@@ -64,7 +64,6 @@ const contractReadNodeProps: ContractReadNodeProps = {
         ]
       }
     ]`,
-    method: "balanceOf",
   },
 };
 

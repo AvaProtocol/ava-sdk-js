@@ -36,7 +36,6 @@ class ContractReadNode extends Node {
     );
     nodeData.setCallData((this.data as ContractReadNodeData).callData);
     nodeData.setContractAbi((this.data as ContractReadNodeData).contractAbi);
-    nodeData.setMethod((this.data as ContractReadNodeData).method);
 
     request.setContractRead(nodeData);
 

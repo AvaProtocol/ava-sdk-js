@@ -239,8 +239,6 @@ export class ContractWriteNode extends jspb.Message {
     setCallData(value: string): ContractWriteNode;
     getContractAbi(): string;
     setContractAbi(value: string): ContractWriteNode;
-    getMethod(): string;
-    setMethod(value: string): ContractWriteNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractWriteNode.AsObject;
@@ -257,7 +255,6 @@ export namespace ContractWriteNode {
         contractAddress: string,
         callData: string,
         contractAbi: string,
-        method: string,
     }
 }
 
@@ -268,8 +265,6 @@ export class ContractReadNode extends jspb.Message {
     setCallData(value: string): ContractReadNode;
     getContractAbi(): string;
     setContractAbi(value: string): ContractReadNode;
-    getMethod(): string;
-    setMethod(value: string): ContractReadNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractReadNode.AsObject;
@@ -286,7 +281,6 @@ export namespace ContractReadNode {
         contractAddress: string,
         callData: string,
         contractAbi: string,
-        method: string,
     }
 }
 

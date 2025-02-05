@@ -2674,8 +2674,7 @@ proto.aggregator.ContractWriteNode.toObject = function(includeInstance, msg) {
   var f, obj = {
     contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
     callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    method: jspb.Message.getFieldWithDefault(msg, 4, "")
+    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -2724,10 +2723,6 @@ proto.aggregator.ContractWriteNode.deserializeBinaryFromReader = function(msg, r
       var value = /** @type {string} */ (reader.readString());
       msg.setContractAbi(value);
       break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setMethod(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -2775,13 +2770,6 @@ proto.aggregator.ContractWriteNode.serializeBinaryToWriter = function(message, w
   if (f.length > 0) {
     writer.writeString(
       3,
-      f
-    );
-  }
-  f = message.getMethod();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
       f
     );
   }
@@ -2842,24 +2830,6 @@ proto.aggregator.ContractWriteNode.prototype.setContractAbi = function(value) {
 };
 
 
-/**
- * optional string method = 4;
- * @return {string}
- */
-proto.aggregator.ContractWriteNode.prototype.getMethod = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ContractWriteNode} returns this
- */
-proto.aggregator.ContractWriteNode.prototype.setMethod = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
 
 
 
@@ -2894,8 +2864,7 @@ proto.aggregator.ContractReadNode.toObject = function(includeInstance, msg) {
   var f, obj = {
     contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
     callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    method: jspb.Message.getFieldWithDefault(msg, 4, "")
+    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, "")
   };
 
   if (includeInstance) {
@@ -2944,10 +2913,6 @@ proto.aggregator.ContractReadNode.deserializeBinaryFromReader = function(msg, re
       var value = /** @type {string} */ (reader.readString());
       msg.setContractAbi(value);
       break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setMethod(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -2995,13 +2960,6 @@ proto.aggregator.ContractReadNode.serializeBinaryToWriter = function(message, wr
   if (f.length > 0) {
     writer.writeString(
       3,
-      f
-    );
-  }
-  f = message.getMethod();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
       f
     );
   }
@@ -3059,24 +3017,6 @@ proto.aggregator.ContractReadNode.prototype.getContractAbi = function() {
  */
 proto.aggregator.ContractReadNode.prototype.setContractAbi = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string method = 4;
- * @return {string}
- */
-proto.aggregator.ContractReadNode.prototype.getMethod = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ContractReadNode} returns this
- */
-proto.aggregator.ContractReadNode.prototype.setMethod = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
