@@ -178,22 +178,20 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-
       const res = await client.authWithAPIKey(
         generateAuthPayloadWithApiKey(eoaAddress, TEST_API_KEY)
       );
 
       authKeyViaAPI = res.authKey;
-      console.log("🚀 ~ beforeAll ~ authKeyViaAPI:", authKeyViaAPI)
 
       console.log("Authenticating with signature ...");
-      const sigObject:GetKeyRequestSignature = await generateSignature(TEST_PRIVATE_KEY);
-      console.log("🚀 ~ beforeAll ~ sigObject:", sigObject)
-      
+      const sigObject: GetKeyRequestSignature = await generateSignature(
+        TEST_PRIVATE_KEY
+      );
+
       const res2 = await client.authWithSignature(sigObject);
 
       authKeyViaSignature = res2.authKey;
-      console.log("🚀 ~ beforeAll ~ authKeyViaSignature:", authKeyViaSignature)
     });
 
     test("getWallet works with options.authKey", async () => {

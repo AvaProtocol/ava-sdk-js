@@ -30,24 +30,19 @@ export async function generateSignature(
 ): Promise<GetKeyRequestSignature> {
   const wallet = new ethers.Wallet(privateKey);
 
-  const message = getKeyRequestMessage({
+  const keyRequestParams: GetKeyRequestMessage = {
     chainId: _.toNumber(CHAIN_ID),
     address: wallet.address,
     issuedAt: new Date(),
-    expiredAt: new Date(Date.now() + EXPIRATION_DURATION_MS),
-  });
-
-  console.log("🚀 ~ getKeyRequestMessage.message:", message);
-
-  const signature = await wallet.signMessage(message);
-
-  return {
-    chainId: _.toNumber(CHAIN_ID),
-    address: wallet.address,
-    issuedAt: new Date(),
-    expiredAt: new Date(Date.now() + EXPIRATION_DURATION_MS),
-    signature,
+    expiredAt: new Date(new Date().getTime() + EXPIRATION_DURATION_MS),
   };
+
+  const message = getKeyRequestMessage(keyRequestParams);
+  console.log("🚀 ~ message:", message);
+  const signature = await wallet.signMessage(message);
+  console.log("🚀 ~ signature:", { signature, ...keyRequestParams });
+
+  return { signature, ...keyRequestParams };
 }
 
 // Helper function to generate api key message
