@@ -3,7 +3,7 @@ import Client from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
 import { getAddress, generateSignature, requireEnvVar } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS } from "./templates";
+import { FACTORY_ADDRESS } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -27,7 +27,7 @@ describe("getAddresses Tests", () => {
     });
 
     console.log("Authenticating with signature ...");
-    const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+    const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });

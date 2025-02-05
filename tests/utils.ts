@@ -1,9 +1,11 @@
-import Client, {
+import Client, { Workflow, WorkflowProps, WorkflowStatus } from "@/sdk-js/dist";
+import {
   getKeyRequestMessage,
-  Workflow,
-  WorkflowProps,
-  WorkflowStatus,
-} from "@/sdk-js/dist";
+  GetKeyRequestMessage,
+  GetKeyRequestApiKey,
+  GetKeyRequestSignature,
+} from "@/types/dist";
+
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import dotenv from "dotenv";
@@ -13,9 +15,8 @@ import _ from "lodash";
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
-// CHAIN_ID can be fetch from CHAIN_ID but when running test it hit RPC everytime to get that and slow the test so we just define in the env similar to how we define CHAIN_ENDPOINT
-const CHAIN_ID = parseInt(process.env.CHAIN_ID || 11155111);
-console.log("CHAIN_ENDPOINT", CHAIN_ENDPOINT, "CHAIN_ID", CHAIN_ID);
+const CHAIN_ID = requireEnvVar("CHAIN_ID", "11155111");
+const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 
 // Get wallet address from private key
 export async function getAddress(privateKey: string): Promise<string> {
@@ -23,52 +24,55 @@ export async function getAddress(privateKey: string): Promise<string> {
   return wallet.address;
 }
 
-interface KeyRequest {
-  chainId: number;
-  address: string;
-  expiredAt: Date;
-  issuedAt: Date;
-  signature: string;
-}
-
 // Generate a signed message from a private key
 export async function generateSignature(
-  privateKey: string,
-  expiredAtEpoch: number
-): Promise<KeyRequest> {
-  const chainId = CHAIN_ID;
+  privateKey: string
+): Promise<GetKeyRequestSignature> {
   const wallet = new ethers.Wallet(privateKey);
-  const issuedAt = new Date();
-  const expiredAt = new Date(expiredAtEpoch * 1000);
-  const message = getKeyRequestMessage(
-      chainId,
-      wallet.address,
-      issuedAt.toISOString(),
-      expiredAt.toISOString()
-  );
 
-  const signature = await wallet.signMessage(message);https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate/migration-histories#committing-the-migration-history-to-source-control
+  const message = getKeyRequestMessage({
+    chainId: _.toNumber(CHAIN_ID),
+    address: wallet.address,
+    issuedAt: new Date(),
+    expiredAt: new Date(Date.now() + EXPIRATION_DURATION_MS),
+  });
 
-  return { chainId, address: wallet.address, issuedAt, expiredAt, signature };
+  console.log("🚀 ~ getKeyRequestMessage.message:", message);
+
+  const signature = await wallet.signMessage(message);
+
+  return {
+    chainId: _.toNumber(CHAIN_ID),
+    address: wallet.address,
+    issuedAt: new Date(),
+    expiredAt: new Date(Date.now() + EXPIRATION_DURATION_MS),
+    signature,
+  };
 }
 
 // Helper function to generate api key message
 export function generateAuthPayloadWithApiKey(
   address: string,
-  apiKey: string,
-  expiredAtEpoch: number,
-): Promise<KeyRequest> {
-  const chainId = CHAIN_ID;
+  apiKey: string
+): GetKeyRequestApiKey {
+  const chainId = _.toNumber(CHAIN_ID);
   const issuedAt = new Date();
-  const expiredAt = new Date(expiredAtEpoch * 1000);
+  const expiredAt = new Date(Date.now() + EXPIRATION_DURATION_MS);
 
   return { chainId, address, issuedAt, expiredAt, apiKey };
 }
 
 // Helper function to ensure environment variables are defined
-export function requireEnvVar(name: string): string {
+export function requireEnvVar(name: string, defaultValue?: string): string {
   const value = process.env[name];
-  if (!value) {
+
+  if (_.isUndefined(value)) {
+    // Use the defaultValue if it's provided
+    if (!_.isUndefined(defaultValue)) {
+      return defaultValue;
+    }
+
+    // Otherwise, configs are seriosuly wrong, throwing an error
     throw new Error(`Required environment variable "${name}" is not set`);
   }
   return value;

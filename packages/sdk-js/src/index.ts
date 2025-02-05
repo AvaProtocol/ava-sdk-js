@@ -132,15 +132,25 @@ class BaseClient {
     request.setOwner(address);
     const issueTs = Timestamp.fromDate(issuedAt);
     const expiredTs = Timestamp.fromDate(expiredAt);
+
+    console.log("🚀 ~ authWithSignature ~ issueTs:", issueTs);
+    console.log("🚀 ~ authWithSignature ~ expiredTs:", expiredTs);
     request.setIssuedAt(issueTs);
     request.setExpiredAt(expiredTs);
     request.setSignature(signature);
+
+    console.log(
+      "🚀 ~ authWithSignature ~ request.toObject():",
+      request.toObject()
+    );
 
     // when exchanging the key, we don't set the token yet
     const result = await this.sendGrpcRequest<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
       request
     );
+
+    console.log("🚀 ~ authWithSignature ~ result:", result);
 
     return { authKey: result.getKey() };
   }

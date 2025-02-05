@@ -1,16 +1,17 @@
 import Client from "@/sdk-js/dist";
-import { WorkflowStatus } from "@/types/dist";
+import { GetKeyRequestSignature, WorkflowStatus } from "@/types/dist";
 import dotenv from "dotenv";
 import path from "path";
 import {
   getAddress,
-  generateSignature, generateAuthPayloadWithApiKey,
+  generateSignature,
+  generateAuthPayloadWithApiKey,
   requireEnvVar,
   queueForRemoval,
   removeCreatedWorkflows,
   compareResults,
 } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -46,7 +47,7 @@ describe("Authentication Tests", () => {
   describe("Authenticated with client.authKey", () => {
     beforeAll(async () => {
       console.log("Authenticating with signature ...");
-      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+      const signature = await generateSignature(TEST_PRIVATE_KEY);
       const res = await client.authWithSignature(signature);
 
       client.setAuthKey(res.authKey);
@@ -151,9 +152,7 @@ describe("Authentication Tests", () => {
     });
 
     test("deleteWorkflow works with client.authKey", async () => {
-      const wallet = await client.getWallet(
-        { salt: "0" },
-      );
+      const wallet = await client.getWallet({ salt: "0" });
 
       const workflowId = await client.submitWorkflow(
         client.createWorkflow({
@@ -179,26 +178,32 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(await generateAuthPayloadWithApiKey(
-        eoaAddress,
-        TEST_API_KEY,
-        EXPIRED_AT
-      ));
+
+      const res = await client.authWithAPIKey(
+        generateAuthPayloadWithApiKey(eoaAddress, TEST_API_KEY)
+      );
+
       authKeyViaAPI = res.authKey;
+      console.log("🚀 ~ beforeAll ~ authKeyViaAPI:", authKeyViaAPI)
 
       console.log("Authenticating with signature ...");
-      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
-      const res2 = await client.authWithSignature(signature);
+      const sigObject:GetKeyRequestSignature = await generateSignature(TEST_PRIVATE_KEY);
+      console.log("🚀 ~ beforeAll ~ sigObject:", sigObject)
+      
+      const res2 = await client.authWithSignature(sigObject);
 
       authKeyViaSignature = res2.authKey;
+      console.log("🚀 ~ beforeAll ~ authKeyViaSignature:", authKeyViaSignature)
     });
 
     test("getWallet works with options.authKey", async () => {
       const testSalt = "123";
+
       const wallet = await client.getWallet(
         { salt: testSalt },
         { authKey: authKeyViaAPI }
       );
+
       expect(wallet).toHaveProperty("address");
       expect(wallet).toHaveProperty("salt", testSalt);
       expect(wallet).toHaveProperty("factory", FACTORY_ADDRESS);
@@ -231,7 +236,10 @@ describe("Authentication Tests", () => {
     });
 
     test("createWorkflow works with options.authKey", async () => {
-      const wallet = await client.getWallet({ salt: "345" }, { authKey: authKeyViaAPI });
+      const wallet = await client.getWallet(
+        { salt: "345" },
+        { authKey: authKeyViaAPI }
+      );
 
       const workflowId = await client.submitWorkflow(
         client.createWorkflow({
@@ -257,7 +265,10 @@ describe("Authentication Tests", () => {
     });
 
     test("getWorkflow works with options.authKey", async () => {
-      const wallet = await client.getWallet({ salt: "0" }, { authKey:  authKeyViaAPI });
+      const wallet = await client.getWallet(
+        { salt: "0" },
+        { authKey: authKeyViaAPI }
+      );
 
       const createResult = await client.submitWorkflow(
         client.createWorkflow({
@@ -421,17 +432,15 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       // Prepare an auth key for the tests
-      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+      const signature = await generateSignature(TEST_PRIVATE_KEY);
       const res = await client.authWithSignature(signature);
       authKeyViaSignature = res.authKey;
     });
 
     test("should return auth key when using API key", async () => {
-      const res = await client.authWithAPIKey(await generateAuthPayloadWithApiKey(
-        eoaAddress,
-        TEST_API_KEY,
-        EXPIRED_AT
-      ));
+      const res = await client.authWithAPIKey(
+        generateAuthPayloadWithApiKey(eoaAddress, TEST_API_KEY)
+      );
 
       expect(res).toBeDefined();
       expect(res).toHaveProperty("authKey");
@@ -451,11 +460,11 @@ describe("Authentication Tests", () => {
 
       // Verify all expected payload fields
       expect(payload).toHaveProperty("iss", "AvaProtocol");
-      expect(payload).toHaveProperty("exp", EXPIRED_AT);
+      expect(payload).toHaveProperty("exp");
     });
 
     test("should return auth key when using EOA signature", async () => {
-      const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+      const signature = await generateSignature(TEST_PRIVATE_KEY);
 
       if (!signature) {
         throw new Error(
@@ -477,7 +486,7 @@ describe("Authentication Tests", () => {
       expect(payload).toHaveProperty("iss", "AvaProtocol");
       expect(payload).toHaveProperty("sub");
       expect(payload.sub).toMatch(/^0x[a-fA-F0-9]{40}$/); // Ethereum address format
-      expect(payload).toHaveProperty("exp", EXPIRED_AT);
+      expect(payload).toHaveProperty("exp");
     });
 
     test("getWallet should throw error", async () => {

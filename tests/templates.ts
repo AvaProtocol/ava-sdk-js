@@ -16,9 +16,8 @@ import {
   FilterNodeProps,
 } from "@/sdk-js/dist";
 import { getNextId } from "./utils";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType } from "@/types/dist";
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
-export const EXPIRED_AT = Math.floor(Date.now() / 1000) + 24 * 60 * 60; // 24 hours from now
 
 export const defaultTriggerId = getNextId();
 

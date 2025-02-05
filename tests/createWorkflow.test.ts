@@ -9,7 +9,7 @@ import Client, {
   WorkflowStatus,
   BranchNodeData,
 } from "@/sdk-js/dist";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType } from "@/types/dist";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -27,7 +27,6 @@ import {
   NodesTemplate,
   EdgesTemplate,
   MultiNodeWithBranch,
-  EXPIRED_AT,
   FACTORY_ADDRESS,
   defaultTriggerId,
   blockTriggerEvery5,
@@ -62,7 +61,7 @@ describe("createWorkflow Tests", () => {
     });
 
     console.log("Authenticating with signature ...");
-    const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+    const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
 
     client.setAuthKey(res.authKey);
