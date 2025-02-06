@@ -2,13 +2,13 @@ name: Run tests against staging on PR
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   staging-test:
     runs-on: ubuntu-latest
     environment: test # The below environment variables are only available in the test environment
-    
+
     env:
       TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
@@ -24,27 +24,55 @@ jobs:
       # on local test is continously wipe out on every run so it isn't a problem like staging
       # We may want to sweep and delete task data on those test account
       RUN_ID: ${{ github.run_id }}
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
- 
-    - name: Debug environment variables
-      run: |
-        echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
-        echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
-        echo "ENDPOINT: $ENDPOINT"
- 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'yarn'
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: yarn install
+      - name: Debug environment variables
+        run: |
+          echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
+          echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
+          echo "ENDPOINT: $ENDPOINT"
 
-    - name: Run tests againts staging AVS
-      run: |
-        yarn build
-        yarn test 
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn build
+
+      - name: Test Authentication
+        run: yarn test:auth
+
+      - name: Test Create Workflow
+        run: yarn test:createWorkflow
+
+      - name: Test Get Workflow
+        run: yarn test:getWorkflow
+
+      - name: Test Get Workflows
+        run: yarn test:getWorkflows
+
+      - name: Test Cancel Workflow
+        run: yarn test:cancelWorkflow
+
+      - name: Test Delete Workflow
+        run: yarn test:deleteWorkflow
+
+      - name: Test Get Executions
+        run: yarn test:getExecutions
+
+      - name: Test Get Wallet
+        run: yarn test:getWallet
+
+      - name: Test Get Wallets
+        run: yarn test:getWallets
+
+      - name: Test Secret
+        run: yarn test:secret

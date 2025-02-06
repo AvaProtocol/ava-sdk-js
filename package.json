@@ -18,7 +18,16 @@
     "build": "yarn workspaces run build",
     "clean": "rm -rf node_modules yarn.lock && yarn workspaces run clean",
     "test": "jest --config jest.config.cjs",
-    "test:select": "npm run test -- --testNamePattern"
+    "test:auth": "jest tests/auth.test.ts",
+    "test:createWorkflow": "jest tests/createWorkflow.test.ts",
+    "test:getWorkflow": "jest tests/getWorkflow.test.ts",
+    "test:getWorkflows": "jest tests/getWorkflows.test.ts",
+    "test:cancelWorkflow": "jest tests/cancelWorkflow.test.ts",
+    "test:deleteWorkflow": "jest tests/deleteWorkflow.test.ts",
+    "test:getExecutions": "jest tests/getExecutions.test.ts",
+    "test:getWallet": "jest tests/getWallet.test.ts",
+    "test:getWallets": "jest tests/getWallets.test.ts",
+    "test:secret": "jest tests/secret.test.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
