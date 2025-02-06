@@ -19,10 +19,6 @@ export interface GetWorkflowsRequest extends RequestOptions {
   limit?: number;
 }
 
-export interface GetKeyResponse {
-  authKey: string;
-}
-
 export interface GetWalletRequest {
   salt: string;
   factoryAddress?: string;

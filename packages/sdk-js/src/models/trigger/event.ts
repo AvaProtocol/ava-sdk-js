@@ -61,7 +61,6 @@ class EventTrigger extends Trigger {
     }
 
     if (matcher && matcher.length >= 1) {
-        console.log("hit here", matcher);
         condition.setMatcherList(matcher.map(element => {
           const m = new avs_pb.EventCondition.Matcher();
           m.setType(element["type"]);

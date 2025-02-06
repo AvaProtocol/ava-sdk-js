@@ -1,9 +1,12 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import BlockTrigger from "./block";
+import BlockTrigger, { BlockTriggerDataType } from "./block";
 import { BlockTriggerProps } from "./block";
-import CronTrigger, { CronTriggerProps } from "./cron";
-import EventTrigger, { EventTriggerProps } from "./event";
-import FixedTimeTrigger, { FixedTimeTriggerProps } from "./fixedTime";
+import CronTrigger, { CronTriggerDataType, CronTriggerProps } from "./cron";
+import EventTrigger, { EventTriggerDataType, EventTriggerProps } from "./event";
+import FixedTimeTrigger, {
+  FixedTimeTriggerDataType,
+  FixedTimeTriggerProps,
+} from "./fixedTime";
 import Trigger from "./interface";
 import { TriggerProps } from "./interface";
 import { TriggerType } from "../../types";
@@ -52,6 +55,7 @@ class TriggerFactory {
 
 export default TriggerFactory;
 
+// Trigger object definitions
 export {
   Trigger,
   TriggerType,
@@ -61,10 +65,19 @@ export {
   FixedTimeTrigger,
 };
 
+// Trigger Props definitions
 export type {
   TriggerProps,
   BlockTriggerProps,
   CronTriggerProps,
   EventTriggerProps,
   FixedTimeTriggerProps,
+};
+
+// Trigger Data definitions
+export type {
+  BlockTriggerDataType,
+  CronTriggerDataType,
+  EventTriggerDataType,
+  FixedTimeTriggerDataType,
 };

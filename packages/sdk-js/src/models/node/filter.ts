@@ -4,7 +4,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { expression, input }
-type FilterNodeData = avs_pb.FilterNode.AsObject;
+export type FilterNodeData = avs_pb.FilterNode.AsObject;
 export type FilterNodeProps = NodeProps & {
   data: FilterNodeData;
 };

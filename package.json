@@ -16,9 +16,18 @@
     "gen-protoc": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./grpc_codegen/ --grpc_out=grpc_js:./grpc_codegen/ --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=grpc_js:./grpc_codegen --proto_path=./grpc_codegen grpc_codegen/avs.proto",
     "gen-apikey": "sh -c 'API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey) && echo \"Generated API key for tests: $API_KEY\" && echo \"Writing to .env.test to replace the TEST_API_KEY env variable\" && sed -i \"\" -e \"s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/\" .env.test && echo \"Done.\"'",
     "build": "yarn workspaces run build",
-    "clean": "yarn workspaces run clean",
+    "clean": "rm -rf node_modules yarn.lock && yarn workspaces run clean",
     "test": "jest --config jest.config.cjs",
-    "test:select": "npm run test -- --testNamePattern"
+    "test:auth": "jest tests/auth.test.ts  --verbose --runInBand",
+    "test:createWorkflow": "jest tests/createWorkflow.test.ts --verbose --runInBand",
+    "test:getWorkflow": "jest tests/getWorkflow.test.ts --verbose --runInBand",
+    "test:getWorkflows": "jest tests/getWorkflows.test.ts --verbose --runInBand",
+    "test:cancelWorkflow": "jest tests/cancelWorkflow.test.ts --verbose --runInBand",
+    "test:deleteWorkflow": "jest tests/deleteWorkflow.test.ts --verbose --runInBand",
+    "test:getExecutions": "jest tests/getExecutions.test.ts --verbose --runInBand",
+    "test:getWallet": "jest tests/getWallet.test.ts --verbose --runInBand",
+    "test:getWallets": "jest tests/getWallets.test.ts --verbose --runInBand",
+    "test:secret": "jest tests/secret.test.ts --verbose --runInBand"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

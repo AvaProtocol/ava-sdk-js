@@ -9,7 +9,7 @@ import {
   queueForRemoval,
   removeCreatedWorkflows,
 } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 import { WorkflowStatus } from "@/sdk-js/dist";
 
 // Update the dotenv configuration
@@ -39,7 +39,7 @@ describe("cancelWorkflow Tests", () => {
     });
 
     console.log("Authenticating with signature ...");
-    const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+    const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
 
     client.setAuthKey(res.authKey);

@@ -4,7 +4,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
 // Required props for cons  tructor: id, name, type and data: { lang: CustomCodeLang, source: string }
-type CustomCodeNodeData = avs_pb.CustomCodeNode.AsObject;
+export type CustomCodeNodeData = avs_pb.CustomCodeNode.AsObject;
 export const CustomCodeLangs = avs_pb.CustomCodeLang;
 export type CustomCodeNodeProps = NodeProps & {
   data: CustomCodeNodeData;

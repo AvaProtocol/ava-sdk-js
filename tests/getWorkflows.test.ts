@@ -13,7 +13,7 @@ import {
   compareResults,
   compareListResults,
 } from "./utils";
-import { EXPIRED_AT, FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -41,7 +41,7 @@ describe("getWorkflows Tests", () => {
       factoryAddress: FACTORY_ADDRESS,
     });
 
-    const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+    const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });

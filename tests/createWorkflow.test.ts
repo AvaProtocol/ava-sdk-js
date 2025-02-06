@@ -9,7 +9,7 @@ import Client, {
   WorkflowStatus,
   BranchNodeData,
 } from "@/sdk-js/dist";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType } from "@/types/dist";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -27,7 +27,6 @@ import {
   NodesTemplate,
   EdgesTemplate,
   MultiNodeWithBranch,
-  EXPIRED_AT,
   FACTORY_ADDRESS,
   defaultTriggerId,
   blockTriggerEvery5,
@@ -62,7 +61,7 @@ describe("createWorkflow Tests", () => {
     });
 
     console.log("Authenticating with signature ...");
-    const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+    const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
 
     client.setAuthKey(res.authKey);
@@ -251,6 +250,8 @@ describe("createWorkflow Tests", () => {
               "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" 
               && trigger1.data.topics[2] == "${wallet.address}"
             `,
+          // We don't need but the compare result look at its as a whole
+          matcher: [],
         },
       }),
     };
@@ -307,7 +308,7 @@ describe("createWorkflow Tests", () => {
         type: TriggerType.Event,
         data: {
           matcher: [
-            { type: "topics", value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", null, "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] },
+            { type: "topics", value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", "", "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] },
           ]
         },
       }),
@@ -334,29 +335,30 @@ describe("createWorkflow Tests", () => {
 
   test("create block trigger", async () => {
     const wallet = await client.getWallet({ salt: "0" });
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow({
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-        trigger: TriggerFactory.create({
-          id: defaultTriggerId,
-          name: "blockTrigger",
-          type: TriggerType.Block,
-          data: { interval: 102 },
-        }),
-      })
+
+    const workflowData = {
+      ...WorkflowTemplate,
+      smartWalletAddress: wallet.address,
+      trigger: TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 102 },
+      }),
+    };
+
+    const id = await client.submitWorkflow(
+      client.createWorkflow(workflowData)
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
+    queueForRemoval(createdWorkflows, id);
 
-    const task = await client.getWorkflow(submitResult);
+    const task = await client.getWorkflow(id);
     compareResults(
       {
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-        status: WorkflowStatus.Active,
-        id: submitResult,
+        id,
         owner: eoaAddress,
+        ...workflowData
       },
       task
     );

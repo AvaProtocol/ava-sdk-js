@@ -14,7 +14,6 @@ import {
 
 import {
   WorkflowTemplate,
-  EXPIRED_AT,
   FACTORY_ADDRESS,
   defaultTriggerId,
 } from "./templates";
@@ -45,7 +44,7 @@ describe("getAddresses Tests", () => {
     });
 
     console.log("Authenticating with signature ...");
-    const signature = await generateSignature(TEST_PRIVATE_KEY, EXPIRED_AT);
+    const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });

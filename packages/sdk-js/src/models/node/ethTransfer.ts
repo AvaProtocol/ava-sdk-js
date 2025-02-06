@@ -4,7 +4,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
-type ETHTransferNodeData = avs_pb.ETHTransferNode.AsObject;
+export type ETHTransferNodeData = avs_pb.ETHTransferNode.AsObject;
 export type ETHTransferNodeProps = NodeProps & {
   data: ETHTransferNodeData;
 };

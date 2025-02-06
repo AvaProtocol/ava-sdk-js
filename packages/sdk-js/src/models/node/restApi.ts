@@ -4,7 +4,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
-type RestAPINodeData = avs_pb.RestAPINode.AsObject;
+export type RestAPINodeData = avs_pb.RestAPINode.AsObject;
 export type RestAPINodeProps = NodeProps & {
   data: RestAPINodeData;
 };

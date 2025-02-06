@@ -4,7 +4,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, query, variablesMap }
-type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.AsObject;
+export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.AsObject;
 export type GraphQLQueryNodeProps = NodeProps & {
   data: GraphQLQueryNodeData;
 };
