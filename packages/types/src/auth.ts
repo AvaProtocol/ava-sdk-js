@@ -5,13 +5,13 @@ export const getKeyRequestMessage = ({
   expiredAt,
 }: GetKeyRequestMessage): string => {
   return `Please sign the below text for ownership verification.
-  
-  URI: https://app.avaprotocol.org
-  Chain ID: ${chainId}
-  Version: 1
-  Issued At: ${issuedAt.toISOString()}
-  Expire At: ${expiredAt.toISOString()}
-  Wallet: ${address}`;
+
+URI: https://app.avaprotocol.org
+Chain ID: ${chainId}
+Version: 1
+Issued At: ${issuedAt.toISOString()}
+Expire At: ${expiredAt.toISOString()}
+Wallet: ${address}`;
 };
 
 // Common interface for all get authKey requests
