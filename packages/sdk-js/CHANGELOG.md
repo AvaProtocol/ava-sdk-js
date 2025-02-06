@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.3.4
+
+### Patch Changes
+
+- Migrated getKeyRequestMessage to types; Added secret functions
+- Updated dependencies
+  - @avaprotocol/types@0.9.4
+
 ## 1.3.3
 
 ### Patch Changes
