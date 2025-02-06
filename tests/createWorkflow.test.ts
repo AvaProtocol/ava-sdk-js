@@ -351,7 +351,7 @@ describe("createWorkflow Tests", () => {
       client.createWorkflow(workflowData)
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
+    queueForRemoval(createdWorkflows, id);
 
     const task = await client.getWorkflow(id);
     compareResults(
