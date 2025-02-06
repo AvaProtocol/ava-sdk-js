@@ -45,10 +45,41 @@ jobs:
             sleep 5
           done
 
-      - name: Run tests againts local AVS
+      - name: Build
+        run: yarn build
+
+      - name: Setup test environment
+        id: setup-env
         run: |
-          export TEST_API_KEY="$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)"
-          export ENDPOINT="localhost:2206"
-          # We need to run yarn build here because the test is still importing from dist
-          yarn build
-          yarn test
+          echo "TEST_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
+          echo "ENDPOINT=localhost:2206" >> $GITHUB_ENV
+
+      - name: Test Authentication
+        run: yarn test:auth
+
+      - name: Test Create Workflow
+        run: yarn test:createWorkflow
+
+      - name: Test Get Workflow
+        run: yarn test:getWorkflow
+
+      - name: Test Get Workflows
+        run: yarn test:getWorkflows
+
+      - name: Test Cancel Workflow
+        run: yarn test:cancelWorkflow
+
+      - name: Test Delete Workflow
+        run: yarn test:deleteWorkflow
+
+      - name: Test Get Executions
+        run: yarn test:getExecutions
+
+      - name: Test Get Wallet
+        run: yarn test:getWallet
+
+      - name: Test Get Wallets
+        run: yarn test:getWallets
+
+      - name: Test Secret
+        run: yarn test:secret
