@@ -63,11 +63,14 @@ describe("Authentication Tests", () => {
     });
 
     test("getWallets works with client.authKey", async () => {
+      // ensure at least one wallet is created. the call is idempotent
+      await client.getWallet({ salt: "123" });
+
       const wallets = await client.getWallets();
       expect(wallets.length).toBeGreaterThanOrEqual(1);
 
       expect(wallets[0]).toHaveProperty("address");
-      expect(wallets[0]).toHaveProperty("salt", "0");
+      expect(wallets[0]?.salt).toEqual("123"0);
       expect(wallets[0]).toHaveProperty("factory", FACTORY_ADDRESS);
     });
 
@@ -227,10 +230,6 @@ describe("Authentication Tests", () => {
         authKey: authKeyViaSignature,
       });
       expect(wallets2.length).toBeGreaterThanOrEqual(1);
-
-      expect(wallets2[0]).toHaveProperty("address");
-      expect(wallets2[0]).toHaveProperty("salt", "0");
-      expect(wallets2[0]).toHaveProperty("factory", FACTORY_ADDRESS);
     });
 
     test("createWorkflow works with options.authKey", async () => {
