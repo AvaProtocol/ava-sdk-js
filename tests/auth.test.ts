@@ -70,7 +70,7 @@ describe("Authentication Tests", () => {
       expect(wallets.length).toBeGreaterThanOrEqual(1);
 
       expect(wallets[0]).toHaveProperty("address");
-      expect(wallets[0]?.salt).toEqual("123"0);
+      expect(wallets[0]?.salt).toEqual("123");
       expect(wallets[0]).toHaveProperty("factory", FACTORY_ADDRESS);
     });
 
