@@ -1,12 +1,17 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
-export type SecretProps = avs_pb.CreateOrUpdateSecretReq.AsObject;
+export type SecretProps = {
+  name: string;
+  secret: string;
+  workflowId?: string;
+  orgId?: string;
+};
 
 class Secret implements SecretProps {
   name: string;
   secret: string;
-  workflowId: string;
-  orgId: string;
+  workflowId?: string;
+  orgId?: string;
 
   constructor(props: SecretProps) {
     this.name = props.name;
@@ -19,9 +24,13 @@ class Secret implements SecretProps {
     const request = new avs_pb.CreateOrUpdateSecretReq();
 
     request.setName(this.name);   
-    request.setSecret(this.secret);   
-    request.setOrgId(this.orgId);
-    request.setWorkflowId(this.workflowId);
+    request.setSecret(this.secret);
+    if (this.orgId) {
+      request.setOrgId(this.orgId);
+    }
+    if (this.workflowId) {
+      request.setWorkflowId(this.workflowId);
+    }
 
     return request;
   }
