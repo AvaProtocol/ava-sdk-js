@@ -1,5 +1,16 @@
-import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { Secret } from "@/sdk-js/dist";
+import _ from "lodash";
+import util from "util";
+import { describe, beforeAll, expect } from "@jest/globals";
+import Client, {
+  CustomCodeLangs,
+  CustomCodeNodeProps,
+  Edge,
+  Execution,
+  NodeFactory,
+  StepProps,
+  TriggerFactory,
+  TriggerType,
+} from "@/sdk-js/dist";
 
 import dotenv from "dotenv";
 import path from "path";
@@ -8,9 +19,15 @@ import {
   generateSignature,
   requireEnvVar,
   getNextId,
+  getBlockNumber,
 } from "./utils";
 
-import { FACTORY_ADDRESS } from "./templates";
+import {
+  defaultTriggerId,
+  FACTORY_ADDRESS,
+  WorkflowTemplate,
+} from "./templates";
+import { NodeType } from "@/types/dist";
 
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 const { TEST_PRIVATE_KEY, ENDPOINT } = {
@@ -50,131 +67,234 @@ describe("secret Tests", () => {
     client2.setAuthKey(res2.authKey);
   });
 
-  describe("create secret", () => {
-    it("create secret succesfully", async () => {
-      const secret = new Secret({
-        name: `dummysecret_${getNextId()}`,
+  describe("create secret suite", () => {
+    it("created secret have value in workflow", async () => {
+      const result = await client.createSecret("secrete_name", "secret_value");
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      expect(result).toBe(true);
+
+      const wallet = await client.getWallet({ salt: "345" });
+
+      const customCodeNodeProps: CustomCodeNodeProps = {
+        id: getNextId(),
+        name: "custom code",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLangs.JAVASCRIPT,
+          // source: "console.log('foo bar')",
+          source: "return {{secret.secrete_name}}",
+        },
+      };
+
+      const edges = [
+        {
+          id: getNextId(),
+          source: WorkflowTemplate.trigger.id,
+          target: customCodeNodeProps.id,
+        },
+      ];
+
+      const workflowId = await client.submitWorkflow(
+        client.createWorkflow({
+          ...WorkflowTemplate,
+          trigger: TriggerFactory.create({
+            id: defaultTriggerId,
+            name: "blockTrigger",
+            type: TriggerType.Block,
+            data: { interval: triggerInterval },
+          }),
+          nodes: NodeFactory.createNodes([customCodeNodeProps]),
+          edges: _.map(edges, (edge) => new Edge(edge)),
+          smartWalletAddress: wallet.address,
+          maxExecution: 1,
+        })
+      );
+
+      await client.triggerWorkflow({
+        id: workflowId,
+        data: {
+          type: TriggerType.Block,
+          blockNumber: currentBlockNumber + triggerInterval * 2, // Make sure we have enough block buffer to trigger 1 execution
+        },
+        isBlocking: true,
       });
 
-      const result = await client.createSecret(secret);
+      let executions = await client.getExecutions([workflowId], {
+        limit: 1,
+      });
+
+      expect(executions.result.length).toBe(1);
+      // console.log("executions", util.inspect(executions, { depth: 6 }));
+
+      const matchStep: StepProps | undefined = _.find(
+        _.first(executions.result)?.stepsList,
+        (step) => step.nodeId === customCodeNodeProps.id
+      );
+
+      expect(matchStep).toBeDefined();
+
+      console.log("matchStep", util.inspect(matchStep, { depth: 4 }));
+      
+      // TODO: validate the secret variable is converted to code
+
+      // Clean up the secret of this test
+      await client.deleteSecret("secrete_name");
+      await client.deleteWorkflow(workflowId);
+    });
+
+    it("create secret at user level succeeds", async () => {
+      const inputName = `dummysecret_${getNextId()}`;
+      const result = await client.createSecret(inputName, "value");
+
       expect(result).toBe(true);
 
       // now we list the secret and it should contain the above
       const secrets = await client.listSecrets();
-      const match = secrets.find((item) => item.name === secret.name);
-      expect(match.name).toEqual(secret.name);
+      const match = _.find(secrets, (item) => item.name === inputName);
+      expect(match?.name).toEqual(inputName);
+
+      // Clean up the secret of this test
+      await client.deleteSecret(inputName);
     });
 
-    it("create secret at correct level", async () => {
-      const secret = new Secret({
-        name: `dummysecret_${getNextId()}`,
-        workflowId: getNextId(),
+    it("create secret at workflow level", async () => {
+      const inputName = `dummysecret_${getNextId()}`;
+      const inputWorkflowId = getNextId();
+      const result = await client.createSecret(inputName, "value", {
+        workflowId: inputWorkflowId,
       });
 
-      const result = await client.createSecret(secret);
       expect(result).toBe(true);
 
       // now we list the secret and it should contain the above
       const secrets = await client.listSecrets();
-      const match = secrets.find((item) => item.name === secret.name);
-      expect(match.name).toEqual(secret.name);
-      expect(match.workflowId).toEqual(secret.workflowId);
+      const match = _.find(secrets, (item) => item.name === inputName);
+      expect(match?.name).toEqual(inputName);
+      expect(match?.workflowId).toEqual(inputWorkflowId);
+
+      // Clean up the secret of this test
+      await client.deleteSecret(inputName);
     });
 
-    it("cannot view others secret", async () => {
-      const secret1 = new Secret({
-        name: `testdup1_${getNextId()}`,
-      });
-      const secret2 = new Secret({
-        name: `testdup2_${getNextId()}`,
-      });
+    // TODO: add test for create secret at org level
+    it("create secret at org level succeeds", async () => {
+      // const inputName = `dummysecret_${getNextId()}`;
+      // const orgId = getNextId();
+      // const result = await client.createSecret(inputName, "value", {
+      //   orgId,
+      // });
+      // expect(result).toBe(true);
+      // // now we list the secret and it should contain the above
+      // const secrets = await client.listSecrets();
+      // const match = _.find(secrets, (item) => item.name === inputName);
+      // expect(match?.name).toEqual(inputName);
+      // expect(match?.orgId).toEqual(orgId);
+      // Clean up the secret of this test
+      // await client.deleteSecret(inputName);
+    });
 
-      const result1 = await client.createSecret(secret1);
-      const result2 = await client2.createSecret(secret2);
+    it("secrets from different eoaAddress do not cross", async () => {
+      const inputName1 = `testdup1_${getNextId()}`;
+      const inputName2 = `testdup2_${getNextId()}`;
 
-      expect(result1).toBe(true);
-      expect(result2).toBe(true);
+      // The two clients are initialized with different eoaAddress,
+      // so they should not be able to view each other's secrets
+      const createResultClient1 = await client.createSecret(
+        inputName1,
+        "some_value"
+      );
+      const createResultClient2 = await client2.createSecret(
+        inputName2,
+        "some_value"
+      );
+
+      expect(createResultClient1).toBe(true);
+      expect(createResultClient2).toBe(true);
 
       // now we list the secret and it should contain the above
-      const secrets1 = await client.listSecrets();
-      const secrets2 = await client2.listSecrets();
-      expect(secrets1.some((item) => item.name === secret2.name)).toBe(false);
-      expect(secrets2.some((item) => item.name === secret1.name)).toBe(false);
+      const listResultClient1 = await client.listSecrets();
+      const listResultClient2 = await client2.listSecrets();
+
+      expect(listResultClient1.some((item) => item.name === inputName2)).toBe(
+        false
+      );
+
+      expect(listResultClient2.some((item) => item.name === inputName1)).toBe(
+        false
+      );
+
+      // Clean up the secret of this test
+      await client.deleteSecret(inputName1);
+      await client2.deleteSecret(inputName2);
     });
   });
 
-  describe("deleteSecret", () => {
+  describe("delete secret suite", () => {
     it("delete your own secret works", async () => {
-      const secret1 = new Secret({
-        name: `delete_${getNextId()}`,
-        secret: "value",
-      });
-      const result = await client.createSecret(secret1);
-      let secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === secret1.name)).toBe(true);
+      const inputName = `delete_${getNextId()}`;
+      await client.createSecret(inputName, "value");
 
-      const deleted = await client.deleteSecret({
-        name: secret1.name,
-      });
+      let secrets = await client.listSecrets();
+      expect(secrets.some((item) => item.name === inputName)).toBe(true);
+
+      const deleted = await client.deleteSecret(inputName);
       expect(deleted).toBe(true);
 
       secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === secret1.name)).toBe(false);
+      expect(secrets.some((item) => item.name === inputName)).toBe(false);
     });
 
-    it("delete at correct level", async () => {
-      const secret1 = new Secret({
-        name: `abc_${getNextId()}`,
-        secret: "value",
-      });
-      const secret2 = new Secret({
-        name: `def_${getNextId()}`,
-        secret: "value",
-        workflowId: getNextId(),
-      });
+    it("delete at workflowId level succeeds", async () => {
+      const userLevelName = `abc_${getNextId()}`;
+      const workflowLevelName = `def_${getNextId()}`;
+      const inputWorkflowId = getNextId();
 
       // we create 2 secret at different level
-      await client.createSecret(secret1);
-      await client.createSecret(secret2);
+      await client.createSecret(userLevelName, "value1");
+      await client.createSecret(workflowLevelName, "value2", {
+        workflowId: inputWorkflowId,
+      });
 
       let secrets = await client.listSecrets();
       // make sure we got both secret
-      expect(secrets.some((item) => item.name === secret1.name)).toBe(true);
-      expect(secrets.some((item) => item.name === secret2.name)).toBe(true);
+      expect(secrets.some((item) => item.name === userLevelName)).toBe(true);
+      expect(secrets.some((item) => item.name === workflowLevelName)).toBe(
+        true
+      );
 
-      // delete the one at workflow level and list again, make sure it delete the right one
-      const deleted = await client.deleteSecret({
-        name: secret2.name,
-        workflowId: secret2.workflowId,
+      // Delete the one at workflow level and list again, make sure we deleted the right one
+      const deleted = await client.deleteSecret(workflowLevelName, {
+        workflowId: inputWorkflowId,
       });
+
       expect(deleted).toBe(true);
 
       secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === secret1.name)).toBe(true);
-      expect(secrets.some((item) => item.name === secret2.name)).toBe(false);
+      expect(secrets.some((item) => item.name === userLevelName)).toBe(true);
+      expect(secrets.some((item) => item.name === workflowLevelName)).toBe(
+        false
+      );
     });
   });
 
-  describe("updateSecret", () => {
+  describe("update secret suite", () => {
     // currently we cannot fetch back the value. we had test on the SDK to ensure that
     // Here, we just want to make sure some the update call succesfully
     it("update secret value succesfully", async () => {
-      const secret = new Secret({
-        name: `delete_${getNextId()}`,
-        secret: "value",
-      });
-      let result = await client.createSecret(secret);
-      expect(result).toBe(true);
+      const inputName = `delete_${getNextId()}`;
+
+      await client.createSecret(inputName, "value");
 
       let secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === secret.name)).toBe(true);
+      expect(secrets.some((item) => item.name === inputName)).toBe(true);
 
-      secret.secret = "newvalue";
-      result = await client.updateSecret(secret);
-      expect(result).toBe(true);
+      const updated = await client.updateSecret(inputName, "newvalue");
+      expect(updated).toBe(true);
 
       secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === secret.name)).toBe(true);
+      expect(secrets.some((item) => item.name === inputName)).toBe(true);
     });
   });
 });

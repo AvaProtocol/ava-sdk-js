@@ -58,8 +58,8 @@ export const ExecutionStatus = avs_pb.ExecutionStatus;
 
 export interface ListSecretResponse {
   name: string;
-  workflowId: string;
-  orgId: string;
+  workflowId?: string;
+  orgId?: string;
 }
 
 export interface SecretRequestOptions extends RequestOptions {

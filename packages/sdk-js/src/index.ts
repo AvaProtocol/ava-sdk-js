@@ -6,10 +6,10 @@ import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
-import Execution from "./models/execution";
+import Execution, { ExecutionProps } from "./models/execution";
+import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
-import Secret from "./models/secret";
 import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
@@ -532,70 +532,6 @@ export default class Client extends BaseClient {
   }
 
   /**
-   * Retrieve a list of secrets; secrets can be filtered by workflowId or orgId.
-   * @param params - Parameters for listing secrets
-   * @param options - Request options, including workflowId and orgId for filtering
-   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
-   */
-  async listSecrets(
-    options?: SecretRequestOptions
-  ): Promise<ListSecretResponse[]> {
-    const request = new avs_pb.ListSecretsReq();
-
-    if (options?.workflowId) {
-      request.setWorkflowId(options.workflowId);
-    }
-
-    if (options?.orgId) {
-      request.setOrgId(options.orgId);
-    }
-
-    const result = await this.sendGrpcRequest<
-      avs_pb.ListSecretsResp,
-      avs_pb.ListSecretsReq
-    >("listSecrets", request, options);
-
-    return result.getItemsList().map((item) => {
-      return {
-        name: item.getName(),
-        workflowId: item.getWorkflowId(),
-        orgId: item.getOrgId(),
-      };
-    });
-  }
-
-  /**
-   * Delete a secret by its name; by default, the secret is deleted from the user scope, derived from the auth key
-   * @param name - The name of the secret
-   * @param options - Request options
-   * @param options.workflowId - The workflow id; if specified, the secret will be deleted from the workflow scope
-   * @param options.orgId - The organization id; if specified, the secret will be deleted from the organization scope
-   * @returns {Promise<boolean>} - Whether the secret was successfully deleted
-   */
-  async deleteSecret(
-    name: string,
-    options?: SecretRequestOptions
-  ): Promise<boolean> {
-    const request = new avs_pb.DeleteSecretReq();
-    request.setName(name);
-
-    if (options?.workflowId) {
-      request.setWorkflowId(options.workflowId);
-    }
-
-    if (options?.orgId) {
-      request.setOrgId(options.orgId);
-    }
-
-    const result = await this.sendGrpcRequest<
-      BoolValue,
-      avs_pb.DeleteSecretReq
-    >("deleteSecret", request, options);
-
-    return result.getValue();
-  }
-
-  /**
    * Update an existing secret; the secret is updated in the user scope by default, derived from the auth key.
    * @param secret - The secret object containing updated information
    * @param options - Request options, including workflowId and orgId for scoping
@@ -628,16 +564,50 @@ export default class Client extends BaseClient {
   }
 
   /**
-   * Retrieve a secret by its name; the secret can be filtered by workflowId or orgId.
-   * @param name - The name of the secret
+   * Retrieve a list of secrets; secrets can be filtered by workflowId or orgId.
+   * @param params - Parameters for listing secrets
    * @param options - Request options, including workflowId and orgId for filtering
-   * @returns {Promise<ListSecretResponse | null>} - The secret object or null if not found
+   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
    */
-  async getSecret(
+  async listSecrets(
+    options?: SecretRequestOptions
+  ): Promise<ListSecretResponse[]> {
+    const request = new avs_pb.ListSecretsReq();
+
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      // TODO: wait for the AVS to support orgId in ListSecrets
+      // request.setOrgId(options.orgId);
+    }
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.ListSecretsResp,
+      avs_pb.ListSecretsReq
+    >("listSecrets", request, options);
+
+    return result.getItemsList().map((item) => ({
+      name: item.getName(),
+      workflowId: item.getWorkflowId(),
+      orgId: item.getOrgId(),
+    }));
+  }
+
+  /**
+   * Delete a secret by its name; by default, the secret is deleted from the user scope, derived from the auth key
+   * @param name - The name of the secret
+   * @param options - Request options
+   * @param options.workflowId - The workflow id; if specified, the secret will be deleted from the workflow scope
+   * @param options.orgId - The organization id; if specified, the secret will be deleted from the organization scope
+   * @returns {Promise<boolean>} - Whether the secret was successfully deleted
+   */
+  async deleteSecret(
     name: string,
     options?: SecretRequestOptions
-  ): Promise<ListSecretResponse | null> {
-    const request = new avs_pb.GetSecretReq();
+  ): Promise<boolean> {
+    const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
 
     if (options?.workflowId) {
@@ -649,20 +619,11 @@ export default class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.GetSecretResp,
-      avs_pb.GetSecretReq
-    >("getSecret", request, options);
+      BoolValue,
+      avs_pb.DeleteSecretReq
+    >("deleteSecret", request, options);
 
-    if (result.hasSecret()) {
-      const secret = result.getSecret();
-      return {
-        name: secret.getName(),
-        workflowId: secret.getWorkflowId(),
-        orgId: secret.getOrgId(),
-      };
-    }
-
-    return null;
+    return result.getValue();
   }
 }
 
@@ -671,6 +632,6 @@ export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
-export { Workflow, Edge, Execution, NodeFactory, TriggerFactory, Secret };
+export { Workflow, Edge, Execution, Step, NodeFactory, TriggerFactory };
 
-export type { WorkflowProps, EdgeProps };
+export type { WorkflowProps, EdgeProps, ExecutionProps, StepProps };
