@@ -27,3 +27,30 @@ node dist/example.js
 ```
 
 and it will show the usage of the script with all the actions that you can do.
+
+## Example commands
+
+```
+n dist/example.js create-wallet 1
+n dist/example.js wallet
+
+# Setup a task to monitor this wallet
+n dist/example.js schedule-monitor 0xC114FB059434563DC65AC8D57e7976e3eaC534F4
+
+# At this moment we had an ID, we should set it to env to use it in other commands
+export WORKFLOW_ID=01JKVASBP0E7E5XGJ949QXX0X1
+
+# Get the workflow details
+n dist/example get $WORKFLOW_ID
+
+# Get all workflow of smart wallet 0x5Df343de7d99fd64b2479189692C1dAb8f46184a (replace with your own smart wallet address)
+n dist/example.js tasks 0x5Df343de7d99fd64b2479189692C1dAb8f46184a
+# pagination is also supported (update the cursor)
+n dist/example.js tasks 0x5Df343de7d99fd64b2479189692C1dAb8f46184a 2 'eyJkIjoibmV4dCIsInAiOiIwMUpLTVdXQk5QOURKRVBKMTFYTVNEMkg3VyJ9'
+
+# trigger the workflow manually
+n dist/example.js trigger $WORKFLOW_ID '{"tx_hash": "0x74edc53c374eb0947909fd387ecf9b166b8add40528ed4f2534ece903bc70cdd", "log_index": 143, "block_number": 72121741}'
+
+# list all the executions of the workflow
+n dist/example.js executions $WORKFLOW_ID
+```
