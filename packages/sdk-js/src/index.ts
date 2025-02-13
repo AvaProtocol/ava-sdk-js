@@ -580,6 +580,6 @@ export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
-export { Workflow, Edge, Execution, NodeFactory, TriggerFactory, Secret };
+export { Workflow, Edge, Execution, NodeFactory, TriggerFactory, TriggerMetadata, Secret };
 
 export type { WorkflowProps, EdgeProps };

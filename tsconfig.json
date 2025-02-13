@@ -16,7 +16,7 @@
       "@/types/*": ["packages/types/*"]
     }
   },
-  "include": ["grpc_codegen/**/*", "tests"],
+  "include": ["grpc_codegen/**/*", "tests", "examples"],
   "ts-node": {
     "esm": true
   }

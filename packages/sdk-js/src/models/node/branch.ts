@@ -36,6 +36,7 @@ class BranchNode extends Node {
         const conditionObj = new avs_pb.Condition();
         conditionObj.setId(condition.id);
         conditionObj.setType(condition.type);
+        conditionObj.setExpression(condition.expression);
         return conditionObj;
       })
     );

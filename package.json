@@ -27,7 +27,9 @@
     "test:getExecutions": "jest tests/getExecutions.test.ts --verbose --runInBand",
     "test:getWallet": "jest tests/getWallet.test.ts --verbose --runInBand",
     "test:getWallets": "jest tests/getWallets.test.ts --verbose --runInBand",
-    "test:secret": "jest tests/secret.test.ts --verbose --runInBand"
+    "test:secret": "jest tests/secret.test.ts --verbose --runInBand",
+    "test:select": "npm run test -- --testNamePattern",
+    "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
