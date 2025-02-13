@@ -62,12 +62,7 @@ export interface ListSecretResponse {
   orgId: string;
 }
 
-export interface ListSecretRequest {
+export interface SecretRequestOptions extends RequestOptions {
   workflowId?: string;
-}
-
-export interface DeleteSecretRequest {
-  name: string;
-  workflowId: string;
-  orgId: string;
+  orgId?: string;
 }
