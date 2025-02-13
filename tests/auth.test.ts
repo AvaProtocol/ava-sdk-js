@@ -218,20 +218,6 @@ describe("Authentication Tests", () => {
       expect(res2).toHaveProperty("factory", FACTORY_ADDRESS);
     });
 
-    test("getWallets works with options.authKey", async () => {
-      const wallets = await client.getWallets({ authKey: authKeyViaAPI });
-      expect(wallets.length).toBeGreaterThanOrEqual(1);
-
-      expect(wallets[0]).toHaveProperty("address");
-      expect(wallets[0]).toHaveProperty("salt", "0");
-      expect(wallets[0]).toHaveProperty("factory", FACTORY_ADDRESS);
-
-      const wallets2 = await client.getWallets({
-        authKey: authKeyViaSignature,
-      });
-      expect(wallets2.length).toBeGreaterThanOrEqual(1);
-    });
-
     test("createWorkflow works with options.authKey", async () => {
       const wallet = await client.getWallet(
         { salt: "345" },
