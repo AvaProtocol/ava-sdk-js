@@ -13,9 +13,8 @@ const {
   getKeyRequestMessage,
   GetKeyRequestMessage,
   GetKeyRequestApiKey,
-  GetKeyRequestSignature
+  GetKeyRequestSignature,
 } = require("@/types/dist");
-
 
 const _ = require("lodash");
 const { ethers } = require("ethers");
@@ -23,9 +22,9 @@ const { Wallet } = ethers;
 const { UlidMonotonic } = require("id128");
 const util = require("node:util");
 
-
 const env = process.env.ENV || "development";
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
+const DEFAULT_PAGE_LIMIT = 5;
 
 const config = {
   // The development environment is the local environment run on your machine. It can be bring up following the instructions in this file https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/docs/development.md
@@ -129,22 +128,49 @@ async function signMessageWithEthers(wallet, message: string) {
 async function listTask(owner: string, token: string) {
   const opts = {
     cursor: process.argv[5] || "",
-    limit: parseInt(process.argv[4] || "2"),
+    limit: parseInt(process.argv[4]) || DEFAULT_PAGE_LIMIT,
     authKey: token,
   };
-  const result = await client.getWorkflows(
-    process.argv[3].split(","),
-    opts
-  );
 
-  console.log(`List tasks with param`,  opts);
-  console.log(`Found ${result.result.length} tasks created by`, process.argv[3]);
+  const input = process.argv[3];
+
+  let params = [];
+
+  if (_.isEmpty(input)) {
+    console.log(
+      "process.argv[3] is empty, fetching all wallet addresses as params ..."
+    );
+    const wallets = await getWallets(owner, token);
+    params = _.map(wallets, (wallet: any) => wallet.address);
+
+    // If after fetching smart wallets the params is still empty, return early
+    // Otherwise, AVS returns Error: 3 INVALID_ARGUMENT: Missing smart_wallet_address
+    if (_.isEmpty(params)) {
+      console.log("No addresses provided, returning early ...");
+      console.log("Run create-wallet to create a smart wallet first ...");
+      return;
+    }
+  } else {
+    params = _.split(input, ",");
+  }
+
+  const result = await client.getWorkflows(params, opts);
+
+  console.log(`List tasks with param`, opts);
+  console.log(
+    `Found ${result.result.length} tasks created by`,
+    process.argv[3]
+  );
 
   for (const item of result.result) {
     console.log(util.inspect(item, { depth: 4, colors: true }));
   }
-  console.log(util.inspect({cursor: result.cursor, hasMore: result.hasMore, limit: opts.limit}, { depth: 4, colors: true }));
-  console.log("Note: we are returning only 2 items per page to demonstrate pagination");
+  console.log(
+    util.inspect(
+      { cursor: result.cursor, hasMore: result.hasMore, limit: opts.limit },
+      { depth: 4, colors: true }
+    )
+  );
 }
 
 async function getTask(owner, token, taskId) {
@@ -156,42 +182,29 @@ async function getTask(owner, token, taskId) {
 }
 
 async function listExecutions(owner, token, ids) {
-  const result = await client.getExecutions(
-    ids.split(","),
-    {
-      authKey: token,
-      cursor: process.argv[4] || "", 
-      itemPerPage: 200 
-    }
-  );
+  const result = await client.getExecutions(ids.split(","), {
+    authKey: token,
+    cursor: process.argv[4] || "",
+    itemPerPage: 200,
+  });
 
   console.log(util.inspect(result, { depth: 4, colors: true }));
 }
 
 async function getExecution(owner, token, taskId, execId) {
-  const result = await client.getExecution( 
-    taskId, 
-    execId,
-    { authKey: token }
-  );
+  const result = await client.getExecution(taskId, execId, { authKey: token });
 
   console.log(util.inspect(result, { depth: 4, colors: true }));
 }
 
 async function cancel(owner, token, taskId) {
-  const result = await client.cancelWorkflow(
-    taskId,
-    { authKey: token, }
-  );
+  const result = await client.cancelWorkflow(taskId, { authKey: token });
 
   console.log("Response:\n", result);
 }
 
 async function deleteTask(owner, token, taskId) {
-  const result = await client.deleteWorkflow( 
-    taskId,
-    { authKey: token }
-  );
+  const result = await client.deleteWorkflow(taskId, { authKey: token });
 
   console.log("Response:\n", result);
 }
@@ -199,82 +212,90 @@ async function deleteTask(owner, token, taskId) {
 async function triggerTask(owner, token, taskId, triggerMetadata) {
   const metadata = JSON.parse(triggerMetadata);
 
-  const result = await client.triggerWorkflow({ 
-    id: taskId, 
-    data: new TriggerMetadata({
-      type: TriggerType.Event,
-      blockNumber: metadata["block_number"],
-      logIndex: metadata["log_index"],
-      txHash: metadata["tx_hash"],
-    }), 
-    isBlocking: true 
-  }, {
-    authKey: token,
-  });
+  const result = await client.triggerWorkflow(
+    {
+      id: taskId,
+      data: new TriggerMetadata({
+        type: TriggerType.Event,
+        blockNumber: metadata["block_number"],
+        logIndex: metadata["log_index"],
+        txHash: metadata["tx_hash"],
+      }),
+      isBlocking: true,
+    },
+    {
+      authKey: token,
+    }
+  );
 
   console.log("request", { taskId: taskId, triggerMetadata });
   console.log("Response:\n", result);
 }
 
-async function getWallets(owner: string, token: string) {
-  const walletsResp = await client.getWallets({}, {
+async function getWallets(
+  owner: string,
+  token: string,
+  shouldFetchBalances?: boolean
+) {
+  const walletsResp = await client.getWallets({
     authKey: token,
   });
 
-  console.log("Response:\n", walletsResp);
+  console.log("getWallets response:\n", walletsResp);
 
-  console.log("Fetching balances from RPC provider ...");
+  if (shouldFetchBalances) {
+    console.log("Fetching balances from RPC provider ...");
+    // Update the provider creation
+    const provider = new ethers.JsonRpcProvider(config[env].RPC_PROVIDER);
 
-  // Update the provider creation
-  const provider = new ethers.JsonRpcProvider(config[env].RPC_PROVIDER);
+    // Get token balance
+    const tokenAddress = config[env].TEST_TRANSFER_TOKEN;
+    const tokenAbi = [
+      "function balanceOf(address account) view returns (uint256)",
+      "function decimals() view returns (uint8)",
+      "function symbol() view returns (string)",
+    ];
+    const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, provider);
 
-  // Get token balance
-  const tokenAddress = config[env].TEST_TRANSFER_TOKEN;
-  const tokenAbi = [
-    "function balanceOf(address account) view returns (uint256)",
-    "function decimals() view returns (uint8)",
-    "function symbol() view returns (string)",
-  ];
-  const tokenContract = new ethers.Contract(tokenAddress, tokenAbi, provider);
+    let wallets = [];
+    for (const wallet of walletsResp) {
+      const balance = await provider.getBalance(wallet.address);
+      const balanceInEth = _.floor(ethers.formatEther(balance), 2);
 
-  let wallets = [];
-  for (const wallet of walletsResp) {
-    const balance = await provider.getBalance(wallet.address);
-    const balanceInEth = _.floor(ethers.formatEther(balance), 2);
+      const tokenBalance = await tokenContract.balanceOf(wallet.address);
 
-    const tokenBalance = await tokenContract.balanceOf(wallet.address);
+      const tokenDecimals = await tokenContract.decimals();
+      const tokenSymbol = await tokenContract.symbol();
+      const tokenBalanceFormatted = _.floor(
+        ethers.formatUnits(tokenBalance, tokenDecimals),
+        2
+      );
+      wallets.push({
+        ...wallet,
+        balances: [
+          `${balanceInEth} ETH`,
+          `${tokenBalanceFormatted} ${tokenSymbol}`,
+        ],
+      });
+    }
 
-    const tokenDecimals = await tokenContract.decimals();
-    const tokenSymbol = await tokenContract.symbol();
-    const tokenBalanceFormatted = _.floor(
-      ethers.formatUnits(tokenBalance, tokenDecimals),
-      2
-    );
-    wallets.push({
-      ...wallet,
-      balances: [
-        `${balanceInEth} ETH`,
-        `${tokenBalanceFormatted} ${tokenSymbol}`,
-      ],
-    });
+    return wallets;
+  } else {
+    return walletsResp;
   }
-  console.log(
-    `Listing smart wallet addresses for ${owner} ...\n`,
-    wallets
-  );
-
-  return wallets;
 }
- 
-const createWallet = async (owner, token, salt, factoryAddress) => {
-  return await client.getWallet({ 
-    salt, 
-    factoryAddress 
-  }, {
-    authKey: token,
-  });
-};
 
+const createWallet = async (owner, token, salt, factoryAddress) => {
+  return await client.getWallet(
+    {
+      salt,
+      factoryAddress,
+    },
+    {
+      authKey: token,
+    }
+  );
+};
 
 function getTaskData() {
   let ABI = ["function transfer(address to, uint amount)"];
@@ -291,22 +312,29 @@ function getTaskDataQuery(owner) {
   return iface.encodeFunctionData("retrieve", [owner]);
 }
 
+async function createSecret(
+  owner: string,
+  token: string,
+  name: string,
+  secret: string
+) {
+  const result = await client.createSecret(new Secret({ name, secret }), {
+    authKey: token,
+  });
 
-async function createSecret(owner: string, token: string, name: string, secret: string) {
-  const result = await client.createSecret(
-    new Secret({name, secret}), 
-    {
-      authKey: token
-    }
+  console.log(
+    "Created secret:",
+    util.inspect(result, { depth: 4, colors: true })
   );
-
-  console.log("Created secret:", util.inspect(result, { depth: 4, colors: true }));
 }
 
 async function listSecrets(owner: string, token: string) {
-  const result = await client.listSecrets({}, {
-    authKey: token
-  });
+  const result = await client.listSecrets(
+    {},
+    {
+      authKey: token,
+    }
+  );
 
   console.log("Secrets:", util.inspect(result, { depth: 4, colors: true }));
 }
@@ -323,27 +351,27 @@ async function schedulePriceReport(owner: string, token: string) {
   const triggerId: string = UlidMonotonic.generate().toCanonical();
   const nodeIdOraclePrice = UlidMonotonic.generate().toCanonical();
   const nodeIdNotification = UlidMonotonic.generate().toCanonical();
-  
 
   let trigger = TriggerFactory.create({
     id: triggerId,
     type: TriggerType.Block,
     name: "demoTriggerName",
     data: {
-      interval: 5, 
-    }
+      interval: 5,
+    },
   });
-  
+
   const workflow = client.createWorkflow({
     name: `price report every 5 blocks`,
     smartWalletAddress,
     nodes: NodeFactory.createNodes([
       {
         id: nodeIdOraclePrice,
-        name: 'checkPrice',
+        name: "checkPrice",
         type: NodeType.ContractRead,
         data: {
-          contractAddress: config[env as keyof typeof config].ORACLE_PRICE_CONTRACT,
+          contractAddress:
+            config[env as keyof typeof config].ORACLE_PRICE_CONTRACT,
           callData: "0xfeaf968c",
           contractAbi: `[
             {
@@ -359,22 +387,20 @@ async function schedulePriceReport(owner: string, token: string) {
               "stateMutability":"view",
               "type":"function"
             }
-          ]`,          
-        }
+          ]`,
+        },
       },
       {
         id: nodeIdNotification,
-        name: 'notification',
+        name: "notification",
         type: NodeType.RestAPI,
         data: {
           // Show case how we're posting to a webhook, you can then go to browser at https://webhook.site/#!/view/51e02e34-e8db-47b0-ba28-ae38fd895478 to inspect the payload that we push
           url: "https://webhook.site/51e02e34-e8db-47b0-ba28-ae38fd895478",
           method: "POST",
           body: `The latest price is \${checkPrice.data.answer}`,
-          headersMap: [
-            ["content-type", "application/json"],
-          ]
-        }
+          headersMap: [["content-type", "application/json"]],
+        },
       },
     ]),
 
@@ -405,7 +431,11 @@ async function schedulePriceReport(owner: string, token: string) {
 }
 
 // setup a task to monitor in/out transfer for a wallet and send notification
-async function scheduleMonitorTransfer(owner: string, token: string, target: string) {
+async function scheduleMonitorTransfer(
+  owner: string,
+  token: string,
+  target: string
+) {
   console.log("schedule a monitor transfer task to the first smart wallet");
   const wallets = await getWallets(owner, token);
   const smartWalletAddress = wallets[0].address;
@@ -415,8 +445,15 @@ async function scheduleMonitorTransfer(owner: string, token: string, target: str
     event: {
       // expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${target.toLowerCase()}"`,
       matchers: [
-        { type: "topics", value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", "", "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] },
-      ]
+        {
+          type: "topics",
+          value: [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "",
+            "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+          ],
+        },
+      ],
     },
   };
 
@@ -432,7 +469,7 @@ async function scheduleMonitorTransfer(owner: string, token: string, target: str
     nodes: NodeFactory.createNodes([
       {
         id: nodeIdCheckAmount,
-        name: 'checkAmount',
+        name: "checkAmount",
         type: NodeType.Branch,
         data: {
           conditionsList: [
@@ -441,14 +478,14 @@ async function scheduleMonitorTransfer(owner: string, token: string, target: str
               type: "if",
               expression: `
                 demoTriggerName.data.address == "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238" && Number(demoTriggerName.data.value_formatted) > 1
-              `
-            }
-          ]
-        }
+              `,
+            },
+          ],
+        },
       },
       {
         id: nodeIdNotification,
-        name: 'notification',
+        name: "notification",
         type: NodeType.RestAPI,
         data: {
           url: "https://api.telegram.org/bot${{secrets.ap_notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
@@ -458,10 +495,8 @@ async function scheduleMonitorTransfer(owner: string, token: string, target: str
             chat_id:-4609037622,
             text: \`Congrat, your walllet [\${demoTriggerName.data.to_address}](https://sepolia.etherscan.io/address/\${demoTriggerName.data.to_address}) received \\\`\${demoTriggerName.data.value_formatted}\\\` [\${demoTriggerName.data.token_symbol}](https://sepolia.etherscan.io/token/\${demoTriggerName.data.address}) from \${demoTriggerName.data.from_address} at [\${demoTriggerName.data.transaction_hash}](sepolia.etherscan.io/tx/\${demoTriggerName.data.transaction_hash})\`
           })`,
-          headersMap: [
-            ["content-type", "application/json"],
-          ]
-        }
+          headersMap: [["content-type", "application/json"]],
+        },
       },
     ]),
 
@@ -484,12 +519,16 @@ async function scheduleMonitorTransfer(owner: string, token: string, target: str
       name: "demoTriggerName",
       data: {
         matcher: [
-          { 
-            type: "topics", 
-            value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", "", "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] 
+          {
+            type: "topics",
+            value: [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "",
+              "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+            ],
           },
-        ]
-      }
+        ],
+      },
     }),
     startAt: Math.floor(Date.now() / 1000) + 30,
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
@@ -507,8 +546,8 @@ async function scheduleMonitorTransfer(owner: string, token: string, target: str
 
 const main = async (cmd: string) => {
   const result = await generateApiToken();
-  const owner  = result.address; // this is the address extract from private key
-  const token  = result.authKey;
+  const owner = result.address; // this is the address extract from private key
+  const token = result.authKey;
 
   switch (cmd) {
     case "wallet":
@@ -534,10 +573,7 @@ const main = async (cmd: string) => {
     case "schedule-cron":
     case "schedule-fixed":
     case "schedule-manual":
-      const resultSchedule = await schedulePriceReport(
-        owner,
-        token,
-      );
+      const resultSchedule = await schedulePriceReport(owner, token);
       break;
 
     case "tasks":
