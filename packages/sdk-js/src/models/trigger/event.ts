@@ -1,7 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "../../types";
-
+import util from "util";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
 // We imply or operator among all conditions.
@@ -28,7 +28,7 @@ interface EventMatcher {
 // Required props for constructor: id, name, type and data: { expression }
 export type EventTriggerDataType = avs_pb.EventCondition.AsObject & {
   matcher?: EventMatcher[];
-}
+};
 
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
 
@@ -36,11 +36,20 @@ class EventTrigger extends Trigger {
   constructor(props: EventTriggerProps) {
     super({ ...props, type: TriggerType.Event, data: props.data });
 
-    console.log("EventTrigger.constructor.props:", {
-      ...props,
-      type: TriggerType.Event,
-      data: props.data,
-    });
+    console.log(
+      "EventTrigger.constructor.props:",
+      util.inspect(
+        {
+          ...props,
+          type: TriggerType.Event,
+          data: props.data,
+        },
+        {
+          depth: 6,
+          colors: true,
+        }
+      )
+    );
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -53,7 +62,7 @@ class EventTrigger extends Trigger {
     }
 
     const condition = new avs_pb.EventCondition();
-    const expression = (this.data as EventTriggerDataType).expression; 
+    const expression = (this.data as EventTriggerDataType).expression;
     const matcher = (this.data as EventTriggerDataType).matcher;
 
     if (expression && expression != "") {
@@ -61,16 +70,24 @@ class EventTrigger extends Trigger {
     }
 
     if (matcher && matcher.length >= 1) {
-        condition.setMatcherList(matcher.map(element => {
+      condition.setMatcherList(
+        matcher.map((element) => {
           const m = new avs_pb.EventCondition.Matcher();
           m.setType(element["type"]);
           m.setValueList(element["value"]);
           return m;
-        }));
+        })
+      );
     }
     request.setEvent(condition);
 
-    console.log("EventTrigger.toRequest.request:", request.toObject());
+    console.log(
+      "EventTrigger.toRequest.request:",
+      util.inspect(request.toObject(), {
+        depth: 6,
+        colors: true,
+      })
+    );
 
     return request;
   }
@@ -79,20 +96,21 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    console.log("EventTrigger.fromResponse.obj:", obj);
-
     let data: EventTriggerDataType = {} as EventTriggerDataType;
     if (raw.getEvent()!.getExpression()) {
       data.expression = raw.getEvent()!.getExpression();
     }
 
     if (raw.getEvent()!.getMatcherList()) {
-      data.matcher = raw.getEvent()!.getMatcherList().map((item: avs_pb.EventCondition.Matcher) => {
-        return {
-          type: item.getType(),
-          value: item.getValueList(),
-        }
-      });
+      data.matcher = raw
+        .getEvent()!
+        .getMatcherList()
+        .map((item: avs_pb.EventCondition.Matcher) => {
+          return {
+            type: item.getType(),
+            value: item.getValueList(),
+          };
+        });
     }
 
     //raw.getEvent()!.toObject() as EventTriggerDataType;
