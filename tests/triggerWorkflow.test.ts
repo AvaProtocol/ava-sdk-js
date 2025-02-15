@@ -227,6 +227,7 @@ describe("triggerWorkflow Tests", () => {
       type: TriggerType.Event,
       data: {
         expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${wallet.address.toLowerCase()}"`,
+        matcherList: [],
       },
     });
 
@@ -244,7 +245,7 @@ describe("triggerWorkflow Tests", () => {
     expect(executions.result.length).toEqual(0);
 
     // Manually trigger the workflow
-    const result = await client.triggerWorkflow({
+    await client.triggerWorkflow({
       id: workflowId,
       data: {
         type: TriggerType.Event,

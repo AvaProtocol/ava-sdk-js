@@ -47,10 +47,6 @@ describe("Authentication Tests", () => {
   });
 
   afterEach(async () => {
-    console.log(
-      "afterEach - removing created workflows:",
-      expect.getState().currentTestName
-    );
     await removeCreatedWorkflows(client, createdIdMap);
   });
 
