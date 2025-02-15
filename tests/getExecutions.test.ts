@@ -57,7 +57,7 @@ describe("getExecutions Tests", () => {
     const triggerInterval = 5;
     const repeatCount = 4;
 
-    const wallet = await client.getWallet({ salt: getSalt() } ));
+    const wallet = await client.getWallet({ salt: getSalt() });
     const currentBlockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
