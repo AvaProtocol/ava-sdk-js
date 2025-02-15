@@ -10,6 +10,7 @@ import {
   queueForRemoval,
   removeCreatedWorkflows,
   getBlockNumber,
+  getSalt,
 } from "./utils";
 import {
   FACTORY_ADDRESS,
@@ -29,7 +30,6 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
 // Map of created workflows tracking of those that need to be cleaned up after the test
 const createdWorkflows: Map<string, boolean> = new Map();
 
-const salt = "0";
 
 describe("getExecutions Tests", () => {
   let ownerAddress: string;
@@ -57,7 +57,7 @@ describe("getExecutions Tests", () => {
     const triggerInterval = 5;
     const repeatCount = 4;
 
-    const wallet = await client.getWallet({ salt });
+    const wallet = await client.getWallet({ salt: getSalt() } ));
     const currentBlockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -145,7 +145,7 @@ describe("getExecutions Tests", () => {
     const repeatCount = 3;
     const limit = 2;
 
-    const wallet = await client.getWallet({ salt });
+    const wallet = await client.getWallet({ salt: getSalt() });
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -215,7 +215,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("should throw error with a non-existent cursor", async () => {
-    const wallet = await client.getWallet({ salt });
+    const wallet = await client.getWallet({ salt: getSalt() });
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -253,7 +253,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("should throw error with an invalid limit", async () => {
-    const wallet = await client.getWallet({ salt });
+    const wallet = await client.getWallet({ salt: getSalt() });
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({

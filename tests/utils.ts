@@ -203,3 +203,8 @@ export const getChainId = async (): Promise<number> => {
   const chainId = await provider.getNetwork();
   return chainId;
 };
+
+
+export const getSalt = (): number => {
+  return (new Date().getTime() * 1000000000) + Math.floor(Math.random() * 100000);
+};
