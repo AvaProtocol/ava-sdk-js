@@ -9,7 +9,6 @@ import {
   requireEnvVar,
   removeCreatedWorkflows,
   SaltGlobal,
-  submitWorkflowAndQueueForRemoval,
 } from "./utils";
 
 import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
@@ -52,13 +51,12 @@ describe("deleteWorkflow Tests", () => {
 
   test("should delete task when authenticated with signature", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    workflowId = await submitWorkflowAndQueueForRemoval(
-      client,
+
+    workflowId = await client.submitWorkflow(
       client.createWorkflow({
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-      }),
-      createdIdMap
+      })
     );
 
     const result = await client.deleteWorkflow(workflowId);

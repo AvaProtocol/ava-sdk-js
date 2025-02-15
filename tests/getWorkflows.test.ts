@@ -7,8 +7,9 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueForRemoval,
+  SaltGlobal,
   removeCreatedWorkflows,
+  submitWorkflowAndQueueForRemoval,
   cleanupWorkflows,
   compareResults,
   compareListResults,
@@ -25,7 +26,8 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
 } as const;
 
 // Map of created workflows tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
+const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.GetWorkflows * 1000; // Salt index 8,000 - 8,999
 
 describe("getWorkflows Tests", () => {
   let ownerAddress: string;
@@ -46,18 +48,20 @@ describe("getWorkflows Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   test("should list tasks when authenticated with signature", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowName = "test 123";
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-        name: "test 123",
-      })
+        name: workflowName,
+      },
+      createdIdMap
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     const res = await client.getWorkflows([wallet.address]);
     expect(Array.isArray(res.result)).toBe(true);
@@ -66,7 +70,7 @@ describe("getWorkflows Tests", () => {
     const result = res.result.find((task) => task.id === workflowId);
 
     expect(result?.id).toEqual(workflowId);
-    expect(result?.name).toEqual("test 123");
+    expect(result?.name).toEqual(workflowName);
     expect(result?.startAt).toEqual(WorkflowTemplate.startAt);
     expect(result?.maxExecution).toEqual(WorkflowTemplate.maxExecution);
   });
@@ -76,28 +80,27 @@ describe("getWorkflows Tests", () => {
     const countFirstPage = 1;
 
     // Isolated test of this account
-    const salt = (new Date().getTime() * 1000000000) + Math.floor(Math.random() * 100000);
+    const salt = _.toString(saltIndex++);
     const wallet = await client.getWallet({ salt });
     await cleanupWorkflows(client, wallet.address);
 
     // Create 4 workflows
     const workflowPromises = Array.from({ length: totalCount }).map(
       async () => {
-        const workflowId = await client.submitWorkflow(
-          client.createWorkflow({
+        const workflowId = await submitWorkflowAndQueueForRemoval(
+          client,
+          {
             ...WorkflowTemplate,
             smartWalletAddress: wallet.address,
-          })
+          },
+          createdIdMap
         );
 
-        queueForRemoval(createdWorkflows, workflowId);
         return workflowId;
       }
     );
 
-
-    const workflowIds = await Promise.all(workflowPromises);
-    queueForRemoval(createdWorkflows, workflowIds);
+    await Promise.all(workflowPromises);
 
     // Get the list of workflows with limit:countFirstPage
     const listResponse = await client.getWorkflows([wallet.address], {
@@ -143,26 +146,26 @@ describe("getWorkflows Tests", () => {
     const limit = 2;
 
     // jest runs test in parallel across files. If there are other test in other file that adds task to the same smart wallet, the return of listing workflow will become undeterministic ahead of time. by using a dedicated salt here we ensure other activity won't interfer with this test
-    const wallet = await client.getWallet({ salt: Math.round(Math.random() * 100000000000).toString() });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     await cleanupWorkflows(client, wallet.address);
 
     // Create 3 workflows
     const workflowPromises = Array.from({ length: totalCount }).map(
       async () => {
-        const workflowId = await client.submitWorkflow(
-          client.createWorkflow({
+        const workflowId = await submitWorkflowAndQueueForRemoval(
+          client,
+          {
             ...WorkflowTemplate,
             smartWalletAddress: wallet.address,
-          })
+          },
+          createdIdMap
         );
 
-        queueForRemoval(createdWorkflows, workflowId);
         return workflowId;
       }
     );
 
-    const workflowIds = await Promise.all(workflowPromises);
-    queueForRemoval(createdWorkflows, workflowIds);
+    const createdIds = await Promise.all(workflowPromises);
 
     // Get the list of workflows with limit:2
     const listResponse = await client.getWorkflows([wallet.address], { limit });
@@ -171,9 +174,8 @@ describe("getWorkflows Tests", () => {
     expect(listResponse).toHaveProperty("cursor");
 
     _.each(listResponse.result, (item) => {
-      expect(_.includes(workflowIds, item.id)).toBe(true);
+      expect(_.includes(createdIds, item.id)).toBe(true);
     });
-
 
     const firstCursor = listResponse.cursor;
 
@@ -189,7 +191,7 @@ describe("getWorkflows Tests", () => {
 
     // Make sure the returned ids are in the list of created ids
     _.each(listResponse2.result, (item) => {
-      expect(_.includes(workflowIds, item.id)).toBe(true);
+      expect(_.includes(createdIds, item.id)).toBe(true);
     });
 
     // Make sure there’s no overlap between the two lists

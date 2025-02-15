@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "@/sdk-js/dist";
 import dotenv from "dotenv";
@@ -6,9 +7,11 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueForRemoval,
   compareResults,
+  SaltGlobal,
   removeCreatedWorkflows,
+  submitWorkflowAndQueueForRemoval,
+  queueForRemoval,
 } from "./utils";
 import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
@@ -22,7 +25,8 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
 } as const;
 
 // Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
+const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.GetWorkflow * 1000; // Salt index 7,000 - 7,999
 
 describe("getWorkflow Tests", () => {
   let client: Client;
@@ -45,17 +49,18 @@ describe("getWorkflow Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   test("should get workflow when authenticated with signature", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-      })
+      },
+      createdIdMap
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     const result = await client.getWorkflow(workflowId);
 
