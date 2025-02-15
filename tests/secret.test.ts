@@ -1,11 +1,9 @@
 import _ from "lodash";
-import util from "util";
 import { describe, beforeAll, expect } from "@jest/globals";
 import Client, {
   CustomCodeLangs,
   CustomCodeNodeProps,
   Edge,
-  Execution,
   NodeFactory,
   StepProps,
   TriggerFactory,
@@ -20,6 +18,9 @@ import {
   requireEnvVar,
   getNextId,
   getBlockNumber,
+  SaltGlobal,
+  submitWorkflowAndQueueForRemoval,
+  removeCreatedWorkflows,
 } from "./utils";
 
 import {
@@ -34,6 +35,9 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.Secrets * 1000; // Salt index 9,000 - 9,999
 
 describe("secret Tests", () => {
   let client: Client;
@@ -67,6 +71,8 @@ describe("secret Tests", () => {
     client2.setAuthKey(res2.authKey);
   });
 
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
+
   describe("create secret suite", () => {
     it("created secret have value in workflow", async () => {
       const secretName = "secrete_name";
@@ -79,7 +85,7 @@ describe("secret Tests", () => {
 
       expect(result).toBe(true);
 
-      const wallet = await client.getWallet({ salt: "345" });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const customCodeNodeProps: CustomCodeNodeProps = {
         id: getNextId(),
@@ -99,8 +105,9 @@ describe("secret Tests", () => {
         },
       ];
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow({
+      const workflowId = await submitWorkflowAndQueueForRemoval(
+        client,
+        {
           ...WorkflowTemplate,
           trigger: TriggerFactory.create({
             id: defaultTriggerId,
@@ -112,7 +119,8 @@ describe("secret Tests", () => {
           edges: _.map(edges, (edge) => new Edge(edge)),
           smartWalletAddress: wallet.address,
           maxExecution: 1,
-        })
+        },
+        createdIdMap
       );
 
       await client.triggerWorkflow({
@@ -148,7 +156,6 @@ describe("secret Tests", () => {
 
       // Clean up the secret of this test
       await client.deleteSecret("secrete_name");
-      await client.deleteWorkflow(workflowId);
     });
 
     it("create secret at user level succeeds", async () => {

@@ -8,12 +8,6 @@ export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
     super({ ...props, type: TriggerType.Cron, data: props.data });
-
-    console.log("CronTrigger.constructor.props:", {
-      ...props,
-      type: TriggerType.Cron,
-      data: props.data,
-    });
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -29,8 +23,6 @@ class CronTrigger extends Trigger {
     condition.setScheduleList((this.data as CronTriggerDataType).scheduleList);
     request.setCron(condition);
 
-    console.log("CronTrigger.toRequest.request:", request.toObject());
-
     return request;
   }
 
@@ -38,7 +30,6 @@ class CronTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    console.log("CronTrigger.fromResponse.obj:", obj);
     return new CronTrigger({
       ...obj,
       type: TriggerType.Cron,

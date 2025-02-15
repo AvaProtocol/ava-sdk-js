@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "@/sdk-js/dist";
 import dotenv from "dotenv";
@@ -6,8 +7,8 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueForRemoval,
   removeCreatedWorkflows,
+  SaltGlobal,
 } from "./utils";
 
 import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
@@ -16,14 +17,14 @@ import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Get environment variables with type safety
-const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
+const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
 // Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
+const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.DeleteWorkflow * 1000; // Salt index 3,000 - 3,999
 
 describe("deleteWorkflow Tests", () => {
   let client: Client;
@@ -46,18 +47,17 @@ describe("deleteWorkflow Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   test("should delete task when authenticated with signature", async () => {
-    const wallet = await client.getWallet({ salt: "1" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
     workflowId = await client.submitWorkflow(
       client.createWorkflow({
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
       })
     );
-
-    queueForRemoval(createdWorkflows, workflowId);
 
     const result = await client.deleteWorkflow(workflowId);
     expect(result).toBe(true);

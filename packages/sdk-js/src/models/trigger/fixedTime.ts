@@ -11,12 +11,6 @@ export type FixedTimeTriggerProps = TriggerProps & {
 class FixedTimeTrigger extends Trigger {
   constructor(props: FixedTimeTriggerProps) {
     super({ ...props, type: TriggerType.FixedTime, data: props.data });
-
-    console.log("FixedTimeTrigger.constructor.props:", {
-      ...props,
-      type: TriggerType.FixedTime,
-      data: props.data,
-    });
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -32,8 +26,6 @@ class FixedTimeTrigger extends Trigger {
     condition.setEpochsList((this.data as FixedTimeTriggerDataType).epochsList);
     request.setFixedTime(condition);
 
-    console.log("FixedTimeTrigger.toRequest.request:", request.toObject());
-
     return request;
   }
 
@@ -41,7 +33,6 @@ class FixedTimeTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    console.log("FixedTimeTrigger.fromResponse.obj:", obj);
     return new FixedTimeTrigger({
       ...obj,
       type: TriggerType.FixedTime,

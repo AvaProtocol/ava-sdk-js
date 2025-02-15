@@ -16,6 +16,7 @@ import {
   cleanupWorkflows,
   getBlockNumber,
   SaltGlobal,
+  TIMEOUT_DURATION,
 } from "./utils";
 import {
   FACTORY_ADDRESS,
@@ -26,6 +27,7 @@ import {
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
+jest.setTimeout(TIMEOUT_DURATION);  // Set timeout to 15 seconds for all tests in this file
 let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
 
 // Get environment variables with type safety
@@ -227,6 +229,7 @@ describe("triggerWorkflow Tests", () => {
       type: TriggerType.Event,
       data: {
         expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${wallet.address.toLowerCase()}"`,
+        matcherList: [],
       },
     });
 
@@ -244,7 +247,7 @@ describe("triggerWorkflow Tests", () => {
     expect(executions.result.length).toEqual(0);
 
     // Manually trigger the workflow
-    const result = await client.triggerWorkflow({
+    await client.triggerWorkflow({
       id: workflowId,
       data: {
         type: TriggerType.Event,
