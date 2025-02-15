@@ -1,8 +1,14 @@
+import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import {
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  SaltGlobal,
+} from "./utils";
 import { FACTORY_ADDRESS } from "./templates";
 
 // Update the dotenv configuration
@@ -12,6 +18,10 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+jest.setTimeout(15000); // Set timeout to 15 seconds for all tests in this file
+
+let saltIndex = SaltGlobal.GetWallets * 1000; // Salt index 6,000 - 6,999
 
 describe("getAddresses Tests", () => {
   let client: Client;
@@ -43,17 +53,17 @@ describe("getAddresses Tests", () => {
   // });
 
   test("should include custom salt wallet when getting address with smartWallet using signature", async () => {
-    const randomSalt = "12345";
-    await client.getWallet({ salt: randomSalt });
+    const saltValue = _.toString(saltIndex++);
+    await client.getWallet({ salt: saltValue });
 
     const wallets = await client.getWallets();
     expect(wallets.length).toBeGreaterThanOrEqual(2);
-    expect(wallets.some((item) => item.salt === randomSalt)).toBe(true);
+    expect(wallets.some((item) => item.salt === saltValue)).toBe(true);
   });
 
   test("will not add duplicate wallets to the list", async () => {
-    const salt1 = "12345";
-    const salt2 = "0";
+    const salt1 = _.toString(saltIndex++);
+    const salt2 = _.toString(saltIndex++);
 
     // Intentially getting duplicate wallets with the same salt
     await client.getWallet({ salt: salt1 });
