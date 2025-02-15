@@ -38,9 +38,7 @@ export async function generateSignature(
   };
 
   const message = getKeyRequestMessage(keyRequestParams);
-  console.log("🚀 ~ message:", message);
   const signature = await wallet.signMessage(message);
-  console.log("🚀 ~ signature:", { signature, ...keyRequestParams });
 
   return { signature, ...keyRequestParams };
 }
