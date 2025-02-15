@@ -138,7 +138,6 @@ describe("Authentication Tests", () => {
         createdIdMap
       );
 
-      console.log("Getting workflows for wallet:", wallet.address);
       const listResult1 = await client.getWorkflows([wallet.address]);
       expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
     });
@@ -484,13 +483,11 @@ describe("Authentication Tests", () => {
       client.setAuthKey(undefined);
       await expect(
         client.getWallet({ salt: _.toString(saltIndex++) })
-      ).rejects.toThrowError(/unauthenticated/i);
+      ).rejects.toThrow(/unauthenticated/i);
     });
 
     test("getWallets should throw error", async () => {
-      await expect(client.getWallets()).rejects.toThrowError(
-        /unauthenticated/i
-      );
+      await expect(client.getWallets()).rejects.toThrow(/unauthenticated/i);
     });
 
     test("createWorkflow should throw error", async () => {
@@ -509,7 +506,7 @@ describe("Authentication Tests", () => {
             smartWalletAddress: wallet.address,
           })
         )
-      ).rejects.toThrowError(/unauthenticated/i);
+      ).rejects.toThrow(/unauthenticated/i);
     });
 
     test("getWorkflow should throw error", async () => {
@@ -529,16 +526,12 @@ describe("Authentication Tests", () => {
       );
 
       client.setAuthKey(undefined);
-      await expect(client.getWorkflow(workflowId)).rejects.toThrowError(
-        /unauthenticated/i
-      );
+      await expect(client.getWorkflow(workflowId)).rejects.toThrow(/unauthenticated/i);
     });
 
     test("getWorkflows should throw error", async () => {
       client.setAuthKey(undefined);
-      await expect(client.getWorkflows([eoaAddress])).rejects.toThrowError(
-        /unauthenticated/i
-      );
+      await expect(client.getWorkflows([eoaAddress])).rejects.toThrow(/unauthenticated/i);
     });
 
     test("cancelWorkflow should throw error", async () => {
@@ -558,12 +551,11 @@ describe("Authentication Tests", () => {
         { authKey: authKeyViaSignature }
       );
 
-      queueForRemoval(createdIdMap, workflowId);
+      // Don’t queue for removal in afterEach, because the authKey is not set by default in this test
+      await client.deleteWorkflow(workflowId, { authKey: authKeyViaSignature });
 
       client.setAuthKey(undefined);
-      await expect(client.cancelWorkflow(workflowId)).rejects.toThrowError(
-        /unauthenticated/i
-      );
+      await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(/unauthenticated/i);
     });
 
     test("deleteWorkflow should throw error", async () => {
@@ -582,9 +574,7 @@ describe("Authentication Tests", () => {
       );
 
       client.setAuthKey(undefined);
-      await expect(client.deleteWorkflow(workflowId)).rejects.toThrowError(
-        /unauthenticated/i
-      );
+      await expect(client.deleteWorkflow(workflowId)).rejects.toThrow(/unauthenticated/i);
     });
   });
 });

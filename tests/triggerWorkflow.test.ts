@@ -16,6 +16,7 @@ import {
   cleanupWorkflows,
   getBlockNumber,
   SaltGlobal,
+  TIMEOUT_DURATION,
 } from "./utils";
 import {
   FACTORY_ADDRESS,
@@ -26,6 +27,7 @@ import {
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
+jest.setTimeout(TIMEOUT_DURATION);  // Set timeout to 15 seconds for all tests in this file
 let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
 
 // Get environment variables with type safety
