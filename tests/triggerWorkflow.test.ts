@@ -13,24 +13,26 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueForRemoval,
-  removeCreatedWorkflows,
   cleanupWorkflows,
   getBlockNumber,
+  SaltGlobal,
 } from "./utils";
-import { FACTORY_ADDRESS, WorkflowTemplate, defaultTriggerId } from "./templates";
+import {
+  FACTORY_ADDRESS,
+  WorkflowTemplate,
+  defaultTriggerId,
+} from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+
+let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
 
 // Get environment variables with type safety
 const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
-
-// Map of created workflows tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
 
 describe("triggerWorkflow Tests", () => {
   let ownerAddress: string;
@@ -51,11 +53,9 @@ describe("triggerWorkflow Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
-
   test("trigger for block type should succeed", async () => {
     const interval = 5;
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -72,7 +72,6 @@ describe("triggerWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     const executions = await client.getExecutions([workflowId]);
 
@@ -108,10 +107,12 @@ describe("triggerWorkflow Tests", () => {
 
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.totalExecution).toEqual(1);
+
+    await client.deleteWorkflow(workflowId);
   });
 
   test("trigger for cron type should succeed", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     await cleanupWorkflows(client, wallet.address);
     const epoch = Math.floor(Date.now() / 1000);
 
@@ -130,7 +131,6 @@ describe("triggerWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     const executions = await client.getExecutions([workflowId]);
 
@@ -160,10 +160,12 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.totalExecution).toEqual(1);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
+
+    await client.deleteWorkflow(workflowId);
   });
 
   test("trigger for fixed time type should succeed", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const epoch = Math.floor(Date.now() / 1000);
 
     const trigger = TriggerFactory.create({
@@ -183,7 +185,6 @@ describe("triggerWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     // The list should be empty because the workflow has not been executed yet
     const executions = await client.getExecutions([workflowId]);
@@ -212,10 +213,12 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].triggerMetadata?.type).toEqual(
       TriggerType.FixedTime
     );
+
+    await client.deleteWorkflow(workflowId);
   });
 
   test("trigger for event type should succeed", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -234,7 +237,6 @@ describe("triggerWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     // The list should be empty because the workflow has not been executed yet
     const executions = await client.getExecutions([workflowId]);
@@ -270,10 +272,12 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].triggerMetadata?.type).toEqual(
       TriggerType.Event
     );
+
+    await client.deleteWorkflow(workflowId);
   });
 
   test("trigger return correct execution id in blocking mode", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     await cleanupWorkflows(client, wallet.address);
     const epoch = Math.floor(Date.now() / 1000);
 
@@ -292,7 +296,6 @@ describe("triggerWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     const executions = await client.getExecutions([workflowId]);
 
@@ -312,15 +315,20 @@ describe("triggerWorkflow Tests", () => {
     // The list should now contain one execution, the id from manual trigger should matched
     const execution = await client.getExecution(workflowId, result.executionId);
     expect(execution.id).toEqual(result.executionId);
-    expect(execution.triggerMetadata.type).toEqual(TriggerType.Cron);
-    expect(execution.triggerMetadata.epoch).toEqual(epoch + 60);
+    expect(execution.triggerMetadata?.type).toEqual(TriggerType.Cron);
+    expect(execution.triggerMetadata?.epoch).toEqual(epoch + 60);
 
-    const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
+    const executionStatus = await client.getExecutionStatus(
+      workflowId,
+      result.executionId
+    );
     expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
+
+    await client.deleteWorkflow(workflowId);
   });
 
   test("trigger async return id and pending status", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     await cleanupWorkflows(client, wallet.address);
     const epoch = Math.floor(Date.now() / 1000);
 
@@ -339,7 +347,6 @@ describe("triggerWorkflow Tests", () => {
         smartWalletAddress: wallet.address,
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     const result = await client.triggerWorkflow({
       id: workflowId,
@@ -352,11 +359,12 @@ describe("triggerWorkflow Tests", () => {
 
     expect(result.status).toEqual(ExecutionStatus.QUEUED);
     expect(result.executionId).toHaveLength(26);
+
+    await client.deleteWorkflow(workflowId);
   });
 
-
   test("should throw trigger an non-existent workflow Id", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
 
     await expect(

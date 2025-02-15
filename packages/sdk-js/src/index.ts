@@ -6,10 +6,10 @@ import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
-import Execution from "./models/execution";
+import Execution, { ExecutionProps } from "./models/execution";
+import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
-import Secret from "./models/secret";
 import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
@@ -25,9 +25,8 @@ import {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
-  ListSecretRequest,
   ListSecretResponse,
-  DeleteSecretRequest,
+  SecretRequestOptions,
 } from "./types";
 
 import TriggerMetadata, {
@@ -77,7 +76,7 @@ class BaseClient {
   }
 
   /**
-   * The API key could retrieve a wallet’s authKey by skipping its signature verification
+   * The API key could retrieve a wallet's authKey by skipping its signature verification
    * @param chainId - The chain id
    * @param address - The address of the EOA wallet
    * @param issuedAt - The issued at timestamp
@@ -153,7 +152,7 @@ class BaseClient {
   }
 
   /**
-   * Get the auth key if it’s set in the client
+   * Get the auth key if it's set in the client
    * @returns {string | undefined} - The auth key
    */
   public getAuthKey(): string | undefined {
@@ -169,7 +168,7 @@ class BaseClient {
   }
 
   /**
-   * Get the factory address if it’s set in the client
+   * Get the factory address if it's set in the client
    * @returns {string | undefined} - The factory address
    */
   public getFactoryAddress(): string | undefined {
@@ -507,10 +506,22 @@ export default class Client extends BaseClient {
   }
 
   async createSecret(
-    secret: Secret,
-    options?: RequestOptions
+    name: string,
+    value: string,
+    options?: SecretRequestOptions
   ): Promise<boolean> {
-    const request = secret.toRequest();
+    const request = new avs_pb.CreateOrUpdateSecretReq();
+
+    request.setName(name);
+    request.setSecret(value);
+
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      request.setOrgId(options.orgId);
+    }
 
     const result = await this.sendGrpcRequest<
       BoolValue,
@@ -520,13 +531,56 @@ export default class Client extends BaseClient {
     return result.getValue();
   }
 
+  /**
+   * Update an existing secret; the secret is updated in the user scope by default, derived from the auth key.
+   * @param secret - The secret object containing updated information
+   * @param options - Request options, including workflowId and orgId for scoping
+   * @returns {Promise<boolean>} - Whether the secret was successfully updated
+   */
+  async updateSecret(
+    name: string,
+    value: string,
+    options?: SecretRequestOptions
+  ): Promise<boolean> {
+    const request = new avs_pb.CreateOrUpdateSecretReq();
+
+    request.setName(name);
+    request.setSecret(value);
+
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      request.setOrgId(options.orgId);
+    }
+
+    const result = await this.sendGrpcRequest<
+      BoolValue,
+      avs_pb.CreateOrUpdateSecretReq
+    >("updateSecret", request, options);
+
+    return result.getValue();
+  }
+
+  /**
+   * Retrieve a list of secrets; secrets can be filtered by workflowId or orgId.
+   * @param params - Parameters for listing secrets
+   * @param options - Request options, including workflowId and orgId for filtering
+   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
+   */
   async listSecrets(
-    params: ListSecretRequest,
-    options?: RequestOptions
+    options?: SecretRequestOptions
   ): Promise<ListSecretResponse[]> {
     const request = new avs_pb.ListSecretsReq();
-    if (params?.workflowId) {
-      request.setWorkflowId(params.workflowId);
+
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      // TODO: wait for the AVS to support orgId in ListSecrets
+      // request.setOrgId(options.orgId);
     }
 
     const result = await this.sendGrpcRequest<
@@ -534,23 +588,34 @@ export default class Client extends BaseClient {
       avs_pb.ListSecretsReq
     >("listSecrets", request, options);
 
-    return result.getItemsList().map((item) => {
-      return {
-        name: item.getName(),
-        workflowId: item.getWorkflowId(),
-        orgId: item.getOrgId(),
-      };
-    });
+    return result.getItemsList().map((item) => ({
+      name: item.getName(),
+      workflowId: item.getWorkflowId(),
+      orgId: item.getOrgId(),
+    }));
   }
 
+  /**
+   * Delete a secret by its name; by default, the secret is deleted from the user scope, derived from the auth key
+   * @param name - The name of the secret
+   * @param options - Request options
+   * @param options.workflowId - The workflow id; if specified, the secret will be deleted from the workflow scope
+   * @param options.orgId - The organization id; if specified, the secret will be deleted from the organization scope
+   * @returns {Promise<boolean>} - Whether the secret was successfully deleted
+   */
   async deleteSecret(
-    params: DeleteSecretRequest,
-    options?: RequestOptions
+    name: string,
+    options?: SecretRequestOptions
   ): Promise<boolean> {
     const request = new avs_pb.DeleteSecretReq();
-    request.setName(params.name);
-    if (params?.workflowId) {
-      request.setWorkflowId(params.workflowId);
+    request.setName(name);
+
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      request.setOrgId(options.orgId);
     }
 
     const result = await this.sendGrpcRequest<
@@ -560,19 +625,6 @@ export default class Client extends BaseClient {
 
     return result.getValue();
   }
-
-  async updateSecret(
-    secret: Secret,
-    options?: RequestOptions
-  ): Promise<boolean> {
-    const request = secret.toRequest();
-
-    const result = await this.sendGrpcRequest<
-      BoolValue,
-      avs_pb.CreateOrUpdateSecretReq
-    >("updateSecret", request, options);
-    return result.getValue();
-  }
 }
 
 // Export types for easier use
@@ -580,6 +632,14 @@ export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
-export { Workflow, Edge, Execution, NodeFactory, TriggerFactory, TriggerMetadata, Secret };
+export {
+  Workflow,
+  Edge,
+  Execution,
+  Step,
+  NodeFactory,
+  TriggerFactory,
+  TriggerMetadata,
+};
 
-export type { WorkflowProps, EdgeProps };
+export type { WorkflowProps, EdgeProps, ExecutionProps, StepProps };

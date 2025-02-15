@@ -14,6 +14,7 @@ jobs:
       ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
+      AVS_BUILD_VERSION: "support-pre-processing-template-with-js-expression"
 
     steps:
       - name: Checkout repository

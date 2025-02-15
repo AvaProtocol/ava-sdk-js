@@ -1,17 +1,29 @@
+import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import Client from "@/sdk-js/dist";
 import dotenv from "dotenv";
 import path from "path";
-import { getAddress, generateSignature, requireEnvVar } from "./utils";
+import {
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  SaltGlobal,
+  TIMEOUT_DURATION,
+} from "./utils";
 import { FACTORY_ADDRESS } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+
 // Get environment variables with type safety
 const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
+
+jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
+
+let saltIndex = SaltGlobal.GetWallets * 1000; // Salt index 6,000 - 6,999
 
 describe("getAddresses Tests", () => {
   let client: Client;
@@ -32,27 +44,28 @@ describe("getAddresses Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  test("should include default smart wallet when authenticated with signature", async () => {
-    const result = await client.getWallets();
-    expect(result).toBeDefined();
-    expect(result.length).toBeGreaterThanOrEqual(1);
-    expect(result[0].salt).toEqual("0");
-    expect(result[0].factory).toEqual(FACTORY_ADDRESS);
-    expect(result[0].address).toHaveLength(42);
-  });
+  // TODO: Redo this test when we can have a solid way for a wallets reset
+  // test("should return an initial empty array when authenticated with signature", async () => {
+  //   const result = await client.getWallets();
+  //   expect(result).toBeDefined();
+  //   expect(result.length).toBeGreaterThanOrEqual(1);
+  //   expect(result[0].salt).toEqual("0");
+  //   expect(result[0].factory).toEqual(FACTORY_ADDRESS);
+  //   expect(result[0].address).toHaveLength(42);
+  // });
 
   test("should include custom salt wallet when getting address with smartWallet using signature", async () => {
-    const randomSalt = "12345";
-    await client.getWallet({ salt: randomSalt });
+    const saltValue = _.toString(saltIndex++);
+    await client.getWallet({ salt: saltValue });
 
     const wallets = await client.getWallets();
     expect(wallets.length).toBeGreaterThanOrEqual(2);
-    expect(wallets.some((item) => item.salt === randomSalt)).toBe(true);
+    expect(wallets.some((item) => item.salt === saltValue)).toBe(true);
   });
 
   test("will not add duplicate wallets to the list", async () => {
-    const salt1 = "12345";
-    const salt2 = "0";
+    const salt1 = _.toString(saltIndex++);
+    const salt2 = _.toString(saltIndex++);
 
     // Intentially getting duplicate wallets with the same salt
     await client.getWallet({ salt: salt1 });
