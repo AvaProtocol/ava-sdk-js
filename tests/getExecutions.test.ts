@@ -7,8 +7,6 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  queueForRemoval,
-  removeCreatedWorkflows,
   getBlockNumber,
   SaltGlobal,
 } from "./utils";
@@ -27,8 +25,9 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
-// Map of created workflows tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
+// Set a default timeout of 15 seconds for all tests in this file
+jest.setTimeout(15000);
+
 let saltIndex = SaltGlobal.GetExecutions * 1000;
 
 describe("getExecutions Tests", () => {
@@ -49,8 +48,6 @@ describe("getExecutions Tests", () => {
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
-
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
 
   /**
    * Test the options.limit parameter
@@ -89,11 +86,9 @@ describe("getExecutions Tests", () => {
         maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     // Trigger the workflow totalTriggerCount times to make sure we have 4 executions
     for (let i = 1; i <= totalTriggerCount; i++) {
-      console.log("Triggering the workflow", i, "times");
       await client.triggerWorkflow({
         id: workflowId,
         data: {
@@ -146,7 +141,9 @@ describe("getExecutions Tests", () => {
 
     // Make sure the cursor is an empty string due to reaching the end of the list
     expect(resultWithExtraLimit.cursor).toBe("");
-  }, 15000); // Timeout 15 seconds
+
+    await client.deleteWorkflow(workflowId);
+  });
 
   test("options.cursor works as pagination", async () => {
     const blockInterval = 5;
@@ -171,7 +168,6 @@ describe("getExecutions Tests", () => {
         maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
       })
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     for (let i = 0; i < 3; i++) {
       // Manually trigger the workflow 3 times
@@ -218,7 +214,9 @@ describe("getExecutions Tests", () => {
     expect(executions2.cursor).not.toBe(firstCursor);
     expect(executions2.cursor).toBe("");
     expect(executions2.hasMore).toBe(false);
-  }, 15000); // Timeout 15 seconds
+
+    await client.deleteWorkflow(workflowId);
+  });
 
   test("should throw error with a non-existent cursor", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
@@ -239,8 +237,6 @@ describe("getExecutions Tests", () => {
       })
     );
 
-    queueForRemoval(createdWorkflows, workflowId);
-
     await client.triggerWorkflow({
       id: workflowId,
       data: {
@@ -256,6 +252,8 @@ describe("getExecutions Tests", () => {
         cursor: "invalid-cursor",
       })
     ).rejects.toThrowError(/cursor is not valid/);
+
+    await client.deleteWorkflow(workflowId);
   });
 
   test("should throw error with an invalid limit", async () => {
@@ -277,8 +275,6 @@ describe("getExecutions Tests", () => {
       })
     );
 
-    queueForRemoval(createdWorkflows, workflowId);
-
     await client.triggerWorkflow({
       id: workflowId,
       data: {
@@ -294,5 +290,7 @@ describe("getExecutions Tests", () => {
         limit: -1,
       })
     ).rejects.toThrowError(/item per page is not valid/);
+
+    await client.deleteWorkflow(workflowId);
   });
 });
