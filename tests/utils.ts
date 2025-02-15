@@ -33,6 +33,7 @@ export const SaltGlobal = {
   GetWorkflows: 8,
   Secrets: 9,
   TriggerWorkflow: 10,
+  CreateWorkflow: 11,
 };
 
 // Get wallet address from private key

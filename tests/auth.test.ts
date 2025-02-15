@@ -18,7 +18,6 @@ import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
-let saltIndex = SaltGlobal.Auth * 1000; // Salt index 0 - 999
 
 // Get environment variables with type safety
 const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
@@ -29,6 +28,7 @@ const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
 
 // Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
 const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.Auth * 1000; // Salt index 0 - 999
 
 describe("Authentication Tests", () => {
   let client: Client;

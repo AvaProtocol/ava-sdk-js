@@ -20,8 +20,8 @@ import {
   compareResults,
   getNextId,
   submitWorkflowAndQueueForRemoval,
-  queueForRemoval,
   TIMEOUT_DURATION,
+  SaltGlobal,
 } from "./utils";
 
 import {
@@ -50,6 +50,7 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
 
 // Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
 const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.CreateWorkflow * 1000; // Salt index 11,000 - 11,999
 
 describe("createWorkflow Tests", () => {
   let eoaAddress: string;
@@ -72,7 +73,7 @@ describe("createWorkflow Tests", () => {
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   test("should create a task when authenticated with signature", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
     const workflow = client.createWorkflow({
       smartWalletAddress: wallet.address,
@@ -114,7 +115,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create cron trigger", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const workflowData = {
       ...WorkflowTemplate,
       smartWalletAddress: wallet.address,
@@ -141,7 +142,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create fixed time trigger", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const workflowData = {
       ...WorkflowTemplate,
       smartWalletAddress: wallet.address,
@@ -164,7 +165,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create event trigger", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const branchNode = NodeFactory.create({
       name: "branchCheckTokenAmount",
       type: NodeType.Branch,
@@ -271,7 +272,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create event trigger with topic matching", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const restApiNode = NodeFactory.create({
       name: "notification",
       type: NodeType.RestAPI,
@@ -335,7 +336,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create block trigger", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
     const workflowData = {
       ...WorkflowTemplate,
@@ -366,7 +367,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create complex task with multi nodes and edge", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const workflowData = {
       ...MultiNodeWithBranch,
       smartWalletAddress: wallet.address,
@@ -393,7 +394,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create filter node task", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
     const workflowData = {
       smartWalletAddress: wallet.address,
