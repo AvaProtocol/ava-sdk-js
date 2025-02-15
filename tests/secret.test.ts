@@ -83,8 +83,7 @@ describe("secret Tests", () => {
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLangs.JAVASCRIPT,
-          // source: "console.log('foo bar')",
-          source: "return {{secret.secrete_name}}",
+          source: "return 'my secret is ' + apContext.configVars.secrete_name",
         },
       };
 
@@ -126,7 +125,7 @@ describe("secret Tests", () => {
       });
 
       expect(executions.result.length).toBe(1);
-      // console.log("executions", util.inspect(executions, { depth: 6 }));
+      expect(JSON.parse(executions.result[0].stepsList[0].outputData)).toEqual("my secret is secret_value");
 
       const matchStep: StepProps | undefined = _.find(
         _.first(executions.result)?.stepsList,
@@ -297,4 +296,5 @@ describe("secret Tests", () => {
       expect(secrets.some((item) => item.name === inputName)).toBe(true);
     });
   });
+
 });

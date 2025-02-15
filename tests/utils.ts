@@ -18,6 +18,21 @@ const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
 const CHAIN_ID = requireEnvVar("CHAIN_ID", "11155111");
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 
+// Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
+export const SaltGlobal = {
+  Auth: 0,
+  CancelWorkflow: 1,
+  CreateSecret: 2,
+  DeleteWorkflow: 3,
+  GetExecutions: 4,
+  GetWallet: 5,
+  GetWallets: 6,
+  GetWorkflow: 7,
+  GetWorkflows: 8,
+  Secrets: 9,
+  TriggerWorkflow: 10,
+};
+
 // Get wallet address from private key
 export async function getAddress(privateKey: string): Promise<string> {
   const wallet = new ethers.Wallet(privateKey);
@@ -102,10 +117,14 @@ export const removeCreatedWorkflows = async (
       workflowIds.set(workflowId, true);
 
       try {
-        await client.deleteWorkflow(workflowId);
+        const foundWorkflow = await client.getWorkflow(workflowId);
+
+        if (foundWorkflow) {
+          await client.deleteWorkflow(workflowId);
+        }
       } catch (error) {
         console.warn(
-          `Cannot cleanup workflowId ${workflowId}. Please remove it manually.`,
+          `Found workflowId ${workflowId} but failed to delete it during cleanup.`,
           (error as Error).message
         );
       } finally {
@@ -151,7 +170,7 @@ export const compareResults = (
   expect(actual.trigger.id).toEqual(expected.trigger.id);
   expect(actual.trigger.type).toEqual(expected.trigger.type);
   expect(actual.trigger.name).toEqual(expected.trigger.name);
-  
+
   expect(actual.trigger.data).toEqual(expected.trigger.data);
   expect(actual.nodes).toHaveLength(expected.nodes.length);
   expect(actual.edges).toHaveLength(expected.edges.length);
@@ -200,6 +219,8 @@ export const getBlockNumber = async (): Promise<number> => {
 
 export const getChainId = async (): Promise<number> => {
   const provider = new ethers.JsonRpcProvider(CHAIN_ENDPOINT);
-  const chainId = await provider.getNetwork();
-  return chainId;
+  const network = await provider.getNetwork();
+
+  console.log("getChainId network:", network);
+  return Number(network.chainId);
 };
