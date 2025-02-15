@@ -9,6 +9,9 @@ import {
   requireEnvVar,
   getBlockNumber,
   SaltGlobal,
+  removeCreatedWorkflows,
+  submitWorkflowAndQueueForRemoval,
+  TIMEOUT_DURATION,
 } from "./utils";
 import {
   FACTORY_ADDRESS,
@@ -26,8 +29,10 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
 } as const;
 
 // Set a default timeout of 15 seconds for all tests in this file
-jest.setTimeout(15000);
+jest.setTimeout(TIMEOUT_DURATION);
 
+// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
+const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.GetExecutions * 1000; // Salt index 4000 - 4999
 
 describe("getExecutions Tests", () => {
@@ -47,6 +52,8 @@ describe("getExecutions Tests", () => {
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
+
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   /**
    * Test the options.limit parameter
@@ -77,13 +84,15 @@ describe("getExecutions Tests", () => {
       data: { interval: triggerInterval },
     });
 
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
         maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
-      })
+      },
+      createdIdMap
     );
 
     // Trigger the workflow totalTriggerCount times to make sure we have 4 executions
@@ -140,8 +149,6 @@ describe("getExecutions Tests", () => {
 
     // Make sure the cursor is an empty string due to reaching the end of the list
     expect(resultWithExtraLimit.cursor).toBe("");
-
-    await client.deleteWorkflow(workflowId);
   });
 
   test("options.cursor works as pagination", async () => {
@@ -159,13 +166,15 @@ describe("getExecutions Tests", () => {
       data: { interval: blockInterval },
     });
 
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
         maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
-      })
+      },
+      createdIdMap
     );
 
     for (let i = 0; i < 3; i++) {
@@ -213,8 +222,6 @@ describe("getExecutions Tests", () => {
     expect(executions2.cursor).not.toBe(firstCursor);
     expect(executions2.cursor).toBe("");
     expect(executions2.hasMore).toBe(false);
-
-    await client.deleteWorkflow(workflowId);
   });
 
   test("should throw error with a non-existent cursor", async () => {
@@ -228,12 +235,14 @@ describe("getExecutions Tests", () => {
       data: { interval: 5 },
     });
 
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
-      })
+      },
+      createdIdMap
     );
 
     await client.triggerWorkflow({
@@ -251,8 +260,6 @@ describe("getExecutions Tests", () => {
         cursor: "invalid-cursor",
       })
     ).rejects.toThrowError(/cursor is not valid/);
-
-    await client.deleteWorkflow(workflowId);
   });
 
   test("should throw error with an invalid limit", async () => {
@@ -266,12 +273,14 @@ describe("getExecutions Tests", () => {
       data: { interval: 5 },
     });
 
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         trigger,
         smartWalletAddress: wallet.address,
-      })
+      },
+      createdIdMap
     );
 
     await client.triggerWorkflow({
@@ -289,7 +298,5 @@ describe("getExecutions Tests", () => {
         limit: -1,
       })
     ).rejects.toThrowError(/item per page is not valid/);
-
-    await client.deleteWorkflow(workflowId);
   });
 });

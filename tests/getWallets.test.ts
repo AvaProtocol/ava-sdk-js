@@ -8,18 +8,20 @@ import {
   generateSignature,
   requireEnvVar,
   SaltGlobal,
+  TIMEOUT_DURATION,
 } from "./utils";
 import { FACTORY_ADDRESS } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+
 // Get environment variables with type safety
 const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
-jest.setTimeout(15000); // Set timeout to 15 seconds for all tests in this file
+jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 
 let saltIndex = SaltGlobal.GetWallets * 1000; // Salt index 6,000 - 6,999
 

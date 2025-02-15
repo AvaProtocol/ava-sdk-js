@@ -18,6 +18,8 @@ const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
 const CHAIN_ID = requireEnvVar("CHAIN_ID", "11155111");
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 
+export const TIMEOUT_DURATION = 15000; // 15 seconds
+
 // Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
 export const SaltGlobal = {
   Auth: 0,

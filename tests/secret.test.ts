@@ -69,7 +69,11 @@ describe("secret Tests", () => {
 
   describe("create secret suite", () => {
     it("created secret have value in workflow", async () => {
-      const result = await client.createSecret("secrete_name", "secret_value");
+      const secretName = "secrete_name";
+      const secretValue = "dummy_value";
+      const testMessage = "my secret is ";
+
+      const result = await client.createSecret(secretName, secretValue);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -83,7 +87,7 @@ describe("secret Tests", () => {
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLangs.JAVASCRIPT,
-          source: "return 'my secret is ' + apContext.configVars.secrete_name",
+          source: `return '${testMessage}' + apContext.configVars['${secretName}']`,
         },
       };
 
@@ -115,7 +119,7 @@ describe("secret Tests", () => {
         id: workflowId,
         data: {
           type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval * 2, // Make sure we have enough block buffer to trigger 1 execution
+          blockNumber: currentBlockNumber + triggerInterval,
         },
         isBlocking: true,
       });
@@ -124,19 +128,23 @@ describe("secret Tests", () => {
         limit: 1,
       });
 
+      // Find the execution step that contains the secret value
       expect(executions.result.length).toBe(1);
-      expect(JSON.parse(executions.result[0].stepsList[0].outputData)).toEqual("my secret is secret_value");
-
       const matchStep: StepProps | undefined = _.find(
         _.first(executions.result)?.stepsList,
         (step) => step.nodeId === customCodeNodeProps.id
       );
 
-      expect(matchStep).toBeDefined();
+      if (_.isUndefined(matchStep)) {
+        throw new Error(
+          "No corresponding match step found for the triggered execution."
+        );
+      }
 
-      console.log("matchStep", util.inspect(matchStep, { depth: 4 }));
-      
-      // TODO: validate the secret variable is converted to code
+      // Verify that the output data of CustomCode node contains the actual secret value
+      expect(JSON.parse(matchStep.outputData)).toEqual(
+        testMessage + secretValue
+      );
 
       // Clean up the secret of this test
       await client.deleteSecret("secrete_name");
@@ -296,5 +304,4 @@ describe("secret Tests", () => {
       expect(secrets.some((item) => item.name === inputName)).toBe(true);
     });
   });
-
 });

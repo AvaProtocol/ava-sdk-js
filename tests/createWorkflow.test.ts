@@ -21,6 +21,7 @@ import {
   getNextId,
   submitWorkflowAndQueueForRemoval,
   queueForRemoval,
+  TIMEOUT_DURATION,
 } from "./utils";
 
 import {
@@ -39,7 +40,7 @@ import {
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
 // Set timeout to 15 seconds for all tests in this file
-jest.setTimeout(15000);
+jest.setTimeout(TIMEOUT_DURATION);
 
 // Get environment variables with type safety
 const { TEST_PRIVATE_KEY, ENDPOINT } = {
