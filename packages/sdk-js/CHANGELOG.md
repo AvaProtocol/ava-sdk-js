@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 1.3.6
+
+### Patch Changes
+
+- Fix the build file problem in 1.3.5
+
 ## 1.3.5
 
 ### Patch Changes
