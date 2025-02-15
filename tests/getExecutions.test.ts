@@ -28,7 +28,7 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
 // Set a default timeout of 15 seconds for all tests in this file
 jest.setTimeout(15000);
 
-let saltIndex = SaltGlobal.GetExecutions * 1000;
+let saltIndex = SaltGlobal.GetExecutions * 1000; // Salt index 4000 - 4999
 
 describe("getExecutions Tests", () => {
   let ownerAddress: string;
@@ -36,7 +36,6 @@ describe("getExecutions Tests", () => {
 
   beforeAll(async () => {
     ownerAddress = await getAddress(TEST_PRIVATE_KEY);
-    console.log("Client endpoint:", ENDPOINT, "\nOwner address:", ownerAddress);
 
     // Initialize the client with test credentials
     client = new Client({

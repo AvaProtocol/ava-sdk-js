@@ -184,6 +184,8 @@ export const compareResults = (
   expect(actual.trigger.type).toEqual(expected.trigger.type);
   expect(actual.trigger.name).toEqual(expected.trigger.name);
 
+  console.log("actual.trigger.data", actual.trigger.data);
+  console.log("expected.trigger.data", expected.trigger.data);
   expect(actual.trigger.data).toEqual(expected.trigger.data);
   expect(actual.nodes).toHaveLength(expected.nodes.length);
   expect(actual.edges).toHaveLength(expected.edges.length);

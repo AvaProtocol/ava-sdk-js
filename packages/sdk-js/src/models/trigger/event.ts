@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "../../types";
@@ -20,36 +21,15 @@ import util from "util";
 // }
 // ]
 // ```
-interface EventMatcher {
-  type: string;
-  value: string[];
-}
 
-// Required props for constructor: id, name, type and data: { expression }
-export type EventTriggerDataType = avs_pb.EventCondition.AsObject & {
-  matcher?: EventMatcher[];
-};
+// Required props for constructor: id, name, type and data: { expression, matcherList }
+export type EventTriggerDataType = avs_pb.EventCondition.AsObject;
 
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
 
 class EventTrigger extends Trigger {
   constructor(props: EventTriggerProps) {
     super({ ...props, type: TriggerType.Event, data: props.data });
-
-    console.log(
-      "EventTrigger.constructor.props:",
-      util.inspect(
-        {
-          ...props,
-          type: TriggerType.Event,
-          data: props.data,
-        },
-        {
-          depth: 6,
-          colors: true,
-        }
-      )
-    );
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -63,31 +43,28 @@ class EventTrigger extends Trigger {
 
     const condition = new avs_pb.EventCondition();
     const expression = (this.data as EventTriggerDataType).expression;
-    const matcher = (this.data as EventTriggerDataType).matcher;
+    const matcherList = (this.data as EventTriggerDataType).matcherList;
 
-    if (expression && expression != "") {
-      condition.setExpression(expression);
+    if (_.isUndefined(expression)) {
+      throw new Error(`Expression is undefined for ${this.type}`);
     }
 
-    if (matcher && matcher.length >= 1) {
-      condition.setMatcherList(
-        matcher.map((element) => {
-          const m = new avs_pb.EventCondition.Matcher();
-          m.setType(element["type"]);
-          m.setValueList(element["value"]);
-          return m;
-        })
-      );
-    }
-    request.setEvent(condition);
+    condition.setExpression(expression);
 
-    console.log(
-      "EventTrigger.toRequest.request:",
-      util.inspect(request.toObject(), {
-        depth: 6,
-        colors: true,
+    if (_.isUndefined(matcherList)) {
+      throw new Error(`Matcher list is undefined for ${this.type}`);
+    }
+
+    condition.setMatcherList(
+      matcherList.map((element) => {
+        const m = new avs_pb.EventCondition.Matcher();
+        m.setType(element["type"]);
+        m.setValueList(element["valueList"]);
+        return m;
       })
     );
+
+    request.setEvent(condition);
 
     return request;
   }
@@ -102,13 +79,13 @@ class EventTrigger extends Trigger {
     }
 
     if (raw.getEvent()!.getMatcherList()) {
-      data.matcher = raw
+      data.matcherList = raw
         .getEvent()!
         .getMatcherList()
         .map((item: avs_pb.EventCondition.Matcher) => {
           return {
             type: item.getType(),
-            value: item.getValueList(),
+            valueList: item.getValueList(),
           };
         });
     }

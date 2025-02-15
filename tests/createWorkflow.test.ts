@@ -17,9 +17,10 @@ import {
   generateSignature,
   requireEnvVar,
   removeCreatedWorkflows,
-  queueForRemoval,
   compareResults,
   getNextId,
+  submitWorkflowAndQueueForRemoval,
+  queueForRemoval,
 } from "./utils";
 
 import {
@@ -37,22 +38,23 @@ import {
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
+// Set timeout to 15 seconds for all tests in this file
+jest.setTimeout(15000);
+
 // Get environment variables with type safety
-const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
+const { TEST_PRIVATE_KEY, ENDPOINT } = {
   TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
 // Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
+const createdIdMap: Map<string, boolean> = new Map();
 
 describe("createWorkflow Tests", () => {
   let eoaAddress: string;
   let client: Client;
   beforeAll(async () => {
     eoaAddress = await getAddress(TEST_PRIVATE_KEY);
-    console.log("Client endpoint:", ENDPOINT, "\nOwner address:", eoaAddress);
 
     // Initialize the client with test credentials
     client = new Client({
@@ -60,23 +62,15 @@ describe("createWorkflow Tests", () => {
       factoryAddress: FACTORY_ADDRESS,
     });
 
-    console.log("Authenticating with signature ...");
     const signature = await generateSignature(TEST_PRIVATE_KEY);
     const res = await client.authWithSignature(signature);
 
     client.setAuthKey(res.authKey);
   });
 
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   test("should create a task when authenticated with signature", async () => {
-    console.log("TriggerFactory.create.inputs:", {
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
-    });
-
     const wallet = await client.getWallet({ salt: "0" });
 
     const workflow = client.createWorkflow({
@@ -93,14 +87,15 @@ describe("createWorkflow Tests", () => {
       expiredAt: WorkflowTemplate.expiredAt,
       maxExecution: 1,
     });
-    console.log("Create workflow.workflow:", workflow);
+
     expect(workflow).toBeDefined();
     expect(workflow).toBeInstanceOf(Workflow);
 
-    const result = await client.submitWorkflow(workflow);
-    console.log("Create workflow.result:", result);
-
-    queueForRemoval(createdWorkflows, result);
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflow,
+      createdIdMap
+    );
 
     expect(result).toBeDefined();
     expect(typeof result).toBe("string");
@@ -129,16 +124,17 @@ describe("createWorkflow Tests", () => {
         data: { scheduleList: ["5 4 * * *", "5 0 * 8 *"] },
       }),
     };
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
-
-    const getResult = await client.getWorkflow(submitResult);
+    const getResult = await client.getWorkflow(result);
 
     compareResults(
-      { ...workflowData, id: submitResult, owner: eoaAddress },
+      { ...workflowData, id: result, owner: eoaAddress },
       getResult
     );
   });
@@ -156,17 +152,14 @@ describe("createWorkflow Tests", () => {
       }),
     };
 
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
-
-    const task = await client.getWorkflow(submitResult);
-    compareResults(
-      { ...workflowData, id: submitResult, owner: eoaAddress },
-      task
-    );
+    const task = await client.getWorkflow(result);
+    compareResults({ ...workflowData, id: result, owner: eoaAddress }, task);
   });
 
   test("create event trigger", async () => {
@@ -251,32 +244,31 @@ describe("createWorkflow Tests", () => {
               && trigger1.data.topics[2] == "${wallet.address}"
             `,
           // We don't need but the compare result look at its as a whole
-          matcher: [],
+          matcherList: [],
         },
       }),
     };
 
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
-
-    const task = await client.getWorkflow(submitResult);
+    const task = await client.getWorkflow(result);
 
     compareResults(
       {
         ...workflowData,
         smartWalletAddress: wallet.address,
         status: WorkflowStatus.Active,
-        id: submitResult,
+        id: result,
         owner: eoaAddress,
       },
       task
     );
   });
 
-  
   test("create event trigger with topic matching", async () => {
     const wallet = await client.getWallet({ salt: "0" });
     const restApiNode = NodeFactory.create({
@@ -307,29 +299,37 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          matcher: [
-            { type: "topics", value: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", "", "0x06DBb141d8275d9eDb8a7446F037D20E215188ff"] },
-          ]
+          expression: "// TODO: expression cannot be empty",
+          matcherList: [
+            {
+              type: "topics",
+              valueList: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "",
+                "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+              ],
+            },
+          ],
         },
       }),
     };
 
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+    const createResult = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
-
-    const task = await client.getWorkflow(submitResult);
+    const getResult = await client.getWorkflow(createResult);
     compareResults(
       {
         ...workflowData,
         smartWalletAddress: wallet.address,
         status: WorkflowStatus.Active,
-        id: submitResult,
+        id: createResult,
         owner: eoaAddress,
       },
-      task
+      getResult
     );
   });
 
@@ -347,18 +347,18 @@ describe("createWorkflow Tests", () => {
       }),
     };
 
-    const id = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, id);
-
-    const task = await client.getWorkflow(id);
+    const task = await client.getWorkflow(result);
     compareResults(
       {
-        id,
+        id: result,
         owner: eoaAddress,
-        ...workflowData
+        ...workflowData,
       },
       task
     );
@@ -371,21 +371,20 @@ describe("createWorkflow Tests", () => {
       smartWalletAddress: wallet.address,
     };
 
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
-
-    const task = await client.getWorkflow(submitResult);
-    console.log("getWorkflow task", task);
+    const task = await client.getWorkflow(result);
 
     compareResults(
       {
         ...MultiNodeWithBranch,
         smartWalletAddress: wallet.address,
         status: WorkflowStatus.Active,
-        id: submitResult,
+        id: result,
         owner: eoaAddress,
       },
       task
@@ -398,29 +397,41 @@ describe("createWorkflow Tests", () => {
     const workflowData = {
       smartWalletAddress: wallet.address,
       nodes: NodeFactory.createNodes([restApiNodeProps, filterNodeProps]),
-      edges: [new Edge({id: getNextId(), source: defaultTriggerId, target: restApiNodeProps.id})],
+      edges: [
+        new Edge({
+          id: getNextId(),
+          source: defaultTriggerId,
+          target: restApiNodeProps.id,
+        }),
+      ],
       trigger: blockTriggerEvery5,
       startAt: WorkflowTemplate.startAt,
       expiredAt: WorkflowTemplate.expiredAt,
       maxExecution: 1,
-    }
+    };
 
-    const submitResult = await client.submitWorkflow(
-      client.createWorkflow(workflowData)
+    const result = await submitWorkflowAndQueueForRemoval(
+      client,
+      workflowData,
+      createdIdMap
     );
 
-    queueForRemoval(createdWorkflows, submitResult);
-
-    const task = await client.getWorkflow(submitResult);
+    const task = await client.getWorkflow(result);
 
     compareResults(
       {
         smartWalletAddress: wallet.address,
         status: WorkflowStatus.Active,
-        id: submitResult,
+        id: result,
         owner: eoaAddress,
         nodes: NodeFactory.createNodes([restApiNodeProps, filterNodeProps]),
-        edges: [new Edge({id: getNextId(), source: defaultTriggerId, target: restApiNodeProps.id})],
+        edges: [
+          new Edge({
+            id: getNextId(),
+            source: defaultTriggerId,
+            target: restApiNodeProps.id,
+          }),
+        ],
         trigger: blockTriggerEvery5,
         startAt: WorkflowTemplate.startAt,
         expiredAt: WorkflowTemplate.expiredAt,
@@ -429,7 +440,6 @@ describe("createWorkflow Tests", () => {
       task
     );
   });
-
 
   // TODO: add detailed verification for each node in the workflow
   // expect(task.nodes[0].contractWrite.contractAddress).toEqual(
