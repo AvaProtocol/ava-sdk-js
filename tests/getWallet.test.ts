@@ -1,15 +1,16 @@
+import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, {
-  TriggerFactory,
-  TriggerType,
-} from "@/sdk-js/dist";
+import Client, { TriggerFactory, TriggerType } from "@/sdk-js/dist";
 
 import dotenv from "dotenv";
 import path from "path";
 import {
-  getAddress, generateSignature, requireEnvVar,
-  queueForRemoval,
+  getAddress,
+  generateSignature,
+  requireEnvVar,
+  SaltGlobal,
   removeCreatedWorkflows,
+  submitWorkflowAndQueueForRemoval,
 } from "./utils";
 
 import {
@@ -19,8 +20,8 @@ import {
 } from "./templates";
 
 // Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdWorkflows: Map<string, boolean> = new Map();
-
+const createdIdMap: Map<string, boolean> = new Map();
+let saltIndex = SaltGlobal.GetWallet * 1000; // Salt index 5,000 - 5,999
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -48,17 +49,19 @@ describe("getAddresses Tests", () => {
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
-  afterAll(async () => await removeCreatedWorkflows(client, createdWorkflows));
+
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   test("should get wallet client.factoryAddress", async () => {
+    const salt = _.toString(saltIndex++);
     // Set the factory address in client
     client.setFactoryAddress(FACTORY_ADDRESS);
     expect(client.getFactoryAddress()).toEqual(FACTORY_ADDRESS);
 
-    const result = await client.getWallet({ salt: "0" });
+    const result = await client.getWallet({ salt });
 
     expect(result).toBeDefined();
-    expect(result.salt).toEqual("0");
+    expect(result.salt).toEqual(salt);
     expect(result.factory).toEqual(FACTORY_ADDRESS);
     expect(result.address).toHaveLength(42);
   });
@@ -68,6 +71,7 @@ describe("getAddresses Tests", () => {
     client.setFactoryAddress(FACTORY_ADDRESS);
     expect(client.getFactoryAddress()).toEqual(FACTORY_ADDRESS);
 
+    // TODO: experiment with not using the RUN_ID for running tests on staging
     const salt = process.env.RUN_ID || `${new Date().getTime()}`;
     let wallet = await client.getWallet({ salt });
 
@@ -79,8 +83,9 @@ describe("getAddresses Tests", () => {
       failedTaskCount: wallet.failedTaskCount,
     };
 
-    const workflowId = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowId = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
         trigger: TriggerFactory.create({
@@ -89,54 +94,56 @@ describe("getAddresses Tests", () => {
           type: TriggerType.Block,
           data: { interval: 102 },
         }),
-      })
+      },
+      createdIdMap
     );
-    queueForRemoval(createdWorkflows, workflowId);
 
     wallet = await client.getWallet({ salt });
 
-    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount+1);
-    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount+1);
+    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 1);
+    expect(wallet.activeTaskCount).toEqual(
+      initialStat.activeTaskCount || 0 + 1
+    );
     expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount);
     expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
 
     // Trigger the task and wait for it finished to check the stat
-    const result = await client.triggerWorkflow({
+    await client.triggerWorkflow({
       id: workflowId,
       data: {
         type: TriggerType.Block,
-        block_number: 1, // set epoch to 1 minute later
+        blockNumber: 1, // set epoch to 1 minute later
       },
       isBlocking: true,
     });
 
-
     wallet = await client.getWallet({ salt });
-    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount+1);
-    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount);
-    expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount+1);
+    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 1);
+    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount || 0);
+    expect(wallet.completedTaskCount).toEqual(
+      initialStat.completedTaskCount || 0 + 1
+    );
     expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
 
     // Now test the cancel metric
-    const workflowId2 = await client.submitWorkflow(
-      client.createWorkflow({
+    const workflowId2 = await submitWorkflowAndQueueForRemoval(
+      client,
+      {
         ...WorkflowTemplate,
         smartWalletAddress: wallet.address,
-      })
+      },
+      createdIdMap
     );
-    queueForRemoval(createdWorkflows, workflowId2);
+
 
     await client.cancelWorkflow(workflowId2);
 
     wallet = await client.getWallet({ salt });
-    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount+2);
-    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount);
-    expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount+1);
-    expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount+1);
-
-
+    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 2);
+    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount );
+    expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount || 0 + 1);
+    expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount || 0 + 1);
   });
-
 
   test("should get wallet with options.factoryAddress", async () => {
     // Unset the factory address in client
@@ -185,7 +192,11 @@ describe("getAddresses Tests", () => {
     client.setFactoryAddress(invalidAddress);
     expect(client.getFactoryAddress()).toEqual(invalidAddress);
 
-    await expect(client.getWallet({ salt: "0", factoryAddress: "0x1234" })).rejects.toThrow(/invalid factory address/);
-    await expect(client.getWallet({ salt: "0" })).rejects.toThrow(/invalid factory address/);
+    await expect(
+      client.getWallet({ salt: "0", factoryAddress: "0x1234" })
+    ).rejects.toThrow(/invalid factory address/);
+    await expect(client.getWallet({ salt: "0" })).rejects.toThrow(
+      /invalid factory address/
+    );
   });
 });
