@@ -102,6 +102,19 @@ export const queueForRemoval = (
   });
 };
 
+// Add a workflow to the list of created workflows for cleanup, or removal later
+export const submitWorkflowAndQueueForRemoval = async (
+  client: Client,
+  data: WorkflowProps,
+  createdIdMap: Map<string, boolean>
+) => {
+  const workflowId = await client.submitWorkflow(client.createWorkflow(data));
+
+  queueForRemoval(createdIdMap, workflowId);
+
+  return workflowId;
+};
+
 // Remove all workflows from the list of created workflows
 export const removeCreatedWorkflows = async (
   client: Client,
