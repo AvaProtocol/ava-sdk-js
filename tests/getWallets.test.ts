@@ -32,14 +32,15 @@ describe("getAddresses Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  test("should include default smart wallet when authenticated with signature", async () => {
-    const result = await client.getWallets();
-    expect(result).toBeDefined();
-    expect(result.length).toBeGreaterThanOrEqual(1);
-    expect(result[0].salt).toEqual("0");
-    expect(result[0].factory).toEqual(FACTORY_ADDRESS);
-    expect(result[0].address).toHaveLength(42);
-  });
+  // TODO: Redo this test when we can have a solid way for a wallets reset
+  // test("should return an initial empty array when authenticated with signature", async () => {
+  //   const result = await client.getWallets();
+  //   expect(result).toBeDefined();
+  //   expect(result.length).toBeGreaterThanOrEqual(1);
+  //   expect(result[0].salt).toEqual("0");
+  //   expect(result[0].factory).toEqual(FACTORY_ADDRESS);
+  //   expect(result[0].address).toHaveLength(42);
+  // });
 
   test("should include custom salt wallet when getting address with smartWallet using signature", async () => {
     const randomSalt = "12345";
