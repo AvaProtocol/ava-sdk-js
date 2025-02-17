@@ -105,9 +105,7 @@ async function generateSignature(privateKey: string) {
   };
 
   const message = getKeyRequestMessage(keyRequestParams);
-  console.log("🚀 ~ message:", message);
   const signature = await wallet.signMessage(message);
-  console.log("🚀 ~ signature:", { signature, ...keyRequestParams });
 
   return { signature, ...keyRequestParams };
 }
@@ -140,6 +138,7 @@ async function listTask(owner: string, token: string) {
     console.log(
       "process.argv[3] is empty, fetching all wallet addresses as params ..."
     );
+
     const wallets = await getWallets(owner, token);
     params = _.map(wallets, (wallet: any) => wallet.address);
 
@@ -181,14 +180,52 @@ async function getTask(owner, token, taskId) {
   console.log(util.inspect(result, { depth: 4, colors: true }));
 }
 
-async function listExecutions(owner, token, ids) {
-  const result = await client.getExecutions(ids.split(","), {
-    authKey: token,
-    cursor: process.argv[4] || "",
-    itemPerPage: 200,
+async function listExecutions(
+  workflowIdsString: string,
+  options: {
+    authKey: string;
+    cursor?: string;
+    limit?: number;
+  } = { authKey: "", cursor: "", limit: 20 }
+) {
+  let workflowIds = [];
+
+  if (_.isEmpty(workflowIdsString)) {
+    const wallets = await client.getWallets({
+      authKey: options.authKey,
+    });
+
+    const workflows = await client.getWorkflows(
+      _.map(wallets, (wallet: any) => wallet.address),
+      {
+        authKey: options.authKey,
+        cursor: options.cursor,
+        limit: options.limit,
+      }
+    );
+
+    console.log(
+      `Found ${wallets.length} wallets and ${workflows.result.length} workflows...`
+    );
+
+    // If there’s no workflows found, return early
+    if (_.isEmpty(workflows.result)) {
+      console.log("No workflows found, returning early ...");
+      return;
+    }
+
+    workflowIds = _.map(workflows.result, (workflow: any) => workflow.id);
+  } else {
+    workflowIds = _.split(workflowIdsString, ",");
+  }
+
+  const result = await client.getExecutions(workflowIds, {
+    authKey: options.authKey,
+    cursor: options.cursor,
+    limit: options.limit,
   });
 
-  console.log(util.inspect(result, { depth: 4, colors: true }));
+  console.log("getExecutions response:\n", util.inspect(result, { depth: 6, colors: true }));
 }
 
 async function getExecution(owner, token, taskId, execId) {
@@ -585,7 +622,11 @@ const main = async (cmd: string) => {
       break;
 
     case "executions":
-      await listExecutions(owner, token, process.argv[3]);
+      await listExecutions(process.argv[3], {
+        authKey: token,
+        cursor: process.argv[4],
+        limit: _.toNumber(process.argv[5]),
+      });
       break;
     case "execution":
       await getExecution(owner, token, process.argv[3], process.argv[4]);
