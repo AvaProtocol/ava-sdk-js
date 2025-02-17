@@ -459,8 +459,8 @@ async function scheduleTelegram(
           url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
           method: "POST",
           body: `{
-            "chat_id":-4609037622,
-            "text": "Hello world, you can use use js in this block {{ new Date() }}."
+            "chat_id": -4609037622,
+            "text": "Hello world scheduleTelegram Test. This task is triggered at block {{ triggerEvery10.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -480,7 +480,7 @@ async function scheduleTelegram(
       type: TriggerType.Block,
       name: "triggerEvery10",
       data: {
-        interval: 10,
+        interval: 3,
       },
     }),
     startAt: Math.floor(Date.now() / 1000) + 30,
@@ -546,7 +546,7 @@ async function scheduleMonitorTransfer(
           method: "POST",
           // Update the chat id according to your own telegram bot
           body: `{
-            "chat_id":-4609037622,
+            "chat_id": -4609037622,
             "text": "Congrat, your walllet {{demoTriggerName.data.to_address}}(https://sepolia.etherscan.io/address/{{demoTriggerName.data.to_address}}) received {{demoTriggerName.data.value_formatted}} [{{demoTriggerName.data.token_symbol}}](https://sepolia.etherscan.io/token/{{demoTriggerName.data.address}}) from {{demoTriggerName.data.from_address}} at [{{demoTriggerName.data.transaction_hash}}](sepolia.etherscan.io/tx/{{demoTriggerName.data.transaction_hash}})"
           }`,
           headersMap: [["content-type", "application/json"]],
