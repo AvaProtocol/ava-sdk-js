@@ -460,7 +460,7 @@ async function scheduleTelegram(
           method: "POST",
           body: `{
             "chat_id": -4609037622,
-            "text": "Hello world scheduleTelegram Test. This task is triggered at block {{ triggerEvery10.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
+            "text": "Hello world scheduleTelegram Test. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -626,6 +626,7 @@ const main = async (cmd: string) => {
       break;
     case "schedule-telegram":
       scheduleTelegram(owner, token);
+      break;
     case "schedule":
     case "schedule-cron":
     case "schedule-fixed":
