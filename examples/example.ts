@@ -140,6 +140,7 @@ async function listTask(owner: string, token: string) {
     );
 
     const wallets = await getWallets(owner, token);
+    console.log(`Found ${wallets.length} smart wallets ...`);
     params = _.map(wallets, (wallet: any) => wallet.address);
 
     // If after fetching smart wallets the params is still empty, return early
@@ -155,29 +156,21 @@ async function listTask(owner: string, token: string) {
 
   const result = await client.getWorkflows(params, opts);
 
-  console.log(`List tasks with param`, opts);
-  console.log(
-    `Found ${result.result.length} tasks created by`,
-    process.argv[3]
-  );
+  console.log(`List tasks with cursor`, opts.cursor, `and limit`, opts.limit);
 
-  for (const item of result.result) {
-    console.log(util.inspect(item, { depth: 4, colors: true }));
-  }
   console.log(
-    util.inspect(
-      { cursor: result.cursor, hasMore: result.hasMore, limit: opts.limit },
-      { depth: 4, colors: true }
-    )
+    "getWorkflows response:\n",
+    util.inspect(result, { depth: 6, colors: true })
   );
 }
 
-async function getTask(owner, token, taskId) {
-  const result = await client.getWorkflow(taskId, {
-    authKey: token,
-  });
+async function getTask(taskId: string, options: { authKey: string }) {
+  const result = await client.getWorkflow(taskId, options);
 
-  console.log(util.inspect(result, { depth: 4, colors: true }));
+  console.log(
+    "getWorkflow response:\n",
+    util.inspect(result, { depth: 6, colors: true })
+  );
 }
 
 async function listExecutions(
@@ -225,13 +218,16 @@ async function listExecutions(
     limit: options.limit,
   });
 
-  console.log("getExecutions response:\n", util.inspect(result, { depth: 6, colors: true }));
+  console.log(
+    "getExecutions response:\n",
+    util.inspect(result, { depth: 6, colors: true })
+  );
 }
 
 async function getExecution(owner, token, taskId, execId) {
   const result = await client.getExecution(taskId, execId, { authKey: token });
 
-  console.log(util.inspect(result, { depth: 4, colors: true }));
+  console.log(util.inspect(result, { depth: 6, colors: true }));
 }
 
 async function cancel(owner, token, taskId) {
@@ -277,8 +273,6 @@ async function getWallets(
   const walletsResp = await client.getWallets({
     authKey: token,
   });
-
-  console.log("getWallets response:\n", walletsResp);
 
   if (shouldFetchBalances) {
     console.log("Fetching balances from RPC provider ...");
@@ -361,7 +355,7 @@ async function createSecret(
 
   console.log(
     "Created secret:",
-    util.inspect(result, { depth: 4, colors: true })
+    util.inspect(result, { depth: 6, colors: true })
   );
 }
 
@@ -373,7 +367,7 @@ async function listSecrets(owner: string, token: string) {
     }
   );
 
-  console.log("Secrets:", util.inspect(result, { depth: 4, colors: true }));
+  console.log("Secrets:", util.inspect(result, { depth: 6, colors: true }));
 }
 
 // Schedule a simple job that get price of an asset and post it to a webhook
@@ -588,7 +582,11 @@ const main = async (cmd: string) => {
 
   switch (cmd) {
     case "wallet":
-      await getWallets(owner, token);
+      const wallets = await getWallets(owner, token);
+      console.log(
+        "getWallets response:\n",
+        util.inspect(wallets, { depth: 6, colors: true })
+      );
       break;
     case "create-wallet":
       const salt = process.argv[3] || 0;
@@ -618,7 +616,7 @@ const main = async (cmd: string) => {
       break;
 
     case "get":
-      await getTask(owner, token, process.argv[3]);
+      await getTask(process.argv[3], { authKey: token });
       break;
 
     case "executions":
