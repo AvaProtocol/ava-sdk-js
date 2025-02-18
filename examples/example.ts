@@ -462,6 +462,73 @@ async function schedulePriceReport(owner: string, token: string) {
 }
 
 // setup a task to monitor in/out transfer for a wallet and send notification
+async function scheduleTelegram(
+  owner: string,
+  token: string
+) {
+  console.log("schedule a dummy telegram message");
+  const wallets = await getWallets(owner, token);
+  if (_.isEmpty(wallets)) {
+    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    return;
+  }
+  const smartWalletAddress = wallets[0].address;
+
+  const nodeIdNotification = UlidMonotonic.generate().toCanonical();
+
+  const triggerId = UlidMonotonic.generate().toCanonical();
+
+  const workflow = client.createWorkflow({
+    name: `dummy telegram msg ${new Date().toISOString()}`,
+    smartWalletAddress,
+    nodes: NodeFactory.createNodes([
+      {
+        id: nodeIdNotification,
+        name: "notification",
+        type: NodeType.RestAPI,
+        data: {
+          url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          method: "POST",
+          body: `{
+            "chat_id": -4609037622,
+            "text": "Hello world scheduleTelegram Test. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
+          }`,
+          headersMap: [["content-type", "application/json"]],
+        },
+      },
+    ]),
+
+    edges: [
+      new Edge({
+        id: UlidMonotonic.generate().toCanonical(),
+        source: triggerId,
+        target: nodeIdNotification,
+      }),
+    ],
+
+    trigger: TriggerFactory.create({
+      id: triggerId,
+      type: TriggerType.Block,
+      name: "triggerEvery10",
+      data: {
+        interval: 3,
+      },
+    }),
+    startAt: Math.floor(Date.now() / 1000) + 30,
+    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    maxExecution: 0, // unlimited run
+  });
+
+  const workflowId = await client.submitWorkflow(workflow, {
+    authKey: token,
+  });
+
+  console.log("create task", workflowId);
+
+  return workflowId;
+}
+
+// setup a task to monitor in/out transfer for a wallet and send notification
 async function scheduleMonitorTransfer(
   owner: string,
   token: string,
@@ -469,24 +536,11 @@ async function scheduleMonitorTransfer(
 ) {
   console.log("schedule a monitor transfer task to the first smart wallet");
   const wallets = await getWallets(owner, token);
+  if (_.isEmpty(wallets)) {
+    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    return;
+  }
   const smartWalletAddress = wallets[0].address;
-
-  let trigger = {
-    name: "trigger1",
-    event: {
-      // expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${target.toLowerCase()}"`,
-      matchers: [
-        {
-          type: "topics",
-          value: [
-            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-            "",
-            "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
-          ],
-        },
-      ],
-    },
-  };
 
   const nodeIdNotification = UlidMonotonic.generate().toCanonical();
   const nodeIdCheckAmount = UlidMonotonic.generate().toCanonical();
@@ -519,13 +573,13 @@ async function scheduleMonitorTransfer(
         name: "notification",
         type: NodeType.RestAPI,
         data: {
-          url: "https://api.telegram.org/bot${{secrets.ap_notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
+          url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
           method: "POST",
           // Update the chat id according to your own telegram bot
-          body: `JSON.stringify({
-            chat_id:-4609037622,
-            text: \`Congrat, your walllet [\${demoTriggerName.data.to_address}](https://sepolia.etherscan.io/address/\${demoTriggerName.data.to_address}) received \\\`\${demoTriggerName.data.value_formatted}\\\` [\${demoTriggerName.data.token_symbol}](https://sepolia.etherscan.io/token/\${demoTriggerName.data.address}) from \${demoTriggerName.data.from_address} at [\${demoTriggerName.data.transaction_hash}](sepolia.etherscan.io/tx/\${demoTriggerName.data.transaction_hash})\`
-          })`,
+          body: `{
+            "chat_id": -4609037622,
+            "text": "Congrat, your walllet {{demoTriggerName.data.to_address}}(https://sepolia.etherscan.io/address/{{demoTriggerName.data.to_address}}) received {{demoTriggerName.data.value_formatted}} [{{demoTriggerName.data.token_symbol}}](https://sepolia.etherscan.io/token/{{demoTriggerName.data.address}}) from {{demoTriggerName.data.from_address}} at [{{demoTriggerName.data.transaction_hash}}](sepolia.etherscan.io/tx/{{demoTriggerName.data.transaction_hash}})"
+          }`,
           headersMap: [["content-type", "application/json"]],
         },
       },
@@ -549,7 +603,8 @@ async function scheduleMonitorTransfer(
       type: TriggerType.Event,
       name: "demoTriggerName",
       data: {
-        matcher: [
+        expression: "",
+        matcherList: [
           {
             type: "topics",
             value: [
@@ -603,6 +658,9 @@ const main = async (cmd: string) => {
       break;
     case "schedule-monitor":
       scheduleMonitorTransfer(owner, token, process.argv[3]);
+      break;
+    case "schedule-telegram":
+      scheduleTelegram(owner, token);
       break;
     case "schedule":
     case "schedule-cron":
@@ -663,6 +721,7 @@ const main = async (cmd: string) => {
       schedule <smart-wallet-address>:                    to schedule a task that run on every block, with chainlink eth-usd its condition will be matched quickly
       schedule-cron <smart-wallet-address>:               same as above, but run on cron
       schedule-monitor <wallet-address>:                  to monitor erc20 in/out for an address
+      schedule-telegram:                                  to schedule a dummy task that send a fix message to telegram every 10 blocks
       trigger <task-id> <trigger-metadata>:               manually trigger a task. Example:
                                                             trigger abcdef '{"block_number":1234}' for blog trigger
                                                             trigger abcdef '{"block_number":1234, "log_index":312,"tx_hash":"0x123"}' for event trigger
