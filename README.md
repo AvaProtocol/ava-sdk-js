@@ -6,7 +6,7 @@
 
 - Type-Safe SDK: Automatically generated TypeScript types from gRPC protocol buffers ensure type safety and reduce errors during development.
 - Seamless Integration: Works in both Node.js and browser environments, optimized for frameworks like Next.js.
-- Easy to Use: Abstracts the complexity of gRPC with a simple JavaScript/TypeScript API.
+- User-friendly: Simplifies the intricacies of gRPC with an intuitive JavaScript/Typescript interface.
 - Efficient Communication: Leverages gRPC for fast, efficient communication with Ava Protocol’s AVS (Actively Validated Services).
 
 ## Installation
