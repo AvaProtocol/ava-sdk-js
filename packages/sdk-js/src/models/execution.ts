@@ -1,15 +1,25 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import TriggerReason, { TriggerReasonProps } from "./trigger/reason";
+import TriggerReason from "./trigger/reason";
 import Step from "./step";
 
+export type StepProps = avs_pb.Execution.Step.AsObject;
+
+export type OutputDataProps =
+  | avs_pb.Execution.EvmLogOutput.AsObject
+  | avs_pb.Execution.TransferLogOutput.AsObject
+  | avs_pb.Execution.BlockOutput.AsObject
+  | avs_pb.Execution.TimeOutput.AsObject
+  | undefined;
+
+// Ignore the original transferLog, evmLog, etc. fields and use a combined outputData field instead
 export type ExecutionProps = Omit<
   avs_pb.Execution.AsObject,
-  "stepsList" | "reason"
+  "stepsList" | "reason" | "transferLog" | "evmLog" | "block" | "time"
 > & {
   stepsList: Step[];
   triggerReason: TriggerReason | undefined;
+  outputData: OutputDataProps;
 };
-export type StepProps = avs_pb.Execution.Step.AsObject;
 
 class Execution implements ExecutionProps {
   id: string;
@@ -20,7 +30,7 @@ class Execution implements ExecutionProps {
   stepsList: Step[];
   triggerReason: TriggerReason | undefined;
   triggerName: string;
-
+  outputData: OutputDataProps;
 
   constructor(props: ExecutionProps) {
     this.id = props.id;
@@ -31,9 +41,29 @@ class Execution implements ExecutionProps {
     this.stepsList = props.stepsList;
     this.triggerName = props.triggerName;
     this.triggerReason = props.triggerReason;
+    this.outputData = props.outputData;
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
+    const outputDataType = execution.getOutputDataCase();
+
+    let outputData: OutputDataProps | undefined;
+
+    switch (outputDataType) {
+      case avs_pb.Execution.OutputDataCase.EVM_LOG:
+        outputData = execution.getEvmLog()?.toObject();
+        break;
+      case avs_pb.Execution.OutputDataCase.TRANSFER_LOG:
+        outputData = execution.getTransferLog()?.toObject();
+        break;
+      case avs_pb.Execution.OutputDataCase.BLOCK:
+        outputData = execution.getBlock()?.toObject();
+        break;
+      case avs_pb.Execution.OutputDataCase.TIME:
+        outputData = execution.getTime()?.toObject();
+        break;
+    }
+
     return new Execution({
       id: execution.getId(),
       startAt: execution.getStartAt(),
@@ -45,25 +75,11 @@ class Execution implements ExecutionProps {
       stepsList: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)),
-      
+      outputData: outputData,
     });
   }
 
-  toRequest(): avs_pb.Execution {
-    const execution = new avs_pb.Execution();
-    execution.setId(this.id);
-    execution.setStartAt(this.startAt);
-    execution.setEndAt(this.endAt);
-    execution.setSuccess(this.success);
-    execution.setError(this.error);
-    execution.setStepsList(this.stepsList.map((step) => step.toRequest()));
-
-    if (this.triggerReason) {
-      execution.setReason(this.triggerReason.toRequest());
-    }
-
-    return execution;
-  }
+  // Client side does not generate the exeuction, so there’s no toRequest() method
 }
 
 export default Execution;

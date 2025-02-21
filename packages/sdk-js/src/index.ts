@@ -6,7 +6,7 @@ import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
-import Execution, { ExecutionProps } from "./models/execution";
+import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
 import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
@@ -640,4 +640,10 @@ export {
   TriggerReason,
 };
 
-export type { WorkflowProps, EdgeProps, ExecutionProps, StepProps };
+export type {
+  WorkflowProps,
+  EdgeProps,
+  ExecutionProps,
+  StepProps,
+  OutputDataProps,
+};
