@@ -11,7 +11,7 @@
 
 ## Installation
 
-To install `@avaprotocol/sdk-js`, use npm:
+To install `@avaprotocol/sdk-js`, run the following command:
 
 ```bash
 npm install @avaprotocol/sdk-js

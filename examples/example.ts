@@ -7,7 +7,7 @@ import Client, {
 } from "@/sdk-js/dist";
 
 import { NodeType } from "@/types/dist";
-import { Secret } from "@avaprotocol/sdk-js";
+import Secret from "@/sdk-js/dist";
 
 const {
   getKeyRequestMessage,
@@ -242,13 +242,13 @@ async function deleteTask(owner, token, taskId) {
   console.log("Response:\n", result);
 }
 
-async function triggerTask(owner, token, taskId, triggerMetadata) {
-  const metadata = JSON.parse(triggerMetadata);
+async function triggerTask(owner, token, taskId, triggerReason) {
+  const metadata = JSON.parse(triggerReason);
 
   const result = await client.triggerWorkflow(
     {
       id: taskId,
-      data: new TriggerReason({
+      reason: new TriggerReason({
         type: TriggerType.Event,
         blockNumber: metadata["block_number"],
         logIndex: metadata["log_index"],
@@ -261,7 +261,7 @@ async function triggerTask(owner, token, taskId, triggerMetadata) {
     }
   );
 
-  console.log("request", { taskId: taskId, triggerMetadata });
+  console.log("request", { taskId: taskId, triggerReason });
   console.log("Response:\n", result);
 }
 

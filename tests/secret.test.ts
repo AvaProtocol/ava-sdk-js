@@ -125,7 +125,7 @@ describe("secret Tests", () => {
 
       await client.triggerWorkflow({
         id: workflowId,
-        data: {
+        reason: {
           type: TriggerType.Block,
           blockNumber: currentBlockNumber + triggerInterval,
         },

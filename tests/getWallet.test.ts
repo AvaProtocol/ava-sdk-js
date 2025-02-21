@@ -110,7 +110,7 @@ describe("getAddresses Tests", () => {
     // Trigger the task and wait for it finished to check the stat
     await client.triggerWorkflow({
       id: workflowId,
-      data: {
+      reason: {
         type: TriggerType.Block,
         blockNumber: 1, // set epoch to 1 minute later
       },

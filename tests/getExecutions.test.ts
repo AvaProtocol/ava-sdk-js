@@ -99,7 +99,7 @@ describe("getExecutions Tests", () => {
     for (let i = 1; i <= totalTriggerCount; i++) {
       await client.triggerWorkflow({
         id: workflowId,
-        data: {
+        reason: {
           type: TriggerType.Block,
           blockNumber: startBlockNumber + i * triggerInterval,
         },
@@ -181,7 +181,7 @@ describe("getExecutions Tests", () => {
       // Manually trigger the workflow 3 times
       await client.triggerWorkflow({
         id: workflowId,
-        data: {
+        reason: {
           type: TriggerType.Block,
           blockNumber: blockNumber + i,
         },
@@ -247,7 +247,7 @@ describe("getExecutions Tests", () => {
 
     await client.triggerWorkflow({
       id: workflowId,
-      data: {
+      reason: {
         type: TriggerType.Block,
         blockNumber: blockNumber + 5,
       },
@@ -285,7 +285,7 @@ describe("getExecutions Tests", () => {
 
     await client.triggerWorkflow({
       id: workflowId,
-      data: {
+      reason: {
         type: TriggerType.Block,
         blockNumber: blockNumber + 5,
       },
