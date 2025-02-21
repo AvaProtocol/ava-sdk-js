@@ -645,5 +645,6 @@ export type {
   EdgeProps,
   ExecutionProps,
   StepProps,
+  TriggerReasonProps,
   OutputDataProps,
 };
