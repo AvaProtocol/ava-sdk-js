@@ -654,15 +654,15 @@ export class Execution extends jspb.Message {
     getTriggerName(): string;
     setTriggerName(value: string): Execution;
 
-    hasTransferEvent(): boolean;
-    clearTransferEvent(): void;
-    getTransferEvent(): Execution.TransferEventOutput | undefined;
-    setTransferEvent(value?: Execution.TransferEventOutput): Execution;
+    hasTransferLog(): boolean;
+    clearTransferLog(): void;
+    getTransferLog(): Execution.TransferLogOutput | undefined;
+    setTransferLog(value?: Execution.TransferLogOutput): Execution;
 
-    hasRawEvent(): boolean;
-    clearRawEvent(): void;
-    getRawEvent(): Execution.RawEventOutput | undefined;
-    setRawEvent(value?: Execution.RawEventOutput): Execution;
+    hasEvmLog(): boolean;
+    clearEvmLog(): void;
+    getEvmLog(): Execution.EvmLogOutput | undefined;
+    setEvmLog(value?: Execution.EvmLogOutput): Execution;
 
     hasBlock(): boolean;
     clearBlock(): void;
@@ -696,8 +696,8 @@ export namespace Execution {
         reason?: TriggerReason.AsObject,
         stepsList: Array<Execution.Step.AsObject>,
         triggerName: string,
-        transferEvent?: Execution.TransferEventOutput.AsObject,
-        rawEvent?: Execution.RawEventOutput.AsObject,
+        transferLog?: Execution.TransferLogOutput.AsObject,
+        evmLog?: Execution.EvmLogOutput.AsObject,
         block?: Execution.BlockOutput.AsObject,
         time?: Execution.TimeOutput.AsObject,
     }
@@ -746,43 +746,43 @@ export namespace Execution {
         }
     }
 
-    export class TransferEventOutput extends jspb.Message { 
+    export class TransferLogOutput extends jspb.Message { 
         getTokenName(): string;
-        setTokenName(value: string): TransferEventOutput;
+        setTokenName(value: string): TransferLogOutput;
         getTokenSymbol(): string;
-        setTokenSymbol(value: string): TransferEventOutput;
+        setTokenSymbol(value: string): TransferLogOutput;
         getTokenDecimals(): number;
-        setTokenDecimals(value: number): TransferEventOutput;
+        setTokenDecimals(value: number): TransferLogOutput;
         getTransactionHash(): string;
-        setTransactionHash(value: string): TransferEventOutput;
+        setTransactionHash(value: string): TransferLogOutput;
         getAddress(): string;
-        setAddress(value: string): TransferEventOutput;
+        setAddress(value: string): TransferLogOutput;
         getBlockNumber(): number;
-        setBlockNumber(value: number): TransferEventOutput;
+        setBlockNumber(value: number): TransferLogOutput;
         getBlockTimestamp(): number;
-        setBlockTimestamp(value: number): TransferEventOutput;
+        setBlockTimestamp(value: number): TransferLogOutput;
         getFromAddress(): string;
-        setFromAddress(value: string): TransferEventOutput;
+        setFromAddress(value: string): TransferLogOutput;
         getToAddress(): string;
-        setToAddress(value: string): TransferEventOutput;
+        setToAddress(value: string): TransferLogOutput;
         getValue(): string;
-        setValue(value: string): TransferEventOutput;
+        setValue(value: string): TransferLogOutput;
         getValueFormatted(): string;
-        setValueFormatted(value: string): TransferEventOutput;
+        setValueFormatted(value: string): TransferLogOutput;
         getTransactionIndex(): number;
-        setTransactionIndex(value: number): TransferEventOutput;
+        setTransactionIndex(value: number): TransferLogOutput;
 
         serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): TransferEventOutput.AsObject;
-        static toObject(includeInstance: boolean, msg: TransferEventOutput): TransferEventOutput.AsObject;
+        toObject(includeInstance?: boolean): TransferLogOutput.AsObject;
+        static toObject(includeInstance: boolean, msg: TransferLogOutput): TransferLogOutput.AsObject;
         static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
         static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: TransferEventOutput, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): TransferEventOutput;
-        static deserializeBinaryFromReader(message: TransferEventOutput, reader: jspb.BinaryReader): TransferEventOutput;
+        static serializeBinaryToWriter(message: TransferLogOutput, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): TransferLogOutput;
+        static deserializeBinaryFromReader(message: TransferLogOutput, reader: jspb.BinaryReader): TransferLogOutput;
     }
 
-    export namespace TransferEventOutput {
+    export namespace TransferLogOutput {
         export type AsObject = {
             tokenName: string,
             tokenSymbol: string,
@@ -799,37 +799,37 @@ export namespace Execution {
         }
     }
 
-    export class RawEventOutput extends jspb.Message { 
+    export class EvmLogOutput extends jspb.Message { 
         getAddress(): string;
-        setAddress(value: string): RawEventOutput;
+        setAddress(value: string): EvmLogOutput;
         getBlockHash(): string;
-        setBlockHash(value: string): RawEventOutput;
+        setBlockHash(value: string): EvmLogOutput;
         getBlockNumber(): number;
-        setBlockNumber(value: number): RawEventOutput;
+        setBlockNumber(value: number): EvmLogOutput;
         getData(): string;
-        setData(value: string): RawEventOutput;
+        setData(value: string): EvmLogOutput;
         getIndex(): number;
-        setIndex(value: number): RawEventOutput;
+        setIndex(value: number): EvmLogOutput;
         clearTopicsList(): void;
         getTopicsList(): Array<string>;
-        setTopicsList(value: Array<string>): RawEventOutput;
+        setTopicsList(value: Array<string>): EvmLogOutput;
         addTopics(value: string, index?: number): string;
         getTransactionHash(): string;
-        setTransactionHash(value: string): RawEventOutput;
+        setTransactionHash(value: string): EvmLogOutput;
         getTransactionIndex(): number;
-        setTransactionIndex(value: number): RawEventOutput;
+        setTransactionIndex(value: number): EvmLogOutput;
 
         serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): RawEventOutput.AsObject;
-        static toObject(includeInstance: boolean, msg: RawEventOutput): RawEventOutput.AsObject;
+        toObject(includeInstance?: boolean): EvmLogOutput.AsObject;
+        static toObject(includeInstance: boolean, msg: EvmLogOutput): EvmLogOutput.AsObject;
         static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
         static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: RawEventOutput, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): RawEventOutput;
-        static deserializeBinaryFromReader(message: RawEventOutput, reader: jspb.BinaryReader): RawEventOutput;
+        static serializeBinaryToWriter(message: EvmLogOutput, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): EvmLogOutput;
+        static deserializeBinaryFromReader(message: EvmLogOutput, reader: jspb.BinaryReader): EvmLogOutput;
     }
 
-    export namespace RawEventOutput {
+    export namespace EvmLogOutput {
         export type AsObject = {
             address: string,
             blockHash: string,
@@ -885,8 +885,8 @@ export namespace Execution {
 
     export enum OutputDataCase {
         OUTPUT_DATA_NOT_SET = 0,
-        TRANSFER_EVENT = 10,
-        RAW_EVENT = 11,
+        TRANSFER_LOG = 10,
+        EVM_LOG = 11,
         BLOCK = 12,
         TIME = 13,
     }
