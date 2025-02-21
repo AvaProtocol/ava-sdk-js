@@ -1,13 +1,13 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import TriggerMetadata, { TriggerMetadataProps } from "./trigger/metadata";
+import TriggerReason, { TriggerReasonProps } from "./trigger/reason";
 import Step from "./step";
 
 export type ExecutionProps = Omit<
   avs_pb.Execution.AsObject,
-  "stepsList" | "triggerMetadata"
+  "stepsList" | "reason"
 > & {
   stepsList: Step[];
-  triggerMetadata: TriggerMetadata | undefined;
+  triggerReason: TriggerReason | undefined;
 };
 export type StepProps = avs_pb.Execution.Step.AsObject;
 
@@ -17,9 +17,10 @@ class Execution implements ExecutionProps {
   endAt: number;
   success: boolean;
   error: string;
-  triggerMetadata: TriggerMetadata | undefined;
-  result: string;
   stepsList: Step[];
+  triggerReason: TriggerReason | undefined;
+  triggerName: string;
+
 
   constructor(props: ExecutionProps) {
     this.id = props.id;
@@ -27,9 +28,9 @@ class Execution implements ExecutionProps {
     this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
-    this.triggerMetadata = props.triggerMetadata;
-    this.result = props.result;
     this.stepsList = props.stepsList;
+    this.triggerName = props.triggerName;
+    this.triggerReason = props.triggerReason;
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
@@ -39,13 +40,12 @@ class Execution implements ExecutionProps {
       endAt: execution.getEndAt(),
       success: execution.getSuccess(),
       error: execution.getError(),
-      triggerMetadata: TriggerMetadata.fromResponse(
-        execution.getTriggerMetadata()
-      ),
-      result: execution.getResult(),
+      triggerName: execution.getTriggerName(),
+      triggerReason: TriggerReason.fromResponse(execution.getReason()),
       stepsList: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)),
+      
     });
   }
 
@@ -58,11 +58,10 @@ class Execution implements ExecutionProps {
     execution.setError(this.error);
     execution.setStepsList(this.stepsList.map((step) => step.toRequest()));
 
-    if (this.triggerMetadata) {
-      execution.setTriggerMetadata(this.triggerMetadata.toRequest());
+    if (this.triggerReason) {
+      execution.setReason(this.triggerReason.toRequest());
     }
 
-    execution.setResult(this.result);
     return execution;
   }
 }

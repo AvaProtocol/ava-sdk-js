@@ -1,7 +1,7 @@
 import Client, {
   TriggerFactory,
   TriggerType,
-  TriggerMetadata,
+  TriggerReason,
   NodeFactory,
   Edge,
 } from "@/sdk-js/dist";
@@ -248,7 +248,7 @@ async function triggerTask(owner, token, taskId, triggerMetadata) {
   const result = await client.triggerWorkflow(
     {
       id: taskId,
-      data: new TriggerMetadata({
+      data: new TriggerReason({
         type: TriggerType.Event,
         blockNumber: metadata["block_number"],
         logIndex: metadata["log_index"],

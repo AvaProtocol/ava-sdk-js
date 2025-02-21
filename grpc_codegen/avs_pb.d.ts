@@ -643,16 +643,38 @@ export class Execution extends jspb.Message {
     getError(): string;
     setError(value: string): Execution;
 
-    hasTriggerMetadata(): boolean;
-    clearTriggerMetadata(): void;
-    getTriggerMetadata(): TriggerMetadata | undefined;
-    setTriggerMetadata(value?: TriggerMetadata): Execution;
-    getResult(): string;
-    setResult(value: string): Execution;
+    hasReason(): boolean;
+    clearReason(): void;
+    getReason(): TriggerReason | undefined;
+    setReason(value?: TriggerReason): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
     addSteps(value?: Execution.Step, index?: number): Execution.Step;
+    getTriggerName(): string;
+    setTriggerName(value: string): Execution;
+
+    hasTransferEvent(): boolean;
+    clearTransferEvent(): void;
+    getTransferEvent(): Execution.TransferEventOutput | undefined;
+    setTransferEvent(value?: Execution.TransferEventOutput): Execution;
+
+    hasRawEvent(): boolean;
+    clearRawEvent(): void;
+    getRawEvent(): Execution.RawEventOutput | undefined;
+    setRawEvent(value?: Execution.RawEventOutput): Execution;
+
+    hasBlock(): boolean;
+    clearBlock(): void;
+    getBlock(): Execution.BlockOutput | undefined;
+    setBlock(value?: Execution.BlockOutput): Execution;
+
+    hasTime(): boolean;
+    clearTime(): void;
+    getTime(): Execution.TimeOutput | undefined;
+    setTime(value?: Execution.TimeOutput): Execution;
+
+    getOutputDataCase(): Execution.OutputDataCase;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Execution.AsObject;
@@ -671,9 +693,13 @@ export namespace Execution {
         endAt: number,
         success: boolean,
         error: string,
-        triggerMetadata?: TriggerMetadata.AsObject,
-        result: string,
+        reason?: TriggerReason.AsObject,
         stepsList: Array<Execution.Step.AsObject>,
+        triggerName: string,
+        transferEvent?: Execution.TransferEventOutput.AsObject,
+        rawEvent?: Execution.RawEventOutput.AsObject,
+        block?: Execution.BlockOutput.AsObject,
+        time?: Execution.TimeOutput.AsObject,
     }
 
 
@@ -692,6 +718,10 @@ export namespace Execution {
         setStartAt(value: number): Step;
         getEndAt(): number;
         setEndAt(value: number): Step;
+        clearInputsList(): void;
+        getInputsList(): Array<string>;
+        setInputsList(value: Array<string>): Step;
+        addInputs(value: string, index?: number): string;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Step.AsObject;
@@ -712,7 +742,153 @@ export namespace Execution {
             error: string,
             startAt: number,
             endAt: number,
+            inputsList: Array<string>,
         }
+    }
+
+    export class TransferEventOutput extends jspb.Message { 
+        getTokenName(): string;
+        setTokenName(value: string): TransferEventOutput;
+        getTokenSymbol(): string;
+        setTokenSymbol(value: string): TransferEventOutput;
+        getTokenDecimals(): number;
+        setTokenDecimals(value: number): TransferEventOutput;
+        getTransactionHash(): string;
+        setTransactionHash(value: string): TransferEventOutput;
+        getAddress(): string;
+        setAddress(value: string): TransferEventOutput;
+        getBlockNumber(): number;
+        setBlockNumber(value: number): TransferEventOutput;
+        getBlockTimestamp(): number;
+        setBlockTimestamp(value: number): TransferEventOutput;
+        getFromAddress(): string;
+        setFromAddress(value: string): TransferEventOutput;
+        getToAddress(): string;
+        setToAddress(value: string): TransferEventOutput;
+        getValue(): string;
+        setValue(value: string): TransferEventOutput;
+        getValueFormatted(): string;
+        setValueFormatted(value: string): TransferEventOutput;
+        getTransactionIndex(): number;
+        setTransactionIndex(value: number): TransferEventOutput;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): TransferEventOutput.AsObject;
+        static toObject(includeInstance: boolean, msg: TransferEventOutput): TransferEventOutput.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: TransferEventOutput, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): TransferEventOutput;
+        static deserializeBinaryFromReader(message: TransferEventOutput, reader: jspb.BinaryReader): TransferEventOutput;
+    }
+
+    export namespace TransferEventOutput {
+        export type AsObject = {
+            tokenName: string,
+            tokenSymbol: string,
+            tokenDecimals: number,
+            transactionHash: string,
+            address: string,
+            blockNumber: number,
+            blockTimestamp: number,
+            fromAddress: string,
+            toAddress: string,
+            value: string,
+            valueFormatted: string,
+            transactionIndex: number,
+        }
+    }
+
+    export class RawEventOutput extends jspb.Message { 
+        getAddress(): string;
+        setAddress(value: string): RawEventOutput;
+        getBlockHash(): string;
+        setBlockHash(value: string): RawEventOutput;
+        getBlockNumber(): number;
+        setBlockNumber(value: number): RawEventOutput;
+        getData(): string;
+        setData(value: string): RawEventOutput;
+        getIndex(): number;
+        setIndex(value: number): RawEventOutput;
+        clearTopicsList(): void;
+        getTopicsList(): Array<string>;
+        setTopicsList(value: Array<string>): RawEventOutput;
+        addTopics(value: string, index?: number): string;
+        getTransactionHash(): string;
+        setTransactionHash(value: string): RawEventOutput;
+        getTransactionIndex(): number;
+        setTransactionIndex(value: number): RawEventOutput;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): RawEventOutput.AsObject;
+        static toObject(includeInstance: boolean, msg: RawEventOutput): RawEventOutput.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: RawEventOutput, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): RawEventOutput;
+        static deserializeBinaryFromReader(message: RawEventOutput, reader: jspb.BinaryReader): RawEventOutput;
+    }
+
+    export namespace RawEventOutput {
+        export type AsObject = {
+            address: string,
+            blockHash: string,
+            blockNumber: number,
+            data: string,
+            index: number,
+            topicsList: Array<string>,
+            transactionHash: string,
+            transactionIndex: number,
+        }
+    }
+
+    export class BlockOutput extends jspb.Message { 
+        getBlockNumber(): number;
+        setBlockNumber(value: number): BlockOutput;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): BlockOutput.AsObject;
+        static toObject(includeInstance: boolean, msg: BlockOutput): BlockOutput.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: BlockOutput, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): BlockOutput;
+        static deserializeBinaryFromReader(message: BlockOutput, reader: jspb.BinaryReader): BlockOutput;
+    }
+
+    export namespace BlockOutput {
+        export type AsObject = {
+            blockNumber: number,
+        }
+    }
+
+    export class TimeOutput extends jspb.Message { 
+        getEpoch(): number;
+        setEpoch(value: number): TimeOutput;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): TimeOutput.AsObject;
+        static toObject(includeInstance: boolean, msg: TimeOutput): TimeOutput.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: TimeOutput, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): TimeOutput;
+        static deserializeBinaryFromReader(message: TimeOutput, reader: jspb.BinaryReader): TimeOutput;
+    }
+
+    export namespace TimeOutput {
+        export type AsObject = {
+            epoch: number,
+        }
+    }
+
+
+    export enum OutputDataCase {
+        OUTPUT_DATA_NOT_SET = 0,
+        TRANSFER_EVENT = 10,
+        RAW_EVENT = 11,
+        BLOCK = 12,
+        TIME = 13,
     }
 
 }
@@ -1233,35 +1409,35 @@ export namespace KeyResp {
     }
 }
 
-export class TriggerMetadata extends jspb.Message { 
+export class TriggerReason extends jspb.Message { 
     getBlockNumber(): number;
-    setBlockNumber(value: number): TriggerMetadata;
+    setBlockNumber(value: number): TriggerReason;
     getLogIndex(): number;
-    setLogIndex(value: number): TriggerMetadata;
+    setLogIndex(value: number): TriggerReason;
     getTxHash(): string;
-    setTxHash(value: string): TriggerMetadata;
+    setTxHash(value: string): TriggerReason;
     getEpoch(): number;
-    setEpoch(value: number): TriggerMetadata;
-    getType(): TriggerMetadata.TriggerType;
-    setType(value: TriggerMetadata.TriggerType): TriggerMetadata;
+    setEpoch(value: number): TriggerReason;
+    getType(): TriggerReason.TriggerType;
+    setType(value: TriggerReason.TriggerType): TriggerReason;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TriggerMetadata.AsObject;
-    static toObject(includeInstance: boolean, msg: TriggerMetadata): TriggerMetadata.AsObject;
+    toObject(includeInstance?: boolean): TriggerReason.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerReason): TriggerReason.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TriggerMetadata, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TriggerMetadata;
-    static deserializeBinaryFromReader(message: TriggerMetadata, reader: jspb.BinaryReader): TriggerMetadata;
+    static serializeBinaryToWriter(message: TriggerReason, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerReason;
+    static deserializeBinaryFromReader(message: TriggerReason, reader: jspb.BinaryReader): TriggerReason;
 }
 
-export namespace TriggerMetadata {
+export namespace TriggerReason {
     export type AsObject = {
         blockNumber: number,
         logIndex: number,
         txHash: string,
         epoch: number,
-        type: TriggerMetadata.TriggerType,
+        type: TriggerReason.TriggerType,
     }
 
     export enum TriggerType {
@@ -1343,10 +1519,10 @@ export class UserTriggerTaskReq extends jspb.Message {
     getTaskId(): string;
     setTaskId(value: string): UserTriggerTaskReq;
 
-    hasTriggerMetadata(): boolean;
-    clearTriggerMetadata(): void;
-    getTriggerMetadata(): TriggerMetadata | undefined;
-    setTriggerMetadata(value?: TriggerMetadata): UserTriggerTaskReq;
+    hasReason(): boolean;
+    clearReason(): void;
+    getReason(): TriggerReason | undefined;
+    setReason(value?: TriggerReason): UserTriggerTaskReq;
     getIsBlocking(): boolean;
     setIsBlocking(value: boolean): UserTriggerTaskReq;
 
@@ -1363,7 +1539,7 @@ export class UserTriggerTaskReq extends jspb.Message {
 export namespace UserTriggerTaskReq {
     export type AsObject = {
         taskId: string,
-        triggerMetadata?: TriggerMetadata.AsObject,
+        reason?: TriggerReason.AsObject,
         isBlocking: boolean,
     }
 }
