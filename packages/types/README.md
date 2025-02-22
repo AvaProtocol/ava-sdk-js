@@ -4,7 +4,7 @@
 
 ## Installation
 
-To install `@avaprotocol/types`, use npm:
+To install `@avaprotocol/types`, run the following command:
 
 ```bash
 npm install @avaprotocol/types

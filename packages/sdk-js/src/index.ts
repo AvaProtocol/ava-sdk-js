@@ -6,7 +6,7 @@ import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
-import Execution, { ExecutionProps } from "./models/execution";
+import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
 import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
@@ -29,9 +29,7 @@ import {
   SecretRequestOptions,
 } from "./types";
 
-import TriggerMetadata, {
-  TriggerMetadataProps,
-} from "./models/trigger/metadata";
+import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
 
 class BaseClient {
   readonly endpoint: string;
@@ -444,11 +442,11 @@ export default class Client extends BaseClient {
   async triggerWorkflow(
     {
       id,
-      data,
+      reason,
       isBlocking = false,
     }: {
       id: string;
-      data: TriggerMetadataProps;
+      reason: TriggerReasonProps;
       isBlocking: boolean;
     },
     options?: RequestOptions
@@ -456,7 +454,7 @@ export default class Client extends BaseClient {
     const request = new avs_pb.UserTriggerTaskReq();
 
     request.setTaskId(id);
-    request.setTriggerMetadata(new TriggerMetadata(data).toRequest());
+    request.setReason(new TriggerReason(reason).toRequest());
     request.setIsBlocking(isBlocking);
 
     const result = await this.sendGrpcRequest<
@@ -639,7 +637,14 @@ export {
   Step,
   NodeFactory,
   TriggerFactory,
-  TriggerMetadata,
+  TriggerReason,
 };
 
-export type { WorkflowProps, EdgeProps, ExecutionProps, StepProps };
+export type {
+  WorkflowProps,
+  EdgeProps,
+  ExecutionProps,
+  StepProps,
+  TriggerReasonProps,
+  OutputDataProps,
+};

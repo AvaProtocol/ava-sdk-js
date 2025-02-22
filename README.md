@@ -11,7 +11,7 @@
 
 ## Installation
 
-To install `ava-sdk-js`, use npm:
+To install `ava-sdk-js`, run the following command:
 
 ```bash
 npm install ava-sdk-js
@@ -33,7 +33,7 @@ import { AvaSDK } from "ava-sdk-js";
 
 ## Development
 
-### Install Dependencies and Download Proto Files
+### Install Dependencies and Download Protobuf Files
 
 ```bash
 npm install # install grpc-tools, etc. as dev dependencies

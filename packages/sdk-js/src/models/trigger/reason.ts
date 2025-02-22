@@ -1,9 +1,8 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "../../types";
-import _ from "lodash";
 
 // Union type for all possible trigger data
-export type TriggerMetadataProps =
+export type TriggerReasonProps =
   | { type: TriggerType.FixedTime; epoch: number }
   | { type: TriggerType.Cron; epoch: number }
   | { type: TriggerType.Block; blockNumber: number }
@@ -18,33 +17,33 @@ export type TriggerMetadataProps =
 
 // Convert the number values of gRPC TriggerType to string values of TriggerType
 const convertTriggerType = (
-  grpcType: avs_pb.TriggerMetadata.TriggerType
+  grpcType: avs_pb.TriggerReason.TriggerType
 ): TriggerType => {
   const conversionMap: {
-    [key in avs_pb.TriggerMetadata.TriggerType]: TriggerType;
+    [key in avs_pb.TriggerReason.TriggerType]: TriggerType;
   } = {
-    [avs_pb.TriggerMetadata.TriggerType.FIXEDTIME]: TriggerType.FixedTime,
-    [avs_pb.TriggerMetadata.TriggerType.CRON]: TriggerType.Cron,
-    [avs_pb.TriggerMetadata.TriggerType.BLOCK]: TriggerType.Block,
-    [avs_pb.TriggerMetadata.TriggerType.EVENT]: TriggerType.Event,
-    [avs_pb.TriggerMetadata.TriggerType.MANUAL]: TriggerType.Manual,
-    [avs_pb.TriggerMetadata.TriggerType.UNSET]: TriggerType.Unset,
+    [avs_pb.TriggerReason.TriggerType.FIXEDTIME]: TriggerType.FixedTime,
+    [avs_pb.TriggerReason.TriggerType.CRON]: TriggerType.Cron,
+    [avs_pb.TriggerReason.TriggerType.BLOCK]: TriggerType.Block,
+    [avs_pb.TriggerReason.TriggerType.EVENT]: TriggerType.Event,
+    [avs_pb.TriggerReason.TriggerType.MANUAL]: TriggerType.Manual,
+    [avs_pb.TriggerReason.TriggerType.UNSET]: TriggerType.Unset,
   };
 
   return conversionMap[grpcType];
 };
 
-class TriggerMetadata {
+class TriggerReason {
   type: TriggerType;
   blockNumber?: number;
   epoch?: number;
   logIndex?: number;
   txHash?: string;
 
-  constructor(props: TriggerMetadataProps) {
+  constructor(props: TriggerReasonProps) {
     this.type = props.type;
 
-    // Configure metadata based on trigger type
+    // Configure reason based on trigger type
     switch (props.type) {
       case TriggerType.FixedTime:
       case TriggerType.Cron:
@@ -64,13 +63,13 @@ class TriggerMetadata {
   }
 
   static fromResponse(
-    data: avs_pb.TriggerMetadata | undefined
-  ): TriggerMetadata | undefined {
+    data: avs_pb.TriggerReason | undefined
+  ): TriggerReason | undefined {
     if (!data) {
       return undefined;
     }
 
-    return new TriggerMetadata({
+    return new TriggerReason({
       type: convertTriggerType(data.getType()),
       blockNumber: data.getBlockNumber(),
       epoch: data.getEpoch(),
@@ -79,30 +78,30 @@ class TriggerMetadata {
     });
   }
 
-  toRequest(): avs_pb.TriggerMetadata {
-    const request = new avs_pb.TriggerMetadata();
+  toRequest(): avs_pb.TriggerReason {
+    const request = new avs_pb.TriggerReason();
 
     switch (this.type) {
       case TriggerType.FixedTime:
-        request.setType(avs_pb.TriggerMetadata.TriggerType.FIXEDTIME);
+        request.setType(avs_pb.TriggerReason.TriggerType.FIXEDTIME);
         if (this.epoch) {
           request.setEpoch(this.epoch);
         }
         break;
       case TriggerType.Cron:
-        request.setType(avs_pb.TriggerMetadata.TriggerType.CRON);
+        request.setType(avs_pb.TriggerReason.TriggerType.CRON);
         if (this.epoch) {
           request.setEpoch(this.epoch);
         }
         break;
       case TriggerType.Block:
-        request.setType(avs_pb.TriggerMetadata.TriggerType.BLOCK);
+        request.setType(avs_pb.TriggerReason.TriggerType.BLOCK);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
         break;
       case TriggerType.Event:
-        request.setType(avs_pb.TriggerMetadata.TriggerType.EVENT);
+        request.setType(avs_pb.TriggerReason.TriggerType.EVENT);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
@@ -114,10 +113,10 @@ class TriggerMetadata {
         }
         break;
       case TriggerType.Manual:
-        request.setType(avs_pb.TriggerMetadata.TriggerType.MANUAL);
+        request.setType(avs_pb.TriggerReason.TriggerType.MANUAL);
         break;
       case TriggerType.Unset:
-        request.setType(avs_pb.TriggerMetadata.TriggerType.UNSET);
+        request.setType(avs_pb.TriggerReason.TriggerType.UNSET);
         break;
       default:
         throw new Error("Unsupported trigger type");
@@ -127,4 +126,4 @@ class TriggerMetadata {
   }
 }
 
-export default TriggerMetadata;
+export default TriggerReason;

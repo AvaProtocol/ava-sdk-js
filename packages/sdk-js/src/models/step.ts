@@ -10,6 +10,7 @@ class Step implements StepProps {
   error: string;
   startAt: number;
   endAt: number;
+  inputsList: string[];
 
   constructor(props: StepProps) {
     this.nodeId = props.nodeId;
@@ -19,6 +20,7 @@ class Step implements StepProps {
     this.error = props.error;
     this.startAt = props.startAt;
     this.endAt = props.endAt;
+    this.inputsList = props.inputsList;
   }
 
   static fromResponse(step: avs_pb.Execution.Step): Step {
@@ -30,6 +32,7 @@ class Step implements StepProps {
       error: step.getError(),
       startAt: step.getStartAt(),
       endAt: step.getEndAt(),
+      inputsList: step.getInputsList(),
     });
   }
 
@@ -42,7 +45,7 @@ class Step implements StepProps {
     step.setError(this.error);
     step.setStartAt(this.startAt);
     step.setEndAt(this.endAt);
-
+    step.setInputsList(this.inputsList);
     return step;
   }
 }
