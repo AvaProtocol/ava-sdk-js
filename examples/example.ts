@@ -32,7 +32,8 @@ const config = {
     AP_AVS_RPC: "localhost:2206",
     TEST_TRANSFER_TOKEN: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
-    ORACLE_PRICE_CONTRACT: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+    //ORACLE_PRICE_CONTRACT: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+    ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     // on local development we still target smart wallet on sepolia
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
   },
@@ -41,7 +42,7 @@ const config = {
     AP_AVS_RPC: "aggregator-sepolia.avaprotocol.org:2206",
     TEST_TRANSFER_TOKEN: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
-    ORACLE_PRICE_CONTRACT: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+    ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
   },
 
@@ -49,7 +50,7 @@ const config = {
     AP_AVS_RPC: "aggregator-base-sepolia.avaprotocol.org:3206",
     TEST_TRANSFER_TOKEN: "0x72d587b34f7d21fbc47d55fa3d2c2609d4f25698",
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-    ORACLE_PRICE_CONTRACT: "0x360B0a3f9Fc28Eb2426fa2391Fd2eB13912E1e40",
+    ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
   },
 
@@ -57,7 +58,7 @@ const config = {
     AP_AVS_RPC: "aggregator-base.avaprotocol.org:3206",
     TEST_TRANSFER_TOKEN: "0x72d587b34f7d21fbc47d55fa3d2c2609d4f25698",
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-    ORACLE_PRICE_CONTRACT: "0x360B0a3f9Fc28Eb2426fa2391Fd2eB13912E1e40",
+    ORACLE_PRICE_CONTRACT: "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
   },
 
@@ -65,7 +66,7 @@ const config = {
     AP_AVS_RPC: "aggregator.avaprotocol.org:2206",
     TEST_TRANSFER_TOKEN: "0x72d587b34f7d21fbc47d55fa3d2c2609d4f25698",
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-    ORACLE_PRICE_CONTRACT: "0x360B0a3f9Fc28Eb2426fa2391Fd2eB13912E1e40",
+    ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
   },
 
@@ -91,6 +92,8 @@ if (!config[env as keyof typeof config]) {
 const client = new Client({
   endpoint: config[env as keyof typeof config].AP_AVS_RPC,
 });
+
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-4609037622";
 
 // Generate a signed message from a private key
 async function generateSignature(privateKey: string) {
@@ -371,7 +374,7 @@ async function listSecrets(owner: string, token: string) {
 }
 
 // Schedule a simple job that get price of an asset and post it to a webhook
-async function schedulePriceReport(owner: string, token: string) {
+async function schedulePriceReport(owner: string, token: string, schedule: string) {
   const taskBody = getTaskData();
   const smartWalletAddress = process.argv[3];
   if (!smartWalletAddress) {
@@ -391,6 +394,18 @@ async function schedulePriceReport(owner: string, token: string) {
       interval: 5,
     },
   });
+
+  if (schedule === "schedule-cron") {
+    trigger = TriggerFactory.create({
+      id: triggerId,
+      type: TriggerType.Cron,
+      name: "demoCronTrigger",
+      data: {
+        // every 5 minutes, multiple crontab is also accepted
+        scheduleList: ["*/2 * * * *", ]
+      },
+    });
+  }
 
   const workflow = client.createWorkflow({
     name: `price report every 5 blocks`,
@@ -426,10 +441,14 @@ async function schedulePriceReport(owner: string, token: string) {
         name: "notification",
         type: NodeType.RestAPI,
         data: {
-          // Show case how we're posting to a webhook, you can then go to browser at https://webhook.site/#!/view/51e02e34-e8db-47b0-ba28-ae38fd895478 to inspect the payload that we push
-          url: "https://webhook.site/51e02e34-e8db-47b0-ba28-ae38fd895478",
+          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage",
+          // Using this kind of website so you can interactly look at the request
+          url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
-          body: `The latest price is \${checkPrice.data.answer}`,
+          body: `{
+            "chat_id": -4609037622,
+            "text": "The result of latestRoundData at {{ new Date().getTime() }} of ETH/USD pair on ${ env } network is {{ checkPrice.data.toString() }}."
+          }`,
           headersMap: [["content-type", "application/json"]],
         },
       },
@@ -489,9 +508,14 @@ async function scheduleTelegram(
         data: {
           url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
           method: "POST",
+          //body: `{
+          //  "chat_id": -4609037622,
+          //  "text": "Hello world scheduleTelegram Test. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
+          //}`,
+
           body: `{
-            "chat_id": -4609037622,
-            "text": "Hello world scheduleTelegram Test. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
+            "chat_id": 5197173428,
+            "text": "Hello world scheduleTelegram Test on ${ env } network. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -511,7 +535,130 @@ async function scheduleTelegram(
       type: TriggerType.Block,
       name: "triggerEvery10",
       data: {
-        interval: 3,
+        interval: 5,
+      },
+    }),
+    startAt: Math.floor(Date.now() / 1000) + 30,
+    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    maxExecution: 0, // unlimited run
+  });
+
+  const workflowId = await client.submitWorkflow(workflow, {
+    authKey: token,
+  });
+
+  console.log("create task", workflowId);
+
+  return workflowId;
+}
+
+// sweep is a highly dynamic task where the task isn't a fixed. It is essentially simulate an exchange deposit wallet. It works as follow
+// 1. A task is setup to monitor a certain of token transfer in the wallet. Note: can also monitor all but don't want to waste gas for spam token
+// 2. When the allowed token transfer it the smart wallet, we will transfer out the exact amount into a destination wallet
+//
+// The task demo how contractWrite node can be dynamic based on previous input
+async function scheduleSweep(
+  owner: string,
+  token: string,
+  target: string,
+) {
+  console.log("schedule a sweep task that move incoming fund to another wallet");
+  const wallets = await getWallets(owner, token);
+  if (_.isEmpty(wallets)) {
+    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    return;
+  }
+  const smartWalletAddress = wallets[0].address;
+
+  const nodeIdCheckToken = UlidMonotonic.generate().toCanonical();
+  const nodeIdLog = UlidMonotonic.generate().toCanonical();
+  const nodeIdSweep = UlidMonotonic.generate().toCanonical();
+  const branchIdCheckToken = UlidMonotonic.generate().toCanonical();
+
+  const triggerId = UlidMonotonic.generate().toCanonical();
+
+  const workflow = client.createWorkflow({
+    name: `monitor transfer at ${new Date().toISOString()}`,
+    smartWalletAddress,
+    nodes: NodeFactory.createNodes([
+      {
+        id: nodeIdCheckToken,
+        name: "checktoken",
+        type: NodeType.Branch,
+        data: {
+          conditionsList: [
+            {
+              id: branchIdCheckToken,
+              type: "if",
+              // This can be an or to only sweep whitelist token such as usd and link
+              expression: `["0x036cbd53842c5426634e7929541ec2318f3dcf7e", "0xe4ab69c077896252fafbd49efd26b5d171a32410"].indexOf(demoTriggerName.data.address.toLowerCase()) >= 0`,
+            },
+          ],
+        },
+      },
+      {
+        id: nodeIdLog,
+        name: "log",
+        type: NodeType.RestAPI,
+        data: {
+          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          url: "https://wet-butcher-89.webhook.cool",
+          method: "POST",
+          // Update the chat id according to your own telegram bot
+          body: `{{ demoTriggerName.data.toString() }}`,
+          headersMap: [["content-type", "application/json"]],
+        },
+      },
+
+      {
+        id: nodeIdSweep,
+        name: "sweep",
+        type: NodeType.ContractWrite,
+        data: {
+          // At  run time this is dynamically evaluate
+          contractAddress: "{{demoTriggerName.data.address}}",
+          // Transfer whatever coming in amount out
+          callData: "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}"
+          // 000000000000000000000000000000000000000000000000000000000000003e"
+        },
+      },
+    ]),
+
+    edges: [
+      new Edge({
+        id: UlidMonotonic.generate().toCanonical(),
+        source: triggerId,
+        target: nodeIdCheckToken,
+      }),
+      new Edge({
+        id: UlidMonotonic.generate().toCanonical(),
+        source: `${nodeIdCheckToken}.${branchIdCheckToken}`,
+        target: nodeIdLog,
+      }),
+      new Edge({
+        id: UlidMonotonic.generate().toCanonical(),
+        source: nodeIdLog,
+        target: nodeIdSweep,
+      }),
+    ],
+
+    trigger: TriggerFactory.create({
+      id: triggerId,
+      type: TriggerType.Event,
+      name: "demoTriggerName",
+      data: {
+        expression: "",
+        matcherList: [
+          {
+            type: "topics",
+            valueList: [
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "",
+              // The wallet to monitor here
+              target,
+            ],
+          },
+        ],
       },
     }),
     startAt: Math.floor(Date.now() / 1000) + 30,
@@ -561,9 +708,8 @@ async function scheduleMonitorTransfer(
             {
               id: branchIdCheckAmount,
               type: "if",
-              expression: `
-                demoTriggerName.data.address == "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238" && Number(demoTriggerName.data.value_formatted) > 1
-              `,
+              //expression: `demoTriggerName.data.address == "0x036cbd53842c5426634e7929541ec2318f3dcf7e" && Number(demoTriggerName.data.value_formatted) > 1`,
+              expression: `demoTriggerName.data.address == "0x036cbd53842c5426634e7929541ec2318f3dcf7e" && Number(demoTriggerName.data.value_formatted) > 0.005`,
             },
           ],
         },
@@ -573,7 +719,8 @@ async function scheduleMonitorTransfer(
         name: "notification",
         type: NodeType.RestAPI,
         data: {
-          url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
           // Update the chat id according to your own telegram bot
           body: `{
@@ -607,10 +754,11 @@ async function scheduleMonitorTransfer(
         matcherList: [
           {
             type: "topics",
-            value: [
+            valueList: [
               "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
               "",
-              "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+              //"0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+              target,
             ],
           },
         ],
@@ -636,6 +784,9 @@ const main = async (cmd: string) => {
   const token = result.authKey;
 
   switch (cmd) {
+    case "auth-key":
+        console.log("The authkey associate with the EOA is", token);
+        break;
     case "wallet":
       const wallets = await getWallets(owner, token);
       console.log(
@@ -662,11 +813,14 @@ const main = async (cmd: string) => {
     case "schedule-telegram":
       scheduleTelegram(owner, token);
       break;
+    case "schedule-sweep":
+      scheduleSweep(owner, token, process.argv[3]);
+      break;
     case "schedule":
     case "schedule-cron":
     case "schedule-fixed":
     case "schedule-manual":
-      const resultSchedule = await schedulePriceReport(owner, token);
+      const resultSchedule = await schedulePriceReport(owner, token, cmd);
       break;
 
     case "tasks":
@@ -722,6 +876,7 @@ const main = async (cmd: string) => {
       schedule-cron <smart-wallet-address>:               same as above, but run on cron
       schedule-monitor <wallet-address>:                  to monitor erc20 in/out for an address
       schedule-telegram:                                  to schedule a dummy task that send a fix message to telegram every 10 blocks
+      schedule-sweep:                                     when fund arrive to smart wallet, route them to other address, simulate exchange deposit
       trigger <task-id> <trigger-metadata>:               manually trigger a task. Example:
                                                             trigger abcdef '{"block_number":1234}' for blog trigger
                                                             trigger abcdef '{"block_number":1234, "log_index":312,"tx_hash":"0x123"}' for event trigger
@@ -731,6 +886,7 @@ const main = async (cmd: string) => {
       create-secret name value:                           create a user secret that is available to all task
       list-secrets name value:                            create a user secret that is available to all task
       gen-task-data:                                      generate a task data for a contract call
+      auth-key:                                            get auth key for your EOA when you want to construct grpc call manually
       `);
   }
 };
