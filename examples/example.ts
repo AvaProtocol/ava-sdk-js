@@ -617,7 +617,8 @@ async function scheduleSweep(
         data: {
           // At  run time this is dynamically evaluate
           contractAddress: "{{demoTriggerName.data.address}}",
-          // Transfer whatever coming in amount out
+          // Transfer whatever coming in to 0xe0f7d11fd714674722d325cd86062a5f1882e13a
+          // Learn more how to compute these here https://ethereum.stackexchange.com/questions/114146/how-do-i-manually-encode-and-send-transaction-data and https://docs.ethers.org/v6/api/abi/#Interface-encodeFunctionData
           callData: "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}"
           // 000000000000000000000000000000000000000000000000000000000000003e"
         },
@@ -876,7 +877,7 @@ const main = async (cmd: string) => {
       schedule-cron <smart-wallet-address>:               same as above, but run on cron
       schedule-monitor <wallet-address>:                  to monitor erc20 in/out for an address
       schedule-telegram:                                  to schedule a dummy task that send a fix message to telegram every 10 blocks
-      schedule-sweep:                                     when fund arrive to smart wallet, route them to other address, simulate exchange deposit
+      schedule-sweep <smart-wallet-address>:              when fund arrive to smart wallet, route them to other address, simulate exchange deposit
       trigger <task-id> <trigger-metadata>:               manually trigger a task. Example:
                                                             trigger abcdef '{"block_number":1234}' for blog trigger
                                                             trigger abcdef '{"block_number":1234, "log_index":312,"tx_hash":"0x123"}' for event trigger
