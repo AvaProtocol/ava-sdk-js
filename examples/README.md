@@ -32,6 +32,8 @@ and it will show the usage of the script with all the actions that you can do.
 
 ## Example commands
 
+Note: please don't just copy and run these example command. Read the code to understand what are these parameter.
+
 ```
 node dist/example.js create-wallet 1
 node dist/example.js wallet
@@ -55,4 +57,13 @@ node dist/example.js trigger $WORKFLOW_ID '{"tx_hash": "0x74edc53c374eb0947909fd
 
 # list all the executions of the workflow
 node dist/example.js executions $WORKFLOW_ID
+
+# Schedule a cron task that post the result to webhook.site very 5 mins
+# Please check and update accordingly your smart wallet
+# This task require that we are passing a smart wallet
+n dist/example.js schedule-cron '0x5Afb1B1bc212C6417C575A78bf9921Cc05F6d3E2'
+
+
+# schedule an auto sweep task where fund transfer to the smart wallet will automatically move out to the 0x036cbd53842c5426634e7929541ec2318f3dcf7e wallet
+n dist/example.js schedule-sweep 0x036cbd53842c5426634e7929541ec2318f3dcf7e
 ```
