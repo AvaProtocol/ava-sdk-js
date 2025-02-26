@@ -442,11 +442,11 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
         type: NodeType.RestAPI,
         data: {
           //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage",
-          // Using this kind of website so you can interactly look at the request
+          // Using this kind of website so you can interactly look at the request body, once it looks good and match telegram style, uncomment to use the above telegram url. It is important to use your own chat id
           url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
           body: `{
-            "chat_id": -4609037622,
+            "chat_id": ${ CHAT_ID },
             "text": "The result of latestRoundData at {{ new Date().getTime() }} of ETH/USD pair on ${ env } network is {{ checkPrice.data.toString() }}."
           }`,
           headersMap: [["content-type", "application/json"]],
