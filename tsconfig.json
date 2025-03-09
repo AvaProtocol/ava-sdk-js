@@ -12,8 +12,8 @@
     "baseUrl": ".",
     "paths": {
       "@/grpc_codegen/*": ["grpc_codegen/*"],
-      "@/sdk-js/*": ["packages/sdk-js/*"],
-      "@/types/*": ["packages/types/*"]
+      "@avaprotocol/sdk-js": ["packages/sdk-js/src/*"],
+      "@avaprotocol/types": ["packages/types/*"]
     }
   },
   "include": ["grpc_codegen/**/*", "tests", "examples"],

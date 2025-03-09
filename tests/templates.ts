@@ -14,9 +14,9 @@ import {
   BranchNodeProps,
   CustomCodeLangs,
   FilterNodeProps,
-} from "@/sdk-js/dist";
+} from "@avaprotocol/sdk-js";
 import { getNextId } from "./utils";
-import { NodeType } from "@/types/dist";
+import { NodeType } from "@avaprotocol/types";
 export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
 
 export const defaultTriggerId = getNextId();

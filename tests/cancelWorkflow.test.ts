@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client from "@/sdk-js/dist";
+import { Client } from "@avaprotocol/sdk-js";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -12,7 +12,7 @@ import {
   submitWorkflowAndQueueForRemoval,
 } from "./utils";
 import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
-import { WorkflowStatus } from "@/sdk-js/dist";
+import { WorkflowStatus } from "@avaprotocol/types";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });

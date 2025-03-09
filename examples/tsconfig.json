@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "outDir": "./dist",
+    "baseUrl": ".",
+  },
+  "include": ["example.ts"]
+}

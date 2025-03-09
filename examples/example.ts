@@ -1,26 +1,19 @@
-import Client, {
+import {
+  Client,
   TriggerFactory,
   TriggerType,
   TriggerReason,
   NodeFactory,
   Edge,
-} from "@/sdk-js/dist";
+} from "@avaprotocol/sdk-js";
 
-import { NodeType } from "@/types/dist";
-import Secret from "@/sdk-js/dist";
+import { NodeType, getKeyRequestMessage } from "@avaprotocol/types";
 
-const {
-  getKeyRequestMessage,
-  GetKeyRequestMessage,
-  GetKeyRequestApiKey,
-  GetKeyRequestSignature,
-} = require("@/types/dist");
-
-const _ = require("lodash");
-const { ethers } = require("ethers");
-const { Wallet } = ethers;
-const { UlidMonotonic } = require("id128");
-const util = require("node:util");
+import _ from "lodash";
+import { ethers } from "ethers";
+import id128library from "id128";
+import util from "node:util";
+const { UlidMonotonic } = id128library;
 
 const env = process.env.ENV || "development";
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
@@ -352,7 +345,7 @@ async function createSecret(
   name: string,
   secret: string
 ) {
-  const result = await client.createSecret(new Secret({ name, secret }), {
+  const result = await client.createSecret(name, secret, {
     authKey: token,
   });
 
@@ -363,12 +356,9 @@ async function createSecret(
 }
 
 async function listSecrets(owner: string, token: string) {
-  const result = await client.listSecrets(
-    {},
-    {
-      authKey: token,
-    }
-  );
+  const result = await client.listSecrets({
+    authKey: token,
+  });
 
   console.log("Secrets:", util.inspect(result, { depth: 6, colors: true }));
 }
@@ -481,14 +471,13 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
 }
 
 // setup a task to monitor in/out transfer for a wallet and send notification
-async function scheduleTelegram(
-  owner: string,
-  token: string
-) {
+async function scheduleTelegram(owner: string, token: string) {
   console.log("schedule a dummy telegram message");
   const wallets = await getWallets(owner, token);
   if (_.isEmpty(wallets)) {
-    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    console.log(
+      "please create at least one wallet. this example will then auto pick the first wallet to schedule the test"
+    );
     return;
   }
   const smartWalletAddress = wallets[0].address;
@@ -685,7 +674,9 @@ async function scheduleMonitorTransfer(
   console.log("schedule a monitor transfer task to the first smart wallet");
   const wallets = await getWallets(owner, token);
   if (_.isEmpty(wallets)) {
-    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    console.log(
+      "please create at least one wallet. this example will then auto pick the first wallet to schedule the test"
+    );
     return;
   }
   const smartWalletAddress = wallets[0].address;

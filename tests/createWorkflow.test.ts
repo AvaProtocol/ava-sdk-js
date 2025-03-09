@@ -1,6 +1,7 @@
 import * as _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, {
+import {
+  Client,
   Edge,
   Workflow,
   NodeFactory,
@@ -8,8 +9,8 @@ import Client, {
   TriggerType,
   WorkflowStatus,
   BranchNodeData,
-} from "@/sdk-js/dist";
-import { NodeType } from "@/types/dist";
+} from "@avaprotocol/sdk-js";
+import { NodeType } from "@avaprotocol/types";
 import dotenv from "dotenv";
 import path from "path";
 import {

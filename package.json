@@ -6,6 +6,8 @@
     "yarn": ">=1.22.19"
   },
   "private": true,
+  "type": "commonjs",
+  "license": "Apache-2.0",
   "workspaces": [
     "packages/*"
   ],
@@ -51,6 +53,5 @@
     "ts-jest": "^29.2.5",
     "tsup": "^8.0.2",
     "typescript": "^5.4.2"
-  },
-  "type": "commonjs"
+  }
 }

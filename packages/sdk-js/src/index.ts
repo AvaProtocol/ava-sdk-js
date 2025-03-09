@@ -10,6 +10,7 @@ import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
 import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
+import Secret, { SecretProps } from "./models/secret";
 import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
@@ -207,7 +208,7 @@ class BaseClient {
   }
 }
 
-export default class Client extends BaseClient {
+class Client extends BaseClient {
   constructor(config: ClientOption) {
     super(config);
   }
@@ -631,6 +632,7 @@ export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
 export {
+  Client,
   Workflow,
   Edge,
   Execution,
@@ -638,6 +640,7 @@ export {
   NodeFactory,
   TriggerFactory,
   TriggerReason,
+  Secret,
 };
 
 export type {
@@ -647,4 +650,5 @@ export type {
   StepProps,
   TriggerReasonProps,
   OutputDataProps,
+  SecretProps,
 };
