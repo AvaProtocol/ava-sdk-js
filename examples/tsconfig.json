@@ -3,12 +3,7 @@
     "module": "commonjs",
     "target": "es6",
     "outDir": "./dist",
-    "rootDir": ".",
     "baseUrl": ".",
-    "paths": {
-      "@avaprotocol/sdk-js": ["../packages/sdk-js/src/*"],
-      "@avaprotocol/types": ["../packages/types/src/*"]
-    }
   },
   "include": ["example.ts"]
 }
