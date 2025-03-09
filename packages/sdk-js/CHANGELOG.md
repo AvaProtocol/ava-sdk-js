@@ -1,5 +1,17 @@
 # @avaprotocol/sdk-js
 
+## 1.3.8
+
+### Patch Changes
+
+- Made Client a regular export instead of default
+
+## 1.3.7
+
+### Patch Changes
+
+- Added Secret and TriggerReason
+
 ## 1.3.6
 
 ### Patch Changes

@@ -28,7 +28,7 @@ yarn add @avaprotocol/sdk-js
 Here’s a quick example of how to use the SDK to get started with Ava Protocol:
 
 ```typescript
-import Client from "@avaprotocol/sdk-js";
+import { Client } from "@avaprotocol/sdk-js";
 import { getServerSession } from "next-auth";
 import { isAuthKeyValid } from "./utils";
 import { authOptions } from "./auth/[...nextauth]/route";
