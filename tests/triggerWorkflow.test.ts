@@ -1,10 +1,11 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, {
+import {
+  Client,
   TriggerFactory,
   TriggerType,
   ExecutionStatus,
   WorkflowStatus,
-} from "@/sdk-js/dist";
+} from "@avaprotocol/sdk-js";
 
 import dotenv from "dotenv";
 import path from "path";
@@ -27,7 +28,7 @@ import {
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
-jest.setTimeout(TIMEOUT_DURATION);  // Set timeout to 15 seconds for all tests in this file
+jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
 
 // Get environment variables with type safety
@@ -154,9 +155,7 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.result)).toBe(true);
     expect(executions2.result.length).toEqual(1);
-    expect(executions2.result[0].triggerReason?.type).toEqual(
-      TriggerType.Cron
-    );
+    expect(executions2.result[0].triggerReason?.type).toEqual(TriggerType.Cron);
     expect(executions2.result[0].triggerReason?.epoch).toEqual(epoch + 60);
 
     const workflow = await client.getWorkflow(workflowId);
@@ -269,9 +268,7 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].triggerReason?.blockNumber).toEqual(
       blockNumber + 5
     );
-    expect(executions2.result[0].triggerReason?.txHash).toEqual(
-      "0x1234567890"
-    );
+    expect(executions2.result[0].triggerReason?.txHash).toEqual("0x1234567890");
     expect(executions2.result[0].triggerReason?.type).toEqual(
       TriggerType.Event
     );

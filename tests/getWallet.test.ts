@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import Client, { TriggerFactory, TriggerType } from "@/sdk-js/dist";
+import { Client, TriggerFactory, TriggerType } from "@avaprotocol/sdk-js";
 
 import dotenv from "dotenv";
 import path from "path";

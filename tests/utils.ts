@@ -1,10 +1,15 @@
-import Client, { Workflow, WorkflowProps, WorkflowStatus } from "@/sdk-js/dist";
+import {
+  Client,
+  Workflow,
+  WorkflowProps,
+  WorkflowStatus,
+} from "@avaprotocol/sdk-js";
 import {
   getKeyRequestMessage,
   GetKeyRequestMessage,
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
-} from "@/types/dist";
+} from "@avaprotocol/types";
 
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";

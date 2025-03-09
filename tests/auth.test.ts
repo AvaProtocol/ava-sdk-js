@@ -1,6 +1,6 @@
 import _ from "lodash";
-import Client from "@/sdk-js/dist";
-import { GetKeyRequestSignature, WorkflowStatus } from "@/types/dist";
+import { Client } from "@avaprotocol/sdk-js";
+import { GetKeyRequestSignature, WorkflowStatus } from "@avaprotocol/types";
 import dotenv from "dotenv";
 import path from "path";
 import {
@@ -526,12 +526,16 @@ describe("Authentication Tests", () => {
       );
 
       client.setAuthKey(undefined);
-      await expect(client.getWorkflow(workflowId)).rejects.toThrow(/unauthenticated/i);
+      await expect(client.getWorkflow(workflowId)).rejects.toThrow(
+        /unauthenticated/i
+      );
     });
 
     test("getWorkflows should throw error", async () => {
       client.setAuthKey(undefined);
-      await expect(client.getWorkflows([eoaAddress])).rejects.toThrow(/unauthenticated/i);
+      await expect(client.getWorkflows([eoaAddress])).rejects.toThrow(
+        /unauthenticated/i
+      );
     });
 
     test("cancelWorkflow should throw error", async () => {
@@ -555,7 +559,9 @@ describe("Authentication Tests", () => {
       await client.deleteWorkflow(workflowId, { authKey: authKeyViaSignature });
 
       client.setAuthKey(undefined);
-      await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(/unauthenticated/i);
+      await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(
+        /unauthenticated/i
+      );
     });
 
     test("deleteWorkflow should throw error", async () => {
@@ -574,7 +580,9 @@ describe("Authentication Tests", () => {
       );
 
       client.setAuthKey(undefined);
-      await expect(client.deleteWorkflow(workflowId)).rejects.toThrow(/unauthenticated/i);
+      await expect(client.deleteWorkflow(workflowId)).rejects.toThrow(
+        /unauthenticated/i
+      );
     });
   });
 });
