@@ -72,18 +72,24 @@ print_status "Generating API key"
 API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)
 echo "Generated API key: $API_KEY"
 print_status "Updating TEST_API_KEY in .env.test"
-sed -i "s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/" .env.test
+# Use sed with compatibility for both Linux and macOS
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS version
+  sed -i '' "s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/" .env.test
+else
+  # Linux version
+  sed -i "s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/" .env.test
+fi
 
 # Set ENDPOINT in .env.test
 print_status "Setting ENDPOINT in .env.test"
-sed -i "s/^ENDPOINT=.*/ENDPOINT=localhost:2206/" .env.test
-
-# Download proto files and generate TypeScript types
-print_status "Downloading proto files"
-yarn run proto-download
-
-print_status "Generating TypeScript types"
-yarn run gen-protoc || print_warning "Failed to generate TypeScript types, continuing anyway..."
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS version
+  sed -i '' "s/^ENDPOINT=.*/ENDPOINT=localhost:2206/" .env.test
+else
+  # Linux version
+  sed -i "s/^ENDPOINT=.*/ENDPOINT=localhost:2206/" .env.test
+fi
 
 # Build the project
 print_status "Building the project"
