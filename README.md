@@ -103,6 +103,29 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
 
    This will execute all unit and integration tests. Make sure all tests pass in local dev environment before submitting a pull request or deploying changes.
 
+### Running Tests with Docker
+
+To run tests with Docker (replicating the GitHub Actions workflow), use the following command:
+
+```bash
+yarn test:docker
+```
+
+This script will:
+1. Pull the Docker container defined in docker-compose.yml
+2. Set up parameters and environment variables
+3. Run the tests
+
+To run specific tests, you can pass a test name pattern:
+
+```bash
+yarn test:docker "authWithSignature"
+```
+
+Make sure to set the following environment variables in your `.env.test` file:
+- `TEST_PRIVATE_KEY`: A valid Ethereum private key for testing
+- `CHAIN_ENDPOINT`: A valid Ethereum RPC endpoint (e.g., Infura, Alchemy)
+
 ## Release Process
 
 ### Releasing a new version for development
