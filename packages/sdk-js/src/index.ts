@@ -341,6 +341,7 @@ class Client extends BaseClient {
     options?: GetExecutionsRequest
   ): Promise<{ cursor: string; result: Execution[]; hasMore: boolean }> {
     const request = new avs_pb.ListExecutionsReq();
+
     request.setTaskIdsList(workflows);
 
     // Cusor is implemenent similarly to moral
@@ -350,10 +351,20 @@ class Client extends BaseClient {
 
     request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
 
+    console.log(
+      "🚀 ~ Client ~ before calling sendGrpcRequest ~ request:",
+      request.toObject()
+    );
+
     const result = await this.sendGrpcRequest<
       avs_pb.ListExecutionsResp,
       avs_pb.ListExecutionsReq
     >("listExecutions", request, options);
+
+    console.log(
+      "🚀 ~ Client ~ after calling sendGrpcRequest ~ response:",
+      result.toObject()
+    );
 
     return {
       cursor: result.getCursor(),
