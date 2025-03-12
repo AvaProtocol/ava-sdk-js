@@ -36,20 +36,20 @@ import { AvaSDK } from "ava-sdk-js";
 ### Install Dependencies and Download Protobuf Files
 
 ```bash
-npm install # install grpc-tools, etc. as dev dependencies
+yarn # install grpc-tools, etc. as dev dependencies
 ```
 
 Then, run the following command to regenerate the types:
 
 ```bash
 # download the latest .proto file from https://github.com/AvaProtocol/EigenLayer-AVS
-npm run proto-download
+yarn run proto-download
 
 # Generate the TypeScript types and gRPC code based on the downloaded .proto file
-npm run gen-protoc
+yarn run gen-protoc
 
 # Build the source files in to ./dist folder
-npm run build
+yarn run build
 ```
 
 ### Running Tests

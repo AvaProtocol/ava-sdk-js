@@ -5,7 +5,6 @@ import Step from "./step";
 export type StepProps = avs_pb.Execution.Step.AsObject;
 
 export type OutputDataProps =
-  | avs_pb.Execution.EvmLogOutput.AsObject
   | avs_pb.Execution.TransferLogOutput.AsObject
   | avs_pb.Execution.BlockOutput.AsObject
   | avs_pb.Execution.TimeOutput.AsObject

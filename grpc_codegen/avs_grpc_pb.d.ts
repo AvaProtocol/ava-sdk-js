@@ -8,6 +8,8 @@ import * as grpc from "@grpc/grpc-js";
 import * as avs_pb from "./avs_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
+import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     getKey: IAggregatorService_IGetKey;
@@ -27,6 +29,8 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     deleteSecret: IAggregatorService_IDeleteSecret;
     listSecrets: IAggregatorService_IListSecrets;
     updateSecret: IAggregatorService_IUpdateSecret;
+    getWorkflowCount: IAggregatorService_IGetWorkflowCount;
+    getExecutionCount: IAggregatorService_IGetExecutionCount;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -182,6 +186,24 @@ interface IAggregatorService_IUpdateSecret extends grpc.MethodDefinition<avs_pb.
     responseSerialize: grpc.serialize<google_protobuf_wrappers_pb.BoolValue>;
     responseDeserialize: grpc.deserialize<google_protobuf_wrappers_pb.BoolValue>;
 }
+interface IAggregatorService_IGetWorkflowCount extends grpc.MethodDefinition<avs_pb.GetWorkflowCountReq, avs_pb.GetWorkflowCountResp> {
+    path: "/aggregator.Aggregator/GetWorkflowCount";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetWorkflowCountReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetWorkflowCountReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetWorkflowCountResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetWorkflowCountResp>;
+}
+interface IAggregatorService_IGetExecutionCount extends grpc.MethodDefinition<avs_pb.GetExecutionCountReq, avs_pb.GetExecutionCountResp> {
+    path: "/aggregator.Aggregator/GetExecutionCount";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetExecutionCountReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetExecutionCountReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetExecutionCountResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetExecutionCountResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
@@ -203,6 +225,8 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     deleteSecret: grpc.handleUnaryCall<avs_pb.DeleteSecretReq, google_protobuf_wrappers_pb.BoolValue>;
     listSecrets: grpc.handleUnaryCall<avs_pb.ListSecretsReq, avs_pb.ListSecretsResp>;
     updateSecret: grpc.handleUnaryCall<avs_pb.CreateOrUpdateSecretReq, google_protobuf_wrappers_pb.BoolValue>;
+    getWorkflowCount: grpc.handleUnaryCall<avs_pb.GetWorkflowCountReq, avs_pb.GetWorkflowCountResp>;
+    getExecutionCount: grpc.handleUnaryCall<avs_pb.GetExecutionCountReq, avs_pb.GetExecutionCountResp>;
 }
 
 export interface IAggregatorClient {
@@ -257,6 +281,12 @@ export interface IAggregatorClient {
     updateSecret(request: avs_pb.CreateOrUpdateSecretReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     updateSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     updateSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+    getWorkflowCount(request: avs_pb.GetWorkflowCountReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWorkflowCountResp) => void): grpc.ClientUnaryCall;
+    getWorkflowCount(request: avs_pb.GetWorkflowCountReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWorkflowCountResp) => void): grpc.ClientUnaryCall;
+    getWorkflowCount(request: avs_pb.GetWorkflowCountReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWorkflowCountResp) => void): grpc.ClientUnaryCall;
+    getExecutionCount(request: avs_pb.GetExecutionCountReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
+    getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
+    getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -312,4 +342,10 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public updateSecret(request: avs_pb.CreateOrUpdateSecretReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public updateSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public updateSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
+    public getWorkflowCount(request: avs_pb.GetWorkflowCountReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWorkflowCountResp) => void): grpc.ClientUnaryCall;
+    public getWorkflowCount(request: avs_pb.GetWorkflowCountReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWorkflowCountResp) => void): grpc.ClientUnaryCall;
+    public getWorkflowCount(request: avs_pb.GetWorkflowCountReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWorkflowCountResp) => void): grpc.ClientUnaryCall;
+    public getExecutionCount(request: avs_pb.GetExecutionCountReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
+    public getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
+    public getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
 }
