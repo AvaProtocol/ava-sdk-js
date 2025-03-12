@@ -41,18 +41,24 @@ if ! grep -q "CHAIN_ENDPOINT=" .env.test; then
   print_warning "Please update CHAIN_ENDPOINT in .env.test with a valid endpoint"
 fi
 
-# Check if TEST_PRIVATE_KEY is set
-if ! grep -q "TEST_PRIVATE_KEY=[a-zA-Z0-9]" .env.test; then
-  print_error "TEST_PRIVATE_KEY is not set in .env.test"
-  print_error "Please add a valid private key to .env.test"
-  exit 1
+# Step 1: Check if TEST_PRIVATE_KEY is set in the environment
+if [ -z "$TEST_PRIVATE_KEY" ]; then
+  # Step 2: If not set, check the .env.test file
+  if ! grep -q "TEST_PRIVATE_KEY=[a-zA-Z0-9]" .env.test; then
+    print_error "TEST_PRIVATE_KEY is not set in the environment or .env.test"
+    print_error "Please add a valid private key to the environment or .env.test"
+    exit 1
+  else
+    # Load the .env.test file
+    export $(grep -v '^#' .env.test | xargs)
+  fi
 fi
 
 # Ensure config directory exists
 mkdir -p config
 
-# Pull the latest Docker image
-print_status "Pulling the latest Docker image"
+# Step 3: Pull the latest Docker images
+print_status "Pulling the latest Docker images"
 docker pull avaprotocol/avs-dev:latest
 
 # Start the Docker container
