@@ -7,6 +7,8 @@
 import * as jspb from "google-protobuf";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
+import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 export class IdReq extends jspb.Message { 
     getId(): string;
@@ -230,6 +232,28 @@ export namespace ETHTransferNode {
         destination: string,
         amount: string,
     }
+
+
+    export class Output extends jspb.Message { 
+        getTransactionHash(): string;
+        setTransactionHash(value: string): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            transactionHash: string,
+        }
+    }
+
 }
 
 export class ContractWriteNode extends jspb.Message { 
@@ -256,6 +280,37 @@ export namespace ContractWriteNode {
         callData: string,
         contractAbi: string,
     }
+
+
+    export class Output extends jspb.Message { 
+
+        hasUserOp(): boolean;
+        clearUserOp(): void;
+        getUserOp(): Evm.UserOp | undefined;
+        setUserOp(value?: Evm.UserOp): Output;
+
+        hasTxReceipt(): boolean;
+        clearTxReceipt(): void;
+        getTxReceipt(): Evm.TransactionReceipt | undefined;
+        setTxReceipt(value?: Evm.TransactionReceipt): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            userOp?: Evm.UserOp.AsObject,
+            txReceipt?: Evm.TransactionReceipt.AsObject,
+        }
+    }
+
 }
 
 export class ContractReadNode extends jspb.Message { 
@@ -282,6 +337,30 @@ export namespace ContractReadNode {
         callData: string,
         contractAbi: string,
     }
+
+
+    export class Output extends jspb.Message { 
+        clearDataList(): void;
+        getDataList(): Array<google_protobuf_struct_pb.Value>;
+        setDataList(value: Array<google_protobuf_struct_pb.Value>): Output;
+        addData(value?: google_protobuf_struct_pb.Value, index?: number): google_protobuf_struct_pb.Value;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            dataList: Array<google_protobuf_struct_pb.Value.AsObject>,
+        }
+    }
+
 }
 
 export class GraphQLQueryNode extends jspb.Message { 
@@ -310,6 +389,31 @@ export namespace GraphQLQueryNode {
 
         variablesMap: Array<[string, string]>,
     }
+
+
+    export class Output extends jspb.Message { 
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_any_pb.Any | undefined;
+        setData(value?: google_protobuf_any_pb.Any): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            data?: google_protobuf_any_pb.Any.AsObject,
+        }
+    }
+
 }
 
 export class RestAPINode extends jspb.Message { 
@@ -341,6 +445,31 @@ export namespace RestAPINode {
         body: string,
         method: string,
     }
+
+
+    export class Output extends jspb.Message { 
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_any_pb.Any | undefined;
+        setData(value?: google_protobuf_any_pb.Any): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            data?: google_protobuf_any_pb.Any.AsObject,
+        }
+    }
+
 }
 
 export class CustomCodeNode extends jspb.Message { 
@@ -364,6 +493,31 @@ export namespace CustomCodeNode {
         lang: CustomCodeLang,
         source: string,
     }
+
+
+    export class Output extends jspb.Message { 
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_any_pb.Any | undefined;
+        setData(value?: google_protobuf_any_pb.Any): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            data?: google_protobuf_any_pb.Any.AsObject,
+        }
+    }
+
 }
 
 export class Condition extends jspb.Message { 
@@ -412,6 +566,28 @@ export namespace BranchNode {
     export type AsObject = {
         conditionsList: Array<Condition.AsObject>,
     }
+
+
+    export class Output extends jspb.Message { 
+        getConditionId(): string;
+        setConditionId(value: string): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            conditionId: string,
+        }
+    }
+
 }
 
 export class FilterNode extends jspb.Message { 
@@ -435,6 +611,31 @@ export namespace FilterNode {
         expression: string,
         input: string,
     }
+
+
+    export class Output extends jspb.Message { 
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_any_pb.Any | undefined;
+        setData(value?: google_protobuf_any_pb.Any): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            data?: google_protobuf_any_pb.Any.AsObject,
+        }
+    }
+
 }
 
 export class LoopNode extends jspb.Message { 
@@ -499,6 +700,28 @@ export namespace LoopNode {
         restApi?: RestAPINode.AsObject,
         customCode?: CustomCodeNode.AsObject,
     }
+
+
+    export class Output extends jspb.Message { 
+        getData(): string;
+        setData(value: string): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            data: string,
+        }
+    }
+
 
     export enum RunnerCase {
         RUNNER_NOT_SET = 0,
@@ -661,8 +884,8 @@ export class Execution extends jspb.Message {
 
     hasEvmLog(): boolean;
     clearEvmLog(): void;
-    getEvmLog(): Execution.EvmLogOutput | undefined;
-    setEvmLog(value?: Execution.EvmLogOutput): Execution;
+    getEvmLog(): Evm.Log | undefined;
+    setEvmLog(value?: Evm.Log): Execution;
 
     hasBlock(): boolean;
     clearBlock(): void;
@@ -697,7 +920,7 @@ export namespace Execution {
         stepsList: Array<Execution.Step.AsObject>,
         triggerName: string,
         transferLog?: Execution.TransferLogOutput.AsObject,
-        evmLog?: Execution.EvmLogOutput.AsObject,
+        evmLog?: Evm.Log.AsObject,
         block?: Execution.BlockOutput.AsObject,
         time?: Execution.TimeOutput.AsObject,
     }
@@ -708,8 +931,51 @@ export namespace Execution {
         setNodeId(value: string): Step;
         getSuccess(): boolean;
         setSuccess(value: boolean): Step;
-        getOutputData(): string;
-        setOutputData(value: string): Step;
+
+        hasEthTransfer(): boolean;
+        clearEthTransfer(): void;
+        getEthTransfer(): ETHTransferNode.Output | undefined;
+        setEthTransfer(value?: ETHTransferNode.Output): Step;
+
+        hasGraphql(): boolean;
+        clearGraphql(): void;
+        getGraphql(): GraphQLQueryNode.Output | undefined;
+        setGraphql(value?: GraphQLQueryNode.Output): Step;
+
+        hasContractRead(): boolean;
+        clearContractRead(): void;
+        getContractRead(): ContractReadNode.Output | undefined;
+        setContractRead(value?: ContractReadNode.Output): Step;
+
+        hasContractWrite(): boolean;
+        clearContractWrite(): void;
+        getContractWrite(): ContractWriteNode.Output | undefined;
+        setContractWrite(value?: ContractWriteNode.Output): Step;
+
+        hasCustomCode(): boolean;
+        clearCustomCode(): void;
+        getCustomCode(): CustomCodeNode.Output | undefined;
+        setCustomCode(value?: CustomCodeNode.Output): Step;
+
+        hasRestApi(): boolean;
+        clearRestApi(): void;
+        getRestApi(): RestAPINode.Output | undefined;
+        setRestApi(value?: RestAPINode.Output): Step;
+
+        hasBranch(): boolean;
+        clearBranch(): void;
+        getBranch(): BranchNode.Output | undefined;
+        setBranch(value?: BranchNode.Output): Step;
+
+        hasFilter(): boolean;
+        clearFilter(): void;
+        getFilter(): FilterNode.Output | undefined;
+        setFilter(value?: FilterNode.Output): Step;
+
+        hasLoop(): boolean;
+        clearLoop(): void;
+        getLoop(): LoopNode.Output | undefined;
+        setLoop(value?: LoopNode.Output): Step;
         getLog(): string;
         setLog(value: string): Step;
         getError(): string;
@@ -722,6 +988,8 @@ export namespace Execution {
         getInputsList(): Array<string>;
         setInputsList(value: Array<string>): Step;
         addInputs(value: string, index?: number): string;
+
+        getOutputDataCase(): Step.OutputDataCase;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Step.AsObject;
@@ -737,13 +1005,35 @@ export namespace Execution {
         export type AsObject = {
             nodeId: string,
             success: boolean,
-            outputData: string,
+            ethTransfer?: ETHTransferNode.Output.AsObject,
+            graphql?: GraphQLQueryNode.Output.AsObject,
+            contractRead?: ContractReadNode.Output.AsObject,
+            contractWrite?: ContractWriteNode.Output.AsObject,
+            customCode?: CustomCodeNode.Output.AsObject,
+            restApi?: RestAPINode.Output.AsObject,
+            branch?: BranchNode.Output.AsObject,
+            filter?: FilterNode.Output.AsObject,
+            loop?: LoopNode.Output.AsObject,
             log: string,
             error: string,
             startAt: number,
             endAt: number,
             inputsList: Array<string>,
         }
+
+        export enum OutputDataCase {
+            OUTPUT_DATA_NOT_SET = 0,
+            ETH_TRANSFER = 3,
+            GRAPHQL = 4,
+            CONTRACT_READ = 5,
+            CONTRACT_WRITE = 6,
+            CUSTOM_CODE = 7,
+            REST_API = 8,
+            BRANCH = 9,
+            FILTER = 10,
+            LOOP = 11,
+        }
+
     }
 
     export class TransferLogOutput extends jspb.Message { 
@@ -795,49 +1085,6 @@ export namespace Execution {
             toAddress: string,
             value: string,
             valueFormatted: string,
-            transactionIndex: number,
-        }
-    }
-
-    export class EvmLogOutput extends jspb.Message { 
-        getAddress(): string;
-        setAddress(value: string): EvmLogOutput;
-        getBlockHash(): string;
-        setBlockHash(value: string): EvmLogOutput;
-        getBlockNumber(): number;
-        setBlockNumber(value: number): EvmLogOutput;
-        getData(): string;
-        setData(value: string): EvmLogOutput;
-        getIndex(): number;
-        setIndex(value: number): EvmLogOutput;
-        clearTopicsList(): void;
-        getTopicsList(): Array<string>;
-        setTopicsList(value: Array<string>): EvmLogOutput;
-        addTopics(value: string, index?: number): string;
-        getTransactionHash(): string;
-        setTransactionHash(value: string): EvmLogOutput;
-        getTransactionIndex(): number;
-        setTransactionIndex(value: number): EvmLogOutput;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): EvmLogOutput.AsObject;
-        static toObject(includeInstance: boolean, msg: EvmLogOutput): EvmLogOutput.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: EvmLogOutput, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): EvmLogOutput;
-        static deserializeBinaryFromReader(message: EvmLogOutput, reader: jspb.BinaryReader): EvmLogOutput;
-    }
-
-    export namespace EvmLogOutput {
-        export type AsObject = {
-            address: string,
-            blockHash: string,
-            blockNumber: number,
-            data: string,
-            index: number,
-            topicsList: Array<string>,
-            transactionHash: string,
             transactionIndex: number,
         }
     }
@@ -1693,6 +1940,278 @@ export namespace DeleteSecretReq {
         workflowId: string,
         orgId: string,
     }
+}
+
+export class GetWorkflowCountReq extends jspb.Message { 
+    clearAddressesList(): void;
+    getAddressesList(): Array<string>;
+    setAddressesList(value: Array<string>): GetWorkflowCountReq;
+    addAddresses(value: string, index?: number): string;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetWorkflowCountReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetWorkflowCountReq): GetWorkflowCountReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetWorkflowCountReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetWorkflowCountReq;
+    static deserializeBinaryFromReader(message: GetWorkflowCountReq, reader: jspb.BinaryReader): GetWorkflowCountReq;
+}
+
+export namespace GetWorkflowCountReq {
+    export type AsObject = {
+        addressesList: Array<string>,
+    }
+}
+
+export class GetWorkflowCountResp extends jspb.Message { 
+    getTotal(): number;
+    setTotal(value: number): GetWorkflowCountResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetWorkflowCountResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetWorkflowCountResp): GetWorkflowCountResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetWorkflowCountResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetWorkflowCountResp;
+    static deserializeBinaryFromReader(message: GetWorkflowCountResp, reader: jspb.BinaryReader): GetWorkflowCountResp;
+}
+
+export namespace GetWorkflowCountResp {
+    export type AsObject = {
+        total: number,
+    }
+}
+
+export class GetExecutionCountReq extends jspb.Message { 
+    clearWorkflowIdsList(): void;
+    getWorkflowIdsList(): Array<string>;
+    setWorkflowIdsList(value: Array<string>): GetExecutionCountReq;
+    addWorkflowIds(value: string, index?: number): string;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetExecutionCountReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetExecutionCountReq): GetExecutionCountReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetExecutionCountReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetExecutionCountReq;
+    static deserializeBinaryFromReader(message: GetExecutionCountReq, reader: jspb.BinaryReader): GetExecutionCountReq;
+}
+
+export namespace GetExecutionCountReq {
+    export type AsObject = {
+        workflowIdsList: Array<string>,
+    }
+}
+
+export class GetExecutionCountResp extends jspb.Message { 
+    getTotal(): number;
+    setTotal(value: number): GetExecutionCountResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetExecutionCountResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetExecutionCountResp): GetExecutionCountResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetExecutionCountResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetExecutionCountResp;
+    static deserializeBinaryFromReader(message: GetExecutionCountResp, reader: jspb.BinaryReader): GetExecutionCountResp;
+}
+
+export namespace GetExecutionCountResp {
+    export type AsObject = {
+        total: number,
+    }
+}
+
+export class Evm extends jspb.Message { 
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Evm.AsObject;
+    static toObject(includeInstance: boolean, msg: Evm): Evm.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Evm, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Evm;
+    static deserializeBinaryFromReader(message: Evm, reader: jspb.BinaryReader): Evm;
+}
+
+export namespace Evm {
+    export type AsObject = {
+    }
+
+
+    export class Log extends jspb.Message { 
+        getAddress(): string;
+        setAddress(value: string): Log;
+        clearTopicsList(): void;
+        getTopicsList(): Array<string>;
+        setTopicsList(value: Array<string>): Log;
+        addTopics(value: string, index?: number): string;
+        getData(): string;
+        setData(value: string): Log;
+        getBlockNumber(): number;
+        setBlockNumber(value: number): Log;
+        getTransactionHash(): string;
+        setTransactionHash(value: string): Log;
+        getTransactionIndex(): number;
+        setTransactionIndex(value: number): Log;
+        getBlockHash(): string;
+        setBlockHash(value: string): Log;
+        getIndex(): number;
+        setIndex(value: number): Log;
+        getRemoved(): boolean;
+        setRemoved(value: boolean): Log;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Log.AsObject;
+        static toObject(includeInstance: boolean, msg: Log): Log.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Log, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Log;
+        static deserializeBinaryFromReader(message: Log, reader: jspb.BinaryReader): Log;
+    }
+
+    export namespace Log {
+        export type AsObject = {
+            address: string,
+            topicsList: Array<string>,
+            data: string,
+            blockNumber: number,
+            transactionHash: string,
+            transactionIndex: number,
+            blockHash: string,
+            index: number,
+            removed: boolean,
+        }
+    }
+
+    export class TransactionReceipt extends jspb.Message { 
+        getHash(): string;
+        setHash(value: string): TransactionReceipt;
+        getBlockHash(): string;
+        setBlockHash(value: string): TransactionReceipt;
+        getBlockNumber(): number;
+        setBlockNumber(value: number): TransactionReceipt;
+        getFrom(): string;
+        setFrom(value: string): TransactionReceipt;
+        getGasUsed(): number;
+        setGasUsed(value: number): TransactionReceipt;
+        getGasPrice(): number;
+        setGasPrice(value: number): TransactionReceipt;
+        getCumulativeGasUsed(): number;
+        setCumulativeGasUsed(value: number): TransactionReceipt;
+        getFee(): number;
+        setFee(value: number): TransactionReceipt;
+        getContractAddress(): string;
+        setContractAddress(value: string): TransactionReceipt;
+        getIndex(): number;
+        setIndex(value: number): TransactionReceipt;
+        clearLogsList(): void;
+        getLogsList(): Array<string>;
+        setLogsList(value: Array<string>): TransactionReceipt;
+        addLogs(value: string, index?: number): string;
+        getLogsBloom(): string;
+        setLogsBloom(value: string): TransactionReceipt;
+        getRoot(): string;
+        setRoot(value: string): TransactionReceipt;
+        getStatus(): number;
+        setStatus(value: number): TransactionReceipt;
+        getType(): number;
+        setType(value: number): TransactionReceipt;
+        getBlobGasPrice(): number;
+        setBlobGasPrice(value: number): TransactionReceipt;
+        getBlobGasUsed(): number;
+        setBlobGasUsed(value: number): TransactionReceipt;
+        getTo(): string;
+        setTo(value: string): TransactionReceipt;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): TransactionReceipt.AsObject;
+        static toObject(includeInstance: boolean, msg: TransactionReceipt): TransactionReceipt.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: TransactionReceipt, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): TransactionReceipt;
+        static deserializeBinaryFromReader(message: TransactionReceipt, reader: jspb.BinaryReader): TransactionReceipt;
+    }
+
+    export namespace TransactionReceipt {
+        export type AsObject = {
+            hash: string,
+            blockHash: string,
+            blockNumber: number,
+            from: string,
+            gasUsed: number,
+            gasPrice: number,
+            cumulativeGasUsed: number,
+            fee: number,
+            contractAddress: string,
+            index: number,
+            logsList: Array<string>,
+            logsBloom: string,
+            root: string,
+            status: number,
+            type: number,
+            blobGasPrice: number,
+            blobGasUsed: number,
+            to: string,
+        }
+    }
+
+    export class UserOp extends jspb.Message { 
+        getSender(): string;
+        setSender(value: string): UserOp;
+        getNonce(): string;
+        setNonce(value: string): UserOp;
+        getInitCode(): string;
+        setInitCode(value: string): UserOp;
+        getCallData(): string;
+        setCallData(value: string): UserOp;
+        getCallGasLimit(): string;
+        setCallGasLimit(value: string): UserOp;
+        getVerificationGasLimit(): string;
+        setVerificationGasLimit(value: string): UserOp;
+        getPreVerificationGas(): string;
+        setPreVerificationGas(value: string): UserOp;
+        getMaxFeePerGas(): string;
+        setMaxFeePerGas(value: string): UserOp;
+        getMaxPriorityFeePerGas(): string;
+        setMaxPriorityFeePerGas(value: string): UserOp;
+        getPaymasterAndData(): string;
+        setPaymasterAndData(value: string): UserOp;
+        getSignature(): string;
+        setSignature(value: string): UserOp;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): UserOp.AsObject;
+        static toObject(includeInstance: boolean, msg: UserOp): UserOp.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: UserOp, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): UserOp;
+        static deserializeBinaryFromReader(message: UserOp, reader: jspb.BinaryReader): UserOp;
+    }
+
+    export namespace UserOp {
+        export type AsObject = {
+            sender: string,
+            nonce: string,
+            initCode: string,
+            callData: string,
+            callGasLimit: string,
+            verificationGasLimit: string,
+            preVerificationGas: string,
+            maxFeePerGas: string,
+            maxPriorityFeePerGas: string,
+            paymasterAndData: string,
+            signature: string,
+        }
+    }
+
 }
 
 export enum Error {

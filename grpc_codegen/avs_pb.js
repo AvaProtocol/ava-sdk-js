@@ -25,38 +25,57 @@ var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrapp
 goog.object.extend(proto, google_protobuf_wrappers_pb);
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 goog.object.extend(proto, google_protobuf_timestamp_pb);
+var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
+goog.object.extend(proto, google_protobuf_any_pb);
+var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
+goog.object.extend(proto, google_protobuf_struct_pb);
 goog.exportSymbol('proto.aggregator.BlockCondition', null, global);
 goog.exportSymbol('proto.aggregator.BranchNode', null, global);
+goog.exportSymbol('proto.aggregator.BranchNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.Condition', null, global);
 goog.exportSymbol('proto.aggregator.ContractReadNode', null, global);
+goog.exportSymbol('proto.aggregator.ContractReadNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.ContractWriteNode', null, global);
+goog.exportSymbol('proto.aggregator.ContractWriteNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.CreateOrUpdateSecretReq', null, global);
 goog.exportSymbol('proto.aggregator.CreateTaskReq', null, global);
 goog.exportSymbol('proto.aggregator.CreateTaskResp', null, global);
 goog.exportSymbol('proto.aggregator.CronCondition', null, global);
 goog.exportSymbol('proto.aggregator.CustomCodeLang', null, global);
 goog.exportSymbol('proto.aggregator.CustomCodeNode', null, global);
+goog.exportSymbol('proto.aggregator.CustomCodeNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.DeleteSecretReq', null, global);
 goog.exportSymbol('proto.aggregator.ETHTransferNode', null, global);
+goog.exportSymbol('proto.aggregator.ETHTransferNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.Error', null, global);
 goog.exportSymbol('proto.aggregator.EventCondition', null, global);
 goog.exportSymbol('proto.aggregator.EventCondition.Matcher', null, global);
+goog.exportSymbol('proto.aggregator.Evm', null, global);
+goog.exportSymbol('proto.aggregator.Evm.Log', null, global);
+goog.exportSymbol('proto.aggregator.Evm.TransactionReceipt', null, global);
+goog.exportSymbol('proto.aggregator.Evm.UserOp', null, global);
 goog.exportSymbol('proto.aggregator.Execution', null, global);
 goog.exportSymbol('proto.aggregator.Execution.BlockOutput', null, global);
-goog.exportSymbol('proto.aggregator.Execution.EvmLogOutput', null, global);
 goog.exportSymbol('proto.aggregator.Execution.OutputDataCase', null, global);
 goog.exportSymbol('proto.aggregator.Execution.Step', null, global);
+goog.exportSymbol('proto.aggregator.Execution.Step.OutputDataCase', null, global);
 goog.exportSymbol('proto.aggregator.Execution.TimeOutput', null, global);
 goog.exportSymbol('proto.aggregator.Execution.TransferLogOutput', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionReq', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionStatus', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionStatusResp', null, global);
 goog.exportSymbol('proto.aggregator.FilterNode', null, global);
+goog.exportSymbol('proto.aggregator.FilterNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.FixedTimeCondition', null, global);
+goog.exportSymbol('proto.aggregator.GetExecutionCountReq', null, global);
+goog.exportSymbol('proto.aggregator.GetExecutionCountResp', null, global);
 goog.exportSymbol('proto.aggregator.GetKeyReq', null, global);
 goog.exportSymbol('proto.aggregator.GetWalletReq', null, global);
 goog.exportSymbol('proto.aggregator.GetWalletResp', null, global);
+goog.exportSymbol('proto.aggregator.GetWorkflowCountReq', null, global);
+goog.exportSymbol('proto.aggregator.GetWorkflowCountResp', null, global);
 goog.exportSymbol('proto.aggregator.GraphQLQueryNode', null, global);
+goog.exportSymbol('proto.aggregator.GraphQLQueryNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.IdReq', null, global);
 goog.exportSymbol('proto.aggregator.KeyResp', null, global);
 goog.exportSymbol('proto.aggregator.ListExecutionsReq', null, global);
@@ -70,10 +89,12 @@ goog.exportSymbol('proto.aggregator.ListTasksResp.Item', null, global);
 goog.exportSymbol('proto.aggregator.ListWalletReq', null, global);
 goog.exportSymbol('proto.aggregator.ListWalletResp', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode', null, global);
+goog.exportSymbol('proto.aggregator.LoopNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode.RunnerCase', null, global);
 goog.exportSymbol('proto.aggregator.NonceRequest', null, global);
 goog.exportSymbol('proto.aggregator.NonceResp', null, global);
 goog.exportSymbol('proto.aggregator.RestAPINode', null, global);
+goog.exportSymbol('proto.aggregator.RestAPINode.Output', null, global);
 goog.exportSymbol('proto.aggregator.SmartWallet', null, global);
 goog.exportSymbol('proto.aggregator.Task', null, global);
 goog.exportSymbol('proto.aggregator.TaskEdge', null, global);
@@ -264,6 +285,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.ETHTransferNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.ETHTransferNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.ETHTransferNode.Output.displayName = 'proto.aggregator.ETHTransferNode.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.ContractWriteNode = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -274,6 +316,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.ContractWriteNode.displayName = 'proto.aggregator.ContractWriteNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.ContractWriteNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.ContractWriteNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.ContractWriteNode.Output.displayName = 'proto.aggregator.ContractWriteNode.Output';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -306,6 +369,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.ContractReadNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ContractReadNode.Output.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.ContractReadNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.ContractReadNode.Output.displayName = 'proto.aggregator.ContractReadNode.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.GraphQLQueryNode = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -316,6 +400,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.GraphQLQueryNode.displayName = 'proto.aggregator.GraphQLQueryNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.GraphQLQueryNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.GraphQLQueryNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.GraphQLQueryNode.Output.displayName = 'proto.aggregator.GraphQLQueryNode.Output';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -348,6 +453,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.RestAPINode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.RestAPINode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.RestAPINode.Output.displayName = 'proto.aggregator.RestAPINode.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.CustomCodeNode = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -358,6 +484,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.CustomCodeNode.displayName = 'proto.aggregator.CustomCodeNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.CustomCodeNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.CustomCodeNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.CustomCodeNode.Output.displayName = 'proto.aggregator.CustomCodeNode.Output';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -411,6 +558,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.BranchNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.BranchNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.BranchNode.Output.displayName = 'proto.aggregator.BranchNode.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.FilterNode = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -432,6 +600,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.FilterNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.FilterNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.FilterNode.Output.displayName = 'proto.aggregator.FilterNode.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.LoopNode = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, proto.aggregator.LoopNode.oneofGroups_);
 };
@@ -442,6 +631,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.LoopNode.displayName = 'proto.aggregator.LoopNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.LoopNode.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.LoopNode.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.LoopNode.Output.displayName = 'proto.aggregator.LoopNode.Output';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -517,7 +727,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.Execution.Step = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Execution.Step.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Execution.Step.repeatedFields_, proto.aggregator.Execution.Step.oneofGroups_);
 };
 goog.inherits(proto.aggregator.Execution.Step, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -547,27 +757,6 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.Execution.TransferLogOutput.displayName = 'proto.aggregator.Execution.TransferLogOutput';
-}
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.aggregator.Execution.EvmLogOutput = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Execution.EvmLogOutput.repeatedFields_, null);
-};
-goog.inherits(proto.aggregator.Execution.EvmLogOutput, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  /**
-   * @public
-   * @override
-   */
-  proto.aggregator.Execution.EvmLogOutput.displayName = 'proto.aggregator.Execution.EvmLogOutput';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -1177,6 +1366,174 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.DeleteSecretReq.displayName = 'proto.aggregator.DeleteSecretReq';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.GetWorkflowCountReq = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.GetWorkflowCountReq.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.GetWorkflowCountReq, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.GetWorkflowCountReq.displayName = 'proto.aggregator.GetWorkflowCountReq';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.GetWorkflowCountResp = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.GetWorkflowCountResp, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.GetWorkflowCountResp.displayName = 'proto.aggregator.GetWorkflowCountResp';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.GetExecutionCountReq = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.GetExecutionCountReq.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.GetExecutionCountReq, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.GetExecutionCountReq.displayName = 'proto.aggregator.GetExecutionCountReq';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.GetExecutionCountResp = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.GetExecutionCountResp, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.GetExecutionCountResp.displayName = 'proto.aggregator.GetExecutionCountResp';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.Evm = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.Evm, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.Evm.displayName = 'proto.aggregator.Evm';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.Evm.Log = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Evm.Log.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.Evm.Log, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.Evm.Log.displayName = 'proto.aggregator.Evm.Log';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.Evm.TransactionReceipt = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.Evm.TransactionReceipt.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.Evm.TransactionReceipt, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.Evm.TransactionReceipt.displayName = 'proto.aggregator.Evm.TransactionReceipt';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.Evm.UserOp = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.Evm.UserOp, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.Evm.UserOp.displayName = 'proto.aggregator.Evm.UserOp';
 }
 
 
@@ -2693,6 +3050,136 @@ proto.aggregator.ETHTransferNode.serializeBinaryToWriter = function(message, wri
 };
 
 
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.ETHTransferNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.ETHTransferNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.ETHTransferNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ETHTransferNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    transactionHash: jspb.Message.getFieldWithDefault(msg, 1, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.ETHTransferNode.Output}
+ */
+proto.aggregator.ETHTransferNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.ETHTransferNode.Output;
+  return proto.aggregator.ETHTransferNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.ETHTransferNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.ETHTransferNode.Output}
+ */
+proto.aggregator.ETHTransferNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTransactionHash(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.ETHTransferNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.ETHTransferNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.ETHTransferNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ETHTransferNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getTransactionHash();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string transaction_hash = 1;
+ * @return {string}
+ */
+proto.aggregator.ETHTransferNode.Output.prototype.getTransactionHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ETHTransferNode.Output} returns this
+ */
+proto.aggregator.ETHTransferNode.Output.prototype.setTransactionHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
 /**
  * optional string destination = 1;
  * @return {string}
@@ -2862,6 +3349,208 @@ proto.aggregator.ContractWriteNode.serializeBinaryToWriter = function(message, w
       f
     );
   }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.ContractWriteNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.ContractWriteNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractWriteNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    userOp: (f = msg.getUserOp()) && proto.aggregator.Evm.UserOp.toObject(includeInstance, f),
+    txReceipt: (f = msg.getTxReceipt()) && proto.aggregator.Evm.TransactionReceipt.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.ContractWriteNode.Output}
+ */
+proto.aggregator.ContractWriteNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.ContractWriteNode.Output;
+  return proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.ContractWriteNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.ContractWriteNode.Output}
+ */
+proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.Evm.UserOp;
+      reader.readMessage(value,proto.aggregator.Evm.UserOp.deserializeBinaryFromReader);
+      msg.setUserOp(value);
+      break;
+    case 2:
+      var value = new proto.aggregator.Evm.TransactionReceipt;
+      reader.readMessage(value,proto.aggregator.Evm.TransactionReceipt.deserializeBinaryFromReader);
+      msg.setTxReceipt(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.ContractWriteNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getUserOp();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.Evm.UserOp.serializeBinaryToWriter
+    );
+  }
+  f = message.getTxReceipt();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      proto.aggregator.Evm.TransactionReceipt.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional Evm.UserOp user_op = 1;
+ * @return {?proto.aggregator.Evm.UserOp}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.getUserOp = function() {
+  return /** @type{?proto.aggregator.Evm.UserOp} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.Evm.UserOp, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.Evm.UserOp|undefined} value
+ * @return {!proto.aggregator.ContractWriteNode.Output} returns this
+*/
+proto.aggregator.ContractWriteNode.Output.prototype.setUserOp = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.Output} returns this
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.clearUserOp = function() {
+  return this.setUserOp(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.hasUserOp = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional Evm.TransactionReceipt tx_receipt = 2;
+ * @return {?proto.aggregator.Evm.TransactionReceipt}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.getTxReceipt = function() {
+  return /** @type{?proto.aggregator.Evm.TransactionReceipt} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.Evm.TransactionReceipt, 2));
+};
+
+
+/**
+ * @param {?proto.aggregator.Evm.TransactionReceipt|undefined} value
+ * @return {!proto.aggregator.ContractWriteNode.Output} returns this
+*/
+proto.aggregator.ContractWriteNode.Output.prototype.setTxReceipt = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.Output} returns this
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.clearTxReceipt = function() {
+  return this.setTxReceipt(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.hasTxReceipt = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -3055,6 +3744,166 @@ proto.aggregator.ContractReadNode.serializeBinaryToWriter = function(message, wr
 };
 
 
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.ContractReadNode.Output.repeatedFields_ = [1];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.ContractReadNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.ContractReadNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.ContractReadNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractReadNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    dataList: jspb.Message.toObjectList(msg.getDataList(),
+    google_protobuf_struct_pb.Value.toObject, includeInstance)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.ContractReadNode.Output}
+ */
+proto.aggregator.ContractReadNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.ContractReadNode.Output;
+  return proto.aggregator.ContractReadNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.ContractReadNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.ContractReadNode.Output}
+ */
+proto.aggregator.ContractReadNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.addData(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.ContractReadNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.ContractReadNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.ContractReadNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractReadNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getDataList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      1,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * repeated google.protobuf.Value data = 1;
+ * @return {!Array<!proto.google.protobuf.Value>}
+ */
+proto.aggregator.ContractReadNode.Output.prototype.getDataList = function() {
+  return /** @type{!Array<!proto.google.protobuf.Value>} */ (
+    jspb.Message.getRepeatedWrapperField(this, google_protobuf_struct_pb.Value, 1));
+};
+
+
+/**
+ * @param {!Array<!proto.google.protobuf.Value>} value
+ * @return {!proto.aggregator.ContractReadNode.Output} returns this
+*/
+proto.aggregator.ContractReadNode.Output.prototype.setDataList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+};
+
+
+/**
+ * @param {!proto.google.protobuf.Value=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.google.protobuf.Value}
+ */
+proto.aggregator.ContractReadNode.Output.prototype.addData = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.google.protobuf.Value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.ContractReadNode.Output} returns this
+ */
+proto.aggregator.ContractReadNode.Output.prototype.clearDataList = function() {
+  return this.setDataList([]);
+};
+
+
 /**
  * optional string contract_address = 1;
  * @return {string}
@@ -3241,6 +4090,157 @@ proto.aggregator.GraphQLQueryNode.serializeBinaryToWriter = function(message, wr
   if (f && f.getLength() > 0) {
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.GraphQLQueryNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.GraphQLQueryNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.GraphQLQueryNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GraphQLQueryNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.GraphQLQueryNode.Output}
+ */
+proto.aggregator.GraphQLQueryNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.GraphQLQueryNode.Output;
+  return proto.aggregator.GraphQLQueryNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.GraphQLQueryNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.GraphQLQueryNode.Output}
+ */
+proto.aggregator.GraphQLQueryNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new google_protobuf_any_pb.Any;
+      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      msg.setData(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.GraphQLQueryNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.GraphQLQueryNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.GraphQLQueryNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GraphQLQueryNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      google_protobuf_any_pb.Any.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional google.protobuf.Any data = 1;
+ * @return {?proto.google.protobuf.Any}
+ */
+proto.aggregator.GraphQLQueryNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Any} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Any|undefined} value
+ * @return {!proto.aggregator.GraphQLQueryNode.Output} returns this
+*/
+proto.aggregator.GraphQLQueryNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.GraphQLQueryNode.Output} returns this
+ */
+proto.aggregator.GraphQLQueryNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.GraphQLQueryNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -3449,6 +4449,157 @@ proto.aggregator.RestAPINode.serializeBinaryToWriter = function(message, writer)
 };
 
 
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.RestAPINode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.RestAPINode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.RestAPINode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.RestAPINode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.RestAPINode.Output}
+ */
+proto.aggregator.RestAPINode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.RestAPINode.Output;
+  return proto.aggregator.RestAPINode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.RestAPINode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.RestAPINode.Output}
+ */
+proto.aggregator.RestAPINode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new google_protobuf_any_pb.Any;
+      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      msg.setData(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.RestAPINode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.RestAPINode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.RestAPINode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.RestAPINode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      google_protobuf_any_pb.Any.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional google.protobuf.Any data = 1;
+ * @return {?proto.google.protobuf.Any}
+ */
+proto.aggregator.RestAPINode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Any} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Any|undefined} value
+ * @return {!proto.aggregator.RestAPINode.Output} returns this
+*/
+proto.aggregator.RestAPINode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RestAPINode.Output} returns this
+ */
+proto.aggregator.RestAPINode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RestAPINode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
 /**
  * optional string url = 1;
  * @return {string}
@@ -3646,6 +4797,157 @@ proto.aggregator.CustomCodeNode.serializeBinaryToWriter = function(message, writ
       f
     );
   }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.CustomCodeNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.CustomCodeNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.CustomCodeNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CustomCodeNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.CustomCodeNode.Output}
+ */
+proto.aggregator.CustomCodeNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.CustomCodeNode.Output;
+  return proto.aggregator.CustomCodeNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.CustomCodeNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.CustomCodeNode.Output}
+ */
+proto.aggregator.CustomCodeNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new google_protobuf_any_pb.Any;
+      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      msg.setData(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.CustomCodeNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.CustomCodeNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.CustomCodeNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CustomCodeNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      google_protobuf_any_pb.Any.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional google.protobuf.Any data = 1;
+ * @return {?proto.google.protobuf.Any}
+ */
+proto.aggregator.CustomCodeNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Any} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Any|undefined} value
+ * @return {!proto.aggregator.CustomCodeNode.Output} returns this
+*/
+proto.aggregator.CustomCodeNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.CustomCodeNode.Output} returns this
+ */
+proto.aggregator.CustomCodeNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.CustomCodeNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -3997,6 +5299,136 @@ proto.aggregator.BranchNode.serializeBinaryToWriter = function(message, writer) 
 };
 
 
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.BranchNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.BranchNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.BranchNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BranchNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    conditionId: jspb.Message.getFieldWithDefault(msg, 1, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.BranchNode.Output}
+ */
+proto.aggregator.BranchNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.BranchNode.Output;
+  return proto.aggregator.BranchNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.BranchNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.BranchNode.Output}
+ */
+proto.aggregator.BranchNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setConditionId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.BranchNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.BranchNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.BranchNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BranchNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getConditionId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string condition_id = 1;
+ * @return {string}
+ */
+proto.aggregator.BranchNode.Output.prototype.getConditionId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BranchNode.Output} returns this
+ */
+proto.aggregator.BranchNode.Output.prototype.setConditionId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
 /**
  * repeated Condition conditions = 1;
  * @return {!Array<!proto.aggregator.Condition>}
@@ -4156,6 +5588,157 @@ proto.aggregator.FilterNode.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.FilterNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.FilterNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.FilterNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FilterNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.FilterNode.Output}
+ */
+proto.aggregator.FilterNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.FilterNode.Output;
+  return proto.aggregator.FilterNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.FilterNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.FilterNode.Output}
+ */
+proto.aggregator.FilterNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new google_protobuf_any_pb.Any;
+      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      msg.setData(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.FilterNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.FilterNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.FilterNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FilterNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      google_protobuf_any_pb.Any.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional google.protobuf.Any data = 1;
+ * @return {?proto.google.protobuf.Any}
+ */
+proto.aggregator.FilterNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Any} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Any|undefined} value
+ * @return {!proto.aggregator.FilterNode.Output} returns this
+*/
+proto.aggregator.FilterNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.FilterNode.Output} returns this
+ */
+proto.aggregator.FilterNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.FilterNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -4442,6 +6025,136 @@ proto.aggregator.LoopNode.serializeBinaryToWriter = function(message, writer) {
       proto.aggregator.CustomCodeNode.serializeBinaryToWriter
     );
   }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.LoopNode.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.LoopNode.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.LoopNode.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.LoopNode.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    data: jspb.Message.getFieldWithDefault(msg, 1, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.LoopNode.Output}
+ */
+proto.aggregator.LoopNode.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.LoopNode.Output;
+  return proto.aggregator.LoopNode.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.LoopNode.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.LoopNode.Output}
+ */
+proto.aggregator.LoopNode.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setData(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.LoopNode.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.LoopNode.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.LoopNode.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.LoopNode.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getData();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string data = 1;
+ * @return {string}
+ */
+proto.aggregator.LoopNode.Output.prototype.getData = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.LoopNode.Output} returns this
+ */
+proto.aggregator.LoopNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -5640,7 +7353,7 @@ proto.aggregator.Execution.toObject = function(includeInstance, msg) {
     proto.aggregator.Execution.Step.toObject, includeInstance),
     triggerName: jspb.Message.getFieldWithDefault(msg, 9, ""),
     transferLog: (f = msg.getTransferLog()) && proto.aggregator.Execution.TransferLogOutput.toObject(includeInstance, f),
-    evmLog: (f = msg.getEvmLog()) && proto.aggregator.Execution.EvmLogOutput.toObject(includeInstance, f),
+    evmLog: (f = msg.getEvmLog()) && proto.aggregator.Evm.Log.toObject(includeInstance, f),
     block: (f = msg.getBlock()) && proto.aggregator.Execution.BlockOutput.toObject(includeInstance, f),
     time: (f = msg.getTime()) && proto.aggregator.Execution.TimeOutput.toObject(includeInstance, f)
   };
@@ -5719,8 +7432,8 @@ proto.aggregator.Execution.deserializeBinaryFromReader = function(msg, reader) {
       msg.setTransferLog(value);
       break;
     case 11:
-      var value = new proto.aggregator.Execution.EvmLogOutput;
-      reader.readMessage(value,proto.aggregator.Execution.EvmLogOutput.deserializeBinaryFromReader);
+      var value = new proto.aggregator.Evm.Log;
+      reader.readMessage(value,proto.aggregator.Evm.Log.deserializeBinaryFromReader);
       msg.setEvmLog(value);
       break;
     case 12:
@@ -5833,7 +7546,7 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
     writer.writeMessage(
       11,
       f,
-      proto.aggregator.Execution.EvmLogOutput.serializeBinaryToWriter
+      proto.aggregator.Evm.Log.serializeBinaryToWriter
     );
   }
   f = message.getBlock();
@@ -5861,7 +7574,40 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
  * @private {!Array<number>}
  * @const
  */
-proto.aggregator.Execution.Step.repeatedFields_ = [8];
+proto.aggregator.Execution.Step.repeatedFields_ = [16];
+
+/**
+ * Oneof group definitions for this message. Each group defines the field
+ * numbers belonging to that group. When of these fields' value is set, all
+ * other fields in the group are cleared. During deserialization, if multiple
+ * fields are encountered for a group, only the last value seen will be kept.
+ * @private {!Array<!Array<number>>}
+ * @const
+ */
+proto.aggregator.Execution.Step.oneofGroups_ = [[3,4,5,6,7,8,9,10,11]];
+
+/**
+ * @enum {number}
+ */
+proto.aggregator.Execution.Step.OutputDataCase = {
+  OUTPUT_DATA_NOT_SET: 0,
+  ETH_TRANSFER: 3,
+  GRAPHQL: 4,
+  CONTRACT_READ: 5,
+  CONTRACT_WRITE: 6,
+  CUSTOM_CODE: 7,
+  REST_API: 8,
+  BRANCH: 9,
+  FILTER: 10,
+  LOOP: 11
+};
+
+/**
+ * @return {proto.aggregator.Execution.Step.OutputDataCase}
+ */
+proto.aggregator.Execution.Step.prototype.getOutputDataCase = function() {
+  return /** @type {proto.aggregator.Execution.Step.OutputDataCase} */(jspb.Message.computeOneofCase(this, proto.aggregator.Execution.Step.oneofGroups_[0]));
+};
 
 
 
@@ -5896,12 +7642,20 @@ proto.aggregator.Execution.Step.toObject = function(includeInstance, msg) {
   var f, obj = {
     nodeId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     success: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    outputData: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    log: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    error: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    startAt: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    endAt: jspb.Message.getFieldWithDefault(msg, 7, 0),
-    inputsList: (f = jspb.Message.getRepeatedField(msg, 8)) == null ? undefined : f
+    ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.Output.toObject(includeInstance, f),
+    graphql: (f = msg.getGraphql()) && proto.aggregator.GraphQLQueryNode.Output.toObject(includeInstance, f),
+    contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.Output.toObject(includeInstance, f),
+    contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.Output.toObject(includeInstance, f),
+    customCode: (f = msg.getCustomCode()) && proto.aggregator.CustomCodeNode.Output.toObject(includeInstance, f),
+    restApi: (f = msg.getRestApi()) && proto.aggregator.RestAPINode.Output.toObject(includeInstance, f),
+    branch: (f = msg.getBranch()) && proto.aggregator.BranchNode.Output.toObject(includeInstance, f),
+    filter: (f = msg.getFilter()) && proto.aggregator.FilterNode.Output.toObject(includeInstance, f),
+    loop: (f = msg.getLoop()) && proto.aggregator.LoopNode.Output.toObject(includeInstance, f),
+    log: jspb.Message.getFieldWithDefault(msg, 12, ""),
+    error: jspb.Message.getFieldWithDefault(msg, 13, ""),
+    startAt: jspb.Message.getFieldWithDefault(msg, 14, 0),
+    endAt: jspb.Message.getFieldWithDefault(msg, 15, 0),
+    inputsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -5947,26 +7701,67 @@ proto.aggregator.Execution.Step.deserializeBinaryFromReader = function(msg, read
       msg.setSuccess(value);
       break;
     case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setOutputData(value);
+      var value = new proto.aggregator.ETHTransferNode.Output;
+      reader.readMessage(value,proto.aggregator.ETHTransferNode.Output.deserializeBinaryFromReader);
+      msg.setEthTransfer(value);
       break;
     case 4:
+      var value = new proto.aggregator.GraphQLQueryNode.Output;
+      reader.readMessage(value,proto.aggregator.GraphQLQueryNode.Output.deserializeBinaryFromReader);
+      msg.setGraphql(value);
+      break;
+    case 5:
+      var value = new proto.aggregator.ContractReadNode.Output;
+      reader.readMessage(value,proto.aggregator.ContractReadNode.Output.deserializeBinaryFromReader);
+      msg.setContractRead(value);
+      break;
+    case 6:
+      var value = new proto.aggregator.ContractWriteNode.Output;
+      reader.readMessage(value,proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader);
+      msg.setContractWrite(value);
+      break;
+    case 7:
+      var value = new proto.aggregator.CustomCodeNode.Output;
+      reader.readMessage(value,proto.aggregator.CustomCodeNode.Output.deserializeBinaryFromReader);
+      msg.setCustomCode(value);
+      break;
+    case 8:
+      var value = new proto.aggregator.RestAPINode.Output;
+      reader.readMessage(value,proto.aggregator.RestAPINode.Output.deserializeBinaryFromReader);
+      msg.setRestApi(value);
+      break;
+    case 9:
+      var value = new proto.aggregator.BranchNode.Output;
+      reader.readMessage(value,proto.aggregator.BranchNode.Output.deserializeBinaryFromReader);
+      msg.setBranch(value);
+      break;
+    case 10:
+      var value = new proto.aggregator.FilterNode.Output;
+      reader.readMessage(value,proto.aggregator.FilterNode.Output.deserializeBinaryFromReader);
+      msg.setFilter(value);
+      break;
+    case 11:
+      var value = new proto.aggregator.LoopNode.Output;
+      reader.readMessage(value,proto.aggregator.LoopNode.Output.deserializeBinaryFromReader);
+      msg.setLoop(value);
+      break;
+    case 12:
       var value = /** @type {string} */ (reader.readString());
       msg.setLog(value);
       break;
-    case 5:
+    case 13:
       var value = /** @type {string} */ (reader.readString());
       msg.setError(value);
       break;
-    case 6:
+    case 14:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setStartAt(value);
       break;
-    case 7:
+    case 15:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setEndAt(value);
       break;
-    case 8:
+    case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.addInputs(value);
       break;
@@ -6013,45 +7808,110 @@ proto.aggregator.Execution.Step.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getOutputData();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getEthTransfer();
+  if (f != null) {
+    writer.writeMessage(
       3,
-      f
+      f,
+      proto.aggregator.ETHTransferNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getGraphql();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      proto.aggregator.GraphQLQueryNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getContractRead();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      proto.aggregator.ContractReadNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getContractWrite();
+  if (f != null) {
+    writer.writeMessage(
+      6,
+      f,
+      proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getCustomCode();
+  if (f != null) {
+    writer.writeMessage(
+      7,
+      f,
+      proto.aggregator.CustomCodeNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getRestApi();
+  if (f != null) {
+    writer.writeMessage(
+      8,
+      f,
+      proto.aggregator.RestAPINode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getBranch();
+  if (f != null) {
+    writer.writeMessage(
+      9,
+      f,
+      proto.aggregator.BranchNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getFilter();
+  if (f != null) {
+    writer.writeMessage(
+      10,
+      f,
+      proto.aggregator.FilterNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getLoop();
+  if (f != null) {
+    writer.writeMessage(
+      11,
+      f,
+      proto.aggregator.LoopNode.Output.serializeBinaryToWriter
     );
   }
   f = message.getLog();
   if (f.length > 0) {
     writer.writeString(
-      4,
+      12,
       f
     );
   }
   f = message.getError();
   if (f.length > 0) {
     writer.writeString(
-      5,
+      13,
       f
     );
   }
   f = message.getStartAt();
   if (f !== 0) {
     writer.writeInt64(
-      6,
+      14,
       f
     );
   }
   f = message.getEndAt();
   if (f !== 0) {
     writer.writeInt64(
-      7,
+      15,
       f
     );
   }
   f = message.getInputsList();
   if (f.length > 0) {
     writer.writeRepeatedString(
-      8,
+      16,
       f
     );
   }
@@ -6095,29 +7955,344 @@ proto.aggregator.Execution.Step.prototype.setSuccess = function(value) {
 
 
 /**
- * optional string output_data = 3;
- * @return {string}
+ * optional ETHTransferNode.Output eth_transfer = 3;
+ * @return {?proto.aggregator.ETHTransferNode.Output}
  */
-proto.aggregator.Execution.Step.prototype.getOutputData = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+proto.aggregator.Execution.Step.prototype.getEthTransfer = function() {
+  return /** @type{?proto.aggregator.ETHTransferNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ETHTransferNode.Output, 3));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.ETHTransferNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setEthTransfer = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 3, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.Execution.Step} returns this
  */
-proto.aggregator.Execution.Step.prototype.setOutputData = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
+proto.aggregator.Execution.Step.prototype.clearEthTransfer = function() {
+  return this.setEthTransfer(undefined);
 };
 
 
 /**
- * optional string log = 4;
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasEthTransfer = function() {
+  return jspb.Message.getField(this, 3) != null;
+};
+
+
+/**
+ * optional GraphQLQueryNode.Output graphql = 4;
+ * @return {?proto.aggregator.GraphQLQueryNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getGraphql = function() {
+  return /** @type{?proto.aggregator.GraphQLQueryNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.GraphQLQueryNode.Output, 4));
+};
+
+
+/**
+ * @param {?proto.aggregator.GraphQLQueryNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setGraphql = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 4, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearGraphql = function() {
+  return this.setGraphql(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasGraphql = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional ContractReadNode.Output contract_read = 5;
+ * @return {?proto.aggregator.ContractReadNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getContractRead = function() {
+  return /** @type{?proto.aggregator.ContractReadNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ContractReadNode.Output, 5));
+};
+
+
+/**
+ * @param {?proto.aggregator.ContractReadNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setContractRead = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 5, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearContractRead = function() {
+  return this.setContractRead(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasContractRead = function() {
+  return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional ContractWriteNode.Output contract_write = 6;
+ * @return {?proto.aggregator.ContractWriteNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getContractWrite = function() {
+  return /** @type{?proto.aggregator.ContractWriteNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ContractWriteNode.Output, 6));
+};
+
+
+/**
+ * @param {?proto.aggregator.ContractWriteNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setContractWrite = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 6, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearContractWrite = function() {
+  return this.setContractWrite(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasContractWrite = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional CustomCodeNode.Output custom_code = 7;
+ * @return {?proto.aggregator.CustomCodeNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getCustomCode = function() {
+  return /** @type{?proto.aggregator.CustomCodeNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CustomCodeNode.Output, 7));
+};
+
+
+/**
+ * @param {?proto.aggregator.CustomCodeNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setCustomCode = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 7, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearCustomCode = function() {
+  return this.setCustomCode(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasCustomCode = function() {
+  return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * optional RestAPINode.Output rest_api = 8;
+ * @return {?proto.aggregator.RestAPINode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getRestApi = function() {
+  return /** @type{?proto.aggregator.RestAPINode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.RestAPINode.Output, 8));
+};
+
+
+/**
+ * @param {?proto.aggregator.RestAPINode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setRestApi = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 8, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearRestApi = function() {
+  return this.setRestApi(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasRestApi = function() {
+  return jspb.Message.getField(this, 8) != null;
+};
+
+
+/**
+ * optional BranchNode.Output branch = 9;
+ * @return {?proto.aggregator.BranchNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getBranch = function() {
+  return /** @type{?proto.aggregator.BranchNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BranchNode.Output, 9));
+};
+
+
+/**
+ * @param {?proto.aggregator.BranchNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setBranch = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 9, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearBranch = function() {
+  return this.setBranch(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasBranch = function() {
+  return jspb.Message.getField(this, 9) != null;
+};
+
+
+/**
+ * optional FilterNode.Output filter = 10;
+ * @return {?proto.aggregator.FilterNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getFilter = function() {
+  return /** @type{?proto.aggregator.FilterNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FilterNode.Output, 10));
+};
+
+
+/**
+ * @param {?proto.aggregator.FilterNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setFilter = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 10, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearFilter = function() {
+  return this.setFilter(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasFilter = function() {
+  return jspb.Message.getField(this, 10) != null;
+};
+
+
+/**
+ * optional LoopNode.Output loop = 11;
+ * @return {?proto.aggregator.LoopNode.Output}
+ */
+proto.aggregator.Execution.Step.prototype.getLoop = function() {
+  return /** @type{?proto.aggregator.LoopNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.LoopNode.Output, 11));
+};
+
+
+/**
+ * @param {?proto.aggregator.LoopNode.Output|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setLoop = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 11, proto.aggregator.Execution.Step.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearLoop = function() {
+  return this.setLoop(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasLoop = function() {
+  return jspb.Message.getField(this, 11) != null;
+};
+
+
+/**
+ * optional string log = 12;
  * @return {string}
  */
 proto.aggregator.Execution.Step.prototype.getLog = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
 };
 
 
@@ -6126,16 +8301,16 @@ proto.aggregator.Execution.Step.prototype.getLog = function() {
  * @return {!proto.aggregator.Execution.Step} returns this
  */
 proto.aggregator.Execution.Step.prototype.setLog = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 12, value);
 };
 
 
 /**
- * optional string error = 5;
+ * optional string error = 13;
  * @return {string}
  */
 proto.aggregator.Execution.Step.prototype.getError = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 13, ""));
 };
 
 
@@ -6144,16 +8319,16 @@ proto.aggregator.Execution.Step.prototype.getError = function() {
  * @return {!proto.aggregator.Execution.Step} returns this
  */
 proto.aggregator.Execution.Step.prototype.setError = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 13, value);
 };
 
 
 /**
- * optional int64 start_at = 6;
+ * optional int64 start_at = 14;
  * @return {number}
  */
 proto.aggregator.Execution.Step.prototype.getStartAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
 };
 
 
@@ -6162,16 +8337,16 @@ proto.aggregator.Execution.Step.prototype.getStartAt = function() {
  * @return {!proto.aggregator.Execution.Step} returns this
  */
 proto.aggregator.Execution.Step.prototype.setStartAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 6, value);
+  return jspb.Message.setProto3IntField(this, 14, value);
 };
 
 
 /**
- * optional int64 end_at = 7;
+ * optional int64 end_at = 15;
  * @return {number}
  */
 proto.aggregator.Execution.Step.prototype.getEndAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
 
@@ -6180,16 +8355,16 @@ proto.aggregator.Execution.Step.prototype.getEndAt = function() {
  * @return {!proto.aggregator.Execution.Step} returns this
  */
 proto.aggregator.Execution.Step.prototype.setEndAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 7, value);
+  return jspb.Message.setProto3IntField(this, 15, value);
 };
 
 
 /**
- * repeated string inputs = 8;
+ * repeated string inputs = 16;
  * @return {!Array<string>}
  */
 proto.aggregator.Execution.Step.prototype.getInputsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 8));
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 16));
 };
 
 
@@ -6198,7 +8373,7 @@ proto.aggregator.Execution.Step.prototype.getInputsList = function() {
  * @return {!proto.aggregator.Execution.Step} returns this
  */
 proto.aggregator.Execution.Step.prototype.setInputsList = function(value) {
-  return jspb.Message.setField(this, 8, value || []);
+  return jspb.Message.setField(this, 16, value || []);
 };
 
 
@@ -6208,7 +8383,7 @@ proto.aggregator.Execution.Step.prototype.setInputsList = function(value) {
  * @return {!proto.aggregator.Execution.Step} returns this
  */
 proto.aggregator.Execution.Step.prototype.addInputs = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 8, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 16, value, opt_index);
 };
 
 
@@ -6678,372 +8853,6 @@ proto.aggregator.Execution.TransferLogOutput.prototype.getTransactionIndex = fun
  */
 proto.aggregator.Execution.TransferLogOutput.prototype.setTransactionIndex = function(value) {
   return jspb.Message.setProto3IntField(this, 12, value);
-};
-
-
-
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.aggregator.Execution.EvmLogOutput.repeatedFields_ = [6];
-
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * Optional fields that are not set will be set to undefined.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
- * @param {boolean=} opt_includeInstance Deprecated. whether to include the
- *     JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.Execution.EvmLogOutput.toObject(opt_includeInstance, this);
-};
-
-
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Deprecated. Whether to include
- *     the JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.aggregator.Execution.EvmLogOutput} msg The msg instance to transform.
- * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.EvmLogOutput.toObject = function(includeInstance, msg) {
-  var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    blockHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    blockNumber: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    data: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    index: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    topicsList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f,
-    transactionHash: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    transactionIndex: jspb.Message.getFieldWithDefault(msg, 8, 0)
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
-  }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.Execution.EvmLogOutput}
- */
-proto.aggregator.Execution.EvmLogOutput.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.Execution.EvmLogOutput;
-  return proto.aggregator.Execution.EvmLogOutput.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.aggregator.Execution.EvmLogOutput} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.Execution.EvmLogOutput}
- */
-proto.aggregator.Execution.EvmLogOutput.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setAddress(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setBlockHash(value);
-      break;
-    case 3:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setBlockNumber(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setData(value);
-      break;
-    case 5:
-      var value = /** @type {number} */ (reader.readUint32());
-      msg.setIndex(value);
-      break;
-    case 6:
-      var value = /** @type {string} */ (reader.readString());
-      msg.addTopics(value);
-      break;
-    case 7:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTransactionHash(value);
-      break;
-    case 8:
-      var value = /** @type {number} */ (reader.readUint32());
-      msg.setTransactionIndex(value);
-      break;
-    default:
-      reader.skipField();
-      break;
-    }
-  }
-  return msg;
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  proto.aggregator.Execution.EvmLogOutput.serializeBinaryToWriter(this, writer);
-  return writer.getResultBuffer();
-};
-
-
-/**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.Execution.EvmLogOutput} message
- * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.EvmLogOutput.serializeBinaryToWriter = function(message, writer) {
-  var f = undefined;
-  f = message.getAddress();
-  if (f.length > 0) {
-    writer.writeString(
-      1,
-      f
-    );
-  }
-  f = message.getBlockHash();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
-  f = message.getBlockNumber();
-  if (f !== 0) {
-    writer.writeUint64(
-      3,
-      f
-    );
-  }
-  f = message.getData();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
-  f = message.getIndex();
-  if (f !== 0) {
-    writer.writeUint32(
-      5,
-      f
-    );
-  }
-  f = message.getTopicsList();
-  if (f.length > 0) {
-    writer.writeRepeatedString(
-      6,
-      f
-    );
-  }
-  f = message.getTransactionHash();
-  if (f.length > 0) {
-    writer.writeString(
-      7,
-      f
-    );
-  }
-  f = message.getTransactionIndex();
-  if (f !== 0) {
-    writer.writeUint32(
-      8,
-      f
-    );
-  }
-};
-
-
-/**
- * optional string address = 1;
- * @return {string}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setAddress = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string block_hash = 2;
- * @return {string}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getBlockHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setBlockHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional uint64 block_number = 3;
- * @return {number}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getBlockNumber = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setBlockNumber = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
-};
-
-
-/**
- * optional string data = 4;
- * @return {string}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getData = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setData = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional uint32 index = 5;
- * @return {number}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getIndex = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setIndex = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
-};
-
-
-/**
- * repeated string topics = 6;
- * @return {!Array<string>}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getTopicsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 6));
-};
-
-
-/**
- * @param {!Array<string>} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setTopicsList = function(value) {
-  return jspb.Message.setField(this, 6, value || []);
-};
-
-
-/**
- * @param {string} value
- * @param {number=} opt_index
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.addTopics = function(value, opt_index) {
-  return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.clearTopicsList = function() {
-  return this.setTopicsList([]);
-};
-
-
-/**
- * optional string transaction_hash = 7;
- * @return {string}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getTransactionHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setTransactionHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 7, value);
-};
-
-
-/**
- * optional uint32 transaction_index = 8;
- * @return {number}
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.getTransactionIndex = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.EvmLogOutput} returns this
- */
-proto.aggregator.Execution.EvmLogOutput.prototype.setTransactionIndex = function(value) {
-  return jspb.Message.setProto3IntField(this, 8, value);
 };
 
 
@@ -7528,17 +9337,17 @@ proto.aggregator.Execution.prototype.hasTransferLog = function() {
 
 
 /**
- * optional EvmLogOutput evm_log = 11;
- * @return {?proto.aggregator.Execution.EvmLogOutput}
+ * optional Evm.Log evm_log = 11;
+ * @return {?proto.aggregator.Evm.Log}
  */
 proto.aggregator.Execution.prototype.getEvmLog = function() {
-  return /** @type{?proto.aggregator.Execution.EvmLogOutput} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.Execution.EvmLogOutput, 11));
+  return /** @type{?proto.aggregator.Evm.Log} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.Evm.Log, 11));
 };
 
 
 /**
- * @param {?proto.aggregator.Execution.EvmLogOutput|undefined} value
+ * @param {?proto.aggregator.Evm.Log|undefined} value
  * @return {!proto.aggregator.Execution} returns this
 */
 proto.aggregator.Execution.prototype.setEvmLog = function(value) {
@@ -13661,6 +15470,2171 @@ proto.aggregator.DeleteSecretReq.prototype.getOrgId = function() {
  */
 proto.aggregator.DeleteSecretReq.prototype.setOrgId = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.GetWorkflowCountReq.repeatedFields_ = [1];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.GetWorkflowCountReq.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.GetWorkflowCountReq.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.GetWorkflowCountReq} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetWorkflowCountReq.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    addressesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.GetWorkflowCountReq}
+ */
+proto.aggregator.GetWorkflowCountReq.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.GetWorkflowCountReq;
+  return proto.aggregator.GetWorkflowCountReq.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.GetWorkflowCountReq} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.GetWorkflowCountReq}
+ */
+proto.aggregator.GetWorkflowCountReq.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addAddresses(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.GetWorkflowCountReq.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.GetWorkflowCountReq.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.GetWorkflowCountReq} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetWorkflowCountReq.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getAddressesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * repeated string addresses = 1;
+ * @return {!Array<string>}
+ */
+proto.aggregator.GetWorkflowCountReq.prototype.getAddressesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 1));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.GetWorkflowCountReq} returns this
+ */
+proto.aggregator.GetWorkflowCountReq.prototype.setAddressesList = function(value) {
+  return jspb.Message.setField(this, 1, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.GetWorkflowCountReq} returns this
+ */
+proto.aggregator.GetWorkflowCountReq.prototype.addAddresses = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.GetWorkflowCountReq} returns this
+ */
+proto.aggregator.GetWorkflowCountReq.prototype.clearAddressesList = function() {
+  return this.setAddressesList([]);
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.GetWorkflowCountResp.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.GetWorkflowCountResp.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.GetWorkflowCountResp} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetWorkflowCountResp.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    total: jspb.Message.getFieldWithDefault(msg, 1, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.GetWorkflowCountResp}
+ */
+proto.aggregator.GetWorkflowCountResp.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.GetWorkflowCountResp;
+  return proto.aggregator.GetWorkflowCountResp.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.GetWorkflowCountResp} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.GetWorkflowCountResp}
+ */
+proto.aggregator.GetWorkflowCountResp.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setTotal(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.GetWorkflowCountResp.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.GetWorkflowCountResp.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.GetWorkflowCountResp} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetWorkflowCountResp.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getTotal();
+  if (f !== 0) {
+    writer.writeInt64(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional int64 total = 1;
+ * @return {number}
+ */
+proto.aggregator.GetWorkflowCountResp.prototype.getTotal = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.GetWorkflowCountResp} returns this
+ */
+proto.aggregator.GetWorkflowCountResp.prototype.setTotal = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.GetExecutionCountReq.repeatedFields_ = [1];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.GetExecutionCountReq.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.GetExecutionCountReq.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.GetExecutionCountReq} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetExecutionCountReq.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    workflowIdsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.GetExecutionCountReq}
+ */
+proto.aggregator.GetExecutionCountReq.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.GetExecutionCountReq;
+  return proto.aggregator.GetExecutionCountReq.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.GetExecutionCountReq} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.GetExecutionCountReq}
+ */
+proto.aggregator.GetExecutionCountReq.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addWorkflowIds(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.GetExecutionCountReq.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.GetExecutionCountReq.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.GetExecutionCountReq} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetExecutionCountReq.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getWorkflowIdsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * repeated string workflow_ids = 1;
+ * @return {!Array<string>}
+ */
+proto.aggregator.GetExecutionCountReq.prototype.getWorkflowIdsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 1));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.GetExecutionCountReq} returns this
+ */
+proto.aggregator.GetExecutionCountReq.prototype.setWorkflowIdsList = function(value) {
+  return jspb.Message.setField(this, 1, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.GetExecutionCountReq} returns this
+ */
+proto.aggregator.GetExecutionCountReq.prototype.addWorkflowIds = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.GetExecutionCountReq} returns this
+ */
+proto.aggregator.GetExecutionCountReq.prototype.clearWorkflowIdsList = function() {
+  return this.setWorkflowIdsList([]);
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.GetExecutionCountResp.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.GetExecutionCountResp.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.GetExecutionCountResp} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetExecutionCountResp.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    total: jspb.Message.getFieldWithDefault(msg, 1, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.GetExecutionCountResp}
+ */
+proto.aggregator.GetExecutionCountResp.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.GetExecutionCountResp;
+  return proto.aggregator.GetExecutionCountResp.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.GetExecutionCountResp} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.GetExecutionCountResp}
+ */
+proto.aggregator.GetExecutionCountResp.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setTotal(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.GetExecutionCountResp.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.GetExecutionCountResp.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.GetExecutionCountResp} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GetExecutionCountResp.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getTotal();
+  if (f !== 0) {
+    writer.writeInt64(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional int64 total = 1;
+ * @return {number}
+ */
+proto.aggregator.GetExecutionCountResp.prototype.getTotal = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.GetExecutionCountResp} returns this
+ */
+proto.aggregator.GetExecutionCountResp.prototype.setTotal = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.Evm.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.Evm.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.Evm} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.toObject = function(includeInstance, msg) {
+  var f, obj = {
+
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.Evm}
+ */
+proto.aggregator.Evm.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.Evm;
+  return proto.aggregator.Evm.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.Evm} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.Evm}
+ */
+proto.aggregator.Evm.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.Evm.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.Evm.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.Evm} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.Evm.Log.repeatedFields_ = [2];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.Evm.Log.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.Evm.Log.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.Evm.Log} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.Log.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    topicsList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
+    data: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    blockNumber: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    transactionHash: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    transactionIndex: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    blockHash: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    index: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    removed: jspb.Message.getBooleanFieldWithDefault(msg, 9, false)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.Evm.Log}
+ */
+proto.aggregator.Evm.Log.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.Evm.Log;
+  return proto.aggregator.Evm.Log.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.Evm.Log} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.Evm.Log}
+ */
+proto.aggregator.Evm.Log.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAddress(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addTopics(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setData(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlockNumber(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTransactionHash(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setTransactionIndex(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setBlockHash(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setIndex(value);
+      break;
+    case 9:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setRemoved(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.Evm.Log.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.Evm.Log.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.Evm.Log} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.Log.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getAddress();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getTopicsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      2,
+      f
+    );
+  }
+  f = message.getData();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+  f = message.getBlockNumber();
+  if (f !== 0) {
+    writer.writeUint64(
+      4,
+      f
+    );
+  }
+  f = message.getTransactionHash();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getTransactionIndex();
+  if (f !== 0) {
+    writer.writeUint32(
+      6,
+      f
+    );
+  }
+  f = message.getBlockHash();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
+      f
+    );
+  }
+  f = message.getIndex();
+  if (f !== 0) {
+    writer.writeUint32(
+      8,
+      f
+    );
+  }
+  f = message.getRemoved();
+  if (f) {
+    writer.writeBool(
+      9,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string address = 1;
+ * @return {string}
+ */
+proto.aggregator.Evm.Log.prototype.getAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * repeated string topics = 2;
+ * @return {!Array<string>}
+ */
+proto.aggregator.Evm.Log.prototype.getTopicsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setTopicsList = function(value) {
+  return jspb.Message.setField(this, 2, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.addTopics = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.clearTopicsList = function() {
+  return this.setTopicsList([]);
+};
+
+
+/**
+ * optional string data = 3;
+ * @return {string}
+ */
+proto.aggregator.Evm.Log.prototype.getData = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setData = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional uint64 block_number = 4;
+ * @return {number}
+ */
+proto.aggregator.Evm.Log.prototype.getBlockNumber = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setBlockNumber = function(value) {
+  return jspb.Message.setProto3IntField(this, 4, value);
+};
+
+
+/**
+ * optional string transaction_hash = 5;
+ * @return {string}
+ */
+proto.aggregator.Evm.Log.prototype.getTransactionHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setTransactionHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional uint32 transaction_index = 6;
+ * @return {number}
+ */
+proto.aggregator.Evm.Log.prototype.getTransactionIndex = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setTransactionIndex = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
+};
+
+
+/**
+ * optional string block_hash = 7;
+ * @return {string}
+ */
+proto.aggregator.Evm.Log.prototype.getBlockHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setBlockHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional uint32 index = 8;
+ * @return {number}
+ */
+proto.aggregator.Evm.Log.prototype.getIndex = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setIndex = function(value) {
+  return jspb.Message.setProto3IntField(this, 8, value);
+};
+
+
+/**
+ * optional bool removed = 9;
+ * @return {boolean}
+ */
+proto.aggregator.Evm.Log.prototype.getRemoved = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 9, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.aggregator.Evm.Log} returns this
+ */
+proto.aggregator.Evm.Log.prototype.setRemoved = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 9, value);
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.Evm.TransactionReceipt.repeatedFields_ = [12];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.Evm.TransactionReceipt.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.Evm.TransactionReceipt} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.TransactionReceipt.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    hash: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    blockHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    blockNumber: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    from: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    gasUsed: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    gasPrice: jspb.Message.getFieldWithDefault(msg, 7, 0),
+    cumulativeGasUsed: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    fee: jspb.Message.getFieldWithDefault(msg, 9, 0),
+    contractAddress: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    index: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    logsList: (f = jspb.Message.getRepeatedField(msg, 12)) == null ? undefined : f,
+    logsBloom: jspb.Message.getFieldWithDefault(msg, 13, ""),
+    root: jspb.Message.getFieldWithDefault(msg, 14, ""),
+    status: jspb.Message.getFieldWithDefault(msg, 15, 0),
+    type: jspb.Message.getFieldWithDefault(msg, 16, 0),
+    blobGasPrice: jspb.Message.getFieldWithDefault(msg, 17, 0),
+    blobGasUsed: jspb.Message.getFieldWithDefault(msg, 18, 0),
+    to: jspb.Message.getFieldWithDefault(msg, 19, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.Evm.TransactionReceipt}
+ */
+proto.aggregator.Evm.TransactionReceipt.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.Evm.TransactionReceipt;
+  return proto.aggregator.Evm.TransactionReceipt.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.Evm.TransactionReceipt} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.Evm.TransactionReceipt}
+ */
+proto.aggregator.Evm.TransactionReceipt.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setHash(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setBlockHash(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlockNumber(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFrom(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setGasUsed(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setGasPrice(value);
+      break;
+    case 8:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setCumulativeGasUsed(value);
+      break;
+    case 9:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setFee(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setContractAddress(value);
+      break;
+    case 11:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setIndex(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addLogs(value);
+      break;
+    case 13:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLogsBloom(value);
+      break;
+    case 14:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRoot(value);
+      break;
+    case 15:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setStatus(value);
+      break;
+    case 16:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setType(value);
+      break;
+    case 17:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlobGasPrice(value);
+      break;
+    case 18:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlobGasUsed(value);
+      break;
+    case 19:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTo(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.Evm.TransactionReceipt.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.Evm.TransactionReceipt} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.TransactionReceipt.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getHash();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getBlockHash();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getBlockNumber();
+  if (f !== 0) {
+    writer.writeUint64(
+      3,
+      f
+    );
+  }
+  f = message.getFrom();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getGasUsed();
+  if (f !== 0) {
+    writer.writeUint64(
+      6,
+      f
+    );
+  }
+  f = message.getGasPrice();
+  if (f !== 0) {
+    writer.writeUint64(
+      7,
+      f
+    );
+  }
+  f = message.getCumulativeGasUsed();
+  if (f !== 0) {
+    writer.writeUint64(
+      8,
+      f
+    );
+  }
+  f = message.getFee();
+  if (f !== 0) {
+    writer.writeUint64(
+      9,
+      f
+    );
+  }
+  f = message.getContractAddress();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
+  f = message.getIndex();
+  if (f !== 0) {
+    writer.writeUint64(
+      11,
+      f
+    );
+  }
+  f = message.getLogsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      12,
+      f
+    );
+  }
+  f = message.getLogsBloom();
+  if (f.length > 0) {
+    writer.writeString(
+      13,
+      f
+    );
+  }
+  f = message.getRoot();
+  if (f.length > 0) {
+    writer.writeString(
+      14,
+      f
+    );
+  }
+  f = message.getStatus();
+  if (f !== 0) {
+    writer.writeUint32(
+      15,
+      f
+    );
+  }
+  f = message.getType();
+  if (f !== 0) {
+    writer.writeUint32(
+      16,
+      f
+    );
+  }
+  f = message.getBlobGasPrice();
+  if (f !== 0) {
+    writer.writeUint64(
+      17,
+      f
+    );
+  }
+  f = message.getBlobGasUsed();
+  if (f !== 0) {
+    writer.writeUint64(
+      18,
+      f
+    );
+  }
+  f = message.getTo();
+  if (f.length > 0) {
+    writer.writeString(
+      19,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string hash = 1;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string block_hash = 2;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getBlockHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setBlockHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional uint64 block_number = 3;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getBlockNumber = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setBlockNumber = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string from = 4;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getFrom = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setFrom = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional uint64 gas_used = 6;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getGasUsed = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setGasUsed = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
+};
+
+
+/**
+ * optional uint64 gas_price = 7;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getGasPrice = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setGasPrice = function(value) {
+  return jspb.Message.setProto3IntField(this, 7, value);
+};
+
+
+/**
+ * optional uint64 cumulative_gas_used = 8;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getCumulativeGasUsed = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setCumulativeGasUsed = function(value) {
+  return jspb.Message.setProto3IntField(this, 8, value);
+};
+
+
+/**
+ * optional uint64 fee = 9;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getFee = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setFee = function(value) {
+  return jspb.Message.setProto3IntField(this, 9, value);
+};
+
+
+/**
+ * optional string contract_address = 10;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getContractAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setContractAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
+
+
+/**
+ * optional uint64 index = 11;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getIndex = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setIndex = function(value) {
+  return jspb.Message.setProto3IntField(this, 11, value);
+};
+
+
+/**
+ * repeated string logs = 12;
+ * @return {!Array<string>}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getLogsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 12));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setLogsList = function(value) {
+  return jspb.Message.setField(this, 12, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.addLogs = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 12, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.clearLogsList = function() {
+  return this.setLogsList([]);
+};
+
+
+/**
+ * optional string logs_bloom = 13;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getLogsBloom = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 13, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setLogsBloom = function(value) {
+  return jspb.Message.setProto3StringField(this, 13, value);
+};
+
+
+/**
+ * optional string root = 14;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getRoot = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 14, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setRoot = function(value) {
+  return jspb.Message.setProto3StringField(this, 14, value);
+};
+
+
+/**
+ * optional uint32 status = 15;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getStatus = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setStatus = function(value) {
+  return jspb.Message.setProto3IntField(this, 15, value);
+};
+
+
+/**
+ * optional uint32 type = 16;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getType = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 16, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setType = function(value) {
+  return jspb.Message.setProto3IntField(this, 16, value);
+};
+
+
+/**
+ * optional uint64 blob_gas_price = 17;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getBlobGasPrice = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 17, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setBlobGasPrice = function(value) {
+  return jspb.Message.setProto3IntField(this, 17, value);
+};
+
+
+/**
+ * optional uint64 blob_gas_used = 18;
+ * @return {number}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getBlobGasUsed = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 18, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setBlobGasUsed = function(value) {
+  return jspb.Message.setProto3IntField(this, 18, value);
+};
+
+
+/**
+ * optional string to = 19;
+ * @return {string}
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.getTo = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 19, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.TransactionReceipt} returns this
+ */
+proto.aggregator.Evm.TransactionReceipt.prototype.setTo = function(value) {
+  return jspb.Message.setProto3StringField(this, 19, value);
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.Evm.UserOp.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.Evm.UserOp.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.Evm.UserOp} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.UserOp.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    sender: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    nonce: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    initCode: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    callData: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    callGasLimit: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    verificationGasLimit: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    preVerificationGas: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    maxFeePerGas: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    maxPriorityFeePerGas: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    paymasterAndData: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    signature: jspb.Message.getFieldWithDefault(msg, 11, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.Evm.UserOp}
+ */
+proto.aggregator.Evm.UserOp.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.Evm.UserOp;
+  return proto.aggregator.Evm.UserOp.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.Evm.UserOp} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.Evm.UserOp}
+ */
+proto.aggregator.Evm.UserOp.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSender(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNonce(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setInitCode(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCallData(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCallGasLimit(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setVerificationGasLimit(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPreVerificationGas(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setMaxFeePerGas(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setMaxPriorityFeePerGas(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPaymasterAndData(value);
+      break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSignature(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.Evm.UserOp.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.Evm.UserOp.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.Evm.UserOp} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.Evm.UserOp.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getSender();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getNonce();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getInitCode();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+  f = message.getCallData();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getCallGasLimit();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getVerificationGasLimit();
+  if (f.length > 0) {
+    writer.writeString(
+      6,
+      f
+    );
+  }
+  f = message.getPreVerificationGas();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
+      f
+    );
+  }
+  f = message.getMaxFeePerGas();
+  if (f.length > 0) {
+    writer.writeString(
+      8,
+      f
+    );
+  }
+  f = message.getMaxPriorityFeePerGas();
+  if (f.length > 0) {
+    writer.writeString(
+      9,
+      f
+    );
+  }
+  f = message.getPaymasterAndData();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
+  f = message.getSignature();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string sender = 1;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getSender = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setSender = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string nonce = 2;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getNonce = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setNonce = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string init_code = 3;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getInitCode = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setInitCode = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string call_data = 4;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getCallData = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setCallData = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string call_gas_limit = 5;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getCallGasLimit = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setCallGasLimit = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional string verification_gas_limit = 6;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getVerificationGasLimit = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setVerificationGasLimit = function(value) {
+  return jspb.Message.setProto3StringField(this, 6, value);
+};
+
+
+/**
+ * optional string pre_verification_gas = 7;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getPreVerificationGas = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setPreVerificationGas = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional string max_fee_per_gas = 8;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getMaxFeePerGas = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setMaxFeePerGas = function(value) {
+  return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional string max_priority_fee_per_gas = 9;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getMaxPriorityFeePerGas = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setMaxPriorityFeePerGas = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * optional string paymaster_and_data = 10;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getPaymasterAndData = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setPaymasterAndData = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
+
+
+/**
+ * optional string signature = 11;
+ * @return {string}
+ */
+proto.aggregator.Evm.UserOp.prototype.getSignature = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Evm.UserOp} returns this
+ */
+proto.aggregator.Evm.UserOp.prototype.setSignature = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
 };
 
 

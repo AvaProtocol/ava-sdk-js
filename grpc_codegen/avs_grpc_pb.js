@@ -5,6 +5,8 @@ var grpc = require('@grpc/grpc-js');
 var avs_pb = require('./avs_pb.js');
 var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
 var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
+var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
+var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
 function serialize_aggregator_CreateOrUpdateSecretReq(arg) {
   if (!(arg instanceof avs_pb.CreateOrUpdateSecretReq)) {
@@ -83,6 +85,28 @@ function deserialize_aggregator_ExecutionStatusResp(buffer_arg) {
   return avs_pb.ExecutionStatusResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_GetExecutionCountReq(arg) {
+  if (!(arg instanceof avs_pb.GetExecutionCountReq)) {
+    throw new Error('Expected argument of type aggregator.GetExecutionCountReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetExecutionCountReq(buffer_arg) {
+  return avs_pb.GetExecutionCountReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetExecutionCountResp(arg) {
+  if (!(arg instanceof avs_pb.GetExecutionCountResp)) {
+    throw new Error('Expected argument of type aggregator.GetExecutionCountResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetExecutionCountResp(buffer_arg) {
+  return avs_pb.GetExecutionCountResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_GetKeyReq(arg) {
   if (!(arg instanceof avs_pb.GetKeyReq)) {
     throw new Error('Expected argument of type aggregator.GetKeyReq');
@@ -114,6 +138,28 @@ function serialize_aggregator_GetWalletResp(arg) {
 
 function deserialize_aggregator_GetWalletResp(buffer_arg) {
   return avs_pb.GetWalletResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetWorkflowCountReq(arg) {
+  if (!(arg instanceof avs_pb.GetWorkflowCountReq)) {
+    throw new Error('Expected argument of type aggregator.GetWorkflowCountReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetWorkflowCountReq(buffer_arg) {
+  return avs_pb.GetWorkflowCountReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetWorkflowCountResp(arg) {
+  if (!(arg instanceof avs_pb.GetWorkflowCountResp)) {
+    throw new Error('Expected argument of type aggregator.GetWorkflowCountResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetWorkflowCountResp(buffer_arg) {
+  return avs_pb.GetWorkflowCountResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_IdReq(arg) {
@@ -490,6 +536,38 @@ updateSecret: {
     requestDeserialize: deserialize_aggregator_CreateOrUpdateSecretReq,
     responseSerialize: serialize_google_protobuf_BoolValue,
     responseDeserialize: deserialize_google_protobuf_BoolValue,
+  },
+  // The spec of these 2 RPCs are based on the following issue:
+// Reference: https://github.com/AvaProtocol/EigenLayer-AVS/issues/150
+// GetWorkflowCount returns the total count of workflows for the given eoa addresses or a list of smart wallet addresses belongs to the eoa in the auth key
+// When passing a list of smart wallet addresses, we will return the total count of workflows belongs to all of them
+// If the smart wallet address is not found in our system, we will ignore it and not count towards the total
+// if smart wallet address doesn't belong to the eoa in the auth key, we will also ignore it and not count towards the total
+getWorkflowCount: {
+    path: '/aggregator.Aggregator/GetWorkflowCount',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.GetWorkflowCountReq,
+    responseType: avs_pb.GetWorkflowCountResp,
+    requestSerialize: serialize_aggregator_GetWorkflowCountReq,
+    requestDeserialize: deserialize_aggregator_GetWorkflowCountReq,
+    responseSerialize: serialize_aggregator_GetWorkflowCountResp,
+    responseDeserialize: deserialize_aggregator_GetWorkflowCountResp,
+  },
+  // GetExecutionCount returns the total number of executions for specified workflow IDs or all workflows linked to the EOA in the auth key.
+// If no workflow IDs are provided, it counts executions for all workflows of the EOA.
+// Workflow IDs not found in the system are ignored.
+// Workflow IDs not linked to the EOA in the auth key are also ignored.
+getExecutionCount: {
+    path: '/aggregator.Aggregator/GetExecutionCount',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.GetExecutionCountReq,
+    responseType: avs_pb.GetExecutionCountResp,
+    requestSerialize: serialize_aggregator_GetExecutionCountReq,
+    requestDeserialize: deserialize_aggregator_GetExecutionCountReq,
+    responseSerialize: serialize_aggregator_GetExecutionCountResp,
+    responseDeserialize: deserialize_aggregator_GetExecutionCountResp,
   },
 };
 
