@@ -31,6 +31,7 @@
     "test:getWallets": "jest tests/getWallets.test.ts --verbose --runInBand",
     "test:secret": "jest tests/secret.test.ts --verbose --runInBand",
     "test:select": "npm run test -- --testNamePattern",
+    "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/"
   },
   "devDependencies": {
