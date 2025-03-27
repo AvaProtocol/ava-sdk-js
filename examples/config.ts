@@ -4,7 +4,7 @@ const cliOptions = commandLineArgs([
   { name: 'avs-target', alias: 't', type: String, defaultValue: 'development' }
 ], { partial: true });
 
-export const env = cliOptions['avs-target'] || process.env.ENV || 'development';
+export const env = cliOptions['avs-target'] || 'development';
 
 export const config = {
   development: {
