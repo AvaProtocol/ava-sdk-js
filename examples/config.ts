@@ -7,6 +7,7 @@ const cliOptions = commandLineArgs([
 export const env = cliOptions['avs-target'] || 'development';
 
 export const config = {
+  // The development environment is the local environment run on your machine. It can be bring up following the instructions in this file https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/docs/development.md
   development: {
     AP_AVS_RPC: "localhost:2206",
     TEST_TRANSFER_TOKEN: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
