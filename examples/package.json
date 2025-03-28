@@ -5,6 +5,10 @@
     "node": ">=20.18.0",
     "yarn": ">=1.22.19"
   },
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
@@ -19,7 +23,7 @@
     "@avaprotocol/types": "workspace:*",
     "@types/node": "^20.0.0",
     "command-line-args": "^6.0.1",
-    "ethers": "^5.0.0",
+    "ethers": "6.13.2",
     "id128": "^1.0.0",
     "lodash": "^4.17.21",
     "ts-node": "^10.9.2",

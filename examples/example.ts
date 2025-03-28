@@ -15,7 +15,7 @@ import util from "node:util";
 import id128library from "id128";
 const { UlidMonotonic } = id128library;
 
-import { env as currentEnv, getConfig, config } from "./config.ts";
+import { currentEnv, getConfig } from "./config";
 
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
 const DEFAULT_PAGE_LIMIT = 5;
@@ -26,8 +26,6 @@ console.log("Current environment is: ", currentEnv);
 const client = new Client({
   endpoint: getConfig().AP_AVS_RPC,
 });
-
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-4609037622";
 
 // Generate a signed message from a private key
 async function generateSignature(privateKey: string) {
