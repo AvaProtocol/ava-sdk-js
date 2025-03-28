@@ -2,20 +2,19 @@ import {
   Client,
   TriggerFactory,
   TriggerType,
-  TriggerReason,
   NodeFactory,
   Edge,
 } from "@avaprotocol/sdk-js";
 
 import { NodeType, getKeyRequestMessage } from "@avaprotocol/types";
 
-import * as _ from "lodash";
-import { ethers } from "ethers";
+import _ from "lodash";
+import { ethers, Wallet } from "ethers";
 import util from "node:util";
 import id128library from "id128";
 const { UlidMonotonic } = id128library;
 
-import { env as currentEnv, getConfig, config } from "./config.ts";
+import { commandArgs, currentEnv, getConfig } from "./config";
 
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
 const DEFAULT_PAGE_LIMIT = 5;
@@ -101,15 +100,6 @@ async function listTask(owner: string, token: string) {
   );
 }
 
-async function getTask(taskId: string, options: { authKey: string }) {
-  const result = await client.getWorkflow(taskId, options);
-
-  console.log(
-    "getWorkflow response:\n",
-    util.inspect(result, { depth: 6, colors: true })
-  );
-}
-
 async function listExecutions(
   workflowIdsString: string,
   options: {
@@ -161,36 +151,18 @@ async function listExecutions(
   );
 }
 
-async function getExecution(owner, token, taskId, execId) {
-  const result = await client.getExecution(taskId, execId, { authKey: token });
-
-  console.log(util.inspect(result, { depth: 6, colors: true }));
-}
-
-async function cancel(owner, token, taskId) {
-  const result = await client.cancelWorkflow(taskId, { authKey: token });
-
-  console.log("Response:\n", result);
-}
-
-async function deleteTask(owner, token, taskId) {
-  const result = await client.deleteWorkflow(taskId, { authKey: token });
-
-  console.log("Response:\n", result);
-}
-
 async function triggerTask(owner, token, taskId, triggerReason) {
   const metadata = JSON.parse(triggerReason);
 
   const result = await client.triggerWorkflow(
     {
       id: taskId,
-      reason: new TriggerReason({
+      reason: {
         type: TriggerType.Event,
         blockNumber: metadata["block_number"],
         logIndex: metadata["log_index"],
         txHash: metadata["tx_hash"],
-      }),
+      },
       isBlocking: true,
     },
     {
@@ -228,14 +200,14 @@ async function getWallets(
     let wallets = [];
     for (const wallet of walletsResp) {
       const balance = await provider.getBalance(wallet.address);
-      const balanceInEth = _.floor(ethers.formatEther(balance), 2);
+      const balanceInEth = _.floor(Number(ethers.formatEther(balance)), 2);
 
       const tokenBalance = await tokenContract.balanceOf(wallet.address);
 
       const tokenDecimals = await tokenContract.decimals();
       const tokenSymbol = await tokenContract.symbol();
       const tokenBalanceFormatted = _.floor(
-        ethers.formatUnits(tokenBalance, tokenDecimals),
+        Number(ethers.formatUnits(tokenBalance, tokenDecimals)),
         2
       );
       wallets.push({
@@ -280,38 +252,13 @@ function getTaskDataQuery(owner) {
   return iface.encodeFunctionData("retrieve", [owner]);
 }
 
-async function createSecret(
-  owner: string,
-  token: string,
-  name: string,
-  secret: string
-) {
-  const result = await client.createSecret(name, secret, {
-    authKey: token,
-  });
-
-  console.log(
-    "Created secret:",
-    util.inspect(result, { depth: 6, colors: true })
-  );
-}
-
-async function listSecrets(owner: string, token: string) {
-  const result = await client.listSecrets({
-    authKey: token,
-  });
-
-  console.log("Secrets:", util.inspect(result, { depth: 6, colors: true }));
-}
-
 // Schedule a simple job that get price of an asset and post it to a webhook
 async function schedulePriceReport(
-  owner: string,
-  token: string,
-  schedule: string
+  schedule: string,
+  smartWalletAddress: string,
+  { authKey }: { authKey: string }
 ) {
   const taskBody = getTaskData();
-  const smartWalletAddress = process.argv[3];
   if (!smartWalletAddress) {
     console.log("invalid smart wallet address. check usage");
     return;
@@ -408,7 +355,7 @@ async function schedulePriceReport(
   });
 
   const workflowId = await client.submitWorkflow(workflow, {
-    authKey: token,
+    authKey,
   });
 
   console.log("create task", workflowId);
@@ -554,7 +501,8 @@ async function scheduleSweep(owner: string, token: string, target: string) {
           // Learn more how to compute these here https://ethereum.stackexchange.com/questions/114146/how-do-i-manually-encode-and-send-transaction-data and https://docs.ethers.org/v6/api/abi/#Interface-encodeFunctionData
           callData:
             "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
-          // 000000000000000000000000000000000000000000000000000000000000003e"
+          // Adding required contractAbi property
+          contractAbi: "[]",
         },
       },
     ]),
@@ -717,27 +665,31 @@ async function scheduleMonitorTransfer(
 
 const main = async (cmd: string) => {
   const result = await generateApiToken();
-  const owner = result.address; // this is the address extract from private key
-  const token = result.authKey;
+  // Fix the address property issue - use the address from the original signature
+  const wallet = new Wallet(privateKey);
+  const owner = wallet.address;
+  const authKey = result.authKey;
 
-  switch (cmd) {
+  switch (commandArgs.command) {
     case "auth-key":
-      console.log("The authkey associate with the EOA is", token);
+      console.log("The authkey associate with the EOA is", authKey);
       break;
     case "wallet":
-      const wallets = await getWallets(owner, token);
+      const wallets = await client.getWallets({ authKey });
       console.log(
         "getWallets response:\n",
         util.inspect(wallets, { depth: 6, colors: true })
       );
       break;
     case "create-wallet":
-      const salt = process.argv[3] || 0;
-      let smartWalletAddress = await createWallet(
-        owner,
-        token,
-        salt,
-        process.argv[4]
+      const salt = commandArgs.args[0];
+      const factoryAddress = getConfig().FACTORY_ADDRESS;
+      let smartWalletAddress = await client.getWallet(
+        {
+          salt,
+          factoryAddress,
+        },
+        { authKey }
       );
       console.log(
         `A new smart wallet with salt ${salt} is created for ${owner}:\nResponse:\n`,
@@ -745,44 +697,80 @@ const main = async (cmd: string) => {
       );
       break;
     case "schedule-monitor":
-      scheduleMonitorTransfer(owner, token, process.argv[3]);
+      scheduleMonitorTransfer(owner, authKey, commandArgs.args[0]);
       break;
     case "schedule-telegram":
-      scheduleTelegram(owner, token);
+      scheduleTelegram(owner, authKey);
       break;
     case "schedule-sweep":
-      scheduleSweep(owner, token, process.argv[3]);
+      scheduleSweep(owner, authKey, commandArgs.args[0]);
       break;
     case "schedule":
     case "schedule-cron":
     case "schedule-fixed":
     case "schedule-manual":
-      const resultSchedule = await schedulePriceReport(owner, token, cmd);
+      const resultSchedule = await schedulePriceReport(
+        commandArgs.args[0],
+        commandArgs.args[1],
+        { authKey }
+      );
+
+      console.log(
+        "schedule",
+        util.inspect(resultSchedule, { depth: 6, colors: true })
+      );
       break;
 
     case "tasks":
-      await listTask(owner, token);
+      await listTask(owner, authKey);
       break;
 
     case "get":
-      await getTask(process.argv[3], { authKey: token });
+      const taskId = commandArgs.args[0];
+      const result = await client.getWorkflow(taskId, {
+        authKey,
+      });
+
+      console.log(
+        "getWorkflow response:\n",
+        util.inspect(result, { depth: 6, colors: true })
+      );
       break;
 
     case "executions":
-      await listExecutions(process.argv[3], {
-        authKey: token,
-        cursor: process.argv[4],
-        limit: _.toNumber(process.argv[5]),
+      await listExecutions(commandArgs.args[0], {
+        authKey,
+        cursor: commandArgs.args[1],
+        limit: _.toNumber(commandArgs.args[2]),
       });
       break;
     case "execution":
-      await getExecution(owner, token, process.argv[3], process.argv[4]);
+      const resultExecution = await client.getExecution(
+        commandArgs.args[0],
+        commandArgs.args[1],
+        { authKey }
+      );
+
+      console.log(
+        "getExecution response:\n",
+        util.inspect(resultExecution, { depth: 6, colors: true })
+      );
       break;
     case "cancel":
-      await cancel(owner, token, process.argv[3]);
+      const resultCancel = await client.cancelWorkflow(
+        commandArgs.args[0],
+        { authKey }
+      );
+
+      console.log("Response:\n", resultCancel);
       break;
     case "delete":
-      await deleteTask(owner, token, process.argv[3]);
+      const resultDelete = await client.deleteWorkflow(
+        commandArgs.args[0],
+        { authKey }
+      );
+
+      console.log("Response:\n", resultDelete);
       break;
 
     case "gen-task-data":
@@ -790,14 +778,31 @@ const main = async (cmd: string) => {
       break;
 
     case "trigger":
-      await triggerTask(owner, token, process.argv[3], process.argv[4]);
+      await triggerTask(
+        owner,
+        authKey,
+        commandArgs.args[0],
+        commandArgs.args[1]
+      );
       break;
 
     case "create-secret":
-      await createSecret(owner, token, process.argv[3], process.argv[4]);
+      const isSuccess = await client.createSecret(
+        commandArgs.args[0],
+        commandArgs.args[1],
+        { authKey }
+      );
+
+      console.log(
+        "secret",
+        util.inspect(isSuccess, { depth: 6, colors: true })
+      );
       break;
     case "list-secrets":
-      await listSecrets(owner, token);
+      const secrets = await client.listSecrets({
+        authKey,
+      });
+      console.log("secrets", util.inspect(secrets, { depth: 6, colors: true }));
       break;
 
     default:

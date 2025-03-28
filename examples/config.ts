@@ -1,18 +1,34 @@
-import commandLineArgs from "command-line-args";
+import commandLineParser from "command-line-args";
 
-const cliOptions = commandLineArgs(
-  [
-    {
-      name: "avs-target",
-      alias: "t",
-      type: String,
-      defaultValue: "development",
-    },
-  ],
-  { partial: true }
-);
+const optionDefinitions = [
+  { name: "command", type: String, defaultOption: true },
+  {
+    name: "avs-target",
+    alias: "t",
+    type: String,
+    defaultValue: "development",
+  },
+  { name: "args", type: String, multiple: true, defaultValue: [] }, // Captures extra arguments like `0`
+];
 
-export const env = cliOptions["avs-target"] || "development";
+const parsed = commandLineParser(optionDefinitions, {
+  stopAtFirstUnknown: true,
+});
+
+const argv = process.argv;
+const unknownArgsStart = argv.findIndex((arg) => arg === parsed.command) + 1;
+const unknownArgs = argv
+  .slice(unknownArgsStart)
+  .filter((arg) => !arg.startsWith("-"));
+
+export const commandArgs = {
+  ...parsed,
+  args: unknownArgs,
+};
+
+console.log("commandArgs", commandArgs);
+
+export const env = commandArgs["avs-target"] || "development";
 
 export const config = {
   // The development environment is the local environment run on your machine. It can be bring up following the instructions in this file https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/docs/development.md
@@ -22,6 +38,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
     ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
+    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 
   sepolia: {
@@ -30,6 +47,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
     ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
+    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 
   "base-sepolia": {
@@ -38,6 +56,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
     ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
+    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 
   base: {
@@ -46,6 +65,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
     ORACLE_PRICE_CONTRACT: "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
+    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 
   ethereum: {
@@ -54,6 +74,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
     ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
+    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 
   // TODO: Minato no longer works so we comment out in this, will add it back it eventually
