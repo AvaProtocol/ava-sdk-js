@@ -50,7 +50,6 @@ class Execution implements ExecutionProps {
 
     switch (outputDataType) {
       case avs_pb.Execution.OutputDataCase.EVM_LOG:
-        outputData = execution.getEvmLog()?.toObject();
         break;
       case avs_pb.Execution.OutputDataCase.TRANSFER_LOG:
         outputData = execution.getTransferLog()?.toObject();
