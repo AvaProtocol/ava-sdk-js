@@ -9,81 +9,22 @@ import {
 
 import { NodeType, getKeyRequestMessage } from "@avaprotocol/types";
 
-import _ from "lodash";
+import * as _ from "lodash";
 import { ethers } from "ethers";
-import id128library from "id128";
 import util from "node:util";
+import id128library from "id128";
 const { UlidMonotonic } = id128library;
 
-const env = process.env.ENV || "development";
+import { env as currentEnv, getConfig, config } from "./config.ts";
+
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
 const DEFAULT_PAGE_LIMIT = 5;
 
-const config = {
-  // The development environment is the local environment run on your machine. It can be bring up following the instructions in this file https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/docs/development.md
-  development: {
-    AP_AVS_RPC: "localhost:2206",
-    TEST_TRANSFER_TOKEN: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
-    //ORACLE_PRICE_CONTRACT: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
-    ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
-    // on local development we still target smart wallet on sepolia
-    RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
-  },
-
-  sepolia: {
-    AP_AVS_RPC: "aggregator-sepolia.avaprotocol.org:2206",
-    TEST_TRANSFER_TOKEN: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
-    ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
-  },
-
-  "base-sepolia": {
-    AP_AVS_RPC: "aggregator-base-sepolia.avaprotocol.org:3206",
-    TEST_TRANSFER_TOKEN: "0x72d587b34f7d21fbc47d55fa3d2c2609d4f25698",
-    TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-    ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
-    RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
-  },
-
-  base: {
-    AP_AVS_RPC: "aggregator-base.avaprotocol.org:3206",
-    TEST_TRANSFER_TOKEN: "0x72d587b34f7d21fbc47d55fa3d2c2609d4f25698",
-    TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-    ORACLE_PRICE_CONTRACT: "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
-    RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
-  },
-
-  ethereum: {
-    AP_AVS_RPC: "aggregator.avaprotocol.org:2206",
-    TEST_TRANSFER_TOKEN: "0x72d587b34f7d21fbc47d55fa3d2c2609d4f25698",
-    TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-    ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
-  },
-
-  // TODO: Minato no longer works so we comment out in this, will add it back it eventually
-  // minato: {
-  //   AP_AVS_RPC: "aggregator-minato.avaprotocol.org:2306",
-  //   // https://explorer-testnet.soneium.org/token/0xBA33747043d09868946978Dd935130490a083458?tab=contract
-  //   // anyone can mint this token for testing transfer it
-  //   TEST_TRANSFER_TOKEN: "0xBA33747043d09868946978Dd935130490a083458",
-  //   // Can be any arbitrary address to demonstrate that this address will receive the token above
-  //   TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
-  //   ORACLE_PRICE_CONTRACT: "0x0ee7f0f7796Bd98c0E68107c42b21F5B7C13bcA9",
-  //   RPC_PROVIDER: "https://rpc.minato.soneium.org",
-  // },
-};
-
 // Initialize SDK
-console.log("Current environment is: ", env);
-if (!config[env as keyof typeof config]) {
-  throw new Error(`Environment ${env} not found`);
-}
+console.log("Current environment is: ", currentEnv);
 
 const client = new Client({
-  endpoint: config[env as keyof typeof config].AP_AVS_RPC,
+  endpoint: getConfig().AP_AVS_RPC,
 });
 
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-4609037622";
@@ -197,7 +138,7 @@ async function listExecutions(
       `Found ${wallets.length} wallets and ${workflows.result.length} workflows...`
     );
 
-    // If there’s no workflows found, return early
+    // If there's no workflows found, return early
     if (_.isEmpty(workflows.result)) {
       console.log("No workflows found, returning early ...");
       return;
@@ -273,10 +214,10 @@ async function getWallets(
   if (shouldFetchBalances) {
     console.log("Fetching balances from RPC provider ...");
     // Update the provider creation
-    const provider = new ethers.JsonRpcProvider(config[env].RPC_PROVIDER);
+    const provider = new ethers.JsonRpcProvider(getConfig().RPC_PROVIDER);
 
     // Get token balance
-    const tokenAddress = config[env].TEST_TRANSFER_TOKEN;
+    const tokenAddress = getConfig().TEST_TRANSFER_TOKEN;
     const tokenAbi = [
       "function balanceOf(address account) view returns (uint256)",
       "function decimals() view returns (uint8)",
@@ -328,7 +269,7 @@ function getTaskData() {
   let ABI = ["function transfer(address to, uint amount)"];
   let iface = new ethers.Interface(ABI);
   return iface.encodeFunctionData("transfer", [
-    config[env].TEST_TRANSFER_TO,
+    getConfig().TEST_TRANSFER_TO,
     ethers.parseUnits("12", 18),
   ]);
 }
@@ -364,7 +305,11 @@ async function listSecrets(owner: string, token: string) {
 }
 
 // Schedule a simple job that get price of an asset and post it to a webhook
-async function schedulePriceReport(owner: string, token: string, schedule: string) {
+async function schedulePriceReport(
+  owner: string,
+  token: string,
+  schedule: string
+) {
   const taskBody = getTaskData();
   const smartWalletAddress = process.argv[3];
   if (!smartWalletAddress) {
@@ -392,7 +337,7 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
       name: "demoCronTrigger",
       data: {
         // every 5 minutes, multiple crontab is also accepted
-        scheduleList: ["*/2 * * * *", ]
+        scheduleList: ["*/2 * * * *"],
       },
     });
   }
@@ -406,8 +351,7 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
         name: "checkPrice",
         type: NodeType.ContractRead,
         data: {
-          contractAddress:
-            config[env as keyof typeof config].ORACLE_PRICE_CONTRACT,
+          contractAddress: getConfig().ORACLE_PRICE_CONTRACT,
           callData: "0xfeaf968c",
           contractAbi: `[
             {
@@ -436,8 +380,8 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
           url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
           body: `{
-            "chat_id": ${ CHAT_ID },
-            "text": "The result of latestRoundData at {{ new Date().getTime() }} of ETH/USD pair on ${ env } network is {{ checkPrice.data.toString() }}."
+            "chat_id": ${CHAT_ID},
+            "text": "The result of latestRoundData at {{ new Date().getTime() }} of ETH/USD pair on ${currentEnv} network is {{ checkPrice.data.toString() }}."
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -504,7 +448,7 @@ async function scheduleTelegram(owner: string, token: string) {
 
           body: `{
             "chat_id": 5197173428,
-            "text": "Hello world scheduleTelegram Test on ${ env } network. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
+            "text": "Hello world scheduleTelegram Test on ${currentEnv} network. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -546,15 +490,15 @@ async function scheduleTelegram(owner: string, token: string) {
 // 2. When the allowed token transfer it the smart wallet, we will transfer out the exact amount into a destination wallet
 //
 // The task demo how contractWrite node can be dynamic based on previous input
-async function scheduleSweep(
-  owner: string,
-  token: string,
-  target: string,
-) {
-  console.log("schedule a sweep task that move incoming fund to another wallet");
+async function scheduleSweep(owner: string, token: string, target: string) {
+  console.log(
+    "schedule a sweep task that move incoming fund to another wallet"
+  );
   const wallets = await getWallets(owner, token);
   if (_.isEmpty(wallets)) {
-    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    console.log(
+      "please create at least one wallet. this example will then auto pick the first wallet to schedule the test"
+    );
     return;
   }
   const smartWalletAddress = wallets[0].address;
@@ -608,7 +552,8 @@ async function scheduleSweep(
           contractAddress: "{{demoTriggerName.data.address}}",
           // Transfer whatever coming in to 0xe0f7d11fd714674722d325cd86062a5f1882e13a
           // Learn more how to compute these here https://ethereum.stackexchange.com/questions/114146/how-do-i-manually-encode-and-send-transaction-data and https://docs.ethers.org/v6/api/abi/#Interface-encodeFunctionData
-          callData: "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}"
+          callData:
+            "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
           // 000000000000000000000000000000000000000000000000000000000000003e"
         },
       },
@@ -777,8 +722,8 @@ const main = async (cmd: string) => {
 
   switch (cmd) {
     case "auth-key":
-        console.log("The authkey associate with the EOA is", token);
-        break;
+      console.log("The authkey associate with the EOA is", token);
+      break;
     case "wallet":
       const wallets = await getWallets(owner, token);
       console.log(
