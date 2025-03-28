@@ -26,6 +26,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0  # Fetch all history for all branches
 
       - name: Debug environment variables
         run: |
@@ -37,14 +40,16 @@ jobs:
           echo "=== Pull Request Information ==="
           echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
           echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
+          echo "PR Head Ref: ${{ github.event.pull_request.head.ref }}"
           echo "GitHub Ref: ${{ github.ref }}"
           echo "Base Branch: ${{ github.base_ref }}"
           
-          # Ensure we have the base branch
-          git fetch origin ${{ github.base_ref }} --depth=1
+          # Fetch both branches
+          git fetch origin ${{ github.base_ref }}
+          git fetch origin ${{ github.event.pull_request.head.ref }}
           
           # Get all changed files
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          CHANGED_FILES=$(git diff origin/${{ github.base_ref }} HEAD)
           
           # Define the source code patterns we want to monitor
           SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'

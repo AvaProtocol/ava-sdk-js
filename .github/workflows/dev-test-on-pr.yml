@@ -17,10 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run local AVS aggregator in Docker
-        run: |
-          docker compose up -d
-
       - name: Debug environment variables
         run: |
           echo "ENDPOINT: $ENDPOINT"
@@ -66,7 +62,7 @@ jobs:
           fi
         shell: bash
 
-      - name: Bring up docker compose
+      - name: Run local AVS aggregator in Docker
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           docker compose up -d
