@@ -8,12 +8,17 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "ts-node example.ts"
+    "start": "ts-node example.ts",
+    "start:sepolia": "ts-node example.ts -t sepolia",
+    "start:base": "ts-node example.ts -t base",
+    "start:base-sepolia": "ts-node example.ts -t base-sepolia",
+    "start:ethereum": "ts-node example.ts -t ethereum"
   },
   "devDependencies": {
     "@avaprotocol/sdk-js": "workspace:*",
     "@avaprotocol/types": "workspace:*",
     "@types/node": "^20.0.0",
+    "command-line-args": "^6.0.1",
     "ethers": "^5.0.0",
     "id128": "^1.0.0",
     "lodash": "^4.17.21",

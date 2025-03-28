@@ -9,13 +9,13 @@ import {
 
 import { NodeType, getKeyRequestMessage } from "@avaprotocol/types";
 
-import _ from "lodash";
+import * as _ from "lodash";
 import { ethers } from "ethers";
-import id128library from "id128";
 import util from "node:util";
+import id128library from "id128";
 const { UlidMonotonic } = id128library;
 
-import { env as currentEnv, getConfig, config } from "./config";
+import { env as currentEnv, getConfig, config } from "./config.ts";
 
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
 const DEFAULT_PAGE_LIMIT = 5;
@@ -138,7 +138,7 @@ async function listExecutions(
       `Found ${wallets.length} wallets and ${workflows.result.length} workflows...`
     );
 
-    // If there’s no workflows found, return early
+    // If there's no workflows found, return early
     if (_.isEmpty(workflows.result)) {
       console.log("No workflows found, returning early ...");
       return;
@@ -305,7 +305,11 @@ async function listSecrets(owner: string, token: string) {
 }
 
 // Schedule a simple job that get price of an asset and post it to a webhook
-async function schedulePriceReport(owner: string, token: string, schedule: string) {
+async function schedulePriceReport(
+  owner: string,
+  token: string,
+  schedule: string
+) {
   const taskBody = getTaskData();
   const smartWalletAddress = process.argv[3];
   if (!smartWalletAddress) {
@@ -333,7 +337,7 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
       name: "demoCronTrigger",
       data: {
         // every 5 minutes, multiple crontab is also accepted
-        scheduleList: ["*/2 * * * *", ]
+        scheduleList: ["*/2 * * * *"],
       },
     });
   }
@@ -347,8 +351,7 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
         name: "checkPrice",
         type: NodeType.ContractRead,
         data: {
-          contractAddress:
-            getConfig().ORACLE_PRICE_CONTRACT,
+          contractAddress: getConfig().ORACLE_PRICE_CONTRACT,
           callData: "0xfeaf968c",
           contractAbi: `[
             {
@@ -377,8 +380,8 @@ async function schedulePriceReport(owner: string, token: string, schedule: strin
           url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
           body: `{
-            "chat_id": ${ CHAT_ID },
-            "text": "The result of latestRoundData at {{ new Date().getTime() }} of ETH/USD pair on ${ currentEnv } network is {{ checkPrice.data.toString() }}."
+            "chat_id": ${CHAT_ID},
+            "text": "The result of latestRoundData at {{ new Date().getTime() }} of ETH/USD pair on ${currentEnv} network is {{ checkPrice.data.toString() }}."
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -445,7 +448,7 @@ async function scheduleTelegram(owner: string, token: string) {
 
           body: `{
             "chat_id": 5197173428,
-            "text": "Hello world scheduleTelegram Test on ${ currentEnv } network. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
+            "text": "Hello world scheduleTelegram Test on ${currentEnv} network. This task is triggered at block {{ triggerEvery10.data.block_number }}. we can also use use js in this block new Date() = {{ new Date() }}"
           }`,
           headersMap: [["content-type", "application/json"]],
         },
@@ -487,15 +490,15 @@ async function scheduleTelegram(owner: string, token: string) {
 // 2. When the allowed token transfer it the smart wallet, we will transfer out the exact amount into a destination wallet
 //
 // The task demo how contractWrite node can be dynamic based on previous input
-async function scheduleSweep(
-  owner: string,
-  token: string,
-  target: string,
-) {
-  console.log("schedule a sweep task that move incoming fund to another wallet");
+async function scheduleSweep(owner: string, token: string, target: string) {
+  console.log(
+    "schedule a sweep task that move incoming fund to another wallet"
+  );
   const wallets = await getWallets(owner, token);
   if (_.isEmpty(wallets)) {
-    console.log("please create at least one wallet. this example will then auto pick the first wallet to schedule the test");
+    console.log(
+      "please create at least one wallet. this example will then auto pick the first wallet to schedule the test"
+    );
     return;
   }
   const smartWalletAddress = wallets[0].address;
@@ -549,7 +552,8 @@ async function scheduleSweep(
           contractAddress: "{{demoTriggerName.data.address}}",
           // Transfer whatever coming in to 0xe0f7d11fd714674722d325cd86062a5f1882e13a
           // Learn more how to compute these here https://ethereum.stackexchange.com/questions/114146/how-do-i-manually-encode-and-send-transaction-data and https://docs.ethers.org/v6/api/abi/#Interface-encodeFunctionData
-          callData: "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}"
+          callData:
+            "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
           // 000000000000000000000000000000000000000000000000000000000000003e"
         },
       },
@@ -718,8 +722,8 @@ const main = async (cmd: string) => {
 
   switch (cmd) {
     case "auth-key":
-        console.log("The authkey associate with the EOA is", token);
-        break;
+      console.log("The authkey associate with the EOA is", token);
+      break;
     case "wallet":
       const wallets = await getWallets(owner, token);
       console.log(
