@@ -10,8 +10,6 @@ jobs:
 
     env:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-      TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
-      ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
 
@@ -19,26 +17,69 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Bring up docker compose
+      - name: Debug environment variables
+        run: |
+          echo "ENDPOINT: $ENDPOINT"
+
+      - name: Check Source or Test Code Changes
+        id: check_source_changes
+        run: |
+          echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
+          echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
+          echo "GitHub Ref: ${{ github.ref }}"
+          
+          # Ensure we have the base branch
+          git fetch origin ${{ github.base_ref }} --depth=1
+          
+          # Get all changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
+          
+          # Define the source code patterns we want to monitor
+          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'
+          
+          echo "=== Debug Information ==="
+          echo "Base ref: ${{ github.base_ref }}"
+          echo "Current branch: $(git branch --show-current)"
+          echo "Git status:"
+          git status
+          
+          echo "=== Changed Files ==="
+          echo "$CHANGED_FILES"
+          
+          # Check if any files in our monitored directories have changed
+          MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
+          
+          echo "=== Matching Files ==="
+          echo "$MATCHING_FILES"
+          
+          if [ -z "$MATCHING_FILES" ]; then
+            echo "source_changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in monitored directories, skipping tests"
+          else
+            echo "source_changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in monitored directories:"
+            echo "$MATCHING_FILES"
+          fi
+        shell: bash
+
+      - name: Run local AVS aggregator in Docker
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           docker compose up -d
 
-      - name: Debug environment variables
-        run: |
-          echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
-          echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
-          echo "ENDPOINT: $ENDPOINT"
-
       - name: Use Node.js
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "yarn"
 
       - name: Install dependencies
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
 
       - name: ensure the aggregator and env is ready
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           until curl --output /dev/null --silent --fail http://localhost:1323/up; do
             printf '.'
@@ -46,40 +87,52 @@ jobs:
           done
 
       - name: Build
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
       - name: Setup test environment
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         id: setup-env
         run: |
           echo "TEST_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
           echo "ENDPOINT=localhost:2206" >> $GITHUB_ENV
 
       - name: Test Authentication
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:auth
 
       - name: Test Create Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:createWorkflow
 
       - name: Test Get Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflow
 
       - name: Test Get Workflows
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflows
 
       - name: Test Cancel Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:cancelWorkflow
 
       - name: Test Delete Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
 
       - name: Test Get Executions
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallet
 
       - name: Test Get Wallets
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallets
 
       - name: Test Secret
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:secret
