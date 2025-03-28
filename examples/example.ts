@@ -9,7 +9,7 @@ import {
 
 import { NodeType, getKeyRequestMessage } from "@avaprotocol/types";
 
-import * as _ from "lodash";
+import _ from "lodash";
 import { ethers } from "ethers";
 import util from "node:util";
 import id128library from "id128";
@@ -26,6 +26,8 @@ console.log("Current environment is: ", currentEnv);
 const client = new Client({
   endpoint: getConfig().AP_AVS_RPC,
 });
+
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-4609037622";
 
 // Generate a signed message from a private key
 async function generateSignature(privateKey: string) {
@@ -226,14 +228,14 @@ async function getWallets(
     let wallets = [];
     for (const wallet of walletsResp) {
       const balance = await provider.getBalance(wallet.address);
-      const balanceInEth = _.floor(ethers.formatEther(balance), 2);
+      const balanceInEth = _.floor(Number(ethers.formatEther(balance)), 2);
 
       const tokenBalance = await tokenContract.balanceOf(wallet.address);
 
       const tokenDecimals = await tokenContract.decimals();
       const tokenSymbol = await tokenContract.symbol();
       const tokenBalanceFormatted = _.floor(
-        ethers.formatUnits(tokenBalance, tokenDecimals),
+        Number(ethers.formatUnits(tokenBalance, tokenDecimals)),
         2
       );
       wallets.push({

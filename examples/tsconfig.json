@@ -4,7 +4,9 @@
     "target": "es6",
     "outDir": "./dist",
     "baseUrl": ".",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
-  "include": ["example.ts"]
+  "include": ["example.ts", "config.ts"],
 }
