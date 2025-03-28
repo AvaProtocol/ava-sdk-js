@@ -12,8 +12,6 @@ jobs:
     env:
       TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-      TOKEN_CONTRACT: ${{ vars.TOKEN_CONTRACT }}
-      ORACLE_CONTRACT: ${{ vars.ORACLE_CONTRACT }}
       ENDPOINT: ${{ vars.ENDPOINT }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       # On staging env, when test run it may not cleanup data properly for multiple reasons.
@@ -31,48 +29,85 @@ jobs:
 
       - name: Debug environment variables
         run: |
-          echo "TOKEN_CONTRACT: $TOKEN_CONTRACT"
-          echo "ORACLE_CONTRACT: $ORACLE_CONTRACT"
           echo "ENDPOINT: $ENDPOINT"
 
+      - name: Check Source Code Changes
+        id: check_source_changes
+        run: |
+          # Get all changed files
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          
+          # Define the source code patterns we want to monitor
+          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Check if any files in our monitored directories have changed
+          MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
+          
+          if [ -z "$MATCHING_FILES" ]; then
+            echo "source_changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in monitored directories, skipping tests"
+          else
+            echo "source_changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in monitored directories:"
+            echo "$MATCHING_FILES"
+          fi
+          exit 0
+        shell: bash
+
       - name: Use Node.js
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "yarn"
 
       - name: Install dependencies
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
 
       - name: Build
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
       - name: Test Authentication
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:auth
 
       - name: Test Create Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:createWorkflow
 
       - name: Test Get Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflow
 
       - name: Test Get Workflows
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflows
 
       - name: Test Cancel Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:cancelWorkflow
 
       - name: Test Delete Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
 
       - name: Test Get Executions
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallet
 
       - name: Test Get Wallets
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallets
 
       - name: Test Secret
+        if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:secret
