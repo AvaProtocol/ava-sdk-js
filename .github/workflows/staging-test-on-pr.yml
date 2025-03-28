@@ -48,8 +48,8 @@ jobs:
           git fetch origin ${{ github.base_ref }}
           git fetch origin ${{ github.event.pull_request.head.ref }}
           
-          # Get all changed files
-          CHANGED_FILES=$(git diff origin/${{ github.base_ref }} HEAD)
+          # Get all changed files (only names)
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
           
           # Define the source code patterns we want to monitor
           SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'
