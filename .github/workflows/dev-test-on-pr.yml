@@ -21,7 +21,7 @@ jobs:
         run: |
           echo "ENDPOINT: $ENDPOINT"
 
-      - name: Check Source Code Changes
+      - name: Check Source or Test Code Changes
         id: check_source_changes
         run: |
           echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"

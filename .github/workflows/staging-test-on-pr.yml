@@ -34,7 +34,7 @@ jobs:
         run: |
           echo "ENDPOINT: $ENDPOINT"
 
-      - name: Check Source Code Changes
+      - name: Check Source or Test Code Changes
         id: check_source_changes
         run: |
           echo "=== Pull Request Information ==="
