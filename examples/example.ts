@@ -59,23 +59,24 @@ async function signMessageWithEthers(wallet, message: string) {
   return signature;
 }
 
-async function listTask(owner: string, token: string) {
-  const opts = {
-    cursor: process.argv[5] || "",
-    limit: parseInt(process.argv[4]) || DEFAULT_PAGE_LIMIT,
-    authKey: token,
+async function getWorkflows(
+  address: string,
+  options: { authKey: string; cursor: string; limit: number }
+) {
+  let params = [];
+  const validOptions = {
+    authKey: options.authKey,
+    cursor: options.cursor || "",
+    limit: options.limit || DEFAULT_PAGE_LIMIT,
   };
 
-  const input = process.argv[3];
-
-  let params = [];
-
-  if (_.isEmpty(input)) {
+  if (_.isEmpty(address)) {
     console.log(
-      "process.argv[3] is empty, fetching all wallet addresses as params ..."
+      "address is empty, fetching all wallet addresses as params ..."
     );
 
-    const wallets = await getWallets(owner, token);
+    const wallets = await client.getWallets({ authKey: validOptions.authKey });
+
     console.log(`Found ${wallets.length} smart wallets ...`);
     params = _.map(wallets, (wallet: any) => wallet.address);
 
@@ -87,12 +88,17 @@ async function listTask(owner: string, token: string) {
       return;
     }
   } else {
-    params = _.split(input, ",");
+    params = _.split(address, ",");
   }
 
-  const result = await client.getWorkflows(params, opts);
+  console.log(
+    `Calling getWorkflows with cursor`,
+    validOptions.cursor,
+    `and limit`,
+    validOptions.limit
+  );
 
-  console.log(`List tasks with cursor`, opts.cursor, `and limit`, opts.limit);
+  const result = await client.getWorkflows(params, validOptions);
 
   console.log(
     "getWorkflows response:\n",
@@ -100,7 +106,7 @@ async function listTask(owner: string, token: string) {
   );
 }
 
-async function listExecutions(
+async function getExecutions(
   workflowIdsString: string,
   options: {
     authKey: string;
@@ -674,14 +680,14 @@ const main = async (cmd: string) => {
     case "auth-key":
       console.log("The authkey associate with the EOA is", authKey);
       break;
-    case "wallet":
+    case "getWallets":
       const wallets = await client.getWallets({ authKey });
       console.log(
         "getWallets response:\n",
         util.inspect(wallets, { depth: 6, colors: true })
       );
       break;
-    case "create-wallet":
+    case "getWallet":
       const salt = commandArgs.args[0];
       const factoryAddress = getConfig().FACTORY_ADDRESS;
       let smartWalletAddress = await client.getWallet(
@@ -721,11 +727,16 @@ const main = async (cmd: string) => {
       );
       break;
 
-    case "tasks":
-      await listTask(owner, authKey);
+    case "getWorkflows":
+      const address = commandArgs.args[0];
+      await getWorkflows(address, {
+        cursor: commandArgs.args[1],
+        limit: _.toNumber(commandArgs.args[2]),
+        authKey,
+      });
       break;
 
-    case "get":
+    case "getWorkflow":
       const taskId = commandArgs.args[0];
       const result = await client.getWorkflow(taskId, {
         authKey,
@@ -737,8 +748,8 @@ const main = async (cmd: string) => {
       );
       break;
 
-    case "executions":
-      await listExecutions(commandArgs.args[0], {
+    case "getExecutions":
+      await getExecutions(commandArgs.args[0], {
         authKey,
         cursor: commandArgs.args[1],
         limit: _.toNumber(commandArgs.args[2]),
@@ -757,18 +768,16 @@ const main = async (cmd: string) => {
       );
       break;
     case "cancel":
-      const resultCancel = await client.cancelWorkflow(
-        commandArgs.args[0],
-        { authKey }
-      );
+      const resultCancel = await client.cancelWorkflow(commandArgs.args[0], {
+        authKey,
+      });
 
       console.log("Response:\n", resultCancel);
       break;
-    case "delete":
-      const resultDelete = await client.deleteWorkflow(
-        commandArgs.args[0],
-        { authKey }
-      );
+    case "deleteWorkflow":
+      const resultDelete = await client.deleteWorkflow(commandArgs.args[0], {
+        authKey,
+      });
 
       console.log("Response:\n", resultDelete);
       break;
