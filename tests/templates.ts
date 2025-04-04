@@ -14,6 +14,7 @@ import {
   BranchNodeProps,
   CustomCodeLangs,
   FilterNodeProps,
+  WorkflowProps,
 } from "@avaprotocol/sdk-js";
 import { getNextId } from "./utils";
 import { NodeType } from "@avaprotocol/types";
@@ -176,18 +177,26 @@ const createEdgesFromNodes = (nodes: NodeProps[]): Edge[] => {
 /**
  * Workflow templates
  */
-export const WorkflowTemplate = {
-  nodes: NodeFactory.createNodes(NodesTemplate),
-  edges: createEdgesFromNodes(NodesTemplate),
-  trigger: TriggerFactory.create({
-    id: defaultTriggerId,
-    name: "blockTrigger",
-    type: TriggerType.Block,
-    data: { interval: 5 },
-  }),
-  startAt: Math.floor(Date.now() / 1000) + 30,
-  expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-  maxExecution: 1,
+export const createFromTemplate = (
+  address: string,
+  nodes?: NodeProps[]
+): WorkflowProps => {
+  const nodesList = nodes || NodesTemplate;
+
+  return {
+    smartWalletAddress: address,
+    nodes: NodeFactory.createNodes(nodesList),
+    edges: createEdgesFromNodes(nodesList),
+    trigger: TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 5 },
+    }),
+    startAt: Math.floor(Date.now() / 1000) + 30,
+    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    maxExecution: 1,
+  } as WorkflowProps;
 };
 
 const nodes = [

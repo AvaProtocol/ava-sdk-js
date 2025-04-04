@@ -10,11 +10,9 @@ import {
   requireEnvVar,
   compareResults,
   SaltGlobal,
-  queueForRemoval,
   removeCreatedWorkflows,
-  submitWorkflowAndQueueForRemoval,
 } from "./utils";
-import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -87,100 +85,103 @@ describe("Authentication Tests", () => {
 
     test("createWorkflow works with client.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId: string | undefined;
 
-      const workflowId = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
-
-      expect(workflowId).toHaveLength(26);
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow);
+        expect(workflowId).toHaveLength(26);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
+      }
     });
 
     test("getWorkflow works with client.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId: string | undefined;
 
-      const createResult = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow);
 
-      const getResponse = await client.getWorkflow(createResult);
-      compareResults(
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-          id: createResult,
-          status: WorkflowStatus.Active,
-          owner: eoaAddress,
-        },
-        getResponse
-      );
+        const getResponse = await client.getWorkflow(workflowId);
+        compareResults(
+          {
+            ...workflowProps,
+            id: workflowId,
+            status: WorkflowStatus.Active,
+            owner: eoaAddress,
+          },
+          getResponse
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
+      }
     });
 
     test("getWorkflows works with client.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId: string | undefined;
 
-      // populate tasks for default wallet and the custom salt smart wallet above
-      const createdId1 = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow);
 
-      const listResult1 = await client.getWorkflows([wallet.address]);
-      expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
+        const listResult1 = await client.getWorkflows([wallet.address]);
+        expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
+      }
     });
 
     test("cancelWorkflow works with client.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId: string | undefined;
 
-      const workflowId = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow);
 
-      const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatus.Active);
+        const workflowObj = await client.getWorkflow(workflowId);
+        expect(workflowObj.status).toEqual(WorkflowStatus.Active);
 
-      const cancelResult = await client.cancelWorkflow(workflowId);
-      expect(cancelResult).toEqual(true);
+        const cancelResult = await client.cancelWorkflow(workflowId);
+        expect(cancelResult).toEqual(true);
 
-      const canceled = await client.getWorkflow(workflowId);
-      expect(canceled.status).toEqual(WorkflowStatus.Canceled);
+        const canceled = await client.getWorkflow(workflowId);
+        expect(canceled.status).toEqual(WorkflowStatus.Canceled);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
+      }
     });
 
     test("deleteWorkflow works with client.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId: string | undefined;
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        })
-      );
+      const workflowProps = createFromTemplate(wallet.address);
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
 
-      const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatus.Active);
+      const workflowObj = await client.getWorkflow(workflowId);
+      expect(workflowObj.status).toEqual(WorkflowStatus.Active);
 
-      expect(await client.deleteWorkflow(workflowId)).toEqual(true);
+      expect(await client.deleteWorkflow(workflowId!)).toEqual(true);
 
       await expect(async () => {
-        await client.getWorkflow(workflowId);
+        await client.getWorkflow(workflowId!);
       }).rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
@@ -232,28 +233,31 @@ describe("Authentication Tests", () => {
         { salt: _.toString(saltIndex++) },
         { authKey: authKeyViaAPI }
       );
+      let workflowId1: string | undefined;
+      let workflowId2: string | undefined;
 
-      const workflowId = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps1 = createFromTemplate(wallet.address);
+        const workflow1 = client.createWorkflow(workflowProps1);
+        workflowId1 = await client.submitWorkflow(workflow1, {
+          authKey: authKeyViaAPI,
+        });
+        expect(workflowId1).toHaveLength(26);
 
-      expect(workflowId).toHaveLength(26);
-
-      const workflowId2 = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
-
-      expect(workflowId2).toHaveLength(26);
+        const workflowProps2 = createFromTemplate(wallet.address);
+        const workflow2 = client.createWorkflow(workflowProps2);
+        workflowId2 = await client.submitWorkflow(workflow2, {
+          authKey: authKeyViaAPI,
+        });
+        expect(workflowId2).toHaveLength(26);
+      } finally {
+        if (workflowId1) {
+          await client.deleteWorkflow(workflowId1, { authKey: authKeyViaAPI });
+        }
+        if (workflowId2) {
+          await client.deleteWorkflow(workflowId2, { authKey: authKeyViaAPI });
+        }
+      }
     });
 
     test("getWorkflow works with options.authKey", async () => {
@@ -261,159 +265,160 @@ describe("Authentication Tests", () => {
         { salt: _.toString(saltIndex++) },
         { authKey: authKeyViaAPI }
       );
+      let workflowId: string | undefined;
 
-      const createResult = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow, {
+          authKey: authKeyViaAPI,
+        });
 
-      const getResponse = await client.getWorkflow(createResult, {
-        authKey: authKeyViaAPI,
-      });
+        const getResponse = await client.getWorkflow(workflowId, {
+          authKey: authKeyViaAPI,
+        });
 
-      compareResults(
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-          id: createResult,
-          status: WorkflowStatus.Active,
-          owner: eoaAddress,
-        },
-        getResponse
-      );
+        compareResults(
+          {
+            ...workflowProps,
+            id: workflowId,
+            status: WorkflowStatus.Active,
+            owner: eoaAddress,
+          },
+          getResponse
+        );
 
-      const getResponse2 = await client.getWorkflow(createResult, {
-        authKey: authKeyViaSignature,
-      });
+        const getResponse2 = await client.getWorkflow(workflowId, {
+          authKey: authKeyViaSignature,
+        });
 
-      compareResults(
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-          id: createResult,
-          status: WorkflowStatus.Active,
-          owner: eoaAddress,
-        },
-        getResponse2
-      );
+        compareResults(
+          {
+            ...workflowProps,
+            id: workflowId,
+            status: WorkflowStatus.Active,
+            owner: eoaAddress,
+          },
+          getResponse2
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId, { authKey: authKeyViaAPI });
+        }
+      }
     });
 
     test("getWorkflows works with options.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId1: string | undefined;
+      let workflowId2: string | undefined;
 
-      // populate tasks for default wallet and the custom salt smart wallet above
-      const createdId1 = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps1 = createFromTemplate(wallet.address);
+        const workflow1 = client.createWorkflow(workflowProps1);
+        workflowId1 = await client.submitWorkflow(workflow1);
 
-      const listResult1 = await client.getWorkflows([wallet.address]);
-      expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
+        const listResult1 = await client.getWorkflows([wallet.address]);
+        expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
 
-      const createdId2 = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+        const workflowProps2 = createFromTemplate(wallet.address);
+        const workflow2 = client.createWorkflow(workflowProps2);
+        workflowId2 = await client.submitWorkflow(workflow2);
 
-      const listResult2 = await client.getWorkflows([wallet.address]);
-      expect(listResult2.result.length).toBeGreaterThanOrEqual(2);
+        const listResult2 = await client.getWorkflows([wallet.address]);
+        expect(listResult2.result.length).toBeGreaterThanOrEqual(2);
+      } finally {
+        if (workflowId1) {
+          await client.deleteWorkflow(workflowId1);
+        }
+        if (workflowId2) {
+          await client.deleteWorkflow(workflowId2);
+        }
+      }
     });
 
     test("cancelWorkflow works with options.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId1: string | undefined;
+      let workflowId2: string | undefined;
 
-      const workflowId = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+      try {
+        const workflowProps1 = createFromTemplate(wallet.address);
+        const workflow1 = client.createWorkflow(workflowProps1);
+        workflowId1 = await client.submitWorkflow(workflow1);
 
-      const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatus.Active);
+        const workflowObj1 = await client.getWorkflow(workflowId1);
+        expect(workflowObj1.status).toEqual(WorkflowStatus.Active);
 
-      expect(
-        await client.cancelWorkflow(workflowId, { authKey: authKeyViaAPI })
-      ).toEqual(true);
+        expect(
+          await client.cancelWorkflow(workflowId1, { authKey: authKeyViaAPI })
+        ).toEqual(true);
 
-      const canceled = await client.getWorkflow(workflowId);
-      expect(canceled.status).toEqual(WorkflowStatus.Canceled);
+        const canceled1 = await client.getWorkflow(workflowId1);
+        expect(canceled1.status).toEqual(WorkflowStatus.Canceled);
 
-      const workflowId2 = await submitWorkflowAndQueueForRemoval(
-        client,
-        {
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        },
-        createdIdMap
-      );
+        const workflowProps2 = createFromTemplate(wallet.address);
+        const workflow2 = client.createWorkflow(workflowProps2);
+        workflowId2 = await client.submitWorkflow(workflow2);
 
-      const workflow2 = await client.getWorkflow(workflowId2);
-      expect(workflow2.status).toEqual(WorkflowStatus.Active);
+        const workflowObj2 = await client.getWorkflow(workflowId2);
+        expect(workflowObj2.status).toEqual(WorkflowStatus.Active);
 
-      expect(
-        await client.cancelWorkflow(workflowId2, {
-          authKey: authKeyViaSignature,
-        })
-      ).toEqual(true);
+        expect(
+          await client.cancelWorkflow(workflowId2, {
+            authKey: authKeyViaSignature,
+          })
+        ).toEqual(true);
 
-      const canceled2 = await client.getWorkflow(workflowId2);
-      expect(canceled2.status).toEqual(WorkflowStatus.Canceled);
+        const canceled2 = await client.getWorkflow(workflowId2);
+        expect(canceled2.status).toEqual(WorkflowStatus.Canceled);
+      } finally {
+        if (workflowId1) {
+          await client.deleteWorkflow(workflowId1, { authKey: authKeyViaAPI });
+        }
+        if (workflowId2) {
+          await client.deleteWorkflow(workflowId2, {
+            authKey: authKeyViaSignature,
+          });
+        }
+      }
     });
 
     test("deleteWorkflow works with options.authKey", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId1: string | undefined;
+      let workflowId2: string | undefined;
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        })
-      );
+      const workflowProps1 = createFromTemplate(wallet.address);
+      const workflow1 = client.createWorkflow(workflowProps1);
+      workflowId1 = await client.submitWorkflow(workflow1);
 
-      const workflow = await client.getWorkflow(workflowId);
-      expect(workflow.status).toEqual(WorkflowStatus.Active);
+      const workflowObj1 = await client.getWorkflow(workflowId1);
+      expect(workflowObj1.status).toEqual(WorkflowStatus.Active);
 
       expect(
-        await client.deleteWorkflow(workflowId, { authKey: authKeyViaAPI })
+        await client.deleteWorkflow(workflowId1!, { authKey: authKeyViaAPI })
       ).toEqual(true);
 
       await expect(async () => {
-        await client.getWorkflow(workflowId);
+        await client.getWorkflow(workflowId1!);
       }).rejects.toThrow("5 NOT_FOUND: task not found");
 
-      const workflowId2 = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        })
-      );
+      const workflowProps2 = createFromTemplate(wallet.address);
+      const workflow2 = client.createWorkflow(workflowProps2);
+      workflowId2 = await client.submitWorkflow(workflow2);
 
-      const workflow2 = await client.getWorkflow(workflowId2);
-      expect(workflow2.status).toEqual(WorkflowStatus.Active);
+      const workflowObj2 = await client.getWorkflow(workflowId2);
+      expect(workflowObj2.status).toEqual(WorkflowStatus.Active);
 
       expect(
-        await client.deleteWorkflow(workflowId2, {
+        await client.deleteWorkflow(workflowId2!, {
           authKey: authKeyViaSignature,
         })
       ).toEqual(true);
 
       await expect(async () => {
-        await client.getWorkflow(workflowId2);
+        await client.getWorkflow(workflowId2!);
       }).rejects.toThrow("5 NOT_FOUND: task not found");
     });
   });
@@ -501,10 +506,7 @@ describe("Authentication Tests", () => {
       client.setAuthKey(undefined);
       await expect(
         client.submitWorkflow(
-          client.createWorkflow({
-            ...WorkflowTemplate,
-            smartWalletAddress: wallet.address,
-          })
+          client.createWorkflow(createFromTemplate(wallet.address))
         )
       ).rejects.toThrow(/unauthenticated/i);
     });
@@ -517,18 +519,26 @@ describe("Authentication Tests", () => {
           authKey: authKeyViaSignature,
         }
       );
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        }),
-        { authKey: authKeyViaSignature }
-      );
+      let workflowId: string | undefined;
 
-      client.setAuthKey(undefined);
-      await expect(client.getWorkflow(workflowId)).rejects.toThrow(
-        /unauthenticated/i
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow, {
+          authKey: authKeyViaSignature,
+        });
+
+        client.setAuthKey(undefined);
+        await expect(client.getWorkflow(workflowId)).rejects.toThrow(
+          /unauthenticated/i
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId, {
+            authKey: authKeyViaSignature,
+          });
+        }
+      }
     });
 
     test("getWorkflows should throw error", async () => {
@@ -546,22 +556,26 @@ describe("Authentication Tests", () => {
           authKey: authKeyViaSignature,
         }
       );
+      let workflowId: string | undefined;
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        }),
-        { authKey: authKeyViaSignature }
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow, {
+          authKey: authKeyViaSignature,
+        });
 
-      // Don’t queue for removal in afterEach, because the authKey is not set by default in this test
-      await client.deleteWorkflow(workflowId, { authKey: authKeyViaSignature });
-
-      client.setAuthKey(undefined);
-      await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(
-        /unauthenticated/i
-      );
+        client.setAuthKey(undefined);
+        await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(
+          /unauthenticated/i
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId, {
+            authKey: authKeyViaSignature,
+          });
+        }
+      }
     });
 
     test("deleteWorkflow should throw error", async () => {
@@ -570,19 +584,26 @@ describe("Authentication Tests", () => {
         { salt: _.toString(saltIndex++) },
         { authKey: authKeyViaSignature }
       );
+      let workflowId: string | undefined;
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        }),
-        { authKey: authKeyViaSignature }
-      );
+      try {
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
+        workflowId = await client.submitWorkflow(workflow, {
+          authKey: authKeyViaSignature,
+        });
 
-      client.setAuthKey(undefined);
-      await expect(client.deleteWorkflow(workflowId)).rejects.toThrow(
-        /unauthenticated/i
-      );
+        client.setAuthKey(undefined);
+        await expect(client.deleteWorkflow(workflowId)).rejects.toThrow(
+          /unauthenticated/i
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId, {
+            authKey: authKeyViaSignature,
+          });
+        }
+      }
     });
   });
 });
