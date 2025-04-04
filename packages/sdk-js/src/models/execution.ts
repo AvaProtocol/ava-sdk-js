@@ -47,8 +47,6 @@ class Execution implements ExecutionProps {
   static fromResponse(execution: avs_pb.Execution): Execution {
     const triggerOutputDataType = execution.getOutputDataCase();
 
-    console.log("execution.triggerOutputDataType", execution.toObject());
-    console.log("execution.triggerOutputDataType", triggerOutputDataType);
     let triggerOutputData: OutputDataProps | undefined;
 
     switch (triggerOutputDataType) {
