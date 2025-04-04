@@ -328,6 +328,27 @@ class Client extends BaseClient {
   }
 
   /**
+   * Get the count of workflows for multiple addresses
+   * @param addresses - The list of addresses
+   * @param options - Request options
+   * @returns {Promise<number>} - The count of workflows
+   */
+  async getWorkflowCount(
+    addresses: string[],
+    options?: RequestOptions
+  ): Promise<number> {
+    const request = new avs_pb.GetWorkflowCountReq();
+    request.setAddressesList(addresses);
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetWorkflowCountResp,
+      avs_pb.GetWorkflowCountReq
+    >("getWorkflowCount", request, options);
+
+    return result.getTotal();
+  }
+
+  /**
    * Get the list of executions for multiple workflow given in the workflows argument.
    * @param {string[]} workflows - The list of workflow ids to fetch execution for
    * @param {GetExecutionsRequest} options - Request options
@@ -384,6 +405,27 @@ class Client extends BaseClient {
     >("getExecution", request, options);
 
     return Execution.fromResponse(result);
+  }
+
+  /**
+   * Get the count of executions for multiple workflows
+   * @param workflowIds - The list of workflow ids
+   * @param options - Request options
+   * @returns {Promise<number>} - The count of executions
+   */
+  async getExecutionCount(
+    workflowIds: string[],
+    options?: RequestOptions
+  ): Promise<number> {
+    const request = new avs_pb.GetExecutionCountReq();
+    request.setWorkflowIdsList(workflowIds);
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetExecutionCountResp,
+      avs_pb.GetExecutionCountReq
+    >("getExecutionCount", request, options);
+
+    return result.getTotal();
   }
 
   /**
