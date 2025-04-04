@@ -5,6 +5,8 @@ import { NodeType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
 export type RestAPINodeData = avs_pb.RestAPINode.AsObject;
+export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
+
 export type RestAPINodeProps = NodeProps & {
   data: RestAPINodeData;
 };

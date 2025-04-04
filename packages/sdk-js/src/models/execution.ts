@@ -8,6 +8,7 @@ export type OutputDataProps =
   | avs_pb.Execution.TransferLogOutput.AsObject
   | avs_pb.Execution.BlockOutput.AsObject
   | avs_pb.Execution.TimeOutput.AsObject
+  | avs_pb.Evm.Log.AsObject
   | undefined;
 
 // Ignore the original transferLog, evmLog, etc. fields and use a combined outputData field instead
@@ -17,7 +18,7 @@ export type ExecutionProps = Omit<
 > & {
   stepsList: Step[];
   triggerReason: TriggerReason | undefined;
-  outputData: OutputDataProps;
+  triggerOutput: OutputDataProps;
 };
 
 class Execution implements ExecutionProps {
@@ -29,7 +30,7 @@ class Execution implements ExecutionProps {
   stepsList: Step[];
   triggerReason: TriggerReason | undefined;
   triggerName: string;
-  outputData: OutputDataProps;
+  triggerOutput: OutputDataProps;
 
   constructor(props: ExecutionProps) {
     this.id = props.id;
@@ -40,26 +41,28 @@ class Execution implements ExecutionProps {
     this.stepsList = props.stepsList;
     this.triggerName = props.triggerName;
     this.triggerReason = props.triggerReason;
-    this.outputData = props.outputData;
+    this.triggerOutput = props.triggerOutput;
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
-    const outputDataType = execution.getOutputDataCase();
+    const triggerOutputDataType = execution.getOutputDataCase();
 
-    let outputData: OutputDataProps | undefined;
+    console.log("execution.triggerOutputDataType", execution.toObject());
+    console.log("execution.triggerOutputDataType", triggerOutputDataType);
+    let triggerOutputData: OutputDataProps | undefined;
 
-    switch (outputDataType) {
+    switch (triggerOutputDataType) {
       case avs_pb.Execution.OutputDataCase.EVM_LOG:
-        outputData = execution.getEvmLog()?.toObject();
+        triggerOutputData = execution.getEvmLog()?.toObject();
         break;
       case avs_pb.Execution.OutputDataCase.TRANSFER_LOG:
-        outputData = execution.getTransferLog()?.toObject();
+        triggerOutputData = execution.getTransferLog()?.toObject();
         break;
       case avs_pb.Execution.OutputDataCase.BLOCK:
-        outputData = execution.getBlock()?.toObject();
+        triggerOutputData = execution.getBlock()?.toObject();
         break;
       case avs_pb.Execution.OutputDataCase.TIME:
-        outputData = execution.getTime()?.toObject();
+        triggerOutputData = execution.getTime()?.toObject();
         break;
     }
 
@@ -71,14 +74,14 @@ class Execution implements ExecutionProps {
       error: execution.getError(),
       triggerName: execution.getTriggerName(),
       triggerReason: TriggerReason.fromResponse(execution.getReason()),
+      triggerOutput: triggerOutputData,
       stepsList: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)),
-      outputData: outputData,
     });
   }
 
-  // Client side does not generate the exeuction, so there’s no toRequest() method
+  // Client side does not generate the execution, so there’s no toRequest() method
 }
 
 export default Execution;
