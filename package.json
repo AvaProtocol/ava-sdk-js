@@ -26,11 +26,11 @@
     "test:getWorkflows": "jest tests/getWorkflows.test.ts --verbose --runInBand",
     "test:cancelWorkflow": "jest tests/cancelWorkflow.test.ts --verbose --runInBand",
     "test:deleteWorkflow": "jest tests/deleteWorkflow.test.ts --verbose --runInBand",
+    "test:getExecution": "jest tests/getExecution.test.ts --verbose --runInBand",
     "test:getExecutions": "jest tests/getExecutions.test.ts --verbose --runInBand",
     "test:getWallet": "jest tests/getWallet.test.ts --verbose --runInBand",
     "test:getWallets": "jest tests/getWallets.test.ts --verbose --runInBand",
     "test:secret": "jest tests/secret.test.ts --verbose --runInBand",
-    "test:step": "jest tests/step.test.ts --verbose --runInBand",
     "test:select": "npm run test -- --testNamePattern",
     "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/"

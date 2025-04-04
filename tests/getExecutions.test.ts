@@ -13,7 +13,7 @@ import {
 } from "./utils";
 import {
   FACTORY_ADDRESS,
-  WorkflowTemplate,
+  createFromTemplate,
   defaultTriggerId,
 } from "./templates";
 
@@ -63,24 +63,22 @@ describe("getExecutions Tests", () => {
 
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const startBlockNumber = await getBlockNumber();
-
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: triggerInterval },
-    });
-
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      trigger,
-      smartWalletAddress: wallet.address,
-      maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
-      // Trigger the workflow totalTriggerCount times to make sure we have 4 executions
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+      workflowProps.maxExecution = 0; // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      // Trigger the workflow multiple times
       for (let i = 1; i <= totalTriggerCount; i++) {
         await client.triggerWorkflow({
           id: workflowId,
@@ -92,34 +90,34 @@ describe("getExecutions Tests", () => {
         });
       }
 
-      // Get the list of workflows with limit:1; it should return 1 item
-      const resultLimitOne = await client.getExecutions([workflowId], {
+      // Get executions with limitOne
+      const resultWithLimitOne = await client.getExecutions([workflowId], {
         limit: limitOne,
       });
 
-      expect(Array.isArray(resultLimitOne.result)).toBe(true);
-      expect(resultLimitOne.result.length).toBe(limitOne);
-      expect(resultLimitOne).toHaveProperty("cursor");
-      expect(resultLimitOne.hasMore).toBe(true);
-      const firstCursor = resultLimitOne.cursor;
+      expect(Array.isArray(resultWithLimitOne.result)).toBe(true);
+      expect(resultWithLimitOne.result.length).toBe(limitOne);
+      expect(resultWithLimitOne).toHaveProperty("cursor");
+      expect(resultWithLimitOne.hasMore).toBe(true);
+      const firstCursor = resultWithLimitOne.cursor;
 
-      // Get the list of workflows with limit:2; it should return 2 items
-      const resultLimitTwo = await client.getExecutions([workflowId], {
+      // Get executions with limitTwo
+      const resultWithLimitTwo = await client.getExecutions([workflowId], {
         limit: limitTwo,
         cursor: firstCursor,
       });
-      expect(Array.isArray(resultLimitTwo.result)).toBe(true);
-      expect(resultLimitTwo.result.length).toBe(limitTwo);
-      expect(resultLimitTwo.hasMore).toBe(true);
+      expect(Array.isArray(resultWithLimitTwo.result)).toBe(true);
+      expect(resultWithLimitTwo.result.length).toBe(limitTwo);
+      expect(resultWithLimitTwo.hasMore).toBe(true);
 
       // Make sure there's no overlap between the two lists
       expect(
         _.intersection(
-          resultLimitOne.result.map((item) => item.id),
-          resultLimitTwo.result.map((item) => item.id)
+          resultWithLimitOne.result.map((item) => item.id),
+          resultWithLimitTwo.result.map((item) => item.id)
         ).length
       ).toBe(0);
-      const secondCursor = resultLimitTwo.cursor;
+      const secondCursor = resultWithLimitTwo.cursor;
 
       // Get another limit:2 with the second cursor; it should return only 1 item
       const resultWithExtraLimit = await client.getExecutions([workflowId], {
@@ -135,7 +133,9 @@ describe("getExecutions Tests", () => {
       // Make sure the cursor is an empty string due to reaching the end of the list
       expect(resultWithExtraLimit.cursor).toBe("");
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -146,92 +146,88 @@ describe("getExecutions Tests", () => {
 
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
-
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: blockInterval },
-    });
-
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      trigger,
-      smartWalletAddress: wallet.address,
-      maxExecution: 0, // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
-      for (let i = 0; i < 3; i++) {
-        // Manually trigger the workflow 3 times
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: blockInterval },
+      });
+      workflowProps.maxExecution = 0; // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      // Trigger the workflow multiple times
+      for (let i = 1; i <= repeatCount; i++) {
         await client.triggerWorkflow({
           id: workflowId,
           reason: {
             type: TriggerType.Block,
-            blockNumber: blockNumber + i,
+            blockNumber: blockNumber + i * blockInterval,
           },
           isBlocking: true,
         });
       }
 
-      // Get the first page of executions with limit:1
-      const executions = await client.getExecutions([workflowId], {
+      // Get first page of executions
+      const firstPage = await client.getExecutions([workflowId], {
         limit,
       });
 
-      expect(Array.isArray(executions.result)).toBe(true);
-      expect(executions.result.length).toBe(limit);
-      expect(executions).toHaveProperty("cursor");
-      expect(executions.hasMore).toBe(true);
-      const firstCursor = executions.cursor;
+      expect(Array.isArray(firstPage.result)).toBe(true);
+      expect(firstPage.result.length).toBe(limit);
+      expect(firstPage.cursor).toBeDefined();
 
-      // Get the list of workflows with limit:2 and cursor
-      const executions2 = await client.getExecutions([workflowId], {
+      // Get second page of executions using cursor
+      const secondPage = await client.getExecutions([workflowId], {
         limit,
-        cursor: firstCursor,
+        cursor: firstPage.cursor,
       });
 
       // Verify that the count of the second return is totalCount - limit
-      expect(Array.isArray(executions2.result)).toBe(true);
-      expect(executions2.result.length).toBe(repeatCount - limit);
+      expect(Array.isArray(secondPage.result)).toBe(true);
+      expect(secondPage.result.length).toBe(repeatCount - limit);
 
       // Make sure there's no overlap between the two lists
       expect(
         _.intersection(
-          executions.result.map((item) => item.id),
-          executions2.result.map((item) => item.id)
+          firstPage.result.map((item) => item.id),
+          secondPage.result.map((item) => item.id)
         ).length
       ).toBe(0);
 
       // Make sure the cursor is different from the first cursor and an empty string due to reaching the end of the list
-      expect(executions2.cursor).not.toBe(firstCursor);
-      expect(executions2.cursor).toBe("");
-      expect(executions2.hasMore).toBe(false);
+      expect(secondPage.cursor).not.toBe(firstPage.cursor);
+      expect(secondPage.cursor).toBe("");
+      expect(secondPage.hasMore).toBe(false);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
   test("should throw error with a non-existent cursor", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
-
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
-    });
-
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      trigger,
-      smartWalletAddress: wallet.address,
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
       await client.triggerWorkflow({
         id: workflowId,
         reason: {
@@ -248,29 +244,29 @@ describe("getExecutions Tests", () => {
         })
       ).rejects.toThrowError(/cursor is not valid/);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
   test("should throw error with an invalid limit", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
-
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
-    });
-
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      trigger,
-      smartWalletAddress: wallet.address,
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
       await client.triggerWorkflow({
         id: workflowId,
         reason: {
@@ -287,30 +283,30 @@ describe("getExecutions Tests", () => {
         })
       ).rejects.toThrowError(/item per page is not valid/);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
   test("getExecutionCount returns correct count for single workflow", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
-
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
-    });
-
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      trigger,
-      smartWalletAddress: wallet.address,
-      maxExecution: 0,
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+      workflowProps.maxExecution = 0;
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
       // Trigger the workflow 3 times
       for (let i = 1; i <= 3; i++) {
         await client.triggerWorkflow({
@@ -326,7 +322,9 @@ describe("getExecutions Tests", () => {
       const count = await client.getExecutionCount([workflowId]);
       expect(count).toBeGreaterThanOrEqual(3);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -335,31 +333,29 @@ describe("getExecutions Tests", () => {
     const blockNumber = await getBlockNumber();
     const workflowIds: string[] = [];
 
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
-    });
-
     try {
-      // Create first workflow
-      const workflow1 = client.createWorkflow({
-        ...WorkflowTemplate,
-        trigger,
-        smartWalletAddress: wallet.address,
-        maxExecution: 0,
+      const trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
       });
+
+      // Create first workflow
+      const workflowProps1 = createFromTemplate(wallet.address);
+      workflowProps1.trigger = trigger;
+      workflowProps1.maxExecution = 0;
+
+      const workflow1 = client.createWorkflow(workflowProps1);
       const workflowId1 = await client.submitWorkflow(workflow1);
       workflowIds.push(workflowId1);
 
       // Create second workflow
-      const workflow2 = client.createWorkflow({
-        ...WorkflowTemplate,
-        trigger,
-        smartWalletAddress: wallet.address,
-        maxExecution: 0,
-      });
+      const workflowProps2 = createFromTemplate(wallet.address);
+      workflowProps2.trigger = trigger;
+      workflowProps2.maxExecution = 0;
+
+      const workflow2 = client.createWorkflow(workflowProps2);
       const workflowId2 = await client.submitWorkflow(workflow2);
       workflowIds.push(workflowId2);
 
@@ -397,26 +393,26 @@ describe("getExecutions Tests", () => {
 
   test("getExecutionCount returns 0 for workflow with no executions", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-
-    const trigger = TriggerFactory.create({
-      id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
-    });
-
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      trigger,
-      smartWalletAddress: wallet.address,
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
       const count = await client.getExecutionCount([workflowId]);
       expect(count).toBe(0);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 });

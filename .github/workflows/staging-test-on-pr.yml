@@ -117,6 +117,10 @@ jobs:
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
 
+      - name: Test Get Execution
+        if: steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:getExecution
+
       - name: Test Get Executions
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getExecutions
@@ -132,7 +136,3 @@ jobs:
       - name: Test Secret
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:secret
-
-      - name: Test Step
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:step

@@ -9,7 +9,7 @@ import {
   requireEnvVar,
   SaltGlobal,
 } from "./utils";
-import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -44,14 +44,14 @@ describe("getWorkflows Tests", () => {
   test("should list tasks when authenticated with signature", async () => {
     const workflowName = "test 123";
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      smartWalletAddress: wallet.address,
-      name: workflowName,
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.name = workflowName;
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
       const res = await client.getWorkflows([wallet.address]);
       expect(Array.isArray(res.result)).toBe(true);
       expect(res.result.length).toBeGreaterThanOrEqual(1);
@@ -60,10 +60,12 @@ describe("getWorkflows Tests", () => {
 
       expect(result?.id).toEqual(workflowId);
       expect(result?.name).toEqual(workflowName);
-      expect(result?.startAt).toEqual(WorkflowTemplate.startAt);
-      expect(result?.maxExecution).toEqual(WorkflowTemplate.maxExecution);
+      expect(result?.startAt).toEqual(workflowProps.startAt);
+      expect(result?.maxExecution).toEqual(workflowProps.maxExecution);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -79,10 +81,8 @@ describe("getWorkflows Tests", () => {
     try {
       // Create 4 workflows
       for (let i = 0; i < totalCount; i++) {
-        const workflow = client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        });
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
         const workflowId = await client.submitWorkflow(workflow);
         workflowIds.push(workflowId);
       }
@@ -143,10 +143,8 @@ describe("getWorkflows Tests", () => {
     try {
       // Create 3 workflows
       for (let i = 0; i < totalCount; i++) {
-        const workflow = client.createWorkflow({
-          ...WorkflowTemplate,
-          smartWalletAddress: wallet.address,
-        });
+        const workflowProps = createFromTemplate(wallet.address);
+        const workflow = client.createWorkflow(workflowProps);
         const workflowId = await client.submitWorkflow(workflow);
         workflowIds.push(workflowId);
       }
@@ -229,18 +227,20 @@ describe("getWorkflows Tests", () => {
   test("getWorkflowCount returns correct count for single wallet", async () => {
     const workflowName = "test count 1";
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const workflow = client.createWorkflow({
-      ...WorkflowTemplate,
-      smartWalletAddress: wallet.address,
-      name: workflowName,
-    });
-    const workflowId = await client.submitWorkflow(workflow);
+    let workflowId: string | undefined;
 
     try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.name = workflowName;
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
       const count = await client.getWorkflowCount([wallet.address]);
       expect(count).toBeGreaterThanOrEqual(1);
     } finally {
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -251,21 +251,16 @@ describe("getWorkflows Tests", () => {
 
     try {
       // Create workflow for first wallet
-      const workflow1 = client.createWorkflow({
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet1.address,
-        name: "test count 2",
-      });
+      const workflowProps1 = createFromTemplate(wallet1.address);
+      workflowProps1.name = "test count 2";
+      const workflow1 = client.createWorkflow(workflowProps1);
       const workflowId1 = await client.submitWorkflow(workflow1);
       workflowIds.push(workflowId1);
 
       // Create workflow for second wallet
-      const workflow2 = client.createWorkflow({
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet2.address,
-        name: "test count 3",
-      });
-
+      const workflowProps2 = createFromTemplate(wallet2.address);
+      workflowProps2.name = "test count 3";
+      const workflow2 = client.createWorkflow(workflowProps2);
       const workflowId2 = await client.submitWorkflow(workflow2);
       workflowIds.push(workflowId2);
 

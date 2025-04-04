@@ -9,11 +9,8 @@ import {
   requireEnvVar,
   compareResults,
   SaltGlobal,
-  removeCreatedWorkflows,
-  submitWorkflowAndQueueForRemoval,
-  queueForRemoval,
 } from "./utils";
-import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -24,8 +21,6 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
-// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.GetWorkflow * 1000; // Salt index 7,000 - 7,999
 
 describe("getWorkflow Tests", () => {
@@ -49,31 +44,32 @@ describe("getWorkflow Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
-
   test("should get workflow when authenticated with signature", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const workflowId = await submitWorkflowAndQueueForRemoval(
-      client,
-      {
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-      },
-      createdIdMap
-    );
+    let workflowId: string | undefined;
 
-    const result = await client.getWorkflow(workflowId);
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
 
-    // Check if the result is an object and has the expected properties
-    compareResults(
-      {
-        ...WorkflowTemplate,
-        id: workflowId,
-        owner: eoaAddress,
-        smartWalletAddress: wallet.address,
-      },
-      result
-    );
+      const result = await client.getWorkflow(workflowId);
+
+      // Check if the result is an object and has the expected properties
+      compareResults(
+        {
+          ...workflowProps,
+          id: workflowId,
+          owner: eoaAddress,
+          smartWalletAddress: wallet.address,
+        },
+        result
+      );
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
   });
 
   test("should throw task not found when getting an non-existent task", async () => {

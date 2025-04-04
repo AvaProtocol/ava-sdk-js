@@ -25,7 +25,7 @@ export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
 export const FACTORY_PROXY = "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834";
 export const defaultTriggerId = getNextId();
 
-const ethTransferNodeProps: ETHTransferNodeProps = {
+export const ethTransferNodeProps: ETHTransferNodeProps = {
   id: getNextId(),
   name: "send eth",
   type: NodeType.ETHTransfer,

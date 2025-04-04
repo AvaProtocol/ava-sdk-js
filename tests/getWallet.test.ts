@@ -9,18 +9,14 @@ import {
   generateSignature,
   requireEnvVar,
   SaltGlobal,
-  removeCreatedWorkflows,
-  submitWorkflowAndQueueForRemoval,
 } from "./utils";
 
 import {
-  WorkflowTemplate,
+  createFromTemplate,
   FACTORY_ADDRESS,
   defaultTriggerId,
 } from "./templates";
 
-// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.GetWallet * 1000; // Salt index 5,000 - 5,999
 
 // Update the dotenv configuration
@@ -50,8 +46,6 @@ describe("getAddresses Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
-
   test("should get wallet client.factoryAddress", async () => {
     const salt = _.toString(saltIndex++);
     // Set the factory address in client
@@ -74,75 +68,72 @@ describe("getAddresses Tests", () => {
     // TODO: experiment with not using the RUN_ID for running tests on staging
     const salt = process.env.RUN_ID || `${new Date().getTime()}`;
     let wallet = await client.getWallet({ salt });
+    let workflowId1: string | undefined;
+    let workflowId2: string | undefined;
 
-    const initialStat = {
-      totalTaskCount: wallet.totalTaskCount,
-      activeTaskCount: wallet.activeTaskCount,
-      completedTaskCount: wallet.completedTaskCount,
-      canceledTaskCount: wallet.canceledTaskCount,
-      failedTaskCount: wallet.failedTaskCount,
-    };
+    try {
+      const initialStat = {
+        totalTaskCount: wallet.totalTaskCount,
+        activeTaskCount: wallet.activeTaskCount,
+        completedTaskCount: wallet.completedTaskCount,
+        canceledTaskCount: wallet.canceledTaskCount,
+        failedTaskCount: wallet.failedTaskCount,
+      };
 
-    const workflowId = await submitWorkflowAndQueueForRemoval(
-      client,
-      {
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-        trigger: TriggerFactory.create({
-          id: defaultTriggerId,
-          name: "blockTrigger",
-          type: TriggerType.Block,
-          data: { interval: 102 },
-        }),
-      },
-      createdIdMap
-    );
-
-    wallet = await client.getWallet({ salt });
-
-    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 1);
-    expect(wallet.activeTaskCount).toEqual(
-      initialStat.activeTaskCount || 0 + 1
-    );
-    expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount);
-    expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
-
-    // Trigger the task and wait for it finished to check the stat
-    await client.triggerWorkflow({
-      id: workflowId,
-      reason: {
+      const workflowProps1 = createFromTemplate(wallet.address);
+      workflowProps1.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
         type: TriggerType.Block,
-        blockNumber: 1, // set epoch to 1 minute later
-      },
-      isBlocking: true,
-    });
+        data: { interval: 102 },
+      });
 
-    wallet = await client.getWallet({ salt });
-    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 1);
-    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount || 0);
-    expect(wallet.completedTaskCount).toEqual(
-      initialStat.completedTaskCount || 0 + 1
-    );
-    expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
+      const workflow1 = client.createWorkflow(workflowProps1);
+      workflowId1 = await client.submitWorkflow(workflow1);
 
-    // Now test the cancel metric
-    const workflowId2 = await submitWorkflowAndQueueForRemoval(
-      client,
-      {
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-      },
-      createdIdMap
-    );
+      wallet = await client.getWallet({ salt });
 
+      expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 1);
+      expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount || 0 + 1);
+      expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount);
+      expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
 
-    await client.cancelWorkflow(workflowId2);
+      // Trigger the task and wait for it finished to check the stat
+      await client.triggerWorkflow({
+        id: workflowId1,
+        reason: {
+          type: TriggerType.Block,
+          blockNumber: 1, // set epoch to 1 minute later
+        },
+        isBlocking: true,
+      });
 
-    wallet = await client.getWallet({ salt });
-    expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 2);
-    expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount );
-    expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount || 0 + 1);
-    expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount || 0 + 1);
+      wallet = await client.getWallet({ salt });
+      expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 1);
+      expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount || 0);
+      expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount || 0 + 1);
+      expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
+
+      // Now test the cancel metric
+      const workflowProps2 = createFromTemplate(wallet.address);
+      const workflow2 = client.createWorkflow(workflowProps2);
+      workflowId2 = await client.submitWorkflow(workflow2);
+
+      await client.cancelWorkflow(workflowId2);
+
+      wallet = await client.getWallet({ salt });
+      expect(wallet.totalTaskCount).toEqual(initialStat.totalTaskCount || 0 + 2);
+      expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount);
+      expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount || 0 + 1);
+      expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount || 0 + 1);
+    } finally {
+      if (workflowId1) {
+        await client.deleteWorkflow(workflowId1);
+      }
+      if (workflowId2) {
+        await client.deleteWorkflow(workflowId2);
+      }
+    }
   });
 
   test("should get wallet with options.factoryAddress", async () => {
