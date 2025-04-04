@@ -3,6 +3,9 @@ import {
   Workflow,
   WorkflowProps,
   WorkflowStatus,
+  Execution,
+  Step,
+  StepProps,
 } from "@avaprotocol/sdk-js";
 import {
   getKeyRequestMessage,
@@ -16,6 +19,7 @@ import { UlidMonotonic } from "id128";
 import dotenv from "dotenv";
 import path from "path";
 import _ from "lodash";
+import { inspect } from "util";
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
@@ -39,6 +43,7 @@ export const SaltGlobal = {
   Secrets: 9,
   TriggerWorkflow: 10,
   CreateWorkflow: 11,
+  Step: 12,
 };
 
 // Get wallet address from private key
@@ -243,4 +248,43 @@ export const getChainId = async (): Promise<number> => {
 
   console.log("getChainId network:", network);
   return Number(network.chainId);
+};
+
+export const verifyExecutionStepResults = (
+  expected: StepProps,
+  actual: Step
+): void => {
+  // Verify basic properties
+  expect(actual).toBeDefined();
+  expect(actual.nodeId).toBe(expected.nodeId);
+  expect(actual.success).toBe(expected.success);
+  expect(actual.log).toBe(expected.log);
+  expect(actual.error).toBe(expected.error);
+  expect(actual.startAt).toBe(expected.startAt);
+  expect(actual.endAt).toBe(expected.endAt);
+
+  // Verify inputsList
+  expect(Array.isArray(actual.inputsList)).toBe(true);
+  expect(actual.inputsList.length).toBe(expected.inputsList.length);
+  actual.inputsList.forEach((input, index) => {
+    expect(input).toBe(expected.inputsList[index]);
+  });
+
+  // Verify output
+  expect(actual.output).toBeDefined();
+  // The output type can vary based on the node type, so we just verify it exists
+  // and matches the expected output
+  expect(actual.output).toEqual(expected.output);
+};
+
+export const consoleLogNestedObject = (name: string, obj: any): void => {
+  console.log(
+    `${name}:`,
+    inspect(obj, {
+      depth: 10,
+      colors: true,
+      showHidden: false,
+      compact: false,
+    })
+  );
 };

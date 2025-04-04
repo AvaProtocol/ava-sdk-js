@@ -76,42 +76,49 @@ describe("triggerWorkflow Tests", () => {
       })
     );
 
-    const executions = await client.getExecutions([workflowId]);
+    try {
+      const executions = await client.getExecutions([workflowId]);
 
-    // The list should be empty because the workflow has not been executed yet
-    expect(Array.isArray(executions.result)).toBe(true);
-    expect(executions.result.length).toEqual(0);
+      // The list should be empty because the workflow has not been executed yet
+      expect(Array.isArray(executions.result)).toBe(true);
+      expect(executions.result.length).toEqual(0);
 
-    // Manually trigger the workflow with block number + 5
-    const result = await client.triggerWorkflow({
-      id: workflowId,
-      reason: {
-        type: TriggerType.Block,
-        blockNumber: blockNumber + interval, // block interval in the workflow template
-      },
-      isBlocking: true,
-    });
+      // Manually trigger the workflow with block number + 5
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Block,
+          blockNumber: blockNumber + interval, // block interval in the workflow template
+        },
+        isBlocking: true,
+      });
 
-    // The list should now contain one execution
-    const executions2 = await client.getExecutions([workflowId]);
+      // The list should now contain one execution
+      const executions2 = await client.getExecutions([workflowId]);
 
-    // Verify that the execution is successfully triggered at block number + 5
-    expect(Array.isArray(executions2.result)).toBe(true);
-    expect(executions2.result.length).toEqual(1);
-    expect(executions2.result[0].success).toEqual(true);
-    expect(executions2.result[0].triggerReason?.blockNumber).toEqual(
-      blockNumber + interval
-    );
-    expect(executions2.result[0].triggerReason?.type).toEqual(
-      TriggerType.Block
-    );
+      // Verify that the execution is successfully triggered at block number + 5
+      expect(Array.isArray(executions2.result)).toBe(true);
+      expect(executions2.result.length).toEqual(1);
+      expect(executions2.result[0].success).toEqual(true);
+      expect(executions2.result[0].triggerReason?.blockNumber).toEqual(
+        blockNumber + interval
+      );
 
-    const workflow = await client.getWorkflow(workflowId);
+      expect(executions2.result[0].triggerReason?.type).toEqual(
+        TriggerType.Block
+      );
 
-    expect(workflow.status).toEqual(WorkflowStatus.Completed);
-    expect(workflow.totalExecution).toEqual(1);
+      expect(executions2.result[0].triggerOutput).toEqual({
+        blockNumber: blockNumber + interval,
+      });
 
-    await client.deleteWorkflow(workflowId);
+      const workflow = await client.getWorkflow(workflowId);
+
+      expect(workflow.status).toEqual(WorkflowStatus.Completed);
+      expect(workflow.totalExecution).toEqual(1);
+    } finally {
+      await client.deleteWorkflow(workflowId);
+    }
   });
 
   test("trigger for cron type should succeed", async () => {
