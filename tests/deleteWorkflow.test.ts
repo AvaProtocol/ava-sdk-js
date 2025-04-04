@@ -7,11 +7,9 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  removeCreatedWorkflows,
   SaltGlobal,
 } from "./utils";
-
-import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
 
 // Update the dotenv configuration
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -22,13 +20,10 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
-// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.DeleteWorkflow * 1000; // Salt index 3,000 - 3,999
 
 describe("deleteWorkflow Tests", () => {
   let client: Client;
-  let workflowId: string;
 
   beforeAll(async () => {
     const eoaAddress = await getAddress(TEST_PRIVATE_KEY);
@@ -47,17 +42,13 @@ describe("deleteWorkflow Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
-
   test("should delete task when authenticated with signature", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    let workflowId: string | undefined;
 
-    workflowId = await client.submitWorkflow(
-      client.createWorkflow({
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-      })
-    );
+    const workflowProps = createFromTemplate(wallet.address);
+    const workflow = client.createWorkflow(workflowProps);
+    workflowId = await client.submitWorkflow(workflow);
 
     const result = await client.deleteWorkflow(workflowId);
     expect(result).toBe(true);

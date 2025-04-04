@@ -7,11 +7,9 @@ import {
   getAddress,
   generateSignature,
   requireEnvVar,
-  removeCreatedWorkflows,
   SaltGlobal,
-  submitWorkflowAndQueueForRemoval,
 } from "./utils";
-import { FACTORY_ADDRESS, WorkflowTemplate } from "./templates";
+import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
 import { WorkflowStatus } from "@avaprotocol/types";
 
 // Update the dotenv configuration
@@ -23,8 +21,7 @@ const { TEST_PRIVATE_KEY, ENDPOINT } = {
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
-// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdIdMap: Map<string, boolean> = new Map();
+
 let saltIndex = SaltGlobal.CancelWorkflow * 1000; // Salt index 1,000 - 1,999
 
 describe("cancelWorkflow Tests", () => {
@@ -47,26 +44,26 @@ describe("cancelWorkflow Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
-
   test("should cancel task when authenticated with signature", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    let workflowId: string | undefined;
 
-    const workflowId = await submitWorkflowAndQueueForRemoval(
-      client,
-      client.createWorkflow({
-        ...WorkflowTemplate,
-        smartWalletAddress: wallet.address,
-      }),
-      createdIdMap
-    );
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
 
-    const result = await client.cancelWorkflow(workflowId);
-    expect(result).toBe(true);
+      const result = await client.cancelWorkflow(workflowId);
+      expect(result).toBe(true);
 
-    const cancelResult = await client.getWorkflow(workflowId);
-    expect(cancelResult.id).toEqual(workflowId);
-    expect(cancelResult.status).toEqual(WorkflowStatus.Canceled);
+      const cancelResult = await client.getWorkflow(workflowId);
+      expect(cancelResult.id).toEqual(workflowId);
+      expect(cancelResult.status).toEqual(WorkflowStatus.Canceled);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
   });
 
   test("should throw error when canceling an non-existent task", async () => {

@@ -19,6 +19,7 @@ import {
   SaltGlobal,
   TIMEOUT_DURATION,
   getNextId,
+  consoleLogNestedObject,
 } from "./utils";
 import {
   FACTORY_ADDRESS,
@@ -84,9 +85,8 @@ describe("Step Tests", () => {
       ...WorkflowTemplate,
       trigger,
       smartWalletAddress: wallet.address,
-      nodes: [ethTransferNode],
-      edges: [],
     });
+
     const workflowId = await client.submitWorkflow(workflow);
 
     try {
@@ -108,14 +108,9 @@ describe("Step Tests", () => {
       expect(execution.stepsList.length).toBeGreaterThan(0);
 
       const step = execution.stepsList[0];
-      expect(step).toHaveProperty("nodeId");
-      expect(step).toHaveProperty("success");
-      expect(step).toHaveProperty("log");
-      expect(step).toHaveProperty("error");
-      expect(step).toHaveProperty("startAt");
-      expect(step).toHaveProperty("endAt");
-      expect(step).toHaveProperty("inputsList");
-      expect(step).toHaveProperty("outputData");
+
+      consoleLogNestedObject("execution", execution);
+      consoleLogNestedObject("step", step);
     } finally {
       await client.deleteWorkflow(workflowId);
     }

@@ -24,8 +24,6 @@ const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
   ENDPOINT: requireEnvVar("ENDPOINT"),
 } as const;
 
-// Map of created workflows and isDeleting status tracking of those that need to be cleaned up after the test
-const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.Auth * 1000; // Salt index 0 - 999
 
 describe("Authentication Tests", () => {
@@ -42,10 +40,6 @@ describe("Authentication Tests", () => {
     // Generate the address here
     const address = await getAddress(TEST_PRIVATE_KEY);
     eoaAddress = address;
-  });
-
-  afterEach(async () => {
-    await removeCreatedWorkflows(client, createdIdMap);
   });
 
   describe("Authenticated with client.authKey", () => {
