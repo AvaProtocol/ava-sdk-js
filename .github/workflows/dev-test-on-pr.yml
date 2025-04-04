@@ -27,31 +27,31 @@ jobs:
           echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
           echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
           echo "GitHub Ref: ${{ github.ref }}"
-          
+
           # Ensure we have the base branch
           git fetch origin ${{ github.base_ref }} --depth=1
-          
+
           # Get all changed files
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-          
+
           # Define the source code patterns we want to monitor
           SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'
-          
+
           echo "=== Debug Information ==="
           echo "Base ref: ${{ github.base_ref }}"
           echo "Current branch: $(git branch --show-current)"
           echo "Git status:"
           git status
-          
+
           echo "=== Changed Files ==="
           echo "$CHANGED_FILES"
-          
+
           # Check if any files in our monitored directories have changed
           MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
-          
+
           echo "=== Matching Files ==="
           echo "$MATCHING_FILES"
-          
+
           if [ -z "$MATCHING_FILES" ]; then
             echo "source_changed=false" >> $GITHUB_OUTPUT
             echo "No changes detected in monitored directories, skipping tests"
@@ -120,6 +120,10 @@ jobs:
       - name: Test Delete Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
+
+      # - name: Test Get Execution
+      #   if: steps.check_source_changes.outputs.source_changed == 'true'
+      #   run: yarn test:getExecution
 
       - name: Test Get Executions
         if: steps.check_source_changes.outputs.source_changed == 'true'

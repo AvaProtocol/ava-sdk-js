@@ -26,6 +26,7 @@ import ETHTransferNode, {
 import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
 import FilterNode, { FilterNodeData, FilterNodeProps } from "./filter";
 import { NodeType } from "@avaprotocol/types";
+
 class NodeFactory {
   static create(props: NodeProps): Node {
     switch (props.type) {
@@ -45,6 +46,10 @@ class NodeFactory {
         return new BranchNode(props as BranchNodeProps);
       case NodeType.Filter:
         return new FilterNode(props as FilterNodeProps);
+      case NodeType.Loop:
+        throw new Error("Loop node type is not yet implemented");
+      case NodeType.Unset:
+        throw new Error("Cannot create node with unset type");
       default:
         throw new Error(`Unsupported node type: ${props.type}`);
     }

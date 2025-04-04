@@ -14,59 +14,18 @@ import {
   BranchNodeProps,
   CustomCodeLangs,
   FilterNodeProps,
+  WorkflowProps,
 } from "@avaprotocol/sdk-js";
 import { getNextId } from "./utils";
 import { NodeType } from "@avaprotocol/types";
-export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
+import { ethers } from "ethers";
+import { factoryProxyAbi } from "./abis";
 
+export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
+export const FACTORY_PROXY = "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834";
 export const defaultTriggerId = getNextId();
 
-/**
- * Node templates
- */
-const contractWriteNodeProps: ContractWriteNodeProps = {
-  id: getNextId(),
-  name: "transfer token",
-  type: NodeType.ContractWrite,
-  data: {
-    contractAddress: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    callData: "0x123cdef",
-    contractAbi: `[
-      {
-        "type": "event",
-        "name": "Transfer",
-        "inputs": [
-          { "indexed": true, "type": "address", "name": "from" },
-          { "indexed": true, "type": "address", "name": "to" },
-          { "indexed": false, "type": "uint256", "name": "value" }
-        ]
-      }
-    ]`,
-  },
-};
-
-const contractReadNodeProps: ContractReadNodeProps = {
-  id: getNextId(),
-  name: "read token balance",
-  type: NodeType.ContractRead,
-  data: {
-    contractAddress: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    callData: "0x123cdef",
-    contractAbi: `[
-      {
-        "type": "event",
-        "name": "Transfer",
-        "inputs": [
-          { "indexed": true, "type": "address", "name": "from" },
-          { "indexed": true, "type": "address", "name": "to" },
-          { "indexed": false, "type": "uint256", "name": "value" }
-        ]
-      }
-    ]`,
-  },
-};
-
-const ethTransferNodeProps: ETHTransferNodeProps = {
+export const ethTransferNodeProps: ETHTransferNodeProps = {
   id: getNextId(),
   name: "send eth",
   type: NodeType.ETHTransfer,
@@ -76,19 +35,75 @@ const ethTransferNodeProps: ETHTransferNodeProps = {
   },
 };
 
+//  Write to the proxy of our factory contract 0xB99BC2E399e06CddCF5E725c0ea341E8f0322834
+// {
+//   "chainId": 11155111,
+//   "data": "0x5fbfb9cf000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c7880000000000000000000000000000000000000000000000000000000000000000",
+//   "from": "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788",
+//   "gas": "0x77258",
+//   "gasPrice": "0x2a1f99",
+//   "nonce": "0x8",
+//   "to": "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834"
+// }
+export const createContractWriteNodeProps = (
+  owner: string,
+  salt: string
+): ContractWriteNodeProps => {
+  // Encode the createAccount function call
+  const contract = new ethers.Contract(FACTORY_PROXY, factoryProxyAbi);
+  const callData = contract.interface.encodeFunctionData("createAccount", [
+    owner,
+    ethers.toBigInt(salt),
+  ]);
+
+  return {
+    id: getNextId(),
+    name: "create account",
+    type: NodeType.ContractWrite,
+    data: {
+      contractAddress: FACTORY_PROXY,
+      callData,
+      contractAbi: factoryProxyAbi,
+    },
+  };
+};
+
+export const createContractReadNodeProps = (
+  owner: string,
+  salt: string
+): ContractReadNodeProps => {
+  // Encode the getAddress function call
+  const contract = new ethers.Contract(FACTORY_PROXY, factoryProxyAbi);
+  const callData = contract.interface.encodeFunctionData("getAddress", [
+    owner,
+    ethers.toBigInt(salt),
+  ]);
+
+  return {
+    id: getNextId(),
+    name: "get account address",
+    type: NodeType.ContractRead,
+    data: {
+      contractAddress: FACTORY_PROXY,
+      callData,
+      contractAbi: factoryProxyAbi,
+    },
+  };
+};
+
 export const restApiNodeProps: RestAPINodeProps = {
   id: getNextId(),
   name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
-    url: "http://endpoint002",
+    url: "http://localhost:3000/api/test",
     method: "post",
-    body: `{"a":1}`,
+    body: `{"test": true}`,
     headersMap: [["Content-Type", "application/json"]],
   },
 };
 
-export const filterNodeProps: FilterNodeProps  = {
+export const filterNodeProps: FilterNodeProps = {
   id: getNextId(),
   name: "filterNode",
   type: NodeType.Filter,
@@ -103,9 +118,14 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql call",
   type: NodeType.GraphQLQuery,
   data: {
-    url: "http://endpoint003",
-    query: `foo bar`,
-    variablesMap: [["foo", "bar"]],
+    url: "http://localhost:3000/graphql",
+    query: `query TestQuery {
+      test {
+        id
+        value
+      }
+    }`,
+    variablesMap: [["test", "true"]],
   },
 };
 
@@ -132,34 +152,54 @@ const customCodeNodeProps: CustomCodeNodeProps = {
   },
 };
 
-export const NodesTemplate: NodeProps[] = [contractWriteNodeProps];
-export const EdgesTemplate = [
-  {
-    id: getNextId(),
-    source: defaultTriggerId,
-    target: NodesTemplate[0].id,
-  },
-];
+export const NodesTemplate = [ethTransferNodeProps];
+
+// Programmatically create edges from nodes
+const createEdgesFromNodes = (nodes: NodeProps[]): Edge[] => {
+  return nodes.map((node, index) => {
+    if (index === 0) {
+      // First edge connects trigger to first node
+      return new Edge({
+        id: getNextId(),
+        source: defaultTriggerId,
+        target: node.id,
+      });
+    }
+    // Connect each node to the next one
+    return new Edge({
+      id: getNextId(),
+      source: nodes[index - 1].id,
+      target: node.id,
+    });
+  });
+};
 
 /**
  * Workflow templates
  */
-export const WorkflowTemplate = {
-  nodes: NodeFactory.createNodes(NodesTemplate),
-  edges: _.map(EdgesTemplate, (edge) => new Edge(edge)),
-  trigger: TriggerFactory.create({
-    id: defaultTriggerId,
-    name: "blockTrigger",
-    type: TriggerType.Block,
-    data: { interval: 5 },
-  }),
-  startAt: Math.floor(Date.now() / 1000) + 30,
-  expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-  maxExecution: 1,
+export const createFromTemplate = (
+  address: string,
+  nodes?: NodeProps[]
+): WorkflowProps => {
+  const nodesList = nodes || NodesTemplate;
+
+  return {
+    smartWalletAddress: address,
+    nodes: NodeFactory.createNodes(nodesList),
+    edges: createEdgesFromNodes(nodesList),
+    trigger: TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 5 },
+    }),
+    startAt: Math.floor(Date.now() / 1000) + 30,
+    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    maxExecution: 1,
+  } as WorkflowProps;
 };
 
 const nodes = [
-  contractReadNodeProps,
   ethTransferNodeProps,
   restApiNodeProps,
   graphqlQueryNodeProps,
@@ -167,42 +207,9 @@ const nodes = [
   customCodeNodeProps,
 ];
 
-const edges = [
-  {
-    id: getNextId(),
-    source: defaultTriggerId,
-    target: nodes[0].id,
-  },
-  {
-    id: getNextId(),
-    source: nodes[0].id,
-    target: nodes[1].id,
-  },
-  {
-    id: getNextId(),
-    source: nodes[1].id,
-    target: nodes[2].id,
-  },
-  {
-    id: getNextId(),
-    source: nodes[2].id,
-    target: nodes[3].id,
-  },
-  {
-    id: getNextId(),
-    source: nodes[3].id,
-    target: nodes[4].id,
-  },
-  {
-    id: getNextId(),
-    source: nodes[3].id,
-    target: nodes[4].id,
-  },
-];
-
 export const MultiNodeWithBranch = {
   nodes: NodeFactory.createNodes(nodes),
-  edges: _.map(edges, (edge) => new Edge(edge)),
+  edges: createEdgesFromNodes(nodes),
   trigger: TriggerFactory.create({
     id: defaultTriggerId,
     name: "blockTrigger",
@@ -221,4 +228,3 @@ export const blockTriggerEvery5 = TriggerFactory.create({
   type: TriggerType.Block,
   data: { interval: 5 },
 });
-

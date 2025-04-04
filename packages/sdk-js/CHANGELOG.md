@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 1.4.0
+
+### Minor Changes
+
+- 5a4bad7: Added getWorkflowCount and getExecutionCount methods
+- 4769b3c: Added Output and Step properties to Execution response
+
+### Patch Changes
+
+- ba9b001: Sync to the latest grpc_codegen and remove step.outputdata that caused build error
+
 ## 1.3.8
 
 ### Patch Changes

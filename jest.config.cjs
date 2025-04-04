@@ -12,4 +12,5 @@ module.exports = {
     "^@/grpc_codegen/(.*)$": "<rootDir>/grpc_codegen/$1",
     "^@/types/(.*)$": "<rootDir>/packages/types/$1",
   },
+  setupFilesAfterEnv: ["<rootDir>/tests/mocks/api.ts"],
 };

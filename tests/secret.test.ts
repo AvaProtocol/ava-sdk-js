@@ -1,15 +1,6 @@
 import _ from "lodash";
 import { describe, beforeAll, expect } from "@jest/globals";
-import {
-  Client,
-  CustomCodeLangs,
-  CustomCodeNodeProps,
-  Edge,
-  NodeFactory,
-  StepProps,
-  TriggerFactory,
-  TriggerType,
-} from "@avaprotocol/sdk-js";
+import { Client } from "@avaprotocol/sdk-js";
 
 import dotenv from "dotenv";
 import path from "path";
@@ -18,18 +9,11 @@ import {
   generateSignature,
   requireEnvVar,
   getNextId,
-  getBlockNumber,
   SaltGlobal,
-  submitWorkflowAndQueueForRemoval,
   removeCreatedWorkflows,
 } from "./utils";
 
-import {
-  defaultTriggerId,
-  FACTORY_ADDRESS,
-  WorkflowTemplate,
-} from "./templates";
-import { NodeType } from "@avaprotocol/types";
+import { FACTORY_ADDRESS } from "./templates";
 
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 const { TEST_PRIVATE_KEY, ENDPOINT } = {

@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0  # Fetch all history for all branches
+          fetch-depth: 0 # Fetch all history for all branches
 
       - name: Debug environment variables
         run: |
@@ -43,31 +43,31 @@ jobs:
           echo "PR Head Ref: ${{ github.event.pull_request.head.ref }}"
           echo "GitHub Ref: ${{ github.ref }}"
           echo "Base Branch: ${{ github.base_ref }}"
-          
+
           # Fetch both branches
           git fetch origin ${{ github.base_ref }}
           git fetch origin ${{ github.event.pull_request.head.ref }}
-          
+
           # Get all changed files (only names)
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-          
+
           # Define the source code patterns we want to monitor
           SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'
-          
+
           echo "=== Git Information ==="
           echo "Current branch: $(git branch --show-current)"
           echo "Git status:"
           git status
-          
+
           echo "=== Changed Files ==="
           echo "$CHANGED_FILES"
-          
+
           # Check if any files in our monitored directories have changed
           MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
-          
+
           echo "=== Matching Files ==="
           echo "$MATCHING_FILES"
-          
+
           if [ -z "$MATCHING_FILES" ]; then
             echo "source_changed=false" >> $GITHUB_OUTPUT
             echo "No changes detected in monitored directories, skipping tests"
@@ -116,6 +116,10 @@ jobs:
       - name: Test Delete Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
+
+      # - name: Test Get Execution
+      #   if: steps.check_source_changes.outputs.source_changed == 'true'
+      #   run: yarn test:getExecution
 
       - name: Test Get Executions
         if: steps.check_source_changes.outputs.source_changed == 'true'
