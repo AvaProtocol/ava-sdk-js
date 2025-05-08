@@ -16,11 +16,11 @@ on:
 jobs:
   staging-test:
     runs-on: ubuntu-latest
-    environment: ${{ matrix.env }} # Use the environment name from matrix
     strategy:
       matrix:
-        env: ${{ github.event_name == 'workflow_dispatch' && [github.event.inputs.environment] || ['sepolia', 'ethereum'] }}
-
+        env: [sepolia, ethereum]
+    if: github.event_name == 'pull_request' || matrix.env == github.event.inputs.environment
+    environment: ${{ matrix.env }}
     env:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_ENV: ${{ matrix.env }}
