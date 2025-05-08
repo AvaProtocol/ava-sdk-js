@@ -35,7 +35,7 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
     destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     amount: "0x123cdef",
   },
-}; 
+};
 
 //  Write to the proxy of our factory contract 0xB99BC2E399e06CddCF5E725c0ea341E8f0322834
 // {
