@@ -5,9 +5,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  local-test:
+  setup:
     runs-on: ubuntu-latest
     environment: dev
+    outputs:
+      source_changed: ${{ steps.check_source_changes.outputs.source_changed }}
 
     env:
       CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
@@ -17,10 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Debug environment variables
-        run: |
-          echo "ENDPOINT: $ENDPOINT"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
@@ -79,7 +77,7 @@ jobs:
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
 
-      - name: ensure the aggregator and env is ready
+      - name: Ensure the aggregator is running
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           until curl --output /dev/null --silent --fail http://localhost:1323/up; do
@@ -87,14 +85,14 @@ jobs:
             sleep 5
           done
 
-      - name: Setup test environment
+      - name: Get the AVS API key
         if: steps.check_source_changes.outputs.source_changed == 'true'
         id: setup-env
         run: |
           echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
           echo "ENDPOINT=localhost:2206" >> $GITHUB_ENV
 
-      - name: Debug Required Environment Variables
+      - name: Print Test Environment Variables
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "=== Required Variables from envalid.ts ==="
@@ -110,11 +108,13 @@ jobs:
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
-      - name: Run Tests
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        uses: ./.github/workflows/test-steps.yml
-        with:
-          test_env: dev
-        env:
-          TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-          CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
+  run-tests:
+    needs: setup
+    if: needs.setup.outputs.source_changed == 'true'
+    uses: ./.github/workflows/test-steps.yml
+    with:
+      test_env: dev
+    secrets:
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
+      AVS_API_KEY: ${{ needs.setup.env.AVS_API_KEY }}

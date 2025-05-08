@@ -14,19 +14,20 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        test: [
-          'auth',
-          'createWorkflow',
-          'getWorkflow',
-          'getWorkflows',
-          'cancelWorkflow',
-          'deleteWorkflow',
-          'triggerWorkflow',
-          'getExecutions',
-          'getWallet',
-          'getWallets',
-          'secret'
-        ]
+        test:
+          [
+            "auth",
+            "createWorkflow",
+            "getWorkflow",
+            "getWorkflows",
+            "cancelWorkflow",
+            "deleteWorkflow",
+            "triggerWorkflow",
+            "getExecutions",
+            "getWallet",
+            "getWallets",
+            "secret",
+          ]
 
     env:
       CHAIN_ENDPOINT: ${{ env.CHAIN_ENDPOINT }}
@@ -34,5 +35,16 @@ jobs:
       TEST_PRIVATE_KEY: ${{ env.TEST_PRIVATE_KEY }}
 
     steps:
+      - name: Print Test Environment Variables
+        run: |
+          echo "=== Required Variables from envalid.ts ==="
+          echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
+          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
+          echo "TEST_ENV: ${{ inputs.test_env }}"
+          echo "avsEndpoint: $ENDPOINT"
+          echo "chainId: 11155111"
+          echo "factoryAddress: 0xB99BC2E399e06CddCF5E725c0ea341E8f0322834"
+
       - name: Run Test
-        run: yarn test:${{ matrix.test }} 
+        run: yarn test:${{ matrix.test }}
