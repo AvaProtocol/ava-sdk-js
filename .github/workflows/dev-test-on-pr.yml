@@ -109,60 +109,48 @@ jobs:
 
       - name: Test Authentication
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:auth
 
       - name: Test Create Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:createWorkflow
 
       - name: Test Get Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWorkflow
 
       - name: Test Get Workflows
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWorkflows
 
       - name: Test Cancel Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:cancelWorkflow
 
       - name: Test Delete Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:deleteWorkflow
 
       - name: Test Trigger Workflow
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:triggerWorkflow
 
       # - name: Test Get Execution
       #   if: steps.check_source_changes.outputs.source_changed == 'true'
-      #   continue-on-error: true
       #   run: yarn test:getExecution
 
       - name: Test Get Executions
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWallet
 
       - name: Test Get Wallets
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWallets
 
       - name: Test Secret
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:secret

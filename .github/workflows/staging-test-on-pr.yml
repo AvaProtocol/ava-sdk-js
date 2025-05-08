@@ -118,37 +118,30 @@ jobs:
 
       - name: Test Authentication
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:auth
 
       - name: Test Create Workflow
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:createWorkflow
 
       - name: Test Get Workflow
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWorkflow
 
       - name: Test Get Workflows
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWorkflows
 
       - name: Test Cancel Workflow
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:cancelWorkflow
 
       - name: Test Delete Workflow
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:deleteWorkflow
 
       - name: Test Trigger Workflow
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:triggerWorkflow
 
       # - name: Test Get Execution
@@ -157,20 +150,16 @@ jobs:
 
       - name: Test Get Executions
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWallet
 
       - name: Test Get Wallets
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:getWallets
 
       - name: Test Secret
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        continue-on-error: true
         run: yarn test:secret
