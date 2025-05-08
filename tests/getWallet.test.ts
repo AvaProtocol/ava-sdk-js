@@ -32,6 +32,7 @@ describe("getAddresses Tests", () => {
 
   beforeAll(async () => {
     const eoaAddress = await getAddress(TEST_PRIVATE_KEY);
+    console.log("TEST KEY", TEST_PRIVATE_KEY);
     console.log("Client endpoint:", ENDPOINT, "\nOwner address:", eoaAddress);
 
     // Initialize the client with test credentials
