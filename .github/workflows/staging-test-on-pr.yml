@@ -19,7 +19,6 @@ jobs:
     strategy:
       matrix:
         env: [sepolia, ethereum]
-    if: github.event_name == 'pull_request' || matrix.env == github.event.inputs.environment
     environment: ${{ matrix.env }}
     env:
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
