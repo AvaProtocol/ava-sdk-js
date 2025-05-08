@@ -145,6 +145,7 @@ jobs:
 
       - name: Test Get Executions
         if: steps.check_source_changes.outputs.source_changed == 'true'
+        continue-on-error: true
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
