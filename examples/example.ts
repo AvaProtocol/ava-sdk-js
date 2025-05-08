@@ -755,7 +755,7 @@ const main = async (cmd: string) => {
         limit: _.toNumber(commandArgs.args[2]),
       });
       break;
-    case "execution":
+    case "getExecution":
       const resultExecution = await client.getExecution(
         commandArgs.args[0],
         commandArgs.args[1],
