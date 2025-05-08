@@ -1,27 +1,18 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import dotenv from "dotenv";
-import path from "path";
 import {
   getAddress,
   generateSignature,
-  requireEnvVar,
   SaltGlobal,
   TIMEOUT_DURATION,
 } from "./utils";
-import { FACTORY_ADDRESS } from "./templates";
-
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
-
-// Get environment variables with type safety
-const { TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  ENDPOINT: requireEnvVar("ENDPOINT"),
-} as const;
+import { getConfig } from "./envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
+
+// Get environment variables from envalid config
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 let saltIndex = SaltGlobal.GetWallets * 1000; // Salt index 6,000 - 6,999
 
@@ -29,17 +20,16 @@ describe("getAddresses Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    const eoaAddress = await getAddress(TEST_PRIVATE_KEY);
-    console.log("Client endpoint:", ENDPOINT, "\nOwner address:", eoaAddress);
+    const eoaAddress = await getAddress(walletPrivateKey);
+    console.log("Owner wallet address:", eoaAddress);
 
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: ENDPOINT,
-      factoryAddress: FACTORY_ADDRESS,
+      endpoint: avsEndpoint,
+      factoryAddress,
     });
 
-    console.log("Authenticating with signature ...");
-    const signature = await generateSignature(TEST_PRIVATE_KEY);
+    const signature = await generateSignature(walletPrivateKey);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
@@ -50,7 +40,7 @@ describe("getAddresses Tests", () => {
   //   expect(result).toBeDefined();
   //   expect(result.length).toBeGreaterThanOrEqual(1);
   //   expect(result[0].salt).toEqual("0");
-  //   expect(result[0].factory).toEqual(FACTORY_ADDRESS);
+  //   expect(result[0].factory).toEqual(factoryAddress);
   //   expect(result[0].address).toHaveLength(42);
   // });
 

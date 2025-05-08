@@ -21,8 +21,10 @@ import { NodeType } from "@avaprotocol/types";
 import { ethers } from "ethers";
 import { factoryProxyAbi } from "./abis";
 
-export const FACTORY_ADDRESS = "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7";
-export const FACTORY_PROXY = "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834";
+import { getConfig } from "./envalid";
+
+const { factoryAddress } = getConfig();
+
 export const defaultTriggerId = getNextId();
 
 export const ethTransferNodeProps: ETHTransferNodeProps = {
@@ -50,7 +52,7 @@ export const createContractWriteNodeProps = (
   salt: string
 ): ContractWriteNodeProps => {
   // Encode the createAccount function call
-  const contract = new ethers.Contract(FACTORY_PROXY, factoryProxyAbi);
+  const contract = new ethers.Contract(factoryAddress, factoryProxyAbi);
   const callData = contract.interface.encodeFunctionData("createAccount", [
     owner,
     ethers.toBigInt(salt),
@@ -61,7 +63,7 @@ export const createContractWriteNodeProps = (
     name: "create account",
     type: NodeType.ContractWrite,
     data: {
-      contractAddress: FACTORY_PROXY,
+      contractAddress: factoryAddress,
       callData,
       contractAbi: factoryProxyAbi,
     },
@@ -73,7 +75,7 @@ export const createContractReadNodeProps = (
   salt: string
 ): ContractReadNodeProps => {
   // Encode the getAddress function call
-  const contract = new ethers.Contract(FACTORY_PROXY, factoryProxyAbi);
+  const contract = new ethers.Contract(factoryAddress, factoryProxyAbi);
   const callData = contract.interface.encodeFunctionData("getAddress", [
     owner,
     ethers.toBigInt(salt),
@@ -84,7 +86,7 @@ export const createContractReadNodeProps = (
     name: "get account address",
     type: NodeType.ContractRead,
     data: {
-      contractAddress: FACTORY_PROXY,
+      contractAddress: factoryAddress,
       callData,
       contractAbi: factoryProxyAbi,
     },

@@ -16,17 +16,13 @@ import {
 
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
-import dotenv from "dotenv";
-import path from "path";
 import _ from "lodash";
 import { inspect } from "util";
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+import { getConfig } from "./envalid";
 
-const CHAIN_ENDPOINT = requireEnvVar("CHAIN_ENDPOINT");
-const CHAIN_ID = requireEnvVar("CHAIN_ID", "11155111");
+const { chainEndpoint, chainId } = getConfig();
+
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
-
 export const TIMEOUT_DURATION = 15000; // 15 seconds
 
 // Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
@@ -59,7 +55,7 @@ export async function generateSignature(
   const wallet = new ethers.Wallet(privateKey);
 
   const keyRequestParams: GetKeyRequestMessage = {
-    chainId: _.toNumber(CHAIN_ID),
+    chainId: _.toNumber(chainId),
     address: wallet.address,
     issuedAt: new Date(),
     expiredAt: new Date(new Date().getTime() + EXPIRATION_DURATION_MS),
@@ -76,27 +72,16 @@ export function generateAuthPayloadWithApiKey(
   address: string,
   apiKey: string
 ): GetKeyRequestApiKey {
-  const chainId = _.toNumber(CHAIN_ID);
   const issuedAt = new Date();
   const expiredAt = new Date(Date.now() + EXPIRATION_DURATION_MS);
 
-  return { chainId, address, issuedAt, expiredAt, apiKey };
-}
-
-// Helper function to ensure environment variables are defined
-export function requireEnvVar(name: string, defaultValue?: string): string {
-  const value = process.env[name];
-
-  if (_.isUndefined(value)) {
-    // Use the defaultValue if it's provided
-    if (!_.isUndefined(defaultValue)) {
-      return defaultValue;
-    }
-
-    // Otherwise, configs are seriosuly wrong, throwing an error
-    throw new Error(`Required environment variable "${name}" is not set`);
-  }
-  return value;
+  return {
+    chainId: _.toNumber(chainId),
+    address,
+    issuedAt,
+    expiredAt,
+    apiKey,
+  };
 }
 
 // Add a workflow to the list of created workflows for cleanup, or removal later
@@ -236,17 +221,15 @@ export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
  * @returns number
  */
 export const getBlockNumber = async (): Promise<number> => {
-  const chainEndpoint = requireEnvVar("CHAIN_ENDPOINT");
   const provider = new ethers.JsonRpcProvider(chainEndpoint);
   const blockNumber = await provider.getBlockNumber();
   return blockNumber;
 };
 
 export const getChainId = async (): Promise<number> => {
-  const provider = new ethers.JsonRpcProvider(CHAIN_ENDPOINT);
+  const provider = new ethers.JsonRpcProvider(chainEndpoint);
   const network = await provider.getNetwork();
 
-  console.log("getChainId network:", network);
   return Number(network.chainId);
 };
 

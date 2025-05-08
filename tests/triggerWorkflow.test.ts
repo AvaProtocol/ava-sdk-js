@@ -6,52 +6,42 @@ import {
   ExecutionStatus,
   WorkflowStatus,
 } from "@avaprotocol/sdk-js";
-
-import dotenv from "dotenv";
-import path from "path";
 import _ from "lodash";
 import {
   getAddress,
   generateSignature,
-  requireEnvVar,
   cleanupWorkflows,
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
 } from "./utils";
 import {
-  FACTORY_ADDRESS,
-  WorkflowTemplate,
+  createFromTemplate,
   defaultTriggerId,
 } from "./templates";
-
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+import { getConfig } from "./envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
 
-// Get environment variables with type safety
-const { TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  ENDPOINT: requireEnvVar("ENDPOINT"),
-} as const;
+// Get environment variables from envalid config
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 describe("triggerWorkflow Tests", () => {
   let ownerAddress: string;
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(TEST_PRIVATE_KEY);
-    console.log("Client endpoint:", ENDPOINT, "\nOwner address:", ownerAddress);
+    ownerAddress = await getAddress(walletPrivateKey);
+    console.log("Owner wallet address:", ownerAddress);
 
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: ENDPOINT,
-      factoryAddress: FACTORY_ADDRESS,
+      endpoint: avsEndpoint,
+      factoryAddress,
     });
 
-    const signature = await generateSignature(TEST_PRIVATE_KEY);
+    const signature = await generateSignature(walletPrivateKey);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
@@ -70,7 +60,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflowId = await client.submitWorkflow(
       client.createWorkflow({
-        ...WorkflowTemplate,
+        ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
       })
@@ -136,7 +126,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflowId = await client.submitWorkflow(
       client.createWorkflow({
-        ...WorkflowTemplate,
+        ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
       })
@@ -188,7 +178,7 @@ describe("triggerWorkflow Tests", () => {
     // Add a test: what happens if the maxExecution is less than the epochsList length?
     const workflowId = await client.submitWorkflow(
       client.createWorkflow({
-        ...WorkflowTemplate,
+        ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
       })
@@ -241,7 +231,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflowId = await client.submitWorkflow(
       client.createWorkflow({
-        ...WorkflowTemplate,
+        ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
       })
@@ -298,7 +288,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflowId = await client.submitWorkflow(
       client.createWorkflow({
-        ...WorkflowTemplate,
+        ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
       })
@@ -349,7 +339,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflowId = await client.submitWorkflow(
       client.createWorkflow({
-        ...WorkflowTemplate,
+        ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
       })
