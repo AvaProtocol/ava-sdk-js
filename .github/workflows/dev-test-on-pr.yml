@@ -2,6 +2,7 @@ name: Run tests againts dev version on PR
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   local-test:
