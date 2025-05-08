@@ -6,6 +6,13 @@ on:
       test_env:
         required: true
         type: string
+    secrets:
+      TEST_PRIVATE_KEY:
+        required: true
+      CHAIN_ENDPOINT:
+        required: true
+      AVS_API_KEY:
+        required: true
 
 jobs:
   run-tests:
@@ -30,9 +37,10 @@ jobs:
           ]
 
     env:
-      CHAIN_ENDPOINT: ${{ env.CHAIN_ENDPOINT }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
-      TEST_PRIVATE_KEY: ${{ env.TEST_PRIVATE_KEY }}
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
 
     steps:
       - name: Print Test Environment Variables
