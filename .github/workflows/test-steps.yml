@@ -1,0 +1,38 @@
+name: Test Steps
+
+on:
+  workflow_call:
+    inputs:
+      test_env:
+        required: true
+        type: string
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.test_env }}
+    continue-on-error: true
+    strategy:
+      matrix:
+        test: [
+          'auth',
+          'createWorkflow',
+          'getWorkflow',
+          'getWorkflows',
+          'cancelWorkflow',
+          'deleteWorkflow',
+          'triggerWorkflow',
+          'getExecutions',
+          'getWallet',
+          'getWallets',
+          'secret'
+        ]
+
+    env:
+      CHAIN_ENDPOINT: ${{ env.CHAIN_ENDPOINT }}
+      ENDPOINT: "localhost:2206"
+      TEST_PRIVATE_KEY: ${{ env.TEST_PRIVATE_KEY }}
+
+    steps:
+      - name: Run Test
+        run: yarn test:${{ matrix.test }} 

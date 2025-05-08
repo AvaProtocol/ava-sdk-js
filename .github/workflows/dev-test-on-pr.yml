@@ -87,10 +87,6 @@ jobs:
             sleep 5
           done
 
-      - name: Build
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn build
-
       - name: Setup test environment
         if: steps.check_source_changes.outputs.source_changed == 'true'
         id: setup-env
@@ -98,7 +94,7 @@ jobs:
           echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
           echo "ENDPOINT=localhost:2206" >> $GITHUB_ENV
 
-      - name: Debug Required Variables
+      - name: Debug Required Environment Variables
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "=== Required Variables from envalid.ts ==="
@@ -110,50 +106,15 @@ jobs:
           echo "chainId: 11155111"
           echo "factoryAddress: 0xB99BC2E399e06CddCF5E725c0ea341E8f0322834"
 
-      - name: Test Authentication
+      - name: Build the SDK for local test
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:auth
+        run: yarn build
 
-      - name: Test Create Workflow
+      - name: Run Tests
         if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:createWorkflow
-
-      - name: Test Get Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWorkflow
-
-      - name: Test Get Workflows
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWorkflows
-
-      - name: Test Cancel Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:cancelWorkflow
-
-      - name: Test Delete Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:deleteWorkflow
-
-      - name: Test Trigger Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:triggerWorkflow
-
-      # - name: Test Get Execution
-      #   if: steps.check_source_changes.outputs.source_changed == 'true'
-      #   run: yarn test:getExecution
-
-      - name: Test Get Executions
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getExecutions
-
-      - name: Test Get Wallet
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWallet
-
-      - name: Test Get Wallets
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWallets
-
-      - name: Test Secret
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:secret
+        uses: ./.github/workflows/test-steps.yml
+        with:
+          test_env: dev
+        env:
+          TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+          CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
