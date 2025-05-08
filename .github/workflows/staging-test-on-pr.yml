@@ -3,17 +3,29 @@ name: Run tests against staging on PR
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run tests against'
+        required: true
+        default: 'sepolia'
+        type: choice
+        options:
+          - sepolia
+          - ethereum
 
 jobs:
   staging-test:
     runs-on: ubuntu-latest
-    environment: test # The below environment variables are only available in the test environment
+    environment: ${{ matrix.env }} # Use the environment name from matrix
+    strategy:
+      matrix:
+        env: ${{ github.event_name == 'workflow_dispatch' && [github.event.inputs.environment] || ['sepolia', 'ethereum'] }}
 
     env:
-      TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-      ENDPOINT: ${{ vars.ENDPOINT }}
-      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      TEST_ENV: ${{ matrix.env }}
+      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
       # On staging env, when test run it may not cleanup data properly for multiple reasons.
       # In the next run, especially on pagination test, the assumption about data is wrong.
       # For those kind of particular test, we want to ensure a 100% unique salt across run
@@ -32,10 +44,12 @@ jobs:
 
       - name: Debug environment variables
         run: |
-          echo "ENDPOINT: $ENDPOINT"
+          echo "TEST_ENV: $TEST_ENV"
+          echo "Using environment: ${{ matrix.env }}"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
+        if: github.event_name == 'pull_request'
         run: |
           echo "=== Pull Request Information ==="
           echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
@@ -79,60 +93,64 @@ jobs:
         shell: bash
 
       - name: Use Node.js
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "yarn"
 
       - name: Install dependencies
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
 
       - name: Build
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
       - name: Test Authentication
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:auth
 
       - name: Test Create Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:createWorkflow
 
       - name: Test Get Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflow
 
       - name: Test Get Workflows
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflows
 
       - name: Test Cancel Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:cancelWorkflow
 
       - name: Test Delete Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
+
+      - name: Test Trigger Workflow
+        if: steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:triggerWorkflow
 
       # - name: Test Get Execution
       #   if: steps.check_source_changes.outputs.source_changed == 'true'
       #   run: yarn test:getExecution
-
+      
       - name: Test Get Executions
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallet
 
       - name: Test Get Wallets
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallets
 
       - name: Test Secret
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:secret
