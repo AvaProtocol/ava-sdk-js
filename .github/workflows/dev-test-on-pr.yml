@@ -10,8 +10,9 @@ jobs:
     environment: dev
 
     env:
-      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
+      TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
 
     steps:
       - name: Checkout repository
