@@ -43,12 +43,24 @@ jobs:
       AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install
+
       - name: Print Test Environment Variables
         run: |
           echo "=== Required Variables from envalid.ts ==="
-          echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
-          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
-          echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
+          echo "AVS_API_KEY: ...${{ secrets.AVS_API_KEY }}"
+          echo "CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}"
+          echo "TEST_PRIVATE_KEY: ...${{ secrets.TEST_PRIVATE_KEY }}"
           echo "TEST_ENV: ${{ inputs.test_env }}"
           echo "avsEndpoint: $ENDPOINT"
           echo "chainId: 11155111"
