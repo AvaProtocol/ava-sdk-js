@@ -1,4 +1,4 @@
-name: Run tests against staging on PR
+name: Run Production Tests on PR
 
 on:
   pull_request:
@@ -12,25 +12,28 @@ on:
         options:
           - sepolia
           - ethereum
+          - base
+          - base-sepolia
+          - soneium-minato
 
 jobs:
-  staging-test:
+  production-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        env: [sepolia, ethereum]
+        env: [sepolia, ethereum, base, base-sepolia, soneium-minato]
     environment: ${{ matrix.env }}
     env:
       CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_ENV: ${{ matrix.env }}
       AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
-      # On staging env, when test run it may not cleanup data properly for multiple reasons.
+      # On production env, when test run it may not cleanup data properly for multiple reasons.
       # In the next run, especially on pagination test, the assumption about data is wrong.
       # For those kind of particular test, we want to ensure a 100% unique salt across run
       # One way to do so, is get this run_id from github action and use it as salt
       # On local dev, we just default to a hard code number in the test to isolate its. data
-      # on local test is continously wipe out on every run so it isn't a problem like staging
+      # on local test is continously wipe out on every run so it isn't a problem like production
       # We may want to sweep and delete task data on those test account
       RUN_ID: ${{ github.run_id }}
 

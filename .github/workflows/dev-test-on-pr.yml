@@ -1,11 +1,11 @@
-name: Run tests againts dev version on PR
+name: Run Dev Tests on PR
 
 on:
   pull_request:
   workflow_dispatch:
 
 jobs:
-  local-test:
+  dev-test:
     runs-on: ubuntu-latest
     environment: dev
 

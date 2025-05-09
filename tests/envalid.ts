@@ -8,6 +8,10 @@ const ALLOWED_ENVIRONMENTS = [
   "ethereum",
   "base-sepolia",
   "base",
+  "soneium",
+  "soneium-minato",
+  "bsc",
+  "bsc-testnet",
 ] as const;
 type Environment = (typeof ALLOWED_ENVIRONMENTS)[number];
 
@@ -20,21 +24,37 @@ const ENV_CONFIGS = {
     avsEndpoint: "localhost:2206",
     chainId: "11155111",
   },
-  sepolia: {
-    avsEndpoint: "aggregator-sepolia.avaprotocol.org:2206",
-    chainId: "11155111",
-  },
-  "base-sepolia": {
-    avsEndpoint: "aggregator-base-sepolia.avaprotocol.org:3206",
-    chainId: "84532",
-  },
   ethereum: {
     avsEndpoint: "aggregator.avaprotocol.org:2206",
     chainId: "1",
   },
+  sepolia: {
+    avsEndpoint: "aggregator-sepolia.avaprotocol.org:2206",
+    chainId: "11155111",
+  },
   base: {
-    avsEndpoint: "aggregator-base.avaprotocol.org:3206",
+    avsEndpoint: "aggregator-base.avaprotocol.org:3206", // TODO:Change to 2207
     chainId: "8453",
+  },
+  "base-sepolia": {
+    avsEndpoint: "aggregator-base-sepolia.avaprotocol.org:3206", // TODO:Change to 2207
+    chainId: "84532",
+  },
+  soneium: {
+    avsEndpoint: "aggregator-soneium.avaprotocol.org:2208",
+    chainId: "1868",
+  },
+  "soneium-minato": {
+    avsEndpoint: "aggregator-soneium-minato.avaprotocol.org:2208",
+    chainId: "1946",
+  },
+  bsc: {
+    avsEndpoint: "aggregator-bsc.avaprotocol.org:2209",
+    chainId: "56",
+  },
+  "bsc-testnet": {
+    avsEndpoint: "aggregator-bsc-testnet.avaprotocol.org:2209",
+    chainId: "97",
   },
 } as const;
 
