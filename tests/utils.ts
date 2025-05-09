@@ -222,15 +222,38 @@ export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
  */
 export const getBlockNumber = async (): Promise<number> => {
   const provider = new ethers.JsonRpcProvider(chainEndpoint);
-  const blockNumber = await provider.getBlockNumber();
-  return blockNumber;
+  try {
+    // Set a 5 second timeout for the connection
+    const blockNumber = await Promise.race<number>([
+      provider.getBlockNumber(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Provider connection timeout")), 5000)
+      ),
+    ]);
+    return blockNumber;
+  } catch (error: any) {
+    throw new Error(
+      `Failed to get block number: ${error?.message || "Unknown error"}`
+    );
+  }
 };
 
 export const getChainId = async (): Promise<number> => {
   const provider = new ethers.JsonRpcProvider(chainEndpoint);
-  const network = await provider.getNetwork();
-
-  return Number(network.chainId);
+  try {
+    // Set a 5 second timeout for the connection
+    const network = await Promise.race<ethers.Network>([
+      provider.getNetwork(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Provider connection timeout")), 5000)
+      ),
+    ]);
+    return Number(network.chainId);
+  } catch (error: any) {
+    throw new Error(
+      `Failed to get chain ID: ${error?.message || "Unknown error"}`
+    );
+  }
 };
 
 export const verifyExecutionStepResults = (
