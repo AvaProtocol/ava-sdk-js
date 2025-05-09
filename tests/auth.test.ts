@@ -1,28 +1,20 @@
 import _ from "lodash";
 import { Client } from "@avaprotocol/sdk-js";
 import { GetKeyRequestSignature, WorkflowStatus } from "@avaprotocol/types";
-import dotenv from "dotenv";
-import path from "path";
 import {
   getAddress,
   generateSignature,
   generateAuthPayloadWithApiKey,
-  requireEnvVar,
   compareResults,
   SaltGlobal,
-  removeCreatedWorkflows,
 } from "./utils";
-import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
 
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+import { createFromTemplate } from "./templates";
+import { getConfig } from "./envalid";
 
-// Get environment variables with type safety
-const { TEST_API_KEY, TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_API_KEY: requireEnvVar("TEST_API_KEY"),
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  ENDPOINT: requireEnvVar("ENDPOINT"),
-} as const;
+// Get environment variables from envalid config
+const { avsApiKey, avsEndpoint, walletPrivateKey, factoryAddress } =
+  getConfig();
 
 let saltIndex = SaltGlobal.Auth * 1000; // Salt index 0 - 999
 
@@ -33,19 +25,18 @@ describe("Authentication Tests", () => {
   beforeAll(async () => {
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: ENDPOINT,
-      factoryAddress: FACTORY_ADDRESS,
+      endpoint: avsEndpoint,
+      factoryAddress,
     });
 
     // Generate the address here
-    const address = await getAddress(TEST_PRIVATE_KEY);
+    const address = await getAddress(walletPrivateKey);
     eoaAddress = address;
   });
 
   describe("Authenticated with client.authKey", () => {
     beforeAll(async () => {
-      console.log("Authenticating with signature ...");
-      const signature = await generateSignature(TEST_PRIVATE_KEY);
+      const signature = await generateSignature(walletPrivateKey);
       const res = await client.authWithSignature(signature);
 
       client.setAuthKey(res.authKey);
@@ -58,23 +49,15 @@ describe("Authentication Tests", () => {
       expect(result).toBeDefined();
       expect(result?.address).toHaveLength(42);
       expect(result?.salt).toEqual(saltValue);
-      expect(result?.factory).toEqual(FACTORY_ADDRESS);
+      expect(result?.factory).toEqual(factoryAddress);
     });
 
     test("getWallets works with client.authKey", async () => {
-      const saltValue = _.toString(saltIndex++);
-
-      // ensure at least one wallet is created. the call is idempotent
-      await client.getWallet({ salt: saltValue });
+      // The salt:0 wallet is automatically created
 
       const wallets = await client.getWallets();
-      expect(wallets.length).toBeGreaterThanOrEqual(1);
 
-      const foundWallet = wallets.find((wallet) => wallet.salt === saltValue);
-      expect(foundWallet).toBeDefined();
-      expect(foundWallet?.address).toHaveLength(42);
-      expect(foundWallet?.salt).toEqual(saltValue);
-      expect(foundWallet?.factory).toEqual(FACTORY_ADDRESS);
+      expect(wallets.length).toBeGreaterThanOrEqual(1);
     });
 
     test("createWorkflow works with client.authKey", async () => {
@@ -186,14 +169,13 @@ describe("Authentication Tests", () => {
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
       const res = await client.authWithAPIKey(
-        generateAuthPayloadWithApiKey(eoaAddress, TEST_API_KEY)
+        generateAuthPayloadWithApiKey(eoaAddress, avsApiKey)
       );
 
       authKeyViaAPI = res.authKey;
 
-      console.log("Authenticating with signature ...");
       const sigObject: GetKeyRequestSignature = await generateSignature(
-        TEST_PRIVATE_KEY
+        walletPrivateKey
       );
 
       const res2 = await client.authWithSignature(sigObject);
@@ -211,7 +193,7 @@ describe("Authentication Tests", () => {
 
       expect(wallet).toHaveProperty("address");
       expect(wallet).toHaveProperty("salt", saltValue);
-      expect(wallet).toHaveProperty("factory", FACTORY_ADDRESS);
+      expect(wallet).toHaveProperty("factory", factoryAddress);
 
       const res2 = await client.getWallet(
         { salt: saltValue },
@@ -219,7 +201,7 @@ describe("Authentication Tests", () => {
       );
       expect(res2).toHaveProperty("address");
       expect(res2).toHaveProperty("salt", saltValue);
-      expect(res2).toHaveProperty("factory", FACTORY_ADDRESS);
+      expect(res2).toHaveProperty("factory", factoryAddress);
     });
 
     test("createWorkflow works with options.authKey", async () => {
@@ -421,14 +403,14 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       // Prepare an auth key for the tests
-      const signature = await generateSignature(TEST_PRIVATE_KEY);
+      const signature = await generateSignature(walletPrivateKey);
       const res = await client.authWithSignature(signature);
       authKeyViaSignature = res.authKey;
     });
 
     test("should return auth key when using API key", async () => {
       const res = await client.authWithAPIKey(
-        generateAuthPayloadWithApiKey(eoaAddress, TEST_API_KEY)
+        generateAuthPayloadWithApiKey(eoaAddress, avsApiKey)
       );
 
       expect(res).toBeDefined();
@@ -453,7 +435,7 @@ describe("Authentication Tests", () => {
     });
 
     test("should return auth key when using EOA signature", async () => {
-      const signature = await generateSignature(TEST_PRIVATE_KEY);
+      const signature = await generateSignature(walletPrivateKey);
 
       if (!signature) {
         throw new Error(

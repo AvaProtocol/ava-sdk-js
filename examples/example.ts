@@ -357,7 +357,7 @@ async function schedulePriceReport(
     trigger,
     startAt: Math.floor(Date.now() / 1000) + 30,
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-    maxExecution: 0, // unlimited run
+    maxExecution: 1,
   });
 
   const workflowId = await client.submitWorkflow(workflow, {
@@ -426,7 +426,7 @@ async function scheduleTelegram(owner: string, token: string) {
     }),
     startAt: Math.floor(Date.now() / 1000) + 30,
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-    maxExecution: 0, // unlimited run
+    maxExecution: 1,
   });
 
   const workflowId = await client.submitWorkflow(workflow, {
@@ -552,7 +552,7 @@ async function scheduleSweep(owner: string, token: string, target: string) {
     }),
     startAt: Math.floor(Date.now() / 1000) + 30,
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-    maxExecution: 0, // unlimited run
+    maxExecution: 1,
   });
 
   const workflowId = await client.submitWorkflow(workflow, {
@@ -657,7 +657,7 @@ async function scheduleMonitorTransfer(
     }),
     startAt: Math.floor(Date.now() / 1000) + 30,
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-    maxExecution: 0, // unlimited run
+    maxExecution: 1,
   });
 
   const workflowId = await client.submitWorkflow(workflow, {

@@ -1,24 +1,12 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import dotenv from "dotenv";
-import path from "path";
 import _ from "lodash";
-import {
-  getAddress,
-  generateSignature,
-  requireEnvVar,
-  SaltGlobal,
-} from "./utils";
-import { FACTORY_ADDRESS, createFromTemplate } from "./templates";
+import { getAddress, generateSignature, SaltGlobal } from "./utils";
+import { createFromTemplate } from "./templates";
+import { getConfig } from "./envalid";
 
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
-
-// Get environment variables with type safety
-const { TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  ENDPOINT: requireEnvVar("ENDPOINT"),
-} as const;
+// Get environment variables from envalid config
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 let saltIndex = SaltGlobal.GetWorkflows * 1000; // Salt index 8,000 - 8,999
 
@@ -27,16 +15,16 @@ describe("getWorkflows Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(TEST_PRIVATE_KEY);
-    console.log("Client endpoint:", ENDPOINT, "\nOwner address:", ownerAddress);
+    ownerAddress = await getAddress(walletPrivateKey);
+    console.log("Owner wallet address:", ownerAddress);
 
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: ENDPOINT,
-      factoryAddress: FACTORY_ADDRESS,
+      endpoint: avsEndpoint,
+      factoryAddress,
     });
 
-    const signature = await generateSignature(TEST_PRIVATE_KEY);
+    const signature = await generateSignature(walletPrivateKey);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
