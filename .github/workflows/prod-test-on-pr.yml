@@ -20,6 +20,7 @@ jobs:
   production-test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         env: [sepolia, ethereum, base, base-sepolia, soneium-minato]
     environment: ${{ matrix.env }}
