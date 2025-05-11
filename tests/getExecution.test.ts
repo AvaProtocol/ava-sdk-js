@@ -68,17 +68,13 @@ describe("Get Execution and Step Tests", () => {
         data: { interval: 5 },
       });
 
-      const workflowProps = {
-        ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
-        trigger,
-        smartWalletAddress: wallet.address,
-        startAt: Math.floor(Date.now() / 1000) - 300, // 5 minutes in the past
-        maxExecution: 0, // Unlimited executions
-      };
-
-      const workflow = client.createWorkflow(workflowProps);
-      consoleLogNestedObject("workflow", workflow);
-      workflowId = await client.submitWorkflow(workflow);
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({
+          ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
+          trigger,
+          smartWalletAddress: wallet.address,
+        })
+      );
 
       // Trigger the workflow
       const triggerResponse = await client.triggerWorkflow({
@@ -138,19 +134,16 @@ describe("Get Execution and Step Tests", () => {
         data: { interval: 5 },
       });
 
-      const workflowProps = {
-        ...createFromTemplate(wallet.address, [
-          ethTransferNodeProps,
-          restApiNodeProps,
-        ]),
-        trigger,
-        smartWalletAddress: wallet.address,
-        startAt: Math.floor(Date.now() / 1000) - 300, // 5 minutes in the past
-        maxExecution: 0, // Unlimited executions
-      };
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({
+          ...createFromTemplate(wallet.address, [
+            ethTransferNodeProps,
+            restApiNodeProps,
+          ]),
+          trigger,
+          smartWalletAddress: wallet.address,
+        })
+      );
 
       // Trigger the workflow
       const triggerResponse = await client.triggerWorkflow({
@@ -216,16 +209,13 @@ describe("Get Execution and Step Tests", () => {
         data: { interval: 5 },
       });
 
-      const workflowProps = {
-        ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
-        trigger,
-        smartWalletAddress: wallet.address,
-        startAt: Math.floor(Date.now() / 1000) - 300, // 5 minutes in the past
-        maxExecution: 0, // Unlimited executions
-      };
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow({
+          ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
+          trigger,
+          smartWalletAddress: wallet.address,
+        })
+      );
 
       // Trigger the workflow
       const triggerResponse = await client.triggerWorkflow({
