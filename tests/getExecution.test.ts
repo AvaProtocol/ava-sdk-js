@@ -76,46 +76,38 @@ describe("Get Execution and Step Tests", () => {
 
   test("should verify step properties from workflow execution with ETH transfer node", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const epoch = Math.floor(Date.now() / 1000);
+    const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create a block trigger which is known to work in triggerWorkflow.test.ts
+      // Create workflow using the exact pattern from triggerWorkflow.test.ts
+      const interval = 5;
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval: 5 },
+        data: { interval },
       });
       
-      // Create workflow using the exact same approach as in triggerWorkflow.test.ts
-      workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
-          trigger,
-          smartWalletAddress: wallet.address,
-          maxExecution: 0, // Set to 0 for unlimited executions
-        })
-      );
+      // Create and submit workflow with explicit smartWalletAddress
+      const workflow = client.createWorkflow({
+        ...createFromTemplate(wallet.address),
+        trigger,
+        smartWalletAddress: wallet.address,
+      });
+      
+      workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Wait for the workflow to be fully registered
-      await new Promise((resolve) => setTimeout(resolve, 10000));
-      
-      // Get the workflow to verify its status
-      const workflowBefore = await client.getWorkflow(workflowId);
-      console.log("Workflow status before trigger:", workflowBefore.status);
-      
-      // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
+      // Trigger the workflow with block number + 5
       console.log("Triggering workflow with Block trigger...");
-      const blockNumber = await getBlockNumber();
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
           type: TriggerType.Block,
-          blockNumber: blockNumber + 5, // Use block interval from the trigger
+          blockNumber: blockNumber + 5,
         },
         isBlocking: true,
       });
@@ -156,39 +148,32 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create a block trigger which is known to work in triggerWorkflow.test.ts
+      // Create workflow using the exact pattern from triggerWorkflow.test.ts
+      const interval = 5;
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval: 5 },
+        data: { interval },
       });
       
-      // Create workflow using the exact same approach as in triggerWorkflow.test.ts
-      workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
-          trigger,
-          smartWalletAddress: wallet.address,
-          maxExecution: 0, // Set to 0 for unlimited executions
-        })
-      );
+      // Create and submit workflow with explicit smartWalletAddress
+      const workflow = client.createWorkflow({
+        ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
+        trigger,
+        smartWalletAddress: wallet.address,
+      });
+      
+      workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Wait for the workflow to be fully registered
-      await new Promise((resolve) => setTimeout(resolve, 10000));
-      
-      // Get the workflow to verify its status
-      const workflowBefore = await client.getWorkflow(workflowId);
-      console.log("Workflow status before trigger:", workflowBefore.status);
-      
-      // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
+      // Trigger the workflow with block number + 5
       console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
           type: TriggerType.Block,
-          blockNumber: blockNumber + 5, // Use block interval from the trigger
+          blockNumber: blockNumber + 5,
         },
         isBlocking: true,
       });
@@ -242,31 +227,23 @@ describe("Get Execution and Step Tests", () => {
         },
       });
       
-      // Create a block trigger which is known to work in triggerWorkflow.test.ts
+      // Create workflow using the exact pattern from triggerWorkflow.test.ts
+      const interval = 5;
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval: 5 },
+        data: { interval },
       });
       
-      // Create workflow using the exact same approach as in triggerWorkflow.test.ts
-      workflowId = await client.submitWorkflow(
-        client.createWorkflow({
-          ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
-          trigger,
-          smartWalletAddress: wallet.address,
-          maxExecution: 0, // Set to 0 for unlimited executions
-        })
-      );
+      // Create and submit workflow with explicit smartWalletAddress
+      const workflow = client.createWorkflow({
+        ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
+        trigger,
+        smartWalletAddress: wallet.address,
+      });
+      workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
-      
-      // Wait for the workflow to be fully registered
-      await new Promise((resolve) => setTimeout(resolve, 10000));
-      
-      // Get the workflow to verify its status
-      const workflowBefore = await client.getWorkflow(workflowId);
-      console.log("Workflow status before trigger:", workflowBefore.status);
       
       // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
       console.log("Triggering workflow with Block trigger...");
