@@ -59,9 +59,21 @@ describe("Get Execution and Step Tests", () => {
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        ethTransferNodeProps,
-      ]);
+      // Create a workflow with block trigger and ETH transfer node
+      const trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflowProps = {
+        ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
+        trigger,
+        smartWalletAddress: wallet.address,
+        startAt: Math.floor(Date.now() / 1000) - 300, // 5 minutes in the past
+        maxExecution: 0, // Unlimited executions
+      };
 
       const workflow = client.createWorkflow(workflowProps);
       consoleLogNestedObject("workflow", workflow);
@@ -80,7 +92,7 @@ describe("Get Execution and Step Tests", () => {
       consoleLogNestedObject("triggerResponse", triggerResponse);
 
       // Wait for the execution triggering to complete
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Get the execution to verify step properties
       const exeResp = await client.getExecution(
@@ -117,10 +129,24 @@ describe("Get Execution and Step Tests", () => {
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        ethTransferNodeProps,
-        restApiNodeProps,
-      ]);
+      // Create a workflow with block trigger and multiple nodes
+      const trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflowProps = {
+        ...createFromTemplate(wallet.address, [
+          ethTransferNodeProps,
+          restApiNodeProps,
+        ]),
+        trigger,
+        smartWalletAddress: wallet.address,
+        startAt: Math.floor(Date.now() / 1000) - 300, // 5 minutes in the past
+        maxExecution: 0, // Unlimited executions
+      };
 
       const workflow = client.createWorkflow(workflowProps);
       workflowId = await client.submitWorkflow(workflow);
@@ -138,7 +164,7 @@ describe("Get Execution and Step Tests", () => {
       consoleLogNestedObject("After triggerWorkflow", triggerResponse);
 
       // Wait for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Get the execution to verify multiple steps
       const exeResp = await client.getExecution(
@@ -166,6 +192,7 @@ describe("Get Execution and Step Tests", () => {
   test("should handle failed steps in workflow execution with invalid configuration", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
+    const targetBlockNumber = blockNumber + 5;
     let workflowId: string | undefined;
 
     try {
@@ -180,9 +207,21 @@ describe("Get Execution and Step Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [
-        invalidEthTransferNode,
-      ]);
+      // Create a workflow with block trigger and invalid node
+      const trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflowProps = {
+        ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
+        trigger,
+        smartWalletAddress: wallet.address,
+        startAt: Math.floor(Date.now() / 1000) - 300, // 5 minutes in the past
+        maxExecution: 0, // Unlimited executions
+      };
 
       const workflow = client.createWorkflow(workflowProps);
       workflowId = await client.submitWorkflow(workflow);
@@ -192,13 +231,13 @@ describe("Get Execution and Step Tests", () => {
         id: workflowId,
         reason: {
           type: TriggerType.Block,
-          blockNumber: blockNumber + 5,
+          blockNumber: targetBlockNumber,
         },
         isBlocking: true,
       });
 
       // Wait for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Get the execution to verify failed steps
       const exeResp = await client.getExecution(
