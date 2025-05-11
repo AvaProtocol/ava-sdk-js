@@ -10,12 +10,9 @@ import {
   WorkflowStatus,
 } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
-import dotenv from "dotenv";
-import path from "path";
 import {
   getAddress,
   generateSignature,
-  requireEnvVar,
   compareResults,
   getNextId,
   TIMEOUT_DURATION,
@@ -26,24 +23,18 @@ import {
 import {
   createFromTemplate,
   MultiNodeWithBranch,
-  FACTORY_ADDRESS,
   defaultTriggerId,
   blockTriggerEvery5,
   restApiNodeProps,
   filterNodeProps,
 } from "./templates";
-
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+import { getConfig } from "./envalid";
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
 
-// Get environment variables with type safety
-const { TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  ENDPOINT: requireEnvVar("ENDPOINT"),
-} as const;
+// Get environment variables from envalid config
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 let saltIndex = SaltGlobal.CreateWorkflow * 1000; // Salt index 11,000 - 11,999
 
@@ -51,15 +42,15 @@ describe("createWorkflow Tests", () => {
   let eoaAddress: string;
   let client: Client;
   beforeAll(async () => {
-    eoaAddress = await getAddress(TEST_PRIVATE_KEY);
+    eoaAddress = await getAddress(walletPrivateKey);
 
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: ENDPOINT,
-      factoryAddress: FACTORY_ADDRESS,
+      endpoint: avsEndpoint,
+      factoryAddress,
     });
 
-    const signature = await generateSignature(TEST_PRIVATE_KEY);
+    const signature = await generateSignature(walletPrivateKey);
     const res = await client.authWithSignature(signature);
 
     client.setAuthKey(res.authKey);
