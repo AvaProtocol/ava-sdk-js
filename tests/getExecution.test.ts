@@ -82,11 +82,11 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow with block trigger type
+      // Create workflow with manual trigger type
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
+        name: "manualTrigger",
+        type: TriggerType.Block, // Still using Block type but will trigger manually
         data: { interval: 1 }, // Use a small interval for faster triggering
       });
       
@@ -103,13 +103,12 @@ describe("Get Execution and Step Tests", () => {
       workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Trigger the workflow with block number + 5
-      console.log("Triggering workflow with Block trigger...");
+      // Trigger the workflow with Manual trigger
+      console.log("Triggering workflow with Manual trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + 5,
+          type: TriggerType.Manual,
         },
         isBlocking: true,
       });
@@ -171,13 +170,12 @@ describe("Get Execution and Step Tests", () => {
       workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Trigger the workflow with block number + 5
-      console.log("Triggering workflow with Block trigger...");
+      // Trigger the workflow with Manual trigger
+      console.log("Triggering workflow with Manual trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + 5,
+          type: TriggerType.Manual,
         },
         isBlocking: true,
       });
