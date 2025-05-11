@@ -6,13 +6,10 @@ import {
 } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
 
-import dotenv from "dotenv";
-import path from "path";
 import _ from "lodash";
 import {
   getAddress,
   generateSignature,
-  requireEnvVar,
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
@@ -21,21 +18,16 @@ import {
 } from "./utils";
 
 import {
-  FACTORY_ADDRESS,
   createFromTemplate,
   defaultTriggerId,
   ethTransferNodeProps,
   restApiNodeProps,
 } from "./templates";
 
-// Update the dotenv configuration
-dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
+import { getConfig } from "./envalid";
 
-// Get environment variables with type safety
-const { TEST_PRIVATE_KEY, ENDPOINT } = {
-  TEST_PRIVATE_KEY: requireEnvVar("TEST_PRIVATE_KEY"),
-  ENDPOINT: requireEnvVar("ENDPOINT"),
-} as const;
+// Get environment variables from envalid config
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 // Set a default timeout of 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
@@ -47,15 +39,15 @@ describe("Get Execution and Step Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(TEST_PRIVATE_KEY);
+    ownerAddress = await getAddress(walletPrivateKey);
 
     // Initialize the client with test credentials
     client = new Client({
-      endpoint: ENDPOINT,
-      factoryAddress: FACTORY_ADDRESS,
+      endpoint: avsEndpoint,
+      factoryAddress,
     });
 
-    const signature = await generateSignature(TEST_PRIVATE_KEY);
+    const signature = await generateSignature(walletPrivateKey);
     const res = await client.authWithSignature(signature);
     client.setAuthKey(res.authKey);
   });
