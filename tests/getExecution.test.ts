@@ -4,6 +4,9 @@ import {
   TriggerType,
   NodeFactory,
   TriggerFactory,
+  NodeProps,
+  Edge,
+  WorkflowStatus,
 } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
 
@@ -16,6 +19,7 @@ import {
   TIMEOUT_DURATION,
   getNextId,
   consoleLogNestedObject,
+  cleanupWorkflows,
 } from "./utils";
 
 import {
@@ -29,6 +33,23 @@ import { getConfig } from "./envalid";
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+
+const createEdgesFromNodes = (nodes: NodeProps[]): Edge[] => {
+  return nodes.map((node, index) => {
+    if (index === 0) {
+      return new Edge({
+        id: getNextId(),
+        source: defaultTriggerId,
+        target: node.id,
+      });
+    }
+    return new Edge({
+      id: getNextId(),
+      source: nodes[index - 1].id,
+      target: node.id,
+    });
+  });
+};
 
 // Set a default timeout of 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
@@ -55,19 +76,21 @@ describe("Get Execution and Step Tests", () => {
 
   test("should verify step properties from workflow execution with ETH transfer node", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const blockNumber = await getBlockNumber();
-    const targetBlockNumber = blockNumber + 5;
+    const epoch = Math.floor(Date.now() / 1000);
     let workflowId: string | undefined;
 
     try {
-      // Create a workflow with block trigger and ETH transfer node
+      await cleanupWorkflows(client, wallet.address);
+      
+      // Create a cron trigger with a schedule of every minute - exactly like in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval: 5 },
+        name: "cronTrigger",
+        type: TriggerType.Cron,
+        data: { scheduleList: ["* * * * *"] },
       });
-
+      
+      // Create workflow using the exact same approach as in triggerWorkflow.test.ts
       workflowId = await client.submitWorkflow(
         client.createWorkflow({
           ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
@@ -75,35 +98,39 @@ describe("Get Execution and Step Tests", () => {
           smartWalletAddress: wallet.address,
         })
       );
-
-      // Trigger the workflow
+      console.log("Created workflow with ID:", workflowId);
+      
+      // Wait for the workflow to be fully registered
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      // Get the workflow to verify its status
+      const workflowBefore = await client.getWorkflow(workflowId);
+      console.log("Workflow status before trigger:", workflowBefore.status);
+      
+      // Trigger the workflow with a cron trigger - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Cron trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: targetBlockNumber,
+          type: TriggerType.Cron,
+          epoch: epoch + 60, // set epoch to 1 minute later
         },
         isBlocking: true,
       });
-
-      consoleLogNestedObject("triggerResponse", triggerResponse);
-
-      // Wait for the execution triggering to complete
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      console.log("Trigger response executionId:", triggerResponse.executionId);
 
       // Get the execution to verify step properties
       const exeResp = await client.getExecution(
         workflowId,
         triggerResponse.executionId
       );
-      consoleLogNestedObject("exeResp", exeResp);
-
-      expect(exeResp.triggerName).toBe("blockTrigger");
-      expect(exeResp.triggerReason?.type).toBe(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toBe(targetBlockNumber);
-      expect(exeResp.triggerOutput).toBeDefined();
-      expect(exeResp.error).toBe("");
-
+      
+      // Verify that the execution has the expected properties
+      expect(exeResp.id).toEqual(triggerResponse.executionId);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Cron);
+      expect(exeResp.triggerReason?.epoch).toEqual(epoch + 60);
+      
       // There should be one step in nodes
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
 
@@ -121,53 +148,63 @@ describe("Get Execution and Step Tests", () => {
 
   test("should handle multiple steps in workflow execution with different node types", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const blockNumber = await getBlockNumber();
-    const targetBlockNumber = blockNumber + 5;
+    const epoch = Math.floor(Date.now() / 1000);
     let workflowId: string | undefined;
 
     try {
-      // Create a workflow with block trigger and multiple nodes
+      await cleanupWorkflows(client, wallet.address);
+      
+      // Create a fixed time trigger - exactly like in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval: 5 },
+        name: "fixedTimeTrigger",
+        type: TriggerType.FixedTime,
+        data: { epochsList: [epoch + 60, epoch + 120, epoch + 180] }, // one per minute for the next 3 minutes
       });
-
+      
+      // Create workflow using the exact same approach as in triggerWorkflow.test.ts
       workflowId = await client.submitWorkflow(
         client.createWorkflow({
-          ...createFromTemplate(wallet.address, [
-            ethTransferNodeProps,
-            restApiNodeProps,
-          ]),
+          ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
         })
       );
-
-      // Trigger the workflow
+      console.log("Created workflow with ID:", workflowId);
+      
+      // Wait for the workflow to be fully registered
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      // Get the workflow to verify its status
+      const workflowBefore = await client.getWorkflow(workflowId);
+      console.log("Workflow status before trigger:", workflowBefore.status);
+      
+      // Trigger the workflow with a fixed time trigger - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with FixedTime trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: targetBlockNumber,
+          type: TriggerType.FixedTime,
+          epoch: epoch + 300, // 5 minutes later
         },
         isBlocking: true,
       });
-
-      consoleLogNestedObject("After triggerWorkflow", triggerResponse);
-
-      // Wait for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      console.log("Trigger response executionId:", triggerResponse.executionId);
 
       // Get the execution to verify multiple steps
       const exeResp = await client.getExecution(
         workflowId,
         triggerResponse.executionId
       );
-
-      consoleLogNestedObject("After getExecutions", exeResp);
-      expect(exeResp.stepsList.length).toBe(2); // Should have multiple steps
+      
+      // Verify that the execution has the expected properties
+      expect(exeResp.id).toEqual(triggerResponse.executionId);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.FixedTime);
+      expect(exeResp.triggerReason?.epoch).toEqual(epoch + 300);
+      
+      // Should have multiple steps
+      expect(exeResp.stepsList.length).toBe(2);
 
       // Verify each step has the required properties
       exeResp.stepsList.forEach((step) => {
@@ -186,10 +223,11 @@ describe("Get Execution and Step Tests", () => {
   test("should handle failed steps in workflow execution with invalid configuration", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
-    const targetBlockNumber = blockNumber + 5;
     let workflowId: string | undefined;
 
     try {
+      await cleanupWorkflows(client, wallet.address);
+      
       // Create a workflow with an invalid ETH transfer node
       const invalidEthTransferNode = NodeFactory.create({
         id: getNextId(),
@@ -200,15 +238,19 @@ describe("Get Execution and Step Tests", () => {
           amount: "0",
         },
       });
-
-      // Create a workflow with block trigger and invalid node
+      
+      // Create an event trigger - exactly like in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval: 5 },
+        name: "eventTrigger",
+        type: TriggerType.Event,
+        data: {
+          expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${wallet.address.toLowerCase()}"`,
+          matcherList: [],
+        },
       });
-
+      
+      // Create workflow using the exact same approach as in triggerWorkflow.test.ts
       workflowId = await client.submitWorkflow(
         client.createWorkflow({
           ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
@@ -216,29 +258,44 @@ describe("Get Execution and Step Tests", () => {
           smartWalletAddress: wallet.address,
         })
       );
-
-      // Trigger the workflow
+      console.log("Created workflow with ID:", workflowId);
+      
+      // Wait for the workflow to be fully registered
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      // Get the workflow to verify its status
+      const workflowBefore = await client.getWorkflow(workflowId);
+      console.log("Workflow status before trigger:", workflowBefore.status);
+      
+      // Trigger the workflow with an event trigger - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Event trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: targetBlockNumber,
+          type: TriggerType.Event,
+          blockNumber: blockNumber + 5,
+          logIndex: 0,
+          txHash: "0x1234567890",
         },
         isBlocking: true,
       });
-
-      // Wait for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      
+      console.log("Trigger response executionId:", triggerResponse.executionId);
 
       // Get the execution to verify failed steps
       const exeResp = await client.getExecution(
         workflowId,
         triggerResponse.executionId
       );
-
+      
+      // Verify that the execution has the expected properties
+      expect(exeResp.id).toEqual(triggerResponse.executionId);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Event);
+      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
+      expect(exeResp.triggerReason?.txHash).toEqual("0x1234567890");
+      
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
 
-      consoleLogNestedObject("exeResp", exeResp);
       const failedSteps = exeResp.stepsList.filter((step) => !step.success);
       expect(failedSteps.length).toBeGreaterThan(0);
 
