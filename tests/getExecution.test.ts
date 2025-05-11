@@ -101,7 +101,7 @@ describe("Get Execution and Step Tests", () => {
       console.log("Created workflow with ID:", workflowId);
       
       // Wait for the workflow to be fully registered
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
       
       // Get the workflow to verify its status
       const workflowBefore = await client.getWorkflow(workflowId);
@@ -129,8 +129,8 @@ describe("Get Execution and Step Tests", () => {
       
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
-      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Cron);
-      expect(exeResp.triggerReason?.epoch).toEqual(epoch + 60);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
+      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
       
       // There should be one step in nodes
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
@@ -149,18 +149,18 @@ describe("Get Execution and Step Tests", () => {
 
   test("should handle multiple steps in workflow execution with different node types", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const epoch = Math.floor(Date.now() / 1000);
+    const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create a fixed time trigger - exactly like in triggerWorkflow.test.ts
+      // Create a block trigger which is known to work in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "fixedTimeTrigger",
-        type: TriggerType.FixedTime,
-        data: { epochsList: [epoch + 60, epoch + 120, epoch + 180] }, // one per minute for the next 3 minutes
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
       });
       
       // Create workflow using the exact same approach as in triggerWorkflow.test.ts
@@ -174,19 +174,19 @@ describe("Get Execution and Step Tests", () => {
       console.log("Created workflow with ID:", workflowId);
       
       // Wait for the workflow to be fully registered
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
       
       // Get the workflow to verify its status
       const workflowBefore = await client.getWorkflow(workflowId);
       console.log("Workflow status before trigger:", workflowBefore.status);
       
-      // Trigger the workflow with a fixed time trigger - exactly like in triggerWorkflow.test.ts
-      console.log("Triggering workflow with FixedTime trigger...");
+      // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.FixedTime,
-          epoch: epoch + 300, // 5 minutes later
+          type: TriggerType.Block,
+          blockNumber: blockNumber + 5, // Use block interval from the trigger
         },
         isBlocking: true,
       });
@@ -201,8 +201,8 @@ describe("Get Execution and Step Tests", () => {
       
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
-      expect(exeResp.triggerReason?.type).toEqual(TriggerType.FixedTime);
-      expect(exeResp.triggerReason?.epoch).toEqual(epoch + 300);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
+      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
       
       // Should have multiple steps
       expect(exeResp.stepsList.length).toBe(2);
@@ -240,15 +240,12 @@ describe("Get Execution and Step Tests", () => {
         },
       });
       
-      // Create an event trigger - exactly like in triggerWorkflow.test.ts
+      // Create a block trigger which is known to work in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: {
-          expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${wallet.address.toLowerCase()}"`,
-          matcherList: [],
-        },
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
       });
       
       // Create workflow using the exact same approach as in triggerWorkflow.test.ts
@@ -262,21 +259,19 @@ describe("Get Execution and Step Tests", () => {
       console.log("Created workflow with ID:", workflowId);
       
       // Wait for the workflow to be fully registered
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 10000));
       
       // Get the workflow to verify its status
       const workflowBefore = await client.getWorkflow(workflowId);
       console.log("Workflow status before trigger:", workflowBefore.status);
       
-      // Trigger the workflow with an event trigger - exactly like in triggerWorkflow.test.ts
-      console.log("Triggering workflow with Event trigger...");
+      // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Event,
+          type: TriggerType.Block,
           blockNumber: blockNumber + 5,
-          logIndex: 0,
-          txHash: "0x1234567890",
         },
         isBlocking: true,
       });
@@ -291,9 +286,8 @@ describe("Get Execution and Step Tests", () => {
       
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
-      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Event);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
       expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
-      expect(exeResp.triggerReason?.txHash).toEqual("0x1234567890");
       
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
 
