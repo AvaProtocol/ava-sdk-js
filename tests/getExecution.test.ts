@@ -3,6 +3,7 @@ import {
   Client,
   TriggerType,
   NodeFactory,
+  TriggerFactory,
 } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
 
