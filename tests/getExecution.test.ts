@@ -89,7 +89,7 @@ describe("Get Execution and Step Tests", () => {
       consoleLogNestedObject("triggerResponse", triggerResponse);
 
       // Wait for the execution triggering to complete
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Get the execution to verify step properties
       const exeResp = await client.getExecution(
@@ -158,7 +158,7 @@ describe("Get Execution and Step Tests", () => {
       consoleLogNestedObject("After triggerWorkflow", triggerResponse);
 
       // Wait for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Get the execution to verify multiple steps
       const exeResp = await client.getExecution(
@@ -228,7 +228,7 @@ describe("Get Execution and Step Tests", () => {
       });
 
       // Wait for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Get the execution to verify failed steps
       const exeResp = await client.getExecution(
