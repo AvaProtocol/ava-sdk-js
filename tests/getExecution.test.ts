@@ -96,6 +96,7 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
+          maxExecution: 0, // Set to 0 for unlimited executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -169,6 +170,7 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
+          maxExecution: 0, // Set to 0 for unlimited executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -254,6 +256,7 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
           trigger,
           smartWalletAddress: wallet.address,
+          maxExecution: 0, // Set to 0 for unlimited executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
