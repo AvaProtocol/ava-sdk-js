@@ -77,38 +77,37 @@ describe("Get Execution and Step Tests", () => {
   test("should verify step properties from workflow execution with ETH transfer node", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
+    const interval = 5;
     let workflowId: string | undefined;
 
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow with manual trigger type
+      // Create workflow with block trigger - exactly like in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "manualTrigger",
-        type: TriggerType.Block, // Still using Block type but will trigger manually
-        data: { interval: 1 }, // Use a small interval for faster triggering
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval },
       });
       
-      // Create and submit workflow with explicit smartWalletAddress and generous time window
+      // Create and submit workflow - exactly like in triggerWorkflow.test.ts
       const workflow = client.createWorkflow({
         ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
-        startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
-        expiredAt: Math.floor(Date.now() / 1000) + 3600 * 24 * 365, // 1 year in the future
-        maxExecution: 100, // Allow many executions
       });
       
       workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Trigger the workflow with Manual trigger
-      console.log("Triggering workflow with Manual trigger...");
+      // Trigger the workflow - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Manual,
+          type: TriggerType.Block,
+          blockNumber: blockNumber + interval,
         },
         isBlocking: true,
       });
@@ -149,33 +148,32 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow with block trigger type
+      // Create workflow with block trigger - exactly like in triggerWorkflow.test.ts
+      const interval = 5;
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval: 1 }, // Use a small interval for faster triggering
+        data: { interval },
       });
       
-      // Create and submit workflow with explicit smartWalletAddress and generous time window
+      // Create and submit workflow - exactly like in triggerWorkflow.test.ts
       const workflow = client.createWorkflow({
         ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
         trigger,
         smartWalletAddress: wallet.address,
-        startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
-        expiredAt: Math.floor(Date.now() / 1000) + 3600 * 24 * 365, // 1 year in the future
-        maxExecution: 100, // Allow many executions
       });
       
       workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Trigger the workflow with Manual trigger
-      console.log("Triggering workflow with Manual trigger...");
+      // Trigger the workflow - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Manual,
+          type: TriggerType.Block,
+          blockNumber: blockNumber + interval,
         },
         isBlocking: true,
       });
@@ -229,33 +227,31 @@ describe("Get Execution and Step Tests", () => {
         },
       });
       
-      // Create workflow with block trigger type
+      // Create workflow with block trigger - exactly like in triggerWorkflow.test.ts
+      const interval = 5;
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval: 1 }, // Use a small interval for faster triggering
+        data: { interval },
       });
       
-      // Create and submit workflow with explicit smartWalletAddress and generous time window
+      // Create and submit workflow - exactly like in triggerWorkflow.test.ts
       const workflow = client.createWorkflow({
         ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
         trigger,
         smartWalletAddress: wallet.address,
-        startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
-        expiredAt: Math.floor(Date.now() / 1000) + 3600 * 24 * 365, // 1 year in the future
-        maxExecution: 100, // Allow many executions
       });
       workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
       
-      // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
+      // Trigger the workflow - exactly like in triggerWorkflow.test.ts
       console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
           type: TriggerType.Block,
-          blockNumber: blockNumber + 5,
+          blockNumber: blockNumber + interval,
         },
         isBlocking: true,
       });
