@@ -82,20 +82,22 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow using the exact pattern from triggerWorkflow.test.ts
-      const interval = 5;
+      // Create workflow with block trigger type
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval },
+        data: { interval: 1 }, // Use a small interval for faster triggering
       });
       
-      // Create and submit workflow with explicit smartWalletAddress
+      // Create and submit workflow with explicit smartWalletAddress and generous time window
       const workflow = client.createWorkflow({
         ...createFromTemplate(wallet.address),
         trigger,
         smartWalletAddress: wallet.address,
+        startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
+        expiredAt: Math.floor(Date.now() / 1000) + 3600 * 24 * 365, // 1 year in the future
+        maxExecution: 100, // Allow many executions
       });
       
       workflowId = await client.submitWorkflow(workflow);
@@ -148,20 +150,22 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow using the exact pattern from triggerWorkflow.test.ts
-      const interval = 5;
+      // Create workflow with block trigger type
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval },
+        data: { interval: 1 }, // Use a small interval for faster triggering
       });
       
-      // Create and submit workflow with explicit smartWalletAddress
+      // Create and submit workflow with explicit smartWalletAddress and generous time window
       const workflow = client.createWorkflow({
         ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
         trigger,
         smartWalletAddress: wallet.address,
+        startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
+        expiredAt: Math.floor(Date.now() / 1000) + 3600 * 24 * 365, // 1 year in the future
+        maxExecution: 100, // Allow many executions
       });
       
       workflowId = await client.submitWorkflow(workflow);
@@ -227,20 +231,22 @@ describe("Get Execution and Step Tests", () => {
         },
       });
       
-      // Create workflow using the exact pattern from triggerWorkflow.test.ts
-      const interval = 5;
+      // Create workflow with block trigger type
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
-        data: { interval },
+        data: { interval: 1 }, // Use a small interval for faster triggering
       });
       
-      // Create and submit workflow with explicit smartWalletAddress
+      // Create and submit workflow with explicit smartWalletAddress and generous time window
       const workflow = client.createWorkflow({
         ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
         trigger,
         smartWalletAddress: wallet.address,
+        startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
+        expiredAt: Math.floor(Date.now() / 1000) + 3600 * 24 * 365, // 1 year in the future
+        maxExecution: 100, // Allow many executions
       });
       workflowId = await client.submitWorkflow(workflow);
       console.log("Created workflow with ID:", workflowId);
