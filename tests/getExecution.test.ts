@@ -82,12 +82,12 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create a cron trigger with a schedule of every minute - exactly like in triggerWorkflow.test.ts
+      // Create a block trigger which is known to work in triggerWorkflow.test.ts
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: { scheduleList: ["* * * * *"] },
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
       });
       
       // Create workflow using the exact same approach as in triggerWorkflow.test.ts
@@ -107,13 +107,14 @@ describe("Get Execution and Step Tests", () => {
       const workflowBefore = await client.getWorkflow(workflowId);
       console.log("Workflow status before trigger:", workflowBefore.status);
       
-      // Trigger the workflow with a cron trigger - exactly like in triggerWorkflow.test.ts
-      console.log("Triggering workflow with Cron trigger...");
+      // Trigger the workflow with a block trigger - exactly like in triggerWorkflow.test.ts
+      console.log("Triggering workflow with Block trigger...");
+      const blockNumber = await getBlockNumber();
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Cron,
-          epoch: epoch + 60, // set epoch to 1 minute later
+          type: TriggerType.Block,
+          blockNumber: blockNumber + 5, // Use block interval from the trigger
         },
         isBlocking: true,
       });
