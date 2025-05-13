@@ -24,28 +24,19 @@ export function convertStatusToString(
   return conversionMap[status] as WorkflowStatus;
 }
 
-export type WorkflowProps = Omit<
-  avs_pb.Task.AsObject,
-  | "id"
-  | "owner"
-  | "completedAt"
-  | "status"
-  | "executionsList"
-  | "name"
-  | "trigger"
-  | "nodesList"
-  | "edgesList"
-  | "executionCount"
-  | "lastRanAt"
-> & {
+export type WorkflowProps = {
+  smartWalletAddress: string;
+  trigger: Trigger;
+  nodes: Node[];
+  edges: Edge[];
+  startAt: number;
+  expiredAt: number;
+  maxExecution: number;
   id?: string;
   owner?: string;
   completedAt?: number;
   status?: WorkflowStatus;
   name?: string;
-  trigger: Trigger;
-  nodes: Node[];
-  edges: Edge[];
   executionCount?: number;
   lastRanAt?: number;
 };
