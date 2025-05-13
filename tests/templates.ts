@@ -191,9 +191,9 @@ export const createFromTemplate = (
     edges: createEdgesFromNodes(nodesList),
     trigger: TriggerFactory.create({
       id: defaultTriggerId,
-      name: "blockTrigger",
-      type: TriggerType.Block,
-      data: { interval: 5 },
+      name: "fixedTimeTrigger",
+      type: TriggerType.FixedTime,
+      data: { epochsList: [Math.floor(Date.now() / 1000) - 3600, Math.floor(Date.now() / 1000) - 1800, Math.floor(Date.now() / 1000) - 900] },
     }),
     startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
@@ -214,9 +214,9 @@ export const MultiNodeWithBranch = {
   edges: createEdgesFromNodes(nodes),
   trigger: TriggerFactory.create({
     id: defaultTriggerId,
-    name: "blockTrigger",
-    type: TriggerType.Block,
-    data: { interval: 5 },
+    name: "fixedTimeTrigger",
+    type: TriggerType.FixedTime,
+    data: { epochsList: [Math.floor(Date.now() / 1000) - 3600, Math.floor(Date.now() / 1000) - 1800, Math.floor(Date.now() / 1000) - 900] },
   }),
   startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
   expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),

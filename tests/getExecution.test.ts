@@ -64,12 +64,12 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow with Block trigger (using exact pattern from triggerWorkflow.test.ts)
+      // Create workflow with FixedTime trigger
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval },
+        name: "fixedTimeTrigger",
+        type: TriggerType.FixedTime,
+        data: { epochsList: [Math.floor(Date.now() / 1000) - 3600, Math.floor(Date.now() / 1000) - 1800, Math.floor(Date.now() / 1000) - 900] },
       });
 
       workflowId = await client.submitWorkflow(
@@ -87,12 +87,13 @@ describe("Get Execution and Step Tests", () => {
       expect(executions.result.length).toEqual(0);
       
       
-      console.log("Triggering workflow with Block trigger...");
+      console.log("Triggering workflow with FixedTime trigger...");
+      const epoch = Math.floor(Date.now() / 1000);
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + interval,
+          type: TriggerType.FixedTime,
+          epoch: epoch - 60, // set epoch to 1 minute in the past
         },
         isBlocking: true,
       });
@@ -107,8 +108,8 @@ describe("Get Execution and Step Tests", () => {
       
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
-      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + interval);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.FixedTime);
+      expect(exeResp.triggerReason?.epoch).toBeDefined();
       
       // There should be one step in nodes
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
@@ -135,12 +136,12 @@ describe("Get Execution and Step Tests", () => {
     try {
       await cleanupWorkflows(client, wallet.address);
       
-      // Create workflow with Block trigger (using exact pattern from triggerWorkflow.test.ts)
+      // Create workflow with FixedTime trigger
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval },
+        name: "fixedTimeTrigger",
+        type: TriggerType.FixedTime,
+        data: { epochsList: [Math.floor(Date.now() / 1000) - 3600, Math.floor(Date.now() / 1000) - 1800, Math.floor(Date.now() / 1000) - 900] },
       });
 
       workflowId = await client.submitWorkflow(
@@ -158,12 +159,13 @@ describe("Get Execution and Step Tests", () => {
       expect(executions.result.length).toEqual(0);
       
       
-      console.log("Triggering workflow with Block trigger...");
+      console.log("Triggering workflow with FixedTime trigger...");
+      const epoch = Math.floor(Date.now() / 1000);
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + interval, // Use future block number exactly as in triggerWorkflow.test.ts
+          type: TriggerType.FixedTime,
+          epoch: epoch - 60, // set epoch to 1 minute in the past
         },
         isBlocking: true,
       });
@@ -178,8 +180,8 @@ describe("Get Execution and Step Tests", () => {
       
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
-      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + interval);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.FixedTime);
+      expect(exeResp.triggerReason?.epoch).toBeDefined();
       
       // Should have multiple steps
       expect(exeResp.stepsList.length).toBe(2);
@@ -218,12 +220,12 @@ describe("Get Execution and Step Tests", () => {
         },
       });
       
-      // Create workflow with Block trigger (using exact pattern from triggerWorkflow.test.ts)
+      // Create workflow with FixedTime trigger
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval },
+        name: "fixedTimeTrigger",
+        type: TriggerType.FixedTime,
+        data: { epochsList: [Math.floor(Date.now() / 1000) - 3600, Math.floor(Date.now() / 1000) - 1800, Math.floor(Date.now() / 1000) - 900] },
       });
 
       workflowId = await client.submitWorkflow(
@@ -241,12 +243,13 @@ describe("Get Execution and Step Tests", () => {
       expect(executions.result.length).toEqual(0);
       
       
-      console.log("Triggering workflow with Block trigger...");
+      console.log("Triggering workflow with FixedTime trigger...");
+      const epoch = Math.floor(Date.now() / 1000);
       const triggerResponse = await client.triggerWorkflow({
         id: workflowId,
         reason: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + interval, // Use future block number exactly as in triggerWorkflow.test.ts
+          type: TriggerType.FixedTime,
+          epoch: epoch - 60, // set epoch to 1 minute in the past
         },
         isBlocking: true,
       });
@@ -261,8 +264,8 @@ describe("Get Execution and Step Tests", () => {
       
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
-      expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + interval);
+      expect(exeResp.triggerReason?.type).toEqual(TriggerType.FixedTime);
+      expect(exeResp.triggerReason?.epoch).toBeDefined();
       
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
 
