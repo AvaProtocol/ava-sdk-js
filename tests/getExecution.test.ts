@@ -93,7 +93,7 @@ describe("Get Execution and Step Tests", () => {
       
       // Create and submit workflow - exactly like in triggerWorkflow.test.ts
       const workflow = client.createWorkflow({
-        ...createFromTemplate(wallet.address),
+        ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
         trigger,
         smartWalletAddress: wallet.address,
       });
@@ -123,7 +123,7 @@ describe("Get Execution and Step Tests", () => {
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
       expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
+      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + interval);
       
       // There should be one step in nodes
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
@@ -189,7 +189,7 @@ describe("Get Execution and Step Tests", () => {
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
       expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
+      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + interval);
       
       // Should have multiple steps
       expect(exeResp.stepsList.length).toBe(2);
@@ -267,7 +267,7 @@ describe("Get Execution and Step Tests", () => {
       // Verify that the execution has the expected properties
       expect(exeResp.id).toEqual(triggerResponse.executionId);
       expect(exeResp.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + 5);
+      expect(exeResp.triggerReason?.blockNumber).toEqual(blockNumber + interval);
       
       expect(exeResp.stepsList.length).toBeGreaterThan(0);
 
