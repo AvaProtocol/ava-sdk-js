@@ -77,6 +77,8 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
+          startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
+          maxExecution: 10, // Increase max executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -86,8 +88,6 @@ describe("Get Execution and Step Tests", () => {
       expect(Array.isArray(executions.result)).toBe(true);
       expect(executions.result.length).toEqual(0);
       
-      console.log("Waiting for workflow to become runable...");
-      await new Promise((resolve) => setTimeout(resolve, 35000));
       
       console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
@@ -150,6 +150,8 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
+          startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
+          maxExecution: 10, // Increase max executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -159,8 +161,6 @@ describe("Get Execution and Step Tests", () => {
       expect(Array.isArray(executions.result)).toBe(true);
       expect(executions.result.length).toEqual(0);
       
-      console.log("Waiting for workflow to become runable...");
-      await new Promise((resolve) => setTimeout(resolve, 35000));
       
       console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
@@ -235,6 +235,8 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
           trigger,
           smartWalletAddress: wallet.address,
+          startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
+          maxExecution: 10, // Increase max executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -244,8 +246,6 @@ describe("Get Execution and Step Tests", () => {
       expect(Array.isArray(executions.result)).toBe(true);
       expect(executions.result.length).toEqual(0);
       
-      console.log("Waiting for workflow to become runable...");
-      await new Promise((resolve) => setTimeout(resolve, 35000));
       
       console.log("Triggering workflow with Block trigger...");
       const triggerResponse = await client.triggerWorkflow({
