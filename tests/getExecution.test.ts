@@ -77,8 +77,6 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [ethTransferNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
-          startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
-          maxExecution: 10, // Increase max executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -150,8 +148,6 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [ethTransferNodeProps, restApiNodeProps]),
           trigger,
           smartWalletAddress: wallet.address,
-          startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
-          maxExecution: 10, // Increase max executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
@@ -235,8 +231,6 @@ describe("Get Execution and Step Tests", () => {
           ...createFromTemplate(wallet.address, [invalidEthTransferNode]),
           trigger,
           smartWalletAddress: wallet.address,
-          startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
-          maxExecution: 10, // Increase max executions
         })
       );
       console.log("Created workflow with ID:", workflowId);
