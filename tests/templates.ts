@@ -195,9 +195,9 @@ export const createFromTemplate = (
       type: TriggerType.Block,
       data: { interval: 5 },
     }),
-    startAt: Math.floor(Date.now() / 1000) + 30,
+    startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
     expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
-    maxExecution: 1,
+    maxExecution: 10, // Increase max executions
   } as WorkflowProps;
 };
 
@@ -218,10 +218,10 @@ export const MultiNodeWithBranch = {
     type: TriggerType.Block,
     data: { interval: 5 },
   }),
-  startAt: Math.floor(Date.now() / 1000) + 30,
+  startAt: Math.floor(Date.now() / 1000) - 60, // Set startAt to 1 minute in the past
   expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
   name: `Test task`,
-  maxExecution: 1,
+  maxExecution: 10, // Increase max executions
 };
 
 export const blockTriggerEvery5 = TriggerFactory.create({
