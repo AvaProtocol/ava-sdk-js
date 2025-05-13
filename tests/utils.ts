@@ -294,16 +294,3 @@ export const consoleLogNestedObject = (name: string, obj: any): void => {
     })
   );
 };
-
-/**
- * Require an environment variable and throw an error if it's not defined
- * @param name Name of the environment variable
- * @returns The value of the environment variable
- */
-export function requireEnvVar(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Environment variable ${name} is required`);
-  }
-  return value;
-}

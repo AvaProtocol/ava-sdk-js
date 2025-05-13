@@ -23,8 +23,7 @@ import { factoryProxyAbi } from "./abis";
 
 import { getConfig } from "./envalid";
 
-export const { factoryAddress } = getConfig();
-export const FACTORY_ADDRESS = factoryAddress;
+const { factoryAddress } = getConfig();
 
 export const defaultTriggerId = getNextId();
 
@@ -196,9 +195,9 @@ export const createFromTemplate = (
       type: TriggerType.Block,
       data: { interval: 5 },
     }),
-    startAt: Math.floor(Date.now() / 1000) - 86400, // 24 hours in the past
-    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 365), // 1 year in the future
-    maxExecution: 100, // high number of executions
+    startAt: Math.floor(Date.now() / 1000) + 30,
+    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    maxExecution: 1,
   } as WorkflowProps;
 };
 
@@ -219,10 +218,10 @@ export const MultiNodeWithBranch = {
     type: TriggerType.Block,
     data: { interval: 5 },
   }),
-  startAt: Math.floor(Date.now() / 1000) - 3600, // 1 hour in the past
+  startAt: Math.floor(Date.now() / 1000) + 30,
   expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
   name: `Test task`,
-  maxExecution: 10, // Increase max executions
+  maxExecution: 1,
 };
 
 export const blockTriggerEvery5 = TriggerFactory.create({
