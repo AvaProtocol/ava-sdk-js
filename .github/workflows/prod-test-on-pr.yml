@@ -148,9 +148,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:triggerWorkflow
 
-      # - name: Test Get Execution
-      #   if: steps.check_source_changes.outputs.source_changed == 'true'
-      #   run: yarn test:getExecution
+      - name: Test Get Execution
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:getExecution
 
       - name: Test Get Executions
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'

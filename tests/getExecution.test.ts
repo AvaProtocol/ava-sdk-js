@@ -1,0 +1,159 @@
+import { describe, beforeAll, test, expect } from "@jest/globals";
+import { Client, TriggerFactory, TriggerType, ExecutionStatus } from "@avaprotocol/sdk-js";
+import _ from "lodash";
+import {
+  getAddress,
+  generateSignature,
+  getBlockNumber,
+  SaltGlobal,
+  TIMEOUT_DURATION,
+} from "./utils";
+import {
+  createFromTemplate,
+  defaultTriggerId,
+} from "./templates";
+import { getConfig } from "./envalid";
+
+jest.setTimeout(TIMEOUT_DURATION);
+
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+
+let saltIndex = SaltGlobal.GetExecution * 1000; // Salt index 13000 - 13999
+
+describe("getExecution Tests", () => {
+  let ownerAddress: string;
+  let client: Client;
+
+  beforeAll(async () => {
+    ownerAddress = await getAddress(walletPrivateKey);
+
+    client = new Client({
+      endpoint: avsEndpoint,
+      factoryAddress,
+    });
+
+    const signature = await generateSignature(walletPrivateKey);
+    const res = await client.authWithSignature(signature);
+    client.setAuthKey(res.authKey);
+  });
+
+  test("should retrieve a specific execution by ID", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const blockNumber = await getBlockNumber();
+    let workflowId: string | undefined;
+
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+      workflowProps.maxExecution = 0; // Set to 0, or infinite runs, to ensure the workflow is not completed
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      const triggerResult = await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Block,
+          blockNumber: blockNumber + 5,
+        },
+        isBlocking: true,
+      });
+
+      const execution = await client.getExecution(workflowId, triggerResult.executionId);
+
+      expect(execution).toBeDefined();
+      expect(execution.id).toEqual(triggerResult.executionId);
+      expect(execution.success).toBe(true);
+      expect(execution.triggerReason?.type).toEqual(TriggerType.Block);
+      expect(execution.triggerReason?.blockNumber).toEqual(blockNumber + 5);
+      expect(execution.triggerOutput).toEqual({
+        blockNumber: blockNumber + 5,
+      });
+      expect(Array.isArray(execution.stepsList)).toBe(true);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+
+  test("should throw error with a non-existent workflow ID", async () => {
+    const nonExistentWorkflowId = "non-existent-workflow-id";
+    const nonExistentExecutionId = "non-existent-execution-id";
+
+    await expect(
+      client.getExecution(nonExistentWorkflowId, nonExistentExecutionId)
+    ).rejects.toThrowError(/INVALID_ARGUMENT|not found/i);
+  });
+
+  test("should throw error with a valid workflow ID but non-existent execution ID", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    let workflowId: string | undefined;
+
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      const nonExistentExecutionId = "non-existent-execution-id";
+
+      await expect(
+        client.getExecution(workflowId, nonExistentExecutionId)
+      ).rejects.toThrowError(/INVALID_ARGUMENT|not found/i);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+
+  test("should retrieve execution with correct status after triggering workflow", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const epoch = Math.floor(Date.now() / 1000);
+    let workflowId: string | undefined;
+
+    try {
+      const trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "cronTrigger",
+        type: TriggerType.Cron,
+        data: { scheduleList: ["* * * * *"] },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = trigger;
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      const result = await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Cron,
+          epoch: epoch + 60, // set epoch to 1 minute later
+        },
+        isBlocking: true,
+      });
+
+      const execution = await client.getExecution(workflowId, result.executionId);
+      
+      expect(execution.id).toEqual(result.executionId);
+      expect(execution.triggerReason?.type).toEqual(TriggerType.Cron);
+      expect(execution.triggerReason?.epoch).toEqual(epoch + 60);
+
+      const executionStatus = await client.getExecutionStatus(
+        workflowId,
+        result.executionId
+      );
+      expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+});
