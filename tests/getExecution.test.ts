@@ -31,7 +31,7 @@ import { getConfig } from "./envalid";
 
 jest.setTimeout(TIMEOUT_DURATION * 4); // 60 seconds
 
-let saltIndex = SaltGlobal.TriggerWorkflow * 1000 + 500; // Salt index 10,500 - 10,999
+let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,499 (same as triggerWorkflow.test.ts)
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
