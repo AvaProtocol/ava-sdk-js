@@ -53,12 +53,13 @@ export async function generateSignature(
   privateKey: string
 ): Promise<GetKeyRequestSignature> {
   const wallet = new ethers.Wallet(privateKey);
+  const now = Date.now(); // Get current time in milliseconds
 
   const keyRequestParams: GetKeyRequestMessage = {
     chainId: _.toNumber(chainId),
     address: wallet.address,
-    issuedAt: new Date(),
-    expiredAt: new Date(new Date().getTime() + EXPIRATION_DURATION_MS),
+    issuedAt: new Date(now),
+    expiredAt: new Date(now + EXPIRATION_DURATION_MS),
   };
 
   const message = getKeyRequestMessage(keyRequestParams);
@@ -72,14 +73,13 @@ export function generateAuthPayloadWithApiKey(
   address: string,
   apiKey: string
 ): GetKeyRequestApiKey {
-  const issuedAt = new Date();
-  const expiredAt = new Date(Date.now() + EXPIRATION_DURATION_MS);
+  const now = Date.now(); // Get current time in milliseconds
 
   return {
     chainId: _.toNumber(chainId),
     address,
-    issuedAt,
-    expiredAt,
+    issuedAt: new Date(now),
+    expiredAt: new Date(now + EXPIRATION_DURATION_MS),
     apiKey,
   };
 }

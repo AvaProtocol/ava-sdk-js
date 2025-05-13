@@ -184,6 +184,7 @@ export const createFromTemplate = (
   nodes?: NodeProps[]
 ): WorkflowProps => {
   const nodesList = nodes || NodesTemplate;
+  const now = Date.now(); // Get current time in milliseconds
 
   return {
     smartWalletAddress: address,
@@ -195,8 +196,8 @@ export const createFromTemplate = (
       type: TriggerType.Block,
       data: { interval: 5 },
     }),
-    startAt: Math.floor(Date.now() / 1000) + 30,
-    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    startAt: now,
+    expiredAt: now + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
     maxExecution: 1,
   } as WorkflowProps;
 };
@@ -218,8 +219,8 @@ export const MultiNodeWithBranch = {
     type: TriggerType.Block,
     data: { interval: 5 },
   }),
-  startAt: Math.floor(Date.now() / 1000) + 30,
-  expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+  startAt: Date.now(),
+  expiredAt: Date.now() + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
   name: `Test task`,
   maxExecution: 1,
 };
