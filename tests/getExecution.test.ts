@@ -50,7 +50,7 @@ describe("getExecution Tests", () => {
         type: TriggerType.Block,
         data: { interval: 5 },
       });
-      workflowProps.maxExecution = 0; // Set to 0, or infinite runs, to ensure the workflow is not completed
+      workflowProps.maxExecution = 3; // Set to 3 to give the workflow enough runs while not being infinite
 
       const workflow = client.createWorkflow(workflowProps);
       workflowId = await client.submitWorkflow(workflow);
