@@ -65,7 +65,7 @@ describe("secret Tests", () => {
 
   describe("create secret suite", () => {
     it("created secret have value in workflow", async () => {
-      const secretName = "secrete_name";
+      const secretName = "secret_name";
       const secretValue = "dummy_value";
       const testMessage = "my secret is ";
 
