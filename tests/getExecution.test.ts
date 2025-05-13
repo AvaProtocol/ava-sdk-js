@@ -93,7 +93,7 @@ describe("Get Execution and Step Tests", () => {
         id: workflowId,
         reason: {
           type: TriggerType.FixedTime,
-          epoch: epoch - 60, // set epoch to 1 minute in the past
+          epoch: epoch + 300, // set epoch to 5 minutes in the future, matching triggerWorkflow.test.ts
         },
         isBlocking: true,
       });
@@ -165,7 +165,7 @@ describe("Get Execution and Step Tests", () => {
         id: workflowId,
         reason: {
           type: TriggerType.FixedTime,
-          epoch: epoch - 60, // set epoch to 1 minute in the past
+          epoch: epoch + 300, // set epoch to 5 minutes in the future, matching triggerWorkflow.test.ts
         },
         isBlocking: true,
       });
@@ -249,7 +249,7 @@ describe("Get Execution and Step Tests", () => {
         id: workflowId,
         reason: {
           type: TriggerType.FixedTime,
-          epoch: epoch - 60, // set epoch to 1 minute in the past
+          epoch: epoch + 300, // set epoch to 5 minutes in the future, matching triggerWorkflow.test.ts
         },
         isBlocking: true,
       });
