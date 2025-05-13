@@ -96,6 +96,20 @@ jobs:
           fi
         shell: bash
 
+      - name: Print Required Environment Variables
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: |
+          echo "=== Required Variables from envalid.ts ==="
+          echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
+          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
+          echo "TEST_ENV: $TEST_ENV"
+
+          if [ -z "$AVS_API_KEY" ] || [ -z "$CHAIN_ENDPOINT" ] || [ -z "$TEST_PRIVATE_KEY" ] || [ -z "$TEST_ENV" ]; then
+            echo "Error: One or more required environment variables are empty." >&2
+            exit 1
+          fi
+
       - name: Use Node.js
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
@@ -106,15 +120,6 @@ jobs:
       - name: Install dependencies
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
-
-      - name: Print Required Environment Variables
-        if: steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          echo "=== Required Variables from envalid.ts ==="
-          echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
-          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
-          echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
-          echo "TEST_ENV: $TEST_ENV"
 
       - name: Build the SDK
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
@@ -148,9 +153,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:triggerWorkflow
 
-      # - name: Test Get Execution
-      #   if: steps.check_source_changes.outputs.source_changed == 'true'
-      #   run: yarn test:getExecution
+      - name: Test Get Execution
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:getExecution
 
       - name: Test Get Executions
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
