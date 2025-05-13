@@ -1458,8 +1458,8 @@ export namespace ListTasksResp {
         setCompletedAt(value: number): Item;
         getMaxExecution(): number;
         setMaxExecution(value: number): Item;
-        getTotalExecution(): number;
-        setTotalExecution(value: number): Item;
+        getExecutionCount(): number;
+        setExecutionCount(value: number): Item;
         getLastRanAt(): number;
         setLastRanAt(value: number): Item;
         getStatus(): TaskStatus;
