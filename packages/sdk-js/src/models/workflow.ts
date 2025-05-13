@@ -35,7 +35,7 @@ export type WorkflowProps = Omit<
   | "trigger"
   | "nodesList"
   | "edgesList"
-  | "totalExecution"
+  | "executionCount"
   | "lastRanAt"
 > & {
   id?: string;
