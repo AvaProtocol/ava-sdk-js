@@ -83,18 +83,20 @@ describe("secret Tests", () => {
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLangs.JAVASCRIPT,
-          source: `return '${testMessage}' + apContext.configVars['${secretName}']`,
+          source: `return '${testMessage}' + {{apContext.configVars['${secretName}']}}`,
         },
       };
 
       // Use createFromTemplate and pass the specific node needed for this test
-      const workflowProps = createFromTemplate(wallet.address, [customCodeNodeProps]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        customCodeNodeProps,
+      ]);
+
       // Override the trigger if necessary, though the default from createFromTemplate might be fine
       // For this specific test, the default trigger (block trigger with interval 5) should work
       // as it will connect to the single customCodeNodeProps.
       // The maxExecution is already 1 by default from createFromTemplate.
-      
+
       // Adjust trigger data if different from default
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId, // Ensure using the consistent defaultTriggerId from templates.ts
@@ -136,12 +138,10 @@ describe("secret Tests", () => {
       }
 
       // Verify that the output data of CustomCode node contains the actual secret value
-      expect(matchStep.output).toEqual( 
-        testMessage + secretValue
-      );
+      expect(matchStep.output).toEqual(testMessage + secretValue);
 
       // Clean up the secret of this test
-      await client.deleteSecret("secrete_name");
+      await client.deleteSecret(secretName);
     });
 
     it("create secret at user level succeeds", async () => {
