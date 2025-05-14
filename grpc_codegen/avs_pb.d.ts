@@ -1157,8 +1157,8 @@ export class Task extends jspb.Message {
     setCompletedAt(value: number): Task;
     getMaxExecution(): number;
     setMaxExecution(value: number): Task;
-    getTotalExecution(): number;
-    setTotalExecution(value: number): Task;
+    getExecutionCount(): number;
+    setExecutionCount(value: number): Task;
     getLastRanAt(): number;
     setLastRanAt(value: number): Task;
     getStatus(): TaskStatus;
@@ -1458,8 +1458,8 @@ export namespace ListTasksResp {
         setCompletedAt(value: number): Item;
         getMaxExecution(): number;
         setMaxExecution(value: number): Item;
-        getTotalExecution(): number;
-        setTotalExecution(value: number): Item;
+        getExecutionCount(): number;
+        setExecutionCount(value: number): Item;
         getLastRanAt(): number;
         setLastRanAt(value: number): Item;
         getStatus(): TaskStatus;

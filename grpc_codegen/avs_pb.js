@@ -9616,7 +9616,7 @@ proto.aggregator.Task.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 9:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setTotalExecution(value);
+      msg.setExecutionCount(value);
       break;
     case 10:
       var value = /** @type {number} */ (reader.readInt64());
@@ -9726,7 +9726,7 @@ proto.aggregator.Task.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getTotalExecution();
+  f = message.getExecutionCount();
   if (f !== 0) {
     writer.writeInt64(
       9,
@@ -9922,7 +9922,7 @@ proto.aggregator.Task.prototype.setMaxExecution = function(value) {
  * optional int64 execution_count = 9;
  * @return {number}
  */
-proto.aggregator.Task.prototype.getTotalExecution = function() {
+proto.aggregator.Task.prototype.getExecutionCount = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
 };
 
@@ -9931,7 +9931,7 @@ proto.aggregator.Task.prototype.getTotalExecution = function() {
  * @param {number} value
  * @return {!proto.aggregator.Task} returns this
  */
-proto.aggregator.Task.prototype.setTotalExecution = function(value) {
+proto.aggregator.Task.prototype.setExecutionCount = function(value) {
   return jspb.Message.setProto3IntField(this, 9, value);
 };
 
@@ -11875,7 +11875,7 @@ proto.aggregator.ListTasksResp.Item.deserializeBinaryFromReader = function(msg, 
       break;
     case 9:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setTotalExecution(value);
+      msg.setExecutionCount(value);
       break;
     case 10:
       var value = /** @type {number} */ (reader.readInt64());
@@ -11975,7 +11975,7 @@ proto.aggregator.ListTasksResp.Item.serializeBinaryToWriter = function(message, 
       f
     );
   }
-  f = message.getTotalExecution();
+  f = message.getExecutionCount();
   if (f !== 0) {
     writer.writeInt64(
       9,
@@ -12155,7 +12155,7 @@ proto.aggregator.ListTasksResp.Item.prototype.setMaxExecution = function(value) 
  * optional int64 execution_count = 9;
  * @return {number}
  */
-proto.aggregator.ListTasksResp.Item.prototype.getTotalExecution = function() {
+proto.aggregator.ListTasksResp.Item.prototype.getExecutionCount = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
 };
 
@@ -12164,7 +12164,7 @@ proto.aggregator.ListTasksResp.Item.prototype.getTotalExecution = function() {
  * @param {number} value
  * @return {!proto.aggregator.ListTasksResp.Item} returns this
  */
-proto.aggregator.ListTasksResp.Item.prototype.setTotalExecution = function(value) {
+proto.aggregator.ListTasksResp.Item.prototype.setExecutionCount = function(value) {
   return jspb.Message.setProto3IntField(this, 9, value);
 };
 
