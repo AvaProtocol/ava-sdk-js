@@ -47,7 +47,7 @@ class Step implements StepProps {
 
     switch (outputDataType) {
       case avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET:
-        return null as unknown as OutputDataProps;
+        return null;
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
         return step.getEthTransfer()?.toObject(); // Specific structure, not google.protobuf.Value
       case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
