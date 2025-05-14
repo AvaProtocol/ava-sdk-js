@@ -160,8 +160,9 @@ describe("secret Tests", () => {
       expect(result).toBe(true);
 
       // now we list the secret and it should contain the above
-      const secrets = await client.listSecrets();
-      const match = _.find(secrets, (item) => item.name === inputName);
+      const secretsResponse = await client.listSecrets();
+      const secretItems = getSecretItems(secretsResponse);
+      const match = _.find(secretItems, (item) => item.name === inputName);
       expect(match?.name).toEqual(inputName);
 
       // Clean up the secret of this test
@@ -178,8 +179,9 @@ describe("secret Tests", () => {
       expect(result).toBe(true);
 
       // now we list the secret and it should contain the above
-      const secrets = await client.listSecrets();
-      const match = _.find(secrets, (item) => item.name === inputName);
+      const secretsResponse = await client.listSecrets();
+      const secretItems = getSecretItems(secretsResponse);
+      const match = _.find(secretItems, (item) => item.name === inputName);
       expect(match?.name).toEqual(inputName);
       expect(match?.workflowId).toEqual(inputWorkflowId);
 
@@ -225,12 +227,15 @@ describe("secret Tests", () => {
       // now we list the secret and it should contain the above
       const listResultClient1 = await client.listSecrets();
       const listResultClient2 = await client2.listSecrets();
+      
+      const client1Items = getSecretItems(listResultClient1);
+      const client2Items = getSecretItems(listResultClient2);
 
-      expect(listResultClient1.some((item) => item.name === inputName2)).toBe(
+      expect(client1Items.some((item: ListSecretResponse) => item.name === inputName2)).toBe(
         false
       );
 
-      expect(listResultClient2.some((item) => item.name === inputName1)).toBe(
+      expect(client2Items.some((item: ListSecretResponse) => item.name === inputName1)).toBe(
         false
       );
 
