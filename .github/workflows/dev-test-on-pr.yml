@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       docker_image_tag:
-        description: 'AVS Build Version (e.g., latest, or a specific tag)'
+        description: 'Docker Image Tag of avaprotocol/avs-dev'
         required: false
         default: 'latest' # Or use an empty default if you want to force it from elsewhere for PRs
 
