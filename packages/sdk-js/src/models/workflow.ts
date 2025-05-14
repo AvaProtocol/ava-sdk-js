@@ -24,29 +24,21 @@ export function convertStatusToString(
   return conversionMap[status] as WorkflowStatus;
 }
 
-export type WorkflowProps = Omit<
-  avs_pb.Task.AsObject,
-  | "id"
-  | "owner"
-  | "completedAt"
-  | "status"
-  | "name"
-  | "trigger"
-  | "nodesList"
-  | "edgesList"
-  | "lastRanAt"
-  | "executionCount"
-> & {
+export type WorkflowProps = {
+  smartWalletAddress: string;
+  trigger: Trigger;
+  nodes: Node[];
+  edges: Edge[];
+  startAt: number;
+  expiredAt: number;
+  maxExecution: number;
+  executionCount?: number;
   id?: string;
   owner?: string;
   completedAt?: number;
   status?: WorkflowStatus;
   name?: string;
-  trigger: Trigger;
-  nodes: Node[];
-  edges: Edge[];
   lastRanAt?: number;
-  executionCount?: number;
 };
 
 class Workflow implements WorkflowProps {
@@ -57,6 +49,7 @@ class Workflow implements WorkflowProps {
   startAt: number;
   expiredAt: number;
   maxExecution: number;
+  executionCount?: number;
 
   // Optional fields
   id?: string;
@@ -65,7 +58,6 @@ class Workflow implements WorkflowProps {
   completedAt?: number;
   status?: WorkflowStatus;
   lastRanAt?: number;
-  executionCount?: number;
 
   /**
    * Create an instance of Workflow from user inputs
@@ -112,6 +104,16 @@ class Workflow implements WorkflowProps {
 
     const edges = _.map(obj.getEdgesList(), (edge) => Edge.fromResponse(edge));
 
+    let executionCount = 0;
+    const taskObj = obj as any;
+    if (typeof taskObj.getExecutionCount === 'function') {
+      executionCount = taskObj.getExecutionCount();
+    } else if (typeof taskObj.getTotalExecution === 'function') {
+      executionCount = taskObj.getTotalExecution();
+    } else {
+      const asObject = taskObj as any;
+      executionCount = asObject.executionCount || asObject.totalExecution || 0;
+    }
 
     const workflow = new Workflow({
       id: obj.getId(),
@@ -123,7 +125,7 @@ class Workflow implements WorkflowProps {
       startAt: obj.getStartAt(),
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
-      executionCount: obj.getExecutionCount(),
+      executionCount: executionCount,
       name: obj.getName(),
       status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
@@ -144,7 +146,16 @@ class Workflow implements WorkflowProps {
       throw new Error("Trigger is undefined in fromListResponse()");
     }
 
-    const executionCount = obj.getExecutionCount ? obj.getExecutionCount() : (obj as unknown as avs_pb.ListTasksResp.Item.AsObject).executionCount;
+    let executionCount = 0;
+    const itemObj = obj as any;
+    if (typeof itemObj.getExecutionCount === 'function') {
+      executionCount = itemObj.getExecutionCount();
+    } else if (typeof itemObj.getTotalExecution === 'function') {
+      executionCount = itemObj.getTotalExecution();
+    } else {
+      const asObject = itemObj as any;
+      executionCount = asObject.executionCount || asObject.totalExecution || 0;
+    }
 
     return new Workflow({
       id: obj.getId(),
