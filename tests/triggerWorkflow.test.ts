@@ -375,4 +375,216 @@ describe("triggerWorkflow Tests", () => {
       })
     ).rejects.toThrowError(/INVALID_ARGUMENT/i);
   });
+
+  test("should throw error when triggering a completed block workflow", async () => {
+    const interval = 5;
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const blockNumber = await getBlockNumber();
+
+    const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval },
+    });
+
+    // Create workflow with maxExecution = 1 to ensure it completes after one execution
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...createFromTemplate(wallet.address),
+        trigger,
+        smartWalletAddress: wallet.address,
+        maxExecution: 1, // Set to 1 to ensure workflow completes after one execution
+      })
+    );
+
+    try {
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Block,
+          blockNumber: blockNumber + interval,
+        },
+        isBlocking: true,
+      });
+
+      // Verify workflow is completed
+      const workflow = await client.getWorkflow(workflowId);
+      expect(workflow.status).toEqual(WorkflowStatus.Completed);
+      expect(workflow.executionCount).toEqual(1);
+
+      await expect(
+        client.triggerWorkflow({
+          id: workflowId,
+          reason: {
+            type: TriggerType.Block,
+            blockNumber: blockNumber + interval * 2,
+          },
+          isBlocking: true,
+        })
+      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+    } finally {
+      await client.deleteWorkflow(workflowId);
+    }
+  });
+
+  test("should throw error when triggering a completed cron workflow", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const epoch = Math.floor(Date.now() / 1000);
+
+    const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { scheduleList: ["* * * * *"] },
+    });
+
+    // Create workflow with maxExecution = 1 to ensure it completes after one execution
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...createFromTemplate(wallet.address),
+        trigger,
+        smartWalletAddress: wallet.address,
+        maxExecution: 1, // Set to 1 to ensure workflow completes after one execution
+      })
+    );
+
+    try {
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Cron,
+          epoch: epoch + 60,
+        },
+        isBlocking: true,
+      });
+
+      // Verify workflow is completed
+      const workflow = await client.getWorkflow(workflowId);
+      expect(workflow.status).toEqual(WorkflowStatus.Completed);
+      expect(workflow.executionCount).toEqual(1);
+
+      await expect(
+        client.triggerWorkflow({
+          id: workflowId,
+          reason: {
+            type: TriggerType.Cron,
+            epoch: epoch + 120,
+          },
+          isBlocking: true,
+        })
+      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+    } finally {
+      await client.deleteWorkflow(workflowId);
+    }
+  });
+
+  test("should throw error when triggering a completed fixed time workflow", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const epoch = Math.floor(Date.now() / 1000);
+
+    const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "fixedTimeTrigger",
+      type: TriggerType.FixedTime,
+      data: { epochsList: [epoch + 60] },
+    });
+
+    // Create workflow with maxExecution = 1 to ensure it completes after one execution
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...createFromTemplate(wallet.address),
+        trigger,
+        smartWalletAddress: wallet.address,
+        maxExecution: 1, // Set to 1 to ensure workflow completes after one execution
+      })
+    );
+
+    try {
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.FixedTime,
+          epoch: epoch + 60,
+        },
+        isBlocking: true,
+      });
+
+      // Verify workflow is completed
+      const workflow = await client.getWorkflow(workflowId);
+      expect(workflow.status).toEqual(WorkflowStatus.Completed);
+      expect(workflow.executionCount).toEqual(1);
+
+      await expect(
+        client.triggerWorkflow({
+          id: workflowId,
+          reason: {
+            type: TriggerType.FixedTime,
+            epoch: epoch + 120,
+          },
+          isBlocking: true,
+        })
+      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+    } finally {
+      await client.deleteWorkflow(workflowId);
+    }
+  });
+
+  test("should throw error when triggering a completed event workflow", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const blockNumber = await getBlockNumber();
+
+    const trigger = TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "eventTrigger",
+      type: TriggerType.Event,
+      data: {
+        expression: `trigger1.data.topics[0] == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" && trigger1.data.topics[2] == "${wallet.address.toLowerCase()}"`,
+        matcherList: [],
+      },
+    });
+
+    // Create workflow with maxExecution = 1 to ensure it completes after one execution
+    const workflowId = await client.submitWorkflow(
+      client.createWorkflow({
+        ...createFromTemplate(wallet.address),
+        trigger,
+        smartWalletAddress: wallet.address,
+        maxExecution: 1, // Set to 1 to ensure workflow completes after one execution
+      })
+    );
+
+    try {
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Event,
+          blockNumber: blockNumber + 5,
+          logIndex: 0,
+          txHash: "0x1234567890",
+        },
+        isBlocking: true,
+      });
+
+      // Verify workflow is completed
+      const workflow = await client.getWorkflow(workflowId);
+      expect(workflow.status).toEqual(WorkflowStatus.Completed);
+      expect(workflow.executionCount).toEqual(1);
+
+      await expect(
+        client.triggerWorkflow({
+          id: workflowId,
+          reason: {
+            type: TriggerType.Event,
+            blockNumber: blockNumber + 10,
+            logIndex: 1,
+            txHash: "0x0987654321",
+          },
+          isBlocking: true,
+        })
+      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+    } finally {
+      await client.deleteWorkflow(workflowId);
+    }
+  });
 });
