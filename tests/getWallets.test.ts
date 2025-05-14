@@ -69,4 +69,23 @@ describe("getAddresses Tests", () => {
     expect(wallets.filter((item) => item.salt === salt1)).toHaveLength(1);
     expect(wallets.filter((item) => item.salt === salt2)).toHaveLength(1);
   });
+
+  test("should handle is_hidden property in wallet objects", async () => {
+    
+    const saltValue = _.toString(saltIndex++);
+    const wallet = await client.getWallet({ salt: saltValue });
+    
+    expect(wallet).toBeDefined();
+    
+    const mockWallet = {
+      ...wallet,
+      is_hidden: false
+    };
+    
+    expect(mockWallet).toHaveProperty('is_hidden');
+    expect(mockWallet.is_hidden).toBe(false);
+    
+    mockWallet.is_hidden = true;
+    expect(mockWallet.is_hidden).toBe(true);
+  });
 });

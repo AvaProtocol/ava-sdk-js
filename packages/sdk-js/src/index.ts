@@ -228,6 +228,7 @@ class Client extends BaseClient {
 
     return result.getItemsList().map((item) => item.toObject());
   }
+  
 
   /**
    * Add a new smart wallet address to the wallet list
