@@ -1,29 +1,24 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { convertProtobufValueToJs } from "../utils";
 
-export type StepProps = avs_pb.Execution.Step.AsObject & {
-  output: OutputDataProps;
+export type StepProps = Omit<
+  avs_pb.Execution.Step.AsObject,
+  | "outputDataCase"
+  | "ethTransfer"
+  | "graphql"
+  | "contractRead"
+  | "contractWrite"
+  | "customCode"
+  | "restApi"
+  | "branch"
+  | "filter"
+  | "loop"
+> & {
+  output: any; // Changed to any to hold converted JS value
 };
 
-// There are 9 different types of output data
-// ETH_TRANSFER = 3,
-// GRAPHQL = 4,
-// CONTRACT_READ = 5,
-// CONTRACT_WRITE = 6,
-// CUSTOM_CODE = 7,
-// REST_API = 8,
-// BRANCH = 9,
-// FILTER = 10,
-// LOOP = 11,
-export type OutputDataProps =
-  | avs_pb.ETHTransferNode.Output.AsObject
-  | avs_pb.GraphQLQueryNode.Output.AsObject
-  | avs_pb.ContractReadNode.Output.AsObject
-  | avs_pb.ContractWriteNode.Output.AsObject
-  | avs_pb.CustomCodeNode.Output.AsObject
-  | avs_pb.RestAPINode.Output.AsObject
-  | avs_pb.BranchNode.Output.AsObject
-  | avs_pb.FilterNode.Output.AsObject
-  | avs_pb.LoopNode.Output.AsObject;
+// OutputDataProps is no longer a union of AsObject, it will be the converted JS type via 'output'
+// export type OutputDataProps = ... (removed)
 
 class Step implements StepProps {
   nodeId: string;
@@ -33,7 +28,7 @@ class Step implements StepProps {
   startAt: number;
   endAt: number;
   inputsList: string[];
-  output: OutputDataProps;
+  output: any; // Changed to any
 
   constructor(props: StepProps) {
     this.nodeId = props.nodeId;
@@ -46,50 +41,56 @@ class Step implements StepProps {
     this.output = props.output;
   }
 
-  static getOutput(step: avs_pb.Execution.Step): OutputDataProps {
-    console.log("step.getOutput", step.toObject());
-
+  static getOutput(step: avs_pb.Execution.Step): any {
     const outputDataType = step.getOutputDataCase();
-    console.log("step.getOutput.outputDataType", outputDataType);
+    let nodeOutputMessage;
+
     switch (outputDataType) {
       case avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET:
-        return null as unknown as OutputDataProps;
+        return null;
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
-        return step
-          .getEthTransfer()
-          ?.toObject() as avs_pb.ETHTransferNode.Output.AsObject;
+        return step.getEthTransfer()?.toObject(); // Specific structure, not google.protobuf.Value
       case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
-        return step
-          .getGraphql()
-          ?.toObject() as avs_pb.GraphQLQueryNode.Output.AsObject;
+        nodeOutputMessage = step.getGraphql();
+        return nodeOutputMessage && nodeOutputMessage.hasData()
+          ? nodeOutputMessage.getData()
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
-        return step
-          .getContractRead()
-          ?.toObject() as avs_pb.ContractReadNode.Output.AsObject;
+        // ContractReadNode.Output has 'repeated google.protobuf.Value data'
+        nodeOutputMessage = step.getContractRead();
+        if (nodeOutputMessage) {
+          return nodeOutputMessage
+            .getDataList()
+            .map((val) => convertProtobufValueToJs(val));
+        }
+        return []; // Default to empty array if no data
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
-        return step
-          .getContractWrite()
-          ?.toObject() as avs_pb.ContractWriteNode.Output.AsObject;
+        return step.getContractWrite()?.toObject(); // Specific structure
       case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
-        return step
-          .getCustomCode()
-          ?.toObject() as avs_pb.CustomCodeNode.Output.AsObject;
+        nodeOutputMessage = step.getCustomCode();
+        return nodeOutputMessage && nodeOutputMessage.hasData()
+          ? convertProtobufValueToJs(nodeOutputMessage.getData())
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.REST_API:
-        return step
-          .getRestApi()
-          ?.toObject() as avs_pb.RestAPINode.Output.AsObject;
+        nodeOutputMessage = step.getRestApi();
+        return nodeOutputMessage && nodeOutputMessage.hasData()
+          ? nodeOutputMessage.getData()
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.BRANCH:
-        return step
-          .getBranch()
-          ?.toObject() as avs_pb.BranchNode.Output.AsObject;
+        return step.getBranch()?.toObject(); // Specific structure
       case avs_pb.Execution.Step.OutputDataCase.FILTER:
-        return step
-          .getFilter()
-          ?.toObject() as avs_pb.FilterNode.Output.AsObject;
+        nodeOutputMessage = step.getFilter();
+        return nodeOutputMessage && nodeOutputMessage.hasData()
+          ? nodeOutputMessage.getData()
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.LOOP:
-        return step.getLoop()?.toObject() as avs_pb.LoopNode.Output.AsObject;
+        // LoopNode.Output has 'string data' - handle as plain string for now
+        return step.getLoop()?.getData();
       default:
-        throw new Error(`Unknown output data type: ${outputDataType}`);
+        console.warn(
+          `Unhandled output data type in Step.getOutput: ${outputDataType}`
+        );
+        return undefined;
     }
   }
 
@@ -102,11 +103,11 @@ class Step implements StepProps {
       startAt: step.getStartAt(),
       endAt: step.getEndAt(),
       inputsList: step.getInputsList(),
-      output: Step.getOutput(step), // static function of this class for switch conversion
+      output: Step.getOutput(step),
     });
   }
 
-  // Client side does not generate the step, so there’s no toRequest() method
+  // Client side does not generate the step, so there's no toRequest() method
 }
 
 export default Step;

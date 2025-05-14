@@ -31,6 +31,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     updateSecret: IAggregatorService_IUpdateSecret;
     getWorkflowCount: IAggregatorService_IGetWorkflowCount;
     getExecutionCount: IAggregatorService_IGetExecutionCount;
+    getExecutionStats: IAggregatorService_IGetExecutionStats;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -204,6 +205,15 @@ interface IAggregatorService_IGetExecutionCount extends grpc.MethodDefinition<av
     responseSerialize: grpc.serialize<avs_pb.GetExecutionCountResp>;
     responseDeserialize: grpc.deserialize<avs_pb.GetExecutionCountResp>;
 }
+interface IAggregatorService_IGetExecutionStats extends grpc.MethodDefinition<avs_pb.GetExecutionStatsReq, avs_pb.GetExecutionStatsResp> {
+    path: "/aggregator.Aggregator/GetExecutionStats";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetExecutionStatsReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetExecutionStatsReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetExecutionStatsResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetExecutionStatsResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
@@ -227,6 +237,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     updateSecret: grpc.handleUnaryCall<avs_pb.CreateOrUpdateSecretReq, google_protobuf_wrappers_pb.BoolValue>;
     getWorkflowCount: grpc.handleUnaryCall<avs_pb.GetWorkflowCountReq, avs_pb.GetWorkflowCountResp>;
     getExecutionCount: grpc.handleUnaryCall<avs_pb.GetExecutionCountReq, avs_pb.GetExecutionCountResp>;
+    getExecutionStats: grpc.handleUnaryCall<avs_pb.GetExecutionStatsReq, avs_pb.GetExecutionStatsResp>;
 }
 
 export interface IAggregatorClient {
@@ -287,6 +298,9 @@ export interface IAggregatorClient {
     getExecutionCount(request: avs_pb.GetExecutionCountReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
     getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
     getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
+    getExecutionStats(request: avs_pb.GetExecutionStatsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
+    getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
+    getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -348,4 +362,7 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getExecutionCount(request: avs_pb.GetExecutionCountReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
     public getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
     public getExecutionCount(request: avs_pb.GetExecutionCountReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionCountResp) => void): grpc.ClientUnaryCall;
+    public getExecutionStats(request: avs_pb.GetExecutionStatsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
+    public getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
+    public getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
 }
