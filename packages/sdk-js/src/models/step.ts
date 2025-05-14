@@ -53,7 +53,7 @@ class Step implements StepProps {
     console.log("step.getOutput.outputDataType", outputDataType);
     switch (outputDataType) {
       case avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET:
-        return {} as OutputDataProps;
+        return null as unknown as OutputDataProps;
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
         return step
           .getEthTransfer()
