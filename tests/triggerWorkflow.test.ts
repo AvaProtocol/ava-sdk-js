@@ -105,7 +105,7 @@ describe("triggerWorkflow Tests", () => {
       const workflow = await client.getWorkflow(workflowId);
 
       expect(workflow.status).toEqual(WorkflowStatus.Completed);
-      expect(workflow.totalExecution).toEqual(1);
+      expect(workflow.executionCount).toEqual(1);
     } finally {
       await client.deleteWorkflow(workflowId);
     }
@@ -156,7 +156,7 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.result[0].triggerReason?.epoch).toEqual(epoch + 60);
 
     const workflow = await client.getWorkflow(workflowId);
-    expect(workflow.totalExecution).toEqual(1);
+    expect(workflow.executionCount).toEqual(1);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
 
     await client.deleteWorkflow(workflowId);
@@ -206,7 +206,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
-    expect(workflow.totalExecution).toEqual(1);
+    expect(workflow.executionCount).toEqual(1);
     expect(executions2.result[0].triggerReason?.epoch).toEqual(epoch + 300);
     expect(executions2.result[0].triggerReason?.type).toEqual(
       TriggerType.FixedTime
@@ -261,7 +261,7 @@ describe("triggerWorkflow Tests", () => {
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
-    expect(workflow.totalExecution).toEqual(1);
+    expect(workflow.executionCount).toEqual(1);
     expect(executions2.result[0].triggerReason?.blockNumber).toEqual(
       blockNumber + 5
     );

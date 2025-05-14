@@ -206,7 +206,7 @@ export const compareListResults = (
     expect(workflow.maxExecution).toBe(expected.maxExecution);
     expect(workflow.status).toBe(expected.status);
     expect(typeof workflow.id).toBe("string");
-    expect(typeof workflow.totalExecution).toBe("number");
+    expect(typeof workflow.executionCount).toBe("number");
     expect(typeof workflow.lastRanAt).toBe("number");
   });
 };

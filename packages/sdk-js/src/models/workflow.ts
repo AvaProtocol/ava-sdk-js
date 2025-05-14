@@ -24,29 +24,20 @@ export function convertStatusToString(
   return conversionMap[status] as WorkflowStatus;
 }
 
-export type WorkflowProps = Omit<
-  avs_pb.Task.AsObject,
-  | "id"
-  | "owner"
-  | "completedAt"
-  | "status"
-  | "executionsList"
-  | "name"
-  | "trigger"
-  | "nodesList"
-  | "edgesList"
-  | "totalExecution"
-  | "lastRanAt"
-> & {
+export type WorkflowProps = {
+  smartWalletAddress: string;
+  trigger: Trigger;
+  nodes: Node[];
+  edges: Edge[];
+  startAt: number;
+  expiredAt: number;
+  maxExecution: number;
   id?: string;
   owner?: string;
   completedAt?: number;
   status?: WorkflowStatus;
   name?: string;
-  trigger: Trigger;
-  nodes: Node[];
-  edges: Edge[];
-  totalExecution?: number;
+  executionCount?: number;
   lastRanAt?: number;
 };
 
@@ -66,7 +57,7 @@ class Workflow implements WorkflowProps {
   name?: string;
   completedAt?: number;
   status?: WorkflowStatus;
-  totalExecution?: number;
+  executionCount?: number;
   lastRanAt?: number;
 
   /**
@@ -92,7 +83,7 @@ class Workflow implements WorkflowProps {
     this.name = props.name;
     this.status = props.status;
     this.completedAt = props.completedAt;
-    this.totalExecution = props.totalExecution;
+    this.executionCount = props.executionCount;
     this.lastRanAt = props.lastRanAt;
   }
 
@@ -130,7 +121,7 @@ class Workflow implements WorkflowProps {
       name: obj.getName(),
       status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
-      totalExecution: obj.getTotalExecution(),
+      executionCount: obj.getExecutionCount(),
       lastRanAt: obj.getLastRanAt(),
     });
 
@@ -161,7 +152,7 @@ class Workflow implements WorkflowProps {
       completedAt: obj.getCompletedAt(),
       status: convertStatusToString(obj.getStatus()),
       name: obj.getName(),
-      totalExecution: obj.getTotalExecution(),
+      executionCount: obj.getExecutionCount(),
       lastRanAt: obj.getLastRanAt(),
     });
   }

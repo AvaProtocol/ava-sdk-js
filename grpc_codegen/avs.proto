@@ -414,7 +414,7 @@ message Task {
   // limit on how many time this task can run. Set to 0 will make it run unlimited until cancelling or reaching its expired time
   int64 max_execution = 8;
   // return how many time this task has run
-  int64 total_execution = 9;
+  int64 execution_count = 9;
   int64 last_ran_at = 10;
 
   TaskStatus status  = 11;
@@ -496,7 +496,7 @@ message ListTasksResp {
     // limit on how many time this task can run. Set to 0 will make it run unlimited until cancelling or reaching its expired time
     int64 max_execution = 8;
     // return how many time this task has run
-    int64 total_execution = 9;
+    int64 execution_count = 9;
     int64 last_ran_at = 10;
 
     TaskStatus status  = 11;
