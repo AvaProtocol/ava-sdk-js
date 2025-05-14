@@ -3,6 +3,11 @@ name: Run Dev Tests on PR
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      avs_build_version:
+        description: 'AVS Build Version (e.g., latest, or a specific tag)'
+        required: false
+        default: 'latest' # Or use an empty default if you want to force it from elsewhere for PRs
 
 jobs:
   dev-test:
@@ -13,6 +18,7 @@ jobs:
       CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      AVS_BUILD_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.avs_build_version || 'latest' }} # Or your preferred default for PRs
 
     steps:
       - name: Checkout repository
@@ -21,6 +27,7 @@ jobs:
       - name: Debug environment variables
         run: |
           echo "ENDPOINT: $ENDPOINT"
+          echo "AVS_BUILD_VERSION: $AVS_BUILD_VERSION"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
@@ -66,6 +73,7 @@ jobs:
       - name: Run local AVS aggregator in Docker
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
+          echo "Starting AVS aggregator with version: $AVS_BUILD_VERSION"
           docker compose up -d
 
       - name: Use Node.js
