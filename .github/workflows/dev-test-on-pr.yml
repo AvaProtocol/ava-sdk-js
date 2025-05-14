@@ -31,6 +31,7 @@ jobs:
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
+        if: github.event_name == 'pull_request'
         run: |
           echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
           echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
@@ -71,24 +72,24 @@ jobs:
         shell: bash
 
       - name: Run local AVS aggregator in Docker
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "Starting AVS aggregator with version: $DOCKER_IMAGE_TAG"
           docker compose up -d
 
       - name: Use Node.js
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "yarn"
 
       - name: Install dependencies
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
 
       - name: Ensure the aggregator is running
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           until curl --output /dev/null --silent --fail http://localhost:1323/up; do
             printf '.'
@@ -96,14 +97,14 @@ jobs:
           done
 
       - name: Retrieve AVS API Key from the aggregator
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         id: setup-env
         run: |
           echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
           echo "ENDPOINT=localhost:2206" >> $GITHUB_ENV
 
       - name: Print Required Environment Variables
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "=== Required Variables from envalid.ts ==="
           echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
@@ -112,53 +113,53 @@ jobs:
           echo "TEST_ENV: dev"
 
       - name: Build the SDK for local test
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
       - name: Test Authentication
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:auth
 
       - name: Test Create Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:createWorkflow
 
       - name: Test Get Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflow
 
       - name: Test Get Workflows
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWorkflows
 
       - name: Test Cancel Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:cancelWorkflow
 
       - name: Test Delete Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:deleteWorkflow
 
       - name: Test Trigger Workflow
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:triggerWorkflow
 
       - name: Test Get Execution
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getExecution
 
       - name: Test Get Executions
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getExecutions
 
       - name: Test Get Wallet
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallet
 
       - name: Test Get Wallets
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:getWallets
 
       - name: Test Secret
-        if: steps.check_source_changes.outputs.source_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:secret
