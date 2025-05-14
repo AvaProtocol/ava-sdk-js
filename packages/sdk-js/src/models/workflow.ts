@@ -24,21 +24,29 @@ export function convertStatusToString(
   return conversionMap[status] as WorkflowStatus;
 }
 
-export type WorkflowProps = {
-  smartWalletAddress: string;
-  trigger: Trigger;
-  nodes: Node[];
-  edges: Edge[];
-  startAt: number;
-  expiredAt: number;
-  maxExecution: number;
+export type WorkflowProps = Omit<
+  avs_pb.Task.AsObject,
+  | "id"
+  | "owner"
+  | "completedAt"
+  | "status"
+  | "name"
+  | "trigger"
+  | "nodesList"
+  | "edgesList"
+  | "lastRanAt"
+  | "executionCount"
+> & {
   id?: string;
   owner?: string;
   completedAt?: number;
   status?: WorkflowStatus;
   name?: string;
-  executionCount?: number;
+  trigger: Trigger;
+  nodes: Node[];
+  edges: Edge[];
   lastRanAt?: number;
+  executionCount?: number;
 };
 
 class Workflow implements WorkflowProps {
@@ -51,14 +59,13 @@ class Workflow implements WorkflowProps {
   maxExecution: number;
 
   // Optional fields
-  id?: string; // Id is assigned by the server side, thus not required for initialization
+  id?: string;
   owner?: string;
-
   name?: string;
   completedAt?: number;
   status?: WorkflowStatus;
-  executionCount?: number;
   lastRanAt?: number;
+  executionCount?: number;
 
   /**
    * Create an instance of Workflow from user inputs
@@ -76,6 +83,7 @@ class Workflow implements WorkflowProps {
     this.startAt = props.startAt;
     this.expiredAt = props.expiredAt;
     this.maxExecution = props.maxExecution;
+    this.executionCount = props.executionCount;
 
     // Optional fields
     this.id = props.id;
@@ -83,7 +91,6 @@ class Workflow implements WorkflowProps {
     this.name = props.name;
     this.status = props.status;
     this.completedAt = props.completedAt;
-    this.executionCount = props.executionCount;
     this.lastRanAt = props.lastRanAt;
   }
 
@@ -104,9 +111,7 @@ class Workflow implements WorkflowProps {
     );
 
     const edges = _.map(obj.getEdgesList(), (edge) => Edge.fromResponse(edge));
-    // const executions = _.map(obj.getExecutionsList(), (item) =>
-    //   Execution.fromResponse(item)
-    // );
+
 
     const workflow = new Workflow({
       id: obj.getId(),
@@ -118,10 +123,10 @@ class Workflow implements WorkflowProps {
       startAt: obj.getStartAt(),
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
+      executionCount: obj.getExecutionCount(),
       name: obj.getName(),
       status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
-      executionCount: obj.getExecutionCount(),
       lastRanAt: obj.getLastRanAt(),
     });
 
@@ -139,6 +144,8 @@ class Workflow implements WorkflowProps {
       throw new Error("Trigger is undefined in fromListResponse()");
     }
 
+    const executionCount = obj.getExecutionCount ? obj.getExecutionCount() : (obj as unknown as avs_pb.ListTasksResp.Item.AsObject).executionCount;
+
     return new Workflow({
       id: obj.getId(),
       owner: obj.getOwner(),
@@ -147,12 +154,12 @@ class Workflow implements WorkflowProps {
       startAt: obj.getStartAt(),
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
+      executionCount: executionCount,
       nodes: [],
       edges: [],
       completedAt: obj.getCompletedAt(),
       status: convertStatusToString(obj.getStatus()),
       name: obj.getName(),
-      executionCount: obj.getExecutionCount(),
       lastRanAt: obj.getLastRanAt(),
     });
   }
