@@ -4876,7 +4876,7 @@ proto.aggregator.CustomCodeNode.Output.prototype.toObject = function(opt_include
  */
 proto.aggregator.CustomCodeNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4914,8 +4914,8 @@ proto.aggregator.CustomCodeNode.Output.deserializeBinaryFromReader = function(ms
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new google_protobuf_any_pb.Any;
-      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
     default:
@@ -4952,24 +4952,24 @@ proto.aggregator.CustomCodeNode.Output.serializeBinaryToWriter = function(messag
     writer.writeMessage(
       1,
       f,
-      google_protobuf_any_pb.Any.serializeBinaryToWriter
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional google.protobuf.Any data = 1;
- * @return {?proto.google.protobuf.Any}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
 proto.aggregator.CustomCodeNode.Output.prototype.getData = function() {
-  return /** @type{?proto.google.protobuf.Any} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {?proto.google.protobuf.Any|undefined} value
+ * @param {?proto.google.protobuf.Value|undefined} value
  * @return {!proto.aggregator.CustomCodeNode.Output} returns this
 */
 proto.aggregator.CustomCodeNode.Output.prototype.setData = function(value) {

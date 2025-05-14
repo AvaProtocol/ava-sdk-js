@@ -499,8 +499,8 @@ export namespace CustomCodeNode {
 
         hasData(): boolean;
         clearData(): void;
-        getData(): google_protobuf_any_pb.Any | undefined;
-        setData(value?: google_protobuf_any_pb.Any): Output;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -514,7 +514,7 @@ export namespace CustomCodeNode {
 
     export namespace Output {
         export type AsObject = {
-            data?: google_protobuf_any_pb.Any.AsObject,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
