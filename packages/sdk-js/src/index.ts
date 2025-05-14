@@ -229,33 +229,6 @@ class Client extends BaseClient {
     return result.getItemsList().map((item) => item.toObject());
   }
   
-  /**
-   * Hide a wallet by its salt value
-   * @param {string} salt - The salt for the wallet to hide
-   * @param {string} factoryAddress - Factory address for the wallet; if not provided, the address stored in the client will be used
-   * @param {RequestOptions} options - Request options
-   * @returns {Promise<boolean>} - Whether the wallet was successfully hidden
-   */
-  async hideWallet(
-    { salt, factoryAddress }: GetWalletRequest,
-    options?: RequestOptions
-  ): Promise<boolean> {
-    const request = new avs_pb.HideWalletReq();
-    request.setSalt(salt);
-
-    if (factoryAddress) {
-      request.setFactoryAddress(factoryAddress);
-    } else if (this.factoryAddress) {
-      request.setFactoryAddress(this.factoryAddress);
-    }
-
-    const result = await this.sendGrpcRequest<
-      google_protobuf_wrappers_pb.BoolValue,
-      avs_pb.HideWalletReq
-    >("hideWallet", request, options);
-
-    return result.getValue();
-  }
 
   /**
    * Add a new smart wallet address to the wallet list

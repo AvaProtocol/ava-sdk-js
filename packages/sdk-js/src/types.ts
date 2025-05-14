@@ -52,6 +52,7 @@ export type SmartWallet = avs_pb.SmartWallet.AsObject & {
   completedTaskCount?: number;
   failedTaskCount?: number;
   canceledTaskCount?: number;
+  is_hidden?: boolean;
 };
 
 export const ExecutionStatus = avs_pb.ExecutionStatus;
