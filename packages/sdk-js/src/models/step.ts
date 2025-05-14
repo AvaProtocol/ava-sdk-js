@@ -52,6 +52,8 @@ class Step implements StepProps {
     const outputDataType = step.getOutputDataCase();
     console.log("step.getOutput.outputDataType", outputDataType);
     switch (outputDataType) {
+      case avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET:
+        return {} as OutputDataProps;
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
         return step
           .getEthTransfer()
