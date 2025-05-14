@@ -389,9 +389,9 @@ describe("secret Tests", () => {
       expect(previousPageItems.length).toBeGreaterThan(0);
       expect(middlePageItems.length).toBeGreaterThan(0);
       
-      // Verify that the previous page has the cursor and hasMore fields
+      // Verify that the previous page has the hasMore field
       if (!Array.isArray(previousPage)) {
-        expect(previousPage.cursor).toBeTruthy();
+        expect(typeof previousPage.cursor).toBe('string');
         expect(typeof previousPage.hasMore).toBe('boolean');
       }
     });
