@@ -606,13 +606,7 @@ class Client extends BaseClient {
   }
 
   /**
-   * Retrieve a list of secrets; secrets can be filtered by workflowId or orgId.
-   * @param params - Parameters for listing secrets
-   * @param options - Request options, including workflowId and orgId for filtering
-   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
-   */
-  /**
-   * List secrets with pagination support
+   * Retrieve a list of secrets with pagination support
    * @param options - Request options including pagination parameters
    * @param options.workflowId - Filter secrets by workflow ID
    * @param options.orgId - Filter secrets by organization ID
@@ -622,7 +616,7 @@ class Client extends BaseClient {
    * @param options.itemPerPage - Number of items per page
    * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
    */
-  async listSecrets(
+  async getSecrets(
     options?: SecretRequestOptions
   ): Promise<ListSecretsResponse> {
     const request = new avs_pb.ListSecretsReq();
@@ -666,6 +660,19 @@ class Client extends BaseClient {
       cursor: result.getCursor(),
       hasMore: result.getHasMore(),
     };
+  }
+
+  /**
+   * @deprecated Use getSecrets instead
+   * Retrieve a list of secrets (legacy method)
+   * @param options - Request options
+   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
+   */
+  async listSecrets(
+    options?: SecretRequestOptions
+  ): Promise<ListSecretResponse[]> {
+    const response = await this.getSecrets(options);
+    return response.items;
   }
 
   /**

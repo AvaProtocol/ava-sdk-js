@@ -160,7 +160,7 @@ describe("secret Tests", () => {
       expect(result).toBe(true);
 
       // now we list the secret and it should contain the above
-      const secretsResponse = await client.listSecrets();
+      const secretsResponse = await client.getSecrets();
       const secretItems = getSecretItems(secretsResponse);
       const match = _.find(secretItems, (item) => item.name === inputName);
       expect(match?.name).toEqual(inputName);
@@ -179,7 +179,7 @@ describe("secret Tests", () => {
       expect(result).toBe(true);
 
       // now we list the secret and it should contain the above
-      const secretsResponse = await client.listSecrets();
+      const secretsResponse = await client.getSecrets();
       const secretItems = getSecretItems(secretsResponse);
       const match = _.find(secretItems, (item) => item.name === inputName);
       expect(match?.name).toEqual(inputName);
@@ -225,8 +225,8 @@ describe("secret Tests", () => {
       expect(createResultClient2).toBe(true);
 
       // now we list the secret and it should contain the above
-      const listResultClient1 = await client.listSecrets();
-      const listResultClient2 = await client2.listSecrets();
+      const listResultClient1 = await client.getSecrets();
+      const listResultClient2 = await client2.getSecrets();
       
       const client1Items = getSecretItems(listResultClient1);
       const client2Items = getSecretItems(listResultClient2);
@@ -250,14 +250,14 @@ describe("secret Tests", () => {
       const inputName = `delete_${getNextId()}`;
       await client.createSecret(inputName, "value");
 
-      let secretsResponse = await client.listSecrets();
+      let secretsResponse = await client.getSecrets();
       const items = getSecretItems(secretsResponse);
       expect(items.some((item) => item.name === inputName)).toBe(true);
 
       const deleted = await client.deleteSecret(inputName);
       expect(deleted).toBe(true);
 
-      secretsResponse = await client.listSecrets();
+      secretsResponse = await client.getSecrets();
       const updatedItems = getSecretItems(secretsResponse);
       expect(updatedItems.some((item) => item.name === inputName)).toBe(false);
     });
@@ -273,7 +273,7 @@ describe("secret Tests", () => {
         workflowId: inputWorkflowId,
       });
 
-      let secretsResponse = await client.listSecrets();
+      let secretsResponse = await client.getSecrets();
       // make sure we got both secret
       const secretItems = getSecretItems(secretsResponse);
       expect(secretItems.some((item) => item.name === userLevelName)).toBe(true);
@@ -288,7 +288,7 @@ describe("secret Tests", () => {
 
       expect(deleted).toBe(true);
 
-      secretsResponse = await client.listSecrets();
+      secretsResponse = await client.getSecrets();
       const afterDeleteItems = getSecretItems(secretsResponse);
       expect(afterDeleteItems.some((item) => item.name === userLevelName)).toBe(true);
       expect(afterDeleteItems.some((item) => item.name === workflowLevelName)).toBe(
@@ -305,14 +305,14 @@ describe("secret Tests", () => {
 
       await client.createSecret(inputName, "value");
 
-      let secretsResponse = await client.listSecrets();
+      let secretsResponse = await client.getSecrets();
       const items = getSecretItems(secretsResponse);
       expect(items.some((item) => item.name === inputName)).toBe(true);
 
       const updated = await client.updateSecret(inputName, "newvalue");
       expect(updated).toBe(true);
 
-      secretsResponse = await client.listSecrets();
+      secretsResponse = await client.getSecrets();
       const finalItems = getSecretItems(secretsResponse);
       expect(finalItems.some((item) => item.name === inputName)).toBe(true);
     });
@@ -338,7 +338,7 @@ describe("secret Tests", () => {
 
     it("should support forward pagination with after parameter", async () => {
       const options = { itemPerPage: 3 } as SecretRequestOptions;
-      const firstPage = await client.listSecrets(options);
+      const firstPage = await client.getSecrets(options);
       
       const firstPageItems = getSecretItems(firstPage);
       expect(firstPageItems.length).toBeLessThanOrEqual(3);
@@ -355,7 +355,7 @@ describe("secret Tests", () => {
         after: typedFirstPage.cursor,
         itemPerPage: 3 
       } as SecretRequestOptions;
-      const secondPage = await client.listSecrets(secondOptions);
+      const secondPage = await client.getSecrets(secondOptions);
       
       const secondPageItems = getSecretItems(secondPage);
       expect(secondPageItems.length).toBeLessThanOrEqual(3);
@@ -369,7 +369,7 @@ describe("secret Tests", () => {
 
     it("should support backward pagination with before parameter", async () => {
       const middleOptions = { itemPerPage: 3 } as SecretRequestOptions;
-      const middlePage = await client.listSecrets(middleOptions);
+      const middlePage = await client.getSecrets(middleOptions);
       
       if (Array.isArray(middlePage)) {
         return;
@@ -380,7 +380,7 @@ describe("secret Tests", () => {
         before: typedMiddlePage.cursor,
         itemPerPage: 3
       } as SecretRequestOptions;
-      const previousPage = await client.listSecrets(previousOptions);
+      const previousPage = await client.getSecrets(previousOptions);
       
       const previousPageItems = getSecretItems(previousPage);
       const middlePageItems = getSecretItems(middlePage);
@@ -398,10 +398,10 @@ describe("secret Tests", () => {
 
     it("should respect the itemPerPage parameter", async () => {
       const smallOptions = { itemPerPage: 2 } as SecretRequestOptions;
-      const smallPage = await client.listSecrets(smallOptions);
+      const smallPage = await client.getSecrets(smallOptions);
       
       const largerOptions = { itemPerPage: 5 } as SecretRequestOptions;
-      const largerPage = await client.listSecrets(largerOptions);
+      const largerPage = await client.getSecrets(largerOptions);
       
       const smallPageItems = getSecretItems(smallPage);
       const largerPageItems = getSecretItems(largerPage);
@@ -420,7 +420,7 @@ describe("secret Tests", () => {
         workflowId
       });
       
-      const filteredSecrets = await client.listSecrets({
+      const filteredSecrets = await client.getSecrets({
         workflowId
       });
       
