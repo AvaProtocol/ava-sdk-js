@@ -1197,7 +1197,7 @@ export namespace Task {
         name: string,
         completedAt: number,
         maxExecution: number,
-        totalExecution: number,
+        executionCount: number,
         lastRanAt: number,
         status: TaskStatus,
         trigger?: TaskTrigger.AsObject,
@@ -1490,7 +1490,7 @@ export namespace ListTasksResp {
             name: string,
             completedAt: number,
             maxExecution: number,
-            totalExecution: number,
+            executionCount: number,
             lastRanAt: number,
             status: TaskStatus,
             trigger?: TaskTrigger.AsObject,
@@ -2023,6 +2023,60 @@ export class GetExecutionCountResp extends jspb.Message {
 export namespace GetExecutionCountResp {
     export type AsObject = {
         total: number,
+    }
+}
+
+export class GetExecutionStatsReq extends jspb.Message { 
+    clearWorkflowIdsList(): void;
+    getWorkflowIdsList(): Array<string>;
+    setWorkflowIdsList(value: Array<string>): GetExecutionStatsReq;
+    addWorkflowIds(value: string, index?: number): string;
+    getDays(): number;
+    setDays(value: number): GetExecutionStatsReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetExecutionStatsReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetExecutionStatsReq): GetExecutionStatsReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetExecutionStatsReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetExecutionStatsReq;
+    static deserializeBinaryFromReader(message: GetExecutionStatsReq, reader: jspb.BinaryReader): GetExecutionStatsReq;
+}
+
+export namespace GetExecutionStatsReq {
+    export type AsObject = {
+        workflowIdsList: Array<string>,
+        days: number,
+    }
+}
+
+export class GetExecutionStatsResp extends jspb.Message { 
+    getTotal(): number;
+    setTotal(value: number): GetExecutionStatsResp;
+    getSucceeded(): number;
+    setSucceeded(value: number): GetExecutionStatsResp;
+    getFailed(): number;
+    setFailed(value: number): GetExecutionStatsResp;
+    getAvgExecutionTime(): number;
+    setAvgExecutionTime(value: number): GetExecutionStatsResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetExecutionStatsResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetExecutionStatsResp): GetExecutionStatsResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetExecutionStatsResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetExecutionStatsResp;
+    static deserializeBinaryFromReader(message: GetExecutionStatsResp, reader: jspb.BinaryReader): GetExecutionStatsResp;
+}
+
+export namespace GetExecutionStatsResp {
+    export type AsObject = {
+        total: number,
+        succeeded: number,
+        failed: number,
+        avgExecutionTime: number,
     }
 }
 

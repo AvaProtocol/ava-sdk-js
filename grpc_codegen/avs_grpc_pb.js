@@ -107,6 +107,28 @@ function deserialize_aggregator_GetExecutionCountResp(buffer_arg) {
   return avs_pb.GetExecutionCountResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_GetExecutionStatsReq(arg) {
+  if (!(arg instanceof avs_pb.GetExecutionStatsReq)) {
+    throw new Error('Expected argument of type aggregator.GetExecutionStatsReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetExecutionStatsReq(buffer_arg) {
+  return avs_pb.GetExecutionStatsReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetExecutionStatsResp(arg) {
+  if (!(arg instanceof avs_pb.GetExecutionStatsResp)) {
+    throw new Error('Expected argument of type aggregator.GetExecutionStatsResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetExecutionStatsResp(buffer_arg) {
+  return avs_pb.GetExecutionStatsResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_GetKeyReq(arg) {
   if (!(arg instanceof avs_pb.GetKeyReq)) {
     throw new Error('Expected argument of type aggregator.GetKeyReq');
@@ -568,6 +590,20 @@ getExecutionCount: {
     requestDeserialize: deserialize_aggregator_GetExecutionCountReq,
     responseSerialize: serialize_aggregator_GetExecutionCountResp,
     responseDeserialize: deserialize_aggregator_GetExecutionCountResp,
+  },
+  // GetExecutionStats returns execution statistics for a specified time period
+// It counts total executions, successful executions, and failed executions
+// If no workflow IDs are provided, it counts for all workflows of the authenticated user
+getExecutionStats: {
+    path: '/aggregator.Aggregator/GetExecutionStats',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.GetExecutionStatsReq,
+    responseType: avs_pb.GetExecutionStatsResp,
+    requestSerialize: serialize_aggregator_GetExecutionStatsReq,
+    requestDeserialize: deserialize_aggregator_GetExecutionStatsReq,
+    responseSerialize: serialize_aggregator_GetExecutionStatsResp,
+    responseDeserialize: deserialize_aggregator_GetExecutionStatsResp,
   },
 };
 

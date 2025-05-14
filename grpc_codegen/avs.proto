@@ -301,7 +301,9 @@ message TaskNode {
 
 message Execution {
   string id      = 1;
+  // timestamp when execution started (in milliseconds)
   int64 start_at = 2;
+  // timestamp when execution ended (in milliseconds)
   int64 end_at   = 3;
   bool   success = 4;
   string error   = 5;
@@ -326,7 +328,9 @@ message Execution {
 
     string log = 12; 
     string error = 13;
+    // timestamp when step started (in milliseconds)
     int64 start_at = 14;
+    // timestamp when step ended (in milliseconds)
     int64 end_at = 15;
 
     // Reference ticket: https://github.com/AvaProtocol/EigenLayer-AVS/issues/151
@@ -380,6 +384,7 @@ message Execution {
     string transaction_hash = 4;
     string address = 5;
     uint64 block_number = 6;
+    // timestamp of the block (in milliseconds)
     uint64 block_timestamp = 7;
     string from_address = 8;
     string to_address = 9;
@@ -402,19 +407,21 @@ message Task {
   string owner                = 2;
   string smart_wallet_address = 3;
 
-  // task won't be check before this
+  // task won't be check before this (timestamp in milliseconds)
   int64  start_at   = 4;
-  // task won't be run/check after this
+  // task won't be run/check after this (timestamp in milliseconds)
   int64  expired_at = 5;
   // arbitrary data about this task. has a limit of 255 character
   string name = 6;
 
+  // timestamp when task was completed (in milliseconds)
   int64 completed_at = 7;
 
   // limit on how many time this task can run. Set to 0 will make it run unlimited until cancelling or reaching its expired time
   int64 max_execution = 8;
   // return how many time this task has run
   int64 execution_count = 9;
+  // timestamp when task was last executed (in milliseconds)
   int64 last_ran_at = 10;
 
   TaskStatus status  = 11;
@@ -484,19 +491,21 @@ message ListTasksResp {
     string owner                = 2;
     string smart_wallet_address = 3;
 
-    // task won't be check before this
+    // task won't be check before this (timestamp in milliseconds)
     int64  start_at   = 4;
-    // task won't be run/check after this
+    // task won't be run/check after this (timestamp in milliseconds)
     int64  expired_at = 5;
     // arbitrary data about this task. has a limit of 255 character
     string name = 6;
 
+    // timestamp when task was completed (in milliseconds)
     int64 completed_at = 7;
 
     // limit on how many time this task can run. Set to 0 will make it run unlimited until cancelling or reaching its expired time
     int64 max_execution = 8;
     // return how many time this task has run
     int64 execution_count = 9;
+    // timestamp when task was last executed (in milliseconds)
     int64 last_ran_at = 10;
 
     TaskStatus status  = 11;
@@ -700,6 +709,11 @@ service Aggregator {
   // Workflow IDs not found in the system are ignored.
   // Workflow IDs not linked to the EOA in the auth key are also ignored.
   rpc GetExecutionCount(GetExecutionCountReq) returns (GetExecutionCountResp);
+
+  // GetExecutionStats returns execution statistics for a specified time period
+  // It counts total executions, successful executions, and failed executions
+  // If no workflow IDs are provided, it counts for all workflows of the authenticated user
+  rpc GetExecutionStats(GetExecutionStatsReq) returns (GetExecutionStatsResp);
 }
 
 // Request message for GetWorkflowCount
@@ -721,6 +735,20 @@ message GetExecutionCountReq {
 message GetExecutionCountResp {
   // TODO: eventually to support success, error count execution
   int64 total = 1; // The total count of executions
+}
+
+// Request message for GetExecutionStats
+message GetExecutionStatsReq {
+  repeated string workflow_ids = 1; // Optional array of workflow IDs
+  int64 days = 2; // Number of days to look back (default: 7)
+}
+
+// Response message for GetExecutionStats
+message GetExecutionStatsResp {
+  int64 total = 1; // Total number of executions
+  int64 succeeded = 2; // Number of successful executions
+  int64 failed = 3; // Number of failed executions
+  double avg_execution_time = 4; // Average execution time in milliseconds
 }
 
 message Evm {
