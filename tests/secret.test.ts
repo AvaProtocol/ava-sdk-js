@@ -1,6 +1,7 @@
 import _ from "lodash";
-import { describe, beforeAll, expect } from "@jest/globals";
+import { describe, beforeAll, expect, it } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
+import { ListSecretsResponse, ListSecretResponse, SecretRequestOptions } from "@avaprotocol/sdk-js/src/types";
 import {
   getAddress,
   generateSignature,
@@ -9,6 +10,13 @@ import {
   removeCreatedWorkflows,
 } from "./utils";
 import { getConfig } from "./envalid";
+
+function getSecretItems(response: ListSecretsResponse | ListSecretResponse[]): ListSecretResponse[] {
+  if (Array.isArray(response)) {
+    return response;
+  }
+  return response.items || [];
+}
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
@@ -227,14 +235,16 @@ describe("secret Tests", () => {
       const inputName = `delete_${getNextId()}`;
       await client.createSecret(inputName, "value");
 
-      let secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === inputName)).toBe(true);
+      let secretsResponse = await client.listSecrets();
+      const items = getSecretItems(secretsResponse);
+      expect(items.some((item) => item.name === inputName)).toBe(true);
 
       const deleted = await client.deleteSecret(inputName);
       expect(deleted).toBe(true);
 
-      secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === inputName)).toBe(false);
+      secretsResponse = await client.listSecrets();
+      const updatedItems = getSecretItems(secretsResponse);
+      expect(updatedItems.some((item) => item.name === inputName)).toBe(false);
     });
 
     it("delete at workflowId level succeeds", async () => {
@@ -248,10 +258,11 @@ describe("secret Tests", () => {
         workflowId: inputWorkflowId,
       });
 
-      let secrets = await client.listSecrets();
+      let secretsResponse = await client.listSecrets();
       // make sure we got both secret
-      expect(secrets.some((item) => item.name === userLevelName)).toBe(true);
-      expect(secrets.some((item) => item.name === workflowLevelName)).toBe(
+      const secretItems = getSecretItems(secretsResponse);
+      expect(secretItems.some((item) => item.name === userLevelName)).toBe(true);
+      expect(secretItems.some((item) => item.name === workflowLevelName)).toBe(
         true
       );
 
@@ -262,9 +273,10 @@ describe("secret Tests", () => {
 
       expect(deleted).toBe(true);
 
-      secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === userLevelName)).toBe(true);
-      expect(secrets.some((item) => item.name === workflowLevelName)).toBe(
+      secretsResponse = await client.listSecrets();
+      const afterDeleteItems = getSecretItems(secretsResponse);
+      expect(afterDeleteItems.some((item) => item.name === userLevelName)).toBe(true);
+      expect(afterDeleteItems.some((item) => item.name === workflowLevelName)).toBe(
         false
       );
     });
@@ -278,14 +290,126 @@ describe("secret Tests", () => {
 
       await client.createSecret(inputName, "value");
 
-      let secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === inputName)).toBe(true);
+      let secretsResponse = await client.listSecrets();
+      const items = getSecretItems(secretsResponse);
+      expect(items.some((item) => item.name === inputName)).toBe(true);
 
       const updated = await client.updateSecret(inputName, "newvalue");
       expect(updated).toBe(true);
 
-      secrets = await client.listSecrets();
-      expect(secrets.some((item) => item.name === inputName)).toBe(true);
+      secretsResponse = await client.listSecrets();
+      const finalItems = getSecretItems(secretsResponse);
+      expect(finalItems.some((item) => item.name === inputName)).toBe(true);
+    });
+  });
+
+  describe("pagination suite", () => {
+    const secretNames: string[] = [];
+    const secretPrefix = `paged_${Date.now()}_`;
+    
+    beforeAll(async () => {
+      for (let i = 0; i < 10; i++) {
+        const name = `${secretPrefix}${i}`;
+        await client.createSecret(name, `value_${i}`);
+        secretNames.push(name);
+      }
+    });
+
+    afterAll(async () => {
+      for (const name of secretNames) {
+        await client.deleteSecret(name);
+      }
+    });
+
+    it("should support forward pagination with after parameter", async () => {
+      const options = { itemPerPage: 3 } as SecretRequestOptions;
+      const firstPage = await client.listSecrets(options);
+      
+      const firstPageItems = getSecretItems(firstPage);
+      expect(firstPageItems.length).toBeLessThanOrEqual(3);
+      
+      if (Array.isArray(firstPage)) {
+        return;
+      }
+      
+      const typedFirstPage = firstPage as ListSecretsResponse;
+      expect(typedFirstPage.cursor).toBeTruthy();
+      expect(typedFirstPage.hasMore).toBe(true);
+      
+      const secondOptions = { 
+        after: typedFirstPage.cursor,
+        itemPerPage: 3 
+      } as SecretRequestOptions;
+      const secondPage = await client.listSecrets(secondOptions);
+      
+      const secondPageItems = getSecretItems(secondPage);
+      expect(secondPageItems.length).toBeLessThanOrEqual(3);
+      
+      const firstPageNames = firstPageItems.map(item => item.name);
+      const secondPageNames = secondPageItems.map(item => item.name);
+      
+      const overlap = firstPageNames.filter(name => secondPageNames.includes(name));
+      expect(overlap.length).toBe(0);
+    });
+
+    it("should support backward pagination with before parameter", async () => {
+      const middleOptions = { itemPerPage: 3 } as SecretRequestOptions;
+      const middlePage = await client.listSecrets(middleOptions);
+      
+      if (Array.isArray(middlePage)) {
+        return;
+      }
+      
+      const typedMiddlePage = middlePage as ListSecretsResponse;
+      const previousOptions = {
+        before: typedMiddlePage.cursor,
+        itemPerPage: 3
+      } as SecretRequestOptions;
+      const previousPage = await client.listSecrets(previousOptions);
+      
+      const previousPageItems = getSecretItems(previousPage);
+      const middlePageItems = getSecretItems(middlePage);
+      
+      const previousPageNames = previousPageItems.map(item => item.name);
+      const middlePageNames = middlePageItems.map(item => item.name);
+      
+      const overlap = previousPageNames.filter(name => middlePageNames.includes(name));
+      expect(overlap.length).toBe(0);
+    });
+
+    it("should respect the itemPerPage parameter", async () => {
+      const smallOptions = { itemPerPage: 2 } as SecretRequestOptions;
+      const smallPage = await client.listSecrets(smallOptions);
+      
+      const largerOptions = { itemPerPage: 5 } as SecretRequestOptions;
+      const largerPage = await client.listSecrets(largerOptions);
+      
+      const smallPageItems = getSecretItems(smallPage);
+      const largerPageItems = getSecretItems(largerPage);
+      
+      expect(smallPageItems.length).toBeLessThanOrEqual(2);
+      expect(largerPageItems.length).toBeLessThanOrEqual(5);
+      
+      expect(largerPageItems.length).toBeGreaterThanOrEqual(smallPageItems.length);
+    });
+
+    it("should filter secrets by workflowId", async () => {
+      const workflowId = getNextId();
+      const workflowSecretName = `${secretPrefix}_workflow_${Date.now()}`;
+      
+      await client.createSecret(workflowSecretName, "workflow_value", {
+        workflowId
+      });
+      
+      const filteredSecrets = await client.listSecrets({
+        workflowId
+      });
+      
+      const items = getSecretItems(filteredSecrets);
+      
+      expect(items.some(item => item.name === workflowSecretName)).toBe(true);
+      
+      await client.deleteSecret(workflowSecretName, { workflowId });
     });
   });
 });
