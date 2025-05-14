@@ -1846,6 +1846,14 @@ export namespace CreateOrUpdateSecretReq {
 export class ListSecretsReq extends jspb.Message { 
     getWorkflowId(): string;
     setWorkflowId(value: string): ListSecretsReq;
+    getCursor(): string;
+    setCursor(value: string): ListSecretsReq;
+    getBefore(): string;
+    setBefore(value: string): ListSecretsReq;
+    getAfter(): string;
+    setAfter(value: string): ListSecretsReq;
+    getItemPerPage(): number;
+    setItemPerPage(value: number): ListSecretsReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsReq.AsObject;
@@ -1860,6 +1868,10 @@ export class ListSecretsReq extends jspb.Message {
 export namespace ListSecretsReq {
     export type AsObject = {
         workflowId: string,
+        cursor: string,
+        before: string,
+        after: string,
+        itemPerPage: number,
     }
 }
 
@@ -1868,6 +1880,10 @@ export class ListSecretsResp extends jspb.Message {
     getItemsList(): Array<ListSecretsResp.ResponseSecret>;
     setItemsList(value: Array<ListSecretsResp.ResponseSecret>): ListSecretsResp;
     addItems(value?: ListSecretsResp.ResponseSecret, index?: number): ListSecretsResp.ResponseSecret;
+    getCursor(): string;
+    setCursor(value: string): ListSecretsResp;
+    getHasMore(): boolean;
+    setHasMore(value: boolean): ListSecretsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsResp.AsObject;
@@ -1882,6 +1898,8 @@ export class ListSecretsResp extends jspb.Message {
 export namespace ListSecretsResp {
     export type AsObject = {
         itemsList: Array<ListSecretsResp.ResponseSecret.AsObject>,
+        cursor: string,
+        hasMore: boolean,
     }
 
 

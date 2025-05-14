@@ -14849,7 +14849,11 @@ proto.aggregator.ListSecretsReq.prototype.toObject = function(opt_includeInstanc
  */
 proto.aggregator.ListSecretsReq.toObject = function(includeInstance, msg) {
   var f, obj = {
-    workflowId: jspb.Message.getFieldWithDefault(msg, 1, "")
+    workflowId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    before: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    after: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    itemPerPage: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -14890,6 +14894,22 @@ proto.aggregator.ListSecretsReq.deserializeBinaryFromReader = function(msg, read
       var value = /** @type {string} */ (reader.readString());
       msg.setWorkflowId(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCursor(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setBefore(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAfter(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setItemPerPage(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -14926,6 +14946,34 @@ proto.aggregator.ListSecretsReq.serializeBinaryToWriter = function(message, writ
       f
     );
   }
+  f = message.getCursor();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getBefore();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+  f = message.getAfter();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getItemPerPage();
+  if (f !== 0) {
+    writer.writeInt64(
+      5,
+      f
+    );
+  }
 };
 
 
@@ -14944,6 +14992,78 @@ proto.aggregator.ListSecretsReq.prototype.getWorkflowId = function() {
  */
 proto.aggregator.ListSecretsReq.prototype.setWorkflowId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string cursor = 2;
+ * @return {string}
+ */
+proto.aggregator.ListSecretsReq.prototype.getCursor = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ListSecretsReq} returns this
+ */
+proto.aggregator.ListSecretsReq.prototype.setCursor = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string before = 3;
+ * @return {string}
+ */
+proto.aggregator.ListSecretsReq.prototype.getBefore = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ListSecretsReq} returns this
+ */
+proto.aggregator.ListSecretsReq.prototype.setBefore = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string after = 4;
+ * @return {string}
+ */
+proto.aggregator.ListSecretsReq.prototype.getAfter = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ListSecretsReq} returns this
+ */
+proto.aggregator.ListSecretsReq.prototype.setAfter = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional int64 item_per_page = 5;
+ * @return {number}
+ */
+proto.aggregator.ListSecretsReq.prototype.getItemPerPage = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.ListSecretsReq} returns this
+ */
+proto.aggregator.ListSecretsReq.prototype.setItemPerPage = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 
@@ -14987,7 +15107,9 @@ proto.aggregator.ListSecretsResp.prototype.toObject = function(opt_includeInstan
 proto.aggregator.ListSecretsResp.toObject = function(includeInstance, msg) {
   var f, obj = {
     itemsList: jspb.Message.toObjectList(msg.getItemsList(),
-    proto.aggregator.ListSecretsResp.ResponseSecret.toObject, includeInstance)
+    proto.aggregator.ListSecretsResp.ResponseSecret.toObject, includeInstance),
+    cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    hasMore: jspb.Message.getBooleanFieldWithDefault(msg, 3, false)
   };
 
   if (includeInstance) {
@@ -15029,6 +15151,14 @@ proto.aggregator.ListSecretsResp.deserializeBinaryFromReader = function(msg, rea
       reader.readMessage(value,proto.aggregator.ListSecretsResp.ResponseSecret.deserializeBinaryFromReader);
       msg.addItems(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCursor(value);
+      break;
+    case 3:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setHasMore(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -15064,6 +15194,20 @@ proto.aggregator.ListSecretsResp.serializeBinaryToWriter = function(message, wri
       1,
       f,
       proto.aggregator.ListSecretsResp.ResponseSecret.serializeBinaryToWriter
+    );
+  }
+  f = message.getCursor();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getHasMore();
+  if (f) {
+    writer.writeBool(
+      3,
+      f
     );
   }
 };
@@ -15324,6 +15468,42 @@ proto.aggregator.ListSecretsResp.prototype.addItems = function(opt_value, opt_in
  */
 proto.aggregator.ListSecretsResp.prototype.clearItemsList = function() {
   return this.setItemsList([]);
+};
+
+
+/**
+ * optional string cursor = 2;
+ * @return {string}
+ */
+proto.aggregator.ListSecretsResp.prototype.getCursor = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ListSecretsResp} returns this
+ */
+proto.aggregator.ListSecretsResp.prototype.setCursor = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional bool has_more = 3;
+ * @return {boolean}
+ */
+proto.aggregator.ListSecretsResp.prototype.getHasMore = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 3, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.aggregator.ListSecretsResp} returns this
+ */
+proto.aggregator.ListSecretsResp.prototype.setHasMore = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 3, value);
 };
 
 

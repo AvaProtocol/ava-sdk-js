@@ -27,6 +27,7 @@ import {
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
   ListSecretResponse,
+  ListSecretsResponse,
   SecretRequestOptions,
 } from "./types";
 
@@ -605,14 +606,19 @@ class Client extends BaseClient {
   }
 
   /**
-   * Retrieve a list of secrets; secrets can be filtered by workflowId or orgId.
-   * @param params - Parameters for listing secrets
-   * @param options - Request options, including workflowId and orgId for filtering
-   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
+   * Retrieve a list of secrets with pagination support
+   * @param options - Request options including pagination parameters
+   * @param options.workflowId - Filter secrets by workflow ID
+   * @param options.orgId - Filter secrets by organization ID
+   * @param options.cursor - Legacy cursor parameter (deprecated, use before/after instead)
+   * @param options.before - Get items before this cursor value (for backward pagination)
+   * @param options.after - Get items after this cursor value (for forward pagination)
+   * @param options.itemPerPage - Number of items per page
+   * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
    */
-  async listSecrets(
+  async getSecrets(
     options?: SecretRequestOptions
-  ): Promise<ListSecretResponse[]> {
+  ): Promise<ListSecretsResponse> {
     const request = new avs_pb.ListSecretsReq();
 
     if (options?.workflowId) {
@@ -624,16 +630,49 @@ class Client extends BaseClient {
       // request.setOrgId(options.orgId);
     }
 
+    if (options?.before) {
+      request.setBefore(options.before);
+    }
+
+    if (options?.after) {
+      request.setAfter(options.after);
+    }
+
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
+    }
+
+    if (options?.itemPerPage) {
+      request.setItemPerPage(options.itemPerPage);
+    }
+
     const result = await this.sendGrpcRequest<
       avs_pb.ListSecretsResp,
       avs_pb.ListSecretsReq
     >("listSecrets", request, options);
 
-    return result.getItemsList().map((item) => ({
-      name: item.getName(),
-      workflowId: item.getWorkflowId(),
-      orgId: item.getOrgId(),
-    }));
+    return {
+      items: result.getItemsList().map((item) => ({
+        name: item.getName(),
+        workflowId: item.getWorkflowId(),
+        orgId: item.getOrgId(),
+      })),
+      cursor: result.getCursor(),
+      hasMore: result.getHasMore(),
+    };
+  }
+
+  /**
+   * @deprecated Use getSecrets instead
+   * Retrieve a list of secrets (legacy method)
+   * @param options - Request options
+   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
+   */
+  async listSecrets(
+    options?: SecretRequestOptions
+  ): Promise<ListSecretResponse[]> {
+    const response = await this.getSecrets(options);
+    return response.items;
   }
 
   /**
