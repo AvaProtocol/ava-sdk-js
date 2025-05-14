@@ -72,7 +72,7 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    > By default the above command will pull the docker image of the latest commit on the `main` branch of https://github.com/AvaProtocol/EigenLayer-AVS. Alternatively, we could also run tests against a specific commit with the below command.
    >
    > ```
-   > export AVS_BUILD_VERSION=git-commit-hash-123
+   > export DOCKER_IMAGE_TAG=image_tag_on_docker_hub
    > docker compose up -d --pull always
    > ```
 

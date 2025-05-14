@@ -4,7 +4,7 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      avs_build_version:
+      docker_image_tag:
         description: 'AVS Build Version (e.g., latest, or a specific tag)'
         required: false
         default: 'latest' # Or use an empty default if you want to force it from elsewhere for PRs
@@ -18,7 +18,7 @@ jobs:
       CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
       ENDPOINT: "localhost:2206"
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-      AVS_BUILD_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.avs_build_version || 'latest' }} # Or your preferred default for PRs
+      DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }} # Or your preferred default for PRs
 
     steps:
       - name: Checkout repository
@@ -27,7 +27,7 @@ jobs:
       - name: Debug environment variables
         run: |
           echo "ENDPOINT: $ENDPOINT"
-          echo "AVS_BUILD_VERSION: $AVS_BUILD_VERSION"
+          echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
@@ -73,7 +73,7 @@ jobs:
       - name: Run local AVS aggregator in Docker
         if: steps.check_source_changes.outputs.source_changed == 'true'
         run: |
-          echo "Starting AVS aggregator with version: $AVS_BUILD_VERSION"
+          echo "Starting AVS aggregator with version: $DOCKER_IMAGE_TAG"
           docker compose up -d
 
       - name: Use Node.js
