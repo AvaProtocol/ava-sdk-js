@@ -126,6 +126,7 @@ describe("secret Tests", () => {
 
       // Find the execution step that contains the secret value
       expect(executions.result.length).toBe(1);
+
       const matchStep: Step | undefined = _.find(
         _.first(executions.result)?.stepsList,
         (step) => step.nodeId === customCodeNodeProps.id
