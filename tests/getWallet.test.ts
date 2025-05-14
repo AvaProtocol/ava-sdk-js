@@ -70,12 +70,9 @@ describe("getAddresses Tests", () => {
         data: { interval: 102 },
       });
 
-      console.log("Creating workflow1 ...");
       const workflow1 = client.createWorkflow(workflowProps1);
       workflowId1 = await client.submitWorkflow(workflow1);
       wallet = await client.getWallet({ salt });
-
-      console.log("After creating workflow1 ...", wallet);
 
       expect(wallet.totalTaskCount).toEqual(
         initialStat.totalTaskCount || 0 + 1
@@ -97,8 +94,6 @@ describe("getAddresses Tests", () => {
         isBlocking: true,
       });
 
-      console.log("After triggering workflow1 ...", wallet);
-
       wallet = await client.getWallet({ salt });
       expect(wallet.totalTaskCount).toEqual(
         initialStat.totalTaskCount || 0 + 1
@@ -118,7 +113,7 @@ describe("getAddresses Tests", () => {
       await client.cancelWorkflow(workflowId2);
 
       wallet = await client.getWallet({ salt });
-      console.log("After cancelling workflow2 ...", wallet);
+
       expect(wallet.totalTaskCount).toEqual(
         initialStat.totalTaskCount || 0 + 2
       );

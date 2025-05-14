@@ -1,7 +1,7 @@
 name: ava-sdk-test
 services:
   aggregator:
-    image: avaprotocol/avs-dev:${AVS_BUILD_VERSION:-latest} # AVS_BUILD_VERSION is a specific git commit hash of https://github.com/AvaProtocol/EigenLayer-AVS. It’s used in the .github/workflows/dev-test-on-pr.yml file.
+    image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest} # DOCKER_IMAGE_TAG is a specific git commit hash of https://github.com/AvaProtocol/EigenLayer-AVS. It’s used in the .github/workflows/dev-test-on-pr.yml file.
     command:
       - "aggregator"
     ports:
