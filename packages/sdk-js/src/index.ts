@@ -264,6 +264,49 @@ class Client extends BaseClient {
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
       canceledTaskCount: result.getCanceledTaskCount(),
+      is_hidden: false, // Default value is false
+    };
+  }
+  
+  /**
+   * Set wallet properties including hiding/unhiding a wallet
+   * @param {GetWalletRequest} walletRequest - The wallet request containing salt and optional factory address
+   * @param {object} options - Options for the wallet
+   * @param {boolean} options.isHidden - Whether the wallet should be hidden
+   * @param {RequestOptions} requestOptions - Request options
+   * @returns {Promise<SmartWallet>} - The updated SmartWallet object
+   */
+  async setWallet(
+    { salt, factoryAddress }: GetWalletRequest,
+    { isHidden }: { isHidden: boolean },
+    requestOptions?: RequestOptions
+  ): Promise<SmartWallet> {
+    const request = new avs_pb.GetWalletReq();
+    request.setSalt(salt);
+
+    if (factoryAddress) {
+      request.setFactoryAddress(factoryAddress);
+    } else if (this.factoryAddress) {
+      request.setFactoryAddress(this.factoryAddress);
+    }
+
+    const method = isHidden ? "hideWallet" : "unhideWallet";
+    
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetWalletResp,
+      avs_pb.GetWalletReq
+    >(method, request, requestOptions);
+
+    return {
+      address: result.getAddress(),
+      salt: result.getSalt(),
+      factory: result.getFactoryAddress(),
+      totalTaskCount: result.getTotalTaskCount(),
+      activeTaskCount: result.getActiveTaskCount(),
+      completedTaskCount: result.getCompletedTaskCount(),
+      failedTaskCount: result.getFailedTaskCount(),
+      canceledTaskCount: result.getCanceledTaskCount(),
+      is_hidden: isHidden,
     };
   }
 

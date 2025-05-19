@@ -193,4 +193,29 @@ describe("getAddresses Tests", () => {
       /invalid factory address/
     );
   });
+  
+  test("should include is_hidden property in getWallet response with default value of false", async () => {
+    const salt = _.toString(saltIndex++);
+    client.setFactoryAddress(factoryAddress);
+    
+    const wallet = await client.getWallet({ salt });
+    
+    expect(wallet).toBeDefined();
+    expect(wallet).toHaveProperty('is_hidden');
+    expect(wallet.is_hidden).toBe(false);
+  });
+  
+  test("setWallet should update isHidden property", async () => {
+    const salt = _.toString(saltIndex++);
+    client.setFactoryAddress(factoryAddress);
+    
+    const initialWallet = await client.getWallet({ salt });
+    expect(initialWallet.is_hidden).toBe(false);
+    
+    const hiddenWallet = await client.setWallet({ salt }, { isHidden: true });
+    expect(hiddenWallet.is_hidden).toBe(true);
+    
+    const unhiddenWallet = await client.setWallet({ salt }, { isHidden: false });
+    expect(unhiddenWallet.is_hidden).toBe(false);
+  });
 });
