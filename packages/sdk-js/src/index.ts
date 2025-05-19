@@ -26,9 +26,20 @@ import {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
-  ListSecretResponse,
-  SecretRequestOptions,
-} from "./types";
+} from "@avaprotocol/types";
+
+const ExecutionStatus = avs_pb.ExecutionStatus;
+
+interface ListSecretResponse {
+  name: string;
+  workflowId?: string;
+  orgId?: string;
+}
+
+interface SecretRequestOptions extends RequestOptions {
+  workflowId?: string;
+  orgId?: string;
+}
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
 
@@ -263,7 +274,7 @@ class Client extends BaseClient {
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
       canceledTaskCount: result.getCanceledTaskCount(),
-    };
+    } as SmartWallet;
   }
 
   /**
@@ -668,8 +679,8 @@ class Client extends BaseClient {
   }
 }
 
-// Export types for easier use
-export * from "./types";
+// Export types from @avaprotocol/types is not needed here as users should import from that package directly
+// export * from "./types";
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 

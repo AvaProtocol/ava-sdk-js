@@ -61,4 +61,23 @@ export enum NodeType {
   Unset = "unset",
 }
 
-export type SmartWallet = avs_pb.SmartWallet.AsObject;
+export type SmartWallet = avs_pb.SmartWallet.AsObject & {
+  totalTaskCount?: number;
+  activeTaskCount?: number;
+  completedTaskCount?: number;
+  failedTaskCount?: number;
+  canceledTaskCount?: number;
+};
+
+export const ExecutionStatus = avs_pb.ExecutionStatus;
+
+export interface ListSecretResponse {
+  name: string;
+  workflowId?: string;
+  orgId?: string;
+}
+
+export interface SecretRequestOptions extends RequestOptions {
+  workflowId?: string;
+  orgId?: string;
+}
