@@ -679,8 +679,14 @@ class Client extends BaseClient {
   }
 }
 
-// Export types from @avaprotocol/types is not needed here as users should import from that package directly
-// export * from "./types";
+export {
+  Environment,
+  WorkflowStatus,
+  TriggerType,
+} from "@avaprotocol/types";
+
+export { ExecutionStatus };
+
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
 
@@ -704,4 +710,6 @@ export type {
   TriggerReasonProps,
   OutputDataProps,
   SecretProps,
+  ListSecretResponse,
+  SecretRequestOptions,
 };
