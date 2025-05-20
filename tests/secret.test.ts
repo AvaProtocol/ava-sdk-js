@@ -2,22 +2,18 @@ import _ from "lodash";
 import { describe, beforeAll, expect, afterEach, it } from "@jest/globals";
 import {
   Client,
-  NodeFactory,
   TriggerFactory,
-  TriggerType,
-  Edge,
   CustomCodeNodeProps,
   CustomCodeLangs,
   Step,
 } from "@avaprotocol/sdk-js";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
   getNextId,
   SaltGlobal,
   removeCreatedWorkflows,
-  submitWorkflowAndQueueForRemoval,
   getBlockNumber,
 } from "./utils";
 import { getConfig } from "./envalid";
@@ -105,10 +101,8 @@ describe("secret Tests", () => {
         data: { interval: triggerInterval }, // Use the triggerInterval defined in this test
       });
 
-      const workflowId = await submitWorkflowAndQueueForRemoval(
-        client,
-        workflowProps, // Pass the fully constructed workflowProps
-        createdIdMap
+      const workflowId = await client.submitWorkflow(
+        client.createWorkflow(workflowProps)
       );
 
       await client.triggerWorkflow({

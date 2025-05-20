@@ -1,4 +1,4 @@
-import { Environment } from "./types";
+import { Environment } from "@avaprotocol/types";
 
 export const DEFAULT_JWT_EXPIRATION = 24 * 60 * 60; // 24 hours
 interface Config {

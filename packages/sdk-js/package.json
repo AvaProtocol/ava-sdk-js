@@ -24,7 +24,9 @@
     "yarn": ">=1.22.19"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build:declarations": "tsc -b tsconfig.json",
+    "build:js": "tsup src/index.ts --format cjs,esm",
+    "build": "yarn build:declarations && yarn build:js",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "dependencies": {
@@ -33,7 +35,7 @@
     "@grpc/proto-loader": "^0.7.13",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.2",
-    "google-protobuf": "^3.21.4",
+    "google-protobuf": "3.19.4",
     "id128": "^1.6.6",
     "lodash": "^4.17.21"
   },

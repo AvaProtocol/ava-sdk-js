@@ -1,10 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import {
-  Client,
-  TriggerFactory,
-  TriggerType,
-  ExecutionStatus,
-} from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
+import { TriggerType, ExecutionStatus } from "@avaprotocol/types";
 import _ from "lodash";
 import {
   getAddress,

@@ -1,5 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import { Client, TriggerFactory, TriggerType } from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
+import { TriggerType } from "@avaprotocol/types";
 import _ from "lodash";
 import {
   getAddress,
@@ -8,10 +9,7 @@ import {
   SaltGlobal,
   TIMEOUT_DURATION,
 } from "./utils";
-import {
-  createFromTemplate,
-  defaultTriggerId,
-} from "./templates";
+import { createFromTemplate, defaultTriggerId } from "./templates";
 import { getConfig } from "./envalid";
 
 // Set a default timeout of 15 seconds for all tests in this file

@@ -7,7 +7,7 @@ import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
-import { WorkflowStatus } from "../types";
+import { WorkflowStatus } from "@avaprotocol/types";
 
 // Function to convert TaskStatus to string
 export function convertStatusToString(
@@ -188,5 +188,4 @@ class Workflow implements WorkflowProps {
   }
 }
 
-export { WorkflowStatus };
 export default Workflow;

@@ -1,6 +1,6 @@
 {
   "name": "@avaprotocol/types",
-  "version": "0.9.4",
+  "version": "0.9.5-dev.5",
   "description": "Type definitions for Ava Protocol's AVS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +22,9 @@
     "yarn": ">=1.22.19"
   },
   "scripts": {
-    "build": "tsup src/index.ts --dts",
+    "build:declarations": "tsc -b tsconfig.json",
+    "build:js": "tsup src/index.ts --format cjs,esm",
+    "build": "yarn build:declarations && yarn build:js",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
   },
   "dependencies": {

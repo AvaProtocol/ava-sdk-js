@@ -9,7 +9,7 @@ import FixedTimeTrigger, {
 } from "./fixedTime";
 import Trigger from "./interface";
 import { TriggerProps } from "./interface";
-import { TriggerType } from "../../types";
+import { TriggerType } from "@avaprotocol/types";
 class TriggerFactory {
   /**
    * Static factory method to create Trigger instances
@@ -58,7 +58,6 @@ export default TriggerFactory;
 // Trigger object definitions
 export {
   Trigger,
-  TriggerType,
   BlockTrigger,
   CronTrigger,
   EventTrigger,

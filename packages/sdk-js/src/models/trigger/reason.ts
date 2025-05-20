@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerType } from "../../types";
+import { TriggerType } from "@avaprotocol/types";
 
 // Union type for all possible trigger data
 export type TriggerReasonProps =
