@@ -26,9 +26,18 @@ import {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
-  ListSecretResponse,
-  SecretRequestOptions,
 } from "@avaprotocol/types";
+
+interface ListSecretResponse {
+  name: string;
+  workflowId?: string;
+  orgId?: string;
+}
+
+interface SecretRequestOptions extends RequestOptions {
+  workflowId?: string;
+  orgId?: string;
+}
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
@@ -682,9 +691,6 @@ class Client extends BaseClient {
   }
 }
 
-export { Environment, WorkflowStatus, TriggerType } from "@avaprotocol/types";
-
-export { ExecutionStatus };
 
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
