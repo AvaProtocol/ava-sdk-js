@@ -15,7 +15,6 @@ import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-  GetSignatureFormatResponse,
 } from "@avaprotocol/types";
 
 import {
@@ -27,9 +26,22 @@ import {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
-  ListSecretResponse,
-  SecretRequestOptions,
 } from "@avaprotocol/types";
+
+interface GetSignatureFormatResponse {
+  message: string;
+}
+
+interface ListSecretResponse {
+  name: string;
+  workflowId?: string;
+  orgId?: string;
+}
+
+interface SecretRequestOptions extends RequestOptions {
+  workflowId?: string;
+  orgId?: string;
+}
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 

@@ -15,16 +15,16 @@ export type GetKeyRequestMessage = {
 };
 
 // Get authKey request with signature
-export type GetKeyRequestSignature = {
+export interface GetKeyRequestSignature {
   message: string;
   signature: string;
-};
+}
 
 // Get authKey request with apiKey
-export type GetKeyRequestApiKey = {
+export interface GetKeyRequestApiKey {
   message: string;
   apiKey: string;
-};
+}
 
 export interface GetKeyResponse {
   authKey: string;
