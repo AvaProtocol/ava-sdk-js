@@ -28,7 +28,7 @@ import {
   DEFAULT_LIMIT,
 } from "@avaprotocol/types";
 
-const ExecutionStatus = avs_pb.ExecutionStatus;
+import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 interface ListSecretResponse {
   name: string;
@@ -104,8 +104,13 @@ class BaseClient {
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
     request.setOwner(address);
-    const issueTs = Timestamp.fromDate(issuedAt);
-    const expiredTs = Timestamp.fromDate(expiredAt);
+    // Create and set timestamp objects properly
+    const issueTs = new Timestamp();
+    issueTs.fromDate(issuedAt);
+    
+    const expiredTs = new Timestamp();
+    expiredTs.fromDate(expiredAt);
+    
     request.setIssuedAt(issueTs);
     request.setExpiredAt(expiredTs);
     request.setSignature(apiKey);
@@ -139,11 +144,18 @@ class BaseClient {
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
     request.setOwner(address);
-    const issueTs = Timestamp.fromDate(issuedAt);
-    const expiredTs = Timestamp.fromDate(expiredAt);
+    
+    // Create and set timestamp objects properly
+    const issueTs = new Timestamp();
+    issueTs.fromDate(issuedAt);
+    
+    const expiredTs = new Timestamp();
+    expiredTs.fromDate(expiredAt);
+    
     request.setIssuedAt(issueTs);
     request.setExpiredAt(expiredTs);
     request.setSignature(signature);
+    
     // when exchanging the key, we don't set the token yet
     const result = await this.sendGrpcRequest<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
