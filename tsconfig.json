@@ -6,14 +6,12 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "declaration": true,
-    "rootDir": "./",
     "typeRoots": ["node_modules/@types"],
     "baseUrl": ".",
     "paths": {
       "@/grpc_codegen/*": ["grpc_codegen/*"],
-      "@avaprotocol/sdk-js": ["packages/sdk-js/src/*"],
-      "@avaprotocol/types": ["packages/types/*"]
+      // "@avaprotocol/sdk-js": ["packages/sdk-js/src/*"],
+      // "@avaprotocol/types": ["packages/types/*"]
     }
   },
   "include": ["grpc_codegen/**/*", "tests", "examples"],
