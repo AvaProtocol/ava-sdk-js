@@ -15,13 +15,6 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@avaprotocol/types@workspace:*":
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/@avaprotocol/types/-/types-0.9.4.tgz#32e703d247ded33159aff21d6dc5e5c30f8a5fe4"
-  integrity sha512-8lxVg33B58ADT/TY2EBy0/DS968bl+AThtBG9o27WgbQe5we1SnQTPtJoFihjqC6zzGBbYTiufhBn5Nlt4FV2A==
-  dependencies:
-    typescript "^5.4.2"
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.26.2":
   version "7.26.2"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.26.2.tgz#4b5fab97d33338eff916235055f0ebc21e573a85"
@@ -3219,10 +3212,10 @@ google-protobuf@3.15.8:
   resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.15.8.tgz#5f3948905e4951c867d6bc143f385a80e2a39efe"
   integrity sha512-2jtfdqTaSxk0cuBJBtTTWsot4WtR9RVr2rXg7x7OoqiuOKopPrwXpM1G4dXIkLcUNRh3RKzz76C8IOkksZSeOw==
 
-google-protobuf@^3.21.4:
-  version "3.21.4"
-  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.21.4.tgz#2f933e8b6e5e9f8edde66b7be0024b68f77da6c9"
-  integrity sha512-MnG7N936zcKTco4Jd2PX2U96Kf9PxygAPKBug+74LHzmHXmceN16MmRcdgZv+DGef/S9YvQAfRsNCn4cjf9yyQ==
+google-protobuf@3.19.4:
+  version "3.19.4"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.19.4.tgz#8d32c3e34be9250956f28c0fb90955d13f311888"
+  integrity sha512-OIPNCxsG2lkIvf+P5FNfJ/Km95CsXOBecS9ZcAU6m2Rq3svc0Apl9nB3GMDNKfQ9asNv4KjyAqGwPQFrVle3Yg==
 
 gopd@^1.2.0:
   version "1.2.0"

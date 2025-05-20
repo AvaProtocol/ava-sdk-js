@@ -17,7 +17,6 @@ import {
   getNextId,
   SaltGlobal,
   removeCreatedWorkflows,
-  submitWorkflowAndQueueForRemoval,
   getBlockNumber,
 } from "./utils";
 import { getConfig } from "./envalid";
@@ -105,10 +104,8 @@ describe("secret Tests", () => {
         data: { interval: triggerInterval }, // Use the triggerInterval defined in this test
       });
 
-      const workflowId = await submitWorkflowAndQueueForRemoval(
-        client,
-        workflowProps, // Pass the fully constructed workflowProps
-        createdIdMap
+      const workflowId = await client.submitWorkflow(
+        client.createWorkflow(workflowProps)
       );
 
       await client.triggerWorkflow({

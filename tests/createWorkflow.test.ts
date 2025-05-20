@@ -17,7 +17,6 @@ import {
   getNextId,
   TIMEOUT_DURATION,
   SaltGlobal,
-  submitWorkflowAndQueueForRemoval,
 } from "./utils";
 
 import {
