@@ -1,12 +1,6 @@
-import {
-  Client,
-  TriggerFactory,
-  TriggerType,
-  NodeFactory,
-  Edge,
-} from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 
-import { NodeType, getKeyRequestMessage } from "@avaprotocol/types";
+import { NodeType, getKeyRequestMessage, TriggerType } from "@avaprotocol/types";
 
 import _ from "lodash";
 import { ethers, Wallet } from "ethers";

@@ -2,15 +2,12 @@ import _ from "lodash";
 import { describe, beforeAll, expect, afterEach, it } from "@jest/globals";
 import {
   Client,
-  NodeFactory,
   TriggerFactory,
-  TriggerType,
-  Edge,
   CustomCodeNodeProps,
   CustomCodeLangs,
   Step,
 } from "@avaprotocol/sdk-js";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,

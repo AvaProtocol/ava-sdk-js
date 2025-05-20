@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import { Client, TriggerFactory, TriggerType } from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
+import { TriggerType } from "@avaprotocol/types";
 import { getAddress, generateSignature, SaltGlobal } from "./utils";
 import { createFromTemplate, defaultTriggerId } from "./templates";
 import { getConfig } from "./envalid";
@@ -83,7 +84,6 @@ describe("getAddresses Tests", () => {
       expect(wallet.completedTaskCount).toEqual(initialStat.completedTaskCount);
       expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
 
-      console.log("Triggering workflow1 ...");
       // Trigger the task and wait for it finished to check the stat
       await client.triggerWorkflow({
         id: workflowId1,
@@ -109,7 +109,6 @@ describe("getAddresses Tests", () => {
       const workflow2 = client.createWorkflow(workflowProps2);
       workflowId2 = await client.submitWorkflow(workflow2);
 
-      console.log("Cancelling workflow2 ...");
       await client.cancelWorkflow(workflowId2);
 
       wallet = await client.getWallet({ salt });

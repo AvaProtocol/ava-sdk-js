@@ -2,7 +2,6 @@ import {
   Client,
   Workflow,
   WorkflowProps,
-  WorkflowStatus,
   Execution,
   Step,
   StepProps,
@@ -12,6 +11,7 @@ import {
   GetKeyRequestMessage,
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
+  WorkflowStatus,
 } from "@avaprotocol/types";
 
 import { ethers } from "ethers";

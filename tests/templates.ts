@@ -4,7 +4,6 @@ import {
   NodeFactory,
   NodeProps,
   TriggerFactory,
-  TriggerType,
   ContractWriteNodeProps,
   ContractReadNodeProps,
   ETHTransferNodeProps,
@@ -17,7 +16,7 @@ import {
   WorkflowProps,
 } from "@avaprotocol/sdk-js";
 import { getNextId } from "./utils";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, TriggerType } from "@avaprotocol/types";
 import { ethers } from "ethers";
 import { factoryProxyAbi } from "./abis";
 

@@ -6,10 +6,8 @@ import {
   Workflow,
   NodeFactory,
   TriggerFactory,
-  TriggerType,
-  WorkflowStatus,
 } from "@avaprotocol/sdk-js";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, WorkflowStatus, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
