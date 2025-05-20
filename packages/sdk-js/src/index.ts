@@ -685,7 +685,7 @@ export {
   TriggerType,
 } from "@avaprotocol/types";
 
-export { ExecutionStatus as ExecutionStatus };
+export { ExecutionStatus };
 
 export * from "./models/node/factory";
 export * from "./models/trigger/factory";
