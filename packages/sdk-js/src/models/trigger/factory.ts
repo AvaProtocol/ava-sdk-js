@@ -58,7 +58,6 @@ export default TriggerFactory;
 // Trigger object definitions
 export {
   Trigger,
-  TriggerType,
   BlockTrigger,
   CronTrigger,
   EventTrigger,

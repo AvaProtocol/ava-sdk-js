@@ -188,5 +188,4 @@ class Workflow implements WorkflowProps {
   }
 }
 
-export { WorkflowStatus };
 export default Workflow;
