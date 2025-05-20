@@ -15,6 +15,7 @@ import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
+  GetSignatureFormatResponse,
 } from "@avaprotocol/types";
 
 import {
@@ -77,33 +78,34 @@ class BaseClient {
   }
 
   /**
+   * Get the signature format from the server
+   * @param wallet - The wallet address
+   * @returns {Promise<GetSignatureFormatResponse>} - The response containing the signature format
+   */
+  async getSignatureFormat(wallet: string): Promise<GetSignatureFormatResponse> {
+    const request = new avs_pb.GetSignatureFormatReq();
+    request.setWallet(wallet);
+
+    const result = await this.sendGrpcRequest<avs_pb.GetSignatureFormatResp, avs_pb.GetSignatureFormatReq>(
+      "getSignatureFormat",
+      request
+    );
+
+    return { message: result.getMessage() };
+  }
+
+  /**
    * The API key could retrieve a wallet's authKey by skipping its signature verification
-   * @param chainId - The chain id
-   * @param address - The address of the EOA wallet
-   * @param issuedAt - The issued at timestamp
-   * @param expiredAt - The expiration timestamp
-   * @param apiKey - The API key
+   * @param message - The message to sign, obtained from getSignatureFormat
+   * @param apiKey - The API key used instead of a signature
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithAPIKey({
-    chainId,
-    address,
-    issuedAt,
-    expiredAt,
+    message,
     apiKey,
   }: GetKeyRequestApiKey): Promise<GetKeyResponse> {
     const request = new avs_pb.GetKeyReq();
-    request.setChainId(chainId);
-    request.setOwner(address);
-    // Create and set timestamp objects properly
-    const issueTs = new Timestamp();
-    issueTs.fromDate(issuedAt);
-
-    const expiredTs = new Timestamp();
-    expiredTs.fromDate(expiredAt);
-
-    request.setIssuedAt(issueTs);
-    request.setExpiredAt(expiredTs);
+    request.setMessage(message);
     request.setSignature(apiKey);
 
     // when exchanging the key, we don't set the token yet
@@ -117,34 +119,17 @@ class BaseClient {
 
   /**
    * Getting an authKey from the server by verifying the signature of an EOA wallet
-   * @param chainId - The chain id
-   * @param address - The address of the EOA wallet
-   * @param issuedAt - The issued at timestamp
-   * @param expiredAt - The expiration timestamp
-   * @param signature - The signature of the EOA wallet
+   * @param message - The message to sign, obtained from getSignatureFormat
+   * @param signature - The signature of the message
    * @returns {Promise<GetKeyResponse>} - The response from the auth call
    */
   async authWithSignature({
-    chainId,
-    address,
-    issuedAt,
-    expiredAt,
+    message,
     signature,
   }: GetKeyRequestSignature): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
-    request.setChainId(chainId);
-    request.setOwner(address);
-
-    // Create and set timestamp objects properly
-    const issueTs = new Timestamp();
-    issueTs.fromDate(issuedAt);
-
-    const expiredTs = new Timestamp();
-    expiredTs.fromDate(expiredAt);
-
-    request.setIssuedAt(issueTs);
-    request.setExpiredAt(expiredTs);
+    request.setMessage(message);
     request.setSignature(signature);
 
     // when exchanging the key, we don't set the token yet

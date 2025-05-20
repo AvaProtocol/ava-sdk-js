@@ -168,9 +168,8 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const res = await client.authWithAPIKey(
-        generateAuthPayloadWithApiKey(eoaAddress, avsApiKey)
-      );
+      const apiKeyPayload = await generateAuthPayloadWithApiKey(eoaAddress, avsApiKey);
+      const res = await client.authWithAPIKey(apiKeyPayload);
 
       authKeyViaAPI = res.authKey;
 
@@ -409,9 +408,8 @@ describe("Authentication Tests", () => {
     });
 
     test("should return auth key when using API key", async () => {
-      const res = await client.authWithAPIKey(
-        generateAuthPayloadWithApiKey(eoaAddress, avsApiKey)
-      );
+      const apiKeyPayload = await generateAuthPayloadWithApiKey(eoaAddress, avsApiKey);
+      const res = await client.authWithAPIKey(apiKeyPayload);
 
       expect(res).toBeDefined();
       expect(res).toHaveProperty("authKey");

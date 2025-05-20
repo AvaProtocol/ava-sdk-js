@@ -7,10 +7,9 @@ import {
   StepProps,
 } from "@avaprotocol/sdk-js";
 import {
-  getKeyRequestMessage,
-  GetKeyRequestMessage,
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
+  GetKeyRequestMessage,
   WorkflowStatus,
 } from "@avaprotocol/types";
 
@@ -54,33 +53,31 @@ export async function generateSignature(
   privateKey: string
 ): Promise<GetKeyRequestSignature> {
   const wallet = new ethers.Wallet(privateKey);
-  const now = Date.now(); // Get current time in milliseconds
-
-  const keyRequestParams: GetKeyRequestMessage = {
-    chainId: _.toNumber(chainId),
-    address: wallet.address,
-    issuedAt: new Date(now),
-    expiredAt: new Date(now + EXPIRATION_DURATION_MS),
-  };
-
-  const message = getKeyRequestMessage(keyRequestParams);
+  
+  const client = new Client({
+    endpoint: getConfig().avsEndpoint,
+  });
+  
+  const { message } = await client.getSignatureFormat(wallet.address);
+  
   const signature = await wallet.signMessage(message);
 
-  return { signature, ...keyRequestParams };
+  return { message, signature };
 }
 
 // Helper function to generate api key message
-export function generateAuthPayloadWithApiKey(
+export async function generateAuthPayloadWithApiKey(
   address: string,
   apiKey: string
-): GetKeyRequestApiKey {
-  const now = Date.now(); // Get current time in milliseconds
-
+): Promise<GetKeyRequestApiKey> {
+  const client = new Client({
+    endpoint: getConfig().avsEndpoint,
+  });
+  
+  const { message } = await client.getSignatureFormat(address);
+  
   return {
-    chainId: _.toNumber(chainId),
-    address,
-    issuedAt: new Date(now),
-    expiredAt: new Date(now + EXPIRATION_DURATION_MS),
+    message,
     apiKey,
   };
 }

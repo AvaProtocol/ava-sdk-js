@@ -2,6 +2,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
 export * from "./auth";
+export { GetSignatureFormatResponse, GetKeyRequestApiKey, GetKeyRequestSignature } from "./auth";
 export type Environment = "production" | "development" | "staging";
 
 export const AUTH_KEY_HEADER = "authkey";

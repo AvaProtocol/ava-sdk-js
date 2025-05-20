@@ -140,6 +140,28 @@ function deserialize_aggregator_GetKeyReq(buffer_arg) {
   return avs_pb.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_GetSignatureFormatReq(arg) {
+  if (!(arg instanceof avs_pb.GetSignatureFormatReq)) {
+    throw new Error('Expected argument of type aggregator.GetSignatureFormatReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetSignatureFormatReq(buffer_arg) {
+  return avs_pb.GetSignatureFormatReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetSignatureFormatResp(arg) {
+  if (!(arg instanceof avs_pb.GetSignatureFormatResp)) {
+    throw new Error('Expected argument of type aggregator.GetSignatureFormatResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetSignatureFormatResp(buffer_arg) {
+  return avs_pb.GetSignatureFormatResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_GetWalletReq(arg) {
   if (!(arg instanceof avs_pb.GetWalletReq)) {
     throw new Error('Expected argument of type aggregator.GetWalletReq');
@@ -373,6 +395,18 @@ getKey: {
     requestDeserialize: deserialize_aggregator_GetKeyReq,
     responseSerialize: serialize_aggregator_KeyResp,
     responseDeserialize: deserialize_aggregator_KeyResp,
+  },
+  // Get the signature format template used for authentication
+getSignatureFormat: {
+    path: '/aggregator.Aggregator/GetSignatureFormat',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.GetSignatureFormatReq,
+    responseType: avs_pb.GetSignatureFormatResp,
+    requestSerialize: serialize_aggregator_GetSignatureFormatReq,
+    requestDeserialize: deserialize_aggregator_GetSignatureFormatReq,
+    responseSerialize: serialize_aggregator_GetSignatureFormatResp,
+    responseDeserialize: deserialize_aggregator_GetSignatureFormatResp,
   },
   // Smart Acccount Operation
 getNonce: {

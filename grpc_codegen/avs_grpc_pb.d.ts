@@ -13,6 +13,7 @@ import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/stru
 
 interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {
     getKey: IAggregatorService_IGetKey;
+    getSignatureFormat: IAggregatorService_IGetSignatureFormat;
     getNonce: IAggregatorService_IGetNonce;
     getWallet: IAggregatorService_IGetWallet;
     listWallets: IAggregatorService_IListWallets;
@@ -42,6 +43,15 @@ interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKey
     requestDeserialize: grpc.deserialize<avs_pb.GetKeyReq>;
     responseSerialize: grpc.serialize<avs_pb.KeyResp>;
     responseDeserialize: grpc.deserialize<avs_pb.KeyResp>;
+}
+interface IAggregatorService_IGetSignatureFormat extends grpc.MethodDefinition<avs_pb.GetSignatureFormatReq, avs_pb.GetSignatureFormatResp> {
+    path: "/aggregator.Aggregator/GetSignatureFormat";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetSignatureFormatReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetSignatureFormatReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetSignatureFormatResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetSignatureFormatResp>;
 }
 interface IAggregatorService_IGetNonce extends grpc.MethodDefinition<avs_pb.NonceRequest, avs_pb.NonceResp> {
     path: "/aggregator.Aggregator/GetNonce";
@@ -219,6 +229,7 @@ export const AggregatorService: IAggregatorService;
 
 export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getKey: grpc.handleUnaryCall<avs_pb.GetKeyReq, avs_pb.KeyResp>;
+    getSignatureFormat: grpc.handleUnaryCall<avs_pb.GetSignatureFormatReq, avs_pb.GetSignatureFormatResp>;
     getNonce: grpc.handleUnaryCall<avs_pb.NonceRequest, avs_pb.NonceResp>;
     getWallet: grpc.handleUnaryCall<avs_pb.GetWalletReq, avs_pb.GetWalletResp>;
     listWallets: grpc.handleUnaryCall<avs_pb.ListWalletReq, avs_pb.ListWalletResp>;
@@ -244,6 +255,9 @@ export interface IAggregatorClient {
     getKey(request: avs_pb.GetKeyReq, callback: (error: grpc.ServiceError | null, response: avs_pb.KeyResp) => void): grpc.ClientUnaryCall;
     getKey(request: avs_pb.GetKeyReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.KeyResp) => void): grpc.ClientUnaryCall;
     getKey(request: avs_pb.GetKeyReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.KeyResp) => void): grpc.ClientUnaryCall;
+    getSignatureFormat(request: avs_pb.GetSignatureFormatReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetSignatureFormatResp) => void): grpc.ClientUnaryCall;
+    getSignatureFormat(request: avs_pb.GetSignatureFormatReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetSignatureFormatResp) => void): grpc.ClientUnaryCall;
+    getSignatureFormat(request: avs_pb.GetSignatureFormatReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetSignatureFormatResp) => void): grpc.ClientUnaryCall;
     getNonce(request: avs_pb.NonceRequest, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
@@ -308,6 +322,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getKey(request: avs_pb.GetKeyReq, callback: (error: grpc.ServiceError | null, response: avs_pb.KeyResp) => void): grpc.ClientUnaryCall;
     public getKey(request: avs_pb.GetKeyReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.KeyResp) => void): grpc.ClientUnaryCall;
     public getKey(request: avs_pb.GetKeyReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.KeyResp) => void): grpc.ClientUnaryCall;
+    public getSignatureFormat(request: avs_pb.GetSignatureFormatReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetSignatureFormatResp) => void): grpc.ClientUnaryCall;
+    public getSignatureFormat(request: avs_pb.GetSignatureFormatReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetSignatureFormatResp) => void): grpc.ClientUnaryCall;
+    public getSignatureFormat(request: avs_pb.GetSignatureFormatReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetSignatureFormatResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: avs_pb.NonceRequest, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
     public getNonce(request: avs_pb.NonceRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.NonceResp) => void): grpc.ClientUnaryCall;
