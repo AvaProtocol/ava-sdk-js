@@ -115,7 +115,10 @@ class BaseClient {
   async authWithAPIKey({
     message,
     apiKey,
-  }: GetKeyRequestApiKey): Promise<GetKeyResponse> {
+  }: {
+    message: string;
+    apiKey: string;
+  }): Promise<GetKeyResponse> {
     const request = new avs_pb.GetKeyReq();
     request.setMessage(message);
     request.setSignature(apiKey);
@@ -138,7 +141,10 @@ class BaseClient {
   async authWithSignature({
     message,
     signature,
-  }: GetKeyRequestSignature): Promise<GetKeyResponse> {
+  }: {
+    message: string;
+    signature: string;
+  }): Promise<GetKeyResponse> {
     // Create a new GetKeyReq message
     const request = new avs_pb.GetKeyReq();
     request.setMessage(message);
