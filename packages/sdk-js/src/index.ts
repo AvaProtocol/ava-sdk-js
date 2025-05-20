@@ -26,20 +26,11 @@ import {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   DEFAULT_LIMIT,
+  ListSecretResponse,
+  SecretRequestOptions,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
-
-interface ListSecretResponse {
-  name: string;
-  workflowId?: string;
-  orgId?: string;
-}
-
-interface SecretRequestOptions extends RequestOptions {
-  workflowId?: string;
-  orgId?: string;
-}
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
 
@@ -107,10 +98,10 @@ class BaseClient {
     // Create and set timestamp objects properly
     const issueTs = new Timestamp();
     issueTs.fromDate(issuedAt);
-    
+
     const expiredTs = new Timestamp();
     expiredTs.fromDate(expiredAt);
-    
+
     request.setIssuedAt(issueTs);
     request.setExpiredAt(expiredTs);
     request.setSignature(apiKey);
@@ -144,18 +135,18 @@ class BaseClient {
     const request = new avs_pb.GetKeyReq();
     request.setChainId(chainId);
     request.setOwner(address);
-    
+
     // Create and set timestamp objects properly
     const issueTs = new Timestamp();
     issueTs.fromDate(issuedAt);
-    
+
     const expiredTs = new Timestamp();
     expiredTs.fromDate(expiredAt);
-    
+
     request.setIssuedAt(issueTs);
     request.setExpiredAt(expiredTs);
     request.setSignature(signature);
-    
+
     // when exchanging the key, we don't set the token yet
     const result = await this.sendGrpcRequest<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
@@ -691,11 +682,7 @@ class Client extends BaseClient {
   }
 }
 
-export {
-  Environment,
-  WorkflowStatus,
-  TriggerType,
-} from "@avaprotocol/types";
+export { Environment, WorkflowStatus, TriggerType } from "@avaprotocol/types";
 
 export { ExecutionStatus };
 
