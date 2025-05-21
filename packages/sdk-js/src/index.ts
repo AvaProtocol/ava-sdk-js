@@ -299,8 +299,7 @@ class Client extends BaseClient {
     { isHidden }: { isHidden: boolean },
     requestOptions?: RequestOptions
   ): Promise<SmartWallet> {
-    // Create the request object
-    const request = new avs_pb.GetWalletReq();
+    const request = new avs_pb.SetWalletReq();
     request.setSalt(salt);
 
     if (factoryAddress) {
@@ -309,58 +308,24 @@ class Client extends BaseClient {
       request.setFactoryAddress(this.factoryAddress);
     }
 
-    // Create custom metadata with isHidden flag
-    const metadata = new Metadata();
-    metadata.set("x-is-hidden", isHidden.toString());
-    metadata.set("x-operation", "setWallet");
+    request.setIsHidden(isHidden);
 
-    // Use the getWallet method with custom metadata
-    const method = "getWallet";
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetWalletResp,
+      avs_pb.SetWalletReq
+    >("setWallet", request, requestOptions);
 
-    try {
-      // Clone the existing metadata from the client
-      const combinedMetadata = _.cloneDeep(this.metadata || new Metadata());
-
-      if (requestOptions?.authKey) {
-        combinedMetadata.set(AUTH_KEY_HEADER, requestOptions.authKey);
-      } else if (this.authKey) {
-        combinedMetadata.set(AUTH_KEY_HEADER, this.authKey);
-      }
-
-      combinedMetadata.set("x-is-hidden", isHidden.toString());
-      combinedMetadata.set("x-operation", "setWallet");
-
-      // Make the request using the existing getWallet method
-      return new Promise((resolve, reject) => {
-        (this.rpcClient as any)[method](
-          request,
-          combinedMetadata,
-          async (error: any, response: any) => {
-            if (error) {
-              console.error("Error setting wallet hidden status:", error);
-              reject(error);
-            } else {
-              try {
-                const updatedWallet = await this.getWallet(
-                  { salt, factoryAddress },
-                  requestOptions
-                );
-                resolve({
-                  ...updatedWallet,
-                  isHidden,
-                });
-              } catch (getError) {
-                console.error("Error getting updated wallet:", getError);
-                reject(getError);
-              }
-            }
-          }
-        );
-      });
-    } catch (error) {
-      console.error("Error setting wallet hidden status:", error);
-      throw error;
-    }
+    return {
+      address: result.getAddress(),
+      salt: result.getSalt(),
+      factory: result.getFactoryAddress(),
+      isHidden: result.getIsHidden(),
+      totalTaskCount: result.getTotalTaskCount(),
+      activeTaskCount: result.getActiveTaskCount(),
+      completedTaskCount: result.getCompletedTaskCount(),
+      failedTaskCount: result.getFailedTaskCount(),
+      canceledTaskCount: result.getCanceledTaskCount(),
+    };
   }
 
   /**
