@@ -1395,8 +1395,8 @@ export class ListTasksReq extends jspb.Message {
     addSmartWalletAddress(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListTasksReq;
-    getItemPerPage(): number;
-    setItemPerPage(value: number): ListTasksReq;
+    getLimit(): number;
+    setLimit(value: number): ListTasksReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksReq.AsObject;
@@ -1412,7 +1412,7 @@ export namespace ListTasksReq {
     export type AsObject = {
         smartWalletAddressList: Array<string>,
         cursor: string,
-        itemPerPage: number,
+        limit: number,
     }
 }
 
@@ -1509,8 +1509,8 @@ export class ListExecutionsReq extends jspb.Message {
     addTaskIds(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListExecutionsReq;
-    getItemPerPage(): number;
-    setItemPerPage(value: number): ListExecutionsReq;
+    getLimit(): number;
+    setLimit(value: number): ListExecutionsReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListExecutionsReq.AsObject;
@@ -1526,7 +1526,7 @@ export namespace ListExecutionsReq {
     export type AsObject = {
         taskIdsList: Array<string>,
         cursor: string,
-        itemPerPage: number,
+        limit: number,
     }
 }
 
@@ -1869,8 +1869,8 @@ export class ListSecretsReq extends jspb.Message {
     setBefore(value: string): ListSecretsReq;
     getAfter(): string;
     setAfter(value: string): ListSecretsReq;
-    getItemPerPage(): number;
-    setItemPerPage(value: number): ListSecretsReq;
+    getLimit(): number;
+    setLimit(value: number): ListSecretsReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsReq.AsObject;
@@ -1888,7 +1888,7 @@ export namespace ListSecretsReq {
         cursor: string,
         before: string,
         after: string,
-        itemPerPage: number,
+        limit: number,
     }
 }
 

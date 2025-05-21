@@ -15,33 +15,19 @@ import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-} from "@avaprotocol/types";
-
-import {
-  AUTH_KEY_HEADER,
+  ListSecretResponse,
+  ListSecretsResponse,
+  SecretRequestOptions,
   RequestOptions,
   ClientOption,
   SmartWallet,
   GetWalletRequest,
   GetExecutionsRequest,
   GetWorkflowsRequest,
-  DEFAULT_LIMIT,
+  GetSignatureFormatResponse,
 } from "@avaprotocol/types";
 
-interface GetSignatureFormatResponse {
-  message: string;
-}
-
-interface ListSecretResponse {
-  name: string;
-  workflowId?: string;
-  orgId?: string;
-}
-
-interface SecretRequestOptions extends RequestOptions {
-  workflowId?: string;
-  orgId?: string;
-}
+import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
@@ -373,7 +359,7 @@ class Client extends BaseClient {
       request.setCursor(options.cursor);
     }
 
-    request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListTasksResp,
@@ -431,7 +417,7 @@ class Client extends BaseClient {
       request.setCursor(options.cursor);
     }
 
-    request.setItemPerPage(options?.limit || DEFAULT_LIMIT);
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListExecutionsResp,
@@ -667,14 +653,19 @@ class Client extends BaseClient {
   }
 
   /**
-   * Retrieve a list of secrets; secrets can be filtered by workflowId or orgId.
-   * @param params - Parameters for listing secrets
-   * @param options - Request options, including workflowId and orgId for filtering
-   * @returns {Promise<ListSecretResponse[]>} - The list of secrets
+   * Retrieve a list of secrets with pagination support
+   * @param options - Request options including pagination parameters
+   * @param options.workflowId - Filter secrets by workflow ID
+   * @param options.orgId - Filter secrets by organization ID
+   * @param options.cursor - Legacy cursor parameter (deprecated, use before/after instead)
+   * @param options.before - Get items before this cursor value (for backward pagination)
+   * @param options.after - Get items after this cursor value (for forward pagination)
+   * @param options.itemPerPage - Number of items per page
+   * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
    */
-  async listSecrets(
+  async getSecrets(
     options?: SecretRequestOptions
-  ): Promise<ListSecretResponse[]> {
+  ): Promise<ListSecretsResponse> {
     const request = new avs_pb.ListSecretsReq();
 
     if (options?.workflowId) {
@@ -686,16 +677,32 @@ class Client extends BaseClient {
       // request.setOrgId(options.orgId);
     }
 
+    if (options?.itemPerPage) {
+      request.setLimit(options.itemPerPage);
+    }
+
+    if (options?.after) {
+      request.setAfter(options.after);
+    }
+
+    if (options?.before) {
+      request.setBefore(options.before);
+    }
+
     const result = await this.sendGrpcRequest<
       avs_pb.ListSecretsResp,
       avs_pb.ListSecretsReq
     >("listSecrets", request, options);
 
-    return result.getItemsList().map((item) => ({
-      name: item.getName(),
-      workflowId: item.getWorkflowId(),
-      orgId: item.getOrgId(),
-    }));
+    return {
+      items: result.getItemsList().map((item) => ({
+        name: item.getName(),
+        workflowId: item.getWorkflowId(),
+        orgId: item.getOrgId(),
+      })),
+      cursor: result.getCursor(),
+      hasMore: result.getHasMore(),
+    };
   }
 
   /**
@@ -753,6 +760,4 @@ export type {
   TriggerReasonProps,
   OutputDataProps,
   SecretProps,
-  ListSecretResponse,
-  SecretRequestOptions,
 };
