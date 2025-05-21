@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.0
+
+### Major Changes
+
+- cdecf79: Get sign message from server; added wallet isHidden
+
 ## 0.9.4
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 1.5.0
+
+### Minor Changes
+
+- cdecf79: Get sign message from server; added wallet isHidden
+
+### Patch Changes
+
+- Updated dependencies [cdecf79]
+  - @avaprotocol/types@1.0.0
+
 ## 1.4.0
 
 ### Minor Changes
