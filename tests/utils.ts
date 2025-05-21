@@ -7,10 +7,9 @@ import {
   StepProps,
 } from "@avaprotocol/sdk-js";
 import {
-  getKeyRequestMessage,
-  GetKeyRequestMessage,
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
+  GetKeyRequestMessage,
   WorkflowStatus,
 } from "@avaprotocol/types";
 
@@ -51,38 +50,40 @@ export async function getAddress(privateKey: string): Promise<string> {
 
 // Generate a signed message from a private key
 export async function generateSignature(
+  message: string,
   privateKey: string
-): Promise<GetKeyRequestSignature> {
+): Promise<string> {
   const wallet = new ethers.Wallet(privateKey);
-  const now = Date.now(); // Get current time in milliseconds
-
-  const keyRequestParams: GetKeyRequestMessage = {
-    chainId: _.toNumber(chainId),
-    address: wallet.address,
-    issuedAt: new Date(now),
-    expiredAt: new Date(now + EXPIRATION_DURATION_MS),
-  };
-
-  const message = getKeyRequestMessage(keyRequestParams);
   const signature = await wallet.signMessage(message);
-
-  return { signature, ...keyRequestParams };
+  return signature;
 }
 
 // Helper function to generate api key message
-export function generateAuthPayloadWithApiKey(
+export async function generateAuthPayloadWithApiKey(
   address: string,
   apiKey: string
-): GetKeyRequestApiKey {
-  const now = Date.now(); // Get current time in milliseconds
+): Promise<GetKeyRequestApiKey> {
+  try {
+    const client = new Client({
+      endpoint: getConfig().avsEndpoint,
+    });
 
-  return {
-    chainId: _.toNumber(chainId),
-    address,
-    issuedAt: new Date(now),
-    expiredAt: new Date(now + EXPIRATION_DURATION_MS),
-    apiKey,
-  };
+    const { message } = await client.getSignatureFormat(address);
+    return { message, apiKey };
+  } catch (error) {
+    console.warn("GetSignatureFormat not available, using fallback format");
+    const now = Date.now();
+    const message = `Please sign the below text for ownership verification.
+
+URI: https://app.avaprotocol.org
+Chain ID: ${_.toNumber(chainId)}
+Version: 1
+Issued At: ${new Date(now).toISOString()}
+Expire At: ${new Date(now + EXPIRATION_DURATION_MS).toISOString()}
+Wallet: ${address}`;
+
+    return { message, apiKey };
+  }
 }
 
 // Add a workflow to the list of created workflows for cleanup, or removal later

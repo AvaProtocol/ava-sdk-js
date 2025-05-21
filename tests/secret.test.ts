@@ -24,6 +24,8 @@ const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.Secrets * 1000; // Salt index 9,000 - 9,999
+const privateKey2 =
+  "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293";
 
 describe("secret Tests", () => {
   let client: Client;
@@ -38,22 +40,30 @@ describe("secret Tests", () => {
       factoryAddress,
     });
 
-    const signature = await generateSignature(walletPrivateKey);
-    const res = await client.authWithSignature(signature);
+    const { message } = await client.getSignatureFormat(eoaAddress);
+    const signature = await generateSignature(message, walletPrivateKey);
+    const res = await client.authWithSignature({
+      message: message,
+      signature: signature,
+    });
     client.setAuthKey(res.authKey);
 
-    const eoaAddress2 = await getAddress(
-      "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293"
-    );
+    const eoaAddress2 = await getAddress(privateKey2);
+
+    console.log("Client 2 address:", eoaAddress2);
     // Initialize the client with test credentials
     client2 = new Client({
       endpoint: avsEndpoint,
       factoryAddress,
     });
-    const signature2 = await generateSignature(
-      "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293"
-    );
-    const res2 = await client.authWithSignature(signature2);
+
+    const { message: message2 } = await client2.getSignatureFormat(eoaAddress2);
+    const signature2 = await generateSignature(message2, privateKey2);
+    const res2 = await client2.authWithSignature({
+      message: message2,
+      signature: signature2,
+    });
+
     client2.setAuthKey(res2.authKey);
   });
 

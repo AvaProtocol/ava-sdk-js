@@ -11,7 +11,7 @@ let saltIndex = SaltGlobal.GetWallet * 1000; // Salt index 5,000 - 5,999
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
-describe("getAddresses Tests", () => {
+describe("getWallet Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
@@ -25,8 +25,12 @@ describe("getAddresses Tests", () => {
     });
 
     console.log("Authenticating with signature ...");
-    const signature = await generateSignature(walletPrivateKey);
-    const res = await client.authWithSignature(signature);
+    const { message } = await client.getSignatureFormat(eoaAddress);
+    const signature = await generateSignature(message, walletPrivateKey);
+    const res = await client.authWithSignature({
+      message: message,
+      signature: signature,
+    });
     client.setAuthKey(res.authKey);
   });
 
@@ -182,9 +186,10 @@ describe("getAddresses Tests", () => {
 
     await expect(
       client.getWallet({ salt: "0", factoryAddress: "0x1234" })
-    ).rejects.toThrow(/invalid factory address/);
+    ).rejects.toThrow(/^3 INVALID_ARGUMENT:.*invalid factory address/);
+
     await expect(client.getWallet({ salt: "0" })).rejects.toThrow(
-      /invalid factory address/
+      /^3 INVALID_ARGUMENT:.*no contract code at given address/
     );
   });
 });

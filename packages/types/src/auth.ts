@@ -1,20 +1,12 @@
-export const getKeyRequestMessage = ({
-  chainId,
-  address,
-  issuedAt,
-  expiredAt,
-}: GetKeyRequestMessage): string => {
-  return `Please sign the below text for ownership verification.
-
-URI: https://app.avaprotocol.org
-Chain ID: ${chainId}
-Version: 1
-Issued At: ${issuedAt.toISOString()}
-Expire At: ${expiredAt.toISOString()}
-Wallet: ${address}`;
+export type GetSignatureFormatRequest = {
+  wallet: string;
 };
 
-// Common interface for all get authKey requests
+export interface GetSignatureFormatResponse {
+  message: string;
+}
+
+// Common interface for all get authKey requests (legacy)
 export type GetKeyRequestMessage = {
   chainId: number;
   address: string;
@@ -23,14 +15,16 @@ export type GetKeyRequestMessage = {
 };
 
 // Get authKey request with signature
-export type GetKeyRequestSignature = GetKeyRequestMessage & {
+export interface GetKeyRequestSignature {
+  message: string;
   signature: string;
-};
+}
 
 // Get authKey request with apiKey
-export type GetKeyRequestApiKey = GetKeyRequestMessage & {
+export interface GetKeyRequestApiKey {
+  message: string;
   apiKey: string;
-};
+}
 
 export interface GetKeyResponse {
   authKey: string;

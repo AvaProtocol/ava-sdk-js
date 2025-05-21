@@ -1344,6 +1344,8 @@ export class SmartWallet extends jspb.Message {
     setSalt(value: string): SmartWallet;
     getFactory(): string;
     setFactory(value: string): SmartWallet;
+    getIsHidden(): boolean;
+    setIsHidden(value: boolean): SmartWallet;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): SmartWallet.AsObject;
@@ -1360,6 +1362,7 @@ export namespace SmartWallet {
         address: string,
         salt: string,
         factory: string,
+        isHidden: boolean,
     }
 }
 
@@ -1599,20 +1602,8 @@ export namespace ExecutionStatusResp {
 }
 
 export class GetKeyReq extends jspb.Message { 
-    getOwner(): string;
-    setOwner(value: string): GetKeyReq;
-    getChainId(): number;
-    setChainId(value: number): GetKeyReq;
-
-    hasIssuedAt(): boolean;
-    clearIssuedAt(): void;
-    getIssuedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setIssuedAt(value?: google_protobuf_timestamp_pb.Timestamp): GetKeyReq;
-
-    hasExpiredAt(): boolean;
-    clearExpiredAt(): void;
-    getExpiredAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-    setExpiredAt(value?: google_protobuf_timestamp_pb.Timestamp): GetKeyReq;
+    getMessage(): string;
+    setMessage(value: string): GetKeyReq;
     getSignature(): string;
     setSignature(value: string): GetKeyReq;
 
@@ -1628,10 +1619,7 @@ export class GetKeyReq extends jspb.Message {
 
 export namespace GetKeyReq {
     export type AsObject = {
-        owner: string,
-        chainId: number,
-        issuedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
-        expiredAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+        message: string,
         signature: string,
     }
 }
@@ -1728,6 +1716,8 @@ export class GetWalletResp extends jspb.Message {
     setSalt(value: string): GetWalletResp;
     getFactoryAddress(): string;
     setFactoryAddress(value: string): GetWalletResp;
+    getIsHidden(): boolean;
+    setIsHidden(value: boolean): GetWalletResp;
     getTotalTaskCount(): number;
     setTotalTaskCount(value: number): GetWalletResp;
     getActiveTaskCount(): number;
@@ -1754,11 +1744,38 @@ export namespace GetWalletResp {
         address: string,
         salt: string,
         factoryAddress: string,
+        isHidden: boolean,
         totalTaskCount: number,
         activeTaskCount: number,
         completedTaskCount: number,
         failedTaskCount: number,
         canceledTaskCount: number,
+    }
+}
+
+export class SetWalletReq extends jspb.Message { 
+    getSalt(): string;
+    setSalt(value: string): SetWalletReq;
+    getFactoryAddress(): string;
+    setFactoryAddress(value: string): SetWalletReq;
+    getIsHidden(): boolean;
+    setIsHidden(value: boolean): SetWalletReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SetWalletReq.AsObject;
+    static toObject(includeInstance: boolean, msg: SetWalletReq): SetWalletReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SetWalletReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SetWalletReq;
+    static deserializeBinaryFromReader(message: SetWalletReq, reader: jspb.BinaryReader): SetWalletReq;
+}
+
+export namespace SetWalletReq {
+    export type AsObject = {
+        salt: string,
+        factoryAddress: string,
+        isHidden: boolean,
     }
 }
 
@@ -1846,6 +1863,14 @@ export namespace CreateOrUpdateSecretReq {
 export class ListSecretsReq extends jspb.Message { 
     getWorkflowId(): string;
     setWorkflowId(value: string): ListSecretsReq;
+    getCursor(): string;
+    setCursor(value: string): ListSecretsReq;
+    getBefore(): string;
+    setBefore(value: string): ListSecretsReq;
+    getAfter(): string;
+    setAfter(value: string): ListSecretsReq;
+    getItemPerPage(): number;
+    setItemPerPage(value: number): ListSecretsReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsReq.AsObject;
@@ -1860,6 +1885,10 @@ export class ListSecretsReq extends jspb.Message {
 export namespace ListSecretsReq {
     export type AsObject = {
         workflowId: string,
+        cursor: string,
+        before: string,
+        after: string,
+        itemPerPage: number,
     }
 }
 
@@ -1868,6 +1897,10 @@ export class ListSecretsResp extends jspb.Message {
     getItemsList(): Array<ListSecretsResp.ResponseSecret>;
     setItemsList(value: Array<ListSecretsResp.ResponseSecret>): ListSecretsResp;
     addItems(value?: ListSecretsResp.ResponseSecret, index?: number): ListSecretsResp.ResponseSecret;
+    getCursor(): string;
+    setCursor(value: string): ListSecretsResp;
+    getHasMore(): boolean;
+    setHasMore(value: boolean): ListSecretsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsResp.AsObject;
@@ -1882,6 +1915,8 @@ export class ListSecretsResp extends jspb.Message {
 export namespace ListSecretsResp {
     export type AsObject = {
         itemsList: Array<ListSecretsResp.ResponseSecret.AsObject>,
+        cursor: string,
+        hasMore: boolean,
     }
 
 
@@ -1939,6 +1974,46 @@ export namespace DeleteSecretReq {
         name: string,
         workflowId: string,
         orgId: string,
+    }
+}
+
+export class GetSignatureFormatReq extends jspb.Message { 
+    getWallet(): string;
+    setWallet(value: string): GetSignatureFormatReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetSignatureFormatReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetSignatureFormatReq): GetSignatureFormatReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetSignatureFormatReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetSignatureFormatReq;
+    static deserializeBinaryFromReader(message: GetSignatureFormatReq, reader: jspb.BinaryReader): GetSignatureFormatReq;
+}
+
+export namespace GetSignatureFormatReq {
+    export type AsObject = {
+        wallet: string,
+    }
+}
+
+export class GetSignatureFormatResp extends jspb.Message { 
+    getMessage(): string;
+    setMessage(value: string): GetSignatureFormatResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetSignatureFormatResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetSignatureFormatResp): GetSignatureFormatResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetSignatureFormatResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetSignatureFormatResp;
+    static deserializeBinaryFromReader(message: GetSignatureFormatResp, reader: jspb.BinaryReader): GetSignatureFormatResp;
+}
+
+export namespace GetSignatureFormatResp {
+    export type AsObject = {
+        message: string,
     }
 }
 

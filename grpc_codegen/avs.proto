@@ -464,7 +464,7 @@ message NonceResp {
 message ListWalletReq {
   // filter out by factory address or salt
   // otherwise return all the wallet
-  string factory_address = 1;
+  string factory_address = 1; // TODO: Consider renaming to factoryAddress for consistency if this is used as a filter key matching SmartWallet.factoryAddress
   string salt            = 2;
 }
 
@@ -472,6 +472,7 @@ message SmartWallet {
   string address = 1;
   string salt = 2;
   string factory = 3;
+  bool is_hidden = 4;  // Whether the wallet is hidden
 }
 
 message ListWalletResp {
@@ -540,11 +541,10 @@ message ExecutionStatusResp {
 }
 
 message GetKeyReq {
-  string owner = 1;
-  int64  chain_id = 2;
-  google.protobuf.Timestamp issued_at = 3;
-  google.protobuf.Timestamp expired_at = 4;
-  string signature = 5;
+  // The message to sign, provided by GetSignatureFormat
+  string message = 1;
+  // The signature of the message
+  string signature = 2;
 }
 
 message KeyResp {
@@ -591,12 +591,20 @@ message GetWalletResp {
   string address = 1;
   string salt = 2;
   string factory_address = 3;
+  bool is_hidden = 4;
+  uint64 total_task_count = 5;
+  uint64 active_task_count = 6;
+  uint64 completed_task_count = 7;
+  uint64 failed_task_count = 8;
+  uint64 canceled_task_count = 9;
+}
 
-  uint64 total_task_count = 4;
-  uint64 active_task_count = 5;
-  uint64 completed_task_count = 6;
-  uint64 failed_task_count = 7;
-  uint64 canceled_task_count = 8;
+message SetWalletReq {
+  string salt = 1;
+  // this is the factory address for the wallet, when leaving its empty, we will use our default factory address
+  string factory_address = 2;
+  // whether the wallet should be hidden in getWallets results
+  bool is_hidden = 3;
 }
 
 message UserTriggerTaskReq {
@@ -635,6 +643,13 @@ message CreateOrUpdateSecretReq {
 
 message ListSecretsReq {
   string workflow_id = 1;
+  // Deprecated: Use before or after instead
+  string cursor = 2;
+  // Get items before this cursor value (for backward pagination)
+  string before = 3;
+  // Get items after this cursor value (for forward pagination)
+  string after = 4;
+  int64 item_per_page = 5;
 }
 
 message ListSecretsResp {
@@ -647,6 +662,8 @@ message ListSecretsResp {
     string org_id = 5;
   }
   repeated ResponseSecret items = 1;
+  string cursor = 2;
+  bool has_more = 3;
 }
 
 message DeleteSecretReq {
@@ -659,14 +676,27 @@ message DeleteSecretReq {
   string org_id = 3;
 }
 
+message GetSignatureFormatReq {
+  // The wallet address to include in the signature format
+  string wallet = 1;
+}
+
+message GetSignatureFormatResp {
+  // The formatted signature message with server-side values filled in
+  string message = 1;
+}
 
 service Aggregator {
   // Exchange for an Auth Key to authenticate in subsequent request
   rpc GetKey(GetKeyReq) returns (KeyResp) {};
+  
+  // Get the signature format template used for authentication
+  rpc GetSignatureFormat(GetSignatureFormatReq) returns (GetSignatureFormatResp) {};
 
   // Smart Acccount Operation
   rpc GetNonce(NonceRequest)        returns (NonceResp) {};
   rpc GetWallet(GetWalletReq)       returns (GetWalletResp) {};
+  rpc SetWallet(SetWalletReq)       returns (GetWalletResp) {};
   rpc ListWallets(ListWalletReq)    returns (ListWalletResp) {};
 
   

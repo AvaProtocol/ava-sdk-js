@@ -140,6 +140,28 @@ function deserialize_aggregator_GetKeyReq(buffer_arg) {
   return avs_pb.GetKeyReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_GetSignatureFormatReq(arg) {
+  if (!(arg instanceof avs_pb.GetSignatureFormatReq)) {
+    throw new Error('Expected argument of type aggregator.GetSignatureFormatReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetSignatureFormatReq(buffer_arg) {
+  return avs_pb.GetSignatureFormatReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetSignatureFormatResp(arg) {
+  if (!(arg instanceof avs_pb.GetSignatureFormatResp)) {
+    throw new Error('Expected argument of type aggregator.GetSignatureFormatResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetSignatureFormatResp(buffer_arg) {
+  return avs_pb.GetSignatureFormatResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_GetWalletReq(arg) {
   if (!(arg instanceof avs_pb.GetWalletReq)) {
     throw new Error('Expected argument of type aggregator.GetWalletReq');
@@ -316,6 +338,17 @@ function deserialize_aggregator_NonceResp(buffer_arg) {
   return avs_pb.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_SetWalletReq(arg) {
+  if (!(arg instanceof avs_pb.SetWalletReq)) {
+    throw new Error('Expected argument of type aggregator.SetWalletReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_SetWalletReq(buffer_arg) {
+  return avs_pb.SetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_Task(arg) {
   if (!(arg instanceof avs_pb.Task)) {
     throw new Error('Expected argument of type aggregator.Task');
@@ -374,6 +407,18 @@ getKey: {
     responseSerialize: serialize_aggregator_KeyResp,
     responseDeserialize: deserialize_aggregator_KeyResp,
   },
+  // Get the signature format template used for authentication
+getSignatureFormat: {
+    path: '/aggregator.Aggregator/GetSignatureFormat',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.GetSignatureFormatReq,
+    responseType: avs_pb.GetSignatureFormatResp,
+    requestSerialize: serialize_aggregator_GetSignatureFormatReq,
+    requestDeserialize: deserialize_aggregator_GetSignatureFormatReq,
+    responseSerialize: serialize_aggregator_GetSignatureFormatResp,
+    responseDeserialize: deserialize_aggregator_GetSignatureFormatResp,
+  },
   // Smart Acccount Operation
 getNonce: {
     path: '/aggregator.Aggregator/GetNonce',
@@ -394,6 +439,17 @@ getNonce: {
     responseType: avs_pb.GetWalletResp,
     requestSerialize: serialize_aggregator_GetWalletReq,
     requestDeserialize: deserialize_aggregator_GetWalletReq,
+    responseSerialize: serialize_aggregator_GetWalletResp,
+    responseDeserialize: deserialize_aggregator_GetWalletResp,
+  },
+  setWallet: {
+    path: '/aggregator.Aggregator/SetWallet',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.SetWalletReq,
+    responseType: avs_pb.GetWalletResp,
+    requestSerialize: serialize_aggregator_SetWalletReq,
+    requestDeserialize: deserialize_aggregator_SetWalletReq,
     responseSerialize: serialize_aggregator_GetWalletResp,
     responseDeserialize: deserialize_aggregator_GetWalletResp,
   },
