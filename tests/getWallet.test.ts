@@ -192,4 +192,32 @@ describe("getWallet Tests", () => {
       /^3 INVALID_ARGUMENT:.*no contract code at given address/
     );
   });
+
+  test("should include isHidden property in getWallet response with default value of false", async () => {
+    const salt = _.toString(saltIndex++);
+    client.setFactoryAddress(factoryAddress);
+
+    const wallet = await client.getWallet({ salt });
+
+    expect(wallet).toBeDefined();
+    expect(wallet).toHaveProperty("isHidden");
+    expect(wallet.isHidden).toBe(false);
+  });
+
+  test("setWallet should update isHidden property", async () => {
+    const salt = _.toString(saltIndex++);
+    client.setFactoryAddress(factoryAddress);
+
+    const initialWallet = await client.getWallet({ salt });
+    expect(initialWallet.isHidden).toBe(false);
+
+    const hiddenWallet = await client.setWallet({ salt }, { isHidden: true });
+    expect(hiddenWallet.isHidden).toBe(true);
+
+    const unhiddenWallet = await client.setWallet(
+      { salt },
+      { isHidden: false }
+    );
+    expect(unhiddenWallet.isHidden).toBe(false);
+  });
 });
