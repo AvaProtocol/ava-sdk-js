@@ -1,5 +1,4 @@
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-
 import { NodeType, getKeyRequestMessage, TriggerType } from "@avaprotocol/types";
 
 import _ from "lodash";
@@ -42,7 +41,11 @@ async function generateSignature(privateKey: string) {
 
 async function generateApiToken() {
   const signature = await generateSignature(privateKey as string);
-  const result = await client.authWithSignature(signature);
+  const { message } = await client.getSignatureFormat(wallet.address);
+  const result = await client.authWithSignature({
+    message: message,
+    signature: signature,
+  });
   client.setAuthKey(result.authKey);
 
   return result;

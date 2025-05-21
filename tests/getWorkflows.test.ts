@@ -24,8 +24,12 @@ describe("getWorkflows Tests", () => {
       factoryAddress,
     });
 
-    const signature = await generateSignature(walletPrivateKey);
-    const res = await client.authWithSignature(signature);
+    const { message } = await client.getSignatureFormat(ownerAddress);
+    const signature = await generateSignature(message, walletPrivateKey);
+    const res = await client.authWithSignature({
+      message: message,
+      signature: signature,
+    });
     client.setAuthKey(res.authKey);
   });
 

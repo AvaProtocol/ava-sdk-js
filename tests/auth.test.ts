@@ -36,8 +36,13 @@ describe("Authentication Tests", () => {
 
   describe("Authenticated with client.authKey", () => {
     beforeAll(async () => {
-      const signature = await generateSignature(walletPrivateKey);
-      const res = await client.authWithSignature(signature);
+      const { message } = await client.getSignatureFormat(eoaAddress);
+      const signature = await generateSignature(message, walletPrivateKey);
+
+      const res = await client.authWithSignature({
+        message: message,
+        signature: signature,
+      });
 
       client.setAuthKey(res.authKey);
     });
@@ -168,16 +173,25 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       console.log("Authenticating with API key ...");
-      const apiKeyPayload = await generateAuthPayloadWithApiKey(eoaAddress, avsApiKey);
-      const res = await client.authWithAPIKey(apiKeyPayload);
+      const apiKeyPayload = await generateAuthPayloadWithApiKey(
+        eoaAddress,
+        avsApiKey
+      );
+
+      const { message } = await client.getSignatureFormat(eoaAddress);
+
+      const res = await client.authWithAPIKey({
+        message: message,
+        apiKey: apiKeyPayload.apiKey,
+      });
 
       authKeyViaAPI = res.authKey;
 
-      const sigObject: GetKeyRequestSignature = await generateSignature(
-        walletPrivateKey
-      );
-
-      const res2 = await client.authWithSignature(sigObject);
+      const sigObject = await generateSignature(message, walletPrivateKey);
+      const res2 = await client.authWithSignature({
+        message: message,
+        signature: sigObject,
+      });
 
       authKeyViaSignature = res2.authKey;
     });
@@ -402,13 +416,20 @@ describe("Authentication Tests", () => {
     let authKeyViaSignature: string;
     beforeAll(async () => {
       // Prepare an auth key for the tests
-      const signature = await generateSignature(walletPrivateKey);
-      const res = await client.authWithSignature(signature);
+      const { message } = await client.getSignatureFormat(eoaAddress);
+      const signature = await generateSignature(message, walletPrivateKey);
+      const res = await client.authWithSignature({
+        message: message,
+        signature: signature,
+      });
       authKeyViaSignature = res.authKey;
     });
 
     test("should return auth key when using API key", async () => {
-      const apiKeyPayload = await generateAuthPayloadWithApiKey(eoaAddress, avsApiKey);
+      const apiKeyPayload = await generateAuthPayloadWithApiKey(
+        eoaAddress,
+        avsApiKey
+      );
       const res = await client.authWithAPIKey(apiKeyPayload);
 
       expect(res).toBeDefined();
@@ -433,15 +454,12 @@ describe("Authentication Tests", () => {
     });
 
     test("should return auth key when using EOA signature", async () => {
-      const signature = await generateSignature(walletPrivateKey);
-
-      if (!signature) {
-        throw new Error(
-          "Signature could not be generated. Make sure TEST_PRIVATE_KEY is set in the .env.test file"
-        );
-      }
-
-      const res = await client.authWithSignature(signature);
+      const { message } = await client.getSignatureFormat(eoaAddress);
+      const signature = await generateSignature(message, walletPrivateKey);
+      const res = await client.authWithSignature({
+        message: message,
+        signature: signature,
+      });
 
       expect(res).toBeDefined();
       expect(res).toHaveProperty("authKey");

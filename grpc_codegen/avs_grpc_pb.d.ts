@@ -16,6 +16,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     getSignatureFormat: IAggregatorService_IGetSignatureFormat;
     getNonce: IAggregatorService_IGetNonce;
     getWallet: IAggregatorService_IGetWallet;
+    setWallet: IAggregatorService_ISetWallet;
     listWallets: IAggregatorService_IListWallets;
     createTask: IAggregatorService_ICreateTask;
     listTasks: IAggregatorService_IListTasks;
@@ -68,6 +69,15 @@ interface IAggregatorService_IGetWallet extends grpc.MethodDefinition<avs_pb.Get
     responseStream: false;
     requestSerialize: grpc.serialize<avs_pb.GetWalletReq>;
     requestDeserialize: grpc.deserialize<avs_pb.GetWalletReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetWalletResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetWalletResp>;
+}
+interface IAggregatorService_ISetWallet extends grpc.MethodDefinition<avs_pb.SetWalletReq, avs_pb.GetWalletResp> {
+    path: "/aggregator.Aggregator/SetWallet";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.SetWalletReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.SetWalletReq>;
     responseSerialize: grpc.serialize<avs_pb.GetWalletResp>;
     responseDeserialize: grpc.deserialize<avs_pb.GetWalletResp>;
 }
@@ -232,6 +242,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getSignatureFormat: grpc.handleUnaryCall<avs_pb.GetSignatureFormatReq, avs_pb.GetSignatureFormatResp>;
     getNonce: grpc.handleUnaryCall<avs_pb.NonceRequest, avs_pb.NonceResp>;
     getWallet: grpc.handleUnaryCall<avs_pb.GetWalletReq, avs_pb.GetWalletResp>;
+    setWallet: grpc.handleUnaryCall<avs_pb.SetWalletReq, avs_pb.GetWalletResp>;
     listWallets: grpc.handleUnaryCall<avs_pb.ListWalletReq, avs_pb.ListWalletResp>;
     createTask: grpc.handleUnaryCall<avs_pb.CreateTaskReq, avs_pb.CreateTaskResp>;
     listTasks: grpc.handleUnaryCall<avs_pb.ListTasksReq, avs_pb.ListTasksResp>;
@@ -264,6 +275,9 @@ export interface IAggregatorClient {
     getWallet(request: avs_pb.GetWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    setWallet(request: avs_pb.SetWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    setWallet(request: avs_pb.SetWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    setWallet(request: avs_pb.SetWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
@@ -331,6 +345,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getWallet(request: avs_pb.GetWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     public getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     public getWallet(request: avs_pb.GetWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    public setWallet(request: avs_pb.SetWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    public setWallet(request: avs_pb.SetWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
+    public setWallet(request: avs_pb.SetWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;

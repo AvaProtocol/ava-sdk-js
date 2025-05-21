@@ -47,8 +47,12 @@ describe("createWorkflow Tests", () => {
       factoryAddress,
     });
 
-    const signature = await generateSignature(walletPrivateKey);
-    const res = await client.authWithSignature(signature);
+    const { message } = await client.getSignatureFormat(eoaAddress);
+    const signature = await generateSignature(message, walletPrivateKey);
+    const res = await client.authWithSignature({
+      message: message,
+      signature: signature,
+    });
 
     client.setAuthKey(res.authKey);
   });
