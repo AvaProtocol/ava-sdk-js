@@ -94,14 +94,16 @@ class BaseClient {
    * @param wallet - The wallet address
    * @returns {Promise<GetSignatureFormatResponse>} - The response containing the signature format
    */
-  async getSignatureFormat(wallet: string): Promise<GetSignatureFormatResponse> {
+  async getSignatureFormat(
+    wallet: string
+  ): Promise<GetSignatureFormatResponse> {
     const request = new avs_pb.GetSignatureFormatReq();
     request.setWallet(wallet);
 
-    const result = await this.sendGrpcRequest<avs_pb.GetSignatureFormatResp, avs_pb.GetSignatureFormatReq>(
-      "getSignatureFormat",
-      request
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetSignatureFormatResp,
+      avs_pb.GetSignatureFormatReq
+    >("getSignatureFormat", request);
 
     return { message: result.getMessage() };
   }
@@ -275,12 +277,90 @@ class Client extends BaseClient {
       address: result.getAddress(),
       salt: result.getSalt(),
       factory: result.getFactoryAddress(),
+      isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
       activeTaskCount: result.getActiveTaskCount(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
       canceledTaskCount: result.getCanceledTaskCount(),
-    } as SmartWallet;
+    };
+  }
+
+  /**
+   * Set wallet properties including hiding/unhiding a wallet
+   * @param {GetWalletRequest} walletRequest - The wallet request containing salt and optional factory address
+   * @param {object} options - Options for the wallet
+   * @param {boolean} options.isHidden - Whether the wallet should be hidden
+   * @param {RequestOptions} requestOptions - Request options
+   * @returns {Promise<SmartWallet>} - The updated SmartWallet object
+   */
+  async setWallet(
+    { salt, factoryAddress }: GetWalletRequest,
+    { isHidden }: { isHidden: boolean },
+    requestOptions?: RequestOptions
+  ): Promise<SmartWallet> {
+    // Create the request object
+    const request = new avs_pb.GetWalletReq();
+    request.setSalt(salt);
+
+    if (factoryAddress) {
+      request.setFactoryAddress(factoryAddress);
+    } else if (this.factoryAddress) {
+      request.setFactoryAddress(this.factoryAddress);
+    }
+
+    // Create custom metadata with isHidden flag
+    const metadata = new Metadata();
+    metadata.set("x-is-hidden", isHidden.toString());
+    metadata.set("x-operation", "setWallet");
+
+    // Use the getWallet method with custom metadata
+    const method = "getWallet";
+
+    try {
+      // Clone the existing metadata from the client
+      const combinedMetadata = _.cloneDeep(this.metadata || new Metadata());
+
+      if (requestOptions?.authKey) {
+        combinedMetadata.set(AUTH_KEY_HEADER, requestOptions.authKey);
+      } else if (this.authKey) {
+        combinedMetadata.set(AUTH_KEY_HEADER, this.authKey);
+      }
+
+      combinedMetadata.set("x-is-hidden", isHidden.toString());
+      combinedMetadata.set("x-operation", "setWallet");
+
+      // Make the request using the existing getWallet method
+      return new Promise((resolve, reject) => {
+        (this.rpcClient as any)[method](
+          request,
+          combinedMetadata,
+          async (error: any, response: any) => {
+            if (error) {
+              console.error("Error setting wallet hidden status:", error);
+              reject(error);
+            } else {
+              try {
+                const updatedWallet = await this.getWallet(
+                  { salt, factoryAddress },
+                  requestOptions
+                );
+                resolve({
+                  ...updatedWallet,
+                  isHidden,
+                });
+              } catch (getError) {
+                console.error("Error getting updated wallet:", getError);
+                reject(getError);
+              }
+            }
+          }
+        );
+      });
+    } catch (error) {
+      console.error("Error setting wallet hidden status:", error);
+      throw error;
+    }
   }
 
   /**

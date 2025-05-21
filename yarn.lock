@@ -15,13 +15,6 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
-"@avaprotocol/types@workspace:*":
-  version "0.9.5-dev.5"
-  resolved "https://registry.yarnpkg.com/@avaprotocol/types/-/types-0.9.5-dev.5.tgz#fa8167dd2fe41a3f85fb7211eae332b2c27657f5"
-  integrity sha512-/BQcx+NcygEWYQwyipynlxNw43X/znNGxiPfoeSlqxYFB/IPsZy4GPL8d1sudy5pfpJf2yeawYpJk43duIT7WQ==
-  dependencies:
-    typescript "^5.4.2"
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.27.1":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.27.1.tgz#200f715e66d52a23b221a9435534a91cc13ad5be"

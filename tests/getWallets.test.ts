@@ -73,4 +73,52 @@ describe("getAddresses Tests", () => {
     expect(wallets.filter((item) => item.salt === salt1)).toHaveLength(1);
     expect(wallets.filter((item) => item.salt === salt2)).toHaveLength(1);
   });
+
+  test("should include isHidden property in getWallets response with default value of false", async () => {
+    const saltValue = _.toString(saltIndex++);
+    await client.getWallet({ salt: saltValue });
+
+    const wallets = await client.getWallets();
+    const wallet = wallets.find((w) => w.salt === saltValue);
+
+    expect(wallet).toBeDefined();
+    expect(wallet).toHaveProperty("isHidden");
+    if (wallet) {
+      expect(wallet.isHidden).toBe(false);
+    }
+  });
+
+  test("setWallet should hide wallet when isHidden is true", async () => {
+    const saltValue = _.toString(saltIndex++);
+    await client.getWallet({ salt: saltValue });
+
+    let wallets = await client.getWallets();
+    let wallet = wallets.find((w) => w.salt === saltValue);
+    expect(wallet).toBeDefined();
+    expect(wallet.isHidden).toBe(false); // The initial value should be false
+
+    const hiddenWallet = await client.setWallet(
+      { salt: saltValue },
+      { isHidden: true }
+    );
+
+    expect(hiddenWallet.isHidden).toBe(true);
+
+    wallets = await client.getWallets();
+    wallet = wallets.find((w) => w.salt === saltValue);
+
+    expect(wallet).toBeDefined();
+    expect(hiddenWallet.isHidden).toBe(true);
+
+    const unhiddenWallet = await client.setWallet(
+      { salt: saltValue },
+      { isHidden: false }
+    );
+    expect(unhiddenWallet.isHidden).toBe(false);
+
+    wallets = await client.getWallets();
+    wallet = wallets.find((w) => w.salt === saltValue);
+    expect(wallet).toBeDefined();
+    expect(wallet.isHidden).toBe(false); // The initial value should be false
+  });
 });
