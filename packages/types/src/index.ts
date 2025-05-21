@@ -77,7 +77,17 @@ export interface ListSecretResponse {
   orgId?: string;
 }
 
+export interface ListSecretsResponse {
+  items: ListSecretResponse[];
+  cursor: string;
+  hasMore: boolean;
+}
+
 export interface SecretRequestOptions extends RequestOptions {
   workflowId?: string;
   orgId?: string;
+  cursor?: string;
+  before?: string;
+  after?: string;
+  itemPerPage?: number;
 }
