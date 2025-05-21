@@ -11536,7 +11536,7 @@ proto.aggregator.ListTasksReq.toObject = function(includeInstance, msg) {
   var f, obj = {
     smartWalletAddressList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
     cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    itemPerPage: jspb.Message.getFieldWithDefault(msg, 3, 0)
+    limit: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -11583,7 +11583,7 @@ proto.aggregator.ListTasksReq.deserializeBinaryFromReader = function(msg, reader
       break;
     case 3:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setItemPerPage(value);
+      msg.setLimit(value);
       break;
     default:
       reader.skipField();
@@ -11628,7 +11628,7 @@ proto.aggregator.ListTasksReq.serializeBinaryToWriter = function(message, writer
       f
     );
   }
-  f = message.getItemPerPage();
+  f = message.getLimit();
   if (f !== 0) {
     writer.writeInt64(
       3,
@@ -11694,10 +11694,10 @@ proto.aggregator.ListTasksReq.prototype.setCursor = function(value) {
 
 
 /**
- * optional int64 item_per_page = 3;
+ * optional int64 limit = 3;
  * @return {number}
  */
-proto.aggregator.ListTasksReq.prototype.getItemPerPage = function() {
+proto.aggregator.ListTasksReq.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
@@ -11706,7 +11706,7 @@ proto.aggregator.ListTasksReq.prototype.getItemPerPage = function() {
  * @param {number} value
  * @return {!proto.aggregator.ListTasksReq} returns this
  */
-proto.aggregator.ListTasksReq.prototype.setItemPerPage = function(value) {
+proto.aggregator.ListTasksReq.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 3, value);
 };
 
@@ -12453,7 +12453,7 @@ proto.aggregator.ListExecutionsReq.toObject = function(includeInstance, msg) {
   var f, obj = {
     taskIdsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
     cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    itemPerPage: jspb.Message.getFieldWithDefault(msg, 3, 0)
+    limit: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -12500,7 +12500,7 @@ proto.aggregator.ListExecutionsReq.deserializeBinaryFromReader = function(msg, r
       break;
     case 3:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setItemPerPage(value);
+      msg.setLimit(value);
       break;
     default:
       reader.skipField();
@@ -12545,7 +12545,7 @@ proto.aggregator.ListExecutionsReq.serializeBinaryToWriter = function(message, w
       f
     );
   }
-  f = message.getItemPerPage();
+  f = message.getLimit();
   if (f !== 0) {
     writer.writeInt64(
       3,
@@ -12611,10 +12611,10 @@ proto.aggregator.ListExecutionsReq.prototype.setCursor = function(value) {
 
 
 /**
- * optional int64 item_per_page = 3;
+ * optional int64 limit = 3;
  * @return {number}
  */
-proto.aggregator.ListExecutionsReq.prototype.getItemPerPage = function() {
+proto.aggregator.ListExecutionsReq.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
 };
 
@@ -12623,7 +12623,7 @@ proto.aggregator.ListExecutionsReq.prototype.getItemPerPage = function() {
  * @param {number} value
  * @return {!proto.aggregator.ListExecutionsReq} returns this
  */
-proto.aggregator.ListExecutionsReq.prototype.setItemPerPage = function(value) {
+proto.aggregator.ListExecutionsReq.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 3, value);
 };
 
@@ -15037,7 +15037,7 @@ proto.aggregator.ListSecretsReq.toObject = function(includeInstance, msg) {
     cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
     before: jspb.Message.getFieldWithDefault(msg, 3, ""),
     after: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    itemPerPage: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    limit: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -15092,7 +15092,7 @@ proto.aggregator.ListSecretsReq.deserializeBinaryFromReader = function(msg, read
       break;
     case 5:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setItemPerPage(value);
+      msg.setLimit(value);
       break;
     default:
       reader.skipField();
@@ -15151,7 +15151,7 @@ proto.aggregator.ListSecretsReq.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getItemPerPage();
+  f = message.getLimit();
   if (f !== 0) {
     writer.writeInt64(
       5,
@@ -15234,10 +15234,10 @@ proto.aggregator.ListSecretsReq.prototype.setAfter = function(value) {
 
 
 /**
- * optional int64 item_per_page = 5;
+ * optional int64 limit = 5;
  * @return {number}
  */
-proto.aggregator.ListSecretsReq.prototype.getItemPerPage = function() {
+proto.aggregator.ListSecretsReq.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
@@ -15246,7 +15246,7 @@ proto.aggregator.ListSecretsReq.prototype.getItemPerPage = function() {
  * @param {number} value
  * @return {!proto.aggregator.ListSecretsReq} returns this
  */
-proto.aggregator.ListSecretsReq.prototype.setItemPerPage = function(value) {
+proto.aggregator.ListSecretsReq.prototype.setLimit = function(value) {
   return jspb.Message.setProto3IntField(this, 5, value);
 };
 
