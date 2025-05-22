@@ -25,6 +25,7 @@ import ETHTransferNode, {
 } from "./ethTransfer";
 import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
 import FilterNode, { FilterNodeData, FilterNodeProps } from "./filter";
+import LoopNode, { LoopNodeData, LoopNodeProps } from "./loop";
 import { NodeType } from "@avaprotocol/types";
 
 class NodeFactory {
@@ -47,7 +48,7 @@ class NodeFactory {
       case NodeType.Filter:
         return new FilterNode(props as FilterNodeProps);
       case NodeType.Loop:
-        throw new Error("Loop node type is not yet implemented");
+        return new LoopNode(props as LoopNodeProps);
       case NodeType.Unset:
         throw new Error("Cannot create node with unset type");
       default:
@@ -77,6 +78,8 @@ class NodeFactory {
         return BranchNode.fromResponse(raw);
       case !!raw.getFilter():
         return FilterNode.fromResponse(raw);
+      case !!raw.getLoop():
+        return LoopNode.fromResponse(raw);
       default:
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
@@ -97,6 +100,7 @@ export {
   CustomCodeNode,
   CustomCodeLangs,
   FilterNode,
+  LoopNode,
 };
 
 // Data definitions of Node
@@ -109,6 +113,7 @@ export type {
   RestAPINodeData,
   CustomCodeNodeData,
   FilterNodeData,
+  LoopNodeData,
 };
 
 // Node Props definitions
@@ -122,4 +127,5 @@ export type {
   RestAPINodeProps,
   CustomCodeNodeProps,
   FilterNodeProps,
+  LoopNodeProps,
 };
