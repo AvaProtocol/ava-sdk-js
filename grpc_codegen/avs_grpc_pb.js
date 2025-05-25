@@ -338,6 +338,28 @@ function deserialize_aggregator_NonceResp(buffer_arg) {
   return avs_pb.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_RunNodeWithInputsReq(arg) {
+  if (!(arg instanceof avs_pb.RunNodeWithInputsReq)) {
+    throw new Error('Expected argument of type aggregator.RunNodeWithInputsReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_RunNodeWithInputsReq(buffer_arg) {
+  return avs_pb.RunNodeWithInputsReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_RunNodeWithInputsResp(arg) {
+  if (!(arg instanceof avs_pb.RunNodeWithInputsResp)) {
+    throw new Error('Expected argument of type aggregator.RunNodeWithInputsResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_RunNodeWithInputsResp(buffer_arg) {
+  return avs_pb.RunNodeWithInputsResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_SetWalletReq(arg) {
   if (!(arg instanceof avs_pb.SetWalletReq)) {
     throw new Error('Expected argument of type aggregator.SetWalletReq');
@@ -660,6 +682,19 @@ getExecutionStats: {
     requestDeserialize: deserialize_aggregator_GetExecutionStatsReq,
     responseSerialize: serialize_aggregator_GetExecutionStatsResp,
     responseDeserialize: deserialize_aggregator_GetExecutionStatsResp,
+  },
+  // RunNodeWithInputs executes a single node with input variables without creating a workflow
+// It allows testing node configurations and variable inputs
+runNodeWithInputs: {
+    path: '/aggregator.Aggregator/RunNodeWithInputs',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.RunNodeWithInputsReq,
+    responseType: avs_pb.RunNodeWithInputsResp,
+    requestSerialize: serialize_aggregator_RunNodeWithInputsReq,
+    requestDeserialize: deserialize_aggregator_RunNodeWithInputsReq,
+    responseSerialize: serialize_aggregator_RunNodeWithInputsResp,
+    responseDeserialize: deserialize_aggregator_RunNodeWithInputsResp,
   },
 };
 

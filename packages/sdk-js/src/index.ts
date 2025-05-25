@@ -4,6 +4,7 @@ import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
 import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
@@ -734,6 +735,146 @@ class Client extends BaseClient {
     >("deleteSecret", request, options);
 
     return result.getValue();
+  }
+
+  /**
+   * Execute a single node with input variables
+   * @param nodeType - Type of node to run (blockTrigger, customCode, restApi, branch, etc.)
+   * @param nodeConfig - Configuration for the node, specific to each node type
+   * @param inputVariables - Input variables for the node execution
+   * @param options - Request options
+   * @returns {Promise<Record<string, any>>} - The execution result
+   */
+  async runNodeWithInputs(
+    nodeType: string,
+    nodeConfig: Record<string, any>,
+    inputVariables: Record<string, any> = {},
+    options?: RequestOptions
+  ): Promise<Record<string, any>> {
+    const request = new avs_pb.RunNodeWithInputsReq();
+    
+    request.setNodeType(nodeType);
+    
+    const nodeConfigStruct = new google_protobuf_struct_pb.Struct();
+    this.objectToStructMap(nodeConfig, nodeConfigStruct.getFieldsMap());
+    request.setNodeConfig(nodeConfigStruct);
+    
+    const inputVariablesStruct = new google_protobuf_struct_pb.Struct();
+    this.objectToStructMap(inputVariables, inputVariablesStruct.getFieldsMap());
+    request.setInputVariables(inputVariablesStruct);
+    
+    const result = await this.sendGrpcRequest<
+      avs_pb.RunNodeWithInputsResp,
+      avs_pb.RunNodeWithInputsReq
+    >("runNodeWithInputs", request, options);
+    
+    if (!result.getSuccess()) {
+      throw new Error(result.getError());
+    }
+    
+    return this.structToObject(result.getResult());
+  }
+  
+  /**
+   * Helper method to convert a JavaScript object to a StructMap for protobuf
+   * @private
+   */
+  private objectToStructMap(
+    obj: Record<string, any>,
+    fieldsMap: any
+  ): void {
+    for (const [key, value] of Object.entries(obj)) {
+      const protoValue = new google_protobuf_struct_pb.Value();
+      
+      if (value === null || value === undefined) {
+        protoValue.setNullValue(google_protobuf_struct_pb.NullValue.NULL_VALUE);
+      } else if (typeof value === 'boolean') {
+        protoValue.setBoolValue(value);
+      } else if (typeof value === 'number') {
+        protoValue.setNumberValue(value);
+      } else if (typeof value === 'string') {
+        protoValue.setStringValue(value);
+      } else if (Array.isArray(value)) {
+        const listValue = new google_protobuf_struct_pb.ListValue();
+        const valuesList: google_protobuf_struct_pb.Value[] = [];
+        
+        for (const item of value) {
+          const itemValue = new google_protobuf_struct_pb.Value();
+          
+          if (item === null || item === undefined) {
+            itemValue.setNullValue(google_protobuf_struct_pb.NullValue.NULL_VALUE);
+          } else if (typeof item === 'boolean') {
+            itemValue.setBoolValue(item);
+          } else if (typeof item === 'number') {
+            itemValue.setNumberValue(item);
+          } else if (typeof item === 'string') {
+            itemValue.setStringValue(item);
+          } else if (typeof item === 'object') {
+            const nestedStruct = new google_protobuf_struct_pb.Struct();
+            this.objectToStructMap(item, nestedStruct.getFieldsMap());
+            itemValue.setStructValue(nestedStruct);
+          }
+          
+          valuesList.push(itemValue);
+        }
+        
+        listValue.setValuesList(valuesList);
+        protoValue.setListValue(listValue);
+      } else if (typeof value === 'object') {
+        const structValue = new google_protobuf_struct_pb.Struct();
+        this.objectToStructMap(value, structValue.getFieldsMap());
+        protoValue.setStructValue(structValue);
+      }
+      
+      fieldsMap.set(key, protoValue);
+    }
+  }
+  
+  /**
+   * Helper method to convert a protobuf Struct to a JavaScript object
+   * @private
+   */
+  private structToObject(
+    struct: google_protobuf_struct_pb.Struct | undefined
+  ): Record<string, any> {
+    if (!struct) {
+      return {};
+    }
+    
+    const result: Record<string, any> = {};
+    const fieldsMap = struct.getFieldsMap();
+    
+    fieldsMap.forEach((value, key) => {
+      if (value.hasNullValue()) {
+        result[key] = null;
+      } else if (value.hasBoolValue()) {
+        result[key] = value.getBoolValue();
+      } else if (value.hasNumberValue()) {
+        result[key] = value.getNumberValue();
+      } else if (value.hasStringValue()) {
+        result[key] = value.getStringValue();
+      } else if (value.hasListValue()) {
+        const listValue = value.getListValue();
+        result[key] = listValue ? listValue.getValuesList().map((item) => {
+          if (item.hasNullValue()) {
+            return null;
+          } else if (item.hasBoolValue()) {
+            return item.getBoolValue();
+          } else if (item.hasNumberValue()) {
+            return item.getNumberValue();
+          } else if (item.hasStringValue()) {
+            return item.getStringValue();
+          } else if (item.hasStructValue()) {
+            return this.structToObject(item.getStructValue());
+          }
+          return null;
+        }) : [];
+      } else if (value.hasStructValue()) {
+        result[key] = this.structToObject(value.getStructValue());
+      }
+    });
+    
+    return result;
   }
 }
 
