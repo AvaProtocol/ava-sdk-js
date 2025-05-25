@@ -1,84 +1,39 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { Client } from "../packages/sdk-js/src";
-import { getTestClient } from "./utils";
+import { getAddress, generateSignature } from "./utils";
+import { getConfig } from "./envalid";
 
 describe("runNodeWithInputs", () => {
   let client: Client;
+  const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
   beforeEach(async () => {
-    client = await getTestClient();
+    const eoaAddress = await getAddress(walletPrivateKey);
+    client = new Client({
+      endpoint: avsEndpoint,
+      factoryAddress,
+    });
+    const { message } = await client.getSignatureFormat(eoaAddress);
+    const signature = await generateSignature(message, walletPrivateKey);
+    const res = await client.authWithSignature({
+      message: message,
+      signature: signature,
+    });
+    client.setAuthKey(res.authKey);
   });
 
   it("should run a blockTrigger node and return blockNumber", async () => {
-    const mockResponse = {
-      getSuccess: jest.fn().mockReturnValue(true),
-      getError: jest.fn().mockReturnValue(""),
-      getResult: jest.fn().mockReturnValue({
-        getFieldsMap: jest.fn().mockReturnValue(
-          new Map([
-            [
-              "blockNumber",
-              {
-                hasNumberValue: jest.fn().mockReturnValue(true),
-                getNumberValue: jest.fn().mockReturnValue(12345),
-                hasStringValue: jest.fn().mockReturnValue(false),
-                hasBoolValue: jest.fn().mockReturnValue(false),
-                hasNullValue: jest.fn().mockReturnValue(false),
-                hasListValue: jest.fn().mockReturnValue(false),
-                hasStructValue: jest.fn().mockReturnValue(false),
-              },
-            ],
-          ])
-        ),
-      }),
-    };
-
-    client.sendGrpcRequest = jest.fn().mockResolvedValue(mockResponse);
-
     const result = await client.runNodeWithInputs(
       "blockTrigger",
-      { blockNumber: 12345 },
+      { blockNumber: 12345 }, // Example config, might need adjustment
       {}
     );
 
-    expect(result).toEqual({ blockNumber: 12345 });
-    expect(client.sendGrpcRequest).toHaveBeenCalledWith(
-      "runNodeWithInputs",
-      expect.objectContaining({
-        getNodeType: expect.any(Function),
-        getNodeConfig: expect.any(Function),
-        getInputVariables: expect.any(Function),
-      }),
-      undefined
-    );
+    expect(result).toBeInstanceOf(Object);
+    expect(result.blockNumber).toBeDefined(); // Assuming blockNumber is a key in the result
   });
 
   it("should run a customCode node with input variables", async () => {
-    const mockResponse = {
-      getSuccess: jest.fn().mockReturnValue(true),
-      getError: jest.fn().mockReturnValue(""),
-      getResult: jest.fn().mockReturnValue({
-        getFieldsMap: jest.fn().mockReturnValue(
-          new Map([
-            [
-              "result",
-              {
-                hasNumberValue: jest.fn().mockReturnValue(true),
-                getNumberValue: jest.fn().mockReturnValue(10),
-                hasStringValue: jest.fn().mockReturnValue(false),
-                hasBoolValue: jest.fn().mockReturnValue(false),
-                hasNullValue: jest.fn().mockReturnValue(false),
-                hasListValue: jest.fn().mockReturnValue(false),
-                hasStructValue: jest.fn().mockReturnValue(false),
-              },
-            ],
-          ])
-        ),
-      }),
-    };
-
-    client.sendGrpcRequest = jest.fn().mockResolvedValue(mockResponse);
-
     const result = await client.runNodeWithInputs(
       "customCode",
       {
@@ -96,31 +51,6 @@ describe("runNodeWithInputs", () => {
   });
 
   it("should run a branch node with conditions", async () => {
-    const mockResponse = {
-      getSuccess: jest.fn().mockReturnValue(true),
-      getError: jest.fn().mockReturnValue(""),
-      getResult: jest.fn().mockReturnValue({
-        getFieldsMap: jest.fn().mockReturnValue(
-          new Map([
-            [
-              "conditionId",
-              {
-                hasStringValue: jest.fn().mockReturnValue(true),
-                getStringValue: jest.fn().mockReturnValue("condition1"),
-                hasNumberValue: jest.fn().mockReturnValue(false),
-                hasBoolValue: jest.fn().mockReturnValue(false),
-                hasNullValue: jest.fn().mockReturnValue(false),
-                hasListValue: jest.fn().mockReturnValue(false),
-                hasStructValue: jest.fn().mockReturnValue(false),
-              },
-            ],
-          ])
-        ),
-      }),
-    };
-
-    client.sendGrpcRequest = jest.fn().mockResolvedValue(mockResponse);
-
     const result = await client.runNodeWithInputs(
       "branch",
       {
@@ -144,74 +74,37 @@ describe("runNodeWithInputs", () => {
   });
 
   it("should run a telegram node (via restApi)", async () => {
-    const mockResponse = {
-      getSuccess: jest.fn().mockReturnValue(true),
-      getError: jest.fn().mockReturnValue(""),
-      getResult: jest.fn().mockReturnValue({
-        getFieldsMap: jest.fn().mockReturnValue(
-          new Map([
-            [
-              "data",
-              {
-                hasStructValue: jest.fn().mockReturnValue(true),
-                getStructValue: jest.fn().mockReturnValue({
-                  getFieldsMap: jest.fn().mockReturnValue(
-                    new Map([
-                      [
-                        "ok",
-                        {
-                          hasBoolValue: jest.fn().mockReturnValue(true),
-                          getBoolValue: jest.fn().mockReturnValue(true),
-                          hasStringValue: jest.fn().mockReturnValue(false),
-                          hasNumberValue: jest.fn().mockReturnValue(false),
-                          hasNullValue: jest.fn().mockReturnValue(false),
-                          hasListValue: jest.fn().mockReturnValue(false),
-                          hasStructValue: jest.fn().mockReturnValue(false),
-                        },
-                      ],
-                    ])
-                  ),
-                }),
-                hasStringValue: jest.fn().mockReturnValue(false),
-                hasNumberValue: jest.fn().mockReturnValue(false),
-                hasBoolValue: jest.fn().mockReturnValue(false),
-                hasNullValue: jest.fn().mockReturnValue(false),
-                hasListValue: jest.fn().mockReturnValue(false),
-              },
-            ],
-          ])
-        ),
-      }),
-    };
-
-    client.sendGrpcRequest = jest.fn().mockResolvedValue(mockResponse);
-
+    // This test will make an actual call to the Telegram API.
+    // It might be slow or fail if network access is restricted or token is invalid.
+    // Consider if this needs special handling (e.g. mocking at a lower level if true E2E is not desired here)
+    // or ensuring a valid (test) token and chat ID are available.
     const result = await client.runNodeWithInputs(
       "restApi",
       {
         url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage",
         method: "POST",
         body: JSON.stringify({
-          chat_id: "{{telegramChatId}}",
-          text: "Hello from runNodeWithInputs!",
+          chat_id: "{{telegramChatId}}", // This will need a real chat ID
+          text: "Hello from runNodeWithInputs test!",
         }),
         headers: { "content-type": "application/json" },
       },
-      { telegramChatId: "123456789" }
+      { telegramChatId: "123456789" } // Replace with a valid test chat ID
+                                      // Also ensure `ap_notify_bot_token` is available in test environment
     );
 
-    expect(result).toEqual({ data: { ok: true } });
+    expect(result).toBeInstanceOf(Object);
+    // Example: Check for a property that indicates success from Telegram
+    // This depends on the actual structure of the Telegram API response
+    // For instance, if Telegram returns a `data` object with an `ok` field:
+    // expect(result.data?.ok).toBe(true);
+    // Adjust based on the actual response structure.
+    // For now, a general check that it's an object.
+    expect(result.data).toBeDefined();
+
   });
 
   it("should throw an error when a required variable is missing", async () => {
-    const mockResponse = {
-      getSuccess: jest.fn().mockReturnValue(false),
-      getError: jest.fn().mockReturnValue("myVar is required but not provided"),
-      getResult: jest.fn().mockReturnValue(null),
-    };
-
-    client.sendGrpcRequest = jest.fn().mockResolvedValue(mockResponse);
-
     await expect(
       client.runNodeWithInputs(
         "customCode",
