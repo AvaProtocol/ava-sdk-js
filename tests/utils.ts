@@ -272,6 +272,58 @@ export const verifyExecutionStepResults = (
   expect(actual.output).toEqual(expected.output);
 };
 
+// Remove all secrets from the list of created secrets
+export const removeCreatedSecrets = async (
+  client: Client,
+  secretNames: Map<string, boolean>
+): Promise<void> => {
+  await Promise.all(
+    Array.from(secretNames.entries()).map(async ([secretName, isDeleting]) => {
+      // Prevent re-entry with the same secret name
+      if (isDeleting) {
+        return;
+      }
+
+      secretNames.set(secretName, true);
+
+      try {
+        await client.deleteSecret(secretName);
+      } catch (error) {
+        console.warn(
+          `Found secret ${secretName} but failed to delete it during cleanup.`,
+          (error as Error).message
+        );
+      } finally {
+        secretNames.delete(secretName);
+      }
+    })
+  );
+
+  if (secretNames.size > 0) {
+    console.warn(
+      "After deleting secrets. The remaining secret names:",
+      secretNames
+    );
+  }
+};
+
+export const cleanupSecrets = async (client: Client) => {
+  try {
+    const secretsResponse = await client.getSecrets({ itemPerPage: 1000 });
+    const secretItems = Array.isArray(secretsResponse) 
+      ? secretsResponse 
+      : secretsResponse.items || [];
+
+    const secretNames = new Map(
+      secretItems.map((item) => [item.name, false])
+    );
+
+    await removeCreatedSecrets(client, secretNames);
+  } catch (error) {
+    console.warn("Failed to cleanup secrets:", (error as Error).message);
+  }
+};
+
 export const consoleLogNestedObject = (name: string, obj: any): void => {
   console.log(
     `${name}:`,

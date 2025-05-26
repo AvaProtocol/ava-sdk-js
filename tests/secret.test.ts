@@ -14,6 +14,8 @@ import {
   getNextId,
   SaltGlobal,
   removeCreatedWorkflows,
+  removeCreatedSecrets,
+  cleanupSecrets,
   getBlockNumber,
 } from "./utils";
 import { getConfig } from "./envalid";
@@ -32,6 +34,7 @@ function getSecretItems(
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
+const createdSecretMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.Secrets * 1000; // Salt index 9,000 - 9,999
 const privateKey2 =
   "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293";
@@ -74,9 +77,16 @@ describe("secret Tests", () => {
     });
 
     client2.setAuthKey(res2.authKey);
+    
+    // Clean up any existing secrets before starting tests
+    await cleanupSecrets(client);
+    await cleanupSecrets(client2);
   });
 
-  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
+  afterEach(async () => {
+    await removeCreatedWorkflows(client, createdIdMap);
+    await removeCreatedSecrets(client, createdSecretMap);
+  });
 
   describe("create secret suite", () => {
     it("created secret have value in workflow", async () => {
@@ -85,6 +95,7 @@ describe("secret Tests", () => {
       const testMessage = "my secret is ";
 
       const result = await client.createSecret(secretName, secretValue);
+      createdSecretMap.set(secretName, false);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -154,13 +165,12 @@ describe("secret Tests", () => {
       // Verify that the output data of CustomCode node contains the actual secret value
       expect(matchStep.output).toEqual(testMessage + secretValue);
 
-      // Clean up the secret of this test
-      await client.deleteSecret(secretName);
     });
 
     it("create secret at user level succeeds", async () => {
       const inputName = `dummysecret_${getNextId()}`;
       const result = await client.createSecret(inputName, "value");
+      createdSecretMap.set(inputName, false);
 
       expect(result).toBe(true);
 
@@ -180,6 +190,7 @@ describe("secret Tests", () => {
       const result = await client.createSecret(inputName, "value", {
         workflowId: inputWorkflowId,
       });
+      createdSecretMap.set(inputName, false);
 
       expect(result).toBe(true);
 
@@ -221,10 +232,13 @@ describe("secret Tests", () => {
         inputName1,
         "some_value"
       );
+      createdSecretMap.set(inputName1, false);
+      
       const createResultClient2 = await client2.createSecret(
         inputName2,
         "some_value"
       );
+      createdSecretMap.set(inputName2, false);
 
       expect(createResultClient1).toBe(true);
       expect(createResultClient2).toBe(true);
@@ -248,9 +262,6 @@ describe("secret Tests", () => {
         )
       ).toBe(false);
 
-      // Clean up the secret of this test
-      await client.deleteSecret(inputName1);
-      await client2.deleteSecret(inputName2);
     });
   });
 
@@ -258,6 +269,7 @@ describe("secret Tests", () => {
     it("delete your own secret works", async () => {
       const inputName = `delete_${getNextId()}`;
       await client.createSecret(inputName, "value");
+      createdSecretMap.set(inputName, false);
 
       let secretsResponse = await client.getSecrets();
       const items = getSecretItems(secretsResponse);
@@ -278,9 +290,12 @@ describe("secret Tests", () => {
 
       // we create 2 secret at different level
       await client.createSecret(userLevelName, "value1");
+      createdSecretMap.set(userLevelName, false);
+      
       await client.createSecret(workflowLevelName, "value2", {
         workflowId: inputWorkflowId,
       });
+      createdSecretMap.set(workflowLevelName, false);
 
       let secretsResponse = await client.getSecrets();
       // make sure we got both secret
@@ -317,6 +332,7 @@ describe("secret Tests", () => {
       const inputName = `delete_${getNextId()}`;
 
       await client.createSecret(inputName, "value");
+      createdSecretMap.set(inputName, false);
 
       let secretsResponse = await client.getSecrets();
       const items = getSecretItems(secretsResponse);
@@ -340,14 +356,10 @@ describe("secret Tests", () => {
         const name = `${secretPrefix}${i}`;
         await client.createSecret(name, `value_${i}`);
         secretNames.push(name);
+        createdSecretMap.set(name, false);
       }
     });
 
-    afterAll(async () => {
-      for (const name of secretNames) {
-        await client.deleteSecret(name);
-      }
-    });
 
     it("should support forward pagination with after parameter", async () => {
       const pageSize = 3;
@@ -456,6 +468,7 @@ describe("secret Tests", () => {
       await client.createSecret(workflowSecretName, "workflow_value", {
         workflowId,
       });
+      createdSecretMap.set(workflowSecretName, false);
 
       const filteredSecrets = await client.getSecrets({
         workflowId,
@@ -465,7 +478,6 @@ describe("secret Tests", () => {
 
       expect(items.some((item) => item.name === workflowSecretName)).toBe(true);
 
-      await client.deleteSecret(workflowSecretName, { workflowId });
     });
   });
 });
