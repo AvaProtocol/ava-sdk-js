@@ -355,7 +355,7 @@ class Client extends BaseClient {
       request.addSmartWalletAddress(a);
     }
 
-    if (options?.cursor && options.cursor !== "") {
+    if (options?.cursor) {
       request.setCursor(options.cursor);
     }
 
