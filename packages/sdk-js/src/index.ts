@@ -346,6 +346,17 @@ class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
    */
+  /**
+   * Get the list of workflows for multiple addresses
+   * @param {string[]} addresses - The list of addresses
+   * @param {GetWorkflowsRequest} options - Request options
+   * @param {string} [options.cursor] - Legacy cursor parameter (deprecated, use before/after instead)
+   * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
+   * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
+   * @param {number} [options.limit] - The page limit of the response; default is 10
+   * @param {string} [options.authKey] - The auth key for the request
+   * @returns {Promise<{ cursor: string; result: Workflow[]; hasMore: boolean }>} - The list of Workflow objects with pagination metadata
+   */
   async getWorkflows(
     addresses: string[],
     options?: GetWorkflowsRequest
@@ -357,6 +368,14 @@ class Client extends BaseClient {
 
     if (options?.cursor) {
       request.setCursor(options.cursor);
+    }
+
+    if (options?.after) {
+      request.setAfter(options.after);
+    }
+
+    if (options?.before) {
+      request.setBefore(options.before);
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -407,6 +426,17 @@ class Client extends BaseClient {
    * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Executions
    */
+  /**
+   * Get the list of executions for multiple workflow given in the workflows argument.
+   * @param {string[]} workflows - The list of workflow ids to fetch execution for
+   * @param {GetExecutionsRequest} options - Request options
+   * @param {string} [options.cursor] - Legacy cursor parameter (deprecated, use before/after instead)
+   * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
+   * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
+   * @param {number} [options.limit] - The page limit of the response; default is 10
+   * @param {string} [options.authKey] - The auth key for the request
+   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Executions
+   */
   async getExecutions(
     workflows: string[],
     options?: GetExecutionsRequest
@@ -424,6 +454,14 @@ class Client extends BaseClient {
       if (options?.after && options?.after !== "") {
         request.setAfter(options.after);
       }
+    }
+
+    if (options?.after) {
+      request.setAfter(options.after);
+    }
+
+    if (options?.before) {
+      request.setBefore(options.before);
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -688,6 +726,10 @@ class Client extends BaseClient {
 
     if (options?.itemPerPage) {
       request.setLimit(options.itemPerPage);
+    }
+
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
     }
 
     if (options?.after) {

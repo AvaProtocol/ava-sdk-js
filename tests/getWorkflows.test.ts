@@ -216,6 +216,128 @@ describe("getWorkflows Tests", () => {
     ).rejects.toThrowError(/INVALID_ARGUMENT/i);
   });
 
+  test("should support forward pagination with after parameter", async () => {
+    const totalCount = 4;
+    const pageSize = 2;
+
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const workflowIds: string[] = [];
+
+    try {
+      // Create workflows
+      for (let i = 0; i < totalCount; i++) {
+        const workflowProps = createFromTemplate(wallet.address);
+        workflowProps.name = `forward_pagination_${i}`;
+        const workflow = client.createWorkflow(workflowProps);
+        const workflowId = await client.submitWorkflow(workflow);
+        workflowIds.push(workflowId);
+      }
+
+      // Get the first page with limit:pageSize
+      const firstPage = await client.getWorkflows([wallet.address], {
+        limit: pageSize,
+      });
+      
+      expect(firstPage.result.length).toBeLessThanOrEqual(pageSize);
+      expect(firstPage.cursor).toBeTruthy();
+      expect(firstPage.hasMore).toBe(true);
+
+      // Get the second page using after parameter
+      const secondPage = await client.getWorkflows([wallet.address], {
+        after: firstPage.cursor,
+        limit: pageSize,
+      });
+
+      expect(secondPage.result.length).toBeLessThanOrEqual(pageSize);
+
+      // Verify no overlap between pages
+      const firstPageIds = firstPage.result.map((item) => item.id);
+      const secondPageIds = secondPage.result.map((item) => item.id);
+      
+      const overlap = firstPageIds.filter((id) => secondPageIds.includes(id));
+      expect(overlap.length).toBe(0);
+
+      // Verify all returned workflows are in our created list
+      [...firstPageIds, ...secondPageIds].forEach((id) => {
+        expect(workflowIds.includes(id)).toBe(true);
+      });
+    } finally {
+      // Clean up all created workflows
+      for (const workflowId of workflowIds) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+
+  test("should support backward pagination with before parameter", async () => {
+    const totalCount = 4;
+    const pageSize = 2;
+
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const workflowIds: string[] = [];
+
+    try {
+      // Create workflows
+      for (let i = 0; i < totalCount; i++) {
+        const workflowProps = createFromTemplate(wallet.address);
+        workflowProps.name = `backward_pagination_${i}`;
+        const workflow = client.createWorkflow(workflowProps);
+        const workflowId = await client.submitWorkflow(workflow);
+        workflowIds.push(workflowId);
+      }
+
+      const middlePage = await client.getWorkflows([wallet.address], {
+        limit: pageSize,
+      });
+      
+      expect(middlePage.result.length).toBeLessThanOrEqual(pageSize);
+      expect(middlePage.cursor).toBeTruthy();
+
+      // Get the previous page using before parameter
+      const previousPage = await client.getWorkflows([wallet.address], {
+        before: middlePage.cursor,
+        limit: pageSize,
+      });
+
+      // Verify we got items in both pages
+      expect(previousPage.result.length).toBeGreaterThan(0);
+      expect(middlePage.result.length).toBeGreaterThan(0);
+
+      // Verify the previous page has cursor and hasMore fields
+      expect(typeof previousPage.cursor).toBe("string");
+      expect(typeof previousPage.hasMore).toBe("boolean");
+
+      // Verify no overlap between pages
+      const previousPageIds = previousPage.result.map((item) => item.id);
+      const middlePageIds = middlePage.result.map((item) => item.id);
+      
+      const overlap = previousPageIds.filter((id) => middlePageIds.includes(id));
+      expect(overlap.length).toBe(0);
+
+      // Verify all returned workflows are in our created list
+      [...previousPageIds, ...middlePageIds].forEach((id) => {
+        expect(workflowIds.includes(id)).toBe(true);
+      });
+    } finally {
+      // Clean up all created workflows
+      for (const workflowId of workflowIds) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+
+  test("should throw error with invalid before/after parameters", async () => {
+    // Invalid before parameter should throw INVALID_ARGUMENT
+    await expect(
+      client.getWorkflows([ownerAddress], { before: "invalid-cursor" })
+    ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+
+    // Invalid after parameter should throw INVALID_ARGUMENT
+    await expect(
+      client.getWorkflows([ownerAddress], { after: "invalid-cursor" })
+    ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+  });
+
   test("getWorkflowCount returns correct count for single wallet", async () => {
     const workflowName = "test count 1";
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
