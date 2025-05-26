@@ -365,15 +365,11 @@ class Client extends BaseClient {
       request.addSmartWalletAddress(a);
     }
 
-    if (options?.cursor && options?.cursor !== "") {
-      request.setCursor(options.cursor);
-    } else {
-      if (options?.before && options?.before !== "") {
-        request.setBefore(options.before);
-      }
-      if (options?.after && options?.after !== "") {
-        request.setAfter(options.after);
-      }
+    if (options?.before && options?.before !== "") {
+      request.setBefore(options.before);
+    }
+    if (options?.after && options?.after !== "") {
+      request.setAfter(options.after);
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -704,15 +700,11 @@ class Client extends BaseClient {
       request.setLimit(options.itemPerPage);
     }
 
-    if (options?.cursor && options?.cursor !== "") {
-      request.setCursor(options.cursor);
-    } else {
-      if (options?.before && options?.before !== "") {
-        request.setBefore(options.before);
-      }
-      if (options?.after && options?.after !== "") {
-        request.setAfter(options.after);
-      }
+    if (options?.before && options?.before !== "") {
+      request.setBefore(options.before);
+    }
+    if (options?.after && options?.after !== "") {
+      request.setAfter(options.after);
     }
 
     const result = await this.sendGrpcRequest<

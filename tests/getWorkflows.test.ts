@@ -90,10 +90,10 @@ describe("getWorkflows Tests", () => {
       const firstCursor = listResponse.cursor;
       expect(firstCursor).toHaveLength(60);
 
-      // Get the list of workflows with limit:2 and cursor
+      // Get the list of workflows with limit:2 and after parameter
       const listResponse2 = await client.getWorkflows([wallet.address], {
         limit: totalCount,
-        cursor: firstCursor,
+        after: firstCursor,
       });
 
       // Verify that the count of the second return is totalCount - limit
@@ -155,10 +155,10 @@ describe("getWorkflows Tests", () => {
 
       const firstCursor = listResponse.cursor;
 
-      // Get the list of workflows with limit:2 and cursor
+      // Get the list of workflows with limit:2 and after parameter
       const listResponse2 = await client.getWorkflows([wallet.address], {
         limit,
-        cursor: firstCursor,
+        after: firstCursor,
       });
 
       // Verify that the count of the second return is totalCount - limit
