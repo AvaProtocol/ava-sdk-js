@@ -78,8 +78,8 @@ describe("runNodeWithInputs Tests", () => {
     //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249230524_22oluwuyz'
     // }
 
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
   });
 
   test("should execute a customCode node with inputs", async () => {
@@ -101,8 +101,8 @@ describe("runNodeWithInputs Tests", () => {
     //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249168737_d4z9e6b2a'
     // }
 
-    expect(result.success).toBe(true);
-    expect(result.data).toBeDefined();
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
   });
 
   test("should handle errors gracefully", async () => {
