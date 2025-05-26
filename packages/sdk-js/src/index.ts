@@ -426,14 +426,14 @@ class Client extends BaseClient {
     const request = new avs_pb.ListExecutionsReq();
     request.setTaskIdsList(workflows);
 
-    if (options?.before && options?.before !== "") {
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
+
+    if (options?.before) {
       request.setBefore(options.before);
     }
-    if (options?.after && options?.after !== "") {
+    if (options?.after) {
       request.setAfter(options.after);
     }
-
-    request.setLimit(options?.limit || DEFAULT_LIMIT);
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListExecutionsResp,
@@ -693,13 +693,14 @@ class Client extends BaseClient {
     }
 
     if (options?.itemPerPage) {
-      request.setLimit(options.itemPerPage);
+      request.setLimit(options.itemPerPage || DEFAULT_LIMIT);
     }
 
-    if (options?.before && options?.before !== "") {
+    if (options?.before) {
       request.setBefore(options.before);
     }
-    if (options?.after && options?.after !== "") {
+
+    if (options?.after) {
       request.setAfter(options.after);
     }
 
