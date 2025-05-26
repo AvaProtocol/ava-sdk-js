@@ -55,15 +55,29 @@ export class RunNodeWithInputsReq extends jspb.Message {
       writer.writeString(1, this.nodeType_);
     }
     if (this.nodeConfig_ !== undefined) {
-      writer.writeMessage(2, this.nodeConfig_, (value: google_protobuf_struct_pb.Struct) => 
-        value.serializeBinaryToWriter(writer)
+      writer.writeMessage(
+        2, 
+        this.nodeConfig_, 
+        google_protobuf_struct_pb.Struct.serializeBinaryToWriter
       );
     }
     if (this.inputVariables_ !== undefined) {
-      writer.writeMessage(3, this.inputVariables_, (value: google_protobuf_struct_pb.Struct) => 
-        value.serializeBinaryToWriter(writer)
+      writer.writeMessage(
+        3, 
+        this.inputVariables_, 
+        google_protobuf_struct_pb.Struct.serializeBinaryToWriter
       );
     }
+  }
+  
+  toObject(includeInstance?: boolean): object {
+    return {
+      nodeType: this.nodeType_,
+      nodeConfig: this.nodeConfig_ ? 
+        this.nodeConfig_.toObject(includeInstance) : undefined,
+      inputVariables: this.inputVariables_ ? 
+        this.inputVariables_.toObject(includeInstance) : undefined
+    };
   }
 
   static deserializeBinary(bytes: Uint8Array): RunNodeWithInputsReq {
@@ -167,10 +181,21 @@ export class RunNodeWithInputsResp extends jspb.Message {
       writer.writeString(2, this.error_);
     }
     if (this.result_ !== undefined) {
-      writer.writeMessage(3, this.result_, (value: google_protobuf_struct_pb.Struct) => 
-        value.serializeBinaryToWriter(writer)
+      writer.writeMessage(
+        3, 
+        this.result_, 
+        google_protobuf_struct_pb.Struct.serializeBinaryToWriter
       );
     }
+  }
+  
+  toObject(includeInstance?: boolean): object {
+    return {
+      success: this.success_,
+      error: this.error_,
+      result: this.result_ ? 
+        this.result_.toObject(includeInstance) : undefined
+    };
   }
 
   static deserializeBinary(bytes: Uint8Array): RunNodeWithInputsResp {
