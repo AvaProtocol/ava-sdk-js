@@ -413,7 +413,7 @@ class Client extends BaseClient {
     request.setTaskIdsList(workflows);
 
     // Cusor is implemenent similarly to moral
-    if (options?.cursor && options?.cursor != "") {
+    if (options?.cursor) {
       request.setCursor(options.cursor);
     }
 
@@ -681,11 +681,11 @@ class Client extends BaseClient {
       request.setLimit(options.itemPerPage);
     }
 
-    if (options?.after && options.after !== "") {
+    if (options?.after) {
       request.setAfter(options.after);
     }
 
-    if (options?.before && options.before !== "") {
+    if (options?.before) {
       request.setBefore(options.before);
     }
 
