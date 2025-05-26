@@ -1,4 +1,5 @@
 import _ from "lodash";
+import * as jspb from "google-protobuf";
 import { credentials, Metadata } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
@@ -777,12 +778,20 @@ class Client extends BaseClient {
   }
   
   /**
-   * Helper method to convert a JavaScript object to a StructMap for protobuf
+   * Helper method to convert a JavaScript object to a StructMap for protobuf.
+   * This method iterates over the key-value pairs of the input object and populates
+   * the provided `fieldsMap` with corresponding protobuf `Value` objects.
+   *
    * @private
+   * @param obj - A plain JavaScript object where keys are strings and values can be
+   *   of any type supported by protobuf (e.g., string, number, boolean, object, etc.).
+   * @param fieldsMap - A Map<string, google_protobuf_struct_pb.Value> instance
+   *   representing the fields of a protobuf `Struct`. This map will be populated
+   *   with the converted values from the input object.
    */
   private objectToStructMap(
     obj: Record<string, any>,
-    fieldsMap: any
+    fieldsMap: jspb.Map<string, google_protobuf_struct_pb.Value>
   ): void {
     for (const [key, value] of Object.entries(obj)) {
       const protoValue = new google_protobuf_struct_pb.Value();
