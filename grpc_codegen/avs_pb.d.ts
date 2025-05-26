@@ -2167,6 +2167,68 @@ export namespace GetExecutionStatsResp {
     }
 }
 
+export class RunNodeWithInputsReq extends jspb.Message { 
+    getNodeType(): string;
+    setNodeType(value: string): RunNodeWithInputsReq;
+
+    getNodeConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearNodeConfigMap(): void;
+
+    getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearInputVariablesMap(): void;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RunNodeWithInputsReq.AsObject;
+    static toObject(includeInstance: boolean, msg: RunNodeWithInputsReq): RunNodeWithInputsReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RunNodeWithInputsReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RunNodeWithInputsReq;
+    static deserializeBinaryFromReader(message: RunNodeWithInputsReq, reader: jspb.BinaryReader): RunNodeWithInputsReq;
+}
+
+export namespace RunNodeWithInputsReq {
+    export type AsObject = {
+        nodeType: string,
+
+        nodeConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+
+        inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+    }
+}
+
+export class RunNodeWithInputsResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): RunNodeWithInputsResp;
+
+    hasData(): boolean;
+    clearData(): void;
+    getData(): google_protobuf_struct_pb.Value | undefined;
+    setData(value?: google_protobuf_struct_pb.Value): RunNodeWithInputsResp;
+    getError(): string;
+    setError(value: string): RunNodeWithInputsResp;
+    getNodeId(): string;
+    setNodeId(value: string): RunNodeWithInputsResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RunNodeWithInputsResp.AsObject;
+    static toObject(includeInstance: boolean, msg: RunNodeWithInputsResp): RunNodeWithInputsResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RunNodeWithInputsResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RunNodeWithInputsResp;
+    static deserializeBinaryFromReader(message: RunNodeWithInputsResp, reader: jspb.BinaryReader): RunNodeWithInputsResp;
+}
+
+export namespace RunNodeWithInputsResp {
+    export type AsObject = {
+        success: boolean,
+        data?: google_protobuf_struct_pb.Value.AsObject,
+        error: string,
+        nodeId: string,
+    }
+}
+
 export class Evm extends jspb.Message { 
 
     serializeBinary(): Uint8Array;
