@@ -7,9 +7,11 @@ import FixedTimeTrigger, {
   FixedTimeTriggerDataType,
   FixedTimeTriggerProps,
 } from "./fixedTime";
+import ManualTrigger, { ManualTriggerProps } from "./manual";
 import Trigger from "./interface";
 import { TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
+
 class TriggerFactory {
   /**
    * Static factory method to create Trigger instances
@@ -26,6 +28,8 @@ class TriggerFactory {
         return new EventTrigger(props as EventTriggerProps);
       case TriggerType.FixedTime:
         return new FixedTimeTrigger(props as FixedTimeTriggerProps);
+      case TriggerType.Manual:
+        return new ManualTrigger(props as ManualTriggerProps);
     }
 
     // Add more conditions for other subclasses
@@ -47,6 +51,8 @@ class TriggerFactory {
         return BlockTrigger.fromResponse(raw);
       case !!raw.getEvent():
         return EventTrigger.fromResponse(raw);
+      case !!raw.getManual():
+        return ManualTrigger.fromResponse(raw);
       default:
         throw new Error("Unknown trigger type");
     }
@@ -62,6 +68,7 @@ export {
   CronTrigger,
   EventTrigger,
   FixedTimeTrigger,
+  ManualTrigger,
 };
 
 // Trigger Props definitions
@@ -71,6 +78,7 @@ export type {
   CronTriggerProps,
   EventTriggerProps,
   FixedTimeTriggerProps,
+  ManualTriggerProps,
 };
 
 // Trigger Data definitions
