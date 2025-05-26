@@ -2,6 +2,7 @@ import _ from "lodash";
 import { credentials, Metadata } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { RunNodeWithInputsReq, RunNodeWithInputsResp } from "./grpc_codegen/custom_types";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
@@ -751,7 +752,7 @@ class Client extends BaseClient {
     inputVariables: Record<string, any> = {},
     options?: RequestOptions
   ): Promise<Record<string, any>> {
-    const request = new avs_pb.RunNodeWithInputsReq();
+    const request = new RunNodeWithInputsReq();
     
     request.setNodeType(nodeType);
     
@@ -764,8 +765,8 @@ class Client extends BaseClient {
     request.setInputVariables(inputVariablesStruct);
     
     const result = await this.sendGrpcRequest<
-      avs_pb.RunNodeWithInputsResp,
-      avs_pb.RunNodeWithInputsReq
+      RunNodeWithInputsResp,
+      RunNodeWithInputsReq
     >("runNodeWithInputs", request, options);
     
     if (!result.getSuccess()) {
@@ -794,6 +795,8 @@ class Client extends BaseClient {
         protoValue.setNumberValue(value);
       } else if (typeof value === 'string') {
         protoValue.setStringValue(value);
+      } else if (value instanceof Date) {
+        protoValue.setStringValue(value.toISOString());
       } else if (Array.isArray(value)) {
         const listValue = new google_protobuf_struct_pb.ListValue();
         const valuesList: google_protobuf_struct_pb.Value[] = [];
@@ -809,6 +812,8 @@ class Client extends BaseClient {
             itemValue.setNumberValue(item);
           } else if (typeof item === 'string') {
             itemValue.setStringValue(item);
+          } else if (item instanceof Date) {
+            itemValue.setStringValue(item.toISOString());
           } else if (typeof item === 'object') {
             const nestedStruct = new google_protobuf_struct_pb.Struct();
             this.objectToStructMap(item, nestedStruct.getFieldsMap());
