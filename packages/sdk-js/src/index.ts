@@ -752,15 +752,19 @@ class Client extends BaseClient {
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
     let workflowId: string | null = null;
+    let dedicatedWallet: any = null;
     
     try {
+      const salt = `runNodeWithInputs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      dedicatedWallet = await this.getWallet({ salt });
+      
       // Create a temporary node using NodeFactory patterns
       const nodeId = `temp_${Date.now()}`;
       const node = this.createNodeFromConfig(request.nodeType, request.nodeConfig, nodeId);
       
       // Create minimal workflow with just this node
       const triggerId = `trigger_${Date.now()}`;
-      const tempWorkflow = this.createTempWorkflowForNode(node, triggerId, request.inputVariables);
+      const tempWorkflow = this.createTempWorkflowForNode(node, triggerId, request.inputVariables, dedicatedWallet.address);
       
       // Submit and immediately trigger the workflow
       workflowId = await this.submitWorkflow(tempWorkflow);
@@ -784,10 +788,17 @@ class Client extends BaseClient {
       };
     } finally {
       if (workflowId) {
-        try {
-          await this.deleteWorkflow(workflowId);
-        } catch (cleanupError) {
-          console.warn(`Failed to cleanup workflow ${workflowId}:`, cleanupError);
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await this.deleteWorkflow(workflowId);
+            break; // Success, exit retry loop
+          } catch (cleanupError) {
+            if (attempt === 2) {
+              console.warn(`Failed to cleanup workflow ${workflowId} after 3 attempts:`, cleanupError);
+            } else {
+              await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+            }
+          }
         }
       }
     }
@@ -852,7 +863,7 @@ class Client extends BaseClient {
     }
   }
 
-  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>): Workflow {
+  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
     // Create a minimal workflow with manual trigger
     const trigger = TriggerFactory.create({
       id: triggerId,
@@ -862,7 +873,7 @@ class Client extends BaseClient {
     });
 
     return new Workflow({
-      smartWalletAddress: '0x0000000000000000000000000000000000000000', // Placeholder
+      smartWalletAddress: walletAddress, // Use the dedicated wallet address
       trigger: trigger,
       nodes: [node],
       edges: [new Edge({
