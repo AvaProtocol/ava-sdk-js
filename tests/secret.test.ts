@@ -1,6 +1,12 @@
 import _ from "lodash";
 import { describe, beforeAll, expect, it } from "@jest/globals";
-import { Client, CustomCodeLangs, CustomCodeNodeProps, TriggerFactory, Step } from "@avaprotocol/sdk-js";
+import {
+  Client,
+  CustomCodeLangs,
+  CustomCodeNodeProps,
+  TriggerFactory,
+  Step,
+} from "@avaprotocol/sdk-js";
 import {
   ListSecretsResponse,
   ListSecretResponse,
@@ -77,7 +83,7 @@ describe("secret Tests", () => {
     });
 
     client2.setAuthKey(res2.authKey);
-    
+
     // Clean up any existing secrets before starting tests
     await cleanupSecrets(client);
     await cleanupSecrets(client2);
@@ -164,7 +170,6 @@ describe("secret Tests", () => {
 
       // Verify that the output data of CustomCode node contains the actual secret value
       expect(matchStep.output).toEqual(testMessage + secretValue);
-
     });
 
     it("create secret at user level succeeds", async () => {
@@ -233,7 +238,7 @@ describe("secret Tests", () => {
         "some_value"
       );
       createdSecretMap.set(inputName1, false);
-      
+
       const createResultClient2 = await client2.createSecret(
         inputName2,
         "some_value"
@@ -261,7 +266,6 @@ describe("secret Tests", () => {
           (item: ListSecretResponse) => item.name === inputName1
         )
       ).toBe(false);
-
     });
   });
 
@@ -291,7 +295,7 @@ describe("secret Tests", () => {
       // we create 2 secret at different level
       await client.createSecret(userLevelName, "value1");
       createdSecretMap.set(userLevelName, false);
-      
+
       await client.createSecret(workflowLevelName, "value2", {
         workflowId: inputWorkflowId,
       });
@@ -360,18 +364,20 @@ describe("secret Tests", () => {
       }
     });
 
-
     it("should support forward pagination with after parameter", async () => {
       const pageSize = 3;
       const options = { limit: pageSize } as SecretRequestOptions;
       console.log("Requesting first page with options:", options);
-      
+
       const firstPage = await client.getSecrets(options);
       console.log("First page response:", JSON.stringify(firstPage, null, 2));
 
       const firstPageItems = getSecretItems(firstPage);
       console.log("First page items count:", firstPageItems.length);
-      console.log("First page items:", firstPageItems.map(item => item.name));
+      console.log(
+        "First page items:",
+        firstPageItems.map((item) => item.name)
+      );
 
       expect(firstPageItems.length).toBeLessThanOrEqual(pageSize);
 
@@ -392,13 +398,16 @@ describe("secret Tests", () => {
         limit: pageSize,
       } as SecretRequestOptions;
       console.log("Requesting second page with options:", secondOptions);
-      
+
       const secondPage = await client.getSecrets(secondOptions);
       console.log("Second page response:", JSON.stringify(secondPage, null, 2));
 
       const secondPageItems = getSecretItems(secondPage);
       console.log("Second page items count:", secondPageItems.length);
-      console.log("Second page items:", secondPageItems.map(item => item.name));
+      console.log(
+        "Second page items:",
+        secondPageItems.map((item) => item.name)
+      );
 
       expect(secondPageItems.length).toBeLessThanOrEqual(pageSize);
 
@@ -477,7 +486,24 @@ describe("secret Tests", () => {
       const items = getSecretItems(filteredSecrets);
 
       expect(items.some((item) => item.name === workflowSecretName)).toBe(true);
+    });
 
+    it("should throw error with an invalid limit", async () => {
+      // Invalid cursor should throw INVALID_ARGUMENT
+      await expect(client.getSecrets({ limit: -1 })).rejects.toThrowError(
+        /INVALID_ARGUMENT/i
+      );
+    });
+
+    it("should throw error with an invalid before or after", async () => {
+      // Invalid cursor should throw INVALID_ARGUMENT
+      await expect(
+        client.getSecrets({ before: "invalid-cursor" })
+      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+
+      await expect(
+        client.getSecrets({ after: "invalid-cursor" })
+      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
     });
   });
 });

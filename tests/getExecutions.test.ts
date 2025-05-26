@@ -132,10 +132,6 @@ describe("getExecutions Tests", () => {
     }
   });
 
-
-
-
-
   test("should throw error with an invalid limit", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
