@@ -534,10 +534,14 @@ describe("getExecutions Tests", () => {
       expect(typeof previousPage.cursor).toBe("string");
       expect(typeof previousPage.hasMore).toBe("boolean");
 
-      // Verify all returned executions are in our created list
+      // Verify no overlap between pages
       const previousPageIds = previousPage.result.map((item) => item.id);
       const firstPageIds = firstPage.result.map((item) => item.id);
       
+      const overlap = previousPageIds.filter((id) => firstPageIds.includes(id));
+      expect(overlap.length).toBe(0);
+
+      // Verify all returned executions are in our created list
       [...previousPageIds, ...firstPageIds].forEach((id) => {
         if (id) {
           expect(executionIds.includes(id)).toBe(true);
