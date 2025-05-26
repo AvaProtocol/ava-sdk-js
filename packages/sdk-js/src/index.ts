@@ -751,6 +751,7 @@ class Client extends BaseClient {
     request: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
+    let workflowId: string | null = null;
     
     try {
       // Create a temporary node using NodeFactory patterns
@@ -762,32 +763,33 @@ class Client extends BaseClient {
       const tempWorkflow = this.createTempWorkflowForNode(node, triggerId, request.inputVariables);
       
       // Submit and immediately trigger the workflow
-      const workflowId = await this.submitWorkflow(tempWorkflow);
+      workflowId = await this.submitWorkflow(tempWorkflow);
       
-      try {
-        const execution = await this.triggerWorkflow({
-          id: workflowId,
-          reason: { type: TriggerType.Manual },
-          isBlocking: true
-        });
-        
-        await this.deleteWorkflow(workflowId);
-        
-        return {
-          success: execution.status === ExecutionStatus.FINISHED,
-          data: this.extractNodeExecutionData(execution),
-          executionId: execution.executionId,
-          nodeId: nodeId
-        };
-      } catch (execError) {
-        await this.deleteWorkflow(workflowId);
-        throw execError;
-      }
+      const execution = await this.triggerWorkflow({
+        id: workflowId,
+        reason: { type: TriggerType.Manual },
+        isBlocking: true
+      });
+      
+      return {
+        success: execution.status === ExecutionStatus.FINISHED,
+        data: this.extractNodeExecutionData(execution),
+        executionId: execution.executionId,
+        nodeId: nodeId
+      };
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error)
       };
+    } finally {
+      if (workflowId) {
+        try {
+          await this.deleteWorkflow(workflowId);
+        } catch (cleanupError) {
+          console.warn(`Failed to cleanup workflow ${workflowId}:`, cleanupError);
+        }
+      }
     }
   }
 

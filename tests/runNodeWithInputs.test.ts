@@ -13,7 +13,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
-let saltIndex = SaltGlobal.CreateWorkflow * 2000; // Salt index 22,000 - 22,999
+let saltIndex = SaltGlobal.CreateWorkflow * 3000; // Salt index 30,000 - 30,999 to avoid conflicts
 
 describe("runNodeWithInputs Tests", () => {
   let eoaAddress: string;
