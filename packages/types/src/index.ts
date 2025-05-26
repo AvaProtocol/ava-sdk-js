@@ -90,10 +90,9 @@ export interface ListSecretsResponse {
 export interface SecretRequestOptions extends RequestOptions {
   workflowId?: string;
   orgId?: string;
-  cursor?: string;
   before?: string;
   after?: string;
-  itemPerPage?: number;
+  limit?: number;
 }
 
 export interface RunNodeWithInputsRequest {

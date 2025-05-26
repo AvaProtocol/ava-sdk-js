@@ -709,10 +709,9 @@ class Client extends BaseClient {
    * @param options - Request options including pagination parameters
    * @param options.workflowId - Filter secrets by workflow ID
    * @param options.orgId - Filter secrets by organization ID
-   * @param options.cursor - Legacy cursor parameter (deprecated, use before/after instead)
    * @param options.before - Get items before this cursor value (for backward pagination)
    * @param options.after - Get items after this cursor value (for forward pagination)
-   * @param options.itemPerPage - Number of items per page
+   * @param options.limit - Number of items per page
    * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
    */
   async getSecrets(
@@ -729,12 +728,8 @@ class Client extends BaseClient {
       // request.setOrgId(options.orgId);
     }
 
-    if (options?.itemPerPage) {
-      request.setLimit(options.itemPerPage);
-    }
-
-    if (options?.cursor) {
-      request.setCursor(options.cursor);
+    if (options?.limit) {
+      request.setLimit(options.limit);
     }
 
     if (options?.after) {
