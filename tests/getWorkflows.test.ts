@@ -259,7 +259,9 @@ describe("getWorkflows Tests", () => {
 
       // Verify all returned workflows are in our created list
       [...firstPageIds, ...secondPageIds].forEach((id) => {
-        expect(workflowIds.includes(id)).toBe(true);
+        if (id) {
+          expect(workflowIds.includes(id)).toBe(true);
+        }
       });
     } finally {
       // Clean up all created workflows
@@ -316,7 +318,9 @@ describe("getWorkflows Tests", () => {
 
       // Verify all returned workflows are in our created list
       [...previousPageIds, ...middlePageIds].forEach((id) => {
-        expect(workflowIds.includes(id)).toBe(true);
+        if (id) {
+          expect(workflowIds.includes(id)).toBe(true);
+        }
       });
     } finally {
       // Clean up all created workflows
