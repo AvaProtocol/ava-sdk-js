@@ -363,7 +363,7 @@ describe("secret Tests", () => {
 
     it("should support forward pagination with after parameter", async () => {
       const pageSize = 3;
-      const options = { itemPerPage: pageSize } as SecretRequestOptions;
+      const options = { limit: pageSize } as SecretRequestOptions;
       console.log("Requesting first page with options:", options);
       
       const firstPage = await client.getSecrets(options);
@@ -389,7 +389,7 @@ describe("secret Tests", () => {
 
       const secondOptions = {
         after: typedFirstPage.cursor,
-        itemPerPage: pageSize,
+        limit: pageSize,
       } as SecretRequestOptions;
       console.log("Requesting second page with options:", secondOptions);
       
@@ -415,7 +415,7 @@ describe("secret Tests", () => {
     });
 
     it("should support backward pagination with before parameter", async () => {
-      const middleOptions = { itemPerPage: 3 } as SecretRequestOptions;
+      const middleOptions = { limit: 3 } as SecretRequestOptions;
       const middlePage = await client.getSecrets(middleOptions);
 
       if (Array.isArray(middlePage)) {
@@ -425,7 +425,7 @@ describe("secret Tests", () => {
       const typedMiddlePage = middlePage as ListSecretsResponse;
       const previousOptions = {
         before: typedMiddlePage.cursor,
-        itemPerPage: 3,
+        limit: 3,
       } as SecretRequestOptions;
       const previousPage = await client.getSecrets(previousOptions);
 
@@ -443,11 +443,11 @@ describe("secret Tests", () => {
       }
     });
 
-    it("should respect the itemPerPage parameter", async () => {
-      const smallOptions = { itemPerPage: 2 } as SecretRequestOptions;
+    it("should respect the limit parameter", async () => {
+      const smallOptions = { limit: 2 } as SecretRequestOptions;
       const smallPage = await client.getSecrets(smallOptions);
 
-      const largerOptions = { itemPerPage: 5 } as SecretRequestOptions;
+      const largerOptions = { limit: 5 } as SecretRequestOptions;
       const largerPage = await client.getSecrets(largerOptions);
 
       const smallPageItems = getSecretItems(smallPage);

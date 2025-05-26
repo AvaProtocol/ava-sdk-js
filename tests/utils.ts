@@ -310,7 +310,7 @@ export const removeCreatedSecrets = async (
 
 export const cleanupSecrets = async (client: Client) => {
   try {
-    const secretsResponse = await client.getSecrets({ itemPerPage: 1000 });
+    const secretsResponse = await client.getSecrets({ limit: 1000 });
     const secretItems = Array.isArray(secretsResponse) 
       ? secretsResponse 
       : secretsResponse.items || [];
