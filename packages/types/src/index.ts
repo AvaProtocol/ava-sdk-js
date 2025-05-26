@@ -13,6 +13,8 @@ export interface RequestOptions {
 
 export interface GetExecutionsRequest extends RequestOptions {
   cursor?: string;
+  before?: string;
+  after?: string;
   limit?: number;
 }
 
