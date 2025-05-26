@@ -350,7 +350,6 @@ class Client extends BaseClient {
    * Get the list of workflows for multiple addresses
    * @param {string[]} addresses - The list of addresses
    * @param {GetWorkflowsRequest} options - Request options
-   * @param {string} [options.cursor] - Legacy cursor parameter (deprecated, use before/after instead)
    * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
@@ -366,16 +365,11 @@ class Client extends BaseClient {
       request.addSmartWalletAddress(a);
     }
 
-    // Priority: legacy cursor first, then before/after parameters
-    if (options?.cursor && options?.cursor !== "") {
-      request.setCursor(options.cursor);
-    } else {
-      if (options?.before && options?.before !== "") {
-        request.setBefore(options.before);
-      }
-      if (options?.after && options?.after !== "") {
-        request.setAfter(options.after);
-      }
+    if (options?.before && options?.before !== "") {
+      request.setBefore(options.before);
+    }
+    if (options?.after && options?.after !== "") {
+      request.setAfter(options.after);
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -419,7 +413,6 @@ class Client extends BaseClient {
    * Get the list of executions for multiple workflow given in the workflows argument.
    * @param {string[]} workflows - The list of workflow ids to fetch execution for
    * @param {GetExecutionsRequest} options - Request options
-   * @param {string} [options.cursor] - Legacy cursor parameter (deprecated, use before/after instead)
    * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
@@ -433,16 +426,11 @@ class Client extends BaseClient {
     const request = new avs_pb.ListExecutionsReq();
     request.setTaskIdsList(workflows);
 
-    // Priority: legacy cursor first, then before/after parameters
-    if (options?.cursor && options?.cursor !== "") {
-      request.setCursor(options.cursor);
-    } else {
-      if (options?.before && options?.before !== "") {
-        request.setBefore(options.before);
-      }
-      if (options?.after && options?.after !== "") {
-        request.setAfter(options.after);
-      }
+    if (options?.before && options?.before !== "") {
+      request.setBefore(options.before);
+    }
+    if (options?.after && options?.after !== "") {
+      request.setAfter(options.after);
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -685,7 +673,6 @@ class Client extends BaseClient {
    * @param options - Request options including pagination parameters
    * @param options.workflowId - Filter secrets by workflow ID
    * @param options.orgId - Filter secrets by organization ID
-   * @param options.cursor - Legacy cursor parameter (deprecated, use before/after instead)
    * @param options.before - Get items before this cursor value (for backward pagination)
    * @param options.after - Get items after this cursor value (for forward pagination)
    * @param options.itemPerPage - Number of items per page
@@ -709,16 +696,11 @@ class Client extends BaseClient {
       request.setLimit(options.itemPerPage);
     }
 
-    // Priority: legacy cursor first, then before/after parameters
-    if (options?.cursor && options?.cursor !== "") {
-      request.setCursor(options.cursor);
-    } else {
-      if (options?.before && options?.before !== "") {
-        request.setBefore(options.before);
-      }
-      if (options?.after && options?.after !== "") {
-        request.setAfter(options.after);
-      }
+    if (options?.before && options?.before !== "") {
+      request.setBefore(options.before);
+    }
+    if (options?.after && options?.after !== "") {
+      request.setAfter(options.after);
     }
 
     const result = await this.sendGrpcRequest<
