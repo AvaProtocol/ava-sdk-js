@@ -57,53 +57,53 @@ describe("runNodeWithInputs Tests", () => {
     // }
   });
 
-  // test("should execute a restApi node with inputs", async () => {
-  //   const result = await client.runNodeWithInputs({
-  //     nodeType: "restApi",
-  //     nodeConfig: {
-  //       url: "https://httpbin.org/get",
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     },
-  //     inputVariables: {},
-  //   });
+  test("should execute a restApi node with inputs", async () => {
+    const result = await client.runNodeWithInputs({
+      nodeType: "restApi",
+      nodeConfig: {
+        url: "https://httpbin.org/get",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+      inputVariables: {},
+    });
 
-  //   console.log("result", result);
+    console.log("result", result);
 
-  //   // TODO: Error is the same as the blockTrigger test.
-  //   // result {
-  //   //   success: false,
-  //   //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249230524_22oluwuyz'
-  //   // }
+    // TODO: Error is the same as the blockTrigger test.
+    // result {
+    //   success: false,
+    //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249230524_22oluwuyz'
+    // }
 
-  //   expect(result.success).toBe(true);
-  //   expect(result.data).toBeDefined();
-  // });
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+  });
 
-  // test("should execute a customCode node with inputs", async () => {
-  //   const result = await client.runNodeWithInputs({
-  //     nodeType: "customCode",
-  //     nodeConfig: {
-  //       source: "return { message: 'Hello', input: myVar };",
-  //     },
-  //     inputVariables: {
-  //       myVar: "World",
-  //     },
-  //   });
+  test("should execute a customCode node with inputs", async () => {
+    const result = await client.runNodeWithInputs({
+      nodeType: "customCode",
+      nodeConfig: {
+        source: "return { message: 'Hello', input: myVar };",
+      },
+      inputVariables: {
+        myVar: "World",
+      },
+    });
 
-  //   console.log("result", result);
+    console.log("result", result);
 
-  //   // TODO: Error is the same as the blockTrigger test.
-  //   // result {
-  //   //   success: false,
-  //   //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249168737_d4z9e6b2a'
-  //   // }
+    // TODO: Error is the same as the blockTrigger test.
+    // result {
+    //   success: false,
+    //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249168737_d4z9e6b2a'
+    // }
 
-  //   expect(result.success).toBe(true);
-  //   expect(result.data).toBeDefined();
-  // });
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+  });
 
   test("should handle errors gracefully", async () => {
     const result = await client.runNodeWithInputs({

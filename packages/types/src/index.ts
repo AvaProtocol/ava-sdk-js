@@ -91,7 +91,7 @@ export interface SecretRequestOptions extends RequestOptions {
   orgId?: string;
   before?: string;
   after?: string;
-  itemPerPage?: number;
+  limit?: number;
 }
 
 export interface RunNodeWithInputsRequest {

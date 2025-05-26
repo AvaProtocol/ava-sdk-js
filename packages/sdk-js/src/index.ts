@@ -680,7 +680,7 @@ class Client extends BaseClient {
    * @param options.orgId - Filter secrets by organization ID
    * @param options.before - Get items before this cursor value (for backward pagination)
    * @param options.after - Get items after this cursor value (for forward pagination)
-   * @param options.itemPerPage - Number of items per page
+   * @param options.limit - Number of items per page
    * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
    */
   async getSecrets(
@@ -697,8 +697,8 @@ class Client extends BaseClient {
       // request.setOrgId(options.orgId);
     }
 
-    if (options?.itemPerPage) {
-      request.setLimit(options.itemPerPage || DEFAULT_LIMIT);
+    if (options?.limit) {
+      request.setLimit(options.limit || DEFAULT_LIMIT);
     }
 
     if (options?.before) {
@@ -770,7 +770,11 @@ class Client extends BaseClient {
     let dedicatedWallet: any = null;
     
     try {
-      const salt = `runNodeWithInputs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Generate a numeric salt that can be parsed by math.ParseBig256
+      // Use timestamp + random number to ensure uniqueness
+      const timestamp = Date.now();
+      const randomNum = Math.floor(Math.random() * 1000000000); // 9 digits
+      const salt = `${timestamp}${randomNum.toString().padStart(9, '0')}`;
       dedicatedWallet = await this.getWallet({ salt });
       
       // Create a temporary node using NodeFactory patterns
