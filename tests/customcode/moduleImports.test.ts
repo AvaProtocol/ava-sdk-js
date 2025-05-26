@@ -107,20 +107,20 @@ describe("CustomCode Module Imports Tests", () => {
       expect(matchStep.output).toEqual([2, 4, 6]);
     });
 
-    it("should support moment.js for date handling", async () => {
+    it("should support dayjs for date handling", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
       const customCodeNodeProps: CustomCodeNodeProps = {
         id: getNextId(),
-        name: "moment test",
+        name: "dayjs test",
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLangs.JAVASCRIPT,
           source: `
-            const moment = require('moment');
-            const date = moment('2023-01-01');
+            const dayjs = require('dayjs');
+            const date = dayjs('2023-01-01');
             return date.format('YYYY-MM-DD');
           `,
         },
@@ -246,15 +246,15 @@ describe("CustomCode Module Imports Tests", () => {
           lang: CustomCodeLangs.JAVASCRIPT,
           source: `
             const _ = require('lodash');
-            const moment = require('moment');
+            const dayjs = require('dayjs');
             const { v4: uuidv4 } = require('uuid');
             
             const id = uuidv4();
             
-            const now = moment();
+            const now = dayjs();
             
             const dates = _.range(0, 3).map(i => 
-              moment(now).add(i, 'days').format('YYYY-MM-DD')
+              dayjs(now).add(i, 'days').format('YYYY-MM-DD')
             );
             
             return {
