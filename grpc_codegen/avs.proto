@@ -745,34 +745,6 @@ service Aggregator {
   // It counts total executions, successful executions, and failed executions
   // If no workflow IDs are provided, it counts for all workflows of the authenticated user
   rpc GetExecutionStats(GetExecutionStatsReq) returns (GetExecutionStatsResp);
-
-  // RunNodeWithInputs executes a single node with input variables without creating a workflow
-  // It allows testing node configurations and variable inputs
-  rpc RunNodeWithInputs(RunNodeWithInputsReq) returns (RunNodeWithInputsResp);
-}
-
-// Request message for RunNodeWithInputs
-message RunNodeWithInputsReq {
-  // The type of node to run (blockTrigger, customCode, restApi, etc.)
-  string node_type = 1;
-  
-  // Configuration for the node in JSON format
-  google.protobuf.Struct node_config = 2;
-  
-  // Input variables for the node execution
-  google.protobuf.Struct input_variables = 3;
-}
-
-// Response message for RunNodeWithInputs
-message RunNodeWithInputsResp {
-  // The execution result
-  google.protobuf.Struct result = 1;
-  
-  // Whether the execution was successful
-  bool success = 2;
-  
-  // Error message if execution failed
-  string error = 3;
 }
 
 // Request message for GetWorkflowCount

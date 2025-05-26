@@ -2017,67 +2017,6 @@ export namespace GetSignatureFormatResp {
     }
 }
 
-export class RunNodeWithInputsReq extends jspb.Message { 
-    getNodeType(): string;
-    setNodeType(value: string): RunNodeWithInputsReq;
-
-    hasNodeConfig(): boolean;
-    clearNodeConfig(): void;
-    getNodeConfig(): google_protobuf_struct_pb.Struct | undefined;
-    setNodeConfig(value?: google_protobuf_struct_pb.Struct): RunNodeWithInputsReq;
-
-    hasInputVariables(): boolean;
-    clearInputVariables(): void;
-    getInputVariables(): google_protobuf_struct_pb.Struct | undefined;
-    setInputVariables(value?: google_protobuf_struct_pb.Struct): RunNodeWithInputsReq;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): RunNodeWithInputsReq.AsObject;
-    static toObject(includeInstance: boolean, msg: RunNodeWithInputsReq): RunNodeWithInputsReq.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: RunNodeWithInputsReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): RunNodeWithInputsReq;
-    static deserializeBinaryFromReader(message: RunNodeWithInputsReq, reader: jspb.BinaryReader): RunNodeWithInputsReq;
-}
-
-export namespace RunNodeWithInputsReq {
-    export type AsObject = {
-        nodeType: string,
-        nodeConfig?: google_protobuf_struct_pb.Struct.AsObject,
-        inputVariables?: google_protobuf_struct_pb.Struct.AsObject,
-    }
-}
-
-export class RunNodeWithInputsResp extends jspb.Message { 
-
-    hasResult(): boolean;
-    clearResult(): void;
-    getResult(): google_protobuf_struct_pb.Struct | undefined;
-    setResult(value?: google_protobuf_struct_pb.Struct): RunNodeWithInputsResp;
-    getSuccess(): boolean;
-    setSuccess(value: boolean): RunNodeWithInputsResp;
-    getError(): string;
-    setError(value: string): RunNodeWithInputsResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): RunNodeWithInputsResp.AsObject;
-    static toObject(includeInstance: boolean, msg: RunNodeWithInputsResp): RunNodeWithInputsResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: RunNodeWithInputsResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): RunNodeWithInputsResp;
-    static deserializeBinaryFromReader(message: RunNodeWithInputsResp, reader: jspb.BinaryReader): RunNodeWithInputsResp;
-}
-
-export namespace RunNodeWithInputsResp {
-    export type AsObject = {
-        result?: google_protobuf_struct_pb.Struct.AsObject,
-        success: boolean,
-        error: string,
-    }
-}
-
 export class GetWorkflowCountReq extends jspb.Message { 
     clearAddressesList(): void;
     getAddressesList(): Array<string>;
