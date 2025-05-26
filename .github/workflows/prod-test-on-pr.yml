@@ -172,3 +172,7 @@ jobs:
       - name: Test Secret
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:secret
+
+      - name: Test Run Node With Inputs
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:node

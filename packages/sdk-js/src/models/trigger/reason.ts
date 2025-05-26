@@ -57,6 +57,9 @@ class TriggerReason {
         this.logIndex = props.logIndex;
         this.txHash = props.txHash;
         break;
+      case TriggerType.Manual:
+      case TriggerType.Unset:
+        break;
       default:
         throw new Error("Unsupported trigger type");
     }

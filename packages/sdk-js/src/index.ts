@@ -9,6 +9,7 @@ import Edge, { EdgeProps } from "./models/edge";
 import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
 import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
+import Node, { NodeProps, NodeData } from "./models/node/interface";
 import TriggerFactory from "./models/trigger/factory";
 import Secret, { SecretProps } from "./models/secret";
 import type {
@@ -25,7 +26,11 @@ import type {
   GetExecutionsRequest,
   GetWorkflowsRequest,
   GetSignatureFormatResponse,
+  RunNodeWithInputsRequest,
+  RunNodeWithInputsResponse
 } from "@avaprotocol/types";
+
+import { NodeType, TriggerType } from "@avaprotocol/types";
 
 import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
@@ -786,6 +791,159 @@ class Client extends BaseClient {
 
     return result.getValue();
   }
+
+  /**
+   * Execute a single node with custom input variables
+   * @param request - Configuration for node execution including nodeType, nodeConfig, and inputVariables
+   * @param options - Request options
+   * @returns {Promise<RunNodeWithInputsResponse>} - The response from the node execution
+   */
+  async runNodeWithInputs(
+    request: RunNodeWithInputsRequest,
+    options?: RequestOptions
+  ): Promise<RunNodeWithInputsResponse> {
+    let workflowId: string | null = null;
+    let dedicatedWallet: any = null;
+    
+    try {
+      const salt = `runNodeWithInputs_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      dedicatedWallet = await this.getWallet({ salt });
+      
+      // Create a temporary node using NodeFactory patterns
+      const nodeId = `temp_${Date.now()}`;
+      const node = this.createNodeFromConfig(request.nodeType, request.nodeConfig, nodeId);
+      
+      // Create minimal workflow with just this node
+      const triggerId = `trigger_${Date.now()}`;
+      const tempWorkflow = this.createTempWorkflowForNode(node, triggerId, request.inputVariables, dedicatedWallet.address);
+      
+      // Submit and immediately trigger the workflow
+      workflowId = await this.submitWorkflow(tempWorkflow);
+      
+      const execution = await this.triggerWorkflow({
+        id: workflowId,
+        reason: { type: TriggerType.Manual },
+        isBlocking: true
+      });
+      
+      return {
+        success: execution.status === ExecutionStatus.FINISHED,
+        data: this.extractNodeExecutionData(execution),
+        executionId: execution.executionId,
+        nodeId: nodeId
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    } finally {
+      if (workflowId) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await this.deleteWorkflow(workflowId);
+            break; // Success, exit retry loop
+          } catch (cleanupError) {
+            if (attempt === 2) {
+              console.warn(`Failed to cleanup workflow ${workflowId} after 3 attempts:`, cleanupError);
+            } else {
+              await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private createNodeFromConfig(nodeType: string, config: Record<string, any>, nodeId: string): Node {
+    const nodeProps: NodeProps = {
+      id: nodeId,
+      name: `Single Node Execution - ${nodeType}`,
+      type: this.mapNodeTypeString(nodeType),
+      data: this.createNodeData(nodeType, config)
+    };
+    
+    return NodeFactory.create(nodeProps);
+  }
+
+  private mapNodeTypeString(nodeType: string): NodeType {
+    const typeMap: Record<string, NodeType> = {
+      'blockTrigger': NodeType.CustomCode, // Block trigger simulated as custom code
+      'restApi': NodeType.RestAPI,
+      'contractRead': NodeType.ContractRead,
+      'customCode': NodeType.CustomCode,
+      'branch': NodeType.Branch,
+      'filter': NodeType.Filter
+    };
+    
+    return typeMap[nodeType] || NodeType.CustomCode;
+  }
+
+  private createNodeData(nodeType: string, config: Record<string, any>): NodeData {
+    switch (nodeType) {
+      case 'restApi':
+        return {
+          url: config.url || '',
+          method: config.method || 'GET',
+          body: config.body || '',
+          headersMap: Object.entries(config.headers || {})
+        };
+      case 'contractRead':
+        return {
+          contractAddress: config.contractAddress || '',
+          callData: config.callData || '',
+          contractAbi: config.contractAbi || ''
+        };
+      case 'customCode':
+      case 'blockTrigger':
+        return {
+          lang: 0, // JavaScript
+          source: config.source || 'return { message: "Node executed successfully" };'
+        };
+      case 'branch':
+        return {
+          conditionsList: config.conditions || []
+        };
+      case 'filter':
+        return {
+          expression: config.expression || '',
+          input: config.input || ''
+        };
+      default:
+        throw new Error(`Unsupported node type: ${nodeType}`);
+    }
+  }
+
+  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
+    // Create a minimal workflow with manual trigger
+    const trigger = TriggerFactory.create({
+      id: triggerId,
+      name: 'manual_trigger',
+      type: TriggerType.Manual,
+      data: null
+    });
+
+    return new Workflow({
+      smartWalletAddress: walletAddress, // Use the dedicated wallet address
+      trigger: trigger,
+      nodes: [node],
+      edges: [new Edge({
+        id: `edge_${Date.now()}`,
+        source: triggerId,
+        target: node.id
+      })],
+      startAt: Date.now(),
+      expiredAt: Date.now() + 3600000, // 1 hour from now
+      maxExecution: 1
+    });
+  }
+
+  private extractNodeExecutionData(execution: any): Record<string, any> {
+    return {
+      executionId: execution.executionId,
+      status: execution.status,
+    };
+  }
 }
 
 export * from "./models/node/factory";
@@ -811,4 +969,6 @@ export type {
   TriggerReasonProps,
   OutputDataProps,
   SecretProps,
+  RunNodeWithInputsRequest,
+  RunNodeWithInputsResponse,
 };
