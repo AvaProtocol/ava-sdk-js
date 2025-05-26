@@ -709,6 +709,10 @@ class Client extends BaseClient {
       request.setLimit(options.itemPerPage);
     }
 
+    if (options?.cursor) {
+      request.setCursor(options.cursor);
+    }
+
     if (options?.after) {
       request.setAfter(options.after);
     }
