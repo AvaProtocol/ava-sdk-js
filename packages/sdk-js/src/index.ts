@@ -355,7 +355,7 @@ class Client extends BaseClient {
       request.addSmartWalletAddress(a);
     }
 
-    if (options?.cursor) {
+    if (options?.cursor && options.cursor !== "") {
       request.setCursor(options.cursor);
     }
 
@@ -681,11 +681,11 @@ class Client extends BaseClient {
       request.setLimit(options.itemPerPage);
     }
 
-    if (options?.after) {
+    if (options?.after && options.after !== "") {
       request.setAfter(options.after);
     }
 
-    if (options?.before) {
+    if (options?.before && options.before !== "") {
       request.setBefore(options.before);
     }
 
