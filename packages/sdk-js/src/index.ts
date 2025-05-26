@@ -437,11 +437,15 @@ class Client extends BaseClient {
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
 
-    if (options?.before) {
-      request.setBefore(options.before);
-    }
-    if (options?.after) {
-      request.setAfter(options.after);
+    if (options?.cursor && options.cursor !== "") {
+      request.setCursor(options.cursor);
+    } else {
+      if (options?.before) {
+        request.setBefore(options.before);
+      }
+      if (options?.after) {
+        request.setAfter(options.after);
+      }
     }
 
     const result = await this.sendGrpcRequest<
@@ -701,16 +705,17 @@ class Client extends BaseClient {
       // request.setOrgId(options.orgId);
     }
 
-    if (options?.limit) {
-      request.setLimit(options.limit || DEFAULT_LIMIT);
-    }
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
 
-    if (options?.before) {
-      request.setBefore(options.before);
-    }
-
-    if (options?.after) {
-      request.setAfter(options.after);
+    if (options?.cursor && options.cursor !== "") {
+      request.setCursor(options.cursor);
+    } else {
+      if (options?.before) {
+        request.setBefore(options.before);
+      }
+      if (options?.after) {
+        request.setAfter(options.after);
+      }
     }
 
     const result = await this.sendGrpcRequest<
