@@ -514,6 +514,12 @@ describe("getExecutions Tests", () => {
         executionIds.push(result.executionId);
       }
 
+      const allExecutions = await client.getExecutions([workflowId], {
+        limit: totalCount,
+      });
+      
+      expect(allExecutions.result.length).toBeGreaterThanOrEqual(pageSize * 2);
+      
       const firstPage = await client.getExecutions([workflowId], {
         limit: pageSize,
       });
