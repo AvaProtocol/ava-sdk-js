@@ -1395,6 +1395,10 @@ export class ListTasksReq extends jspb.Message {
     addSmartWalletAddress(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListTasksReq;
+    getBefore(): string;
+    setBefore(value: string): ListTasksReq;
+    getAfter(): string;
+    setAfter(value: string): ListTasksReq;
     getLimit(): number;
     setLimit(value: number): ListTasksReq;
 
@@ -1412,6 +1416,8 @@ export namespace ListTasksReq {
     export type AsObject = {
         smartWalletAddressList: Array<string>,
         cursor: string,
+        before: string,
+        after: string,
         limit: number,
     }
 }
@@ -1509,6 +1515,10 @@ export class ListExecutionsReq extends jspb.Message {
     addTaskIds(value: string, index?: number): string;
     getCursor(): string;
     setCursor(value: string): ListExecutionsReq;
+    getBefore(): string;
+    setBefore(value: string): ListExecutionsReq;
+    getAfter(): string;
+    setAfter(value: string): ListExecutionsReq;
     getLimit(): number;
     setLimit(value: number): ListExecutionsReq;
 
@@ -1526,6 +1536,8 @@ export namespace ListExecutionsReq {
     export type AsObject = {
         taskIdsList: Array<string>,
         cursor: string,
+        before: string,
+        after: string,
         limit: number,
     }
 }
