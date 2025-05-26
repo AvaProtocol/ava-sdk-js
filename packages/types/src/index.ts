@@ -19,6 +19,7 @@ export interface GetExecutionsRequest extends RequestOptions {
 }
 
 export interface GetWorkflowsRequest extends RequestOptions {
+  cursor?: string;  // Deprecated: Use before or after instead
   before?: string;  // Get items before this cursor value (for backward pagination)
   after?: string;   // Get items after this cursor value (for forward pagination)
   limit?: number;
