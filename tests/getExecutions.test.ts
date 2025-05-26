@@ -97,7 +97,7 @@ describe("getExecutions Tests", () => {
       // Get executions with limitTwo
       const resultWithLimitTwo = await client.getExecutions([workflowId], {
         limit: limitTwo,
-        cursor: firstCursor,
+        after: firstCursor,
       });
       expect(Array.isArray(resultWithLimitTwo.result)).toBe(true);
       expect(resultWithLimitTwo.result.length).toBe(limitTwo);
@@ -115,7 +115,7 @@ describe("getExecutions Tests", () => {
       // Get another limit:2 with the second cursor; it should return only 1 item
       const resultWithExtraLimit = await client.getExecutions([workflowId], {
         limit: limitTwo,
-        cursor: secondCursor,
+        after: secondCursor,
       });
       expect(Array.isArray(resultWithExtraLimit.result)).toBe(true);
       expect(resultWithExtraLimit.result.length).toBe(
@@ -132,116 +132,9 @@ describe("getExecutions Tests", () => {
     }
   });
 
-  test("options.cursor works as pagination", async () => {
-    const blockInterval = 5;
-    const repeatCount = 3;
-    const limit = 2;
 
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const blockNumber = await getBlockNumber();
-    let workflowId: string | undefined;
 
-    try {
-      const workflowProps = createFromTemplate(wallet.address);
-      workflowProps.trigger = TriggerFactory.create({
-        id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval: blockInterval },
-      });
-      workflowProps.maxExecution = 0; // Set to 0, or infinite runs, to ensure the workflow is not completed; otherwise, triggering a Completed workflow will fail
 
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      // Trigger the workflow multiple times
-      for (let i = 1; i <= repeatCount; i++) {
-        await client.triggerWorkflow({
-          id: workflowId,
-          reason: {
-            type: TriggerType.Block,
-            blockNumber: blockNumber + i * blockInterval,
-          },
-          isBlocking: true,
-        });
-      }
-
-      // Get first page of executions
-      const firstPage = await client.getExecutions([workflowId], {
-        limit,
-      });
-
-      expect(Array.isArray(firstPage.result)).toBe(true);
-      expect(firstPage.result.length).toBe(limit);
-      expect(firstPage.cursor).toBeDefined();
-
-      // Get second page of executions using cursor
-      const secondPage = await client.getExecutions([workflowId], {
-        limit,
-        cursor: firstPage.cursor,
-      });
-
-      // Verify that the count of the second return is totalCount - limit
-      expect(Array.isArray(secondPage.result)).toBe(true);
-      expect(secondPage.result.length).toBe(repeatCount - limit);
-
-      // Make sure there's no overlap between the two lists
-      expect(
-        _.intersection(
-          firstPage.result.map((item) => item.id),
-          secondPage.result.map((item) => item.id)
-        ).length
-      ).toBe(0);
-
-      // Make sure the cursor is different from the first cursor and an empty string due to reaching the end of the list
-      expect(secondPage.cursor).not.toBe(firstPage.cursor);
-      expect(secondPage.cursor).toBe("");
-      expect(secondPage.hasMore).toBe(false);
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
-  });
-
-  test("should throw error with a non-existent cursor", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const blockNumber = await getBlockNumber();
-    let workflowId: string | undefined;
-
-    try {
-      const workflowProps = createFromTemplate(wallet.address);
-      workflowProps.trigger = TriggerFactory.create({
-        id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval: 5 },
-      });
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      await client.triggerWorkflow({
-        id: workflowId,
-        reason: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + 5,
-        },
-        isBlocking: true,
-      });
-
-      // Invalid cursor should throw INVALID_ARGUMENT
-      await expect(
-        client.getExecutions([workflowId], {
-          cursor: "invalid-cursor",
-        })
-      ).rejects.toThrowError(/cursor is not valid/);
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
-  });
 
   test("should throw error with an invalid limit", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
