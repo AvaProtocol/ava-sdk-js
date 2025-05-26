@@ -91,3 +91,17 @@ export interface SecretRequestOptions extends RequestOptions {
   after?: string;
   itemPerPage?: number;
 }
+
+export interface RunNodeWithInputsRequest {
+  nodeType: string;
+  nodeConfig: Record<string, any>;
+  inputVariables: Record<string, any>;
+}
+
+export interface RunNodeWithInputsResponse {
+  success: boolean;
+  data?: Record<string, any>;
+  error?: string;
+  executionId?: string;
+  nodeId?: string;
+}
