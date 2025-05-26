@@ -408,4 +408,187 @@ describe("getExecutions Tests", () => {
       }
     }
   });
+
+  test("should support forward pagination with after parameter", async () => {
+    const totalCount = 4;
+    const pageSize = 2;
+
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const blockNumber = await getBlockNumber();
+    let workflowId: string | undefined;
+    const executionIds: string[] = [];
+
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+      workflowProps.maxExecution = 0;
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      // Trigger the workflow multiple times
+      for (let i = 1; i <= totalCount; i++) {
+        const result = await client.triggerWorkflow({
+          id: workflowId,
+          reason: {
+            type: TriggerType.Block,
+            blockNumber: blockNumber + i * 5,
+          },
+          isBlocking: true,
+        });
+        executionIds.push(result.executionId);
+      }
+
+      const firstPage = await client.getExecutions([workflowId], {
+        limit: pageSize,
+      });
+      
+      expect(firstPage.result.length).toBeLessThanOrEqual(pageSize);
+      expect(firstPage.cursor).toBeTruthy();
+      expect(firstPage.hasMore).toBe(true);
+
+      const secondPage = await client.getExecutions([workflowId], {
+        after: firstPage.cursor,
+        limit: pageSize,
+      });
+
+      expect(secondPage.result.length).toBeLessThanOrEqual(pageSize);
+
+      // Verify no overlap between pages
+      const firstPageIds = firstPage.result.map((item) => item.id);
+      const secondPageIds = secondPage.result.map((item) => item.id);
+      
+      const overlap = firstPageIds.filter((id) => secondPageIds.includes(id));
+      expect(overlap.length).toBe(0);
+
+      // Verify all returned executions are in our created list
+      [...firstPageIds, ...secondPageIds].forEach((id) => {
+        if (id) {
+          expect(executionIds.includes(id)).toBe(true);
+        }
+      });
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+
+  test("should support backward pagination with before parameter", async () => {
+    const totalCount = 4;
+    const pageSize = 2;
+
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const blockNumber = await getBlockNumber();
+    let workflowId: string | undefined;
+    const executionIds: string[] = [];
+
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+      workflowProps.maxExecution = 0;
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      // Trigger the workflow multiple times
+      for (let i = 1; i <= totalCount; i++) {
+        const result = await client.triggerWorkflow({
+          id: workflowId,
+          reason: {
+            type: TriggerType.Block,
+            blockNumber: blockNumber + i * 5,
+          },
+          isBlocking: true,
+        });
+        executionIds.push(result.executionId);
+      }
+
+      const firstPage = await client.getExecutions([workflowId], {
+        limit: pageSize,
+      });
+      
+      expect(firstPage.result.length).toBeLessThanOrEqual(pageSize);
+      expect(firstPage.cursor).toBeTruthy();
+
+      const previousPage = await client.getExecutions([workflowId], {
+        before: firstPage.cursor,
+        limit: pageSize,
+      });
+
+      // Verify we got items in both pages
+      expect(previousPage.result.length).toBeGreaterThan(0);
+      expect(firstPage.result.length).toBeGreaterThan(0);
+
+      // Verify the previous page has cursor and hasMore fields
+      expect(typeof previousPage.cursor).toBe("string");
+      expect(typeof previousPage.hasMore).toBe("boolean");
+
+      // Verify all returned executions are in our created list
+      const previousPageIds = previousPage.result.map((item) => item.id);
+      const firstPageIds = firstPage.result.map((item) => item.id);
+      
+      [...previousPageIds, ...firstPageIds].forEach((id) => {
+        if (id) {
+          expect(executionIds.includes(id)).toBe(true);
+        }
+      });
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
+
+  test("should throw error with invalid before/after parameters", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const blockNumber = await getBlockNumber();
+    let workflowId: string | undefined;
+
+    try {
+      const workflowProps = createFromTemplate(wallet.address);
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: 5 },
+      });
+
+      const workflow = client.createWorkflow(workflowProps);
+      workflowId = await client.submitWorkflow(workflow);
+
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Block,
+          blockNumber: blockNumber + 5,
+        },
+        isBlocking: true,
+      });
+
+      // Invalid before parameter should throw INVALID_ARGUMENT
+      await expect(
+        client.getExecutions([workflowId], { before: "invalid-cursor" })
+      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+
+      // Invalid after parameter should throw INVALID_ARGUMENT
+      await expect(
+        client.getExecutions([workflowId], { after: "invalid-cursor" })
+      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
+  });
 });

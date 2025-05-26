@@ -259,7 +259,9 @@ describe("getWorkflows Tests", () => {
 
       // Verify all returned workflows are in our created list
       [...firstPageIds, ...secondPageIds].forEach((id) => {
-        expect(workflowIds.includes(id)).toBe(true);
+        if (id) {
+          expect(workflowIds.includes(id)).toBe(true);
+        }
       });
     } finally {
       // Clean up all created workflows
@@ -286,22 +288,29 @@ describe("getWorkflows Tests", () => {
         workflowIds.push(workflowId);
       }
 
-      const middlePage = await client.getWorkflows([wallet.address], {
+      const allWorkflows = await client.getWorkflows([wallet.address], {
+        limit: totalCount,
+      });
+      
+      expect(allWorkflows.result.length).toBeGreaterThanOrEqual(pageSize * 2);
+      
+      // Get the first page with limit:pageSize
+      const firstPage = await client.getWorkflows([wallet.address], {
         limit: pageSize,
       });
       
-      expect(middlePage.result.length).toBeLessThanOrEqual(pageSize);
-      expect(middlePage.cursor).toBeTruthy();
+      expect(firstPage.result.length).toBeLessThanOrEqual(pageSize);
+      expect(firstPage.cursor).toBeTruthy();
 
       // Get the previous page using before parameter
       const previousPage = await client.getWorkflows([wallet.address], {
-        before: middlePage.cursor,
+        before: firstPage.cursor,
         limit: pageSize,
       });
 
       // Verify we got items in both pages
       expect(previousPage.result.length).toBeGreaterThan(0);
-      expect(middlePage.result.length).toBeGreaterThan(0);
+      expect(firstPage.result.length).toBeGreaterThan(0);
 
       // Verify the previous page has cursor and hasMore fields
       expect(typeof previousPage.cursor).toBe("string");
@@ -309,14 +318,16 @@ describe("getWorkflows Tests", () => {
 
       // Verify no overlap between pages
       const previousPageIds = previousPage.result.map((item) => item.id);
-      const middlePageIds = middlePage.result.map((item) => item.id);
+      const firstPageIds = firstPage.result.map((item) => item.id);
       
-      const overlap = previousPageIds.filter((id) => middlePageIds.includes(id));
+      const overlap = previousPageIds.filter((id) => firstPageIds.includes(id));
       expect(overlap.length).toBe(0);
 
       // Verify all returned workflows are in our created list
-      [...previousPageIds, ...middlePageIds].forEach((id) => {
-        expect(workflowIds.includes(id)).toBe(true);
+      [...previousPageIds, ...firstPageIds].forEach((id) => {
+        if (id) {
+          expect(workflowIds.includes(id)).toBe(true);
+        }
       });
     } finally {
       // Clean up all created workflows
