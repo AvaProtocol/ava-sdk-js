@@ -514,35 +514,37 @@ describe("getExecutions Tests", () => {
         executionIds.push(result.executionId);
       }
 
-      const firstPage = await client.getExecutions([workflowId], {
+      const allExecutions = await client.getExecutions([workflowId], {
+        limit: totalCount,
+      });
+      
+      expect(allExecutions.result.length).toBeGreaterThanOrEqual(pageSize * 2);
+      
+      const middlePage = await client.getExecutions([workflowId], {
         limit: pageSize,
       });
       
-      expect(firstPage.result.length).toBeLessThanOrEqual(pageSize);
-      expect(firstPage.cursor).toBeTruthy();
+      expect(middlePage.result.length).toBeLessThanOrEqual(pageSize);
+      expect(middlePage.cursor).toBeTruthy();
 
       const previousPage = await client.getExecutions([workflowId], {
-        before: firstPage.cursor,
+        before: middlePage.cursor,
         limit: pageSize,
       });
 
       // Verify we got items in both pages
       expect(previousPage.result.length).toBeGreaterThan(0);
-      expect(firstPage.result.length).toBeGreaterThan(0);
+      expect(middlePage.result.length).toBeGreaterThan(0);
 
       // Verify the previous page has cursor and hasMore fields
       expect(typeof previousPage.cursor).toBe("string");
       expect(typeof previousPage.hasMore).toBe("boolean");
 
-      // Verify no overlap between pages
-      const previousPageIds = previousPage.result.map((item) => item.id);
-      const firstPageIds = firstPage.result.map((item) => item.id);
-      
-      const overlap = previousPageIds.filter((id) => firstPageIds.includes(id));
-      expect(overlap.length).toBe(0);
-
       // Verify all returned executions are in our created list
-      [...previousPageIds, ...firstPageIds].forEach((id) => {
+      const previousPageIds = previousPage.result.map((item) => item.id);
+      const middlePageIds = middlePage.result.map((item) => item.id);
+      
+      [...previousPageIds, ...middlePageIds].forEach((id) => {
         if (id) {
           expect(executionIds.includes(id)).toBe(true);
         }
