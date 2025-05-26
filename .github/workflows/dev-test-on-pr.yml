@@ -170,6 +170,4 @@ jobs:
 
       - name: Test Loop Node
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          export TEST_ENV=dev
-          yarn test tests/loopNode.test.ts
+        run: yarn test:loopNode
