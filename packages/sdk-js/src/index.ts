@@ -365,11 +365,15 @@ class Client extends BaseClient {
       request.addSmartWalletAddress(a);
     }
 
-    if (options?.before && options?.before !== "") {
-      request.setBefore(options.before);
-    }
-    if (options?.after && options?.after !== "") {
-      request.setAfter(options.after);
+    if (options?.cursor && options?.cursor !== "") {
+      request.setCursor(options.cursor);
+    } else {
+      if (options?.before && options?.before !== "") {
+        request.setBefore(options.before);
+      }
+      if (options?.after && options?.after !== "") {
+        request.setAfter(options.after);
+      }
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -426,11 +430,15 @@ class Client extends BaseClient {
     const request = new avs_pb.ListExecutionsReq();
     request.setTaskIdsList(workflows);
 
-    if (options?.before && options?.before !== "") {
-      request.setBefore(options.before);
-    }
-    if (options?.after && options?.after !== "") {
-      request.setAfter(options.after);
+    if (options?.cursor && options?.cursor !== "") {
+      request.setCursor(options.cursor);
+    } else {
+      if (options?.before && options?.before !== "") {
+        request.setBefore(options.before);
+      }
+      if (options?.after && options?.after !== "") {
+        request.setAfter(options.after);
+      }
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -696,11 +704,15 @@ class Client extends BaseClient {
       request.setLimit(options.itemPerPage);
     }
 
-    if (options?.before && options?.before !== "") {
-      request.setBefore(options.before);
-    }
-    if (options?.after && options?.after !== "") {
-      request.setAfter(options.after);
+    if (options?.cursor && options?.cursor !== "") {
+      request.setCursor(options.cursor);
+    } else {
+      if (options?.before && options?.before !== "") {
+        request.setBefore(options.before);
+      }
+      if (options?.after && options?.after !== "") {
+        request.setAfter(options.after);
+      }
     }
 
     const result = await this.sendGrpcRequest<
