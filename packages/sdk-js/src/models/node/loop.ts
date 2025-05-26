@@ -72,18 +72,36 @@ class LoopNode implements Node {
     } else if (loopNode.getGraphqlDataQuery()) {
       data.runnerType = NodeType.GraphQLQuery;
       const graphqlQuery = loopNode.getGraphqlDataQuery();
+      const variablesMap = graphqlQuery?.getVariablesMap();
+      const variablesArray: [string, string][] = [];
+      
+      if (variablesMap) {
+        variablesMap.forEach((value, key) => {
+          variablesArray.push([key, value]);
+        });
+      }
+      
       data.runnerProps = {
         url: graphqlQuery?.getUrl(),
         query: graphqlQuery?.getQuery(),
-        variables: graphqlQuery?.getVariablesMap(),
+        variablesMap: variablesArray,
       };
     } else if (loopNode.getRestApi()) {
       data.runnerType = NodeType.RestAPI;
       const restApi = loopNode.getRestApi();
+      const headersMap = restApi?.getHeadersMap();
+      const headersArray: [string, string][] = [];
+      
+      if (headersMap) {
+        headersMap.forEach((value, key) => {
+          headersArray.push([key, value]);
+        });
+      }
+      
       data.runnerProps = {
         url: restApi?.getUrl(),
         method: restApi?.getMethod(),
-        headers: restApi?.getHeadersMap(),
+        headersMap: headersArray,
         body: restApi?.getBody(),
       };
     } else if (loopNode.getCustomCode()) {
@@ -139,9 +157,10 @@ class LoopNode implements Node {
         const graphqlQuery = new avs_pb.GraphQLQueryNode();
         graphqlQuery.setUrl(this.data.runnerProps.url);
         graphqlQuery.setQuery(this.data.runnerProps.query);
-        if (this.data.runnerProps.variables) {
-          Object.entries(this.data.runnerProps.variables).forEach(([key, value]) => {
-            graphqlQuery.getVariablesMap().set(key, value as string);
+        if (this.data.runnerProps.variablesMap) {
+          const variablesMap = graphqlQuery.getVariablesMap();
+          this.data.runnerProps.variablesMap.forEach(([key, value]: [string, string]) => {
+            variablesMap.set(key, value);
           });
         }
         loopNode.setGraphqlDataQuery(graphqlQuery);
@@ -151,9 +170,10 @@ class LoopNode implements Node {
         restApi.setUrl(this.data.runnerProps.url);
         restApi.setMethod(this.data.runnerProps.method);
         restApi.setBody(this.data.runnerProps.body || "");
-        if (this.data.runnerProps.headers) {
-          Object.entries(this.data.runnerProps.headers).forEach(([key, value]) => {
-            restApi.getHeadersMap().set(key, value as string);
+        if (this.data.runnerProps.headersMap) {
+          const headersMap = restApi.getHeadersMap();
+          this.data.runnerProps.headersMap.forEach(([key, value]: [string, string]) => {
+            headersMap.set(key, value);
           });
         }
         loopNode.setRestApi(restApi);

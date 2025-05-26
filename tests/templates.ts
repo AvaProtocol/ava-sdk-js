@@ -230,3 +230,21 @@ export const blockTriggerEvery5 = TriggerFactory.create({
   type: TriggerType.Block,
   data: { interval: 5 },
 });
+
+// Import Loop node templates
+import {
+  loopNodeWithRestApiProps,
+  loopNodeWithCustomCodeProps,
+  loopNodeWithETHTransferProps,
+  loopNodeWithContractReadProps,
+  loopNodeWithGraphQLQueryProps,
+} from "./templates/loopNode";
+
+// Export Loop node templates
+export {
+  loopNodeWithRestApiProps,
+  loopNodeWithCustomCodeProps,
+  loopNodeWithETHTransferProps,
+  loopNodeWithContractReadProps,
+  loopNodeWithGraphQLQueryProps,
+};
