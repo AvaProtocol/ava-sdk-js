@@ -19,17 +19,9 @@ export interface GetExecutionsRequest extends RequestOptions {
 }
 
 export interface GetWorkflowsRequest extends RequestOptions {
-<<<<<<< HEAD
-  cursor?: string; // Deprecated: Use before or after instead
-  before?: string; // Get items before this cursor value (for backward pagination)
-  after?: string; // Get items after this cursor value (for forward pagination)
-||||||| parent of ff8232d (Add before/after parameters for cursor-based pagination in ListTasksByUser)
-  cursor?: string;
-=======
   cursor?: string;  // Deprecated: Use before or after instead
   before?: string;  // Get items before this cursor value (for backward pagination)
   after?: string;   // Get items after this cursor value (for forward pagination)
->>>>>>> ff8232d (Add before/after parameters for cursor-based pagination in ListTasksByUser)
   limit?: number;
 }
 
