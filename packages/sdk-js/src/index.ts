@@ -400,10 +400,12 @@ class Client extends BaseClient {
    * Get the list of executions for multiple workflow given in the workflows argument.
    * @param {string[]} workflows - The list of workflow ids to fetch execution for
    * @param {GetExecutionsRequest} options - Request options
-   * @param {string} [options.cursor] - The cursor for pagination
+   * @param {string} [options.cursor] - The cursor for pagination (deprecated, use before/after instead)
+   * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
+   * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ cursor: string; result: Execution[] }>} - The list of Executions
+   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Executions
    */
   async getExecutions(
     workflows: string[],
@@ -412,9 +414,16 @@ class Client extends BaseClient {
     const request = new avs_pb.ListExecutionsReq();
     request.setTaskIdsList(workflows);
 
-    // Cusor is implemenent similarly to moral
-    if (options?.cursor && options?.cursor != "") {
+    // Priority: legacy cursor first, then before/after parameters
+    if (options?.cursor && options?.cursor !== "") {
       request.setCursor(options.cursor);
+    } else {
+      if (options?.before && options?.before !== "") {
+        request.setBefore(options.before);
+      }
+      if (options?.after && options?.after !== "") {
+        request.setAfter(options.after);
+      }
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
@@ -435,7 +444,7 @@ class Client extends BaseClient {
    * Get a single execution for given workflow and execution id
    * @param {string} workflowId - The workflow id
    * @param {string} executionId - The exectuion id
-   * @param {GetExecutionsRequest} options - Request options
+   * @param {RequestOptions} options - Request options
    * @returns {Promise<Execution>} - The result execution if it is existed
    */
   async getExecution(
@@ -483,7 +492,7 @@ class Client extends BaseClient {
    *
    * @param {string} workflowId - The workflow id
    * @param {string} executionId - The exectuion id
-   * @param {GetExecutionsRequest} options - Request options
+   * @param {RequestOptions} options - Request options
    * @returns {Promise<ExecutionStatus>} - The result execution if it is existed
    */
   async getExecutionStatus(
