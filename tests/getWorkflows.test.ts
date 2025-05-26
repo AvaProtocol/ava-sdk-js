@@ -90,10 +90,10 @@ describe("getWorkflows Tests", () => {
       const firstCursor = listResponse.cursor;
       expect(firstCursor).toHaveLength(60);
 
-      // Get the list of workflows with limit:2 and cursor
+      // Get the list of workflows with limit:2 and after
       const listResponse2 = await client.getWorkflows([wallet.address], {
         limit: totalCount,
-        cursor: firstCursor,
+        after: firstCursor,
       });
 
       // Verify that the count of the second return is totalCount - limit
@@ -124,71 +124,7 @@ describe("getWorkflows Tests", () => {
     }
   });
 
-  test("options.cursor works as pagination", async () => {
-    const totalCount = 3;
-    const limit = 2;
 
-    // jest runs test in parallel across files. If there are other test in other file that adds task to the same smart wallet, the return of listing workflow will become undeterministic ahead of time. by using a dedicated salt here we ensure other activity won't interfer with this test
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    const workflowIds: string[] = [];
-
-    try {
-      // Create 3 workflows
-      for (let i = 0; i < totalCount; i++) {
-        const workflowProps = createFromTemplate(wallet.address);
-        const workflow = client.createWorkflow(workflowProps);
-        const workflowId = await client.submitWorkflow(workflow);
-        workflowIds.push(workflowId);
-      }
-
-      // Get the list of workflows with limit:2
-      const listResponse = await client.getWorkflows([wallet.address], {
-        limit,
-      });
-      expect(Array.isArray(listResponse.result)).toBe(true);
-      expect(listResponse.result.length).toBe(limit);
-      expect(listResponse).toHaveProperty("cursor");
-
-      _.each(listResponse.result, (item) => {
-        expect(_.includes(workflowIds, item.id)).toBe(true);
-      });
-
-      const firstCursor = listResponse.cursor;
-
-      // Get the list of workflows with limit:2 and cursor
-      const listResponse2 = await client.getWorkflows([wallet.address], {
-        limit,
-        cursor: firstCursor,
-      });
-
-      // Verify that the count of the second return is totalCount - limit
-      expect(Array.isArray(listResponse2.result)).toBe(true);
-      expect(listResponse2.result.length).toBe(totalCount - limit);
-
-      // Make sure the returned ids are in the list of created ids
-      _.each(listResponse2.result, (item) => {
-        expect(_.includes(workflowIds, item.id)).toBe(true);
-      });
-
-      // Make sure there's no overlap between the two lists
-      expect(
-        _.intersection(
-          listResponse.result.map((item) => item.id),
-          listResponse2.result.map((item) => item.id)
-        ).length
-      ).toBe(0);
-
-      // Make sure the cursor is different from the first cursor and an empty string due to reaching the end of the list
-      expect(listResponse2.cursor).not.toBe(firstCursor);
-      expect(listResponse2.cursor).toBe("");
-      expect(listResponse2.hasMore).toBe(false);
-    } finally {
-      // Clean up all created workflows
-      for (const workflowId of workflowIds) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
-  });
 
   test("should throw error when not sending a valid smart wallet address", async () => {
     // User's EOA address should throw INVALID_ARGUMENT
@@ -202,12 +138,7 @@ describe("getWorkflows Tests", () => {
     ).rejects.toThrowError(/INVALID_ARGUMENT/i);
   });
 
-  test("should throw error with an invalid cursor", async () => {
-    // Invalid cursor should throw INVALID_ARGUMENT
-    await expect(
-      client.getWorkflows([ownerAddress], { cursor: "invalid-cursor" })
-    ).rejects.toThrowError(/INVALID_ARGUMENT/i);
-  });
+
 
   test("should throw error with an invalid limit", async () => {
     // Invalid limit should throw INVALID_ARGUMENT
