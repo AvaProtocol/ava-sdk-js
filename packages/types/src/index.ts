@@ -83,8 +83,10 @@ export interface ListSecretResponse {
 
 export interface ListSecretsResponse {
   items: ListSecretResponse[];
-  cursor: string;
-  hasMore: boolean;
+  startCursor: string;
+  endCursor: string;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 export interface SecretRequestOptions extends RequestOptions {

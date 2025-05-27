@@ -463,7 +463,13 @@ class Client extends BaseClient {
   async getWorkflows(
     addresses: string[],
     options?: GetWorkflowsRequest
-  ): Promise<{ cursor: string; result: Workflow[]; hasMore: boolean }> {
+  ): Promise<{
+    items: Workflow[];
+    startCursor: string;
+    endCursor: string;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  }> {
     const request = new avs_pb.ListTasksReq();
     for (const a of addresses) {
       request.addSmartWalletAddress(a);
@@ -484,11 +490,10 @@ class Client extends BaseClient {
     >("listTasks", request, options);
 
     return {
-      cursor: result.getCursor(),
-      hasMore: result.getHasMore(),
-      result: result
+      items: result
         .getItemsList()
         .map((item) => Workflow.fromListResponse(item)),
+      ...result.getPageInfo()!.toObject(),
     };
   }
 
@@ -526,7 +531,13 @@ class Client extends BaseClient {
   async getExecutions(
     workflows: string[],
     options?: GetExecutionsRequest
-  ): Promise<{ cursor: string; result: Execution[]; hasMore: boolean }> {
+  ): Promise<{
+    items: Execution[];
+    startCursor: string;
+    endCursor: string;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  }> {
     const request = new avs_pb.ListExecutionsReq();
     for (const w of workflows) {
       request.addTaskIds(w);
@@ -547,11 +558,8 @@ class Client extends BaseClient {
     >("listExecutions", request, options);
 
     return {
-      cursor: result.getCursor(),
-      hasMore: result.getHasMore(),
-      result: result
-        .getItemsList()
-        .map((item) => Execution.fromResponse(item)),
+      items: result.getItemsList().map((item) => Execution.fromResponse(item)),
+      ...result.getPageInfo()!.toObject(),
     };
   }
 
@@ -561,17 +569,15 @@ class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Execution>} - The Execution object
    */
-  async getExecution(
-    id: string,
-    options?: RequestOptions
-  ): Promise<Execution> {
+  async getExecution(id: string, options?: RequestOptions): Promise<Execution> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<
-      avs_pb.Execution,
-      avs_pb.IdReq
-    >("getExecution", request, options);
+    const result = await this.sendGrpcRequest<avs_pb.Execution, avs_pb.IdReq>(
+      "getExecution",
+      request,
+      options
+    );
 
     return Execution.fromResponse(result);
   }
@@ -628,10 +634,11 @@ class Client extends BaseClient {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<
-      avs_pb.Task,
-      avs_pb.IdReq
-    >("getTask", request, options);
+    const result = await this.sendGrpcRequest<avs_pb.Task, avs_pb.IdReq>(
+      "getTask",
+      request,
+      options
+    );
 
     return Workflow.fromResponse(result);
   }
@@ -650,12 +657,12 @@ class Client extends BaseClient {
   ): Promise<string> {
     const request = new avs_pb.UserTriggerTaskReq();
     request.setTaskId(id);
-    
+
     // Create a manual trigger reason
     const reason = new avs_pb.TriggerReason();
     reason.setType(avs_pb.TriggerReason.TriggerType.MANUAL);
     request.setReason(reason);
-    
+
     // Set blocking mode to true to wait for execution
     request.setIsBlocking(true);
 
@@ -673,17 +680,15 @@ class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
    */
-  async cancelWorkflow(
-    id: string,
-    options?: RequestOptions
-  ): Promise<boolean> {
+  async cancelWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<
-      BoolValue,
-      avs_pb.IdReq
-    >("cancelTask", request, options);
+    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
+      "cancelTask",
+      request,
+      options
+    );
 
     return result.getValue();
   }
@@ -694,17 +699,15 @@ class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
    */
-  async deleteWorkflow(
-    id: string,
-    options?: RequestOptions
-  ): Promise<boolean> {
+  async deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<
-      BoolValue,
-      avs_pb.IdReq
-    >("deleteTask", request, options);
+    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
+      "deleteTask",
+      request,
+      options
+    );
 
     return result.getValue();
   }
@@ -714,13 +717,13 @@ class Client extends BaseClient {
    * @param {string} name - The name of the secret
    * @param {string} value - The value of the secret
    * @param {SecretRequestOptions} options - Request options
-   * @returns {Promise<Secret>} - The created Secret object
+   * @returns {Promise<boolean>} - True if the secret was created successfully
    */
   async createSecret(
     name: string,
     value: string,
     options?: SecretRequestOptions
-  ): Promise<Secret> {
+  ): Promise<boolean> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
     request.setSecret(value);
@@ -734,11 +737,11 @@ class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.ListSecretsResp.ResponseSecret,
+      BoolValue,
       avs_pb.CreateOrUpdateSecretReq
     >("createSecret", request, options);
 
-    return new Secret(result.toObject());
+    return result.getValue();
   }
 
   /**
@@ -746,13 +749,13 @@ class Client extends BaseClient {
    * @param {string} name - The name of the secret
    * @param {string} value - The value of the secret
    * @param {SecretRequestOptions} options - Request options
-   * @returns {Promise<Secret>} - The updated Secret object
+   * @returns {Promise<boolean>} - True if the secret was updated successfully
    */
   async updateSecret(
     name: string,
     value: string,
     options?: SecretRequestOptions
-  ): Promise<Secret> {
+  ): Promise<boolean> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
     request.setSecret(value);
@@ -766,11 +769,11 @@ class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.ListSecretsResp.ResponseSecret,
+      BoolValue,
       avs_pb.CreateOrUpdateSecretReq
     >("updateSecret", request, options);
 
-    return new Secret(result.toObject());
+    return result.getValue();
   }
 
   /**
@@ -801,14 +804,17 @@ class Client extends BaseClient {
       avs_pb.ListSecretsReq
     >("listSecrets", request, options);
 
+    const pageInfo = result.getPageInfo();
     return {
-      cursor: result.getCursor(),
-      hasMore: result.getHasMore(),
-      items: result
-        .getItemsList()
-        .map((item) => new Secret({
-          name: item.getName()
-        })),
+      items: result.getItemsList().map(
+        (item) =>
+          new Secret({
+            name: item.getName(),
+            workflowId: item.getWorkflowId() || undefined,
+            orgId: item.getOrgId() || undefined,
+          })
+      ),
+      ...result.getPageInfo()!.toObject(),
     };
   }
 
@@ -816,12 +822,12 @@ class Client extends BaseClient {
    * Delete a secret
    * @param {string} name - The name of the secret
    * @param {SecretRequestOptions} options - Request options
-   * @returns {Promise<ListSecretResponse>} - The deleted Secret object
+   * @returns {Promise<boolean>} - True if the secret was deleted successfully
    */
   async deleteSecret(
     name: string,
     options?: SecretRequestOptions
-  ): Promise<Secret> {
+  ): Promise<boolean> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
 
@@ -834,11 +840,11 @@ class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.ListSecretsResp.ResponseSecret,
+      BoolValue,
       avs_pb.DeleteSecretReq
     >("deleteSecret", request, options);
 
-    return new Secret(result.toObject());
+    return result.getValue();
   }
 
   /**
@@ -852,50 +858,53 @@ class Client extends BaseClient {
    * @returns {Promise<RunNodeWithInputsResponse>} - The response from running the node
    */
   async runNodeWithInputs(
-    {
-      nodeType,
-      nodeConfig,
-      inputVariables = {},
-    }: RunNodeWithInputsRequest,
+    { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
     try {
       // Special handling for blockTrigger nodes - they should reject input variables
-      if (nodeType === 'blockTrigger' && inputVariables && Object.keys(inputVariables).length > 0) {
-        const variableNames = Object.keys(inputVariables).join(', ');
+      if (
+        nodeType === "blockTrigger" &&
+        inputVariables &&
+        Object.keys(inputVariables).length > 0
+      ) {
+        const variableNames = Object.keys(inputVariables).join(", ");
         return {
           success: false,
           error: `blockTrigger nodes do not accept input variables. Received: ${variableNames}`,
-          nodeId: ''
+          nodeId: "",
         };
       }
-      
+
       // Create the request
       const request = new avs_pb.RunNodeWithInputsReq();
       request.setNodeType(nodeType);
-      
+
       const nodeConfigMap = request.getNodeConfigMap();
       for (const [key, value] of Object.entries(nodeConfig)) {
         nodeConfigMap.set(key, this.convertJSValueToProtobuf(value));
       }
-      
+
       if (inputVariables && Object.keys(inputVariables).length > 0) {
         const inputVarsMap = request.getInputVariablesMap();
         for (const [key, value] of Object.entries(inputVariables)) {
           inputVarsMap.set(key, this.convertJSValueToProtobuf(value));
         }
       }
-      
+
       // Send the request directly to the server
       const result = await this.sendGrpcRequest<
         avs_pb.RunNodeWithInputsResp,
         avs_pb.RunNodeWithInputsReq
       >("runNodeWithInputs", request, options);
-      
+
       let data: Record<string, any> | undefined;
-      
+
       const outputCase = result.getOutputDataCase();
-      if (outputCase !== avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET) {
+      if (
+        outputCase !==
+        avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET
+      ) {
         switch (outputCase) {
           case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
             data = result.getEthTransfer()?.toObject();
@@ -938,12 +947,12 @@ class Client extends BaseClient {
             break;
         }
       }
-      
+
       return {
         success: result.getSuccess(),
         data,
         error: result.getError(),
-        nodeId: result.getNodeId()
+        nodeId: result.getNodeId(),
       };
     } catch (error: any) {
       return {
@@ -953,7 +962,11 @@ class Client extends BaseClient {
     }
   }
 
-  private createNodeFromConfig(nodeType: string, config: Record<string, any>, nodeId: string): Node {
+  private createNodeFromConfig(
+    nodeType: string,
+    config: Record<string, any>,
+    nodeId: string
+  ): Node {
     const nodeProps: NodeProps = {
       id: nodeId,
       name: `${nodeType}_node`,
@@ -981,102 +994,119 @@ class Client extends BaseClient {
     return typeMap[nodeType] || null;
   }
 
-  private createNodeData(nodeType: string, config: Record<string, any>): NodeData {
+  private createNodeData(
+    nodeType: string,
+    config: Record<string, any>
+  ): NodeData {
     switch (nodeType) {
-      case 'blockTrigger':
+      case "blockTrigger":
         return {
           config: {
             lang: 0, // JavaScript
-            source: 'return { blockNumber: Math.floor(Math.random() * 10000000) };' // Simulate block trigger
-          }
+            source:
+              "return { blockNumber: Math.floor(Math.random() * 10000000) };", // Simulate block trigger
+          },
         };
-      case 'restApi':
+      case "restApi":
         return {
           config: {
-            url: config.url || '',
-            method: config.method || 'GET',
-            body: config.body || '',
-            headersMap: Object.entries(config.headers || {})
-          }
+            url: config.url || "",
+            method: config.method || "GET",
+            body: config.body || "",
+            headersMap: Object.entries(config.headers || {}),
+          },
         };
-      case 'contractRead':
+      case "contractRead":
         return {
           config: {
-            contractAddress: config.contractAddress || '',
-            callData: config.callData || '',
-            contractAbi: config.contractAbi || ''
-          }
+            contractAddress: config.contractAddress || "",
+            callData: config.callData || "",
+            contractAbi: config.contractAbi || "",
+          },
         };
-      case 'customCode':
+      case "customCode":
         return {
           config: {
             lang: config.lang || 0, // JavaScript
-            source: config.source || 'return { message: "Node executed successfully" };'
-          }
+            source:
+              config.source ||
+              'return { message: "Node executed successfully" };',
+          },
         };
-      case 'loop':
+      case "loop":
         return {
           config: {
-            sourceId: config.sourceId || '',
-            iterVal: config.iterVal || '',
-            iterKey: config.iterKey || ''
-          }
+            sourceId: config.sourceId || "",
+            iterVal: config.iterVal || "",
+            iterKey: config.iterKey || "",
+          },
         };
-      case 'branch':
+      case "branch":
         return {
           config: {
-            conditionsList: config.conditions || []
-          }
+            conditionsList: config.conditions || [],
+          },
         };
-      case 'filter':
+      case "filter":
         return {
           config: {
-            expression: config.expression || '',
-            sourceId: config.sourceId || config.input || ''
-          }
+            expression: config.expression || "",
+            sourceId: config.sourceId || config.input || "",
+          },
         };
       default:
         throw new Error(`Unsupported node type: ${nodeType}`);
     }
   }
 
-  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>): Workflow {
+  private createTempWorkflowForNode(
+    node: Node,
+    triggerId: string,
+    inputVariables: Record<string, any>
+  ): Workflow {
     // For customCode nodes, we need to modify the source to include the input variables
-    if (node.type === NodeType.CustomCode && inputVariables && Object.keys(inputVariables).length > 0) {
+    if (
+      node.type === NodeType.CustomCode &&
+      inputVariables &&
+      Object.keys(inputVariables).length > 0
+    ) {
       const customCodeData = node.data as avs_pb.CustomCodeNode.AsObject;
       if (customCodeData.config) {
         // Create a wrapper that defines the variables before executing the original code
         const variableDefinitions = Object.entries(inputVariables)
           .map(([key, value]) => {
-            const valueStr = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
+            const valueStr =
+              typeof value === "string" ? `"${value}"` : JSON.stringify(value);
             return `const ${key} = ${valueStr};`;
           })
-          .join('\n');
-        
+          .join("\n");
+
         customCodeData.config.source = `${variableDefinitions}\n${customCodeData.config.source}`;
       }
     }
-    
+
     // Create a manual trigger and store input variables in its data property
     const trigger = TriggerFactory.create({
       id: triggerId,
-      name: 'manual_trigger',
+      name: "manual_trigger",
       type: TriggerType.Manual,
-      data: inputVariables // Store input variables in the trigger data
+      data: inputVariables, // Store input variables in the trigger data
     });
 
     return new Workflow({
       smartWalletAddress: "",
       trigger: trigger,
       nodes: [node],
-      edges: [new Edge({
-        id: `edge_${Date.now()}`,
-        source: triggerId,
-        target: node.id
-      })],
+      edges: [
+        new Edge({
+          id: `edge_${Date.now()}`,
+          source: triggerId,
+          target: node.id,
+        }),
+      ],
       startAt: Date.now(),
       expiredAt: Date.now() + 3600000, // 1 hour from now
-      maxExecution: 1
+      maxExecution: 1,
     });
   }
 
