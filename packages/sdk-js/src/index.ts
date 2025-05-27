@@ -872,7 +872,7 @@ class Client extends BaseClient {
         const variableNames = Object.keys(inputVariables).join(', ');
         return {
           success: false,
-          data: {}, // Empty object instead of null to match the expected type
+          data: null, // Now allowed by updated interface
           error: `blockTrigger nodes do not accept input variables. Received: ${variableNames}`,
           nodeId: ''
         };

@@ -104,7 +104,7 @@ export interface RunNodeWithInputsRequest {
 
 export interface RunNodeWithInputsResponse {
   success: boolean;
-  data?: Record<string, any>;
+  data?: Record<string, any> | null;
   error?: string;
   executionId?: string;
   nodeId?: string;
