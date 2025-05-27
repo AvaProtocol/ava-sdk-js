@@ -1805,10 +1805,11 @@ export class ListTasksResp extends jspb.Message {
     getItemsList(): Array<ListTasksResp.Item>;
     setItemsList(value: Array<ListTasksResp.Item>): ListTasksResp;
     addItems(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
-    getCursor(): string;
-    setCursor(value: string): ListTasksResp;
-    getHasMore(): boolean;
-    setHasMore(value: boolean): ListTasksResp;
+
+    hasPageInfo(): boolean;
+    clearPageInfo(): void;
+    getPageInfo(): PageInfo | undefined;
+    setPageInfo(value?: PageInfo): ListTasksResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -1823,8 +1824,7 @@ export class ListTasksResp extends jspb.Message {
 export namespace ListTasksResp {
     export type AsObject = {
         itemsList: Array<ListTasksResp.Item.AsObject>,
-        cursor: string,
-        hasMore: boolean,
+        pageInfo?: PageInfo.AsObject,
     }
 
 
@@ -1925,10 +1925,11 @@ export class ListExecutionsResp extends jspb.Message {
     getItemsList(): Array<Execution>;
     setItemsList(value: Array<Execution>): ListExecutionsResp;
     addItems(value?: Execution, index?: number): Execution;
-    getCursor(): string;
-    setCursor(value: string): ListExecutionsResp;
-    getHasMore(): boolean;
-    setHasMore(value: boolean): ListExecutionsResp;
+
+    hasPageInfo(): boolean;
+    clearPageInfo(): void;
+    getPageInfo(): PageInfo | undefined;
+    setPageInfo(value?: PageInfo): ListExecutionsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListExecutionsResp.AsObject;
@@ -1943,8 +1944,7 @@ export class ListExecutionsResp extends jspb.Message {
 export namespace ListExecutionsResp {
     export type AsObject = {
         itemsList: Array<Execution.AsObject>,
-        cursor: string,
-        hasMore: boolean,
+        pageInfo?: PageInfo.AsObject,
     }
 }
 
@@ -2282,15 +2282,45 @@ export namespace ListSecretsReq {
     }
 }
 
+export class PageInfo extends jspb.Message { 
+    getStartCursor(): string;
+    setStartCursor(value: string): PageInfo;
+    getEndCursor(): string;
+    setEndCursor(value: string): PageInfo;
+    getHasPreviousPage(): boolean;
+    setHasPreviousPage(value: boolean): PageInfo;
+    getHasNextPage(): boolean;
+    setHasNextPage(value: boolean): PageInfo;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): PageInfo.AsObject;
+    static toObject(includeInstance: boolean, msg: PageInfo): PageInfo.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: PageInfo, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): PageInfo;
+    static deserializeBinaryFromReader(message: PageInfo, reader: jspb.BinaryReader): PageInfo;
+}
+
+export namespace PageInfo {
+    export type AsObject = {
+        startCursor: string,
+        endCursor: string,
+        hasPreviousPage: boolean,
+        hasNextPage: boolean,
+    }
+}
+
 export class ListSecretsResp extends jspb.Message { 
     clearItemsList(): void;
     getItemsList(): Array<ListSecretsResp.ResponseSecret>;
     setItemsList(value: Array<ListSecretsResp.ResponseSecret>): ListSecretsResp;
     addItems(value?: ListSecretsResp.ResponseSecret, index?: number): ListSecretsResp.ResponseSecret;
-    getCursor(): string;
-    setCursor(value: string): ListSecretsResp;
-    getHasMore(): boolean;
-    setHasMore(value: boolean): ListSecretsResp;
+
+    hasPageInfo(): boolean;
+    clearPageInfo(): void;
+    getPageInfo(): PageInfo | undefined;
+    setPageInfo(value?: PageInfo): ListSecretsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsResp.AsObject;
@@ -2305,8 +2335,7 @@ export class ListSecretsResp extends jspb.Message {
 export namespace ListSecretsResp {
     export type AsObject = {
         itemsList: Array<ListSecretsResp.ResponseSecret.AsObject>,
-        cursor: string,
-        hasMore: boolean,
+        pageInfo?: PageInfo.AsObject,
     }
 
 
