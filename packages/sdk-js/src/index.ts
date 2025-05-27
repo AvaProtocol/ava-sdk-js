@@ -1045,7 +1045,7 @@ class Client extends BaseClient {
         return {
           config: {
             expression: config.expression || '',
-            sourceId: config.input || ''
+            sourceId: config.sourceId || config.input || ''
           }
         };
       default:
