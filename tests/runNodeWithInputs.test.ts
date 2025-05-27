@@ -36,24 +36,44 @@ describe("runNodeWithInputs Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  test("should execute a blockTrigger node with inputs", async () => {
+  test("should execute a blockTrigger node", async () => {
+    const result = await client.runNodeWithInputs({
+      nodeType: "blockTrigger",
+      nodeConfig: {},
+    });
+
+    console.log("should execute a blockTrigger:", result);
+    expect(result.success).toBe(true);
+
+    // Example result
+    // {
+    //   success: true,
+    //   data: { blockNumber: 8413234 },
+    //   error: '',
+    //   nodeId: 'temp_1748296727820169000'
+    // }
+  });
+
+  test("should throw error when execute a blockTrigger node with inputs", async () => {
     const result = await client.runNodeWithInputs({
       nodeType: "blockTrigger",
       nodeConfig: {},
       inputVariables: {
-        blockNumber: 12345,
+        interval: 12345,
       },
     });
 
-    console.log("result", result);
+    console.log("should execute a blockTrigger:", result);
 
     expect(result.success).toBe(false);
-    expect(result.error).toBeDefined();
+    expect(result.data).toBe(null);
 
-    // TODO: blockTrigger should not be triggerd with inputs, but the error looks weird.
-    // result {
+    // Example result
+    // {
     //   success: false,
-    //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249000119_ehlcowspi'
+    //   data: null,
+    //   error: 'blockTrigger nodes do not accept input variables. Received: interval',
+    //   nodeId: ''
     // }
   });
 
@@ -70,12 +90,21 @@ describe("runNodeWithInputs Tests", () => {
       inputVariables: {},
     });
 
-    console.log("result", result);
+    console.log("should execute a restApi:", result);
 
-    // TODO: Error is the same as the blockTrigger test.
-    // result {
-    //   success: false,
-    //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249230524_22oluwuyz'
+    // Example result
+    // {
+    //   success: true,
+    //   data: {
+    //     wrappers_: null,
+    //     messageId_: undefined,
+    //     arrayIndexOffset_: -1,
+    //     array: [ 'type.googleapis.com/google.protobuf.Value', [Uint8Array] ],
+    //     pivot_: 1.7976931348623157e+308,
+    //     convertedPrimitiveFields_: {}
+    //   },
+    //   executionId: '01JW73NFK32Y76X566SCF00558',
+    //   nodeId: 'temp_1748290420317'
     // }
 
     expect(result.success).toBe(true);
@@ -93,12 +122,13 @@ describe("runNodeWithInputs Tests", () => {
       },
     });
 
-    console.log("result", result);
-
-    // TODO: Error is the same as the blockTrigger test.
-    // result {
-    //   success: false,
-    //   error: '3 INVALID_ARGUMENT: invalid salt value: runNodeWithInputs_1748249168737_d4z9e6b2a'
+    console.log("should execute a customCode:", result);
+    // example result
+    // {
+    //   success: true,
+    //   data: { input: 'World', message: 'Hello' },
+    //   executionId: '01JW73NG3BA5VSNSRJB0RCXC54',
+    //   nodeId: 'temp_1748290420839'
     // }
 
     expect(result.success).toBe(true);
@@ -134,6 +164,8 @@ describe("runNodeWithInputs Tests", () => {
       },
       inputVariables: {},
     });
+
+    console.log("should execute a contractRead:", result);
 
     expect(result).toBeDefined();
     expect(typeof result.success).toBe("boolean");
