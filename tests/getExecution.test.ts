@@ -68,16 +68,14 @@ describe("getExecution Tests", () => {
         isBlocking: true,
       });
 
-      const execution = await client.getExecution(
-        workflowId,
-        triggerResult.executionId
-      );
+      const execution = await client.getExecution(workflowId, triggerResult.executionId);
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
       expect(execution.success).toBe(true);
       expect(execution.triggerReason?.type).toEqual(TriggerType.Block);
       expect(execution.triggerReason?.blockNumber).toEqual(blockNumber + 5);
+      console.log("🚀 ~ execution.triggerOutput:", execution.triggerOutput);
       expect(execution.triggerOutput).toEqual({
         blockNumber: blockNumber + 5,
       });
@@ -96,7 +94,7 @@ describe("getExecution Tests", () => {
     const nonExistentExecutionId = "non-existent-execution-id";
 
     await expect(
-      client.getExecution(nonExistentWorkflowId, nonExistentExecutionId)
+      client.getExecution(nonExistentExecutionId)
     ).rejects.toThrowError(/NOT_FOUND|resource not found/i);
   });
 
@@ -114,7 +112,7 @@ describe("getExecution Tests", () => {
       const nonExistentExecutionId = "non-existent-execution-id";
 
       await expect(
-        client.getExecution(workflowId, nonExistentExecutionId)
+        client.getExecution(nonExistentExecutionId)
       ).rejects.toThrowError(/NOT_FOUND|resource not found/i);
     } finally {
       if (workflowId) {
@@ -152,19 +150,13 @@ describe("getExecution Tests", () => {
         isBlocking: true,
       });
 
-      const execution = await client.getExecution(
-        workflowId,
-        result.executionId
-      );
+      const execution = await client.getExecution(result.executionId);
       expect(execution.id).toEqual(result.executionId);
       expect(execution.triggerReason?.type).toEqual(TriggerType.Cron);
       expect(execution.triggerReason?.epoch).toEqual(epoch + 60);
       expect(execution.success).toBe(true);
 
-      const executionStatus = await client.getExecutionStatus(
-        workflowId,
-        execution.id
-      );
+      const executionStatus = await client.getExecutionStatus(execution.id);
       expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
     } finally {
       if (workflowId) {
@@ -211,10 +203,7 @@ describe("getExecution Tests", () => {
       const executionIdFromList = executionsResponse.items[0].id;
 
       // Get the specific execution using the ID from the list
-      const execution = await client.getExecution(
-        workflowId,
-        executionIdFromList
-      );
+      const execution = await client.getExecution(executionIdFromList);
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
@@ -223,7 +212,7 @@ describe("getExecution Tests", () => {
       expect(execution.triggerReason?.blockNumber).toEqual(blockNumber + 5);
       expect(execution.triggerOutput).toEqual({ blockNumber: blockNumber + 5 });
 
-      const status = await client.getExecutionStatus(workflowId, execution.id);
+      const status = await client.getExecutionStatus(execution.id);
       expect(status).toEqual(ExecutionStatus.FINISHED);
     } finally {
       if (workflowId) {

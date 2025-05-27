@@ -565,15 +565,17 @@ class Client extends BaseClient {
 
   /**
    * Get a specific execution by id
-   * @param {string} id - The execution id
+   * @param {string} workflowId - The workflow id (taskId)
+   * @param {string} executionId - The execution id
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Execution>} - The Execution object
    */
-  async getExecution(id: string, options?: RequestOptions): Promise<Execution> {
-    const request = new avs_pb.IdReq();
-    request.setId(id);
+  async getExecution(workflowId: string, executionId: string, options?: RequestOptions): Promise<Execution> {
+    const request = new avs_pb.ExecutionReq();
+    request.setTaskId(workflowId);
+    request.setExecutionId(executionId);
 
-    const result = await this.sendGrpcRequest<avs_pb.Execution, avs_pb.IdReq>(
+    const result = await this.sendGrpcRequest<avs_pb.Execution, avs_pb.ExecutionReq>(
       "getExecution",
       request,
       options
@@ -605,20 +607,23 @@ class Client extends BaseClient {
 
   /**
    * Get the status of an execution
-   * @param {string} id - The execution id
+   * @param {string} workflowId - The workflow id (taskId)
+   * @param {string} executionId - The execution id
    * @param {RequestOptions} options - Request options
    * @returns {Promise<ExecutionStatus>} - The status of the execution
    */
   async getExecutionStatus(
-    id: string,
+    workflowId: string,
+    executionId: string,
     options?: RequestOptions
   ): Promise<ExecutionStatus> {
-    const request = new avs_pb.IdReq();
-    request.setId(id);
+    const request = new avs_pb.ExecutionReq();
+    request.setTaskId(workflowId);
+    request.setExecutionId(executionId);
 
     const result = await this.sendGrpcRequest<
       avs_pb.ExecutionStatusResp,
-      avs_pb.IdReq
+      avs_pb.ExecutionReq
     >("getExecutionStatus", request, options);
 
     return result.getStatus();
@@ -645,33 +650,42 @@ class Client extends BaseClient {
 
   /**
    * Trigger a workflow manually
-   * @param {string} id - The workflow id
-   * @param {string} triggerId - The trigger id
-   * @param {RequestOptions} options - Request options
-   * @returns {Promise<string>} - The execution id
+   * @param {object} params - The trigger parameters
+   * @param {string} params.id - The workflow id
+   * @param {TriggerReasonProps} params.reason - The trigger reason
+   * @param {boolean} [params.isBlocking=false] - Whether to wait for execution completion
+   * @param {RequestOptions} [options] - Request options
+   * @returns {Promise<avs_pb.UserTriggerTaskResp.AsObject>} - The execution result
    */
   async triggerWorkflow(
-    id: string,
-    triggerId: string,
+    {
+      id,
+      reason,
+      isBlocking = false,
+    }: {
+      id: string;
+      reason: TriggerReasonProps;
+      isBlocking?: boolean;
+    },
     options?: RequestOptions
-  ): Promise<string> {
+  ): Promise<avs_pb.UserTriggerTaskResp.AsObject> {
     const request = new avs_pb.UserTriggerTaskReq();
+
     request.setTaskId(id);
+    request.setReason(new TriggerReason(reason).toRequest());
+    request.setIsBlocking(isBlocking);
 
-    // Create a manual trigger reason
-    const reason = new avs_pb.TriggerReason();
-    reason.setType(avs_pb.TriggerReason.TriggerType.MANUAL);
-    request.setReason(reason);
-
-    // Set blocking mode to true to wait for execution
-    request.setIsBlocking(true);
+    console.log(
+      "🚀 ~ Client ~ request.getReason:",
+      request.getReason()?.toObject()
+    );
 
     const result = await this.sendGrpcRequest<
       avs_pb.UserTriggerTaskResp,
       avs_pb.UserTriggerTaskReq
     >("triggerTask", request, options);
 
-    return result.getExecutionId();
+    return result.toObject();
   }
 
   /**

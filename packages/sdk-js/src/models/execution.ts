@@ -11,12 +11,20 @@ export type OutputDataProps =
   | avs_pb.EventTrigger.Output.AsObject
   | avs_pb.EventTrigger.TransferLogOutput.AsObject
   | avs_pb.Evm.Log.AsObject
+  | { blockNumber: number } // Filtered block trigger output
+  | { epoch: number } // Filtered fixed time trigger output
+  | { epoch: number; scheduleMatched: string } // Filtered cron trigger output
   | undefined;
 
 // Ignore the original trigger output fields and use a combined outputData field instead
 export type ExecutionProps = Omit<
   avs_pb.Execution.AsObject,
-  "stepsList" | "reason" | "blockTrigger" | "fixedTimeTrigger" | "cronTrigger" | "eventTrigger"
+  | "stepsList"
+  | "reason"
+  | "blockTrigger"
+  | "fixedTimeTrigger"
+  | "cronTrigger"
+  | "eventTrigger"
 > & {
   stepsList: Step[];
   triggerReason: TriggerReason | undefined;
@@ -53,13 +61,19 @@ class Execution implements ExecutionProps {
 
     switch (triggerOutputDataType) {
       case avs_pb.Execution.OutputDataCase.BLOCK_TRIGGER:
-        triggerOutputData = execution.getBlockTrigger()?.toObject();
+        const blockOutput = execution.getBlockTrigger()?.toObject();
+        // Filter to only return blockNumber for block triggers
+        triggerOutputData = blockOutput ? { blockNumber: blockOutput.blockNumber } : undefined;
         break;
       case avs_pb.Execution.OutputDataCase.FIXED_TIME_TRIGGER:
-        triggerOutputData = execution.getFixedTimeTrigger()?.toObject();
+        const fixedTimeOutput = execution.getFixedTimeTrigger()?.toObject();
+        // Filter to only return epoch for fixed time triggers
+        triggerOutputData = fixedTimeOutput ? { epoch: fixedTimeOutput.epoch } : undefined;
         break;
       case avs_pb.Execution.OutputDataCase.CRON_TRIGGER:
-        triggerOutputData = execution.getCronTrigger()?.toObject();
+        const cronOutput = execution.getCronTrigger()?.toObject();
+        // Filter to only return epoch and scheduleMatched for cron triggers
+        triggerOutputData = cronOutput ? { epoch: cronOutput.epoch, scheduleMatched: cronOutput.scheduleMatched } : undefined;
         break;
       case avs_pb.Execution.OutputDataCase.EVENT_TRIGGER:
         const eventTrigger = execution.getEventTrigger();

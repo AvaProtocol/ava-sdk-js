@@ -31,10 +31,8 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
   name: "send eth",
   type: NodeType.ETHTransfer,
   data: {
-    config: {
-      destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-      amount: "0x123cdef",
-    }
+    destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
+    amount: "1000000000000000000", // 1 ETH in wei (decimal string)
   },
 };
 
@@ -64,11 +62,9 @@ export const createContractWriteNodeProps = (
     name: "create account",
     type: NodeType.ContractWrite,
     data: {
-      config: {
-        contractAddress: factoryAddress,
-        callData,
-        contractAbi: factoryProxyAbi,
-      }
+      contractAddress: factoryAddress,
+      callData,
+      contractAbi: factoryProxyAbi,
     },
   };
 };
@@ -147,13 +143,11 @@ const branchNodeProps: BranchNodeProps = {
   name: "branch",
   type: NodeType.Branch,
   data: {
-    config: {
-      conditionsList: [
-        { id: "b1", type: "if", expression: "foo >= 5" },
-        { id: "b2", type: "if", expression: "foo <= -1" },
-        { id: "b3", type: "else", expression: "" },
-      ],
-    }
+    conditionsList: [
+      { id: "b1", type: "if", expression: "foo >= 5" },
+      { id: "b2", type: "if", expression: "foo <= -1" },
+      { id: "b3", type: "else", expression: "" },
+    ],
   },
 };
 

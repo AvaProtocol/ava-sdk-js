@@ -55,7 +55,7 @@ export const loopNodeWithETHTransferProps: LoopNodeProps = {
     ethTransfer: {
       config: {
         destination: "{{address}}",
-        amount: "0.001",
+        amount: "1000000000000000000", // 1 ETH in wei (decimal string)
       },
     },
   },
