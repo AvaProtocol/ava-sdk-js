@@ -1,11 +1,11 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "@avaprotocol/types";
 
-export type TriggerConfig =
-  | avs_pb.FixedTimeTrigger.Config.AsObject
-  | avs_pb.CronTrigger.Config.AsObject
-  | avs_pb.BlockTrigger.Config.AsObject
-  | avs_pb.EventTrigger.Config.AsObject
+export type TriggerData =
+  | avs_pb.FixedTimeTrigger.AsObject
+  | avs_pb.CronTrigger.AsObject
+  | avs_pb.BlockTrigger.AsObject
+  | avs_pb.EventTrigger.AsObject
   | null;
 
 export type TriggerOutput =
@@ -20,7 +20,7 @@ export type TriggerProps = Omit<
   "manual" | "fixedTime" | "cron" | "block" | "event"
 > & {
   type: TriggerType;
-  data: TriggerConfig;
+  data: TriggerData;
   output?: TriggerOutput;
 };
 
@@ -28,7 +28,7 @@ class Trigger implements TriggerProps {
   id: string;
   name: string;
   type: TriggerType;
-  data: TriggerConfig;
+  data: TriggerData;
   output?: TriggerOutput;
 
   /**
@@ -47,9 +47,9 @@ class Trigger implements TriggerProps {
     throw new Error("Method not implemented.");
   }
 
-  // getOutput(): TriggerOutput | undefined {
-  //   return this.output;
-  // }
+  getOutput(): TriggerOutput | undefined {
+    return this.output;
+  }
 }
 
 export default Trigger;

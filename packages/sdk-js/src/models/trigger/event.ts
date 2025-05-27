@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerProps } from "./interface";
+import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 import util from "util";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
@@ -22,9 +22,10 @@ import util from "util";
 // ]
 // ```
 
-// Required props for constructor: id, name, type and data: { expression, matcherList }
-export type EventTriggerConfig = avs_pb.EventTrigger.Config.AsObject;
-export type EventTriggerProps = TriggerProps & { data: EventTriggerConfig };
+// Required props for constructor: id, name, type and data: { config: { expression, matcherList } }
+export type EventTriggerDataType = avs_pb.EventTrigger.AsObject;
+export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
+export type EventTriggerOutput = avs_pb.EventTrigger.Output.AsObject;
 
 class EventTrigger extends Trigger {
   constructor(props: EventTriggerProps) {
@@ -41,18 +42,31 @@ class EventTrigger extends Trigger {
     }
 
     const trigger = new avs_pb.EventTrigger();
-    const config = new avs_pb.EventTrigger.Config();
+    
+    if ((this.data as EventTriggerDataType).config) {
+      const config = new avs_pb.EventTrigger.Config();
+      const expression = (this.data as EventTriggerDataType).config!.expression;
+      const matcherList = (this.data as EventTriggerDataType).config!.matcherList;
 
-    config.setExpression((this.data as EventTriggerConfig).expression);
-    config.setMatcherList(
-      (this.data as EventTriggerConfig).matcherList.map((element) => {
-        const m = new avs_pb.EventTrigger.Matcher();
-        m.setType(element["type"]);
-        m.setValueList(element["valueList"]);
-        return m;
-      })
-    );
-    trigger.setConfig(config);
+      if (_.isUndefined(expression)) {
+        throw new Error(`Expression is undefined for ${this.type}`);
+      }
+
+      config.setExpression(expression);
+
+      if (matcherList && matcherList.length > 0) {
+        const matchers = matcherList.map((element: any) => {
+          const m = new avs_pb.EventTrigger.Matcher();
+          m.setType(element.type);
+          m.setValueList(element.valueList || []);
+          return m;
+        });
+        config.setMatcherList(matchers);
+      }
+      
+      trigger.setConfig(config);
+    }
+
     request.setEvent(trigger);
 
     return request;
@@ -62,30 +76,42 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: EventTriggerConfig = {} as EventTriggerConfig;
-    if (raw.getEvent()!.getConfig()!.getExpression()) {
-      data.expression = raw.getEvent()!.getConfig()!.getExpression();
+    let data: EventTriggerDataType = { config: {} } as EventTriggerDataType;
+    
+    if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
+      const config = raw.getEvent()!.getConfig();
+      
+      if (config) {
+        data.config = {
+          expression: config.getExpression(),
+          matcherList: []
+        };
+        
+        if (config.getMatcherList && config.getMatcherList().length > 0) {
+          data.config.matcherList = config.getMatcherList().map((item: any) => {
+            return {
+              type: item.getType(),
+              valueList: item.getValueList() || [],
+            };
+          });
+        }
+      }
     }
 
-    if (raw.getEvent()!.getConfig()!.getMatcherList()) {
-      data.matcherList = raw
-        .getEvent()!
-        .getConfig()!
-        .getMatcherList()
-        .map((item: avs_pb.EventTrigger.Matcher) => {
-          return {
-            type: item.getType(),
-            valueList: item.getValueList(),
-          };
-        });
-    }
-
-    //raw.getEvent()!.toObject() as EventTriggerDataType;
     return new EventTrigger({
       ...obj,
       type: TriggerType.Event,
       data: data,
     });
+  }
+
+  /**
+   * Convert raw data from runNodeWithInputs response to EventOutput format
+   * @param rawData - The raw data from the gRPC response
+   * @returns {EventTriggerOutput | undefined} - The converted data
+   */
+  getOutput(): EventTriggerOutput | undefined {
+    return this.output as EventTriggerOutput;
   }
 }
 

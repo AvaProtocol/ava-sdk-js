@@ -37,7 +37,7 @@ import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
-import BlockTrigger, { BlockTriggerOutput } from "./models/trigger/block";
+import BlockTrigger, { BlockTriggerProps } from "./models/trigger/block";
 
 class BaseClient {
   readonly endpoint: string;
@@ -521,23 +521,25 @@ class Client extends BaseClient {
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Executions
+   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Execution objects with pagination metadata
    */
   async getExecutions(
     workflows: string[],
     options?: GetExecutionsRequest
   ): Promise<{ cursor: string; result: Execution[]; hasMore: boolean }> {
     const request = new avs_pb.ListExecutionsReq();
-    request.setTaskIdsList(workflows);
+    for (const w of workflows) {
+      request.addTaskId(w);
+    }
 
-    request.setLimit(options?.limit || DEFAULT_LIMIT);
-
-    if (options?.before) {
+    if (options?.before && options?.before !== "") {
       request.setBefore(options.before);
     }
-    if (options?.after) {
+    if (options?.after && options?.after !== "") {
       request.setAfter(options.after);
     }
+
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListExecutionsResp,
@@ -546,30 +548,29 @@ class Client extends BaseClient {
 
     return {
       cursor: result.getCursor(),
-      result: result.getItemsList().map((item) => Execution.fromResponse(item)),
       hasMore: result.getHasMore(),
+      result: result
+        .getItemsList()
+        .map((item) => Execution.fromResponse(item)),
     };
   }
 
   /**
-   * Get a single execution for given workflow and execution id
-   * @param {string} workflowId - The workflow id
-   * @param {string} executionId - The exectuion id
+   * Get a specific execution by id
+   * @param {string} id - The execution id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<Execution>} - The result execution if it is existed
+   * @returns {Promise<Execution>} - The Execution object
    */
   async getExecution(
-    taskId: string,
-    executionId: string,
+    id: string,
     options?: RequestOptions
   ): Promise<Execution> {
-    const request = new avs_pb.ExecutionReq();
-    request.setTaskId(taskId);
-    request.setExecutionId(executionId);
+    const request = new avs_pb.GetExecutionReq();
+    request.setId(id);
 
     const result = await this.sendGrpcRequest<
       avs_pb.Execution,
-      avs_pb.ExecutionReq
+      avs_pb.GetExecutionReq
     >("getExecution", request, options);
 
     return Execution.fromResponse(result);
@@ -577,16 +578,16 @@ class Client extends BaseClient {
 
   /**
    * Get the count of executions for multiple workflows
-   * @param workflowIds - The list of workflow ids
+   * @param workflows - The list of workflow ids
    * @param options - Request options
    * @returns {Promise<number>} - The count of executions
    */
   async getExecutionCount(
-    workflowIds: string[],
+    workflows: string[],
     options?: RequestOptions
   ): Promise<number> {
     const request = new avs_pb.GetExecutionCountReq();
-    request.setWorkflowIdsList(workflowIds);
+    request.setTaskIdsList(workflows);
 
     const result = await this.sendGrpcRequest<
       avs_pb.GetExecutionCountResp,
@@ -597,216 +598,188 @@ class Client extends BaseClient {
   }
 
   /**
-   * Get status of an execution.
-   *
-   * When a task is trigger in async manner, it has not run yet, so the data isn't available to return in GetExecution. Calling GetExecution will return in execution not found. We can instad call getExecutionStatus to check whether the execution is finished or not.
-   *
-   * @param {string} workflowId - The workflow id
-   * @param {string} executionId - The exectuion id
+   * Get the status of an execution
+   * @param {string} id - The execution id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<ExecutionStatus>} - The result execution if it is existed
+   * @returns {Promise<ExecutionStatus>} - The status of the execution
    */
   async getExecutionStatus(
-    taskId: string,
-    executionId: string,
+    id: string,
     options?: RequestOptions
-  ): Promise<avs_pb.ExecutionStatus> {
-    const request = new avs_pb.ExecutionReq();
-    request.setTaskId(taskId);
-    request.setExecutionId(executionId);
+  ): Promise<ExecutionStatus> {
+    const request = new avs_pb.GetExecutionStatusReq();
+    request.setId(id);
 
     const result = await this.sendGrpcRequest<
-      avs_pb.ExecutionStatusResp,
-      avs_pb.ExecutionReq
+      avs_pb.GetExecutionStatusResp,
+      avs_pb.GetExecutionStatusReq
     >("getExecutionStatus", request, options);
 
     return result.getStatus();
   }
 
   /**
-   * Get a workflow by its Id
-   * @param {string} id - The Id of the workflow
+   * Get a workflow by id
+   * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Workflow>} - The Workflow object
    */
   async getWorkflow(id: string, options?: RequestOptions): Promise<Workflow> {
-    const request = new avs_pb.IdReq();
+    const request = new avs_pb.GetTaskReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<avs_pb.Task, avs_pb.IdReq>(
-      "getTask",
-      request,
-      options
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.Task,
+      avs_pb.GetTaskReq
+    >("getTask", request, options);
 
     return Workflow.fromResponse(result);
   }
 
   /**
-   * Manually trigger a workflow by its Id, and manual trigger data input
-   * @param id - The Id of the workflow
-   * @param triggerData - The data of the trigger
-   * @param isBlocking - Whether the trigger is blocking
-   * @param options - Request options
-   * @returns {Promise<avs_pb.UserTriggerTaskResp>} - The response from the trigger workflow call
+   * Trigger a workflow manually
+   * @param {string} id - The workflow id
+   * @param {string} triggerId - The trigger id
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<string>} - The execution id
    */
   async triggerWorkflow(
-    {
-      id,
-      reason,
-      isBlocking = false,
-    }: {
-      id: string;
-      reason: TriggerReasonProps;
-      isBlocking: boolean;
-    },
+    id: string,
+    triggerId: string,
     options?: RequestOptions
-  ): Promise<avs_pb.UserTriggerTaskResp.AsObject> {
-    const request = new avs_pb.UserTriggerTaskReq();
-
-    request.setTaskId(id);
-    request.setReason(new TriggerReason(reason).toRequest());
-    request.setIsBlocking(isBlocking);
+  ): Promise<string> {
+    const request = new avs_pb.TriggerTaskReq();
+    request.setId(id);
+    request.setTriggerId(triggerId);
 
     const result = await this.sendGrpcRequest<
-      avs_pb.UserTriggerTaskResp,
-      avs_pb.UserTriggerTaskReq
+      avs_pb.TriggerTaskResp,
+      avs_pb.TriggerTaskReq
     >("triggerTask", request, options);
 
-    return result.toObject();
+    return result.getExecutionId();
   }
 
   /**
-   * Cancel a workflow by its Id
-   * @param {string} id - The Id of the workflow
+   * Cancel a workflow
+   * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
+   * @returns {Promise<Workflow>} - The updated Workflow object
    */
-  async cancelWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
-    const request = new avs_pb.IdReq();
+  async cancelWorkflow(
+    id: string,
+    options?: RequestOptions
+  ): Promise<Workflow> {
+    const request = new avs_pb.CancelTaskReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
-      "cancelTask",
-      request,
-      options
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.Task,
+      avs_pb.CancelTaskReq
+    >("cancelTask", request, options);
 
-    return result.getValue();
+    return Workflow.fromResponse(result);
   }
 
   /**
-   * Delete a workflow by its Id
-   * @param {string} id - The Id of the workflow
+   * Delete a workflow
+   * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
+   * @returns {Promise<Workflow>} - The deleted Workflow object
    */
-  async deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
-    const request = new avs_pb.IdReq();
+  async deleteWorkflow(
+    id: string,
+    options?: RequestOptions
+  ): Promise<Workflow> {
+    const request = new avs_pb.DeleteTaskReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
-      "deleteTask",
-      request,
-      options
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.Task,
+      avs_pb.DeleteTaskReq
+    >("deleteTask", request, options);
 
-    return result.getValue();
+    return Workflow.fromResponse(result);
   }
 
+  /**
+   * Create a new secret
+   * @param {string} name - The name of the secret
+   * @param {string} value - The value of the secret
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<Secret>} - The created Secret object
+   */
   async createSecret(
     name: string,
     value: string,
     options?: SecretRequestOptions
-  ): Promise<boolean> {
-    const request = new avs_pb.CreateOrUpdateSecretReq();
-
+  ): Promise<Secret> {
+    const request = new avs_pb.CreateSecretReq();
     request.setName(name);
-    request.setSecret(value);
+    request.setValue(value);
 
-    if (options?.workflowId) {
-      request.setWorkflowId(options.workflowId);
-    }
-
-    if (options?.orgId) {
-      request.setOrgId(options.orgId);
+    if (options?.smartWalletAddress) {
+      request.setSmartWalletAddress(options.smartWalletAddress);
     }
 
     const result = await this.sendGrpcRequest<
-      BoolValue,
-      avs_pb.CreateOrUpdateSecretReq
+      avs_pb.Secret,
+      avs_pb.CreateSecretReq
     >("createSecret", request, options);
 
-    return result.getValue();
+    return Secret.fromResponse(result);
   }
 
   /**
-   * Update an existing secret; the secret is updated in the user scope by default, derived from the auth key.
-   * @param secret - The secret object containing updated information
-   * @param options - Request options, including workflowId and orgId for scoping
-   * @returns {Promise<boolean>} - Whether the secret was successfully updated
+   * Update a secret
+   * @param {string} name - The name of the secret
+   * @param {string} value - The value of the secret
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<Secret>} - The updated Secret object
    */
   async updateSecret(
     name: string,
     value: string,
     options?: SecretRequestOptions
-  ): Promise<boolean> {
-    const request = new avs_pb.CreateOrUpdateSecretReq();
-
+  ): Promise<Secret> {
+    const request = new avs_pb.UpdateSecretReq();
     request.setName(name);
-    request.setSecret(value);
+    request.setValue(value);
 
-    if (options?.workflowId) {
-      request.setWorkflowId(options.workflowId);
-    }
-
-    if (options?.orgId) {
-      request.setOrgId(options.orgId);
+    if (options?.smartWalletAddress) {
+      request.setSmartWalletAddress(options.smartWalletAddress);
     }
 
     const result = await this.sendGrpcRequest<
-      BoolValue,
-      avs_pb.CreateOrUpdateSecretReq
+      avs_pb.Secret,
+      avs_pb.UpdateSecretReq
     >("updateSecret", request, options);
 
-    return result.getValue();
+    return Secret.fromResponse(result);
   }
 
   /**
-   * Retrieve a list of secrets with pagination support
-   * @param options - Request options including pagination parameters
-   * @param options.workflowId - Filter secrets by workflow ID
-   * @param options.orgId - Filter secrets by organization ID
-   * @param options.before - Get items before this cursor value (for backward pagination)
-   * @param options.after - Get items after this cursor value (for forward pagination)
-   * @param options.limit - Number of items per page
-   * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
+   * Get the list of secrets
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<{ cursor: string; result: Secret[]; hasMore: boolean }>} - The list of Secret objects with pagination metadata
    */
   async getSecrets(
     options?: SecretRequestOptions
   ): Promise<ListSecretsResponse> {
     const request = new avs_pb.ListSecretsReq();
 
-    if (options?.workflowId) {
-      request.setWorkflowId(options.workflowId);
+    if (options?.smartWalletAddress) {
+      request.setSmartWalletAddress(options.smartWalletAddress);
     }
 
-    if (options?.orgId) {
-      // TODO: wait for the AVS to support orgId in ListSecrets
-      // request.setOrgId(options.orgId);
-    }
-
-    if (options?.limit) {
-      request.setLimit(options.limit || DEFAULT_LIMIT);
-    }
-
-    if (options?.before) {
+    if (options?.before && options?.before !== "") {
       request.setBefore(options.before);
     }
-
-    if (options?.after) {
+    if (options?.after && options?.after !== "") {
       request.setAfter(options.after);
     }
+
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListSecretsResp,
@@ -814,162 +787,259 @@ class Client extends BaseClient {
     >("listSecrets", request, options);
 
     return {
-      items: result.getItemsList().map((item) => ({
-        name: item.getName(),
-        workflowId: item.getWorkflowId(),
-        orgId: item.getOrgId(),
-      })),
       cursor: result.getCursor(),
       hasMore: result.getHasMore(),
+      result: result
+        .getItemsList()
+        .map((item) => Secret.fromResponse(item)),
     };
   }
 
   /**
-   * Delete a secret by its name; by default, the secret is deleted from the user scope, derived from the auth key
-   * @param name - The name of the secret
-   * @param options - Request options
-   * @param options.workflowId - The workflow id; if specified, the secret will be deleted from the workflow scope
-   * @param options.orgId - The organization id; if specified, the secret will be deleted from the organization scope
-   * @returns {Promise<boolean>} - Whether the secret was successfully deleted
+   * Delete a secret
+   * @param {string} name - The name of the secret
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<ListSecretResponse>} - The deleted Secret object
    */
   async deleteSecret(
     name: string,
     options?: SecretRequestOptions
-  ): Promise<boolean> {
+  ): Promise<ListSecretResponse> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
 
-    if (options?.workflowId) {
-      request.setWorkflowId(options.workflowId);
-    }
-
-    if (options?.orgId) {
-      request.setOrgId(options.orgId);
+    if (options?.smartWalletAddress) {
+      request.setSmartWalletAddress(options.smartWalletAddress);
     }
 
     const result = await this.sendGrpcRequest<
-      BoolValue,
+      avs_pb.Secret,
       avs_pb.DeleteSecretReq
     >("deleteSecret", request, options);
 
-    return result.getValue();
+    return Secret.fromResponse(result);
   }
 
   /**
-   * Execute a single node with custom input variables
-   * @param request - Configuration for node execution including nodeType, nodeConfig, and inputVariables
-   * @param options - Request options
-   * @returns {Promise<RunNodeWithInputsResponse>} - The response from the node execution
+   * Run a node with inputs
+   * @param {RunNodeWithInputsRequest} params - The parameters for running the node
+   * @param {string} params.nodeType - The type of the node
+   * @param {Record<string, any>} params.nodeConfig - The configuration for the node
+   * @param {Record<string, any>} params.inputVariables - The input variables for the node
+   * @param {string} params.walletAddress - The wallet address to use for the node
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<RunNodeWithInputsResponse>} - The response from running the node
    */
   async runNodeWithInputs(
-    request: RunNodeWithInputsRequest,
+    {
+      nodeType,
+      nodeConfig,
+      inputVariables = {},
+      walletAddress,
+    }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
     try {
-      // Create the gRPC request object
-      const grpcRequest = new avs_pb.RunNodeWithInputsReq();
-      grpcRequest.setNodeType(request.nodeType);
-
-      // Set node config if provided
-      if (request.nodeConfig) {
-        const nodeConfigMap = grpcRequest.getNodeConfigMap();
-        Object.entries(request.nodeConfig).forEach(([key, value]) => {
-          const protobufValue = this.convertJSValueToProtobuf(value);
-          nodeConfigMap.set(key, protobufValue);
-        });
+      // Map the string nodeType to the enum NodeType
+      const mappedNodeType = this.mapNodeTypeString(nodeType);
+      if (!mappedNodeType) {
+        return {
+          success: false,
+          error: `Unsupported node type: ${nodeType}`,
+        };
       }
 
-      // Set input variables if provided (optional for blockTrigger)
-      if (request.inputVariables) {
-        const inputVariablesMap = grpcRequest.getInputVariablesMap();
-        Object.entries(request.inputVariables).forEach(([key, value]) => {
-          const protobufValue = this.convertJSValueToProtobuf(value);
-          inputVariablesMap.set(key, protobufValue);
-        });
+      // Create a node from the config
+      const node = this.createNodeFromConfig(
+        mappedNodeType,
+        nodeConfig,
+        `node_${Date.now()}`
+      );
+
+      // Create a temporary workflow with the node
+      const triggerId = `trigger_${Date.now()}`;
+      const workflow = this.createTempWorkflowForNode(
+        node,
+        triggerId,
+        inputVariables,
+        walletAddress || ""
+      );
+
+      // Submit the workflow
+      const workflowId = await this.submitWorkflow(workflow, options);
+
+      // Trigger the workflow
+      const executionId = await this.triggerWorkflow(
+        workflowId,
+        triggerId,
+        options
+      );
+
+      // Wait for the execution to complete
+      let status = ExecutionStatus.PENDING;
+      let retries = 0;
+      const maxRetries = 30; // 30 seconds timeout
+      let response: RunNodeWithInputsResponse = { success: false };
+
+      while (
+        status !== ExecutionStatus.COMPLETED &&
+        status !== ExecutionStatus.FAILED &&
+        retries < maxRetries
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        status = await this.getExecutionStatus(executionId, options);
+        retries++;
       }
 
-      // Simple pass-through to the gRPC RunNodeWithInputs method
-      const response = await this.sendGrpcRequest<
-        avs_pb.RunNodeWithInputsResp,
-        avs_pb.RunNodeWithInputsReq
-      >("runNodeWithInputs", grpcRequest, options);
-
-      // Convert the response to a proper JavaScript object
-      const responseObj = response.toObject();
-
-      // ethTransfer?: ETHTransferNode.Output.AsObject,
-      // graphql?: GraphQLQueryNode.Output.AsObject,
-      // contractRead?: ContractReadNode.Output.AsObject,
-      // contractWrite?: ContractWriteNode.Output.AsObject,
-      // customCode?: CustomCodeNode.Output.AsObject,
-      // restApi?: RestAPINode.Output.AsObject,
-      // branch?: BranchNode.Output.AsObject,
-      // filter?: FilterNode.Output.AsObject,
-      // loop?: LoopNode.Output.AsObject,
-      // blockTrigger?: BlockTrigger.Output.AsObject,
-      // fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
-      // cronTrigger?: CronTrigger.Output.AsObject,
-      // eventTrigger?: EventTrigger.Output.AsObject,
-      let outputData;
-      switch (request.nodeType) {
-        case TriggerType.Block:
-          outputData = responseObj.blockTrigger;
-          break;
-        case TriggerType.Cron:
-          outputData = responseObj.cronTrigger;
-          break;
-        case TriggerType.Event:
-          outputData = responseObj.eventTrigger;
-          break;
-        case TriggerType.FixedTime:
-          outputData = responseObj.fixedTimeTrigger;
-          break;
-        case NodeType.ETHTransfer:
-          outputData = responseObj.ethTransfer;
-          break;
-        case NodeType.Branch:
-          outputData = responseObj.branch;
-          break;
-        case NodeType.Filter:
-          outputData = responseObj.filter;
-          break;
-        case NodeType.Loop:
-          outputData = responseObj.loop;
-          break;
-        case NodeType.CustomCode:
-          outputData = responseObj.customCode;
-          break;
-        case NodeType.RestAPI:
-          outputData = responseObj.restApi;
-          break;
-        case NodeType.ContractWrite:
-          outputData = responseObj.contractWrite;
-          break;
-        case NodeType.ContractRead:
-          outputData = responseObj.contractRead;
-          break;
-        case NodeType.GraphQLQuery:
-          outputData = responseObj.graphql;
-          break;
-        case NodeType.RestAPI:
-          outputData = responseObj.restApi;
-          break;
-        default:
-          break;
+      if (status === ExecutionStatus.COMPLETED) {
+        // Get the execution details
+        const execution = await this.getExecution(executionId, options);
+        response = {
+          success: true,
+          data: execution,
+        };
+      } else if (status === ExecutionStatus.FAILED) {
+        const execution = await this.getExecution(executionId, options);
+        response = {
+          success: false,
+          error: execution.error || "Execution failed",
+          data: execution,
+        };
+      } else {
+        response = {
+          success: false,
+          error: "Execution timed out",
+        };
       }
 
-      return {
-        success: responseObj.success,
-        data: outputData,
-        error: responseObj.error,
-        nodeId: responseObj.nodeId,
-      };
-    } catch (error) {
+      // Clean up by deleting the temporary workflow
+      await this.deleteWorkflow(workflowId, options);
+
+      return response;
+    } catch (error: any) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: error.message || "An error occurred",
       };
     }
+  }
+
+  private createNodeFromConfig(nodeType: string, config: Record<string, any>, nodeId: string): Node {
+    const nodeProps: NodeProps = {
+      id: nodeId,
+      name: `${nodeType}_node`,
+      type: nodeType as NodeType,
+      data: this.createNodeData(nodeType, config),
+    };
+
+    return NodeFactory.create(nodeProps);
+  }
+
+  private mapNodeTypeString(nodeType: string): NodeType | null {
+    const typeMap: Record<string, NodeType> = {
+      restApi: NodeType.RestAPI,
+      contractRead: NodeType.ContractRead,
+      contractWrite: NodeType.ContractWrite,
+      customCode: NodeType.CustomCode,
+      ethTransfer: NodeType.ETHTransfer,
+      graphqlQuery: NodeType.GraphQLQuery,
+      branch: NodeType.Branch,
+      filter: NodeType.Filter,
+      blockTrigger: NodeType.BlockTrigger,
+    };
+
+    return typeMap[nodeType] || null;
+  }
+
+  private createNodeData(nodeType: string, config: Record<string, any>): NodeData {
+    switch (nodeType) {
+      case 'restApi':
+        return {
+          config: {
+            url: config.url || '',
+            method: config.method || 'GET',
+            body: config.body || '',
+            headersMap: Object.entries(config.headers || {})
+          }
+        };
+      case 'contractRead':
+        return {
+          config: {
+            contractAddress: config.contractAddress || '',
+            callData: config.callData || '',
+            contractAbi: config.contractAbi || ''
+          }
+        };
+      case 'customCode':
+      case 'blockTrigger':
+        return {
+          config: {
+            lang: 0, // JavaScript
+            source: config.source || 'return { message: "Node executed successfully" };'
+          }
+        };
+      case 'branch':
+        return {
+          config: {
+            conditionsList: config.conditions || []
+          }
+        };
+      case 'filter':
+        return {
+          config: {
+            expression: config.expression || '',
+            sourceId: config.input || ''
+          }
+        };
+      default:
+        throw new Error(`Unsupported node type: ${nodeType}`);
+    }
+  }
+
+  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
+    // For customCode nodes, we need to modify the source to include the input variables
+    if (node.type === NodeType.CustomCode && inputVariables && Object.keys(inputVariables).length > 0) {
+      const customCodeData = node.data as avs_pb.CustomCodeNode.AsObject;
+      if (customCodeData.config) {
+        // Create a wrapper that defines the variables before executing the original code
+        const variableDefinitions = Object.entries(inputVariables)
+          .map(([key, value]) => {
+            const valueStr = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
+            return `const ${key} = ${valueStr};`;
+          })
+          .join('\n');
+        
+        customCodeData.config.source = `${variableDefinitions}\n${customCodeData.config.source}`;
+      }
+    }
+    
+    const trigger = TriggerFactory.create({
+      id: triggerId,
+      name: 'manual_trigger',
+      type: TriggerType.Manual,
+      data: inputVariables // Pass input variables through trigger data
+    });
+
+    return new Workflow({
+      smartWalletAddress: walletAddress, // Use the dedicated wallet address
+      trigger: trigger,
+      nodes: [node],
+      edges: [new Edge({
+        id: `edge_${Date.now()}`,
+        source: triggerId,
+        target: node.id
+      })],
+      startAt: Date.now(),
+      expiredAt: Date.now() + 3600000, // 1 hour from now
+      maxExecution: 1
+    });
+  }
+
+  private extractNodeExecutionData(execution: any): Record<string, any> {
+    return {
+      executionId: execution.executionId,
+      status: execution.status,
+    };
   }
 }
 

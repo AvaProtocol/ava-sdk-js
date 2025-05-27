@@ -3,7 +3,7 @@ import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { url, method, headersMap, body }
+// Required props for constructor: id, name, type and data: { config: { url, method, headersMap, body } }
 export type RestAPINodeData = avs_pb.RestAPINode.AsObject;
 export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
 
@@ -33,15 +33,23 @@ class RestAPINode extends Node {
     request.setName(this.name);
 
     const nodeData = new avs_pb.RestAPINode();
-    nodeData.setUrl((this.data as RestAPINodeData).url);
-    nodeData.setMethod((this.data as RestAPINodeData).method);
-    nodeData.setBody((this.data as RestAPINodeData).body);
-
-    const headers = (this.data as RestAPINodeData).headersMap;
-    const headersMap = nodeData.getHeadersMap();
-    headers.forEach(([key, value]) => {
-      headersMap.set(key, value);
-    });
+    
+    if ((this.data as RestAPINodeData).config) {
+      const config = new avs_pb.RestAPINode.Config();
+      config.setUrl((this.data as RestAPINodeData).config!.url);
+      config.setMethod((this.data as RestAPINodeData).config!.method);
+      config.setBody((this.data as RestAPINodeData).config!.body || "");
+      
+      if ((this.data as RestAPINodeData).config!.headersMap && 
+          (this.data as RestAPINodeData).config!.headersMap.length > 0) {
+        const headersMap = config.getHeadersMap();
+        (this.data as RestAPINodeData).config!.headersMap.forEach(([key, value]: [string, string]) => {
+          headersMap.set(key, value);
+        });
+      }
+      
+      nodeData.setConfig(config);
+    }
 
     request.setRestApi(nodeData);
 

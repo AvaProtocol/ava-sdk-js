@@ -1,12 +1,13 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerProps } from "./interface";
+import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name,type and data: { epoch }
-export type FixedTimeTriggerConfig = avs_pb.FixedTimeTrigger.Config.AsObject;
+// Required props for constructor: id, name, type and data: { config: { epochsList } }
+export type FixedTimeTriggerDataType = avs_pb.FixedTimeTrigger.AsObject;
 export type FixedTimeTriggerProps = TriggerProps & {
-  data: FixedTimeTriggerConfig;
+  data: FixedTimeTriggerDataType;
 };
+export type FixedTimeTriggerOutput = avs_pb.FixedTimeTrigger.Output.AsObject;
 
 class FixedTimeTrigger extends Trigger {
   constructor(props: FixedTimeTriggerProps) {
@@ -23,9 +24,13 @@ class FixedTimeTrigger extends Trigger {
     }
 
     const trigger = new avs_pb.FixedTimeTrigger();
-    const config = new avs_pb.FixedTimeTrigger.Config();
-    config.setEpochsList((this.data as FixedTimeTriggerConfig).epochsList);
-    trigger.setConfig(config);
+    
+    if ((this.data as FixedTimeTriggerDataType).config) {
+      const config = new avs_pb.FixedTimeTrigger.Config();
+      config.setEpochsList((this.data as FixedTimeTriggerDataType).config!.epochsList || []);
+      trigger.setConfig(config);
+    }
+    
     request.setFixedTime(trigger);
 
     return request;
@@ -35,11 +40,32 @@ class FixedTimeTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
+    let data: FixedTimeTriggerDataType = { config: {} } as FixedTimeTriggerDataType;
+    
+    if (raw.getFixedTime() && raw.getFixedTime()!.hasConfig()) {
+      const config = raw.getFixedTime()!.getConfig();
+      
+      if (config) {
+        data.config = {
+          epochsList: config.getEpochsList() || []
+        };
+      }
+    }
+    
     return new FixedTimeTrigger({
       ...obj,
       type: TriggerType.FixedTime,
-      data: raw?.getFixedTime()?.toObject().config as FixedTimeTriggerConfig,
+      data: data,
     });
+  }
+
+  /**
+   * Convert raw data from runNodeWithInputs response to FixedTimeOutput format
+   * @param rawData - The raw data from the gRPC response
+   * @returns {FixedTimeTriggerOutput | undefined} - The converted data
+   */
+  getOutput(): FixedTimeTriggerOutput | undefined {
+    return this.output as FixedTimeTriggerOutput;
   }
 }
 

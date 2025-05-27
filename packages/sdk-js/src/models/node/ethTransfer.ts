@@ -3,7 +3,7 @@ import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { destination, amount }
+// Required props for constructor: id, name, type and data: { config: { destination, amount } }
 export type ETHTransferNodeData = avs_pb.ETHTransferNode.AsObject;
 export type ETHTransferNodeProps = NodeProps & {
   data: ETHTransferNodeData;
@@ -31,8 +31,13 @@ class ETHTransferNode extends Node {
     request.setName(this.name);
 
     const nodeData = new avs_pb.ETHTransferNode();
-    nodeData.setDestination((this.data as ETHTransferNodeData).destination);
-    nodeData.setAmount((this.data as ETHTransferNodeData).amount);
+    
+    if ((this.data as ETHTransferNodeData).config) {
+      const config = new avs_pb.ETHTransferNode.Config();
+      config.setDestination((this.data as ETHTransferNodeData).config!.destination);
+      config.setAmount((this.data as ETHTransferNodeData).config!.amount);
+      nodeData.setConfig(config);
+    }
 
     request.setEthTransfer(nodeData);
 

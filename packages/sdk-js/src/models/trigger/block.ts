@@ -2,9 +2,9 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { interval }
-export type BlockTriggerConfig = avs_pb.BlockTrigger.Config.AsObject;
-export type BlockTriggerProps = TriggerProps & { data: BlockTriggerConfig };
+// Required props for constructor: id, name, type and data: { config: { interval } }
+export type BlockTriggerDataType = avs_pb.BlockTrigger.AsObject;
+export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
 export type BlockTriggerOutput = avs_pb.BlockTrigger.Output.AsObject;
 
 class BlockTrigger extends Trigger {
@@ -22,10 +22,13 @@ class BlockTrigger extends Trigger {
     }
 
     const trigger = new avs_pb.BlockTrigger();
-    const config = new avs_pb.BlockTrigger.Config();
-    config.setInterval((this.data as BlockTriggerConfig).interval);
-    trigger.setConfig(config);
-
+    
+    if ((this.data as BlockTriggerDataType).config) {
+      const config = new avs_pb.BlockTrigger.Config();
+      config.setInterval((this.data as BlockTriggerDataType).config!.interval || 0);
+      trigger.setConfig(config);
+    }
+    
     request.setBlock(trigger);
 
     return request;
@@ -35,21 +38,33 @@ class BlockTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
+    let data: BlockTriggerDataType = { config: {} } as BlockTriggerDataType;
+    
+    if (raw.getBlock() && raw.getBlock()!.hasConfig()) {
+      const config = raw.getBlock()!.getConfig();
+      
+      if (config) {
+        data.config = {
+          interval: config.getInterval() || 0
+        };
+      }
+    }
+    
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
-      data: raw?.getBlock()?.toObject().config as BlockTriggerConfig,
+      data: data,
     });
   }
 
-  // /**
-  //  * Convert raw data from runNodeWithInputs response to BlockOutput format
-  //  * @param rawData - The raw data from the gRPC response
-  //  * @returns {avs_pb.Execution.BlockOutput.AsObject} - The converted data
-  //  */
-  // getOutput(): TriggerOutput | undefined {
-  //   return this.output;
-  // }
+  /**
+   * Convert raw data from runNodeWithInputs response to BlockOutput format
+   * @param rawData - The raw data from the gRPC response
+   * @returns {BlockTriggerOutput | undefined} - The converted data
+   */
+  getOutput(): BlockTriggerOutput | undefined {
+    return this.output as BlockTriggerOutput;
+  }
 }
 
 export default BlockTrigger;

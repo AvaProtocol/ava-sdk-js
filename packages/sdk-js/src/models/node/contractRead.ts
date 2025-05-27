@@ -3,7 +3,7 @@ import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { contractAddress, callData, contractAbi, method }
+// Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi } }
 export type ContractReadNodeData = avs_pb.ContractReadNode.AsObject;
 export type ContractReadNodeProps = NodeProps & {
   data: ContractReadNodeData;
@@ -31,11 +31,14 @@ class ContractReadNode extends Node {
     request.setName(this.name);
 
     const nodeData = new avs_pb.ContractReadNode();
-    nodeData.setContractAddress(
-      (this.data as ContractReadNodeData).contractAddress
-    );
-    nodeData.setCallData((this.data as ContractReadNodeData).callData);
-    nodeData.setContractAbi((this.data as ContractReadNodeData).contractAbi);
+    
+    if ((this.data as ContractReadNodeData).config) {
+      const config = new avs_pb.ContractReadNode.Config();
+      config.setContractAddress((this.data as ContractReadNodeData).config!.contractAddress);
+      config.setCallData((this.data as ContractReadNodeData).config!.callData);
+      config.setContractAbi((this.data as ContractReadNodeData).config!.contractAbi);
+      nodeData.setConfig(config);
+    }
 
     request.setContractRead(nodeData);
 
