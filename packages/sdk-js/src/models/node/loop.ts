@@ -35,7 +35,7 @@ class LoopNode extends Node {
     node.setName(this.name);
 
     const data = this.data as LoopNodeData;
-    
+
     if (data.config) {
       const config = new avs_pb.LoopNode.Config();
       config.setSourceId(data.config.sourceId);
@@ -79,8 +79,11 @@ class LoopNode extends Node {
         const config = new avs_pb.GraphQLQueryNode.Config();
         config.setUrl(data.graphqlDataQuery.config.url);
         config.setQuery(data.graphqlDataQuery.config.query);
-        
-        if (data.graphqlDataQuery.config.variablesMap && data.graphqlDataQuery.config.variablesMap.length > 0) {
+
+        if (
+          data.graphqlDataQuery.config.variablesMap &&
+          data.graphqlDataQuery.config.variablesMap.length > 0
+        ) {
           data.graphqlDataQuery.config.variablesMap.forEach(([key, value]) => {
             config.getVariablesMap().set(key, value);
           });
@@ -95,8 +98,11 @@ class LoopNode extends Node {
         config.setUrl(data.restApi.config.url);
         config.setMethod(data.restApi.config.method);
         config.setBody(data.restApi.config.body || "");
-        
-        if (data.restApi.config.headersMap && data.restApi.config.headersMap.length > 0) {
+
+        if (
+          data.restApi.config.headersMap &&
+          data.restApi.config.headersMap.length > 0
+        ) {
           data.restApi.config.headersMap.forEach(([key, value]) => {
             config.getHeadersMap().set(key, value);
           });
