@@ -29,44 +29,55 @@ var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js'
 goog.object.extend(proto, google_protobuf_any_pb);
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 goog.object.extend(proto, google_protobuf_struct_pb);
-goog.exportSymbol('proto.aggregator.BlockCondition', null, global);
+goog.exportSymbol('proto.aggregator.BlockTrigger', null, global);
+goog.exportSymbol('proto.aggregator.BlockTrigger.Config', null, global);
+goog.exportSymbol('proto.aggregator.BlockTrigger.Output', null, global);
 goog.exportSymbol('proto.aggregator.BranchNode', null, global);
+goog.exportSymbol('proto.aggregator.BranchNode.Condition', null, global);
+goog.exportSymbol('proto.aggregator.BranchNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.BranchNode.Output', null, global);
-goog.exportSymbol('proto.aggregator.Condition', null, global);
 goog.exportSymbol('proto.aggregator.ContractReadNode', null, global);
+goog.exportSymbol('proto.aggregator.ContractReadNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.ContractReadNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.ContractWriteNode', null, global);
+goog.exportSymbol('proto.aggregator.ContractWriteNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.ContractWriteNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.CreateOrUpdateSecretReq', null, global);
 goog.exportSymbol('proto.aggregator.CreateTaskReq', null, global);
 goog.exportSymbol('proto.aggregator.CreateTaskResp', null, global);
-goog.exportSymbol('proto.aggregator.CronCondition', null, global);
-goog.exportSymbol('proto.aggregator.CustomCodeLang', null, global);
+goog.exportSymbol('proto.aggregator.CronTrigger', null, global);
+goog.exportSymbol('proto.aggregator.CronTrigger.Config', null, global);
+goog.exportSymbol('proto.aggregator.CronTrigger.Output', null, global);
 goog.exportSymbol('proto.aggregator.CustomCodeNode', null, global);
+goog.exportSymbol('proto.aggregator.CustomCodeNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.CustomCodeNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.DeleteSecretReq', null, global);
 goog.exportSymbol('proto.aggregator.ETHTransferNode', null, global);
+goog.exportSymbol('proto.aggregator.ETHTransferNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.ETHTransferNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.Error', null, global);
-goog.exportSymbol('proto.aggregator.EventCondition', null, global);
-goog.exportSymbol('proto.aggregator.EventCondition.Matcher', null, global);
+goog.exportSymbol('proto.aggregator.EventTrigger', null, global);
+goog.exportSymbol('proto.aggregator.EventTrigger.Config', null, global);
+goog.exportSymbol('proto.aggregator.EventTrigger.Matcher', null, global);
+goog.exportSymbol('proto.aggregator.EventTrigger.Output', null, global);
+goog.exportSymbol('proto.aggregator.EventTrigger.TransferLogOutput', null, global);
 goog.exportSymbol('proto.aggregator.Evm', null, global);
 goog.exportSymbol('proto.aggregator.Evm.Log', null, global);
 goog.exportSymbol('proto.aggregator.Evm.TransactionReceipt', null, global);
 goog.exportSymbol('proto.aggregator.Evm.UserOp', null, global);
 goog.exportSymbol('proto.aggregator.Execution', null, global);
-goog.exportSymbol('proto.aggregator.Execution.BlockOutput', null, global);
 goog.exportSymbol('proto.aggregator.Execution.OutputDataCase', null, global);
 goog.exportSymbol('proto.aggregator.Execution.Step', null, global);
 goog.exportSymbol('proto.aggregator.Execution.Step.OutputDataCase', null, global);
-goog.exportSymbol('proto.aggregator.Execution.TimeOutput', null, global);
-goog.exportSymbol('proto.aggregator.Execution.TransferLogOutput', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionReq', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionStatus', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionStatusResp', null, global);
 goog.exportSymbol('proto.aggregator.FilterNode', null, global);
+goog.exportSymbol('proto.aggregator.FilterNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.FilterNode.Output', null, global);
-goog.exportSymbol('proto.aggregator.FixedTimeCondition', null, global);
+goog.exportSymbol('proto.aggregator.FixedTimeTrigger', null, global);
+goog.exportSymbol('proto.aggregator.FixedTimeTrigger.Config', null, global);
+goog.exportSymbol('proto.aggregator.FixedTimeTrigger.Output', null, global);
 goog.exportSymbol('proto.aggregator.GetExecutionCountReq', null, global);
 goog.exportSymbol('proto.aggregator.GetExecutionCountResp', null, global);
 goog.exportSymbol('proto.aggregator.GetExecutionStatsReq', null, global);
@@ -79,9 +90,11 @@ goog.exportSymbol('proto.aggregator.GetWalletResp', null, global);
 goog.exportSymbol('proto.aggregator.GetWorkflowCountReq', null, global);
 goog.exportSymbol('proto.aggregator.GetWorkflowCountResp', null, global);
 goog.exportSymbol('proto.aggregator.GraphQLQueryNode', null, global);
+goog.exportSymbol('proto.aggregator.GraphQLQueryNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.GraphQLQueryNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.IdReq', null, global);
 goog.exportSymbol('proto.aggregator.KeyResp', null, global);
+goog.exportSymbol('proto.aggregator.Lang', null, global);
 goog.exportSymbol('proto.aggregator.ListExecutionsReq', null, global);
 goog.exportSymbol('proto.aggregator.ListExecutionsResp', null, global);
 goog.exportSymbol('proto.aggregator.ListSecretsReq', null, global);
@@ -93,14 +106,17 @@ goog.exportSymbol('proto.aggregator.ListTasksResp.Item', null, global);
 goog.exportSymbol('proto.aggregator.ListWalletReq', null, global);
 goog.exportSymbol('proto.aggregator.ListWalletResp', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode', null, global);
+goog.exportSymbol('proto.aggregator.LoopNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode.RunnerCase', null, global);
 goog.exportSymbol('proto.aggregator.NonceRequest', null, global);
 goog.exportSymbol('proto.aggregator.NonceResp', null, global);
 goog.exportSymbol('proto.aggregator.RestAPINode', null, global);
+goog.exportSymbol('proto.aggregator.RestAPINode.Config', null, global);
 goog.exportSymbol('proto.aggregator.RestAPINode.Output', null, global);
 goog.exportSymbol('proto.aggregator.RunNodeWithInputsReq', null, global);
 goog.exportSymbol('proto.aggregator.RunNodeWithInputsResp', null, global);
+goog.exportSymbol('proto.aggregator.RunNodeWithInputsResp.OutputDataCase', null, global);
 goog.exportSymbol('proto.aggregator.SetWalletReq', null, global);
 goog.exportSymbol('proto.aggregator.SmartWallet', null, global);
 goog.exportSymbol('proto.aggregator.Task', null, global);
@@ -145,58 +161,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.aggregator.FixedTimeCondition = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.FixedTimeCondition.repeatedFields_, null);
-};
-goog.inherits(proto.aggregator.FixedTimeCondition, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  /**
-   * @public
-   * @override
-   */
-  proto.aggregator.FixedTimeCondition.displayName = 'proto.aggregator.FixedTimeCondition';
-}
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.aggregator.CronCondition = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.CronCondition.repeatedFields_, null);
-};
-goog.inherits(proto.aggregator.CronCondition, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  /**
-   * @public
-   * @override
-   */
-  proto.aggregator.CronCondition.displayName = 'proto.aggregator.CronCondition';
-}
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.aggregator.BlockCondition = function(opt_data) {
+proto.aggregator.FixedTimeTrigger = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.aggregator.BlockCondition, jspb.Message);
+goog.inherits(proto.aggregator.FixedTimeTrigger, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.aggregator.BlockCondition.displayName = 'proto.aggregator.BlockCondition';
+  proto.aggregator.FixedTimeTrigger.displayName = 'proto.aggregator.FixedTimeTrigger';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -208,16 +182,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.aggregator.EventCondition = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.EventCondition.repeatedFields_, null);
+proto.aggregator.FixedTimeTrigger.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.FixedTimeTrigger.Config.repeatedFields_, null);
 };
-goog.inherits(proto.aggregator.EventCondition, jspb.Message);
+goog.inherits(proto.aggregator.FixedTimeTrigger.Config, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.aggregator.EventCondition.displayName = 'proto.aggregator.EventCondition';
+  proto.aggregator.FixedTimeTrigger.Config.displayName = 'proto.aggregator.FixedTimeTrigger.Config';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -229,16 +203,247 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.aggregator.EventCondition.Matcher = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.EventCondition.Matcher.repeatedFields_, null);
+proto.aggregator.FixedTimeTrigger.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.aggregator.EventCondition.Matcher, jspb.Message);
+goog.inherits(proto.aggregator.FixedTimeTrigger.Output, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.aggregator.EventCondition.Matcher.displayName = 'proto.aggregator.EventCondition.Matcher';
+  proto.aggregator.FixedTimeTrigger.Output.displayName = 'proto.aggregator.FixedTimeTrigger.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.CronTrigger = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.CronTrigger, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.CronTrigger.displayName = 'proto.aggregator.CronTrigger';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.CronTrigger.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.CronTrigger.Config.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.CronTrigger.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.CronTrigger.Config.displayName = 'proto.aggregator.CronTrigger.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.CronTrigger.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.CronTrigger.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.CronTrigger.Output.displayName = 'proto.aggregator.CronTrigger.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.BlockTrigger = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.BlockTrigger, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.BlockTrigger.displayName = 'proto.aggregator.BlockTrigger';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.BlockTrigger.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.BlockTrigger.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.BlockTrigger.Config.displayName = 'proto.aggregator.BlockTrigger.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.BlockTrigger.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.BlockTrigger.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.BlockTrigger.Output.displayName = 'proto.aggregator.BlockTrigger.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.EventTrigger = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.EventTrigger, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.EventTrigger.displayName = 'proto.aggregator.EventTrigger';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.EventTrigger.Matcher = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.EventTrigger.Matcher.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.EventTrigger.Matcher, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.EventTrigger.Matcher.displayName = 'proto.aggregator.EventTrigger.Matcher';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.EventTrigger.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.EventTrigger.Config.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.EventTrigger.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.EventTrigger.Config.displayName = 'proto.aggregator.EventTrigger.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.EventTrigger.Output = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.EventTrigger.Output, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.EventTrigger.Output.displayName = 'proto.aggregator.EventTrigger.Output';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.EventTrigger.TransferLogOutput = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.EventTrigger.TransferLogOutput, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.EventTrigger.TransferLogOutput.displayName = 'proto.aggregator.EventTrigger.TransferLogOutput';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -292,6 +497,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.ETHTransferNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.ETHTransferNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.ETHTransferNode.Config.displayName = 'proto.aggregator.ETHTransferNode.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.ETHTransferNode.Output = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -323,6 +549,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.ContractWriteNode.displayName = 'proto.aggregator.ContractWriteNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.ContractWriteNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.ContractWriteNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.ContractWriteNode.Config.displayName = 'proto.aggregator.ContractWriteNode.Config';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -376,6 +623,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.ContractReadNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.ContractReadNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.ContractReadNode.Config.displayName = 'proto.aggregator.ContractReadNode.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.ContractReadNode.Output = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ContractReadNode.Output.repeatedFields_, null);
 };
@@ -407,6 +675,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.GraphQLQueryNode.displayName = 'proto.aggregator.GraphQLQueryNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.GraphQLQueryNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.GraphQLQueryNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.GraphQLQueryNode.Config.displayName = 'proto.aggregator.GraphQLQueryNode.Config';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -460,6 +749,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.RestAPINode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.RestAPINode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.RestAPINode.Config.displayName = 'proto.aggregator.RestAPINode.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.RestAPINode.Output = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -502,6 +812,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.CustomCodeNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.CustomCodeNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.CustomCodeNode.Config.displayName = 'proto.aggregator.CustomCodeNode.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.CustomCodeNode.Output = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -523,16 +854,16 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.aggregator.Condition = function(opt_data) {
+proto.aggregator.BranchNode = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.aggregator.Condition, jspb.Message);
+goog.inherits(proto.aggregator.BranchNode, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.aggregator.Condition.displayName = 'proto.aggregator.Condition';
+  proto.aggregator.BranchNode.displayName = 'proto.aggregator.BranchNode';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -544,16 +875,37 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.aggregator.BranchNode = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.BranchNode.repeatedFields_, null);
+proto.aggregator.BranchNode.Condition = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.aggregator.BranchNode, jspb.Message);
+goog.inherits(proto.aggregator.BranchNode.Condition, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
   /**
    * @public
    * @override
    */
-  proto.aggregator.BranchNode.displayName = 'proto.aggregator.BranchNode';
+  proto.aggregator.BranchNode.Condition.displayName = 'proto.aggregator.BranchNode.Condition';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.BranchNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.BranchNode.Config.repeatedFields_, null);
+};
+goog.inherits(proto.aggregator.BranchNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.BranchNode.Config.displayName = 'proto.aggregator.BranchNode.Config';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -607,6 +959,27 @@ if (goog.DEBUG && !COMPILED) {
  * @extends {jspb.Message}
  * @constructor
  */
+proto.aggregator.FilterNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.FilterNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.FilterNode.Config.displayName = 'proto.aggregator.FilterNode.Config';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
 proto.aggregator.FilterNode.Output = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
@@ -638,6 +1011,27 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.LoopNode.displayName = 'proto.aggregator.LoopNode';
+}
+/**
+ * Generated by JsPbCodeGenerator.
+ * @param {Array=} opt_data Optional initial data array, typically from a
+ * server response, or constructed directly in Javascript. The array is used
+ * in place and becomes part of the constructed object. It is not cloned.
+ * If no data is provided, the constructed object will be empty, but still
+ * valid.
+ * @extends {jspb.Message}
+ * @constructor
+ */
+proto.aggregator.LoopNode.Config = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+};
+goog.inherits(proto.aggregator.LoopNode.Config, jspb.Message);
+if (goog.DEBUG && !COMPILED) {
+  /**
+   * @public
+   * @override
+   */
+  proto.aggregator.LoopNode.Config.displayName = 'proto.aggregator.LoopNode.Config';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -743,69 +1137,6 @@ if (goog.DEBUG && !COMPILED) {
    * @override
    */
   proto.aggregator.Execution.Step.displayName = 'proto.aggregator.Execution.Step';
-}
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.aggregator.Execution.TransferLogOutput = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
-};
-goog.inherits(proto.aggregator.Execution.TransferLogOutput, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  /**
-   * @public
-   * @override
-   */
-  proto.aggregator.Execution.TransferLogOutput.displayName = 'proto.aggregator.Execution.TransferLogOutput';
-}
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.aggregator.Execution.BlockOutput = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
-};
-goog.inherits(proto.aggregator.Execution.BlockOutput, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  /**
-   * @public
-   * @override
-   */
-  proto.aggregator.Execution.BlockOutput.displayName = 'proto.aggregator.Execution.BlockOutput';
-}
-/**
- * Generated by JsPbCodeGenerator.
- * @param {Array=} opt_data Optional initial data array, typically from a
- * server response, or constructed directly in Javascript. The array is used
- * in place and becomes part of the constructed object. It is not cloned.
- * If no data is provided, the constructed object will be empty, but still
- * valid.
- * @extends {jspb.Message}
- * @constructor
- */
-proto.aggregator.Execution.TimeOutput = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
-};
-goog.inherits(proto.aggregator.Execution.TimeOutput, jspb.Message);
-if (goog.DEBUG && !COMPILED) {
-  /**
-   * @public
-   * @override
-   */
-  proto.aggregator.Execution.TimeOutput.displayName = 'proto.aggregator.Execution.TimeOutput';
 }
 /**
  * Generated by JsPbCodeGenerator.
@@ -1595,7 +1926,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.RunNodeWithInputsResp = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.aggregator.RunNodeWithInputsResp.oneofGroups_);
 };
 goog.inherits(proto.aggregator.RunNodeWithInputsResp, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -1820,12 +2151,126 @@ proto.aggregator.IdReq.prototype.setId = function(value) {
 
 
 
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.FixedTimeTrigger.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.FixedTimeTrigger.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.FixedTimeTrigger} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FixedTimeTrigger.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    config: (f = msg.getConfig()) && proto.aggregator.FixedTimeTrigger.Config.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.FixedTimeTrigger}
+ */
+proto.aggregator.FixedTimeTrigger.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.FixedTimeTrigger;
+  return proto.aggregator.FixedTimeTrigger.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.FixedTimeTrigger} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.FixedTimeTrigger}
+ */
+proto.aggregator.FixedTimeTrigger.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.FixedTimeTrigger.Config;
+      reader.readMessage(value,proto.aggregator.FixedTimeTrigger.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.FixedTimeTrigger.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.FixedTimeTrigger.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.FixedTimeTrigger} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FixedTimeTrigger.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.FixedTimeTrigger.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.aggregator.FixedTimeCondition.repeatedFields_ = [1];
+proto.aggregator.FixedTimeTrigger.Config.repeatedFields_ = [1];
 
 
 
@@ -1842,8 +2287,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.aggregator.FixedTimeCondition.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.FixedTimeCondition.toObject(opt_includeInstance, this);
+proto.aggregator.FixedTimeTrigger.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.FixedTimeTrigger.Config.toObject(opt_includeInstance, this);
 };
 
 
@@ -1852,11 +2297,11 @@ proto.aggregator.FixedTimeCondition.prototype.toObject = function(opt_includeIns
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.aggregator.FixedTimeCondition} msg The msg instance to transform.
+ * @param {!proto.aggregator.FixedTimeTrigger.Config} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.FixedTimeCondition.toObject = function(includeInstance, msg) {
+proto.aggregator.FixedTimeTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     epochsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
@@ -1872,23 +2317,23 @@ proto.aggregator.FixedTimeCondition.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.FixedTimeCondition}
+ * @return {!proto.aggregator.FixedTimeTrigger.Config}
  */
-proto.aggregator.FixedTimeCondition.deserializeBinary = function(bytes) {
+proto.aggregator.FixedTimeTrigger.Config.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.FixedTimeCondition;
-  return proto.aggregator.FixedTimeCondition.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.aggregator.FixedTimeTrigger.Config;
+  return proto.aggregator.FixedTimeTrigger.Config.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.aggregator.FixedTimeCondition} msg The message object to deserialize into.
+ * @param {!proto.aggregator.FixedTimeTrigger.Config} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.FixedTimeCondition}
+ * @return {!proto.aggregator.FixedTimeTrigger.Config}
  */
-proto.aggregator.FixedTimeCondition.deserializeBinaryFromReader = function(msg, reader) {
+proto.aggregator.FixedTimeTrigger.Config.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -1914,9 +2359,9 @@ proto.aggregator.FixedTimeCondition.deserializeBinaryFromReader = function(msg, 
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.aggregator.FixedTimeCondition.prototype.serializeBinary = function() {
+proto.aggregator.FixedTimeTrigger.Config.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.aggregator.FixedTimeCondition.serializeBinaryToWriter(this, writer);
+  proto.aggregator.FixedTimeTrigger.Config.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -1924,11 +2369,11 @@ proto.aggregator.FixedTimeCondition.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.FixedTimeCondition} message
+ * @param {!proto.aggregator.FixedTimeTrigger.Config} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.FixedTimeCondition.serializeBinaryToWriter = function(message, writer) {
+proto.aggregator.FixedTimeTrigger.Config.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getEpochsList();
   if (f.length > 0) {
@@ -1944,16 +2389,16 @@ proto.aggregator.FixedTimeCondition.serializeBinaryToWriter = function(message, 
  * repeated int64 epochs = 1;
  * @return {!Array<number>}
  */
-proto.aggregator.FixedTimeCondition.prototype.getEpochsList = function() {
+proto.aggregator.FixedTimeTrigger.Config.prototype.getEpochsList = function() {
   return /** @type {!Array<number>} */ (jspb.Message.getRepeatedField(this, 1));
 };
 
 
 /**
  * @param {!Array<number>} value
- * @return {!proto.aggregator.FixedTimeCondition} returns this
+ * @return {!proto.aggregator.FixedTimeTrigger.Config} returns this
  */
-proto.aggregator.FixedTimeCondition.prototype.setEpochsList = function(value) {
+proto.aggregator.FixedTimeTrigger.Config.prototype.setEpochsList = function(value) {
   return jspb.Message.setField(this, 1, value || []);
 };
 
@@ -1961,29 +2406,22 @@ proto.aggregator.FixedTimeCondition.prototype.setEpochsList = function(value) {
 /**
  * @param {number} value
  * @param {number=} opt_index
- * @return {!proto.aggregator.FixedTimeCondition} returns this
+ * @return {!proto.aggregator.FixedTimeTrigger.Config} returns this
  */
-proto.aggregator.FixedTimeCondition.prototype.addEpochs = function(value, opt_index) {
+proto.aggregator.FixedTimeTrigger.Config.prototype.addEpochs = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.aggregator.FixedTimeCondition} returns this
+ * @return {!proto.aggregator.FixedTimeTrigger.Config} returns this
  */
-proto.aggregator.FixedTimeCondition.prototype.clearEpochsList = function() {
+proto.aggregator.FixedTimeTrigger.Config.prototype.clearEpochsList = function() {
   return this.setEpochsList([]);
 };
 
 
-
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.aggregator.CronCondition.repeatedFields_ = [1];
 
 
 
@@ -2000,8 +2438,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.aggregator.CronCondition.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.CronCondition.toObject(opt_includeInstance, this);
+proto.aggregator.FixedTimeTrigger.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.FixedTimeTrigger.Output.toObject(opt_includeInstance, this);
 };
 
 
@@ -2010,11 +2448,299 @@ proto.aggregator.CronCondition.prototype.toObject = function(opt_includeInstance
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.aggregator.CronCondition} msg The msg instance to transform.
+ * @param {!proto.aggregator.FixedTimeTrigger.Output} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.CronCondition.toObject = function(includeInstance, msg) {
+proto.aggregator.FixedTimeTrigger.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    epoch: jspb.Message.getFieldWithDefault(msg, 1, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.FixedTimeTrigger.Output}
+ */
+proto.aggregator.FixedTimeTrigger.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.FixedTimeTrigger.Output;
+  return proto.aggregator.FixedTimeTrigger.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.FixedTimeTrigger.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.FixedTimeTrigger.Output}
+ */
+proto.aggregator.FixedTimeTrigger.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setEpoch(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.FixedTimeTrigger.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.FixedTimeTrigger.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.FixedTimeTrigger.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FixedTimeTrigger.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getEpoch();
+  if (f !== 0) {
+    writer.writeUint64(
+      1,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional uint64 epoch = 1;
+ * @return {number}
+ */
+proto.aggregator.FixedTimeTrigger.Output.prototype.getEpoch = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.FixedTimeTrigger.Output} returns this
+ */
+proto.aggregator.FixedTimeTrigger.Output.prototype.setEpoch = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional Config config = 1;
+ * @return {?proto.aggregator.FixedTimeTrigger.Config}
+ */
+proto.aggregator.FixedTimeTrigger.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.FixedTimeTrigger.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FixedTimeTrigger.Config, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.FixedTimeTrigger.Config|undefined} value
+ * @return {!proto.aggregator.FixedTimeTrigger} returns this
+*/
+proto.aggregator.FixedTimeTrigger.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.FixedTimeTrigger} returns this
+ */
+proto.aggregator.FixedTimeTrigger.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.FixedTimeTrigger.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.CronTrigger.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.CronTrigger.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.CronTrigger} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CronTrigger.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    config: (f = msg.getConfig()) && proto.aggregator.CronTrigger.Config.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.CronTrigger}
+ */
+proto.aggregator.CronTrigger.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.CronTrigger;
+  return proto.aggregator.CronTrigger.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.CronTrigger} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.CronTrigger}
+ */
+proto.aggregator.CronTrigger.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.CronTrigger.Config;
+      reader.readMessage(value,proto.aggregator.CronTrigger.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.CronTrigger.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.CronTrigger.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.CronTrigger} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CronTrigger.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.CronTrigger.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.CronTrigger.Config.repeatedFields_ = [1];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.CronTrigger.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.CronTrigger.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.CronTrigger.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CronTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     scheduleList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
@@ -2030,23 +2756,23 @@ proto.aggregator.CronCondition.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.CronCondition}
+ * @return {!proto.aggregator.CronTrigger.Config}
  */
-proto.aggregator.CronCondition.deserializeBinary = function(bytes) {
+proto.aggregator.CronTrigger.Config.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.CronCondition;
-  return proto.aggregator.CronCondition.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.aggregator.CronTrigger.Config;
+  return proto.aggregator.CronTrigger.Config.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.aggregator.CronCondition} msg The message object to deserialize into.
+ * @param {!proto.aggregator.CronTrigger.Config} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.CronCondition}
+ * @return {!proto.aggregator.CronTrigger.Config}
  */
-proto.aggregator.CronCondition.deserializeBinaryFromReader = function(msg, reader) {
+proto.aggregator.CronTrigger.Config.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2070,9 +2796,9 @@ proto.aggregator.CronCondition.deserializeBinaryFromReader = function(msg, reade
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.aggregator.CronCondition.prototype.serializeBinary = function() {
+proto.aggregator.CronTrigger.Config.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.aggregator.CronCondition.serializeBinaryToWriter(this, writer);
+  proto.aggregator.CronTrigger.Config.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2080,11 +2806,11 @@ proto.aggregator.CronCondition.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.CronCondition} message
+ * @param {!proto.aggregator.CronTrigger.Config} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.CronCondition.serializeBinaryToWriter = function(message, writer) {
+proto.aggregator.CronTrigger.Config.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getScheduleList();
   if (f.length > 0) {
@@ -2100,16 +2826,16 @@ proto.aggregator.CronCondition.serializeBinaryToWriter = function(message, write
  * repeated string schedule = 1;
  * @return {!Array<string>}
  */
-proto.aggregator.CronCondition.prototype.getScheduleList = function() {
+proto.aggregator.CronTrigger.Config.prototype.getScheduleList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 1));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.aggregator.CronCondition} returns this
+ * @return {!proto.aggregator.CronTrigger.Config} returns this
  */
-proto.aggregator.CronCondition.prototype.setScheduleList = function(value) {
+proto.aggregator.CronTrigger.Config.prototype.setScheduleList = function(value) {
   return jspb.Message.setField(this, 1, value || []);
 };
 
@@ -2117,18 +2843,18 @@ proto.aggregator.CronCondition.prototype.setScheduleList = function(value) {
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.aggregator.CronCondition} returns this
+ * @return {!proto.aggregator.CronTrigger.Config} returns this
  */
-proto.aggregator.CronCondition.prototype.addSchedule = function(value, opt_index) {
+proto.aggregator.CronTrigger.Config.prototype.addSchedule = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.aggregator.CronCondition} returns this
+ * @return {!proto.aggregator.CronTrigger.Config} returns this
  */
-proto.aggregator.CronCondition.prototype.clearScheduleList = function() {
+proto.aggregator.CronTrigger.Config.prototype.clearScheduleList = function() {
   return this.setScheduleList([]);
 };
 
@@ -2149,8 +2875,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.aggregator.BlockCondition.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.BlockCondition.toObject(opt_includeInstance, this);
+proto.aggregator.CronTrigger.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.CronTrigger.Output.toObject(opt_includeInstance, this);
 };
 
 
@@ -2159,11 +2885,322 @@ proto.aggregator.BlockCondition.prototype.toObject = function(opt_includeInstanc
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.aggregator.BlockCondition} msg The msg instance to transform.
+ * @param {!proto.aggregator.CronTrigger.Output} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.BlockCondition.toObject = function(includeInstance, msg) {
+proto.aggregator.CronTrigger.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    epoch: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    scheduleMatched: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.CronTrigger.Output}
+ */
+proto.aggregator.CronTrigger.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.CronTrigger.Output;
+  return proto.aggregator.CronTrigger.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.CronTrigger.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.CronTrigger.Output}
+ */
+proto.aggregator.CronTrigger.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setEpoch(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setScheduleMatched(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.CronTrigger.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.CronTrigger.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.CronTrigger.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CronTrigger.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getEpoch();
+  if (f !== 0) {
+    writer.writeUint64(
+      1,
+      f
+    );
+  }
+  f = message.getScheduleMatched();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional uint64 epoch = 1;
+ * @return {number}
+ */
+proto.aggregator.CronTrigger.Output.prototype.getEpoch = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.CronTrigger.Output} returns this
+ */
+proto.aggregator.CronTrigger.Output.prototype.setEpoch = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional string schedule_matched = 2;
+ * @return {string}
+ */
+proto.aggregator.CronTrigger.Output.prototype.getScheduleMatched = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.CronTrigger.Output} returns this
+ */
+proto.aggregator.CronTrigger.Output.prototype.setScheduleMatched = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional Config config = 1;
+ * @return {?proto.aggregator.CronTrigger.Config}
+ */
+proto.aggregator.CronTrigger.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.CronTrigger.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CronTrigger.Config, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.CronTrigger.Config|undefined} value
+ * @return {!proto.aggregator.CronTrigger} returns this
+*/
+proto.aggregator.CronTrigger.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.CronTrigger} returns this
+ */
+proto.aggregator.CronTrigger.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.CronTrigger.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.BlockTrigger.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.BlockTrigger.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.BlockTrigger} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BlockTrigger.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    config: (f = msg.getConfig()) && proto.aggregator.BlockTrigger.Config.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.BlockTrigger}
+ */
+proto.aggregator.BlockTrigger.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.BlockTrigger;
+  return proto.aggregator.BlockTrigger.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.BlockTrigger} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.BlockTrigger}
+ */
+proto.aggregator.BlockTrigger.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.BlockTrigger.Config;
+      reader.readMessage(value,proto.aggregator.BlockTrigger.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.BlockTrigger.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.BlockTrigger.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.BlockTrigger} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BlockTrigger.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.BlockTrigger.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.BlockTrigger.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.BlockTrigger.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.BlockTrigger.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BlockTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     interval: jspb.Message.getFieldWithDefault(msg, 1, 0)
   };
@@ -2179,23 +3216,23 @@ proto.aggregator.BlockCondition.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.BlockCondition}
+ * @return {!proto.aggregator.BlockTrigger.Config}
  */
-proto.aggregator.BlockCondition.deserializeBinary = function(bytes) {
+proto.aggregator.BlockTrigger.Config.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.BlockCondition;
-  return proto.aggregator.BlockCondition.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.aggregator.BlockTrigger.Config;
+  return proto.aggregator.BlockTrigger.Config.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.aggregator.BlockCondition} msg The message object to deserialize into.
+ * @param {!proto.aggregator.BlockTrigger.Config} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.BlockCondition}
+ * @return {!proto.aggregator.BlockTrigger.Config}
  */
-proto.aggregator.BlockCondition.deserializeBinaryFromReader = function(msg, reader) {
+proto.aggregator.BlockTrigger.Config.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2219,9 +3256,9 @@ proto.aggregator.BlockCondition.deserializeBinaryFromReader = function(msg, read
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.aggregator.BlockCondition.prototype.serializeBinary = function() {
+proto.aggregator.BlockTrigger.Config.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.aggregator.BlockCondition.serializeBinaryToWriter(this, writer);
+  proto.aggregator.BlockTrigger.Config.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2229,11 +3266,11 @@ proto.aggregator.BlockCondition.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.BlockCondition} message
+ * @param {!proto.aggregator.BlockTrigger.Config} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.BlockCondition.serializeBinaryToWriter = function(message, writer) {
+proto.aggregator.BlockTrigger.Config.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getInterval();
   if (f !== 0) {
@@ -2249,27 +3286,20 @@ proto.aggregator.BlockCondition.serializeBinaryToWriter = function(message, writ
  * optional int64 interval = 1;
  * @return {number}
  */
-proto.aggregator.BlockCondition.prototype.getInterval = function() {
+proto.aggregator.BlockTrigger.Config.prototype.getInterval = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
  * @param {number} value
- * @return {!proto.aggregator.BlockCondition} returns this
+ * @return {!proto.aggregator.BlockTrigger.Config} returns this
  */
-proto.aggregator.BlockCondition.prototype.setInterval = function(value) {
+proto.aggregator.BlockTrigger.Config.prototype.setInterval = function(value) {
   return jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
-
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.aggregator.EventCondition.repeatedFields_ = [1];
 
 
 
@@ -2286,8 +3316,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.aggregator.EventCondition.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.EventCondition.toObject(opt_includeInstance, this);
+proto.aggregator.BlockTrigger.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.BlockTrigger.Output.toObject(opt_includeInstance, this);
 };
 
 
@@ -2296,15 +3326,19 @@ proto.aggregator.EventCondition.prototype.toObject = function(opt_includeInstanc
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.aggregator.EventCondition} msg The msg instance to transform.
+ * @param {!proto.aggregator.BlockTrigger.Output} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.EventCondition.toObject = function(includeInstance, msg) {
+proto.aggregator.BlockTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    matcherList: jspb.Message.toObjectList(msg.getMatcherList(),
-    proto.aggregator.EventCondition.Matcher.toObject, includeInstance),
-    expression: jspb.Message.getFieldWithDefault(msg, 2, "")
+    blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    blockHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    timestamp: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    parentHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    difficulty: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    gasLimit: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    gasUsed: jspb.Message.getFieldWithDefault(msg, 7, 0)
   };
 
   if (includeInstance) {
@@ -2318,23 +3352,23 @@ proto.aggregator.EventCondition.toObject = function(includeInstance, msg) {
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.EventCondition}
+ * @return {!proto.aggregator.BlockTrigger.Output}
  */
-proto.aggregator.EventCondition.deserializeBinary = function(bytes) {
+proto.aggregator.BlockTrigger.Output.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.EventCondition;
-  return proto.aggregator.EventCondition.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.aggregator.BlockTrigger.Output;
+  return proto.aggregator.BlockTrigger.Output.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.aggregator.EventCondition} msg The message object to deserialize into.
+ * @param {!proto.aggregator.BlockTrigger.Output} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.EventCondition}
+ * @return {!proto.aggregator.BlockTrigger.Output}
  */
-proto.aggregator.EventCondition.deserializeBinaryFromReader = function(msg, reader) {
+proto.aggregator.BlockTrigger.Output.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2342,13 +3376,32 @@ proto.aggregator.EventCondition.deserializeBinaryFromReader = function(msg, read
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new proto.aggregator.EventCondition.Matcher;
-      reader.readMessage(value,proto.aggregator.EventCondition.Matcher.deserializeBinaryFromReader);
-      msg.addMatcher(value);
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlockNumber(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setExpression(value);
+      msg.setBlockHash(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setTimestamp(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setParentHash(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDifficulty(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setGasLimit(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setGasUsed(value);
       break;
     default:
       reader.skipField();
@@ -2363,9 +3416,9 @@ proto.aggregator.EventCondition.deserializeBinaryFromReader = function(msg, read
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.aggregator.EventCondition.prototype.serializeBinary = function() {
+proto.aggregator.BlockTrigger.Output.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.aggregator.EventCondition.serializeBinaryToWriter(this, writer);
+  proto.aggregator.BlockTrigger.Output.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2373,37 +3426,227 @@ proto.aggregator.EventCondition.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.EventCondition} message
+ * @param {!proto.aggregator.BlockTrigger.Output} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.EventCondition.serializeBinaryToWriter = function(message, writer) {
+proto.aggregator.BlockTrigger.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getMatcherList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
+  f = message.getBlockNumber();
+  if (f !== 0) {
+    writer.writeUint64(
       1,
-      f,
-      proto.aggregator.EventCondition.Matcher.serializeBinaryToWriter
+      f
     );
   }
-  f = message.getExpression();
+  f = message.getBlockHash();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
+  f = message.getTimestamp();
+  if (f !== 0) {
+    writer.writeUint64(
+      3,
+      f
+    );
+  }
+  f = message.getParentHash();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getDifficulty();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getGasLimit();
+  if (f !== 0) {
+    writer.writeUint64(
+      6,
+      f
+    );
+  }
+  f = message.getGasUsed();
+  if (f !== 0) {
+    writer.writeUint64(
+      7,
+      f
+    );
+  }
 };
 
 
+/**
+ * optional uint64 block_number = 1;
+ * @return {number}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getBlockNumber = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
 
 /**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
+ * @param {number} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
  */
-proto.aggregator.EventCondition.Matcher.repeatedFields_ = [2];
+proto.aggregator.BlockTrigger.Output.prototype.setBlockNumber = function(value) {
+  return jspb.Message.setProto3IntField(this, 1, value);
+};
+
+
+/**
+ * optional string block_hash = 2;
+ * @return {string}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getBlockHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+ */
+proto.aggregator.BlockTrigger.Output.prototype.setBlockHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional uint64 timestamp = 3;
+ * @return {number}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+ */
+proto.aggregator.BlockTrigger.Output.prototype.setTimestamp = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string parent_hash = 4;
+ * @return {string}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getParentHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+ */
+proto.aggregator.BlockTrigger.Output.prototype.setParentHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string difficulty = 5;
+ * @return {string}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getDifficulty = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+ */
+proto.aggregator.BlockTrigger.Output.prototype.setDifficulty = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional uint64 gas_limit = 6;
+ * @return {number}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getGasLimit = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+ */
+proto.aggregator.BlockTrigger.Output.prototype.setGasLimit = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
+};
+
+
+/**
+ * optional uint64 gas_used = 7;
+ * @return {number}
+ */
+proto.aggregator.BlockTrigger.Output.prototype.getGasUsed = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+ */
+proto.aggregator.BlockTrigger.Output.prototype.setGasUsed = function(value) {
+  return jspb.Message.setProto3IntField(this, 7, value);
+};
+
+
+/**
+ * optional Config config = 1;
+ * @return {?proto.aggregator.BlockTrigger.Config}
+ */
+proto.aggregator.BlockTrigger.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.BlockTrigger.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BlockTrigger.Config, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.BlockTrigger.Config|undefined} value
+ * @return {!proto.aggregator.BlockTrigger} returns this
+*/
+proto.aggregator.BlockTrigger.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.BlockTrigger} returns this
+ */
+proto.aggregator.BlockTrigger.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.BlockTrigger.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
 
 
 
@@ -2420,8 +3663,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.aggregator.EventCondition.Matcher.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.EventCondition.Matcher.toObject(opt_includeInstance, this);
+proto.aggregator.EventTrigger.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.EventTrigger.toObject(opt_includeInstance, this);
 };
 
 
@@ -2430,11 +3673,132 @@ proto.aggregator.EventCondition.Matcher.prototype.toObject = function(opt_includ
  * @param {boolean|undefined} includeInstance Deprecated. Whether to include
  *     the JSPB instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.aggregator.EventCondition.Matcher} msg The msg instance to transform.
+ * @param {!proto.aggregator.EventTrigger} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.EventCondition.Matcher.toObject = function(includeInstance, msg) {
+proto.aggregator.EventTrigger.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    config: (f = msg.getConfig()) && proto.aggregator.EventTrigger.Config.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.EventTrigger}
+ */
+proto.aggregator.EventTrigger.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.EventTrigger;
+  return proto.aggregator.EventTrigger.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.EventTrigger} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.EventTrigger}
+ */
+proto.aggregator.EventTrigger.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.EventTrigger.Config;
+      reader.readMessage(value,proto.aggregator.EventTrigger.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.EventTrigger.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.EventTrigger.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.EventTrigger} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.EventTrigger.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.EventTrigger.Matcher.repeatedFields_ = [2];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.EventTrigger.Matcher.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.EventTrigger.Matcher.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.EventTrigger.Matcher} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.Matcher.toObject = function(includeInstance, msg) {
   var f, obj = {
     type: jspb.Message.getFieldWithDefault(msg, 1, ""),
     valueList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f
@@ -2451,23 +3815,23 @@ proto.aggregator.EventCondition.Matcher.toObject = function(includeInstance, msg
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.EventCondition.Matcher}
+ * @return {!proto.aggregator.EventTrigger.Matcher}
  */
-proto.aggregator.EventCondition.Matcher.deserializeBinary = function(bytes) {
+proto.aggregator.EventTrigger.Matcher.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.EventCondition.Matcher;
-  return proto.aggregator.EventCondition.Matcher.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.aggregator.EventTrigger.Matcher;
+  return proto.aggregator.EventTrigger.Matcher.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.aggregator.EventCondition.Matcher} msg The message object to deserialize into.
+ * @param {!proto.aggregator.EventTrigger.Matcher} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.EventCondition.Matcher}
+ * @return {!proto.aggregator.EventTrigger.Matcher}
  */
-proto.aggregator.EventCondition.Matcher.deserializeBinaryFromReader = function(msg, reader) {
+proto.aggregator.EventTrigger.Matcher.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2495,9 +3859,9 @@ proto.aggregator.EventCondition.Matcher.deserializeBinaryFromReader = function(m
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.aggregator.EventCondition.Matcher.prototype.serializeBinary = function() {
+proto.aggregator.EventTrigger.Matcher.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.aggregator.EventCondition.Matcher.serializeBinaryToWriter(this, writer);
+  proto.aggregator.EventTrigger.Matcher.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2505,11 +3869,11 @@ proto.aggregator.EventCondition.Matcher.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.EventCondition.Matcher} message
+ * @param {!proto.aggregator.EventTrigger.Matcher} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.aggregator.EventCondition.Matcher.serializeBinaryToWriter = function(message, writer) {
+proto.aggregator.EventTrigger.Matcher.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getType();
   if (f.length > 0) {
@@ -2532,16 +3896,16 @@ proto.aggregator.EventCondition.Matcher.serializeBinaryToWriter = function(messa
  * optional string type = 1;
  * @return {string}
  */
-proto.aggregator.EventCondition.Matcher.prototype.getType = function() {
+proto.aggregator.EventTrigger.Matcher.prototype.getType = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.aggregator.EventCondition.Matcher} returns this
+ * @return {!proto.aggregator.EventTrigger.Matcher} returns this
  */
-proto.aggregator.EventCondition.Matcher.prototype.setType = function(value) {
+proto.aggregator.EventTrigger.Matcher.prototype.setType = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -2550,16 +3914,16 @@ proto.aggregator.EventCondition.Matcher.prototype.setType = function(value) {
  * repeated string value = 2;
  * @return {!Array<string>}
  */
-proto.aggregator.EventCondition.Matcher.prototype.getValueList = function() {
+proto.aggregator.EventTrigger.Matcher.prototype.getValueList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
 
 /**
  * @param {!Array<string>} value
- * @return {!proto.aggregator.EventCondition.Matcher} returns this
+ * @return {!proto.aggregator.EventTrigger.Matcher} returns this
  */
-proto.aggregator.EventCondition.Matcher.prototype.setValueList = function(value) {
+proto.aggregator.EventTrigger.Matcher.prototype.setValueList = function(value) {
   return jspb.Message.setField(this, 2, value || []);
 };
 
@@ -2567,56 +3931,190 @@ proto.aggregator.EventCondition.Matcher.prototype.setValueList = function(value)
 /**
  * @param {string} value
  * @param {number=} opt_index
- * @return {!proto.aggregator.EventCondition.Matcher} returns this
+ * @return {!proto.aggregator.EventTrigger.Matcher} returns this
  */
-proto.aggregator.EventCondition.Matcher.prototype.addValue = function(value, opt_index) {
+proto.aggregator.EventTrigger.Matcher.prototype.addValue = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.aggregator.EventCondition.Matcher} returns this
+ * @return {!proto.aggregator.EventTrigger.Matcher} returns this
  */
-proto.aggregator.EventCondition.Matcher.prototype.clearValueList = function() {
+proto.aggregator.EventTrigger.Matcher.prototype.clearValueList = function() {
   return this.setValueList([]);
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.EventTrigger.Config.repeatedFields_ = [1];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.EventTrigger.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.EventTrigger.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.EventTrigger.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    matcherList: jspb.Message.toObjectList(msg.getMatcherList(),
+    proto.aggregator.EventTrigger.Matcher.toObject, includeInstance),
+    expression: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.EventTrigger.Config}
+ */
+proto.aggregator.EventTrigger.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.EventTrigger.Config;
+  return proto.aggregator.EventTrigger.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.EventTrigger.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.EventTrigger.Config}
+ */
+proto.aggregator.EventTrigger.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.EventTrigger.Matcher;
+      reader.readMessage(value,proto.aggregator.EventTrigger.Matcher.deserializeBinaryFromReader);
+      msg.addMatcher(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExpression(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.EventTrigger.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.EventTrigger.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.EventTrigger.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getMatcherList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      1,
+      f,
+      proto.aggregator.EventTrigger.Matcher.serializeBinaryToWriter
+    );
+  }
+  f = message.getExpression();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
 /**
  * repeated Matcher matcher = 1;
- * @return {!Array<!proto.aggregator.EventCondition.Matcher>}
+ * @return {!Array<!proto.aggregator.EventTrigger.Matcher>}
  */
-proto.aggregator.EventCondition.prototype.getMatcherList = function() {
-  return /** @type{!Array<!proto.aggregator.EventCondition.Matcher>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.EventCondition.Matcher, 1));
+proto.aggregator.EventTrigger.Config.prototype.getMatcherList = function() {
+  return /** @type{!Array<!proto.aggregator.EventTrigger.Matcher>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.EventTrigger.Matcher, 1));
 };
 
 
 /**
- * @param {!Array<!proto.aggregator.EventCondition.Matcher>} value
- * @return {!proto.aggregator.EventCondition} returns this
+ * @param {!Array<!proto.aggregator.EventTrigger.Matcher>} value
+ * @return {!proto.aggregator.EventTrigger.Config} returns this
 */
-proto.aggregator.EventCondition.prototype.setMatcherList = function(value) {
+proto.aggregator.EventTrigger.Config.prototype.setMatcherList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.aggregator.EventCondition.Matcher=} opt_value
+ * @param {!proto.aggregator.EventTrigger.Matcher=} opt_value
  * @param {number=} opt_index
- * @return {!proto.aggregator.EventCondition.Matcher}
+ * @return {!proto.aggregator.EventTrigger.Matcher}
  */
-proto.aggregator.EventCondition.prototype.addMatcher = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.EventCondition.Matcher, opt_index);
+proto.aggregator.EventTrigger.Config.prototype.addMatcher = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.EventTrigger.Matcher, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
- * @return {!proto.aggregator.EventCondition} returns this
+ * @return {!proto.aggregator.EventTrigger.Config} returns this
  */
-proto.aggregator.EventCondition.prototype.clearMatcherList = function() {
+proto.aggregator.EventTrigger.Config.prototype.clearMatcherList = function() {
   return this.setMatcherList([]);
 };
 
@@ -2625,17 +4123,746 @@ proto.aggregator.EventCondition.prototype.clearMatcherList = function() {
  * optional string expression = 2;
  * @return {string}
  */
-proto.aggregator.EventCondition.prototype.getExpression = function() {
+proto.aggregator.EventTrigger.Config.prototype.getExpression = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
 
 /**
  * @param {string} value
- * @return {!proto.aggregator.EventCondition} returns this
+ * @return {!proto.aggregator.EventTrigger.Config} returns this
  */
-proto.aggregator.EventCondition.prototype.setExpression = function(value) {
+proto.aggregator.EventTrigger.Config.prototype.setExpression = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.EventTrigger.Output.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.EventTrigger.Output.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.EventTrigger.Output} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.Output.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    evmLog: (f = msg.getEvmLog()) && proto.aggregator.Evm.Log.toObject(includeInstance, f),
+    transferLog: (f = msg.getTransferLog()) && proto.aggregator.EventTrigger.TransferLogOutput.toObject(includeInstance, f)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.EventTrigger.Output}
+ */
+proto.aggregator.EventTrigger.Output.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.EventTrigger.Output;
+  return proto.aggregator.EventTrigger.Output.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.EventTrigger.Output} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.EventTrigger.Output}
+ */
+proto.aggregator.EventTrigger.Output.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.Evm.Log;
+      reader.readMessage(value,proto.aggregator.Evm.Log.deserializeBinaryFromReader);
+      msg.setEvmLog(value);
+      break;
+    case 2:
+      var value = new proto.aggregator.EventTrigger.TransferLogOutput;
+      reader.readMessage(value,proto.aggregator.EventTrigger.TransferLogOutput.deserializeBinaryFromReader);
+      msg.setTransferLog(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.EventTrigger.Output.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.EventTrigger.Output.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.EventTrigger.Output} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.Output.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getEvmLog();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.Evm.Log.serializeBinaryToWriter
+    );
+  }
+  f = message.getTransferLog();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      proto.aggregator.EventTrigger.TransferLogOutput.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional Evm.Log evm_log = 1;
+ * @return {?proto.aggregator.Evm.Log}
+ */
+proto.aggregator.EventTrigger.Output.prototype.getEvmLog = function() {
+  return /** @type{?proto.aggregator.Evm.Log} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.Evm.Log, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.Evm.Log|undefined} value
+ * @return {!proto.aggregator.EventTrigger.Output} returns this
+*/
+proto.aggregator.EventTrigger.Output.prototype.setEvmLog = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.EventTrigger.Output} returns this
+ */
+proto.aggregator.EventTrigger.Output.prototype.clearEvmLog = function() {
+  return this.setEvmLog(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.EventTrigger.Output.prototype.hasEvmLog = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional TransferLogOutput transfer_log = 2;
+ * @return {?proto.aggregator.EventTrigger.TransferLogOutput}
+ */
+proto.aggregator.EventTrigger.Output.prototype.getTransferLog = function() {
+  return /** @type{?proto.aggregator.EventTrigger.TransferLogOutput} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.EventTrigger.TransferLogOutput, 2));
+};
+
+
+/**
+ * @param {?proto.aggregator.EventTrigger.TransferLogOutput|undefined} value
+ * @return {!proto.aggregator.EventTrigger.Output} returns this
+*/
+proto.aggregator.EventTrigger.Output.prototype.setTransferLog = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.EventTrigger.Output} returns this
+ */
+proto.aggregator.EventTrigger.Output.prototype.clearTransferLog = function() {
+  return this.setTransferLog(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.EventTrigger.Output.prototype.hasTransferLog = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.EventTrigger.TransferLogOutput.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.EventTrigger.TransferLogOutput} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    tokenName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    tokenSymbol: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    tokenDecimals: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    transactionHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    address: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    blockNumber: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    blockTimestamp: jspb.Message.getFieldWithDefault(msg, 7, 0),
+    fromAddress: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    toAddress: jspb.Message.getFieldWithDefault(msg, 9, ""),
+    value: jspb.Message.getFieldWithDefault(msg, 10, ""),
+    valueFormatted: jspb.Message.getFieldWithDefault(msg, 11, ""),
+    transactionIndex: jspb.Message.getFieldWithDefault(msg, 12, 0),
+    logIndex: jspb.Message.getFieldWithDefault(msg, 13, 0)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.EventTrigger.TransferLogOutput;
+  return proto.aggregator.EventTrigger.TransferLogOutput.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.EventTrigger.TransferLogOutput} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTokenName(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTokenSymbol(value);
+      break;
+    case 3:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setTokenDecimals(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTransactionHash(value);
+      break;
+    case 5:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAddress(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlockNumber(value);
+      break;
+    case 7:
+      var value = /** @type {number} */ (reader.readUint64());
+      msg.setBlockTimestamp(value);
+      break;
+    case 8:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setFromAddress(value);
+      break;
+    case 9:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setToAddress(value);
+      break;
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setValue(value);
+      break;
+    case 11:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setValueFormatted(value);
+      break;
+    case 12:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setTransactionIndex(value);
+      break;
+    case 13:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setLogIndex(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.EventTrigger.TransferLogOutput.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.EventTrigger.TransferLogOutput} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getTokenName();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getTokenSymbol();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getTokenDecimals();
+  if (f !== 0) {
+    writer.writeUint32(
+      3,
+      f
+    );
+  }
+  f = message.getTransactionHash();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getAddress();
+  if (f.length > 0) {
+    writer.writeString(
+      5,
+      f
+    );
+  }
+  f = message.getBlockNumber();
+  if (f !== 0) {
+    writer.writeUint64(
+      6,
+      f
+    );
+  }
+  f = message.getBlockTimestamp();
+  if (f !== 0) {
+    writer.writeUint64(
+      7,
+      f
+    );
+  }
+  f = message.getFromAddress();
+  if (f.length > 0) {
+    writer.writeString(
+      8,
+      f
+    );
+  }
+  f = message.getToAddress();
+  if (f.length > 0) {
+    writer.writeString(
+      9,
+      f
+    );
+  }
+  f = message.getValue();
+  if (f.length > 0) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
+  f = message.getValueFormatted();
+  if (f.length > 0) {
+    writer.writeString(
+      11,
+      f
+    );
+  }
+  f = message.getTransactionIndex();
+  if (f !== 0) {
+    writer.writeUint32(
+      12,
+      f
+    );
+  }
+  f = message.getLogIndex();
+  if (f !== 0) {
+    writer.writeUint32(
+      13,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string token_name = 1;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getTokenName = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setTokenName = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string token_symbol = 2;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getTokenSymbol = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setTokenSymbol = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional uint32 token_decimals = 3;
+ * @return {number}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getTokenDecimals = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setTokenDecimals = function(value) {
+  return jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * optional string transaction_hash = 4;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getTransactionHash = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setTransactionHash = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional string address = 5;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional uint64 block_number = 6;
+ * @return {number}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getBlockNumber = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setBlockNumber = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
+};
+
+
+/**
+ * optional uint64 block_timestamp = 7;
+ * @return {number}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getBlockTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setBlockTimestamp = function(value) {
+  return jspb.Message.setProto3IntField(this, 7, value);
+};
+
+
+/**
+ * optional string from_address = 8;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getFromAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setFromAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 8, value);
+};
+
+
+/**
+ * optional string to_address = 9;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getToAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setToAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 9, value);
+};
+
+
+/**
+ * optional string value = 10;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getValue = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setValue = function(value) {
+  return jspb.Message.setProto3StringField(this, 10, value);
+};
+
+
+/**
+ * optional string value_formatted = 11;
+ * @return {string}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getValueFormatted = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setValueFormatted = function(value) {
+  return jspb.Message.setProto3StringField(this, 11, value);
+};
+
+
+/**
+ * optional uint32 transaction_index = 12;
+ * @return {number}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getTransactionIndex = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setTransactionIndex = function(value) {
+  return jspb.Message.setProto3IntField(this, 12, value);
+};
+
+
+/**
+ * optional uint32 log_index = 13;
+ * @return {number}
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.getLogIndex = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 13, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.EventTrigger.TransferLogOutput} returns this
+ */
+proto.aggregator.EventTrigger.TransferLogOutput.prototype.setLogIndex = function(value) {
+  return jspb.Message.setProto3IntField(this, 13, value);
+};
+
+
+/**
+ * optional Config config = 1;
+ * @return {?proto.aggregator.EventTrigger.Config}
+ */
+proto.aggregator.EventTrigger.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.EventTrigger.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.EventTrigger.Config, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.EventTrigger.Config|undefined} value
+ * @return {!proto.aggregator.EventTrigger} returns this
+*/
+proto.aggregator.EventTrigger.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.EventTrigger} returns this
+ */
+proto.aggregator.EventTrigger.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.EventTrigger.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -2702,10 +4929,10 @@ proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
-    fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedTimeCondition.toObject(includeInstance, f),
-    cron: (f = msg.getCron()) && proto.aggregator.CronCondition.toObject(includeInstance, f),
-    block: (f = msg.getBlock()) && proto.aggregator.BlockCondition.toObject(includeInstance, f),
-    event: (f = msg.getEvent()) && proto.aggregator.EventCondition.toObject(includeInstance, f),
+    fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedTimeTrigger.toObject(includeInstance, f),
+    cron: (f = msg.getCron()) && proto.aggregator.CronTrigger.toObject(includeInstance, f),
+    block: (f = msg.getBlock()) && proto.aggregator.BlockTrigger.toObject(includeInstance, f),
+    event: (f = msg.getEvent()) && proto.aggregator.EventTrigger.toObject(includeInstance, f),
     id: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
@@ -2752,23 +4979,23 @@ proto.aggregator.TaskTrigger.deserializeBinaryFromReader = function(msg, reader)
       msg.setManual(value);
       break;
     case 3:
-      var value = new proto.aggregator.FixedTimeCondition;
-      reader.readMessage(value,proto.aggregator.FixedTimeCondition.deserializeBinaryFromReader);
+      var value = new proto.aggregator.FixedTimeTrigger;
+      reader.readMessage(value,proto.aggregator.FixedTimeTrigger.deserializeBinaryFromReader);
       msg.setFixedTime(value);
       break;
     case 4:
-      var value = new proto.aggregator.CronCondition;
-      reader.readMessage(value,proto.aggregator.CronCondition.deserializeBinaryFromReader);
+      var value = new proto.aggregator.CronTrigger;
+      reader.readMessage(value,proto.aggregator.CronTrigger.deserializeBinaryFromReader);
       msg.setCron(value);
       break;
     case 5:
-      var value = new proto.aggregator.BlockCondition;
-      reader.readMessage(value,proto.aggregator.BlockCondition.deserializeBinaryFromReader);
+      var value = new proto.aggregator.BlockTrigger;
+      reader.readMessage(value,proto.aggregator.BlockTrigger.deserializeBinaryFromReader);
       msg.setBlock(value);
       break;
     case 6:
-      var value = new proto.aggregator.EventCondition;
-      reader.readMessage(value,proto.aggregator.EventCondition.deserializeBinaryFromReader);
+      var value = new proto.aggregator.EventTrigger;
+      reader.readMessage(value,proto.aggregator.EventTrigger.deserializeBinaryFromReader);
       msg.setEvent(value);
       break;
     case 7:
@@ -2823,7 +5050,7 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
     writer.writeMessage(
       3,
       f,
-      proto.aggregator.FixedTimeCondition.serializeBinaryToWriter
+      proto.aggregator.FixedTimeTrigger.serializeBinaryToWriter
     );
   }
   f = message.getCron();
@@ -2831,7 +5058,7 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
     writer.writeMessage(
       4,
       f,
-      proto.aggregator.CronCondition.serializeBinaryToWriter
+      proto.aggregator.CronTrigger.serializeBinaryToWriter
     );
   }
   f = message.getBlock();
@@ -2839,7 +5066,7 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
     writer.writeMessage(
       5,
       f,
-      proto.aggregator.BlockCondition.serializeBinaryToWriter
+      proto.aggregator.BlockTrigger.serializeBinaryToWriter
     );
   }
   f = message.getEvent();
@@ -2847,7 +5074,7 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
     writer.writeMessage(
       6,
       f,
-      proto.aggregator.EventCondition.serializeBinaryToWriter
+      proto.aggregator.EventTrigger.serializeBinaryToWriter
     );
   }
   f = message.getId();
@@ -2915,17 +5142,17 @@ proto.aggregator.TaskTrigger.prototype.hasManual = function() {
 
 
 /**
- * optional FixedTimeCondition fixed_time = 3;
- * @return {?proto.aggregator.FixedTimeCondition}
+ * optional FixedTimeTrigger fixed_time = 3;
+ * @return {?proto.aggregator.FixedTimeTrigger}
  */
 proto.aggregator.TaskTrigger.prototype.getFixedTime = function() {
-  return /** @type{?proto.aggregator.FixedTimeCondition} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.FixedTimeCondition, 3));
+  return /** @type{?proto.aggregator.FixedTimeTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FixedTimeTrigger, 3));
 };
 
 
 /**
- * @param {?proto.aggregator.FixedTimeCondition|undefined} value
+ * @param {?proto.aggregator.FixedTimeTrigger|undefined} value
  * @return {!proto.aggregator.TaskTrigger} returns this
 */
 proto.aggregator.TaskTrigger.prototype.setFixedTime = function(value) {
@@ -2952,17 +5179,17 @@ proto.aggregator.TaskTrigger.prototype.hasFixedTime = function() {
 
 
 /**
- * optional CronCondition cron = 4;
- * @return {?proto.aggregator.CronCondition}
+ * optional CronTrigger cron = 4;
+ * @return {?proto.aggregator.CronTrigger}
  */
 proto.aggregator.TaskTrigger.prototype.getCron = function() {
-  return /** @type{?proto.aggregator.CronCondition} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.CronCondition, 4));
+  return /** @type{?proto.aggregator.CronTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CronTrigger, 4));
 };
 
 
 /**
- * @param {?proto.aggregator.CronCondition|undefined} value
+ * @param {?proto.aggregator.CronTrigger|undefined} value
  * @return {!proto.aggregator.TaskTrigger} returns this
 */
 proto.aggregator.TaskTrigger.prototype.setCron = function(value) {
@@ -2989,17 +5216,17 @@ proto.aggregator.TaskTrigger.prototype.hasCron = function() {
 
 
 /**
- * optional BlockCondition block = 5;
- * @return {?proto.aggregator.BlockCondition}
+ * optional BlockTrigger block = 5;
+ * @return {?proto.aggregator.BlockTrigger}
  */
 proto.aggregator.TaskTrigger.prototype.getBlock = function() {
-  return /** @type{?proto.aggregator.BlockCondition} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.BlockCondition, 5));
+  return /** @type{?proto.aggregator.BlockTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BlockTrigger, 5));
 };
 
 
 /**
- * @param {?proto.aggregator.BlockCondition|undefined} value
+ * @param {?proto.aggregator.BlockTrigger|undefined} value
  * @return {!proto.aggregator.TaskTrigger} returns this
 */
 proto.aggregator.TaskTrigger.prototype.setBlock = function(value) {
@@ -3026,17 +5253,17 @@ proto.aggregator.TaskTrigger.prototype.hasBlock = function() {
 
 
 /**
- * optional EventCondition event = 6;
- * @return {?proto.aggregator.EventCondition}
+ * optional EventTrigger event = 6;
+ * @return {?proto.aggregator.EventTrigger}
  */
 proto.aggregator.TaskTrigger.prototype.getEvent = function() {
-  return /** @type{?proto.aggregator.EventCondition} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.EventCondition, 6));
+  return /** @type{?proto.aggregator.EventTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.EventTrigger, 6));
 };
 
 
 /**
- * @param {?proto.aggregator.EventCondition|undefined} value
+ * @param {?proto.aggregator.EventTrigger|undefined} value
  * @return {!proto.aggregator.TaskTrigger} returns this
 */
 proto.aggregator.TaskTrigger.prototype.setEvent = function(value) {
@@ -3112,8 +5339,7 @@ proto.aggregator.ETHTransferNode.prototype.toObject = function(opt_includeInstan
  */
 proto.aggregator.ETHTransferNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    destination: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    amount: jspb.Message.getFieldWithDefault(msg, 2, "")
+    config: (f = msg.getConfig()) && proto.aggregator.ETHTransferNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3151,12 +5377,9 @@ proto.aggregator.ETHTransferNode.deserializeBinaryFromReader = function(msg, rea
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setDestination(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setAmount(value);
+      var value = new proto.aggregator.ETHTransferNode.Config;
+      reader.readMessage(value,proto.aggregator.ETHTransferNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -3187,6 +5410,124 @@ proto.aggregator.ETHTransferNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.ETHTransferNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.ETHTransferNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.ETHTransferNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.ETHTransferNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.ETHTransferNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ETHTransferNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    destination: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    amount: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.ETHTransferNode.Config}
+ */
+proto.aggregator.ETHTransferNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.ETHTransferNode.Config;
+  return proto.aggregator.ETHTransferNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.ETHTransferNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.ETHTransferNode.Config}
+ */
+proto.aggregator.ETHTransferNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setDestination(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAmount(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.ETHTransferNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.ETHTransferNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.ETHTransferNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ETHTransferNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getDestination();
   if (f.length > 0) {
     writer.writeString(
@@ -3201,6 +5542,42 @@ proto.aggregator.ETHTransferNode.serializeBinaryToWriter = function(message, wri
       f
     );
   }
+};
+
+
+/**
+ * optional string destination = 1;
+ * @return {string}
+ */
+proto.aggregator.ETHTransferNode.Config.prototype.getDestination = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ETHTransferNode.Config} returns this
+ */
+proto.aggregator.ETHTransferNode.Config.prototype.setDestination = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string amount = 2;
+ * @return {string}
+ */
+proto.aggregator.ETHTransferNode.Config.prototype.getAmount = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ETHTransferNode.Config} returns this
+ */
+proto.aggregator.ETHTransferNode.Config.prototype.setAmount = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -3335,38 +5712,39 @@ proto.aggregator.ETHTransferNode.Output.prototype.setTransactionHash = function(
 
 
 /**
- * optional string destination = 1;
- * @return {string}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.ETHTransferNode.Config}
  */
-proto.aggregator.ETHTransferNode.prototype.getDestination = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.ETHTransferNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.ETHTransferNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ETHTransferNode.Config, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.ETHTransferNode.Config|undefined} value
+ * @return {!proto.aggregator.ETHTransferNode} returns this
+*/
+proto.aggregator.ETHTransferNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ETHTransferNode} returns this
  */
-proto.aggregator.ETHTransferNode.prototype.setDestination = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.ETHTransferNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * optional string amount = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.ETHTransferNode.prototype.getAmount = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ETHTransferNode} returns this
- */
-proto.aggregator.ETHTransferNode.prototype.setAmount = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+proto.aggregator.ETHTransferNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -3402,9 +5780,7 @@ proto.aggregator.ContractWriteNode.prototype.toObject = function(opt_includeInst
  */
 proto.aggregator.ContractWriteNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, "")
+    config: (f = msg.getConfig()) && proto.aggregator.ContractWriteNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3442,16 +5818,9 @@ proto.aggregator.ContractWriteNode.deserializeBinaryFromReader = function(msg, r
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setContractAddress(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setCallData(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setContractAbi(value);
+      var value = new proto.aggregator.ContractWriteNode.Config;
+      reader.readMessage(value,proto.aggregator.ContractWriteNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -3482,6 +5851,129 @@ proto.aggregator.ContractWriteNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.ContractWriteNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.ContractWriteNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.ContractWriteNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.ContractWriteNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractWriteNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.ContractWriteNode.Config}
+ */
+proto.aggregator.ContractWriteNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.ContractWriteNode.Config;
+  return proto.aggregator.ContractWriteNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.ContractWriteNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.ContractWriteNode.Config}
+ */
+proto.aggregator.ContractWriteNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setContractAddress(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCallData(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setContractAbi(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.ContractWriteNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.ContractWriteNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractWriteNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getContractAddress();
   if (f.length > 0) {
     writer.writeString(
@@ -3503,6 +5995,60 @@ proto.aggregator.ContractWriteNode.serializeBinaryToWriter = function(message, w
       f
     );
   }
+};
+
+
+/**
+ * optional string contract_address = 1;
+ * @return {string}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.getContractAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.setContractAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string call_data = 2;
+ * @return {string}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.getCallData = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.setCallData = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string contract_abi = 3;
+ * @return {string}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.getContractAbi = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.setContractAbi = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -3709,56 +6255,39 @@ proto.aggregator.ContractWriteNode.Output.prototype.hasTxReceipt = function() {
 
 
 /**
- * optional string contract_address = 1;
- * @return {string}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.ContractWriteNode.Config}
  */
-proto.aggregator.ContractWriteNode.prototype.getContractAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.ContractWriteNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.ContractWriteNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ContractWriteNode.Config, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.ContractWriteNode.Config|undefined} value
+ * @return {!proto.aggregator.ContractWriteNode} returns this
+*/
+proto.aggregator.ContractWriteNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ContractWriteNode} returns this
  */
-proto.aggregator.ContractWriteNode.prototype.setContractAddress = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.ContractWriteNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * optional string call_data = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.ContractWriteNode.prototype.getCallData = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ContractWriteNode} returns this
- */
-proto.aggregator.ContractWriteNode.prototype.setCallData = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string contract_abi = 3;
- * @return {string}
- */
-proto.aggregator.ContractWriteNode.prototype.getContractAbi = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ContractWriteNode} returns this
- */
-proto.aggregator.ContractWriteNode.prototype.setContractAbi = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
+proto.aggregator.ContractWriteNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -3794,9 +6323,7 @@ proto.aggregator.ContractReadNode.prototype.toObject = function(opt_includeInsta
  */
 proto.aggregator.ContractReadNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, "")
+    config: (f = msg.getConfig()) && proto.aggregator.ContractReadNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3834,16 +6361,9 @@ proto.aggregator.ContractReadNode.deserializeBinaryFromReader = function(msg, re
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setContractAddress(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setCallData(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setContractAbi(value);
+      var value = new proto.aggregator.ContractReadNode.Config;
+      reader.readMessage(value,proto.aggregator.ContractReadNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -3874,6 +6394,129 @@ proto.aggregator.ContractReadNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.ContractReadNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.ContractReadNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.ContractReadNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.ContractReadNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.ContractReadNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractReadNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    contractAddress: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    contractAbi: jspb.Message.getFieldWithDefault(msg, 3, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.ContractReadNode.Config}
+ */
+proto.aggregator.ContractReadNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.ContractReadNode.Config;
+  return proto.aggregator.ContractReadNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.ContractReadNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.ContractReadNode.Config}
+ */
+proto.aggregator.ContractReadNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setContractAddress(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCallData(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setContractAbi(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.ContractReadNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.ContractReadNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.ContractReadNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.ContractReadNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getContractAddress();
   if (f.length > 0) {
     writer.writeString(
@@ -3895,6 +6538,60 @@ proto.aggregator.ContractReadNode.serializeBinaryToWriter = function(message, wr
       f
     );
   }
+};
+
+
+/**
+ * optional string contract_address = 1;
+ * @return {string}
+ */
+proto.aggregator.ContractReadNode.Config.prototype.getContractAddress = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractReadNode.Config} returns this
+ */
+proto.aggregator.ContractReadNode.Config.prototype.setContractAddress = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string call_data = 2;
+ * @return {string}
+ */
+proto.aggregator.ContractReadNode.Config.prototype.getCallData = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractReadNode.Config} returns this
+ */
+proto.aggregator.ContractReadNode.Config.prototype.setCallData = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string contract_abi = 3;
+ * @return {string}
+ */
+proto.aggregator.ContractReadNode.Config.prototype.getContractAbi = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractReadNode.Config} returns this
+ */
+proto.aggregator.ContractReadNode.Config.prototype.setContractAbi = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -4059,56 +6756,39 @@ proto.aggregator.ContractReadNode.Output.prototype.clearDataList = function() {
 
 
 /**
- * optional string contract_address = 1;
- * @return {string}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.ContractReadNode.Config}
  */
-proto.aggregator.ContractReadNode.prototype.getContractAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.ContractReadNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.ContractReadNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ContractReadNode.Config, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.ContractReadNode.Config|undefined} value
+ * @return {!proto.aggregator.ContractReadNode} returns this
+*/
+proto.aggregator.ContractReadNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ContractReadNode} returns this
  */
-proto.aggregator.ContractReadNode.prototype.setContractAddress = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.ContractReadNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * optional string call_data = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.ContractReadNode.prototype.getCallData = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ContractReadNode} returns this
- */
-proto.aggregator.ContractReadNode.prototype.setCallData = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string contract_abi = 3;
- * @return {string}
- */
-proto.aggregator.ContractReadNode.prototype.getContractAbi = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ContractReadNode} returns this
- */
-proto.aggregator.ContractReadNode.prototype.setContractAbi = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
+proto.aggregator.ContractReadNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -4144,9 +6824,7 @@ proto.aggregator.GraphQLQueryNode.prototype.toObject = function(opt_includeInsta
  */
 proto.aggregator.GraphQLQueryNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    url: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    query: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    variablesMap: (f = msg.getVariablesMap()) ? f.toObject(includeInstance, undefined) : []
+    config: (f = msg.getConfig()) && proto.aggregator.GraphQLQueryNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4184,18 +6862,9 @@ proto.aggregator.GraphQLQueryNode.deserializeBinaryFromReader = function(msg, re
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setUrl(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setQuery(value);
-      break;
-    case 3:
-      var value = msg.getVariablesMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
-         });
+      var value = new proto.aggregator.GraphQLQueryNode.Config;
+      reader.readMessage(value,proto.aggregator.GraphQLQueryNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -4226,6 +6895,131 @@ proto.aggregator.GraphQLQueryNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.GraphQLQueryNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.GraphQLQueryNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.GraphQLQueryNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.GraphQLQueryNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GraphQLQueryNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    url: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    query: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    variablesMap: (f = msg.getVariablesMap()) ? f.toObject(includeInstance, undefined) : []
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.GraphQLQueryNode.Config}
+ */
+proto.aggregator.GraphQLQueryNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.GraphQLQueryNode.Config;
+  return proto.aggregator.GraphQLQueryNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.GraphQLQueryNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.GraphQLQueryNode.Config}
+ */
+proto.aggregator.GraphQLQueryNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUrl(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setQuery(value);
+      break;
+    case 3:
+      var value = msg.getVariablesMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.GraphQLQueryNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.GraphQLQueryNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.GraphQLQueryNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getUrl();
   if (f.length > 0) {
     writer.writeString(
@@ -4245,6 +7039,64 @@ proto.aggregator.GraphQLQueryNode.serializeBinaryToWriter = function(message, wr
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
+
+
+/**
+ * optional string url = 1;
+ * @return {string}
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.getUrl = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.GraphQLQueryNode.Config} returns this
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.setUrl = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string query = 2;
+ * @return {string}
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.getQuery = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.GraphQLQueryNode.Config} returns this
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.setQuery = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * map<string, string> variables = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.getVariablesMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.GraphQLQueryNode.Config} returns this
+ */
+proto.aggregator.GraphQLQueryNode.Config.prototype.clearVariablesMap = function() {
+  this.getVariablesMap().clear();
+  return this;};
 
 
 
@@ -4399,61 +7251,40 @@ proto.aggregator.GraphQLQueryNode.Output.prototype.hasData = function() {
 
 
 /**
- * optional string url = 1;
- * @return {string}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.GraphQLQueryNode.Config}
  */
-proto.aggregator.GraphQLQueryNode.prototype.getUrl = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.GraphQLQueryNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.GraphQLQueryNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.GraphQLQueryNode.Config, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.GraphQLQueryNode.Config|undefined} value
+ * @return {!proto.aggregator.GraphQLQueryNode} returns this
+*/
+proto.aggregator.GraphQLQueryNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.GraphQLQueryNode} returns this
  */
-proto.aggregator.GraphQLQueryNode.prototype.setUrl = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.GraphQLQueryNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * optional string query = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.GraphQLQueryNode.prototype.getQuery = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+proto.aggregator.GraphQLQueryNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.GraphQLQueryNode} returns this
- */
-proto.aggregator.GraphQLQueryNode.prototype.setQuery = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * map<string, string> variables = 3;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<string,string>}
- */
-proto.aggregator.GraphQLQueryNode.prototype.getVariablesMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<string,string>} */ (
-      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
-      null));
-};
-
-
-/**
- * Clears values from the map. The map will be non-null.
- * @return {!proto.aggregator.GraphQLQueryNode} returns this
- */
-proto.aggregator.GraphQLQueryNode.prototype.clearVariablesMap = function() {
-  this.getVariablesMap().clear();
-  return this;};
 
 
 
@@ -4488,10 +7319,7 @@ proto.aggregator.RestAPINode.prototype.toObject = function(opt_includeInstance) 
  */
 proto.aggregator.RestAPINode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    url: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
-    body: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    method: jspb.Message.getFieldWithDefault(msg, 4, "")
+    config: (f = msg.getConfig()) && proto.aggregator.RestAPINode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4529,22 +7357,9 @@ proto.aggregator.RestAPINode.deserializeBinaryFromReader = function(msg, reader)
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setUrl(value);
-      break;
-    case 2:
-      var value = msg.getHeadersMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
-         });
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setBody(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setMethod(value);
+      var value = new proto.aggregator.RestAPINode.Config;
+      reader.readMessage(value,proto.aggregator.RestAPINode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -4575,6 +7390,136 @@ proto.aggregator.RestAPINode.prototype.serializeBinary = function() {
  */
 proto.aggregator.RestAPINode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.RestAPINode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.RestAPINode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.RestAPINode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.RestAPINode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.RestAPINode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    url: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
+    body: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    method: jspb.Message.getFieldWithDefault(msg, 4, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.RestAPINode.Config}
+ */
+proto.aggregator.RestAPINode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.RestAPINode.Config;
+  return proto.aggregator.RestAPINode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.RestAPINode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.RestAPINode.Config}
+ */
+proto.aggregator.RestAPINode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUrl(value);
+      break;
+    case 2:
+      var value = msg.getHeadersMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setBody(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setMethod(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.RestAPINode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.RestAPINode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.RestAPINode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.RestAPINode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getUrl();
   if (f.length > 0) {
     writer.writeString(
@@ -4600,6 +7545,82 @@ proto.aggregator.RestAPINode.serializeBinaryToWriter = function(message, writer)
       f
     );
   }
+};
+
+
+/**
+ * optional string url = 1;
+ * @return {string}
+ */
+proto.aggregator.RestAPINode.Config.prototype.getUrl = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.RestAPINode.Config} returns this
+ */
+proto.aggregator.RestAPINode.Config.prototype.setUrl = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * map<string, string> headers = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.aggregator.RestAPINode.Config.prototype.getHeadersMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.RestAPINode.Config} returns this
+ */
+proto.aggregator.RestAPINode.Config.prototype.clearHeadersMap = function() {
+  this.getHeadersMap().clear();
+  return this;};
+
+
+/**
+ * optional string body = 3;
+ * @return {string}
+ */
+proto.aggregator.RestAPINode.Config.prototype.getBody = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.RestAPINode.Config} returns this
+ */
+proto.aggregator.RestAPINode.Config.prototype.setBody = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional string method = 4;
+ * @return {string}
+ */
+proto.aggregator.RestAPINode.Config.prototype.getMethod = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.RestAPINode.Config} returns this
+ */
+proto.aggregator.RestAPINode.Config.prototype.setMethod = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -4755,78 +7776,39 @@ proto.aggregator.RestAPINode.Output.prototype.hasData = function() {
 
 
 /**
- * optional string url = 1;
- * @return {string}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.RestAPINode.Config}
  */
-proto.aggregator.RestAPINode.prototype.getUrl = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.RestAPINode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.RestAPINode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.RestAPINode.Config, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.RestAPINode.Config|undefined} value
+ * @return {!proto.aggregator.RestAPINode} returns this
+*/
+proto.aggregator.RestAPINode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.RestAPINode} returns this
  */
-proto.aggregator.RestAPINode.prototype.setUrl = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.RestAPINode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * map<string, string> headers = 2;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<string,string>}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.RestAPINode.prototype.getHeadersMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<string,string>} */ (
-      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
-      null));
-};
-
-
-/**
- * Clears values from the map. The map will be non-null.
- * @return {!proto.aggregator.RestAPINode} returns this
- */
-proto.aggregator.RestAPINode.prototype.clearHeadersMap = function() {
-  this.getHeadersMap().clear();
-  return this;};
-
-
-/**
- * optional string body = 3;
- * @return {string}
- */
-proto.aggregator.RestAPINode.prototype.getBody = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.RestAPINode} returns this
- */
-proto.aggregator.RestAPINode.prototype.setBody = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-/**
- * optional string method = 4;
- * @return {string}
- */
-proto.aggregator.RestAPINode.prototype.getMethod = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.RestAPINode} returns this
- */
-proto.aggregator.RestAPINode.prototype.setMethod = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
+proto.aggregator.RestAPINode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -4862,8 +7844,7 @@ proto.aggregator.CustomCodeNode.prototype.toObject = function(opt_includeInstanc
  */
 proto.aggregator.CustomCodeNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    lang: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    source: jspb.Message.getFieldWithDefault(msg, 2, "")
+    config: (f = msg.getConfig()) && proto.aggregator.CustomCodeNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4901,12 +7882,9 @@ proto.aggregator.CustomCodeNode.deserializeBinaryFromReader = function(msg, read
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.aggregator.CustomCodeLang} */ (reader.readEnum());
-      msg.setLang(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setSource(value);
+      var value = new proto.aggregator.CustomCodeNode.Config;
+      reader.readMessage(value,proto.aggregator.CustomCodeNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -4937,6 +7915,124 @@ proto.aggregator.CustomCodeNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.CustomCodeNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.CustomCodeNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.CustomCodeNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.CustomCodeNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.CustomCodeNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CustomCodeNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    lang: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    source: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.CustomCodeNode.Config}
+ */
+proto.aggregator.CustomCodeNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.CustomCodeNode.Config;
+  return proto.aggregator.CustomCodeNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.CustomCodeNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.CustomCodeNode.Config}
+ */
+proto.aggregator.CustomCodeNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {!proto.aggregator.Lang} */ (reader.readEnum());
+      msg.setLang(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSource(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.CustomCodeNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.CustomCodeNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.CustomCodeNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.CustomCodeNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getLang();
   if (f !== 0.0) {
     writer.writeEnum(
@@ -4951,6 +8047,42 @@ proto.aggregator.CustomCodeNode.serializeBinaryToWriter = function(message, writ
       f
     );
   }
+};
+
+
+/**
+ * optional Lang lang = 1;
+ * @return {!proto.aggregator.Lang}
+ */
+proto.aggregator.CustomCodeNode.Config.prototype.getLang = function() {
+  return /** @type {!proto.aggregator.Lang} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.Lang} value
+ * @return {!proto.aggregator.CustomCodeNode.Config} returns this
+ */
+proto.aggregator.CustomCodeNode.Config.prototype.setLang = function(value) {
+  return jspb.Message.setProto3EnumField(this, 1, value);
+};
+
+
+/**
+ * optional string source = 2;
+ * @return {string}
+ */
+proto.aggregator.CustomCodeNode.Config.prototype.getSource = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.CustomCodeNode.Config} returns this
+ */
+proto.aggregator.CustomCodeNode.Config.prototype.setSource = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -5106,238 +8238,42 @@ proto.aggregator.CustomCodeNode.Output.prototype.hasData = function() {
 
 
 /**
- * optional CustomCodeLang lang = 1;
- * @return {!proto.aggregator.CustomCodeLang}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.CustomCodeNode.Config}
  */
-proto.aggregator.CustomCodeNode.prototype.getLang = function() {
-  return /** @type {!proto.aggregator.CustomCodeLang} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.CustomCodeNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.CustomCodeNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CustomCodeNode.Config, 1));
 };
 
 
 /**
- * @param {!proto.aggregator.CustomCodeLang} value
+ * @param {?proto.aggregator.CustomCodeNode.Config|undefined} value
+ * @return {!proto.aggregator.CustomCodeNode} returns this
+*/
+proto.aggregator.CustomCodeNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.CustomCodeNode} returns this
  */
-proto.aggregator.CustomCodeNode.prototype.setLang = function(value) {
-  return jspb.Message.setProto3EnumField(this, 1, value);
+proto.aggregator.CustomCodeNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * optional string source = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.CustomCodeNode.prototype.getSource = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+proto.aggregator.CustomCodeNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
-/**
- * @param {string} value
- * @return {!proto.aggregator.CustomCodeNode} returns this
- */
-proto.aggregator.CustomCodeNode.prototype.setSource = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * Optional fields that are not set will be set to undefined.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
- * @param {boolean=} opt_includeInstance Deprecated. whether to include the
- *     JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.aggregator.Condition.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.Condition.toObject(opt_includeInstance, this);
-};
-
-
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Deprecated. Whether to include
- *     the JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.aggregator.Condition} msg The msg instance to transform.
- * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Condition.toObject = function(includeInstance, msg) {
-  var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    type: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    expression: jspb.Message.getFieldWithDefault(msg, 3, "")
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
-  }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.Condition}
- */
-proto.aggregator.Condition.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.Condition;
-  return proto.aggregator.Condition.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.aggregator.Condition} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.Condition}
- */
-proto.aggregator.Condition.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setId(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setType(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setExpression(value);
-      break;
-    default:
-      reader.skipField();
-      break;
-    }
-  }
-  return msg;
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
- */
-proto.aggregator.Condition.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  proto.aggregator.Condition.serializeBinaryToWriter(this, writer);
-  return writer.getResultBuffer();
-};
-
-
-/**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.Condition} message
- * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Condition.serializeBinaryToWriter = function(message, writer) {
-  var f = undefined;
-  f = message.getId();
-  if (f.length > 0) {
-    writer.writeString(
-      1,
-      f
-    );
-  }
-  f = message.getType();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
-  f = message.getExpression();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
-      f
-    );
-  }
-};
-
-
-/**
- * optional string id = 1;
- * @return {string}
- */
-proto.aggregator.Condition.prototype.getId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Condition} returns this
- */
-proto.aggregator.Condition.prototype.setId = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string type = 2;
- * @return {string}
- */
-proto.aggregator.Condition.prototype.getType = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Condition} returns this
- */
-proto.aggregator.Condition.prototype.setType = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string expression = 3;
- * @return {string}
- */
-proto.aggregator.Condition.prototype.getExpression = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Condition} returns this
- */
-proto.aggregator.Condition.prototype.setExpression = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
-};
-
-
-
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.aggregator.BranchNode.repeatedFields_ = [1];
 
 
 
@@ -5370,8 +8306,7 @@ proto.aggregator.BranchNode.prototype.toObject = function(opt_includeInstance) {
  */
 proto.aggregator.BranchNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    conditionsList: jspb.Message.toObjectList(msg.getConditionsList(),
-    proto.aggregator.Condition.toObject, includeInstance)
+    config: (f = msg.getConfig()) && proto.aggregator.BranchNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5409,9 +8344,9 @@ proto.aggregator.BranchNode.deserializeBinaryFromReader = function(msg, reader) 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new proto.aggregator.Condition;
-      reader.readMessage(value,proto.aggregator.Condition.deserializeBinaryFromReader);
-      msg.addConditions(value);
+      var value = new proto.aggregator.BranchNode.Config;
+      reader.readMessage(value,proto.aggregator.BranchNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -5442,14 +8377,364 @@ proto.aggregator.BranchNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.BranchNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.BranchNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.BranchNode.Condition.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.BranchNode.Condition.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.BranchNode.Condition} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BranchNode.Condition.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    type: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    expression: jspb.Message.getFieldWithDefault(msg, 3, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.BranchNode.Condition}
+ */
+proto.aggregator.BranchNode.Condition.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.BranchNode.Condition;
+  return proto.aggregator.BranchNode.Condition.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.BranchNode.Condition} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.BranchNode.Condition}
+ */
+proto.aggregator.BranchNode.Condition.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setType(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExpression(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.BranchNode.Condition.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.BranchNode.Condition.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.BranchNode.Condition} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BranchNode.Condition.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getType();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getExpression();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string id = 1;
+ * @return {string}
+ */
+proto.aggregator.BranchNode.Condition.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BranchNode.Condition} returns this
+ */
+proto.aggregator.BranchNode.Condition.prototype.setId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string type = 2;
+ * @return {string}
+ */
+proto.aggregator.BranchNode.Condition.prototype.getType = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BranchNode.Condition} returns this
+ */
+proto.aggregator.BranchNode.Condition.prototype.setType = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string expression = 3;
+ * @return {string}
+ */
+proto.aggregator.BranchNode.Condition.prototype.getExpression = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.BranchNode.Condition} returns this
+ */
+proto.aggregator.BranchNode.Condition.prototype.setExpression = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.BranchNode.Config.repeatedFields_ = [1];
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.BranchNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.BranchNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.BranchNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BranchNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    conditionsList: jspb.Message.toObjectList(msg.getConditionsList(),
+    proto.aggregator.BranchNode.Condition.toObject, includeInstance)
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.BranchNode.Config}
+ */
+proto.aggregator.BranchNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.BranchNode.Config;
+  return proto.aggregator.BranchNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.BranchNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.BranchNode.Config}
+ */
+proto.aggregator.BranchNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = new proto.aggregator.BranchNode.Condition;
+      reader.readMessage(value,proto.aggregator.BranchNode.Condition.deserializeBinaryFromReader);
+      msg.addConditions(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.BranchNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.BranchNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.BranchNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.BranchNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getConditionsList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       1,
       f,
-      proto.aggregator.Condition.serializeBinaryToWriter
+      proto.aggregator.BranchNode.Condition.serializeBinaryToWriter
     );
   }
+};
+
+
+/**
+ * repeated Condition conditions = 1;
+ * @return {!Array<!proto.aggregator.BranchNode.Condition>}
+ */
+proto.aggregator.BranchNode.Config.prototype.getConditionsList = function() {
+  return /** @type{!Array<!proto.aggregator.BranchNode.Condition>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.BranchNode.Condition, 1));
+};
+
+
+/**
+ * @param {!Array<!proto.aggregator.BranchNode.Condition>} value
+ * @return {!proto.aggregator.BranchNode.Config} returns this
+*/
+proto.aggregator.BranchNode.Config.prototype.setConditionsList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+};
+
+
+/**
+ * @param {!proto.aggregator.BranchNode.Condition=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.BranchNode.Condition}
+ */
+proto.aggregator.BranchNode.Config.prototype.addConditions = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.BranchNode.Condition, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.BranchNode.Config} returns this
+ */
+proto.aggregator.BranchNode.Config.prototype.clearConditionsList = function() {
+  return this.setConditionsList([]);
 };
 
 
@@ -5584,40 +8869,39 @@ proto.aggregator.BranchNode.Output.prototype.setConditionId = function(value) {
 
 
 /**
- * repeated Condition conditions = 1;
- * @return {!Array<!proto.aggregator.Condition>}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.BranchNode.Config}
  */
-proto.aggregator.BranchNode.prototype.getConditionsList = function() {
-  return /** @type{!Array<!proto.aggregator.Condition>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.Condition, 1));
+proto.aggregator.BranchNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.BranchNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BranchNode.Config, 1));
 };
 
 
 /**
- * @param {!Array<!proto.aggregator.Condition>} value
+ * @param {?proto.aggregator.BranchNode.Config|undefined} value
  * @return {!proto.aggregator.BranchNode} returns this
 */
-proto.aggregator.BranchNode.prototype.setConditionsList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+proto.aggregator.BranchNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.aggregator.Condition=} opt_value
- * @param {number=} opt_index
- * @return {!proto.aggregator.Condition}
- */
-proto.aggregator.BranchNode.prototype.addConditions = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.Condition, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.BranchNode} returns this
  */
-proto.aggregator.BranchNode.prototype.clearConditionsList = function() {
-  return this.setConditionsList([]);
+proto.aggregator.BranchNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.BranchNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -5653,8 +8937,7 @@ proto.aggregator.FilterNode.prototype.toObject = function(opt_includeInstance) {
  */
 proto.aggregator.FilterNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    expression: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    input: jspb.Message.getFieldWithDefault(msg, 2, "")
+    config: (f = msg.getConfig()) && proto.aggregator.FilterNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5692,12 +8975,9 @@ proto.aggregator.FilterNode.deserializeBinaryFromReader = function(msg, reader) 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setExpression(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setInput(value);
+      var value = new proto.aggregator.FilterNode.Config;
+      reader.readMessage(value,proto.aggregator.FilterNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
       break;
     default:
       reader.skipField();
@@ -5728,6 +9008,124 @@ proto.aggregator.FilterNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.FilterNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.FilterNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.FilterNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.FilterNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.FilterNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FilterNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    expression: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    sourceId: jspb.Message.getFieldWithDefault(msg, 2, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.FilterNode.Config}
+ */
+proto.aggregator.FilterNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.FilterNode.Config;
+  return proto.aggregator.FilterNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.FilterNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.FilterNode.Config}
+ */
+proto.aggregator.FilterNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setExpression(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSourceId(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.FilterNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.FilterNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.FilterNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.FilterNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
   f = message.getExpression();
   if (f.length > 0) {
     writer.writeString(
@@ -5735,13 +9133,49 @@ proto.aggregator.FilterNode.serializeBinaryToWriter = function(message, writer) 
       f
     );
   }
-  f = message.getInput();
+  f = message.getSourceId();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
+};
+
+
+/**
+ * optional string expression = 1;
+ * @return {string}
+ */
+proto.aggregator.FilterNode.Config.prototype.getExpression = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.FilterNode.Config} returns this
+ */
+proto.aggregator.FilterNode.Config.prototype.setExpression = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string source_id = 2;
+ * @return {string}
+ */
+proto.aggregator.FilterNode.Config.prototype.getSourceId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.FilterNode.Config} returns this
+ */
+proto.aggregator.FilterNode.Config.prototype.setSourceId = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -5897,38 +9331,39 @@ proto.aggregator.FilterNode.Output.prototype.hasData = function() {
 
 
 /**
- * optional string expression = 1;
- * @return {string}
+ * optional Config config = 1;
+ * @return {?proto.aggregator.FilterNode.Config}
  */
-proto.aggregator.FilterNode.prototype.getExpression = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.FilterNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.FilterNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FilterNode.Config, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.aggregator.FilterNode.Config|undefined} value
+ * @return {!proto.aggregator.FilterNode} returns this
+*/
+proto.aggregator.FilterNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.FilterNode} returns this
  */
-proto.aggregator.FilterNode.prototype.setExpression = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.FilterNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
 };
 
 
 /**
- * optional string input = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.FilterNode.prototype.getInput = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.FilterNode} returns this
- */
-proto.aggregator.FilterNode.prototype.setInput = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+proto.aggregator.FilterNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -5994,15 +9429,13 @@ proto.aggregator.LoopNode.prototype.toObject = function(opt_includeInstance) {
  */
 proto.aggregator.LoopNode.toObject = function(includeInstance, msg) {
   var f, obj = {
-    input: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    iterVal: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    iterKey: jspb.Message.getFieldWithDefault(msg, 3, ""),
     ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.toObject(includeInstance, f),
     contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.toObject(includeInstance, f),
     contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.toObject(includeInstance, f),
     graphqlDataQuery: (f = msg.getGraphqlDataQuery()) && proto.aggregator.GraphQLQueryNode.toObject(includeInstance, f),
     restApi: (f = msg.getRestApi()) && proto.aggregator.RestAPINode.toObject(includeInstance, f),
-    customCode: (f = msg.getCustomCode()) && proto.aggregator.CustomCodeNode.toObject(includeInstance, f)
+    customCode: (f = msg.getCustomCode()) && proto.aggregator.CustomCodeNode.toObject(includeInstance, f),
+    config: (f = msg.getConfig()) && proto.aggregator.LoopNode.Config.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6039,18 +9472,6 @@ proto.aggregator.LoopNode.deserializeBinaryFromReader = function(msg, reader) {
     }
     var field = reader.getFieldNumber();
     switch (field) {
-    case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setInput(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setIterVal(value);
-      break;
-    case 3:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setIterKey(value);
-      break;
     case 10:
       var value = new proto.aggregator.ETHTransferNode;
       reader.readMessage(value,proto.aggregator.ETHTransferNode.deserializeBinaryFromReader);
@@ -6081,6 +9502,11 @@ proto.aggregator.LoopNode.deserializeBinaryFromReader = function(msg, reader) {
       reader.readMessage(value,proto.aggregator.CustomCodeNode.deserializeBinaryFromReader);
       msg.setCustomCode(value);
       break;
+    case 1:
+      var value = new proto.aggregator.LoopNode.Config;
+      reader.readMessage(value,proto.aggregator.LoopNode.Config.deserializeBinaryFromReader);
+      msg.setConfig(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -6110,27 +9536,6 @@ proto.aggregator.LoopNode.prototype.serializeBinary = function() {
  */
 proto.aggregator.LoopNode.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getInput();
-  if (f.length > 0) {
-    writer.writeString(
-      1,
-      f
-    );
-  }
-  f = message.getIterVal();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
-  f = message.getIterKey();
-  if (f.length > 0) {
-    writer.writeString(
-      3,
-      f
-    );
-  }
   f = message.getEthTransfer();
   if (f != null) {
     writer.writeMessage(
@@ -6179,6 +9584,204 @@ proto.aggregator.LoopNode.serializeBinaryToWriter = function(message, writer) {
       proto.aggregator.CustomCodeNode.serializeBinaryToWriter
     );
   }
+  f = message.getConfig();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      proto.aggregator.LoopNode.Config.serializeBinaryToWriter
+    );
+  }
+};
+
+
+
+
+
+if (jspb.Message.GENERATE_TO_OBJECT) {
+/**
+ * Creates an object representation of this proto.
+ * Field names that are reserved in JavaScript and will be renamed to pb_name.
+ * Optional fields that are not set will be set to undefined.
+ * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
+ * For the list of reserved names please see:
+ *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
+ * @param {boolean=} opt_includeInstance Deprecated. whether to include the
+ *     JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @return {!Object}
+ */
+proto.aggregator.LoopNode.Config.prototype.toObject = function(opt_includeInstance) {
+  return proto.aggregator.LoopNode.Config.toObject(opt_includeInstance, this);
+};
+
+
+/**
+ * Static version of the {@see toObject} method.
+ * @param {boolean|undefined} includeInstance Deprecated. Whether to include
+ *     the JSPB instance for transitional soy proto support:
+ *     http://goto/soy-param-migration
+ * @param {!proto.aggregator.LoopNode.Config} msg The msg instance to transform.
+ * @return {!Object}
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.LoopNode.Config.toObject = function(includeInstance, msg) {
+  var f, obj = {
+    sourceId: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    iterVal: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    iterKey: jspb.Message.getFieldWithDefault(msg, 3, "")
+  };
+
+  if (includeInstance) {
+    obj.$jspbMessageInstance = msg;
+  }
+  return obj;
+};
+}
+
+
+/**
+ * Deserializes binary data (in protobuf wire format).
+ * @param {jspb.ByteSource} bytes The bytes to deserialize.
+ * @return {!proto.aggregator.LoopNode.Config}
+ */
+proto.aggregator.LoopNode.Config.deserializeBinary = function(bytes) {
+  var reader = new jspb.BinaryReader(bytes);
+  var msg = new proto.aggregator.LoopNode.Config;
+  return proto.aggregator.LoopNode.Config.deserializeBinaryFromReader(msg, reader);
+};
+
+
+/**
+ * Deserializes binary data (in protobuf wire format) from the
+ * given reader into the given message object.
+ * @param {!proto.aggregator.LoopNode.Config} msg The message object to deserialize into.
+ * @param {!jspb.BinaryReader} reader The BinaryReader to use.
+ * @return {!proto.aggregator.LoopNode.Config}
+ */
+proto.aggregator.LoopNode.Config.deserializeBinaryFromReader = function(msg, reader) {
+  while (reader.nextField()) {
+    if (reader.isEndGroup()) {
+      break;
+    }
+    var field = reader.getFieldNumber();
+    switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSourceId(value);
+      break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setIterVal(value);
+      break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setIterKey(value);
+      break;
+    default:
+      reader.skipField();
+      break;
+    }
+  }
+  return msg;
+};
+
+
+/**
+ * Serializes the message to binary data (in protobuf wire format).
+ * @return {!Uint8Array}
+ */
+proto.aggregator.LoopNode.Config.prototype.serializeBinary = function() {
+  var writer = new jspb.BinaryWriter();
+  proto.aggregator.LoopNode.Config.serializeBinaryToWriter(this, writer);
+  return writer.getResultBuffer();
+};
+
+
+/**
+ * Serializes the given message to binary data (in protobuf wire
+ * format), writing to the given BinaryWriter.
+ * @param {!proto.aggregator.LoopNode.Config} message
+ * @param {!jspb.BinaryWriter} writer
+ * @suppress {unusedLocalVariables} f is only used for nested messages
+ */
+proto.aggregator.LoopNode.Config.serializeBinaryToWriter = function(message, writer) {
+  var f = undefined;
+  f = message.getSourceId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getIterVal();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getIterKey();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string source_id = 1;
+ * @return {string}
+ */
+proto.aggregator.LoopNode.Config.prototype.getSourceId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.LoopNode.Config} returns this
+ */
+proto.aggregator.LoopNode.Config.prototype.setSourceId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string iter_val = 2;
+ * @return {string}
+ */
+proto.aggregator.LoopNode.Config.prototype.getIterVal = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.LoopNode.Config} returns this
+ */
+proto.aggregator.LoopNode.Config.prototype.setIterVal = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string iter_key = 3;
+ * @return {string}
+ */
+proto.aggregator.LoopNode.Config.prototype.getIterKey = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.LoopNode.Config} returns this
+ */
+proto.aggregator.LoopNode.Config.prototype.setIterKey = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -6309,60 +9912,6 @@ proto.aggregator.LoopNode.Output.prototype.getData = function() {
  */
 proto.aggregator.LoopNode.Output.prototype.setData = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string input = 1;
- * @return {string}
- */
-proto.aggregator.LoopNode.prototype.getInput = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.LoopNode} returns this
- */
-proto.aggregator.LoopNode.prototype.setInput = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string iter_val = 2;
- * @return {string}
- */
-proto.aggregator.LoopNode.prototype.getIterVal = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.LoopNode} returns this
- */
-proto.aggregator.LoopNode.prototype.setIterVal = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional string iter_key = 3;
- * @return {string}
- */
-proto.aggregator.LoopNode.prototype.getIterKey = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.LoopNode} returns this
- */
-proto.aggregator.LoopNode.prototype.setIterKey = function(value) {
-  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -6585,6 +10134,43 @@ proto.aggregator.LoopNode.prototype.clearCustomCode = function() {
  */
 proto.aggregator.LoopNode.prototype.hasCustomCode = function() {
   return jspb.Message.getField(this, 15) != null;
+};
+
+
+/**
+ * optional Config config = 1;
+ * @return {?proto.aggregator.LoopNode.Config}
+ */
+proto.aggregator.LoopNode.prototype.getConfig = function() {
+  return /** @type{?proto.aggregator.LoopNode.Config} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.LoopNode.Config, 1));
+};
+
+
+/**
+ * @param {?proto.aggregator.LoopNode.Config|undefined} value
+ * @return {!proto.aggregator.LoopNode} returns this
+*/
+proto.aggregator.LoopNode.prototype.setConfig = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.LoopNode} returns this
+ */
+proto.aggregator.LoopNode.prototype.clearConfig = function() {
+  return this.setConfig(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.LoopNode.prototype.hasConfig = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -7453,10 +11039,10 @@ proto.aggregator.Execution.oneofGroups_ = [[10,11,12,13]];
  */
 proto.aggregator.Execution.OutputDataCase = {
   OUTPUT_DATA_NOT_SET: 0,
-  TRANSFER_LOG: 10,
-  EVM_LOG: 11,
-  BLOCK: 12,
-  TIME: 13
+  BLOCK_TRIGGER: 10,
+  FIXED_TIME_TRIGGER: 11,
+  CRON_TRIGGER: 12,
+  EVENT_TRIGGER: 13
 };
 
 /**
@@ -7506,10 +11092,10 @@ proto.aggregator.Execution.toObject = function(includeInstance, msg) {
     stepsList: jspb.Message.toObjectList(msg.getStepsList(),
     proto.aggregator.Execution.Step.toObject, includeInstance),
     triggerName: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    transferLog: (f = msg.getTransferLog()) && proto.aggregator.Execution.TransferLogOutput.toObject(includeInstance, f),
-    evmLog: (f = msg.getEvmLog()) && proto.aggregator.Evm.Log.toObject(includeInstance, f),
-    block: (f = msg.getBlock()) && proto.aggregator.Execution.BlockOutput.toObject(includeInstance, f),
-    time: (f = msg.getTime()) && proto.aggregator.Execution.TimeOutput.toObject(includeInstance, f)
+    blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
+    fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
+    cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
+    eventTrigger: (f = msg.getEventTrigger()) && proto.aggregator.EventTrigger.Output.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7581,24 +11167,24 @@ proto.aggregator.Execution.deserializeBinaryFromReader = function(msg, reader) {
       msg.setTriggerName(value);
       break;
     case 10:
-      var value = new proto.aggregator.Execution.TransferLogOutput;
-      reader.readMessage(value,proto.aggregator.Execution.TransferLogOutput.deserializeBinaryFromReader);
-      msg.setTransferLog(value);
+      var value = new proto.aggregator.BlockTrigger.Output;
+      reader.readMessage(value,proto.aggregator.BlockTrigger.Output.deserializeBinaryFromReader);
+      msg.setBlockTrigger(value);
       break;
     case 11:
-      var value = new proto.aggregator.Evm.Log;
-      reader.readMessage(value,proto.aggregator.Evm.Log.deserializeBinaryFromReader);
-      msg.setEvmLog(value);
+      var value = new proto.aggregator.FixedTimeTrigger.Output;
+      reader.readMessage(value,proto.aggregator.FixedTimeTrigger.Output.deserializeBinaryFromReader);
+      msg.setFixedTimeTrigger(value);
       break;
     case 12:
-      var value = new proto.aggregator.Execution.BlockOutput;
-      reader.readMessage(value,proto.aggregator.Execution.BlockOutput.deserializeBinaryFromReader);
-      msg.setBlock(value);
+      var value = new proto.aggregator.CronTrigger.Output;
+      reader.readMessage(value,proto.aggregator.CronTrigger.Output.deserializeBinaryFromReader);
+      msg.setCronTrigger(value);
       break;
     case 13:
-      var value = new proto.aggregator.Execution.TimeOutput;
-      reader.readMessage(value,proto.aggregator.Execution.TimeOutput.deserializeBinaryFromReader);
-      msg.setTime(value);
+      var value = new proto.aggregator.EventTrigger.Output;
+      reader.readMessage(value,proto.aggregator.EventTrigger.Output.deserializeBinaryFromReader);
+      msg.setEventTrigger(value);
       break;
     default:
       reader.skipField();
@@ -7687,36 +11273,36 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getTransferLog();
+  f = message.getBlockTrigger();
   if (f != null) {
     writer.writeMessage(
       10,
       f,
-      proto.aggregator.Execution.TransferLogOutput.serializeBinaryToWriter
+      proto.aggregator.BlockTrigger.Output.serializeBinaryToWriter
     );
   }
-  f = message.getEvmLog();
+  f = message.getFixedTimeTrigger();
   if (f != null) {
     writer.writeMessage(
       11,
       f,
-      proto.aggregator.Evm.Log.serializeBinaryToWriter
+      proto.aggregator.FixedTimeTrigger.Output.serializeBinaryToWriter
     );
   }
-  f = message.getBlock();
+  f = message.getCronTrigger();
   if (f != null) {
     writer.writeMessage(
       12,
       f,
-      proto.aggregator.Execution.BlockOutput.serializeBinaryToWriter
+      proto.aggregator.CronTrigger.Output.serializeBinaryToWriter
     );
   }
-  f = message.getTime();
+  f = message.getEventTrigger();
   if (f != null) {
     writer.writeMessage(
       13,
       f,
-      proto.aggregator.Execution.TimeOutput.serializeBinaryToWriter
+      proto.aggregator.EventTrigger.Output.serializeBinaryToWriter
     );
   }
 };
@@ -8550,726 +12136,6 @@ proto.aggregator.Execution.Step.prototype.clearInputsList = function() {
 };
 
 
-
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * Optional fields that are not set will be set to undefined.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
- * @param {boolean=} opt_includeInstance Deprecated. whether to include the
- *     JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.Execution.TransferLogOutput.toObject(opt_includeInstance, this);
-};
-
-
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Deprecated. Whether to include
- *     the JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.aggregator.Execution.TransferLogOutput} msg The msg instance to transform.
- * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.TransferLogOutput.toObject = function(includeInstance, msg) {
-  var f, obj = {
-    tokenName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    tokenSymbol: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    tokenDecimals: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    transactionHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    address: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    blockNumber: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    blockTimestamp: jspb.Message.getFieldWithDefault(msg, 7, 0),
-    fromAddress: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    toAddress: jspb.Message.getFieldWithDefault(msg, 9, ""),
-    value: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    valueFormatted: jspb.Message.getFieldWithDefault(msg, 11, ""),
-    transactionIndex: jspb.Message.getFieldWithDefault(msg, 12, 0)
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
-  }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.Execution.TransferLogOutput}
- */
-proto.aggregator.Execution.TransferLogOutput.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.Execution.TransferLogOutput;
-  return proto.aggregator.Execution.TransferLogOutput.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.aggregator.Execution.TransferLogOutput} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.Execution.TransferLogOutput}
- */
-proto.aggregator.Execution.TransferLogOutput.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTokenName(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTokenSymbol(value);
-      break;
-    case 3:
-      var value = /** @type {number} */ (reader.readUint32());
-      msg.setTokenDecimals(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTransactionHash(value);
-      break;
-    case 5:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setAddress(value);
-      break;
-    case 6:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setBlockNumber(value);
-      break;
-    case 7:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setBlockTimestamp(value);
-      break;
-    case 8:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setFromAddress(value);
-      break;
-    case 9:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setToAddress(value);
-      break;
-    case 10:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setValue(value);
-      break;
-    case 11:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setValueFormatted(value);
-      break;
-    case 12:
-      var value = /** @type {number} */ (reader.readUint32());
-      msg.setTransactionIndex(value);
-      break;
-    default:
-      reader.skipField();
-      break;
-    }
-  }
-  return msg;
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  proto.aggregator.Execution.TransferLogOutput.serializeBinaryToWriter(this, writer);
-  return writer.getResultBuffer();
-};
-
-
-/**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.Execution.TransferLogOutput} message
- * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.TransferLogOutput.serializeBinaryToWriter = function(message, writer) {
-  var f = undefined;
-  f = message.getTokenName();
-  if (f.length > 0) {
-    writer.writeString(
-      1,
-      f
-    );
-  }
-  f = message.getTokenSymbol();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
-  f = message.getTokenDecimals();
-  if (f !== 0) {
-    writer.writeUint32(
-      3,
-      f
-    );
-  }
-  f = message.getTransactionHash();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
-  f = message.getAddress();
-  if (f.length > 0) {
-    writer.writeString(
-      5,
-      f
-    );
-  }
-  f = message.getBlockNumber();
-  if (f !== 0) {
-    writer.writeUint64(
-      6,
-      f
-    );
-  }
-  f = message.getBlockTimestamp();
-  if (f !== 0) {
-    writer.writeUint64(
-      7,
-      f
-    );
-  }
-  f = message.getFromAddress();
-  if (f.length > 0) {
-    writer.writeString(
-      8,
-      f
-    );
-  }
-  f = message.getToAddress();
-  if (f.length > 0) {
-    writer.writeString(
-      9,
-      f
-    );
-  }
-  f = message.getValue();
-  if (f.length > 0) {
-    writer.writeString(
-      10,
-      f
-    );
-  }
-  f = message.getValueFormatted();
-  if (f.length > 0) {
-    writer.writeString(
-      11,
-      f
-    );
-  }
-  f = message.getTransactionIndex();
-  if (f !== 0) {
-    writer.writeUint32(
-      12,
-      f
-    );
-  }
-};
-
-
-/**
- * optional string token_name = 1;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getTokenName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setTokenName = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
-};
-
-
-/**
- * optional string token_symbol = 2;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getTokenSymbol = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setTokenSymbol = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional uint32 token_decimals = 3;
- * @return {number}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getTokenDecimals = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setTokenDecimals = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
-};
-
-
-/**
- * optional string transaction_hash = 4;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getTransactionHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setTransactionHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional string address = 5;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setAddress = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
-};
-
-
-/**
- * optional uint64 block_number = 6;
- * @return {number}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getBlockNumber = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setBlockNumber = function(value) {
-  return jspb.Message.setProto3IntField(this, 6, value);
-};
-
-
-/**
- * optional uint64 block_timestamp = 7;
- * @return {number}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getBlockTimestamp = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setBlockTimestamp = function(value) {
-  return jspb.Message.setProto3IntField(this, 7, value);
-};
-
-
-/**
- * optional string from_address = 8;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getFromAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setFromAddress = function(value) {
-  return jspb.Message.setProto3StringField(this, 8, value);
-};
-
-
-/**
- * optional string to_address = 9;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getToAddress = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 9, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setToAddress = function(value) {
-  return jspb.Message.setProto3StringField(this, 9, value);
-};
-
-
-/**
- * optional string value = 10;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getValue = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setValue = function(value) {
-  return jspb.Message.setProto3StringField(this, 10, value);
-};
-
-
-/**
- * optional string value_formatted = 11;
- * @return {string}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getValueFormatted = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setValueFormatted = function(value) {
-  return jspb.Message.setProto3StringField(this, 11, value);
-};
-
-
-/**
- * optional uint32 transaction_index = 12;
- * @return {number}
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.getTransactionIndex = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.TransferLogOutput} returns this
- */
-proto.aggregator.Execution.TransferLogOutput.prototype.setTransactionIndex = function(value) {
-  return jspb.Message.setProto3IntField(this, 12, value);
-};
-
-
-
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * Optional fields that are not set will be set to undefined.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
- * @param {boolean=} opt_includeInstance Deprecated. whether to include the
- *     JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.aggregator.Execution.BlockOutput.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.Execution.BlockOutput.toObject(opt_includeInstance, this);
-};
-
-
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Deprecated. Whether to include
- *     the JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.aggregator.Execution.BlockOutput} msg The msg instance to transform.
- * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.BlockOutput.toObject = function(includeInstance, msg) {
-  var f, obj = {
-    blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0)
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
-  }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.Execution.BlockOutput}
- */
-proto.aggregator.Execution.BlockOutput.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.Execution.BlockOutput;
-  return proto.aggregator.Execution.BlockOutput.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.aggregator.Execution.BlockOutput} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.Execution.BlockOutput}
- */
-proto.aggregator.Execution.BlockOutput.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    case 1:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setBlockNumber(value);
-      break;
-    default:
-      reader.skipField();
-      break;
-    }
-  }
-  return msg;
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
- */
-proto.aggregator.Execution.BlockOutput.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  proto.aggregator.Execution.BlockOutput.serializeBinaryToWriter(this, writer);
-  return writer.getResultBuffer();
-};
-
-
-/**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.Execution.BlockOutput} message
- * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.BlockOutput.serializeBinaryToWriter = function(message, writer) {
-  var f = undefined;
-  f = message.getBlockNumber();
-  if (f !== 0) {
-    writer.writeUint64(
-      1,
-      f
-    );
-  }
-};
-
-
-/**
- * optional uint64 block_number = 1;
- * @return {number}
- */
-proto.aggregator.Execution.BlockOutput.prototype.getBlockNumber = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.BlockOutput} returns this
- */
-proto.aggregator.Execution.BlockOutput.prototype.setBlockNumber = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
-};
-
-
-
-
-
-if (jspb.Message.GENERATE_TO_OBJECT) {
-/**
- * Creates an object representation of this proto.
- * Field names that are reserved in JavaScript and will be renamed to pb_name.
- * Optional fields that are not set will be set to undefined.
- * To access a reserved field use, foo.pb_<name>, eg, foo.pb_default.
- * For the list of reserved names please see:
- *     net/proto2/compiler/js/internal/generator.cc#kKeyword.
- * @param {boolean=} opt_includeInstance Deprecated. whether to include the
- *     JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @return {!Object}
- */
-proto.aggregator.Execution.TimeOutput.prototype.toObject = function(opt_includeInstance) {
-  return proto.aggregator.Execution.TimeOutput.toObject(opt_includeInstance, this);
-};
-
-
-/**
- * Static version of the {@see toObject} method.
- * @param {boolean|undefined} includeInstance Deprecated. Whether to include
- *     the JSPB instance for transitional soy proto support:
- *     http://goto/soy-param-migration
- * @param {!proto.aggregator.Execution.TimeOutput} msg The msg instance to transform.
- * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.TimeOutput.toObject = function(includeInstance, msg) {
-  var f, obj = {
-    epoch: jspb.Message.getFieldWithDefault(msg, 1, 0)
-  };
-
-  if (includeInstance) {
-    obj.$jspbMessageInstance = msg;
-  }
-  return obj;
-};
-}
-
-
-/**
- * Deserializes binary data (in protobuf wire format).
- * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.aggregator.Execution.TimeOutput}
- */
-proto.aggregator.Execution.TimeOutput.deserializeBinary = function(bytes) {
-  var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.aggregator.Execution.TimeOutput;
-  return proto.aggregator.Execution.TimeOutput.deserializeBinaryFromReader(msg, reader);
-};
-
-
-/**
- * Deserializes binary data (in protobuf wire format) from the
- * given reader into the given message object.
- * @param {!proto.aggregator.Execution.TimeOutput} msg The message object to deserialize into.
- * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.aggregator.Execution.TimeOutput}
- */
-proto.aggregator.Execution.TimeOutput.deserializeBinaryFromReader = function(msg, reader) {
-  while (reader.nextField()) {
-    if (reader.isEndGroup()) {
-      break;
-    }
-    var field = reader.getFieldNumber();
-    switch (field) {
-    case 1:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setEpoch(value);
-      break;
-    default:
-      reader.skipField();
-      break;
-    }
-  }
-  return msg;
-};
-
-
-/**
- * Serializes the message to binary data (in protobuf wire format).
- * @return {!Uint8Array}
- */
-proto.aggregator.Execution.TimeOutput.prototype.serializeBinary = function() {
-  var writer = new jspb.BinaryWriter();
-  proto.aggregator.Execution.TimeOutput.serializeBinaryToWriter(this, writer);
-  return writer.getResultBuffer();
-};
-
-
-/**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.aggregator.Execution.TimeOutput} message
- * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
- */
-proto.aggregator.Execution.TimeOutput.serializeBinaryToWriter = function(message, writer) {
-  var f = undefined;
-  f = message.getEpoch();
-  if (f !== 0) {
-    writer.writeUint64(
-      1,
-      f
-    );
-  }
-};
-
-
-/**
- * optional uint64 epoch = 1;
- * @return {number}
- */
-proto.aggregator.Execution.TimeOutput.prototype.getEpoch = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.Execution.TimeOutput} returns this
- */
-proto.aggregator.Execution.TimeOutput.prototype.setEpoch = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
-};
-
-
 /**
  * optional string id = 1;
  * @return {string}
@@ -9454,20 +12320,20 @@ proto.aggregator.Execution.prototype.setTriggerName = function(value) {
 
 
 /**
- * optional TransferLogOutput transfer_log = 10;
- * @return {?proto.aggregator.Execution.TransferLogOutput}
+ * optional BlockTrigger.Output block_trigger = 10;
+ * @return {?proto.aggregator.BlockTrigger.Output}
  */
-proto.aggregator.Execution.prototype.getTransferLog = function() {
-  return /** @type{?proto.aggregator.Execution.TransferLogOutput} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.Execution.TransferLogOutput, 10));
+proto.aggregator.Execution.prototype.getBlockTrigger = function() {
+  return /** @type{?proto.aggregator.BlockTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BlockTrigger.Output, 10));
 };
 
 
 /**
- * @param {?proto.aggregator.Execution.TransferLogOutput|undefined} value
+ * @param {?proto.aggregator.BlockTrigger.Output|undefined} value
  * @return {!proto.aggregator.Execution} returns this
 */
-proto.aggregator.Execution.prototype.setTransferLog = function(value) {
+proto.aggregator.Execution.prototype.setBlockTrigger = function(value) {
   return jspb.Message.setOneofWrapperField(this, 10, proto.aggregator.Execution.oneofGroups_[0], value);
 };
 
@@ -9476,8 +12342,8 @@ proto.aggregator.Execution.prototype.setTransferLog = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.aggregator.Execution} returns this
  */
-proto.aggregator.Execution.prototype.clearTransferLog = function() {
-  return this.setTransferLog(undefined);
+proto.aggregator.Execution.prototype.clearBlockTrigger = function() {
+  return this.setBlockTrigger(undefined);
 };
 
 
@@ -9485,26 +12351,26 @@ proto.aggregator.Execution.prototype.clearTransferLog = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.aggregator.Execution.prototype.hasTransferLog = function() {
+proto.aggregator.Execution.prototype.hasBlockTrigger = function() {
   return jspb.Message.getField(this, 10) != null;
 };
 
 
 /**
- * optional Evm.Log evm_log = 11;
- * @return {?proto.aggregator.Evm.Log}
+ * optional FixedTimeTrigger.Output fixed_time_trigger = 11;
+ * @return {?proto.aggregator.FixedTimeTrigger.Output}
  */
-proto.aggregator.Execution.prototype.getEvmLog = function() {
-  return /** @type{?proto.aggregator.Evm.Log} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.Evm.Log, 11));
+proto.aggregator.Execution.prototype.getFixedTimeTrigger = function() {
+  return /** @type{?proto.aggregator.FixedTimeTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FixedTimeTrigger.Output, 11));
 };
 
 
 /**
- * @param {?proto.aggregator.Evm.Log|undefined} value
+ * @param {?proto.aggregator.FixedTimeTrigger.Output|undefined} value
  * @return {!proto.aggregator.Execution} returns this
 */
-proto.aggregator.Execution.prototype.setEvmLog = function(value) {
+proto.aggregator.Execution.prototype.setFixedTimeTrigger = function(value) {
   return jspb.Message.setOneofWrapperField(this, 11, proto.aggregator.Execution.oneofGroups_[0], value);
 };
 
@@ -9513,8 +12379,8 @@ proto.aggregator.Execution.prototype.setEvmLog = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.aggregator.Execution} returns this
  */
-proto.aggregator.Execution.prototype.clearEvmLog = function() {
-  return this.setEvmLog(undefined);
+proto.aggregator.Execution.prototype.clearFixedTimeTrigger = function() {
+  return this.setFixedTimeTrigger(undefined);
 };
 
 
@@ -9522,26 +12388,26 @@ proto.aggregator.Execution.prototype.clearEvmLog = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.aggregator.Execution.prototype.hasEvmLog = function() {
+proto.aggregator.Execution.prototype.hasFixedTimeTrigger = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
 
 /**
- * optional BlockOutput block = 12;
- * @return {?proto.aggregator.Execution.BlockOutput}
+ * optional CronTrigger.Output cron_trigger = 12;
+ * @return {?proto.aggregator.CronTrigger.Output}
  */
-proto.aggregator.Execution.prototype.getBlock = function() {
-  return /** @type{?proto.aggregator.Execution.BlockOutput} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.Execution.BlockOutput, 12));
+proto.aggregator.Execution.prototype.getCronTrigger = function() {
+  return /** @type{?proto.aggregator.CronTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CronTrigger.Output, 12));
 };
 
 
 /**
- * @param {?proto.aggregator.Execution.BlockOutput|undefined} value
+ * @param {?proto.aggregator.CronTrigger.Output|undefined} value
  * @return {!proto.aggregator.Execution} returns this
 */
-proto.aggregator.Execution.prototype.setBlock = function(value) {
+proto.aggregator.Execution.prototype.setCronTrigger = function(value) {
   return jspb.Message.setOneofWrapperField(this, 12, proto.aggregator.Execution.oneofGroups_[0], value);
 };
 
@@ -9550,8 +12416,8 @@ proto.aggregator.Execution.prototype.setBlock = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.aggregator.Execution} returns this
  */
-proto.aggregator.Execution.prototype.clearBlock = function() {
-  return this.setBlock(undefined);
+proto.aggregator.Execution.prototype.clearCronTrigger = function() {
+  return this.setCronTrigger(undefined);
 };
 
 
@@ -9559,26 +12425,26 @@ proto.aggregator.Execution.prototype.clearBlock = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.aggregator.Execution.prototype.hasBlock = function() {
+proto.aggregator.Execution.prototype.hasCronTrigger = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
 
 /**
- * optional TimeOutput time = 13;
- * @return {?proto.aggregator.Execution.TimeOutput}
+ * optional EventTrigger.Output event_trigger = 13;
+ * @return {?proto.aggregator.EventTrigger.Output}
  */
-proto.aggregator.Execution.prototype.getTime = function() {
-  return /** @type{?proto.aggregator.Execution.TimeOutput} */ (
-    jspb.Message.getWrapperField(this, proto.aggregator.Execution.TimeOutput, 13));
+proto.aggregator.Execution.prototype.getEventTrigger = function() {
+  return /** @type{?proto.aggregator.EventTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.EventTrigger.Output, 13));
 };
 
 
 /**
- * @param {?proto.aggregator.Execution.TimeOutput|undefined} value
+ * @param {?proto.aggregator.EventTrigger.Output|undefined} value
  * @return {!proto.aggregator.Execution} returns this
 */
-proto.aggregator.Execution.prototype.setTime = function(value) {
+proto.aggregator.Execution.prototype.setEventTrigger = function(value) {
   return jspb.Message.setOneofWrapperField(this, 13, proto.aggregator.Execution.oneofGroups_[0], value);
 };
 
@@ -9587,8 +12453,8 @@ proto.aggregator.Execution.prototype.setTime = function(value) {
  * Clears the message field making it undefined.
  * @return {!proto.aggregator.Execution} returns this
  */
-proto.aggregator.Execution.prototype.clearTime = function() {
-  return this.setTime(undefined);
+proto.aggregator.Execution.prototype.clearEventTrigger = function() {
+  return this.setEventTrigger(undefined);
 };
 
 
@@ -9596,7 +12462,7 @@ proto.aggregator.Execution.prototype.clearTime = function() {
  * Returns whether this field is set.
  * @return {boolean}
  */
-proto.aggregator.Execution.prototype.hasTime = function() {
+proto.aggregator.Execution.prototype.hasEventTrigger = function() {
   return jspb.Message.getField(this, 13) != null;
 };
 
@@ -17480,6 +20346,43 @@ proto.aggregator.RunNodeWithInputsReq.prototype.clearInputVariablesMap = functio
 
 
 
+/**
+ * Oneof group definitions for this message. Each group defines the field
+ * numbers belonging to that group. When of these fields' value is set, all
+ * other fields in the group are cleared. During deserialization, if multiple
+ * fields are encountered for a group, only the last value seen will be kept.
+ * @private {!Array<!Array<number>>}
+ * @const
+ */
+proto.aggregator.RunNodeWithInputsResp.oneofGroups_ = [[10,11,12,13,14,15,16,17,18,20,21,22,23]];
+
+/**
+ * @enum {number}
+ */
+proto.aggregator.RunNodeWithInputsResp.OutputDataCase = {
+  OUTPUT_DATA_NOT_SET: 0,
+  ETH_TRANSFER: 10,
+  GRAPHQL: 11,
+  CONTRACT_READ: 12,
+  CONTRACT_WRITE: 13,
+  CUSTOM_CODE: 14,
+  REST_API: 15,
+  BRANCH: 16,
+  FILTER: 17,
+  LOOP: 18,
+  BLOCK_TRIGGER: 20,
+  FIXED_TIME_TRIGGER: 21,
+  CRON_TRIGGER: 22,
+  EVENT_TRIGGER: 23
+};
+
+/**
+ * @return {proto.aggregator.RunNodeWithInputsResp.OutputDataCase}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getOutputDataCase = function() {
+  return /** @type {proto.aggregator.RunNodeWithInputsResp.OutputDataCase} */(jspb.Message.computeOneofCase(this, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0]));
+};
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -17512,9 +20415,21 @@ proto.aggregator.RunNodeWithInputsResp.prototype.toObject = function(opt_include
 proto.aggregator.RunNodeWithInputsResp.toObject = function(includeInstance, msg) {
   var f, obj = {
     success: jspb.Message.getBooleanFieldWithDefault(msg, 1, false),
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     error: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    nodeId: jspb.Message.getFieldWithDefault(msg, 4, "")
+    nodeId: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.Output.toObject(includeInstance, f),
+    graphql: (f = msg.getGraphql()) && proto.aggregator.GraphQLQueryNode.Output.toObject(includeInstance, f),
+    contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.Output.toObject(includeInstance, f),
+    contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.Output.toObject(includeInstance, f),
+    customCode: (f = msg.getCustomCode()) && proto.aggregator.CustomCodeNode.Output.toObject(includeInstance, f),
+    restApi: (f = msg.getRestApi()) && proto.aggregator.RestAPINode.Output.toObject(includeInstance, f),
+    branch: (f = msg.getBranch()) && proto.aggregator.BranchNode.Output.toObject(includeInstance, f),
+    filter: (f = msg.getFilter()) && proto.aggregator.FilterNode.Output.toObject(includeInstance, f),
+    loop: (f = msg.getLoop()) && proto.aggregator.LoopNode.Output.toObject(includeInstance, f),
+    blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
+    fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
+    cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
+    eventTrigger: (f = msg.getEventTrigger()) && proto.aggregator.EventTrigger.Output.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -17555,11 +20470,6 @@ proto.aggregator.RunNodeWithInputsResp.deserializeBinaryFromReader = function(ms
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setSuccess(value);
       break;
-    case 2:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setData(value);
-      break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setError(value);
@@ -17567,6 +20477,71 @@ proto.aggregator.RunNodeWithInputsResp.deserializeBinaryFromReader = function(ms
     case 4:
       var value = /** @type {string} */ (reader.readString());
       msg.setNodeId(value);
+      break;
+    case 10:
+      var value = new proto.aggregator.ETHTransferNode.Output;
+      reader.readMessage(value,proto.aggregator.ETHTransferNode.Output.deserializeBinaryFromReader);
+      msg.setEthTransfer(value);
+      break;
+    case 11:
+      var value = new proto.aggregator.GraphQLQueryNode.Output;
+      reader.readMessage(value,proto.aggregator.GraphQLQueryNode.Output.deserializeBinaryFromReader);
+      msg.setGraphql(value);
+      break;
+    case 12:
+      var value = new proto.aggregator.ContractReadNode.Output;
+      reader.readMessage(value,proto.aggregator.ContractReadNode.Output.deserializeBinaryFromReader);
+      msg.setContractRead(value);
+      break;
+    case 13:
+      var value = new proto.aggregator.ContractWriteNode.Output;
+      reader.readMessage(value,proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader);
+      msg.setContractWrite(value);
+      break;
+    case 14:
+      var value = new proto.aggregator.CustomCodeNode.Output;
+      reader.readMessage(value,proto.aggregator.CustomCodeNode.Output.deserializeBinaryFromReader);
+      msg.setCustomCode(value);
+      break;
+    case 15:
+      var value = new proto.aggregator.RestAPINode.Output;
+      reader.readMessage(value,proto.aggregator.RestAPINode.Output.deserializeBinaryFromReader);
+      msg.setRestApi(value);
+      break;
+    case 16:
+      var value = new proto.aggregator.BranchNode.Output;
+      reader.readMessage(value,proto.aggregator.BranchNode.Output.deserializeBinaryFromReader);
+      msg.setBranch(value);
+      break;
+    case 17:
+      var value = new proto.aggregator.FilterNode.Output;
+      reader.readMessage(value,proto.aggregator.FilterNode.Output.deserializeBinaryFromReader);
+      msg.setFilter(value);
+      break;
+    case 18:
+      var value = new proto.aggregator.LoopNode.Output;
+      reader.readMessage(value,proto.aggregator.LoopNode.Output.deserializeBinaryFromReader);
+      msg.setLoop(value);
+      break;
+    case 20:
+      var value = new proto.aggregator.BlockTrigger.Output;
+      reader.readMessage(value,proto.aggregator.BlockTrigger.Output.deserializeBinaryFromReader);
+      msg.setBlockTrigger(value);
+      break;
+    case 21:
+      var value = new proto.aggregator.FixedTimeTrigger.Output;
+      reader.readMessage(value,proto.aggregator.FixedTimeTrigger.Output.deserializeBinaryFromReader);
+      msg.setFixedTimeTrigger(value);
+      break;
+    case 22:
+      var value = new proto.aggregator.CronTrigger.Output;
+      reader.readMessage(value,proto.aggregator.CronTrigger.Output.deserializeBinaryFromReader);
+      msg.setCronTrigger(value);
+      break;
+    case 23:
+      var value = new proto.aggregator.EventTrigger.Output;
+      reader.readMessage(value,proto.aggregator.EventTrigger.Output.deserializeBinaryFromReader);
+      msg.setEventTrigger(value);
       break;
     default:
       reader.skipField();
@@ -17604,14 +20579,6 @@ proto.aggregator.RunNodeWithInputsResp.serializeBinaryToWriter = function(messag
       f
     );
   }
-  f = message.getData();
-  if (f != null) {
-    writer.writeMessage(
-      2,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
-  }
   f = message.getError();
   if (f.length > 0) {
     writer.writeString(
@@ -17624,6 +20591,110 @@ proto.aggregator.RunNodeWithInputsResp.serializeBinaryToWriter = function(messag
     writer.writeString(
       4,
       f
+    );
+  }
+  f = message.getEthTransfer();
+  if (f != null) {
+    writer.writeMessage(
+      10,
+      f,
+      proto.aggregator.ETHTransferNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getGraphql();
+  if (f != null) {
+    writer.writeMessage(
+      11,
+      f,
+      proto.aggregator.GraphQLQueryNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getContractRead();
+  if (f != null) {
+    writer.writeMessage(
+      12,
+      f,
+      proto.aggregator.ContractReadNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getContractWrite();
+  if (f != null) {
+    writer.writeMessage(
+      13,
+      f,
+      proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getCustomCode();
+  if (f != null) {
+    writer.writeMessage(
+      14,
+      f,
+      proto.aggregator.CustomCodeNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getRestApi();
+  if (f != null) {
+    writer.writeMessage(
+      15,
+      f,
+      proto.aggregator.RestAPINode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getBranch();
+  if (f != null) {
+    writer.writeMessage(
+      16,
+      f,
+      proto.aggregator.BranchNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getFilter();
+  if (f != null) {
+    writer.writeMessage(
+      17,
+      f,
+      proto.aggregator.FilterNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getLoop();
+  if (f != null) {
+    writer.writeMessage(
+      18,
+      f,
+      proto.aggregator.LoopNode.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getBlockTrigger();
+  if (f != null) {
+    writer.writeMessage(
+      20,
+      f,
+      proto.aggregator.BlockTrigger.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getFixedTimeTrigger();
+  if (f != null) {
+    writer.writeMessage(
+      21,
+      f,
+      proto.aggregator.FixedTimeTrigger.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getCronTrigger();
+  if (f != null) {
+    writer.writeMessage(
+      22,
+      f,
+      proto.aggregator.CronTrigger.Output.serializeBinaryToWriter
+    );
+  }
+  f = message.getEventTrigger();
+  if (f != null) {
+    writer.writeMessage(
+      23,
+      f,
+      proto.aggregator.EventTrigger.Output.serializeBinaryToWriter
     );
   }
 };
@@ -17644,43 +20715,6 @@ proto.aggregator.RunNodeWithInputsResp.prototype.getSuccess = function() {
  */
 proto.aggregator.RunNodeWithInputsResp.prototype.setSuccess = function(value) {
   return jspb.Message.setProto3BooleanField(this, 1, value);
-};
-
-
-/**
- * optional google.protobuf.Value data = 2;
- * @return {?proto.google.protobuf.Value}
- */
-proto.aggregator.RunNodeWithInputsResp.prototype.getData = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
-*/
-proto.aggregator.RunNodeWithInputsResp.prototype.setData = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
- */
-proto.aggregator.RunNodeWithInputsResp.prototype.clearData = function() {
-  return this.setData(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.RunNodeWithInputsResp.prototype.hasData = function() {
-  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -17717,6 +20751,487 @@ proto.aggregator.RunNodeWithInputsResp.prototype.getNodeId = function() {
  */
 proto.aggregator.RunNodeWithInputsResp.prototype.setNodeId = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional ETHTransferNode.Output eth_transfer = 10;
+ * @return {?proto.aggregator.ETHTransferNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getEthTransfer = function() {
+  return /** @type{?proto.aggregator.ETHTransferNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ETHTransferNode.Output, 10));
+};
+
+
+/**
+ * @param {?proto.aggregator.ETHTransferNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setEthTransfer = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 10, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearEthTransfer = function() {
+  return this.setEthTransfer(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasEthTransfer = function() {
+  return jspb.Message.getField(this, 10) != null;
+};
+
+
+/**
+ * optional GraphQLQueryNode.Output graphql = 11;
+ * @return {?proto.aggregator.GraphQLQueryNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getGraphql = function() {
+  return /** @type{?proto.aggregator.GraphQLQueryNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.GraphQLQueryNode.Output, 11));
+};
+
+
+/**
+ * @param {?proto.aggregator.GraphQLQueryNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setGraphql = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 11, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearGraphql = function() {
+  return this.setGraphql(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasGraphql = function() {
+  return jspb.Message.getField(this, 11) != null;
+};
+
+
+/**
+ * optional ContractReadNode.Output contract_read = 12;
+ * @return {?proto.aggregator.ContractReadNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getContractRead = function() {
+  return /** @type{?proto.aggregator.ContractReadNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ContractReadNode.Output, 12));
+};
+
+
+/**
+ * @param {?proto.aggregator.ContractReadNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setContractRead = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 12, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearContractRead = function() {
+  return this.setContractRead(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasContractRead = function() {
+  return jspb.Message.getField(this, 12) != null;
+};
+
+
+/**
+ * optional ContractWriteNode.Output contract_write = 13;
+ * @return {?proto.aggregator.ContractWriteNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getContractWrite = function() {
+  return /** @type{?proto.aggregator.ContractWriteNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ContractWriteNode.Output, 13));
+};
+
+
+/**
+ * @param {?proto.aggregator.ContractWriteNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setContractWrite = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 13, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearContractWrite = function() {
+  return this.setContractWrite(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasContractWrite = function() {
+  return jspb.Message.getField(this, 13) != null;
+};
+
+
+/**
+ * optional CustomCodeNode.Output custom_code = 14;
+ * @return {?proto.aggregator.CustomCodeNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getCustomCode = function() {
+  return /** @type{?proto.aggregator.CustomCodeNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CustomCodeNode.Output, 14));
+};
+
+
+/**
+ * @param {?proto.aggregator.CustomCodeNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setCustomCode = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 14, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearCustomCode = function() {
+  return this.setCustomCode(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasCustomCode = function() {
+  return jspb.Message.getField(this, 14) != null;
+};
+
+
+/**
+ * optional RestAPINode.Output rest_api = 15;
+ * @return {?proto.aggregator.RestAPINode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getRestApi = function() {
+  return /** @type{?proto.aggregator.RestAPINode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.RestAPINode.Output, 15));
+};
+
+
+/**
+ * @param {?proto.aggregator.RestAPINode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setRestApi = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 15, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearRestApi = function() {
+  return this.setRestApi(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasRestApi = function() {
+  return jspb.Message.getField(this, 15) != null;
+};
+
+
+/**
+ * optional BranchNode.Output branch = 16;
+ * @return {?proto.aggregator.BranchNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getBranch = function() {
+  return /** @type{?proto.aggregator.BranchNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BranchNode.Output, 16));
+};
+
+
+/**
+ * @param {?proto.aggregator.BranchNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setBranch = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 16, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearBranch = function() {
+  return this.setBranch(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasBranch = function() {
+  return jspb.Message.getField(this, 16) != null;
+};
+
+
+/**
+ * optional FilterNode.Output filter = 17;
+ * @return {?proto.aggregator.FilterNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getFilter = function() {
+  return /** @type{?proto.aggregator.FilterNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FilterNode.Output, 17));
+};
+
+
+/**
+ * @param {?proto.aggregator.FilterNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setFilter = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 17, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearFilter = function() {
+  return this.setFilter(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasFilter = function() {
+  return jspb.Message.getField(this, 17) != null;
+};
+
+
+/**
+ * optional LoopNode.Output loop = 18;
+ * @return {?proto.aggregator.LoopNode.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getLoop = function() {
+  return /** @type{?proto.aggregator.LoopNode.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.LoopNode.Output, 18));
+};
+
+
+/**
+ * @param {?proto.aggregator.LoopNode.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setLoop = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 18, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearLoop = function() {
+  return this.setLoop(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasLoop = function() {
+  return jspb.Message.getField(this, 18) != null;
+};
+
+
+/**
+ * optional BlockTrigger.Output block_trigger = 20;
+ * @return {?proto.aggregator.BlockTrigger.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getBlockTrigger = function() {
+  return /** @type{?proto.aggregator.BlockTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.BlockTrigger.Output, 20));
+};
+
+
+/**
+ * @param {?proto.aggregator.BlockTrigger.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setBlockTrigger = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 20, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearBlockTrigger = function() {
+  return this.setBlockTrigger(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasBlockTrigger = function() {
+  return jspb.Message.getField(this, 20) != null;
+};
+
+
+/**
+ * optional FixedTimeTrigger.Output fixed_time_trigger = 21;
+ * @return {?proto.aggregator.FixedTimeTrigger.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getFixedTimeTrigger = function() {
+  return /** @type{?proto.aggregator.FixedTimeTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FixedTimeTrigger.Output, 21));
+};
+
+
+/**
+ * @param {?proto.aggregator.FixedTimeTrigger.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setFixedTimeTrigger = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 21, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearFixedTimeTrigger = function() {
+  return this.setFixedTimeTrigger(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasFixedTimeTrigger = function() {
+  return jspb.Message.getField(this, 21) != null;
+};
+
+
+/**
+ * optional CronTrigger.Output cron_trigger = 22;
+ * @return {?proto.aggregator.CronTrigger.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getCronTrigger = function() {
+  return /** @type{?proto.aggregator.CronTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.CronTrigger.Output, 22));
+};
+
+
+/**
+ * @param {?proto.aggregator.CronTrigger.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setCronTrigger = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 22, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearCronTrigger = function() {
+  return this.setCronTrigger(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasCronTrigger = function() {
+  return jspb.Message.getField(this, 22) != null;
+};
+
+
+/**
+ * optional EventTrigger.Output event_trigger = 23;
+ * @return {?proto.aggregator.EventTrigger.Output}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getEventTrigger = function() {
+  return /** @type{?proto.aggregator.EventTrigger.Output} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.EventTrigger.Output, 23));
+};
+
+
+/**
+ * @param {?proto.aggregator.EventTrigger.Output|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setEventTrigger = function(value) {
+  return jspb.Message.setOneofWrapperField(this, 23, proto.aggregator.RunNodeWithInputsResp.oneofGroups_[0], value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearEventTrigger = function() {
+  return this.setEventTrigger(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasEventTrigger = function() {
+  return jspb.Message.getField(this, 23) != null;
 };
 
 
@@ -19316,6 +22831,13 @@ proto.aggregator.Evm.UserOp.prototype.setSignature = function(value) {
 /**
  * @enum {number}
  */
+proto.aggregator.Lang = {
+  JAVASCRIPT: 0
+};
+
+/**
+ * @enum {number}
+ */
 proto.aggregator.Error = {
   UNKNOWERROR: 0,
   RPCNODEERROR: 1000,
@@ -19345,13 +22867,6 @@ proto.aggregator.TaskStatus = {
 proto.aggregator.ExecutionStatus = {
   QUEUED: 0,
   FINISHED: 2
-};
-
-/**
- * @enum {number}
- */
-proto.aggregator.CustomCodeLang = {
-  JAVASCRIPT: 0
 };
 
 goog.object.extend(exports, proto.aggregator);
