@@ -14467,10 +14467,9 @@ proto.aggregator.ListTasksReq.prototype.toObject = function(opt_includeInstance)
 proto.aggregator.ListTasksReq.toObject = function(includeInstance, msg) {
   var f, obj = {
     smartWalletAddressList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    before: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    after: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    limit: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    before: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    after: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    limit: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -14513,17 +14512,13 @@ proto.aggregator.ListTasksReq.deserializeBinaryFromReader = function(msg, reader
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCursor(value);
+      msg.setBefore(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setBefore(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
       msg.setAfter(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setLimit(value);
       break;
@@ -14563,31 +14558,24 @@ proto.aggregator.ListTasksReq.serializeBinaryToWriter = function(message, writer
       f
     );
   }
-  f = message.getCursor();
+  f = message.getBefore();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getBefore();
+  f = message.getAfter();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getAfter();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
   f = message.getLimit();
   if (f !== 0) {
     writer.writeInt64(
-      5,
+      4,
       f
     );
   }
@@ -14632,10 +14620,10 @@ proto.aggregator.ListTasksReq.prototype.clearSmartWalletAddressList = function()
 
 
 /**
- * optional string cursor = 2;
+ * optional string before = 2;
  * @return {string}
  */
-proto.aggregator.ListTasksReq.prototype.getCursor = function() {
+proto.aggregator.ListTasksReq.prototype.getBefore = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -14644,16 +14632,16 @@ proto.aggregator.ListTasksReq.prototype.getCursor = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListTasksReq} returns this
  */
-proto.aggregator.ListTasksReq.prototype.setCursor = function(value) {
+proto.aggregator.ListTasksReq.prototype.setBefore = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
- * optional string before = 3;
+ * optional string after = 3;
  * @return {string}
  */
-proto.aggregator.ListTasksReq.prototype.getBefore = function() {
+proto.aggregator.ListTasksReq.prototype.getAfter = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -14662,35 +14650,17 @@ proto.aggregator.ListTasksReq.prototype.getBefore = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListTasksReq} returns this
  */
-proto.aggregator.ListTasksReq.prototype.setBefore = function(value) {
+proto.aggregator.ListTasksReq.prototype.setAfter = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
- * optional string after = 4;
- * @return {string}
- */
-proto.aggregator.ListTasksReq.prototype.getAfter = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ListTasksReq} returns this
- */
-proto.aggregator.ListTasksReq.prototype.setAfter = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional int64 limit = 5;
+ * optional int64 limit = 4;
  * @return {number}
  */
 proto.aggregator.ListTasksReq.prototype.getLimit = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
 
@@ -14699,7 +14669,7 @@ proto.aggregator.ListTasksReq.prototype.getLimit = function() {
  * @return {!proto.aggregator.ListTasksReq} returns this
  */
 proto.aggregator.ListTasksReq.prototype.setLimit = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 
@@ -15435,10 +15405,9 @@ proto.aggregator.ListExecutionsReq.prototype.toObject = function(opt_includeInst
 proto.aggregator.ListExecutionsReq.toObject = function(includeInstance, msg) {
   var f, obj = {
     taskIdsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    before: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    after: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    limit: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    before: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    after: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    limit: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -15481,17 +15450,13 @@ proto.aggregator.ListExecutionsReq.deserializeBinaryFromReader = function(msg, r
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCursor(value);
+      msg.setBefore(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setBefore(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
       msg.setAfter(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setLimit(value);
       break;
@@ -15531,31 +15496,24 @@ proto.aggregator.ListExecutionsReq.serializeBinaryToWriter = function(message, w
       f
     );
   }
-  f = message.getCursor();
+  f = message.getBefore();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getBefore();
+  f = message.getAfter();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getAfter();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
   f = message.getLimit();
   if (f !== 0) {
     writer.writeInt64(
-      5,
+      4,
       f
     );
   }
@@ -15600,10 +15558,10 @@ proto.aggregator.ListExecutionsReq.prototype.clearTaskIdsList = function() {
 
 
 /**
- * optional string cursor = 2;
+ * optional string before = 2;
  * @return {string}
  */
-proto.aggregator.ListExecutionsReq.prototype.getCursor = function() {
+proto.aggregator.ListExecutionsReq.prototype.getBefore = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -15612,16 +15570,16 @@ proto.aggregator.ListExecutionsReq.prototype.getCursor = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListExecutionsReq} returns this
  */
-proto.aggregator.ListExecutionsReq.prototype.setCursor = function(value) {
+proto.aggregator.ListExecutionsReq.prototype.setBefore = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
- * optional string before = 3;
+ * optional string after = 3;
  * @return {string}
  */
-proto.aggregator.ListExecutionsReq.prototype.getBefore = function() {
+proto.aggregator.ListExecutionsReq.prototype.getAfter = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -15630,35 +15588,17 @@ proto.aggregator.ListExecutionsReq.prototype.getBefore = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListExecutionsReq} returns this
  */
-proto.aggregator.ListExecutionsReq.prototype.setBefore = function(value) {
+proto.aggregator.ListExecutionsReq.prototype.setAfter = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
- * optional string after = 4;
- * @return {string}
- */
-proto.aggregator.ListExecutionsReq.prototype.getAfter = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ListExecutionsReq} returns this
- */
-proto.aggregator.ListExecutionsReq.prototype.setAfter = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional int64 limit = 5;
+ * optional int64 limit = 4;
  * @return {number}
  */
 proto.aggregator.ListExecutionsReq.prototype.getLimit = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
 
@@ -15667,7 +15607,7 @@ proto.aggregator.ListExecutionsReq.prototype.getLimit = function() {
  * @return {!proto.aggregator.ListExecutionsReq} returns this
  */
 proto.aggregator.ListExecutionsReq.prototype.setLimit = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 
@@ -18068,10 +18008,9 @@ proto.aggregator.ListSecretsReq.prototype.toObject = function(opt_includeInstanc
 proto.aggregator.ListSecretsReq.toObject = function(includeInstance, msg) {
   var f, obj = {
     workflowId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    cursor: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    before: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    after: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    limit: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    before: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    after: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    limit: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -18114,17 +18053,13 @@ proto.aggregator.ListSecretsReq.deserializeBinaryFromReader = function(msg, read
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setCursor(value);
+      msg.setBefore(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setBefore(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
       msg.setAfter(value);
       break;
-    case 5:
+    case 4:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setLimit(value);
       break;
@@ -18164,31 +18099,24 @@ proto.aggregator.ListSecretsReq.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getCursor();
+  f = message.getBefore();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getBefore();
+  f = message.getAfter();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getAfter();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
   f = message.getLimit();
   if (f !== 0) {
     writer.writeInt64(
-      5,
+      4,
       f
     );
   }
@@ -18214,10 +18142,10 @@ proto.aggregator.ListSecretsReq.prototype.setWorkflowId = function(value) {
 
 
 /**
- * optional string cursor = 2;
+ * optional string before = 2;
  * @return {string}
  */
-proto.aggregator.ListSecretsReq.prototype.getCursor = function() {
+proto.aggregator.ListSecretsReq.prototype.getBefore = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -18226,16 +18154,16 @@ proto.aggregator.ListSecretsReq.prototype.getCursor = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListSecretsReq} returns this
  */
-proto.aggregator.ListSecretsReq.prototype.setCursor = function(value) {
+proto.aggregator.ListSecretsReq.prototype.setBefore = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
- * optional string before = 3;
+ * optional string after = 3;
  * @return {string}
  */
-proto.aggregator.ListSecretsReq.prototype.getBefore = function() {
+proto.aggregator.ListSecretsReq.prototype.getAfter = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -18244,35 +18172,17 @@ proto.aggregator.ListSecretsReq.prototype.getBefore = function() {
  * @param {string} value
  * @return {!proto.aggregator.ListSecretsReq} returns this
  */
-proto.aggregator.ListSecretsReq.prototype.setBefore = function(value) {
+proto.aggregator.ListSecretsReq.prototype.setAfter = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
- * optional string after = 4;
- * @return {string}
- */
-proto.aggregator.ListSecretsReq.prototype.getAfter = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.ListSecretsReq} returns this
- */
-proto.aggregator.ListSecretsReq.prototype.setAfter = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional int64 limit = 5;
+ * optional int64 limit = 4;
  * @return {number}
  */
 proto.aggregator.ListSecretsReq.prototype.getLimit = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
 
@@ -18281,7 +18191,7 @@ proto.aggregator.ListSecretsReq.prototype.getLimit = function() {
  * @return {!proto.aggregator.ListSecretsReq} returns this
  */
 proto.aggregator.ListSecretsReq.prototype.setLimit = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+  return jspb.Message.setProto3IntField(this, 4, value);
 };
 
 

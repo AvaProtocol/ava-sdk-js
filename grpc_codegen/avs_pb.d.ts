@@ -1771,8 +1771,6 @@ export class ListTasksReq extends jspb.Message {
     getSmartWalletAddressList(): Array<string>;
     setSmartWalletAddressList(value: Array<string>): ListTasksReq;
     addSmartWalletAddress(value: string, index?: number): string;
-    getCursor(): string;
-    setCursor(value: string): ListTasksReq;
     getBefore(): string;
     setBefore(value: string): ListTasksReq;
     getAfter(): string;
@@ -1793,7 +1791,6 @@ export class ListTasksReq extends jspb.Message {
 export namespace ListTasksReq {
     export type AsObject = {
         smartWalletAddressList: Array<string>,
-        cursor: string,
         before: string,
         after: string,
         limit: number,
@@ -1891,8 +1888,6 @@ export class ListExecutionsReq extends jspb.Message {
     getTaskIdsList(): Array<string>;
     setTaskIdsList(value: Array<string>): ListExecutionsReq;
     addTaskIds(value: string, index?: number): string;
-    getCursor(): string;
-    setCursor(value: string): ListExecutionsReq;
     getBefore(): string;
     setBefore(value: string): ListExecutionsReq;
     getAfter(): string;
@@ -1913,7 +1908,6 @@ export class ListExecutionsReq extends jspb.Message {
 export namespace ListExecutionsReq {
     export type AsObject = {
         taskIdsList: Array<string>,
-        cursor: string,
         before: string,
         after: string,
         limit: number,
@@ -2253,8 +2247,6 @@ export namespace CreateOrUpdateSecretReq {
 export class ListSecretsReq extends jspb.Message { 
     getWorkflowId(): string;
     setWorkflowId(value: string): ListSecretsReq;
-    getCursor(): string;
-    setCursor(value: string): ListSecretsReq;
     getBefore(): string;
     setBefore(value: string): ListSecretsReq;
     getAfter(): string;
@@ -2275,7 +2267,6 @@ export class ListSecretsReq extends jspb.Message {
 export namespace ListSecretsReq {
     export type AsObject = {
         workflowId: string,
-        cursor: string,
         before: string,
         after: string,
         limit: number,
