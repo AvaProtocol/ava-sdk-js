@@ -76,20 +76,20 @@ describe("Pagination Tests", () => {
         limit,
       });
 
-      expect(firstPage.result.length).toBe(limit);
-      expect(firstPage.hasMore).toBe(true);
-      expect(firstPage.cursor).toBeTruthy();
+      expect(firstPage.items.length).toBe(limit);
+      expect(firstPage.hasNextPage).toBe(true);
+      expect(firstPage.endCursor).toBeTruthy();
 
       const secondPage = await client.getExecutions([workflowId], {
         limit,
-        after: firstPage.cursor,
+        after: firstPage.endCursor,
       });
 
-      expect(secondPage.result.length).toBe(totalTriggerCount - limit);
-      expect(secondPage.hasMore).toBe(false);
+      expect(secondPage.items.length).toBe(totalTriggerCount - limit);
+      expect(secondPage.hasNextPage).toBe(false);
 
-      const firstPageIds = firstPage.result.map((item) => item.id);
-      const secondPageIds = secondPage.result.map((item) => item.id);
+      const firstPageIds = firstPage.items.map((item) => item.id);
+      const secondPageIds = secondPage.items.map((item) => item.id);
       expect(_.intersection(firstPageIds, secondPageIds).length).toBe(0);
     } finally {
       if (workflowId) {
@@ -140,17 +140,17 @@ describe("Pagination Tests", () => {
         before: "", // Start from the end
       });
 
-      expect(lastPage.result.length).toBe(limit);
+      expect(lastPage.items.length).toBe(limit);
 
       const previousPage = await client.getExecutions([workflowId], {
         limit,
-        before: lastPage.cursor,
+        before: lastPage.startCursor,
       });
 
-      expect(previousPage.result.length).toBe(totalTriggerCount - limit);
+      expect(previousPage.items.length).toBe(totalTriggerCount - limit);
 
-      const lastPageIds = lastPage.result.map((item) => item.id);
-      const previousPageIds = previousPage.result.map((item) => item.id);
+      const lastPageIds = lastPage.items.map((item) => item.id);
+      const previousPageIds = previousPage.items.map((item) => item.id);
       expect(_.intersection(lastPageIds, previousPageIds).length).toBe(0);
     } finally {
       if (workflowId) {
@@ -198,19 +198,19 @@ describe("Pagination Tests", () => {
 
       const resultWithCursor = await client.getExecutions([workflowId], {
         limit,
-        cursor: firstPage.cursor,
+        cursor: firstPage.endCursor,
         after: "should-be-ignored",
         before: "should-also-be-ignored",
       });
 
       const resultOnlyCursor = await client.getExecutions([workflowId], {
         limit,
-        cursor: firstPage.cursor,
+        cursor: firstPage.endCursor,
       });
 
-      expect(resultWithCursor.result.length).toBe(resultOnlyCursor.result.length);
-      expect(resultWithCursor.result.map(item => item.id)).toEqual(
-        resultOnlyCursor.result.map(item => item.id)
+      expect(resultWithCursor.items.length).toBe(resultOnlyCursor.items.length);
+      expect(resultWithCursor.items.map(item => item.id)).toEqual(
+        resultOnlyCursor.items.map(item => item.id)
       );
     } finally {
       if (workflowId) {

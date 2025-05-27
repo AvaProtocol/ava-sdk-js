@@ -171,3 +171,7 @@ jobs:
       - name: Test Loop Node
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:loop
+
+      - name: Test Custom Code
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:customcode

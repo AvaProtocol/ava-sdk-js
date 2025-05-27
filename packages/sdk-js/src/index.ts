@@ -675,11 +675,6 @@ class Client extends BaseClient {
     request.setReason(new TriggerReason(reason).toRequest());
     request.setIsBlocking(isBlocking);
 
-    console.log(
-      "🚀 ~ Client ~ request.getReason:",
-      request.getReason()?.toObject()
-    );
-
     const result = await this.sendGrpcRequest<
       avs_pb.UserTriggerTaskResp,
       avs_pb.UserTriggerTaskReq

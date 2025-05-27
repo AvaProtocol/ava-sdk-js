@@ -46,8 +46,8 @@ describe("deleteWorkflow Tests", () => {
 
     const listRes = await client.getWorkflows([wallet.address]);
 
-    expect(Array.isArray(listRes.result)).toBe(true);
-    expect(listRes.result.some((task) => task.id === workflowId)).toBe(false);
+    expect(Array.isArray(listRes.items)).toBe(true);
+    expect(listRes.items.some((task) => task.id === workflowId)).toBe(false);
   });
 
   test("should throw error when deleting an non-existent task", async () => {

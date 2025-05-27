@@ -133,7 +133,14 @@ describe("secret Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      await client.triggerWorkflow(workflowId, defaultTriggerId);
+      await client.triggerWorkflow({
+        id: workflowId,
+        reason: {
+          type: TriggerType.Block,
+          blockNumber: currentBlockNumber + triggerInterval,
+        },
+        isBlocking: true,
+      });
 
       let executions = await client.getExecutions([workflowId], {
         limit: 1,
