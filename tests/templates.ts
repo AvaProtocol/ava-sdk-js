@@ -31,8 +31,10 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
   name: "send eth",
   type: NodeType.ETHTransfer,
   data: {
-    destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    amount: "0x123cdef",
+    config: {
+      destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
+      amount: "0x123cdef",
+    }
   },
 };
 
@@ -62,9 +64,11 @@ export const createContractWriteNodeProps = (
     name: "create account",
     type: NodeType.ContractWrite,
     data: {
-      contractAddress: factoryAddress,
-      callData,
-      contractAbi: factoryProxyAbi,
+      config: {
+        contractAddress: factoryAddress,
+        callData,
+        contractAbi: factoryProxyAbi,
+      }
     },
   };
 };
@@ -85,9 +89,11 @@ export const createContractReadNodeProps = (
     name: "get account address",
     type: NodeType.ContractRead,
     data: {
-      contractAddress: factoryAddress,
-      callData,
-      contractAbi: factoryProxyAbi,
+      config: {
+        contractAddress: factoryAddress,
+        callData,
+        contractAbi: factoryProxyAbi,
+      }
     },
   };
 };
@@ -97,10 +103,12 @@ export const restApiNodeProps: RestAPINodeProps = {
   name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
-    url: "http://localhost:3000/api/test",
-    method: "post",
-    body: `{"test": true}`,
-    headersMap: [["Content-Type", "application/json"]],
+    config: {
+      url: "http://localhost:3000/api/test",
+      method: "post",
+      body: `{"test": true}`,
+      headersMap: [["Content-Type", "application/json"]],
+    }
   },
 };
 
@@ -109,8 +117,10 @@ export const filterNodeProps: FilterNodeProps = {
   name: "filterNode",
   type: NodeType.Filter,
   data: {
-    input: "rest_api_call",
-    expression: "value >= 1",
+    config: {
+      sourceId: "rest_api_call",
+      expression: "value >= 1",
+    }
   },
 };
 
@@ -119,14 +129,16 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql call",
   type: NodeType.GraphQLQuery,
   data: {
-    url: "http://localhost:3000/graphql",
-    query: `query TestQuery {
-      test {
-        id
-        value
-      }
-    }`,
-    variablesMap: [["test", "true"]],
+    config: {
+      url: "http://localhost:3000/graphql",
+      query: `query TestQuery {
+        test {
+          id
+          value
+        }
+      }`,
+      variablesMap: [["test", "true"]],
+    }
   },
 };
 
@@ -135,11 +147,13 @@ const branchNodeProps: BranchNodeProps = {
   name: "branch",
   type: NodeType.Branch,
   data: {
-    conditionsList: [
-      { id: "b1", type: "if", expression: "foo >= 5" },
-      { id: "b2", type: "if", expression: "foo <= -1" },
-      { id: "b3", type: "else", expression: "" },
-    ],
+    config: {
+      conditionsList: [
+        { id: "b1", type: "if", expression: "foo >= 5" },
+        { id: "b2", type: "if", expression: "foo <= -1" },
+        { id: "b3", type: "else", expression: "" },
+      ],
+    }
   },
 };
 
@@ -148,8 +162,10 @@ const customCodeNodeProps: CustomCodeNodeProps = {
   name: "custom code",
   type: NodeType.CustomCode,
   data: {
-    lang: CustomCodeLangs.JAVASCRIPT,
-    source: "foo bar",
+    config: {
+      lang: CustomCodeLangs.JAVASCRIPT,
+      source: "foo bar",
+    }
   },
 };
 
@@ -193,7 +209,7 @@ export const createFromTemplate = (
       id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
-      data: { interval: 5 },
+      data: { config: { interval: 5 } },
     }),
     startAt: now,
     expiredAt: now + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
@@ -216,7 +232,7 @@ export const MultiNodeWithBranch = {
     id: defaultTriggerId,
     name: "blockTrigger",
     type: TriggerType.Block,
-    data: { interval: 5 },
+    data: { config: { interval: 5 } },
   }),
   startAt: Date.now(),
   expiredAt: Date.now() + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
@@ -228,5 +244,5 @@ export const blockTriggerEvery5 = TriggerFactory.create({
   id: defaultTriggerId,
   name: "blockTrigger",
   type: TriggerType.Block,
-  data: { interval: 5 },
+  data: { config: { interval: 5 } },
 });

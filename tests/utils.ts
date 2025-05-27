@@ -171,7 +171,15 @@ export const compareResults = (
   expect(actual.trigger.id).toEqual(expected.trigger.id);
   expect(actual.trigger.type).toEqual(expected.trigger.type);
   expect(actual.trigger.name).toEqual(expected.trigger.name);
-  expect(actual.trigger.data).toEqual(expected.trigger.data);
+  if (expected.trigger.data && 'interval' in expected.trigger.data) {
+    expect(actual.trigger.data).toBeDefined();
+    if (actual.trigger.data) {
+      expect(actual.trigger.data).toHaveProperty('config');
+      expect(actual.trigger.data.config).toHaveProperty('interval', expected.trigger.data.interval);
+    }
+  } else {
+    expect(actual.trigger.data).toEqual(expected.trigger.data);
+  }
   expect(actual.nodes).toHaveLength(expected.nodes.length);
   expect(actual.edges).toHaveLength(expected.edges.length);
   expect(actual.startAt).toEqual(expected.startAt);
