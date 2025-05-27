@@ -42,7 +42,6 @@ describe("runNodeWithInputs Tests", () => {
       nodeConfig: {},
     });
 
-    console.log("should execute a blockTrigger:", result);
     expect(result.success).toBe(true);
 
     // Example result
@@ -62,8 +61,6 @@ describe("runNodeWithInputs Tests", () => {
         interval: 12345,
       },
     });
-
-    console.log("should execute a blockTrigger:", result);
 
     expect(result.success).toBe(false);
     expect(result.data).toBeUndefined();
@@ -90,8 +87,6 @@ describe("runNodeWithInputs Tests", () => {
       inputVariables: {},
     });
 
-    console.log("should execute a restApi:", result);
-
     // Currently the server is returning an error about missing configuration
     // This suggests there may be an issue with how the configuration is being passed
     // For now, we'll test that we get a response (success or failure)
@@ -113,8 +108,6 @@ describe("runNodeWithInputs Tests", () => {
       },
     });
 
-    console.log("should execute a customCode:", result);
-    
     // Currently the server is returning an error about CustomCodeNode Config being nil
     // This suggests there may be an issue with how the configuration is being passed
     // For now, we'll test that we get a response (success or failure)
@@ -154,8 +147,6 @@ describe("runNodeWithInputs Tests", () => {
       },
       inputVariables: {},
     });
-
-    console.log("should execute a contractRead:", result);
 
     expect(result).toBeDefined();
     expect(typeof result.success).toBe("boolean");
