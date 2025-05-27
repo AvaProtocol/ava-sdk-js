@@ -209,7 +209,7 @@ export const createFromTemplate = (
       id: defaultTriggerId,
       name: "blockTrigger",
       type: TriggerType.Block,
-      data: { config: { interval: 5 } },
+      data: { interval: 5 },
     }),
     startAt: now,
     expiredAt: now + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
@@ -232,7 +232,7 @@ export const MultiNodeWithBranch = {
     id: defaultTriggerId,
     name: "blockTrigger",
     type: TriggerType.Block,
-    data: { config: { interval: 5 } },
+    data: { interval: 5 },
   }),
   startAt: Date.now(),
   expiredAt: Date.now() + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
@@ -244,7 +244,7 @@ export const blockTriggerEvery5 = TriggerFactory.create({
   id: defaultTriggerId,
   name: "blockTrigger",
   type: TriggerType.Block,
-  data: { config: { interval: 5 } },
+  data: { interval: 5 },
 });
 
 // Import Loop node templates

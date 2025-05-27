@@ -188,19 +188,21 @@ describe("createWorkflow Tests", () => {
         type: NodeType.RestAPI,
         id: getNextId(),
         data: {
-          url: "https://api.telegram.org/bot{{notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
-          method: "POST",
-          headersMap: [["content-type", "application/json"]],
-          body: `JSON.stringify({
-              chat_id: -4609037622,
-              text: \`
-                Congrat, your wallet 
-                [\${trigger1.data.to_address}](https://sepolia.etherscan.io/address/\${trigger1.data.to_address}) 
-                received \\\`\${trigger1.data.value_formatted}\\\` 
-                [\${trigger1.data.token_symbol}](https://sepolia.etherscan.io/token/\${trigger1.data.address}) 
-                at [\${trigger1.data.transaction_hash}](https://sepolia.etherscan.io/tx/\${trigger1.data.transaction_hash})
-              \`
-            })`,
+          config: {
+            url: "https://api.telegram.org/bot{{notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
+            method: "POST",
+            headersMap: [["content-type", "application/json"]],
+            body: `JSON.stringify({
+                chat_id: -4609037622,
+                text: \`
+                  Congrat, your wallet 
+                  [\${trigger1.data.to_address}](https://sepolia.etherscan.io/address/\${trigger1.data.to_address}) 
+                  received \\\`\${trigger1.data.value_formatted}\\\` 
+                  [\${trigger1.data.token_symbol}](https://sepolia.etherscan.io/token/\${trigger1.data.address}) 
+                  at [\${trigger1.data.transaction_hash}](https://sepolia.etherscan.io/tx/\${trigger1.data.transaction_hash})
+                \`
+              })`,
+          },
         },
       });
 
@@ -214,12 +216,14 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: `
-              trigger1.data.topics[0] == 
-              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" 
-              && trigger1.data.topics[2] == "${wallet.address}"
-            `,
-          matcherList: [],
+          config: {
+            expression: `
+                trigger1.data.topics[0] == 
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" 
+                && trigger1.data.topics[2] == "${wallet.address}"
+              `,
+            matcherList: [],
+          },
         },
       });
 
@@ -253,10 +257,12 @@ describe("createWorkflow Tests", () => {
         type: NodeType.RestAPI,
         id: getNextId(),
         data: {
-          url: "https://httpbin.org/get",
-          method: "GET",
-          headersMap: [["content-type", "application/json"]],
-          body: `helloworld`,
+          config: {
+            url: "https://httpbin.org/get",
+            method: "GET",
+            headersMap: [["content-type", "application/json"]],
+            body: `helloworld`,
+          },
         },
       });
 
@@ -267,17 +273,19 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: "// TODO: expression cannot be empty",
-          matcherList: [
-            {
-              type: "topics",
-              valueList: [
-                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                "",
-                "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
-              ],
-            },
-          ],
+          config: {
+            expression: "// TODO: expression cannot be empty",
+            matcherList: [
+              {
+                type: "topics",
+                valueList: [
+                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                  "",
+                  "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+                ],
+              },
+            ],
+          },
         },
       });
 

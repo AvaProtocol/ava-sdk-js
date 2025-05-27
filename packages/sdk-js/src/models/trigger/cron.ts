@@ -2,8 +2,8 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { config: { scheduleList } }
-export type CronTriggerDataType = avs_pb.CronTrigger.AsObject;
+// Required props for constructor: id, name, type and data: { scheduleList }
+export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
 export type CronTriggerOutput = avs_pb.CronTrigger.Output.AsObject;
 
@@ -22,12 +22,9 @@ class CronTrigger extends Trigger {
     }
 
     const trigger = new avs_pb.CronTrigger();
-    
-    if ((this.data as CronTriggerDataType).config) {
-      const config = new avs_pb.CronTrigger.Config();
-      config.setScheduleList((this.data as CronTriggerDataType).config!.scheduleList || []);
-      trigger.setConfig(config);
-    }
+    const config = new avs_pb.CronTrigger.Config();
+    config.setScheduleList((this.data as CronTriggerDataType).scheduleList || []);
+    trigger.setConfig(config);
     
     request.setCron(trigger);
 
@@ -38,13 +35,13 @@ class CronTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: CronTriggerDataType = { config: {} } as CronTriggerDataType;
+    let data: CronTriggerDataType = { scheduleList: [] };
     
     if (raw.getCron() && raw.getCron()!.hasConfig()) {
       const config = raw.getCron()!.getConfig();
       
       if (config) {
-        data.config = {
+        data = {
           scheduleList: config.getScheduleList() || []
         };
       }

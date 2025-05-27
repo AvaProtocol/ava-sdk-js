@@ -3,8 +3,8 @@ import { NodeType } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
-// Required props for constructor: id, name, type and data: { config: { conditionsList } }
-export type BranchNodeData = avs_pb.BranchNode.AsObject;
+// Required props for constructor: id, name, type and data: { conditionsList }
+export type BranchNodeData = avs_pb.BranchNode.Config.AsObject;
 export type BranchNodeProps = NodeProps & {
   data: BranchNodeData;
 };
@@ -20,7 +20,7 @@ class BranchNode extends Node {
     return new BranchNode({
       ...obj,
       type: NodeType.Branch,
-      data: raw.getBranch()!.toObject() as BranchNodeData,
+      data: raw.getBranch()!.toObject().config as BranchNodeData,
     });
   }
 
@@ -31,29 +31,25 @@ class BranchNode extends Node {
     request.setName(this.name);
 
     const nodeData = new avs_pb.BranchNode();
+    const config = new avs_pb.BranchNode.Config();
     
-    if ((this.data as BranchNodeData).config) {
-      const config = new avs_pb.BranchNode.Config();
+    if ((this.data as BranchNodeData).conditionsList && 
+        (this.data as BranchNodeData).conditionsList.length > 0) {
       
-      if ((this.data as BranchNodeData).config!.conditionsList && 
-          (this.data as BranchNodeData).config!.conditionsList.length > 0) {
-        
-        const conditionsList = (this.data as BranchNodeData).config!.conditionsList.map(
-          (condition: any) => {
-            const conditionObj = new avs_pb.BranchNode.Condition();
-            conditionObj.setId(condition.id);
-            conditionObj.setType(condition.type);
-            conditionObj.setExpression(condition.expression);
-            return conditionObj;
-          }
-        );
-        
-        config.setConditionsList(conditionsList);
-      }
+      const conditionsList = (this.data as BranchNodeData).conditionsList.map(
+        (condition: any) => {
+          const conditionObj = new avs_pb.BranchNode.Condition();
+          conditionObj.setId(condition.id);
+          conditionObj.setType(condition.type);
+          conditionObj.setExpression(condition.expression);
+          return conditionObj;
+        }
+      );
       
-      nodeData.setConfig(config);
+      config.setConditionsList(conditionsList);
     }
-
+    
+    nodeData.setConfig(config);
     request.setBranch(nodeData);
 
     return request;

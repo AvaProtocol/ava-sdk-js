@@ -2,8 +2,8 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { config: { interval } }
-export type BlockTriggerDataType = avs_pb.BlockTrigger.AsObject;
+// Required props for constructor: id, name, type and data: { interval }
+export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
 export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
 export type BlockTriggerOutput = avs_pb.BlockTrigger.Output.AsObject;
 
@@ -22,12 +22,9 @@ class BlockTrigger extends Trigger {
     }
 
     const trigger = new avs_pb.BlockTrigger();
-    
-    if ((this.data as BlockTriggerDataType).config) {
-      const config = new avs_pb.BlockTrigger.Config();
-      config.setInterval((this.data as BlockTriggerDataType).config!.interval || 0);
-      trigger.setConfig(config);
-    }
+    const config = new avs_pb.BlockTrigger.Config();
+    config.setInterval((this.data as BlockTriggerDataType).interval || 0);
+    trigger.setConfig(config);
     
     request.setBlock(trigger);
 
@@ -38,13 +35,13 @@ class BlockTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: BlockTriggerDataType = { config: {} } as BlockTriggerDataType;
+    let data: BlockTriggerDataType = { interval: 0 };
     
     if (raw.getBlock() && raw.getBlock()!.hasConfig()) {
       const config = raw.getBlock()!.getConfig();
       
       if (config) {
-        data.config = {
+        data = {
           interval: config.getInterval() || 0
         };
       }
