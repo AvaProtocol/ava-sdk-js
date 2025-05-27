@@ -1,13 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-
-export type SecretProps = {
-  name: string;
-  secret?: string;
-  workflowId?: string;
-  orgId?: string;
-  createdAt?: number;
-  updatedAt?: number;
-};
+import { SecretProps } from "@avaprotocol/types";
 
 class Secret implements SecretProps {
   name: string;

@@ -75,14 +75,17 @@ export type SmartWallet = avs_pb.SmartWallet.AsObject & {
 
 export const ExecutionStatus = avs_pb.ExecutionStatus;
 
-export interface ListSecretResponse {
+export type SecretProps = {
   name: string;
+  secret?: string;
   workflowId?: string;
   orgId?: string;
-}
+  createdAt?: number;
+  updatedAt?: number;
+};
 
 export interface ListSecretsResponse {
-  items: ListSecretResponse[];
+  items: SecretProps[];
   startCursor: string;
   endCursor: string;
   hasPreviousPage: boolean;
