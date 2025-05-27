@@ -99,12 +99,11 @@ export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
   inputVariables?: Record<string, any>;
-  walletAddress?: string;
 }
 
 export interface RunNodeWithInputsResponse {
   success: boolean;
-  data?: Record<string, any> | null;
+  data?: Record<string, any>;
   error?: string;
   executionId?: string;
   nodeId?: string;

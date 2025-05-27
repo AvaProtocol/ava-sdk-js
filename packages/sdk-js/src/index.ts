@@ -469,10 +469,10 @@ class Client extends BaseClient {
       request.addSmartWalletAddress(a);
     }
 
-    if (options?.before && options?.before !== "") {
+    if (options?.before) {
       request.setBefore(options.before);
     }
-    if (options?.after && options?.after !== "") {
+    if (options?.after) {
       request.setAfter(options.after);
     }
 
@@ -532,10 +532,10 @@ class Client extends BaseClient {
       request.addTaskIds(w);
     }
 
-    if (options?.before && options?.before !== "") {
+    if (options?.before) {
       request.setBefore(options.before);
     }
-    if (options?.after && options?.after !== "") {
+    if (options?.after) {
       request.setAfter(options.after);
     }
 
@@ -681,11 +681,11 @@ class Client extends BaseClient {
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
-      avs_pb.Task,
+      BoolValue,
       avs_pb.IdReq
     >("cancelTask", request, options);
 
-    return true; // Return boolean as expected by tests
+    return result.getValue();
   }
 
   /**
@@ -702,11 +702,11 @@ class Client extends BaseClient {
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
-      avs_pb.Task,
+      BoolValue,
       avs_pb.IdReq
     >("deleteTask", request, options);
 
-    return true; // Return boolean as expected by tests
+    return result.getValue();
   }
 
   /**
@@ -738,9 +738,7 @@ class Client extends BaseClient {
       avs_pb.CreateOrUpdateSecretReq
     >("createSecret", request, options);
 
-    return new Secret({
-      name: result.getName()
-    });
+    return new Secret(result.toObject());
   }
 
   /**
@@ -772,9 +770,7 @@ class Client extends BaseClient {
       avs_pb.CreateOrUpdateSecretReq
     >("updateSecret", request, options);
 
-    return new Secret({
-      name: result.getName()
-    });
+    return new Secret(result.toObject());
   }
 
   /**
@@ -791,10 +787,10 @@ class Client extends BaseClient {
       request.setWorkflowId(options.workflowId);
     }
 
-    if (options?.before && options?.before !== "") {
+    if (options?.before) {
       request.setBefore(options.before);
     }
-    if (options?.after && options?.after !== "") {
+    if (options?.after) {
       request.setAfter(options.after);
     }
 
@@ -842,9 +838,7 @@ class Client extends BaseClient {
       avs_pb.DeleteSecretReq
     >("deleteSecret", request, options);
 
-    return new Secret({
-      name: result.getName()
-    });
+    return new Secret(result.toObject());
   }
 
   /**
@@ -862,7 +856,6 @@ class Client extends BaseClient {
       nodeType,
       nodeConfig,
       inputVariables = {},
-      walletAddress,
     }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
@@ -872,92 +865,86 @@ class Client extends BaseClient {
         const variableNames = Object.keys(inputVariables).join(', ');
         return {
           success: false,
-          data: null, // Now allowed by updated interface
           error: `blockTrigger nodes do not accept input variables. Received: ${variableNames}`,
           nodeId: ''
         };
       }
       
-      // Map the string nodeType to the enum NodeType
-      const mappedNodeType = this.mapNodeTypeString(nodeType);
-      if (!mappedNodeType) {
-        return {
-          success: false,
-          error: `Unsupported node type: ${nodeType}`,
-        };
+      // Create the request
+      const request = new avs_pb.RunNodeWithInputsReq();
+      request.setNodeType(nodeType);
+      
+      const nodeConfigMap = request.getNodeConfigMap();
+      for (const [key, value] of Object.entries(nodeConfig)) {
+        nodeConfigMap.set(key, this.convertJSValueToProtobuf(value));
       }
-
-      // Create a node from the config
-      const node = this.createNodeFromConfig(
-        mappedNodeType,
-        nodeConfig,
-        `node_${Date.now()}`
-      );
-
-      // Create a temporary workflow with the node
-      const triggerId = `trigger_${Date.now()}`;
-      const workflow = this.createTempWorkflowForNode(
-        node,
-        triggerId,
-        inputVariables,
-        walletAddress || ""
-      );
-
-      // Submit the workflow
-      const workflowId = await this.submitWorkflow(workflow, options);
-
-      // Trigger the workflow
-      const executionId = await this.triggerWorkflow(
-        workflowId,
-        triggerId,
-        options
-      );
-
-      // Wait for the execution to complete
-      let status = 0; // PENDING
-      let retries = 0;
-      const maxRetries = 30; // 30 seconds timeout
-      let response: RunNodeWithInputsResponse = { success: false };
-
-      while (
-        status !== 1 && // COMPLETED
-        status !== 2 && // FAILED
-        retries < maxRetries
-      ) {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-        status = await this.getExecutionStatus(executionId, options);
-        retries++;
+      
+      if (inputVariables && Object.keys(inputVariables).length > 0) {
+        const inputVarsMap = request.getInputVariablesMap();
+        for (const [key, value] of Object.entries(inputVariables)) {
+          inputVarsMap.set(key, this.convertJSValueToProtobuf(value));
+        }
       }
-
-      if (status === 1) { // COMPLETED
-        // Get the execution details
-        const execution = await this.getExecution(executionId, options);
-        response = {
-          success: true,
-          data: execution,
-        };
-      } else if (status === 2) { // FAILED
-        const execution = await this.getExecution(executionId, options);
-        response = {
-          success: false,
-          error: execution.error || "Execution failed",
-          data: execution,
-        };
-      } else {
-        response = {
-          success: false,
-          error: "Execution timed out",
-        };
+      
+      // Send the request directly to the server
+      const result = await this.sendGrpcRequest<
+        avs_pb.RunNodeWithInputsResp,
+        avs_pb.RunNodeWithInputsReq
+      >("runNodeWithInputs", request, options);
+      
+      let data: Record<string, any> | undefined;
+      
+      const outputCase = result.getOutputDataCase();
+      if (outputCase !== avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET) {
+        switch (outputCase) {
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
+            data = result.getEthTransfer()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.GRAPHQL:
+            data = result.getGraphql()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_READ:
+            data = result.getContractRead()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_WRITE:
+            data = result.getContractWrite()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CUSTOM_CODE:
+            data = result.getCustomCode()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.REST_API:
+            data = result.getRestApi()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.BRANCH:
+            data = result.getBranch()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.FILTER:
+            data = result.getFilter()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
+            data = result.getLoop()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.BLOCK_TRIGGER:
+            data = result.getBlockTrigger()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.FIXED_TIME_TRIGGER:
+            data = result.getFixedTimeTrigger()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CRON_TRIGGER:
+            data = result.getCronTrigger()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.EVENT_TRIGGER:
+            data = result.getEventTrigger()?.toObject();
+            break;
+        }
       }
-
-      // Clean up by deleting the temporary workflow
-      try {
-        await this.deleteWorkflow(workflowId, options);
-      } catch (cleanupError) {
-        console.warn(`Failed to cleanup workflow ${workflowId}:`, cleanupError);
-      }
-
-      return response;
+      
+      return {
+        success: result.getSuccess(),
+        data,
+        error: result.getError(),
+        nodeId: result.getNodeId()
+      };
     } catch (error: any) {
       return {
         success: false,
@@ -1053,7 +1040,7 @@ class Client extends BaseClient {
     }
   }
 
-  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
+  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>): Workflow {
     // For customCode nodes, we need to modify the source to include the input variables
     if (node.type === NodeType.CustomCode && inputVariables && Object.keys(inputVariables).length > 0) {
       const customCodeData = node.data as avs_pb.CustomCodeNode.AsObject;
@@ -1079,7 +1066,7 @@ class Client extends BaseClient {
     });
 
     return new Workflow({
-      smartWalletAddress: walletAddress,
+      smartWalletAddress: "",
       trigger: trigger,
       nodes: [node],
       edges: [new Edge({
