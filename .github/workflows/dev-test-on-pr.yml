@@ -170,4 +170,4 @@ jobs:
 
       - name: Test Loop Node
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:loopNode
+        run: yarn test:loop

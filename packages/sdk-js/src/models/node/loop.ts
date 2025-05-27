@@ -19,11 +19,35 @@ class LoopNode extends Node {
       throw new Error("Response does not contain a Loop node");
     }
 
+    const loopNodeData = loopNode.toObject() as LoopNodeData;
+    
+    // Extract config properties to data level for easier access
+    if (loopNodeData.config) {
+      (loopNodeData as any).input = loopNodeData.config.sourceId;
+      (loopNodeData as any).iterVal = loopNodeData.config.iterVal;
+      (loopNodeData as any).iterKey = loopNodeData.config.iterKey;
+      
+      // Also determine runnerType based on which runner is present
+      if (loopNodeData.restApi) {
+        (loopNodeData as any).runnerType = NodeType.RestAPI;
+      } else if (loopNodeData.customCode) {
+        (loopNodeData as any).runnerType = NodeType.CustomCode;
+      } else if (loopNodeData.ethTransfer) {
+        (loopNodeData as any).runnerType = NodeType.ETHTransfer;
+      } else if (loopNodeData.contractRead) {
+        (loopNodeData as any).runnerType = NodeType.ContractRead;
+      } else if (loopNodeData.contractWrite) {
+        (loopNodeData as any).runnerType = NodeType.ContractWrite;
+      } else if (loopNodeData.graphqlDataQuery) {
+        (loopNodeData as any).runnerType = NodeType.GraphQLQuery;
+      }
+    }
+
     return new LoopNode({
       id: raw.getId(),
       name: raw.getName(),
       type: NodeType.Loop,
-      data: loopNode.toObject() as LoopNodeData,
+      data: loopNodeData,
     });
   }
 
@@ -36,13 +60,19 @@ class LoopNode extends Node {
 
     const data = this.data as LoopNodeData;
 
+    // Set the loop config from data.config or direct properties
+    const config = new avs_pb.LoopNode.Config();
     if (data.config) {
-      const config = new avs_pb.LoopNode.Config();
-      config.setSourceId(data.config.sourceId);
-      config.setIterVal(data.config.iterVal);
-      config.setIterKey(data.config.iterKey);
-      loopNode.setConfig(config);
+      config.setSourceId(data.config.sourceId || "");
+      config.setIterVal(data.config.iterVal || "");
+      config.setIterKey(data.config.iterKey || "");
+    } else {
+      // Handle direct properties for backward compatibility
+      config.setSourceId((data as any).input || (data as any).sourceId || "");
+      config.setIterVal((data as any).iterVal || "");
+      config.setIterKey((data as any).iterKey || "");
     }
+    loopNode.setConfig(config);
 
     if (data.ethTransfer) {
       const ethTransfer = new avs_pb.ETHTransferNode();
