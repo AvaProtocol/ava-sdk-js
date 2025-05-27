@@ -855,28 +855,28 @@ class Client extends BaseClient {
           method: config.method || 'GET',
           body: config.body || '',
           headersMap: Object.entries(config.headers || {})
-        };
+        } as avs_pb.RestAPINode.AsObject;
       case 'contractRead':
         return {
           contractAddress: config.contractAddress || '',
           callData: config.callData || '',
           contractAbi: config.contractAbi || ''
-        };
+        } as avs_pb.ContractReadNode.AsObject;
       case 'customCode':
       case 'blockTrigger':
         return {
           lang: 0, // JavaScript
           source: config.source || 'return { message: "Node executed successfully" };'
-        };
+        } as avs_pb.CustomCodeNode.AsObject;
       case 'branch':
         return {
           conditionsList: config.conditions || []
-        };
+        } as avs_pb.BranchNode.AsObject;
       case 'filter':
         return {
           expression: config.expression || '',
           input: config.input || ''
-        };
+        } as avs_pb.FilterNode.AsObject;
       default:
         throw new Error(`Unsupported node type: ${nodeType}`);
     }
