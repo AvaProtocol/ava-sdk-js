@@ -27,7 +27,7 @@ import type {
   GetWorkflowsRequest,
   GetSignatureFormatResponse,
   RunNodeWithInputsRequest,
-  RunNodeWithInputsResponse
+  RunNodeWithInputsResponse,
 } from "@avaprotocol/types";
 
 import { NodeType, TriggerType } from "@avaprotocol/types";
@@ -37,6 +37,7 @@ import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
+import BlockTrigger, { BlockTriggerOutput } from "./models/trigger/block";
 
 class BaseClient {
   readonly endpoint: string;
@@ -215,6 +216,104 @@ class BaseClient {
         }
       );
     });
+  }
+
+  /**
+   * Convert a protobuf Value to a JavaScript value
+   * @param value - The protobuf Value object
+   * @returns {any} - The converted JavaScript value
+   */
+  protected convertProtobufValueToJS(value: any): any {
+    if (!value) return null;
+
+    // Handle different value types based on protobuf Value structure
+    if (value.hasNullValue && value.hasNullValue()) {
+      return null;
+    }
+    if (value.hasNumberValue && value.hasNumberValue()) {
+      return value.getNumberValue();
+    }
+    if (value.hasStringValue && value.hasStringValue()) {
+      return value.getStringValue();
+    }
+    if (value.hasBoolValue && value.hasBoolValue()) {
+      return value.getBoolValue();
+    }
+    if (value.hasStructValue && value.hasStructValue()) {
+      const struct = value.getStructValue();
+      const result: any = {};
+      if (struct && struct.getFieldsMap) {
+        const fieldsMap = struct.getFieldsMap();
+        fieldsMap.forEach((fieldValue: any, key: string) => {
+          result[key] = this.convertProtobufValueToJS(fieldValue);
+        });
+      }
+      return result;
+    }
+    if (value.hasListValue && value.hasListValue()) {
+      const list = value.getListValue();
+      if (list && list.getValuesList) {
+        return list
+          .getValuesList()
+          .map((item: any) => this.convertProtobufValueToJS(item));
+      }
+      return [];
+    }
+
+    // Fallback: try to extract primitive values directly
+    if (typeof value.getNumberValue === "function") {
+      return value.getNumberValue();
+    }
+    if (typeof value.getStringValue === "function") {
+      return value.getStringValue();
+    }
+    if (typeof value.getBoolValue === "function") {
+      return value.getBoolValue();
+    }
+
+    // If all else fails, return the raw value
+    return value;
+  }
+
+  /**
+   * Convert a JavaScript value to a protobuf Value
+   * @param value - The JavaScript value to convert
+   * @returns {any} - The protobuf Value object
+   */
+  protected convertJSValueToProtobuf(value: any): any {
+    const protobufValue =
+      new (require("google-protobuf/google/protobuf/struct_pb").Value)();
+
+    if (value === null || value === undefined) {
+      protobufValue.setNullValue(0); // NULL_VALUE = 0
+    } else if (typeof value === "number") {
+      protobufValue.setNumberValue(value);
+    } else if (typeof value === "string") {
+      protobufValue.setStringValue(value);
+    } else if (typeof value === "boolean") {
+      protobufValue.setBoolValue(value);
+    } else if (Array.isArray(value)) {
+      const listValue =
+        new (require("google-protobuf/google/protobuf/struct_pb").ListValue)();
+      const convertedValues = value.map((item) =>
+        this.convertJSValueToProtobuf(item)
+      );
+      listValue.setValuesList(convertedValues);
+      protobufValue.setListValue(listValue);
+    } else if (typeof value === "object") {
+      const structValue =
+        new (require("google-protobuf/google/protobuf/struct_pb").Struct)();
+      const fieldsMap = structValue.getFieldsMap();
+      Object.entries(value).forEach(([key, val]) => {
+        fieldsMap.set(key, this.convertJSValueToProtobuf(val));
+      });
+      protobufValue.setStructValue(structValue);
+    } else {
+      // Fallback: convert to string
+      protobufValue.setStringValue(String(value));
+    }
+
+    return protobufValue;
   }
 }
 
@@ -766,151 +865,111 @@ class Client extends BaseClient {
     request: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
-    let workflowId: string | null = null;
-    let dedicatedWallet: any = null;
-    
     try {
-      // Generate a numeric salt that can be parsed by math.ParseBig256
-      // Use timestamp + random number to ensure uniqueness
-      const timestamp = Date.now();
-      const randomNum = Math.floor(Math.random() * 1000000000); // 9 digits
-      const salt = `${timestamp}${randomNum.toString().padStart(9, '0')}`;
-      dedicatedWallet = await this.getWallet({ salt });
-      
-      // Create a temporary node using NodeFactory patterns
-      const nodeId = `temp_${Date.now()}`;
-      const node = this.createNodeFromConfig(request.nodeType, request.nodeConfig, nodeId);
-      
-      // Create minimal workflow with just this node
-      const triggerId = `trigger_${Date.now()}`;
-      const tempWorkflow = this.createTempWorkflowForNode(node, triggerId, request.inputVariables, dedicatedWallet.address);
-      
-      // Submit and immediately trigger the workflow
-      workflowId = await this.submitWorkflow(tempWorkflow);
-      
-      const execution = await this.triggerWorkflow({
-        id: workflowId,
-        reason: { type: TriggerType.Manual },
-        isBlocking: true
-      });
-      
+      // Create the gRPC request object
+      const grpcRequest = new avs_pb.RunNodeWithInputsReq();
+      grpcRequest.setNodeType(request.nodeType);
+
+      // Set node config if provided
+      if (request.nodeConfig) {
+        const nodeConfigMap = grpcRequest.getNodeConfigMap();
+        Object.entries(request.nodeConfig).forEach(([key, value]) => {
+          const protobufValue = this.convertJSValueToProtobuf(value);
+          nodeConfigMap.set(key, protobufValue);
+        });
+      }
+
+      // Set input variables if provided (optional for blockTrigger)
+      if (request.inputVariables) {
+        const inputVariablesMap = grpcRequest.getInputVariablesMap();
+        Object.entries(request.inputVariables).forEach(([key, value]) => {
+          const protobufValue = this.convertJSValueToProtobuf(value);
+          inputVariablesMap.set(key, protobufValue);
+        });
+      }
+
+      // Simple pass-through to the gRPC RunNodeWithInputs method
+      const response = await this.sendGrpcRequest<
+        avs_pb.RunNodeWithInputsResp,
+        avs_pb.RunNodeWithInputsReq
+      >("runNodeWithInputs", grpcRequest, options);
+
+      // Convert the response to a proper JavaScript object
+      const responseObj = response.toObject();
+
+      // ethTransfer?: ETHTransferNode.Output.AsObject,
+      // graphql?: GraphQLQueryNode.Output.AsObject,
+      // contractRead?: ContractReadNode.Output.AsObject,
+      // contractWrite?: ContractWriteNode.Output.AsObject,
+      // customCode?: CustomCodeNode.Output.AsObject,
+      // restApi?: RestAPINode.Output.AsObject,
+      // branch?: BranchNode.Output.AsObject,
+      // filter?: FilterNode.Output.AsObject,
+      // loop?: LoopNode.Output.AsObject,
+      // blockTrigger?: BlockTrigger.Output.AsObject,
+      // fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
+      // cronTrigger?: CronTrigger.Output.AsObject,
+      // eventTrigger?: EventTrigger.Output.AsObject,
+      let outputData;
+      switch (request.nodeType) {
+        case TriggerType.Block:
+          outputData = responseObj.blockTrigger;
+          break;
+        case TriggerType.Cron:
+          outputData = responseObj.cronTrigger;
+          break;
+        case TriggerType.Event:
+          outputData = responseObj.eventTrigger;
+          break;
+        case TriggerType.FixedTime:
+          outputData = responseObj.fixedTimeTrigger;
+          break;
+        case NodeType.ETHTransfer:
+          outputData = responseObj.ethTransfer;
+          break;
+        case NodeType.Branch:
+          outputData = responseObj.branch;
+          break;
+        case NodeType.Filter:
+          outputData = responseObj.filter;
+          break;
+        case NodeType.Loop:
+          outputData = responseObj.loop;
+          break;
+        case NodeType.CustomCode:
+          outputData = responseObj.customCode;
+          break;
+        case NodeType.RestAPI:
+          outputData = responseObj.restApi;
+          break;
+        case NodeType.ContractWrite:
+          outputData = responseObj.contractWrite;
+          break;
+        case NodeType.ContractRead:
+          outputData = responseObj.contractRead;
+          break;
+        case NodeType.GraphQLQuery:
+          outputData = responseObj.graphql;
+          break;
+        case NodeType.RestAPI:
+          outputData = responseObj.restApi;
+          break;
+        default:
+          break;
+      }
+
       return {
-        success: execution.status === ExecutionStatus.FINISHED,
-        data: this.extractNodeExecutionData(execution),
-        executionId: execution.executionId,
-        nodeId: nodeId
+        success: responseObj.success,
+        data: outputData,
+        error: responseObj.error,
+        nodeId: responseObj.nodeId,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
-    } finally {
-      if (workflowId) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            await this.deleteWorkflow(workflowId);
-            break; // Success, exit retry loop
-          } catch (cleanupError) {
-            if (attempt === 2) {
-              console.warn(`Failed to cleanup workflow ${workflowId} after 3 attempts:`, cleanupError);
-            } else {
-              await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
-            }
-          }
-        }
-      }
     }
-  }
-
-  private createNodeFromConfig(nodeType: string, config: Record<string, any>, nodeId: string): Node {
-    const nodeProps: NodeProps = {
-      id: nodeId,
-      name: `Single Node Execution - ${nodeType}`,
-      type: this.mapNodeTypeString(nodeType),
-      data: this.createNodeData(nodeType, config)
-    };
-    
-    return NodeFactory.create(nodeProps);
-  }
-
-  private mapNodeTypeString(nodeType: string): NodeType {
-    const typeMap: Record<string, NodeType> = {
-      'blockTrigger': NodeType.CustomCode, // Block trigger simulated as custom code
-      'restApi': NodeType.RestAPI,
-      'contractRead': NodeType.ContractRead,
-      'customCode': NodeType.CustomCode,
-      'branch': NodeType.Branch,
-      'filter': NodeType.Filter
-    };
-    
-    return typeMap[nodeType] || NodeType.CustomCode;
-  }
-
-  private createNodeData(nodeType: string, config: Record<string, any>): NodeData {
-    switch (nodeType) {
-      case 'restApi':
-        return {
-          url: config.url || '',
-          method: config.method || 'GET',
-          body: config.body || '',
-          headersMap: Object.entries(config.headers || {})
-        };
-      case 'contractRead':
-        return {
-          contractAddress: config.contractAddress || '',
-          callData: config.callData || '',
-          contractAbi: config.contractAbi || ''
-        };
-      case 'customCode':
-      case 'blockTrigger':
-        return {
-          lang: 0, // JavaScript
-          source: config.source || 'return { message: "Node executed successfully" };'
-        };
-      case 'branch':
-        return {
-          conditionsList: config.conditions || []
-        };
-      case 'filter':
-        return {
-          expression: config.expression || '',
-          input: config.input || ''
-        };
-      default:
-        throw new Error(`Unsupported node type: ${nodeType}`);
-    }
-  }
-
-  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
-    // Create a minimal workflow with manual trigger
-    const trigger = TriggerFactory.create({
-      id: triggerId,
-      name: 'manual_trigger',
-      type: TriggerType.Manual,
-      data: null
-    });
-
-    return new Workflow({
-      smartWalletAddress: walletAddress, // Use the dedicated wallet address
-      trigger: trigger,
-      nodes: [node],
-      edges: [new Edge({
-        id: `edge_${Date.now()}`,
-        source: triggerId,
-        target: node.id
-      })],
-      startAt: Date.now(),
-      expiredAt: Date.now() + 3600000, // 1 hour from now
-      maxExecution: 1
-    });
-  }
-
-  private extractNodeExecutionData(execution: any): Record<string, any> {
-    return {
-      executionId: execution.executionId,
-      status: execution.status,
-    };
   }
 }
 

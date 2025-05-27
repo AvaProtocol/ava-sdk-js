@@ -23,9 +23,8 @@ import util from "util";
 // ```
 
 // Required props for constructor: id, name, type and data: { expression, matcherList }
-export type EventTriggerDataType = avs_pb.EventCondition.AsObject;
-
-export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
+export type EventTriggerConfig = avs_pb.EventTrigger.Config.AsObject;
+export type EventTriggerProps = TriggerProps & { data: EventTriggerConfig };
 
 class EventTrigger extends Trigger {
   constructor(props: EventTriggerProps) {
@@ -41,30 +40,20 @@ class EventTrigger extends Trigger {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
 
-    const condition = new avs_pb.EventCondition();
-    const expression = (this.data as EventTriggerDataType).expression;
-    const matcherList = (this.data as EventTriggerDataType).matcherList;
+    const trigger = new avs_pb.EventTrigger();
+    const config = new avs_pb.EventTrigger.Config();
 
-    if (_.isUndefined(expression)) {
-      throw new Error(`Expression is undefined for ${this.type}`);
-    }
-
-    condition.setExpression(expression);
-
-    if (_.isUndefined(matcherList)) {
-      throw new Error(`Matcher list is undefined for ${this.type}`);
-    }
-
-    condition.setMatcherList(
-      matcherList.map((element) => {
-        const m = new avs_pb.EventCondition.Matcher();
+    config.setExpression((this.data as EventTriggerConfig).expression);
+    config.setMatcherList(
+      (this.data as EventTriggerConfig).matcherList.map((element) => {
+        const m = new avs_pb.EventTrigger.Matcher();
         m.setType(element["type"]);
         m.setValueList(element["valueList"]);
         return m;
       })
     );
-
-    request.setEvent(condition);
+    trigger.setConfig(config);
+    request.setEvent(trigger);
 
     return request;
   }
@@ -73,16 +62,17 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: EventTriggerDataType = {} as EventTriggerDataType;
-    if (raw.getEvent()!.getExpression()) {
-      data.expression = raw.getEvent()!.getExpression();
+    let data: EventTriggerConfig = {} as EventTriggerConfig;
+    if (raw.getEvent()!.getConfig()!.getExpression()) {
+      data.expression = raw.getEvent()!.getConfig()!.getExpression();
     }
 
-    if (raw.getEvent()!.getMatcherList()) {
+    if (raw.getEvent()!.getConfig()!.getMatcherList()) {
       data.matcherList = raw
         .getEvent()!
+        .getConfig()!
         .getMatcherList()
-        .map((item: avs_pb.EventCondition.Matcher) => {
+        .map((item: avs_pb.EventTrigger.Matcher) => {
           return {
             type: item.getType(),
             valueList: item.getValueList(),

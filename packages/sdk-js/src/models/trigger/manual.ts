@@ -6,7 +6,7 @@ export type ManualTriggerProps = TriggerProps & { data: null };
 
 class ManualTrigger extends Trigger {
   constructor(props: ManualTriggerProps) {
-    super(props);
+    super({ ...props, type: TriggerType.Manual, data: null });
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -18,13 +18,14 @@ class ManualTrigger extends Trigger {
   }
 
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
+    const obj = raw.toObject() as unknown as TriggerProps;
+
     return new ManualTrigger({
-      id: raw.getId(),
-      name: raw.getName(),
+      ...obj,
       type: TriggerType.Manual,
       data: null,
     });
   }
 }
 
-export default ManualTrigger; 
+export default ManualTrigger;

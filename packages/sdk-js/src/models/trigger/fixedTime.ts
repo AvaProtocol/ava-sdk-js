@@ -3,9 +3,9 @@ import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name,type and data: { epoch }
-export type FixedTimeTriggerDataType = avs_pb.FixedTimeCondition.AsObject;
+export type FixedTimeTriggerConfig = avs_pb.FixedTimeTrigger.Config.AsObject;
 export type FixedTimeTriggerProps = TriggerProps & {
-  data: FixedTimeTriggerDataType;
+  data: FixedTimeTriggerConfig;
 };
 
 class FixedTimeTrigger extends Trigger {
@@ -22,9 +22,11 @@ class FixedTimeTrigger extends Trigger {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
 
-    const condition = new avs_pb.FixedTimeCondition();
-    condition.setEpochsList((this.data as FixedTimeTriggerDataType).epochsList);
-    request.setFixedTime(condition);
+    const trigger = new avs_pb.FixedTimeTrigger();
+    const config = new avs_pb.FixedTimeTrigger.Config();
+    config.setEpochsList((this.data as FixedTimeTriggerConfig).epochsList);
+    trigger.setConfig(config);
+    request.setFixedTime(trigger);
 
     return request;
   }
@@ -36,7 +38,7 @@ class FixedTimeTrigger extends Trigger {
     return new FixedTimeTrigger({
       ...obj,
       type: TriggerType.FixedTime,
-      data: raw.getFixedTime()!.toObject() as FixedTimeTriggerDataType,
+      data: raw?.getFixedTime()?.toObject().config as FixedTimeTriggerConfig,
     });
   }
 }

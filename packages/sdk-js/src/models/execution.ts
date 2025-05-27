@@ -5,10 +5,10 @@ import Step from "./step";
 export type StepProps = avs_pb.Execution.Step.AsObject;
 
 export type OutputDataProps =
-  | avs_pb.Execution.TransferLogOutput.AsObject
-  | avs_pb.Execution.BlockOutput.AsObject
-  | avs_pb.Execution.TimeOutput.AsObject
-  | avs_pb.Evm.Log.AsObject
+  | avs_pb.BlockTrigger.Output.AsObject
+  | avs_pb.CronTrigger.Output.AsObject
+  | avs_pb.EventTrigger.Output.AsObject
+  | avs_pb.FixedTimeTrigger.Output.AsObject
   | undefined;
 
 // Ignore the original transferLog, evmLog, etc. fields and use a combined outputData field instead
@@ -50,17 +50,17 @@ class Execution implements ExecutionProps {
     let triggerOutputData: OutputDataProps | undefined;
 
     switch (triggerOutputDataType) {
-      case avs_pb.Execution.OutputDataCase.EVM_LOG:
-        triggerOutputData = execution.getEvmLog()?.toObject();
+      case avs_pb.Execution.OutputDataCase.EVENT_TRIGGER:
+        triggerOutputData = execution.getEventTrigger()?.toObject();
         break;
-      case avs_pb.Execution.OutputDataCase.TRANSFER_LOG:
-        triggerOutputData = execution.getTransferLog()?.toObject();
+      case avs_pb.Execution.OutputDataCase.CRON_TRIGGER:
+        triggerOutputData = execution.getCronTrigger()?.toObject();
         break;
-      case avs_pb.Execution.OutputDataCase.BLOCK:
-        triggerOutputData = execution.getBlock()?.toObject();
+      case avs_pb.Execution.OutputDataCase.BLOCK_TRIGGER:
+        triggerOutputData = execution.getBlockTrigger()?.toObject();
         break;
-      case avs_pb.Execution.OutputDataCase.TIME:
-        triggerOutputData = execution.getTime()?.toObject();
+      case avs_pb.Execution.OutputDataCase.FIXED_TIME_TRIGGER:
+        triggerOutputData = execution.getFixedTimeTrigger()?.toObject();
         break;
     }
 

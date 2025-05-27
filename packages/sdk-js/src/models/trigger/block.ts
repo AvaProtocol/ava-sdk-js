@@ -1,10 +1,11 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerProps } from "./interface";
+import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { interval }
-export type BlockTriggerDataType = avs_pb.BlockCondition.AsObject;
-export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
+export type BlockTriggerConfig = avs_pb.BlockTrigger.Config.AsObject;
+export type BlockTriggerProps = TriggerProps & { data: BlockTriggerConfig };
+export type BlockTriggerOutput = avs_pb.BlockTrigger.Output.AsObject;
 
 class BlockTrigger extends Trigger {
   constructor(props: BlockTriggerProps) {
@@ -20,9 +21,12 @@ class BlockTrigger extends Trigger {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
 
-    const condition = new avs_pb.BlockCondition();
-    condition.setInterval((this.data as BlockTriggerDataType).interval);
-    request.setBlock(condition);
+    const trigger = new avs_pb.BlockTrigger();
+    const config = new avs_pb.BlockTrigger.Config();
+    config.setInterval((this.data as BlockTriggerConfig).interval);
+    trigger.setConfig(config);
+
+    request.setBlock(trigger);
 
     return request;
   }
@@ -34,9 +38,18 @@ class BlockTrigger extends Trigger {
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
-      data: raw.getBlock()!.toObject() as BlockTriggerDataType,
+      data: raw?.getBlock()?.toObject().config as BlockTriggerConfig,
     });
   }
+
+  // /**
+  //  * Convert raw data from runNodeWithInputs response to BlockOutput format
+  //  * @param rawData - The raw data from the gRPC response
+  //  * @returns {avs_pb.Execution.BlockOutput.AsObject} - The converted data
+  //  */
+  // getOutput(): TriggerOutput | undefined {
+  //   return this.output;
+  // }
 }
 
 export default BlockTrigger;
