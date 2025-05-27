@@ -884,6 +884,20 @@ class Client extends BaseClient {
 
   private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
     // Create a minimal workflow with manual trigger
+    // For customCode nodes, we need to modify the source to include the input variables
+    if (node.type === NodeType.CustomCode && inputVariables && Object.keys(inputVariables).length > 0) {
+      const customCodeData = node.data as avs_pb.CustomCodeNode.AsObject;
+      // Create a wrapper that defines the variables before executing the original code
+      const variableDefinitions = Object.entries(inputVariables)
+        .map(([key, value]) => {
+          const valueStr = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
+          return `const ${key} = ${valueStr};`;
+        })
+        .join('\n');
+      
+      customCodeData.source = `${variableDefinitions}\n${customCodeData.source}`;
+    }
+    
     const trigger = TriggerFactory.create({
       id: triggerId,
       name: 'manual_trigger',
