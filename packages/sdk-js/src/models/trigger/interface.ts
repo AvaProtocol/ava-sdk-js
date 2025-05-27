@@ -6,6 +6,7 @@ export type TriggerData =
   | avs_pb.CronTrigger.AsObject
   | avs_pb.BlockTrigger.AsObject
   | avs_pb.EventTrigger.AsObject
+  | Record<string, any>
   | null;
 
 export type TriggerOutput =

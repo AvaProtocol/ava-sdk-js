@@ -529,7 +529,7 @@ class Client extends BaseClient {
   ): Promise<{ cursor: string; result: Execution[]; hasMore: boolean }> {
     const request = new avs_pb.ListExecutionsReq();
     for (const w of workflows) {
-      request.addTaskId(w);
+      request.addTaskIds(w);
     }
 
     if (options?.before && options?.before !== "") {
@@ -565,12 +565,12 @@ class Client extends BaseClient {
     id: string,
     options?: RequestOptions
   ): Promise<Execution> {
-    const request = new avs_pb.GetExecutionReq();
+    const request = new avs_pb.IdReq();
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
       avs_pb.Execution,
-      avs_pb.GetExecutionReq
+      avs_pb.IdReq
     >("getExecution", request, options);
 
     return Execution.fromResponse(result);
@@ -587,7 +587,7 @@ class Client extends BaseClient {
     options?: RequestOptions
   ): Promise<number> {
     const request = new avs_pb.GetExecutionCountReq();
-    request.setTaskIdsList(workflows);
+    request.setWorkflowIdsList(workflows);
 
     const result = await this.sendGrpcRequest<
       avs_pb.GetExecutionCountResp,
@@ -607,12 +607,12 @@ class Client extends BaseClient {
     id: string,
     options?: RequestOptions
   ): Promise<ExecutionStatus> {
-    const request = new avs_pb.GetExecutionStatusReq();
+    const request = new avs_pb.IdReq();
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
-      avs_pb.GetExecutionStatusResp,
-      avs_pb.GetExecutionStatusReq
+      avs_pb.ExecutionStatusResp,
+      avs_pb.IdReq
     >("getExecutionStatus", request, options);
 
     return result.getStatus();
@@ -625,12 +625,12 @@ class Client extends BaseClient {
    * @returns {Promise<Workflow>} - The Workflow object
    */
   async getWorkflow(id: string, options?: RequestOptions): Promise<Workflow> {
-    const request = new avs_pb.GetTaskReq();
+    const request = new avs_pb.IdReq();
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
       avs_pb.Task,
-      avs_pb.GetTaskReq
+      avs_pb.IdReq
     >("getTask", request, options);
 
     return Workflow.fromResponse(result);
@@ -648,13 +648,20 @@ class Client extends BaseClient {
     triggerId: string,
     options?: RequestOptions
   ): Promise<string> {
-    const request = new avs_pb.TriggerTaskReq();
-    request.setId(id);
-    request.setTriggerId(triggerId);
+    const request = new avs_pb.UserTriggerTaskReq();
+    request.setTaskId(id);
+    
+    // Create a manual trigger reason
+    const reason = new avs_pb.TriggerReason();
+    reason.setType(avs_pb.TriggerReason.TriggerType.MANUAL);
+    request.setReason(reason);
+    
+    // Set blocking mode to true to wait for execution
+    request.setIsBlocking(true);
 
     const result = await this.sendGrpcRequest<
-      avs_pb.TriggerTaskResp,
-      avs_pb.TriggerTaskReq
+      avs_pb.UserTriggerTaskResp,
+      avs_pb.UserTriggerTaskReq
     >("triggerTask", request, options);
 
     return result.getExecutionId();
@@ -670,12 +677,12 @@ class Client extends BaseClient {
     id: string,
     options?: RequestOptions
   ): Promise<Workflow> {
-    const request = new avs_pb.CancelTaskReq();
+    const request = new avs_pb.IdReq();
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
       avs_pb.Task,
-      avs_pb.CancelTaskReq
+      avs_pb.IdReq
     >("cancelTask", request, options);
 
     return Workflow.fromResponse(result);
@@ -691,12 +698,12 @@ class Client extends BaseClient {
     id: string,
     options?: RequestOptions
   ): Promise<Workflow> {
-    const request = new avs_pb.DeleteTaskReq();
+    const request = new avs_pb.IdReq();
     request.setId(id);
 
     const result = await this.sendGrpcRequest<
       avs_pb.Task,
-      avs_pb.DeleteTaskReq
+      avs_pb.IdReq
     >("deleteTask", request, options);
 
     return Workflow.fromResponse(result);
@@ -714,20 +721,26 @@ class Client extends BaseClient {
     value: string,
     options?: SecretRequestOptions
   ): Promise<Secret> {
-    const request = new avs_pb.CreateSecretReq();
+    const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
-    request.setValue(value);
+    request.setSecret(value);
 
-    if (options?.smartWalletAddress) {
-      request.setSmartWalletAddress(options.smartWalletAddress);
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      request.setOrgId(options.orgId);
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.Secret,
-      avs_pb.CreateSecretReq
+      avs_pb.ListSecretsResp.ResponseSecret,
+      avs_pb.CreateOrUpdateSecretReq
     >("createSecret", request, options);
 
-    return Secret.fromResponse(result);
+    return new Secret({
+      name: result.getName()
+    });
   }
 
   /**
@@ -742,20 +755,26 @@ class Client extends BaseClient {
     value: string,
     options?: SecretRequestOptions
   ): Promise<Secret> {
-    const request = new avs_pb.UpdateSecretReq();
+    const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
-    request.setValue(value);
+    request.setSecret(value);
 
-    if (options?.smartWalletAddress) {
-      request.setSmartWalletAddress(options.smartWalletAddress);
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      request.setOrgId(options.orgId);
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.Secret,
-      avs_pb.UpdateSecretReq
+      avs_pb.ListSecretsResp.ResponseSecret,
+      avs_pb.CreateOrUpdateSecretReq
     >("updateSecret", request, options);
 
-    return Secret.fromResponse(result);
+    return new Secret({
+      name: result.getName()
+    });
   }
 
   /**
@@ -768,8 +787,8 @@ class Client extends BaseClient {
   ): Promise<ListSecretsResponse> {
     const request = new avs_pb.ListSecretsReq();
 
-    if (options?.smartWalletAddress) {
-      request.setSmartWalletAddress(options.smartWalletAddress);
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
     }
 
     if (options?.before && options?.before !== "") {
@@ -789,9 +808,11 @@ class Client extends BaseClient {
     return {
       cursor: result.getCursor(),
       hasMore: result.getHasMore(),
-      result: result
+      items: result
         .getItemsList()
-        .map((item) => Secret.fromResponse(item)),
+        .map((item) => new Secret({
+          name: item.getName()
+        })),
     };
   }
 
@@ -804,20 +825,26 @@ class Client extends BaseClient {
   async deleteSecret(
     name: string,
     options?: SecretRequestOptions
-  ): Promise<ListSecretResponse> {
+  ): Promise<Secret> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
 
-    if (options?.smartWalletAddress) {
-      request.setSmartWalletAddress(options.smartWalletAddress);
+    if (options?.workflowId) {
+      request.setWorkflowId(options.workflowId);
+    }
+
+    if (options?.orgId) {
+      request.setOrgId(options.orgId);
     }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.Secret,
+      avs_pb.ListSecretsResp.ResponseSecret,
       avs_pb.DeleteSecretReq
     >("deleteSecret", request, options);
 
-    return Secret.fromResponse(result);
+    return new Secret({
+      name: result.getName()
+    });
   }
 
   /**
@@ -876,14 +903,14 @@ class Client extends BaseClient {
       );
 
       // Wait for the execution to complete
-      let status = ExecutionStatus.PENDING;
+      let status = 0; // PENDING
       let retries = 0;
       const maxRetries = 30; // 30 seconds timeout
       let response: RunNodeWithInputsResponse = { success: false };
 
       while (
-        status !== ExecutionStatus.COMPLETED &&
-        status !== ExecutionStatus.FAILED &&
+        status !== 1 && // COMPLETED
+        status !== 2 && // FAILED
         retries < maxRetries
       ) {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
@@ -891,14 +918,14 @@ class Client extends BaseClient {
         retries++;
       }
 
-      if (status === ExecutionStatus.COMPLETED) {
+      if (status === 1) { // COMPLETED
         // Get the execution details
         const execution = await this.getExecution(executionId, options);
         response = {
           success: true,
           data: execution,
         };
-      } else if (status === ExecutionStatus.FAILED) {
+      } else if (status === 2) { // FAILED
         const execution = await this.getExecution(executionId, options);
         response = {
           success: false,
@@ -945,7 +972,7 @@ class Client extends BaseClient {
       graphqlQuery: NodeType.GraphQLQuery,
       branch: NodeType.Branch,
       filter: NodeType.Filter,
-      blockTrigger: NodeType.BlockTrigger,
+      loop: NodeType.Loop,
     };
 
     return typeMap[nodeType] || null;
@@ -971,11 +998,18 @@ class Client extends BaseClient {
           }
         };
       case 'customCode':
-      case 'blockTrigger':
         return {
           config: {
-            lang: 0, // JavaScript
+            lang: config.lang || 0, // JavaScript
             source: config.source || 'return { message: "Node executed successfully" };'
+          }
+        };
+      case 'loop':
+        return {
+          config: {
+            sourceId: config.sourceId || '',
+            iterVal: config.iterVal || '',
+            iterKey: config.iterKey || ''
           }
         };
       case 'branch':
@@ -1013,15 +1047,16 @@ class Client extends BaseClient {
       }
     }
     
+    // Create a manual trigger and store input variables in its data property
     const trigger = TriggerFactory.create({
       id: triggerId,
       name: 'manual_trigger',
       type: TriggerType.Manual,
-      data: inputVariables // Pass input variables through trigger data
+      data: inputVariables // Store input variables in the trigger data
     });
 
     return new Workflow({
-      smartWalletAddress: walletAddress, // Use the dedicated wallet address
+      smartWalletAddress: walletAddress,
       trigger: trigger,
       nodes: [node],
       edges: [new Edge({
