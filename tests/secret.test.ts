@@ -59,7 +59,6 @@ describe("secret Tests", () => {
 
     const eoaAddress2 = await getAddress(privateKey2);
 
-    console.log("Client 2 address:", eoaAddress2);
     // Initialize the client with test credentials
     client2 = new Client({
       endpoint: avsEndpoint,
@@ -365,10 +364,8 @@ describe("secret Tests", () => {
     it("should support forward pagination with after parameter", async () => {
       const pageSize = 3;
       const options = { limit: pageSize } as SecretRequestOptions;
-      console.log("Requesting first page with options:", options);
 
       const firstPage = await client.getSecrets(options);
-      console.log("First page response:", JSON.stringify(firstPage, null, 2));
 
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
 
@@ -378,8 +375,6 @@ describe("secret Tests", () => {
       }
 
       const typedFirstPage = firstPage as ListSecretsResponse;
-      console.log("First page endCursor:", typedFirstPage.endCursor);
-      console.log("First page hasNextPage:", typedFirstPage.hasNextPage);
 
       expect(typedFirstPage.endCursor).toBeTruthy();
 
@@ -395,22 +390,18 @@ describe("secret Tests", () => {
         after: typedFirstPage.endCursor,
         limit: pageSize,
       } as SecretRequestOptions;
-      console.log("Requesting second page with options:", secondOptions);
 
       const secondPage = await client.getSecrets(secondOptions);
-      console.log("Second page response:", JSON.stringify(secondPage, null, 2));
 
       expect(secondPage.items.length).toBeLessThanOrEqual(pageSize);
 
       const firstPageNames = firstPage.items.map((item) => item.name);
       const secondPageNames = secondPage.items.map((item) => item.name);
-      console.log("First page names:", firstPageNames);
-      console.log("Second page names:", secondPageNames);
 
       const overlap = firstPageNames.filter((name) =>
         secondPageNames.includes(name)
       );
-      console.log("Overlapping items:", overlap);
+
       expect(overlap.length).toBe(0);
     });
 
@@ -484,15 +475,12 @@ describe("secret Tests", () => {
         workflowId,
       });
 
-      console.log("result", result);
 
       createdSecretMap.set(testName, false);
 
       const filteredSecrets = await client.getSecrets({
         workflowId,
       });
-
-      console.log("filteredSecrets", filteredSecrets);
 
       expect(filteredSecrets.items.some((item) => item.name === testName)).toBe(
         true

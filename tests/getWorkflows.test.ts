@@ -45,10 +45,10 @@ describe("getWorkflows Tests", () => {
       workflowId = await client.submitWorkflow(workflow);
 
       const res = await client.getWorkflows([wallet.address]);
-      expect(Array.isArray(res.result)).toBe(true);
-      expect(res.result.length).toBeGreaterThanOrEqual(1);
-      expect(res.result.some((task) => task.id === workflowId)).toBe(true);
-      const result = res.result.find((task) => task.id === workflowId);
+      expect(Array.isArray(res.items)).toBe(true);
+      expect(res.items.length).toBeGreaterThanOrEqual(1);
+      expect(res.items.some((task) => task.id === workflowId)).toBe(true);
+      const result = res.items.find((task) => task.id === workflowId);
 
       expect(result?.id).toEqual(workflowId);
       expect(result?.name).toEqual(workflowName);
@@ -83,11 +83,11 @@ describe("getWorkflows Tests", () => {
       const listResponse = await client.getWorkflows([wallet.address], {
         limit: countFirstPage,
       });
-      expect(listResponse.result.length).toBe(countFirstPage);
-      expect(listResponse).toHaveProperty("cursor");
-      expect(listResponse.hasMore).toBe(true);
+      expect(listResponse.items.length).toBe(countFirstPage);
+      expect(listResponse).toHaveProperty("endCursor");
+      expect(listResponse.hasNextPage).toBe(true);
       // because of our usage of ulid, this is fixed length
-      const firstCursor = listResponse.cursor;
+      const firstCursor = listResponse.endCursor;
       expect(firstCursor).toHaveLength(60);
 
       // Get the list of workflows with limit:2 and after
@@ -97,15 +97,15 @@ describe("getWorkflows Tests", () => {
       });
 
       // Verify that the count of the second return is totalCount - limit
-      expect(Array.isArray(listResponse2.result)).toBe(true);
-      expect(listResponse2.result.length).toBe(totalCount - countFirstPage);
-      expect(listResponse2.hasMore).toBe(false);
+      expect(Array.isArray(listResponse2.items)).toBe(true);
+      expect(listResponse2.items.length).toBe(totalCount - countFirstPage);
+      expect(listResponse2.hasNextPage).toBe(false);
 
       // Make sure there's no overlap between the two lists
       expect(
         _.intersection(
-          listResponse.result.map((item) => item.id),
-          listResponse2.result.map((item) => item.id)
+          listResponse.items.map((item: any) => item.id),
+          listResponse2.items.map((item: any) => item.id)
         ).length
       ).toBe(0);
 
@@ -114,8 +114,8 @@ describe("getWorkflows Tests", () => {
         limit: totalCount,
       });
 
-      expect(listResponse3.result.length).toBe(totalCount);
-      expect(listResponse3.hasMore).toBe(false);
+      expect(listResponse3.items.length).toBe(totalCount);
+      expect(listResponse3.hasNextPage).toBe(false);
     } finally {
       // Clean up all created workflows
       for (const workflowId of workflowIds) {

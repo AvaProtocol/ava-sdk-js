@@ -153,9 +153,9 @@ export const cleanupWorkflows = async (
 
   // Filter out undefined ids and convert the array to a Map
   const workflowIds = new Map(
-    workflowArray.result
-      .filter((item) => item.id !== undefined)
-      .map((item) => [item.id as string, false])
+    workflowArray.items
+      .filter((item: any) => item.id !== undefined)
+      .map((item: any) => [item.id as string, false])
   );
 
   await removeCreatedWorkflows(client, workflowIds);

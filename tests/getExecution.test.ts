@@ -207,8 +207,8 @@ describe("getExecution Tests", () => {
       const executionsResponse = await client.getExecutions([workflowId], {
         limit: 1,
       });
-      expect(executionsResponse.result.length).toBe(1);
-      const executionIdFromList = executionsResponse.result[0].id;
+      expect(executionsResponse.items.length).toBe(1);
+      const executionIdFromList = executionsResponse.items[0].id;
 
       // Get the specific execution using the ID from the list
       const execution = await client.getExecution(
