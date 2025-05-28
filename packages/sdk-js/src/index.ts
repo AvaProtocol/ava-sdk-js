@@ -13,18 +13,19 @@ import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
 import type {
   GetKeyResponse,
-  SecretRequestOptions,
   RequestOptions,
   ClientOption,
   SmartWallet,
   GetWalletRequest,
-  GetExecutionsRequest,
-  GetWorkflowsRequest,
+  GetExecutionsOptions,
+  GetWorkflowsOptions,
   GetSignatureFormatResponse,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
   SecretProps,
   PageInfo,
+  GetSecretsOptions,
+  SecretOptions,
 } from "@avaprotocol/types";
 
 import { NodeType, TriggerType } from "@avaprotocol/types";
@@ -440,26 +441,20 @@ class Client extends BaseClient {
   }
 
   /**
-   * Get the list of workflows; new workflows can be created by calling `submitWorkflow`
-   * @param {string} address - The address of the smart wallet
-   * @param {string} cursor - The cursor for the list
-   * @param {number} limit - The limit for the list
-   * @param {RequestOptions} options - Request options
-   * @returns {Promise<{ cursor: string; result: Workflow[] }>} - The list of Workflow objects
-   */
-  /**
    * Get the list of workflows for multiple addresses
    * @param {string[]} addresses - The list of addresses
-   * @param {GetWorkflowsRequest} options - Request options
+   * @param {GetWorkflowsOptions} options - Request options
    * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
+   * @param {boolean} [options.includeNodes] - Include task nodes (expensive field)
+   * @param {boolean} [options.includeEdges] - Include task edges (expensive field)
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ cursor: string; result: Workflow[]; hasMore: boolean }>} - The list of Workflow objects with pagination metadata
+   * @returns {Promise<{ items: Workflow[]; pageInfo: PageInfo }>} - The list of Workflow objects with nested pagination metadata
    */
   async getWorkflows(
     addresses: string[],
-    options?: GetWorkflowsRequest
+    options?: GetWorkflowsOptions
   ): Promise<{
     items: Workflow[];
     pageInfo: PageInfo;
@@ -531,18 +526,18 @@ class Client extends BaseClient {
   }
 
   /**
-   * Get the list of executions for multiple workflow given in the workflows argument.
+   * Get the list of executions for multiple workflows
    * @param {string[]} workflows - The list of workflow ids to fetch execution for
-   * @param {GetExecutionsRequest} options - Request options
+   * @param {GetExecutionsOptions} options - Request options
    * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Execution objects with pagination metadata
+   * @returns {Promise<{ items: Execution[]; pageInfo: PageInfo }>} - The list of Execution objects with nested pagination metadata
    */
   async getExecutions(
     workflows: string[],
-    options?: GetExecutionsRequest
+    options?: GetExecutionsOptions
   ): Promise<{
     items: Execution[];
     pageInfo: PageInfo;
@@ -747,13 +742,16 @@ class Client extends BaseClient {
    * Create a new secret
    * @param {string} name - The name of the secret
    * @param {string} value - The value of the secret
-   * @param {SecretRequestOptions} options - Request options
+   * @param {SecretOptions} [options] - Request options
+   * @param {string} [options.workflowId] - The workflow ID to associate the secret with
+   * @param {string} [options.orgId] - The organization ID to associate the secret with
+   * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<boolean>} - True if the secret was created successfully
    */
   async createSecret(
     name: string,
     value: string,
-    options?: SecretRequestOptions
+    options?: SecretOptions
   ): Promise<boolean> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
@@ -779,13 +777,16 @@ class Client extends BaseClient {
    * Update a secret
    * @param {string} name - The name of the secret
    * @param {string} value - The value of the secret
-   * @param {SecretRequestOptions} options - Request options
+   * @param {SecretOptions} [options] - Request options
+   * @param {string} [options.workflowId] - The workflow ID to associate the secret with
+   * @param {string} [options.orgId] - The organization ID to associate the secret with
+   * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<boolean>} - True if the secret was updated successfully
    */
   async updateSecret(
     name: string,
     value: string,
-    options?: SecretRequestOptions
+    options?: SecretOptions
   ): Promise<boolean> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
@@ -809,10 +810,19 @@ class Client extends BaseClient {
 
   /**
    * Get the list of secrets
-   * @param {SecretRequestOptions} options - Request options
-   * @returns {Promise<{ cursor: string; result: Secret[]; hasMore: boolean }>} - The list of Secret objects with pagination metadata
+   * @param {GetSecretsOptions} options - Request options
+   * @param {string} [options.workflowId] - Filter secrets by workflow ID
+   * @param {string} [options.orgId] - Filter secrets by organization ID
+   * @param {string} [options.before] - Get items before this cursor value (for backward pagination)
+   * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
+   * @param {number} [options.limit] - The page limit of the response; default is 10
+   * @param {boolean} [options.includeTimestamps] - Include created_at and updated_at fields
+   * @param {boolean} [options.includeCreatedBy] - Include created_by field
+   * @param {boolean} [options.includeDescription] - Include description field
+   * @param {string} [options.authKey] - The auth key for the request
+   * @returns {Promise<{ items: SecretProps[]; pageInfo: PageInfo }>} - The list of Secret objects with nested pagination metadata
    */
-  async getSecrets(options?: SecretRequestOptions): Promise<{
+  async getSecrets(options?: GetSecretsOptions): Promise<{
     items: SecretProps[];
     pageInfo: PageInfo;
   }> {
@@ -878,12 +888,15 @@ class Client extends BaseClient {
   /**
    * Delete a secret
    * @param {string} name - The name of the secret
-   * @param {SecretRequestOptions} options - Request options
+   * @param {SecretOptions} [options] - Request options
+   * @param {string} [options.workflowId] - The workflow ID to associate the secret with
+   * @param {string} [options.orgId] - The organization ID to associate the secret with
+   * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<boolean>} - True if the secret was deleted successfully
    */
   async deleteSecret(
     name: string,
-    options?: SecretRequestOptions
+    options?: SecretOptions
   ): Promise<boolean> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);

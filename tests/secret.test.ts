@@ -8,7 +8,7 @@ import {
   Step,
 } from "@avaprotocol/sdk-js";
 import {
-  SecretRequestOptions,
+  GetSecretsOptions,
   NodeType,
   TriggerType,
   PageInfo,
@@ -359,7 +359,7 @@ describe("secret Tests", () => {
 
     it("should support forward pagination with after parameter", async () => {
       const pageSize = 3;
-      const options = { limit: pageSize } as SecretRequestOptions;
+      const options = { limit: pageSize } as GetSecretsOptions;
 
       const firstPage = await client.getSecrets(options);
 
@@ -383,7 +383,7 @@ describe("secret Tests", () => {
       const secondOptions = {
         after: firstPage.pageInfo.endCursor,
         limit: pageSize,
-      } as SecretRequestOptions;
+      } as GetSecretsOptions;
 
       const secondPage = await client.getSecrets(secondOptions);
 
@@ -400,7 +400,7 @@ describe("secret Tests", () => {
     });
 
     it("should support backward pagination with before parameter", async () => {
-      const middleOptions = { limit: 3 } as SecretRequestOptions;
+      const middleOptions = { limit: 3 } as GetSecretsOptions;
       const middlePage = await client.getSecrets(middleOptions);
 
       if (Array.isArray(middlePage)) {
@@ -418,7 +418,7 @@ describe("secret Tests", () => {
       const previousOptions = {
         before: middlePage.pageInfo.endCursor,
         limit: 3,
-      } as SecretRequestOptions;
+      } as GetSecretsOptions;
 
       try {
         const previousPage = await client.getSecrets(previousOptions);
@@ -444,10 +444,10 @@ describe("secret Tests", () => {
     });
 
     it("should respect the limit parameter", async () => {
-      const smallOptions = { limit: 2 } as SecretRequestOptions;
+      const smallOptions = { limit: 2 } as GetSecretsOptions;
       const smallPage = await client.getSecrets(smallOptions);
 
-      const largerOptions = { limit: 5 } as SecretRequestOptions;
+      const largerOptions = { limit: 5 } as GetSecretsOptions;
       const largerPage = await client.getSecrets(largerOptions);
 
       expect(smallPage.items.length).toBeLessThanOrEqual(2);

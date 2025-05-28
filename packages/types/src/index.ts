@@ -11,21 +11,19 @@ export interface RequestOptions {
   authKey?: string;
 }
 
-export interface GetExecutionsRequest extends RequestOptions {
-  cursor?: string; // Deprecated: Use before or after instead
+export interface GetExecutionsOptions extends RequestOptions {
   before?: string; // Get items before this cursor value (for backward pagination)
   after?: string; // Get items after this cursor value (for forward pagination)
   limit?: number;
 }
 
-export interface GetWorkflowsRequest extends RequestOptions {
-  cursor?: string; // Deprecated: Use before or after instead
+export interface GetWorkflowsOptions extends RequestOptions {
   before?: string; // Get items before this cursor value (for backward pagination)
   after?: string; // Get items after this cursor value (for forward pagination)
   limit?: number;
   // Field control options for flexible response content
-  includeNodes?: boolean;  // Include task nodes (expensive field)
-  includeEdges?: boolean;  // Include task edges (expensive field)
+  includeNodes?: boolean; // Include task nodes (expensive field)
+  includeEdges?: boolean; // Include task edges (expensive field)
 }
 
 export interface GetWalletRequest {
@@ -96,16 +94,21 @@ export interface PageInfo {
   hasNextPage: boolean;
 }
 
-export interface SecretRequestOptions extends RequestOptions {
+export interface GetSecretsOptions extends RequestOptions {
   workflowId?: string;
   orgId?: string;
   before?: string;
   after?: string;
   limit?: number;
   // Field control options for flexible response content
-  includeTimestamps?: boolean;   // Include created_at and updated_at fields
-  includeCreatedBy?: boolean;    // Include created_by field
-  includeDescription?: boolean;  // Include description field
+  includeTimestamps?: boolean; // Include created_at and updated_at fields
+  includeCreatedBy?: boolean; // Include created_by field
+  includeDescription?: boolean; // Include description field
+}
+
+export interface SecretOptions extends RequestOptions {
+  workflowId?: string;
+  orgId?: string;
 }
 
 export interface RunNodeWithInputsRequest {
