@@ -1,14 +1,9 @@
 import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, CustomCodeNodeData, CustomCodeLangs } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { config: { lang: number, source: string } }
-export type CustomCodeNodeData = avs_pb.CustomCodeNode.AsObject;
-export const CustomCodeLangs = {
-  JAVASCRIPT: 0,
-  PYTHON: 1
-};
+// Required props for constructor: id, name, type and data: { lang: number, source: string }
 export type CustomCodeNodeProps = NodeProps & {
   data: CustomCodeNodeData;
 };
@@ -24,7 +19,7 @@ class CustomCodeNode extends Node {
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
-      data: raw.getCustomCode()!.toObject() as CustomCodeNodeData,
+      data: raw.getCustomCode()!.getConfig()!.toObject() as CustomCodeNodeData,
     });
   }
 
@@ -36,12 +31,10 @@ class CustomCodeNode extends Node {
 
     const nodeData = new avs_pb.CustomCodeNode();
     
-    if ((this.data as CustomCodeNodeData).config) {
-      const config = new avs_pb.CustomCodeNode.Config();
-      config.setLang((this.data as CustomCodeNodeData).config!.lang);
-      config.setSource((this.data as CustomCodeNodeData).config!.source);
-      nodeData.setConfig(config);
-    }
+    const config = new avs_pb.CustomCodeNode.Config();
+    config.setLang((this.data as CustomCodeNodeData).lang);
+    config.setSource((this.data as CustomCodeNodeData).source);
+    nodeData.setConfig(config);
 
     request.setCustomCode(nodeData);
 

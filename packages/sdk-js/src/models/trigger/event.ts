@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
-import { TriggerType } from "@avaprotocol/types";
+import { TriggerType, EventTriggerDataType, EventTriggerOutput } from "@avaprotocol/types";
 import util from "util";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
@@ -23,9 +23,7 @@ import util from "util";
 // ```
 
 // Required props for constructor: id, name, type and data: { expression, matcherList }
-export type EventTriggerDataType = avs_pb.EventTrigger.Config.AsObject;
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
-export type EventTriggerOutput = avs_pb.EventTrigger.Output.AsObject;
 
 class EventTrigger extends Trigger {
   constructor(props: EventTriggerProps) {

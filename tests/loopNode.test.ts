@@ -115,7 +115,7 @@ describe("LoopNode Tests", () => {
       expect(loopNode?.name).toBe("loop_with_rest_api");
       
       const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.input).toBe("testArray");
+      expect(loopNodeData.sourceId).toBe("testArray");
       expect(loopNodeData.iterVal).toBe("item");
       expect(loopNodeData.iterKey).toBe("index");
     } finally {
@@ -177,10 +177,9 @@ describe("LoopNode Tests", () => {
       expect(loopNode?.name).toBe("loop_with_custom_code");
       
       const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.input).toBe("testArray");
+      expect(loopNodeData.sourceId).toBe("testArray");
       expect(loopNodeData.iterVal).toBe("item");
       expect(loopNodeData.iterKey).toBe("index");
-      expect(loopNodeData.runnerType).toBe(NodeType.CustomCode);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -244,10 +243,9 @@ describe("LoopNode Tests", () => {
       expect(loopNode?.name).toBe("loop_with_eth_transfer");
       
       const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.input).toBe("addressArray");
+      expect(loopNodeData.sourceId).toBe("addressArray");
       expect(loopNodeData.iterVal).toBe("address");
       expect(loopNodeData.iterKey).toBe("index");
-      expect(loopNodeData.runnerType).toBe(NodeType.ETHTransfer);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -318,10 +316,9 @@ describe("LoopNode Tests", () => {
       expect(loopNode?.name).toBe("loop_with_contract_read");
       
       const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.input).toBe("contractArray");
+      expect(loopNodeData.sourceId).toBe("contractArray");
       expect(loopNodeData.iterVal).toBe("contract");
       expect(loopNodeData.iterKey).toBe("index");
-      expect(loopNodeData.runnerType).toBe(NodeType.ContractRead);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -385,10 +382,9 @@ describe("LoopNode Tests", () => {
       expect(loopNode?.name).toBe("loop_with_graphql_query");
       
       const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.input).toBe("queryArray");
+      expect(loopNodeData.sourceId).toBe("queryArray");
       expect(loopNodeData.iterVal).toBe("query");
       expect(loopNodeData.iterKey).toBe("index");
-      expect(loopNodeData.runnerType).toBe(NodeType.GraphQLQuery);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

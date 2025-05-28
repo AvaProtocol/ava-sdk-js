@@ -1,10 +1,9 @@
 import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, FilterNodeData } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { config: { expression, input } }
-export type FilterNodeData = avs_pb.FilterNode.AsObject;
+// Required props for constructor: id, name, type and data: { expression, sourceId }
 export type FilterNodeProps = NodeProps & {
   data: FilterNodeData;
 };
@@ -20,7 +19,7 @@ class FilterNode extends Node {
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
-      data: raw.getFilter()!.toObject() as FilterNodeData,
+      data: raw.getFilter()!.getConfig()!.toObject() as FilterNodeData,
     });
   }
 
@@ -32,12 +31,10 @@ class FilterNode extends Node {
 
     const nodeData = new avs_pb.FilterNode();
     
-    if ((this.data as FilterNodeData).config) {
-      const config = new avs_pb.FilterNode.Config();
-      config.setExpression((this.data as FilterNodeData).config!.expression);
-      config.setSourceId((this.data as FilterNodeData).config!.sourceId || '');
-      nodeData.setConfig(config);
-    }
+    const config = new avs_pb.FilterNode.Config();
+    config.setExpression((this.data as FilterNodeData).expression);
+    config.setSourceId((this.data as FilterNodeData).sourceId || '');
+    nodeData.setConfig(config);
 
     request.setFilter(nodeData);
     return request;

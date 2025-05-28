@@ -7,11 +7,9 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
   name: "loop_with_rest_api",
   type: NodeType.Loop,
   data: {
-    config: {
-      sourceId: "testArray",
-      iterVal: "item",
-      iterKey: "index",
-    },
+    sourceId: "testArray",
+    iterVal: "item",
+    iterKey: "index",
     restApi: {
       config: {
         url: "https://httpbin.org/post",
@@ -28,11 +26,9 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
   name: "loop_with_custom_code", 
   type: NodeType.Loop,
   data: {
-    config: {
-      sourceId: "testArray",
-      iterVal: "item",
-      iterKey: "index",
-    },
+    sourceId: "testArray",
+    iterVal: "item",
+    iterKey: "index",
     customCode: {
       config: {
         lang: CustomCodeLangs.JAVASCRIPT,
@@ -47,11 +43,9 @@ export const loopNodeWithETHTransferProps: LoopNodeProps = {
   name: "loop_with_eth_transfer",
   type: NodeType.Loop,
   data: {
-    config: {
-      sourceId: "addressArray",
-      iterVal: "address",
-      iterKey: "index",
-    },
+    sourceId: "addressArray",
+    iterVal: "address",
+    iterKey: "index",
     ethTransfer: {
       config: {
         destination: "{{address}}",
@@ -66,11 +60,9 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
   name: "loop_with_contract_read",
   type: NodeType.Loop,
   data: {
-    config: {
-      sourceId: "contractArray",
-      iterVal: "contract",
-      iterKey: "index",
-    },
+    sourceId: "contractArray",
+    iterVal: "contract",
+    iterKey: "index",
     contractRead: {
       config: {
         contractAddress: "{{contract.address}}",
@@ -86,11 +78,9 @@ export const loopNodeWithGraphQLQueryProps: LoopNodeProps = {
   name: "loop_with_graphql_query",
   type: NodeType.Loop,
   data: {
-    config: {
-      sourceId: "queryArray",
-      iterVal: "query",
-      iterKey: "index",
-    },
+    sourceId: "queryArray",
+    iterVal: "query",
+    iterKey: "index",
     graphqlDataQuery: {
       config: {
         url: "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3",

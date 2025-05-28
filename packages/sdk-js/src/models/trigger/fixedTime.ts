@@ -1,13 +1,11 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
-import { TriggerType } from "@avaprotocol/types";
+import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { epochsList }
-export type FixedTimeTriggerDataType = avs_pb.FixedTimeTrigger.Config.AsObject;
 export type FixedTimeTriggerProps = TriggerProps & {
   data: FixedTimeTriggerDataType;
 };
-export type FixedTimeTriggerOutput = avs_pb.FixedTimeTrigger.Output.AsObject;
 
 class FixedTimeTrigger extends Trigger {
   constructor(props: FixedTimeTriggerProps) {

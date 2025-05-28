@@ -111,10 +111,8 @@ describe("secret Tests", () => {
         name: "custom code",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
-            source: `return '${testMessage}' + apContext.configVars['${secretName}']`,
-          },
+          lang: CustomCodeLangs.JAVASCRIPT,
+          source: `return '${testMessage}' + apContext.configVars['${secretName}']`,
         },
       };
 

@@ -55,13 +55,11 @@ describe("CustomCode Module Imports Tests", () => {
         name: "lodash test",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
-            source: `
-              const _ = require('lodash');
-              return _.map([1, 2, 3], n => n * 2);
-            `,
-          },
+          lang: CustomCodeLangs.JAVASCRIPT,
+          source: `
+            const _ = require('lodash');
+            return _.map([1, 2, 3], n => n * 2);
+          `,
         },
       };
 
@@ -119,14 +117,12 @@ describe("CustomCode Module Imports Tests", () => {
         name: "dayjs test",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
-            source: `
-              const dayjs = require('dayjs');
-              const date = dayjs('2023-01-01');
-              return date.format('YYYY-MM-DD');
-            `,
-          },
+          lang: CustomCodeLangs.JAVASCRIPT,
+          source: `
+            const dayjs = require('dayjs');
+            const date = dayjs('2023-01-01');
+            return date.format('YYYY-MM-DD');
+          `,
         },
       };
 
@@ -184,14 +180,12 @@ describe("CustomCode Module Imports Tests", () => {
         name: "uuid test",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
-            source: `
-              const { v4: uuidv4 } = require('uuid');
-              const id = uuidv4();
-              return typeof id === 'string' && id.length > 0;
-            `,
-          },
+          lang: CustomCodeLangs.JAVASCRIPT,
+          source: `
+            const { v4: uuidv4 } = require('uuid');
+            const id = uuidv4();
+            return typeof id === 'string' && id.length > 0;
+          `,
         },
       };
 
@@ -249,28 +243,26 @@ describe("CustomCode Module Imports Tests", () => {
         name: "complex module test",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
-            source: `
-              const _ = require('lodash');
-              const dayjs = require('dayjs');
-              const { v4: uuidv4 } = require('uuid');
-              
-              const id = uuidv4();
-              
-              const now = dayjs();
-              
-              const dates = _.range(0, 3).map(i => 
-                dayjs(now).add(i, 'days').format('YYYY-MM-DD')
-              );
-              
-              return {
-                id: id,
-                today: now.format('YYYY-MM-DD'),
-                dates: dates
-              };
-            `,
-          },
+          lang: CustomCodeLangs.JAVASCRIPT,
+          source: `
+            const _ = require('lodash');
+            const dayjs = require('dayjs');
+            const { v4: uuidv4 } = require('uuid');
+            
+            const id = uuidv4();
+            
+            const now = dayjs();
+            
+            const dates = _.range(0, 3).map(i => 
+              dayjs(now).add(i, 'days').format('YYYY-MM-DD')
+            );
+            
+            return {
+              id: id,
+              today: now.format('YYYY-MM-DD'),
+              dates: dates
+            };
+          `,
         },
       };
 

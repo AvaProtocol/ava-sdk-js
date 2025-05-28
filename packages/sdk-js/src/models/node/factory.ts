@@ -1,32 +1,38 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import _ from "lodash";
 import ContractWriteNode, {
-  ContractWriteNodeData,
   ContractWriteNodeProps,
 } from "./contractWrite";
 import CustomCodeNode, {
-  CustomCodeLangs,
-  CustomCodeNodeData,
   CustomCodeNodeProps,
 } from "./customCode";
 import GraphQLQueryNode, {
-  GraphQLQueryNodeData,
   GraphQLQueryNodeProps,
 } from "./graphqlQuery";
 import Node, { NodeProps } from "./interface";
-import RestAPINode, { RestAPINodeData, RestAPINodeProps } from "./restApi";
+import RestAPINode, { RestAPINodeProps } from "./restApi";
 import ContractReadNode, {
-  ContractReadNodeData,
   ContractReadNodeProps,
 } from "./contractRead";
 import ETHTransferNode, {
-  ETHTransferNodeData,
   ETHTransferNodeProps,
 } from "./ethTransfer";
-import BranchNode, { BranchNodeProps, BranchNodeData } from "./branch";
-import FilterNode, { FilterNodeData, FilterNodeProps } from "./filter";
-import LoopNode, { LoopNodeData, LoopNodeProps } from "./loop";
-import { NodeType } from "@avaprotocol/types";
+import BranchNode, { BranchNodeProps } from "./branch";
+import FilterNode, { FilterNodeProps } from "./filter";
+import LoopNode, { LoopNodeProps } from "./loop";
+import { 
+  NodeType,
+  CustomCodeLangs,
+  ContractWriteNodeData,
+  ContractReadNodeData,
+  BranchNodeData,
+  ETHTransferNodeData,
+  GraphQLQueryNodeData,
+  RestAPINodeData,
+  CustomCodeNodeData,
+  FilterNodeData,
+  LoopNodeData
+} from "@avaprotocol/types";
 
 class NodeFactory {
   static create(props: NodeProps): Node {

@@ -1,11 +1,9 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
-import { TriggerType } from "@avaprotocol/types";
+import { TriggerType, CronTriggerDataType, CronTriggerOutput } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { scheduleList }
-export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
-export type CronTriggerOutput = avs_pb.CronTrigger.Output.AsObject;
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
