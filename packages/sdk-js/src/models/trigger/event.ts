@@ -43,29 +43,32 @@ class EventTrigger extends Trigger {
 
     const trigger = new avs_pb.EventTrigger();
     
-    if ((this.data as EventTriggerDataType).config) {
-      const config = new avs_pb.EventTrigger.Config();
-      const expression = (this.data as EventTriggerDataType).config!.expression;
-      const matcherList = (this.data as EventTriggerDataType).config!.matcherList;
-
-      if (_.isUndefined(expression)) {
-        throw new Error(`Expression is undefined for ${this.type}`);
-      }
-
-      config.setExpression(expression);
-
-      if (matcherList && matcherList.length > 0) {
-        const matchers = matcherList.map((element: any) => {
-          const m = new avs_pb.EventTrigger.Matcher();
-          m.setType(element.type);
-          m.setValueList(element.valueList || []);
-          return m;
-        });
-        config.setMatcherList(matchers);
-      }
-      
-      trigger.setConfig(config);
+    const dataConfig = (this.data as EventTriggerDataType).config;
+    if (!dataConfig) {
+      throw new Error(`Config is missing for ${this.type} trigger`);
     }
+
+    const config = new avs_pb.EventTrigger.Config();
+    const expression = dataConfig.expression;
+    const matcherList = dataConfig.matcherList;
+
+    if (_.isUndefined(expression)) {
+      throw new Error(`Expression is undefined for ${this.type}`);
+    }
+
+    config.setExpression(expression);
+
+    if (matcherList && matcherList.length > 0) {
+      const matchers = matcherList.map((element: any) => {
+        const m = new avs_pb.EventTrigger.Matcher();
+        m.setType(element.type);
+        m.setValueList(element.valueList || []);
+        return m;
+      });
+      config.setMatcherList(matchers);
+    }
+    
+    trigger.setConfig(config);
 
     request.setEvent(trigger);
 
