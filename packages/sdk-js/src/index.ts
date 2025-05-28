@@ -16,7 +16,7 @@ import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-  ListSecretsResponse,
+  GetSecretsResponse,
   SecretRequestOptions,
   RequestOptions,
   ClientOption,
@@ -28,6 +28,7 @@ import type {
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
   SecretProps,
+  PageInfo,
 } from "@avaprotocol/types";
 
 import { NodeType, TriggerType } from "@avaprotocol/types";
@@ -465,10 +466,7 @@ class Client extends BaseClient {
     options?: GetWorkflowsRequest
   ): Promise<{
     items: Workflow[];
-    startCursor: string;
-    endCursor: string;
-    hasPreviousPage: boolean;
-    hasNextPage: boolean;
+    pageInfo: PageInfo;
   }> {
     const request = new avs_pb.ListTasksReq();
     for (const a of addresses) {
@@ -497,11 +495,21 @@ class Client extends BaseClient {
       avs_pb.ListTasksReq
     >("listTasks", request, options);
 
+    const pageInfo = result.getPageInfo();
+    if (!pageInfo) {
+      throw new Error("Server response missing pagination info.");
+    }
+
     return {
       items: result
         .getItemsList()
         .map((item) => Workflow.fromListResponse(item)),
-      ...result.getPageInfo()!.toObject(),
+      pageInfo: {
+        startCursor: pageInfo.getStartCursor(),
+        endCursor: pageInfo.getEndCursor(),
+        hasPreviousPage: pageInfo.getHasPreviousPage(),
+        hasNextPage: pageInfo.getHasNextPage(),
+      },
     };
   }
 
@@ -541,10 +549,7 @@ class Client extends BaseClient {
     options?: GetExecutionsRequest
   ): Promise<{
     items: Execution[];
-    startCursor: string;
-    endCursor: string;
-    hasPreviousPage: boolean;
-    hasNextPage: boolean;
+    pageInfo: PageInfo;
   }> {
     const request = new avs_pb.ListExecutionsReq();
     for (const w of workflows) {
@@ -565,9 +570,19 @@ class Client extends BaseClient {
       avs_pb.ListExecutionsReq
     >("listExecutions", request, options);
 
+    const pageInfo = result.getPageInfo();
+    if (!pageInfo) {
+      throw new Error("Server response missing pagination info.");
+    }
+
     return {
       items: result.getItemsList().map((item) => Execution.fromResponse(item)),
-      ...result.getPageInfo()!.toObject(),
+      pageInfo: {
+        startCursor: pageInfo.getStartCursor(),
+        endCursor: pageInfo.getEndCursor(),
+        hasPreviousPage: pageInfo.getHasPreviousPage(),
+        hasNextPage: pageInfo.getHasNextPage(),
+      },
     };
   }
 
@@ -803,7 +818,7 @@ class Client extends BaseClient {
    */
   async getSecrets(
     options?: SecretRequestOptions
-  ): Promise<ListSecretsResponse> {
+  ): Promise<GetSecretsResponse> {
     const request = new avs_pb.ListSecretsReq();
 
     if (options?.workflowId) {
@@ -854,10 +869,12 @@ class Client extends BaseClient {
             description: item.getDescription() || undefined,
           })
       ),
-      startCursor: pageInfo.getStartCursor(),
-      endCursor: pageInfo.getEndCursor(),
-      hasPreviousPage: pageInfo.getHasPreviousPage(),
-      hasNextPage: pageInfo.getHasNextPage(),
+      pageInfo: {
+        startCursor: pageInfo.getStartCursor(),
+        endCursor: pageInfo.getEndCursor(),
+        hasPreviousPage: pageInfo.getHasPreviousPage(),
+        hasNextPage: pageInfo.getHasNextPage(),
+      },
     };
   }
 

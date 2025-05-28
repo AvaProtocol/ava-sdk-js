@@ -89,12 +89,16 @@ export type SecretProps = {
   description?: string;
 };
 
-export interface ListSecretsResponse {
-  items: SecretProps[];
+export interface PageInfo {
   startCursor: string;
   endCursor: string;
   hasPreviousPage: boolean;
   hasNextPage: boolean;
+}
+
+export interface GetSecretsResponse {
+  items: SecretProps[];
+  pageInfo: PageInfo;
 }
 
 export interface SecretRequestOptions extends RequestOptions {

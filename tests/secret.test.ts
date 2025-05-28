@@ -8,7 +8,7 @@ import {
   Step,
 } from "@avaprotocol/sdk-js";
 import {
-  ListSecretsResponse,
+  GetSecretsResponse,
   SecretRequestOptions,
   NodeType,
   TriggerType,
@@ -367,7 +367,7 @@ describe("secret Tests", () => {
         return;
       }
 
-      const typedFirstPage = firstPage as ListSecretsResponse;
+      const typedFirstPage = firstPage as GetSecretsResponse;
 
       expect(typedFirstPage.endCursor).toBeTruthy();
 
@@ -406,7 +406,7 @@ describe("secret Tests", () => {
         return;
       }
 
-      const typedMiddlePage = middlePage as ListSecretsResponse;
+      const typedMiddlePage = middlePage as GetSecretsResponse;
 
       // Skip test if no cursor or no more items
       if (!typedMiddlePage.endCursor || !typedMiddlePage.hasNextPage) {

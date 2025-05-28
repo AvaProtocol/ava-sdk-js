@@ -84,10 +84,10 @@ describe("getWorkflows Tests", () => {
         limit: countFirstPage,
       });
       expect(listResponse.items.length).toBe(countFirstPage);
-      expect(listResponse).toHaveProperty("endCursor");
-      expect(listResponse.hasNextPage).toBe(true);
+      expect(listResponse).toHaveProperty("pageInfo");
+      expect(listResponse.pageInfo.hasNextPage).toBe(true);
       // because of our usage of ulid, this is fixed length
-      const firstCursor = listResponse.endCursor;
+      const firstCursor = listResponse.pageInfo.endCursor;
       expect(firstCursor).toHaveLength(60);
 
       // Get the list of workflows with limit:2 and after
@@ -99,7 +99,7 @@ describe("getWorkflows Tests", () => {
       // Verify that the count of the second return is totalCount - limit
       expect(Array.isArray(listResponse2.items)).toBe(true);
       expect(listResponse2.items.length).toBe(totalCount - countFirstPage);
-      expect(listResponse2.hasNextPage).toBe(false);
+      expect(listResponse2.pageInfo.hasNextPage).toBe(false);
 
       // Make sure there's no overlap between the two lists
       expect(
@@ -116,7 +116,7 @@ describe("getWorkflows Tests", () => {
 
       expect(listResponse3.items.length).toBe(totalCount);
       // Note: hasNextPage might be true even when we get all items, depending on server implementation
-      expect(typeof listResponse3.hasNextPage).toBe("boolean");
+      expect(typeof listResponse3.pageInfo.hasNextPage).toBe("boolean");
     } finally {
       // Clean up all created workflows
       for (const workflowId of workflowIds) {
@@ -171,12 +171,12 @@ describe("getWorkflows Tests", () => {
       });
       
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
-      expect(firstPage.endCursor).toBeTruthy();
-      expect(firstPage.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.endCursor).toBeTruthy();
+      expect(firstPage.pageInfo.hasNextPage).toBe(true);
 
       // Get the second page using after parameter
       const secondPage = await client.getWorkflows([wallet.address], {
-        after: firstPage.endCursor,
+        after: firstPage.pageInfo.endCursor,
         limit: pageSize,
       });
 
@@ -232,18 +232,18 @@ describe("getWorkflows Tests", () => {
       });
       
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
-      expect(firstPage.endCursor).toBeTruthy();
+      expect(firstPage.pageInfo.endCursor).toBeTruthy();
 
       // For backward pagination, we need to get a page that comes after the first page
       // then use 'before' to get the page before it
       const secondPage = await client.getWorkflows([wallet.address], {
-        after: firstPage.endCursor,
+        after: firstPage.pageInfo.endCursor,
         limit: pageSize,
       });
 
       // Now get the page before the second page (which should be the first page or similar)
       const previousPage = await client.getWorkflows([wallet.address], {
-        before: secondPage.startCursor,
+        before: secondPage.pageInfo.startCursor,
         limit: pageSize,
       });
 
@@ -252,8 +252,8 @@ describe("getWorkflows Tests", () => {
       expect(secondPage.items.length).toBeGreaterThan(0);
 
       // Verify the previous page has endCursor and hasPreviousPage fields
-      expect(typeof previousPage.endCursor).toBe("string");
-      expect(typeof previousPage.hasPreviousPage).toBe("boolean");
+      expect(typeof previousPage.pageInfo.endCursor).toBe("string");
+      expect(typeof previousPage.pageInfo.hasPreviousPage).toBe("boolean");
 
       // Verify pagination is working (pages may have some overlap depending on implementation)
       const previousPageIds = previousPage.items.map((item: any) => item.id);
