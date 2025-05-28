@@ -8,6 +8,8 @@ class Secret implements SecretProps {
   orgId?: string;
   createdAt?: number;
   updatedAt?: number;
+  createdBy?: string;
+  description?: string;
 
   constructor(props: SecretProps) {
     this.name = props.name;
@@ -16,6 +18,8 @@ class Secret implements SecretProps {
     this.orgId = props.orgId;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.createdBy = props.createdBy;
+    this.description = props.description;
   }
 
   toRequest(): avs_pb.CreateOrUpdateSecretReq {

@@ -137,14 +137,12 @@ class Workflow implements WorkflowProps {
    * Create an instance of Workflow with only selected fields
    * @param obj
    */
-  static fromListResponse(obj: avs_pb.ListTasksResp.Item): Workflow {
+  static fromListResponse(obj: avs_pb.Task): Workflow {
     const trigger = TriggerFactory.fromResponse(obj.getTrigger()!);
 
     if (!trigger) {
       throw new Error("Trigger is undefined in fromListResponse()");
     }
-
-    const executionCount = obj.getExecutionCount ? obj.getExecutionCount() : (obj as unknown as avs_pb.ListTasksResp.Item.AsObject).executionCount;
 
     return new Workflow({
       id: obj.getId(),
@@ -154,9 +152,9 @@ class Workflow implements WorkflowProps {
       startAt: obj.getStartAt(),
       expiredAt: obj.getExpiredAt(),
       maxExecution: obj.getMaxExecution(),
-      executionCount: executionCount,
-      nodes: [],
-      edges: [],
+      executionCount: obj.getExecutionCount(),
+      nodes: _.map(obj.getNodesList(), (node) => NodeFactory.fromResponse(node)),
+      edges: _.map(obj.getEdgesList(), (edge) => Edge.fromResponse(edge)),
       completedAt: obj.getCompletedAt(),
       status: convertStatusToString(obj.getStatus()),
       name: obj.getName(),

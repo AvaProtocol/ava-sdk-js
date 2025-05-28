@@ -23,6 +23,9 @@ export interface GetWorkflowsRequest extends RequestOptions {
   before?: string; // Get items before this cursor value (for backward pagination)
   after?: string; // Get items after this cursor value (for forward pagination)
   limit?: number;
+  // Field control options for flexible response content
+  includeNodes?: boolean;  // Include task nodes (expensive field)
+  includeEdges?: boolean;  // Include task edges (expensive field)
 }
 
 export interface GetWalletRequest {
@@ -82,6 +85,8 @@ export type SecretProps = {
   orgId?: string;
   createdAt?: number;
   updatedAt?: number;
+  createdBy?: string;
+  description?: string;
 };
 
 export interface ListSecretsResponse {
@@ -98,6 +103,10 @@ export interface SecretRequestOptions extends RequestOptions {
   before?: string;
   after?: string;
   limit?: number;
+  // Field control options for flexible response content
+  includeTimestamps?: boolean;   // Include created_at and updated_at fields
+  includeCreatedBy?: boolean;    // Include created_by field
+  includeDescription?: boolean;  // Include description field
 }
 
 export interface RunNodeWithInputsRequest {

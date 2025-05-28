@@ -11,12 +11,11 @@ import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import Node, { NodeProps, NodeData } from "./models/node/interface";
 import TriggerFactory from "./models/trigger/factory";
-import Secret, { SecretProps } from "./models/secret";
+import Secret from "./models/secret";
 import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-  ListSecretResponse,
   ListSecretsResponse,
   SecretRequestOptions,
   RequestOptions,
@@ -28,6 +27,7 @@ import type {
   GetSignatureFormatResponse,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
+  SecretProps,
 } from "@avaprotocol/types";
 
 import { NodeType, TriggerType } from "@avaprotocol/types";
@@ -484,6 +484,14 @@ class Client extends BaseClient {
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
 
+    // Set field control options
+    if (options?.includeNodes) {
+      request.setIncludeNodes(options.includeNodes);
+    }
+    if (options?.includeEdges) {
+      request.setIncludeEdges(options.includeEdges);
+    }
+
     const result = await this.sendGrpcRequest<
       avs_pb.ListTasksResp,
       avs_pb.ListTasksReq
@@ -570,16 +578,19 @@ class Client extends BaseClient {
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Execution>} - The Execution object
    */
-  async getExecution(workflowId: string, executionId: string, options?: RequestOptions): Promise<Execution> {
+  async getExecution(
+    workflowId: string,
+    executionId: string,
+    options?: RequestOptions
+  ): Promise<Execution> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(workflowId);
     request.setExecutionId(executionId);
 
-    const result = await this.sendGrpcRequest<avs_pb.Execution, avs_pb.ExecutionReq>(
-      "getExecution",
-      request,
-      options
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.Execution,
+      avs_pb.ExecutionReq
+    >("getExecution", request, options);
 
     return Execution.fromResponse(result);
   }
@@ -748,7 +759,7 @@ class Client extends BaseClient {
     const result = await this.sendGrpcRequest<
       BoolValue,
       avs_pb.CreateOrUpdateSecretReq
-    >("createSecret", request, options);
+          >("createSecret", request, options);
 
     return result.getValue();
   }
@@ -808,12 +819,28 @@ class Client extends BaseClient {
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
 
+    // Set field control options
+    if (options?.includeTimestamps) {
+      request.setIncludeTimestamps(options.includeTimestamps);
+    }
+    if (options?.includeCreatedBy) {
+      request.setIncludeCreatedBy(options.includeCreatedBy);
+    }
+    if (options?.includeDescription) {
+      request.setIncludeDescription(options.includeDescription);
+    }
+
     const result = await this.sendGrpcRequest<
       avs_pb.ListSecretsResp,
       avs_pb.ListSecretsReq
-    >("listSecrets", request, options);
+          >("listSecrets", request, options);
 
     const pageInfo = result.getPageInfo();
+
+    if (!pageInfo) {
+      throw new Error("Server response missing pagination info.");
+    }
+
     return {
       items: result.getItemsList().map(
         (item) =>
@@ -821,9 +848,16 @@ class Client extends BaseClient {
             name: item.getName(),
             workflowId: item.getWorkflowId() || undefined,
             orgId: item.getOrgId() || undefined,
+            createdAt: item.getCreatedAt() || undefined,
+            updatedAt: item.getUpdatedAt() || undefined,
+            createdBy: item.getCreatedBy() || undefined,
+            description: item.getDescription() || undefined,
           })
       ),
-      ...result.getPageInfo()!.toObject(),
+      startCursor: pageInfo.getStartCursor(),
+      endCursor: pageInfo.getEndCursor(),
+      hasPreviousPage: pageInfo.getHasPreviousPage(),
+      hasNextPage: pageInfo.getHasNextPage(),
     };
   }
 
@@ -1149,7 +1183,6 @@ export type {
   StepProps,
   TriggerReasonProps,
   OutputDataProps,
-  SecretProps,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
 };

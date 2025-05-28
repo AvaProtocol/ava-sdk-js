@@ -315,11 +315,29 @@ export const cleanupSecrets = async (client: Client) => {
       ? secretsResponse 
       : secretsResponse.items || [];
 
-    const secretNames = new Map(
-      secretItems.map((item) => [item.name, false])
+    // Only cleanup secrets that look like test secrets (have test prefixes)
+    const testSecretPrefixes = [
+      'dummysecret_',
+      'testdup',
+      'delete_',
+      'abc_',
+      'def_',
+      'paged_',
+      'secret_name',
+      'test_debug_'
+    ];
+
+    const testSecrets = secretItems.filter((item) => 
+      testSecretPrefixes.some(prefix => item.name.startsWith(prefix))
     );
 
-    await removeCreatedSecrets(client, secretNames);
+    if (testSecrets.length > 0) {
+      console.log(`Cleaning up ${testSecrets.length} test secrets...`);
+      const secretNames = new Map(
+        testSecrets.map((item) => [item.name, false])
+      );
+      await removeCreatedSecrets(client, secretNames);
+    }
   } catch (error) {
     console.warn("Failed to cleanup secrets:", (error as Error).message);
   }
