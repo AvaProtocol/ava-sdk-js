@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 1.6.1
+
+### Patch Changes
+
+- f6ba804: Added eventTrigger tests
+
 ## 1.6.0
 
 ### Minor Changes
