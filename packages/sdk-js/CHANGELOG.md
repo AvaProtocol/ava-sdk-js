@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.3
+
+### Patch Changes
+
+- 6e9069f: Make type definitions more consistent
+- Updated dependencies [6e9069f]
+  - @avaprotocol/types@1.0.3
+
 ## 1.6.2
 
 ### Patch Changes

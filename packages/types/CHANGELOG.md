@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.3
+
+### Patch Changes
+
+- 6e9069f: Make type definitions more consistent
+
 ## 1.0.2
 
 ### Patch Changes
