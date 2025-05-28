@@ -12,16 +12,20 @@ export interface RequestOptions {
 }
 
 export interface GetExecutionsRequest extends RequestOptions {
-  cursor?: string;  // Deprecated: Use before or after instead
-  before?: string;  // Get items before this cursor value (for backward pagination)
-  after?: string;   // Get items after this cursor value (for forward pagination)
+  cursor?: string; // Deprecated: Use before or after instead
+  before?: string; // Get items before this cursor value (for backward pagination)
+  after?: string; // Get items after this cursor value (for forward pagination)
   limit?: number;
 }
 
 export interface GetWorkflowsRequest extends RequestOptions {
-  before?: string;  // Get items before this cursor value (for backward pagination)
-  after?: string;   // Get items after this cursor value (for forward pagination)
+  cursor?: string; // Deprecated: Use before or after instead
+  before?: string; // Get items before this cursor value (for backward pagination)
+  after?: string; // Get items after this cursor value (for forward pagination)
   limit?: number;
+  // Field control options for flexible response content
+  includeNodes?: boolean;  // Include task nodes (expensive field)
+  includeEdges?: boolean;  // Include task edges (expensive field)
 }
 
 export interface GetWalletRequest {
@@ -74,16 +78,23 @@ export type SmartWallet = avs_pb.SmartWallet.AsObject & {
 
 export const ExecutionStatus = avs_pb.ExecutionStatus;
 
-export interface ListSecretResponse {
+export type SecretProps = {
   name: string;
+  secret?: string;
   workflowId?: string;
   orgId?: string;
-}
+  createdAt?: number;
+  updatedAt?: number;
+  createdBy?: string;
+  description?: string;
+};
 
 export interface ListSecretsResponse {
-  items: ListSecretResponse[];
-  cursor: string;
-  hasMore: boolean;
+  items: SecretProps[];
+  startCursor: string;
+  endCursor: string;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
 }
 
 export interface SecretRequestOptions extends RequestOptions {
@@ -92,12 +103,16 @@ export interface SecretRequestOptions extends RequestOptions {
   before?: string;
   after?: string;
   limit?: number;
+  // Field control options for flexible response content
+  includeTimestamps?: boolean;   // Include created_at and updated_at fields
+  includeCreatedBy?: boolean;    // Include created_by field
+  includeDescription?: boolean;  // Include description field
 }
 
 export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
-  inputVariables: Record<string, any>;
+  inputVariables?: Record<string, any>;
 }
 
 export interface RunNodeWithInputsResponse {

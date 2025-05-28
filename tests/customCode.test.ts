@@ -12,9 +12,9 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-} from "../utils";
-import { getConfig } from "../envalid";
-import { defaultTriggerId, createFromTemplate } from "../templates";
+} from "./utils";
+import { getConfig } from "./envalid";
+import { defaultTriggerId, createFromTemplate } from "./templates";
 
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
@@ -55,11 +55,13 @@ describe("CustomCode Module Imports Tests", () => {
         name: "lodash test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const _ = require('lodash');
-            return _.map([1, 2, 3], n => n * 2);
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const _ = require('lodash');
+              return _.map([1, 2, 3], n => n * 2);
+            `,
+          },
         },
       };
 
@@ -91,10 +93,10 @@ describe("CustomCode Module Imports Tests", () => {
         limit: 1,
       });
 
-      expect(executions.result.length).toBe(1);
+      expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.result)?.stepsList,
+        _.first(executions.items)?.stepsList,
         (step) => step.nodeId === customCodeNodeProps.id
       );
 
@@ -117,12 +119,14 @@ describe("CustomCode Module Imports Tests", () => {
         name: "dayjs test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const dayjs = require('dayjs');
-            const date = dayjs('2023-01-01');
-            return date.format('YYYY-MM-DD');
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const dayjs = require('dayjs');
+              const date = dayjs('2023-01-01');
+              return date.format('YYYY-MM-DD');
+            `,
+          },
         },
       };
 
@@ -154,10 +158,10 @@ describe("CustomCode Module Imports Tests", () => {
         limit: 1,
       });
 
-      expect(executions.result.length).toBe(1);
+      expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.result)?.stepsList,
+        _.first(executions.items)?.stepsList,
         (step) => step.nodeId === customCodeNodeProps.id
       );
 
@@ -180,12 +184,14 @@ describe("CustomCode Module Imports Tests", () => {
         name: "uuid test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const { v4: uuidv4 } = require('uuid');
-            const id = uuidv4();
-            return typeof id === 'string' && id.length > 0;
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const { v4: uuidv4 } = require('uuid');
+              const id = uuidv4();
+              return typeof id === 'string' && id.length > 0;
+            `,
+          },
         },
       };
 
@@ -217,10 +223,10 @@ describe("CustomCode Module Imports Tests", () => {
         limit: 1,
       });
 
-      expect(executions.result.length).toBe(1);
+      expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.result)?.stepsList,
+        _.first(executions.items)?.stepsList,
         (step) => step.nodeId === customCodeNodeProps.id
       );
 
@@ -243,26 +249,28 @@ describe("CustomCode Module Imports Tests", () => {
         name: "complex module test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const _ = require('lodash');
-            const dayjs = require('dayjs');
-            const { v4: uuidv4 } = require('uuid');
-            
-            const id = uuidv4();
-            
-            const now = dayjs();
-            
-            const dates = _.range(0, 3).map(i => 
-              dayjs(now).add(i, 'days').format('YYYY-MM-DD')
-            );
-            
-            return {
-              id: id,
-              today: now.format('YYYY-MM-DD'),
-              dates: dates
-            };
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const _ = require('lodash');
+              const dayjs = require('dayjs');
+              const { v4: uuidv4 } = require('uuid');
+              
+              const id = uuidv4();
+              
+              const now = dayjs();
+              
+              const dates = _.range(0, 3).map(i => 
+                dayjs(now).add(i, 'days').format('YYYY-MM-DD')
+              );
+              
+              return {
+                id: id,
+                today: now.format('YYYY-MM-DD'),
+                dates: dates
+              };
+            `,
+          },
         },
       };
 
@@ -294,10 +302,10 @@ describe("CustomCode Module Imports Tests", () => {
         limit: 1,
       });
 
-      expect(executions.result.length).toBe(1);
+      expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.result)?.stepsList,
+        _.first(executions.items)?.stepsList,
         (step) => step.nodeId === customCodeNodeProps.id
       );
 

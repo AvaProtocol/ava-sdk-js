@@ -1,9 +1,11 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerProps } from "./interface";
+import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
+
 // Required props for constructor: id, name, type and data: { scheduleList }
-export type CronTriggerDataType = avs_pb.CronCondition.AsObject;
+export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
+export type CronTriggerOutput = avs_pb.CronTrigger.Output.AsObject;
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
@@ -19,9 +21,12 @@ class CronTrigger extends Trigger {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
 
-    const condition = new avs_pb.CronCondition();
-    condition.setScheduleList((this.data as CronTriggerDataType).scheduleList);
-    request.setCron(condition);
+    const trigger = new avs_pb.CronTrigger();
+    const config = new avs_pb.CronTrigger.Config();
+    config.setScheduleList((this.data as CronTriggerDataType).scheduleList || []);
+    trigger.setConfig(config);
+    
+    request.setCron(trigger);
 
     return request;
   }
@@ -30,11 +35,32 @@ class CronTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
+    let data: CronTriggerDataType = { scheduleList: [] };
+    
+    if (raw.getCron() && raw.getCron()!.hasConfig()) {
+      const config = raw.getCron()!.getConfig();
+      
+      if (config) {
+        data = {
+          scheduleList: config.getScheduleList() || []
+        };
+      }
+    }
+    
     return new CronTrigger({
       ...obj,
       type: TriggerType.Cron,
-      data: raw.getCron()!.toObject() as CronTriggerDataType,
+      data: data,
     });
+  }
+
+  /**
+   * Convert raw data from runNodeWithInputs response to CronOutput format
+   * @param rawData - The raw data from the gRPC response
+   * @returns {CronTriggerOutput | undefined} - The converted data
+   */
+  getOutput(): CronTriggerOutput | undefined {
+    return this.output as CronTriggerOutput;
   }
 }
 

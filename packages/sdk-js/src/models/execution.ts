@@ -5,16 +5,26 @@ import Step from "./step";
 export type StepProps = avs_pb.Execution.Step.AsObject;
 
 export type OutputDataProps =
-  | avs_pb.Execution.TransferLogOutput.AsObject
-  | avs_pb.Execution.BlockOutput.AsObject
-  | avs_pb.Execution.TimeOutput.AsObject
+  | avs_pb.BlockTrigger.Output.AsObject
+  | avs_pb.FixedTimeTrigger.Output.AsObject
+  | avs_pb.CronTrigger.Output.AsObject
+  | avs_pb.EventTrigger.Output.AsObject
+  | avs_pb.EventTrigger.TransferLogOutput.AsObject
   | avs_pb.Evm.Log.AsObject
+  | { blockNumber: number } // Filtered block trigger output
+  | { epoch: number } // Filtered fixed time trigger output
+  | { epoch: number; scheduleMatched: string } // Filtered cron trigger output
   | undefined;
 
-// Ignore the original transferLog, evmLog, etc. fields and use a combined outputData field instead
+// Ignore the original trigger output fields and use a combined outputData field instead
 export type ExecutionProps = Omit<
   avs_pb.Execution.AsObject,
-  "stepsList" | "reason" | "transferLog" | "evmLog" | "block" | "time"
+  | "stepsList"
+  | "reason"
+  | "blockTrigger"
+  | "fixedTimeTrigger"
+  | "cronTrigger"
+  | "eventTrigger"
 > & {
   stepsList: Step[];
   triggerReason: TriggerReason | undefined;
@@ -50,17 +60,33 @@ class Execution implements ExecutionProps {
     let triggerOutputData: OutputDataProps | undefined;
 
     switch (triggerOutputDataType) {
-      case avs_pb.Execution.OutputDataCase.EVM_LOG:
-        triggerOutputData = execution.getEvmLog()?.toObject();
+      case avs_pb.Execution.OutputDataCase.BLOCK_TRIGGER:
+        const blockOutput = execution.getBlockTrigger()?.toObject();
+        // Filter to only return blockNumber for block triggers
+        triggerOutputData = blockOutput ? { blockNumber: blockOutput.blockNumber } : undefined;
         break;
-      case avs_pb.Execution.OutputDataCase.TRANSFER_LOG:
-        triggerOutputData = execution.getTransferLog()?.toObject();
+      case avs_pb.Execution.OutputDataCase.FIXED_TIME_TRIGGER:
+        const fixedTimeOutput = execution.getFixedTimeTrigger()?.toObject();
+        // Filter to only return epoch for fixed time triggers
+        triggerOutputData = fixedTimeOutput ? { epoch: fixedTimeOutput.epoch } : undefined;
         break;
-      case avs_pb.Execution.OutputDataCase.BLOCK:
-        triggerOutputData = execution.getBlock()?.toObject();
+      case avs_pb.Execution.OutputDataCase.CRON_TRIGGER:
+        const cronOutput = execution.getCronTrigger()?.toObject();
+        // Filter to only return epoch and scheduleMatched for cron triggers
+        triggerOutputData = cronOutput ? { epoch: cronOutput.epoch, scheduleMatched: cronOutput.scheduleMatched } : undefined;
         break;
-      case avs_pb.Execution.OutputDataCase.TIME:
-        triggerOutputData = execution.getTime()?.toObject();
+      case avs_pb.Execution.OutputDataCase.EVENT_TRIGGER:
+        const eventTrigger = execution.getEventTrigger();
+        if (eventTrigger) {
+          if (eventTrigger.hasEvmLog()) {
+            triggerOutputData = eventTrigger.getEvmLog()?.toObject();
+          } else if (eventTrigger.hasTransferLog()) {
+            triggerOutputData = eventTrigger.getTransferLog()?.toObject();
+          }
+        }
+        break;
+      case avs_pb.Execution.OutputDataCase.OUTPUT_DATA_NOT_SET:
+        triggerOutputData = undefined;
         break;
     }
 
@@ -79,7 +105,7 @@ class Execution implements ExecutionProps {
     });
   }
 
-  // Client side does not generate the execution, so there’s no toRequest() method
+  // Client side does not generate the execution, so there's no toRequest() method
 }
 
 export default Execution;

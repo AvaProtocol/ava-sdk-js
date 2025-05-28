@@ -11,12 +11,11 @@ import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
 import Node, { NodeProps, NodeData } from "./models/node/interface";
 import TriggerFactory from "./models/trigger/factory";
-import Secret, { SecretProps } from "./models/secret";
+import Secret from "./models/secret";
 import type {
   GetKeyRequestApiKey,
   GetKeyRequestSignature,
   GetKeyResponse,
-  ListSecretResponse,
   ListSecretsResponse,
   SecretRequestOptions,
   RequestOptions,
@@ -27,7 +26,8 @@ import type {
   GetWorkflowsRequest,
   GetSignatureFormatResponse,
   RunNodeWithInputsRequest,
-  RunNodeWithInputsResponse
+  RunNodeWithInputsResponse,
+  SecretProps,
 } from "@avaprotocol/types";
 
 import { NodeType, TriggerType } from "@avaprotocol/types";
@@ -37,6 +37,7 @@ import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
+import BlockTrigger, { BlockTriggerProps } from "./models/trigger/block";
 
 class BaseClient {
   readonly endpoint: string;
@@ -216,6 +217,104 @@ class BaseClient {
       );
     });
   }
+
+  /**
+   * Convert a protobuf Value to a JavaScript value
+   * @param value - The protobuf Value object
+   * @returns {any} - The converted JavaScript value
+   */
+  protected convertProtobufValueToJS(value: any): any {
+    if (!value) return null;
+
+    // Handle different value types based on protobuf Value structure
+    if (value.hasNullValue && value.hasNullValue()) {
+      return null;
+    }
+    if (value.hasNumberValue && value.hasNumberValue()) {
+      return value.getNumberValue();
+    }
+    if (value.hasStringValue && value.hasStringValue()) {
+      return value.getStringValue();
+    }
+    if (value.hasBoolValue && value.hasBoolValue()) {
+      return value.getBoolValue();
+    }
+    if (value.hasStructValue && value.hasStructValue()) {
+      const struct = value.getStructValue();
+      const result: any = {};
+      if (struct && struct.getFieldsMap) {
+        const fieldsMap = struct.getFieldsMap();
+        fieldsMap.forEach((fieldValue: any, key: string) => {
+          result[key] = this.convertProtobufValueToJS(fieldValue);
+        });
+      }
+      return result;
+    }
+    if (value.hasListValue && value.hasListValue()) {
+      const list = value.getListValue();
+      if (list && list.getValuesList) {
+        return list
+          .getValuesList()
+          .map((item: any) => this.convertProtobufValueToJS(item));
+      }
+      return [];
+    }
+
+    // Fallback: try to extract primitive values directly
+    if (typeof value.getNumberValue === "function") {
+      return value.getNumberValue();
+    }
+    if (typeof value.getStringValue === "function") {
+      return value.getStringValue();
+    }
+    if (typeof value.getBoolValue === "function") {
+      return value.getBoolValue();
+    }
+
+    // If all else fails, return the raw value
+    return value;
+  }
+
+  /**
+   * Convert a JavaScript value to a protobuf Value
+   * @param value - The JavaScript value to convert
+   * @returns {any} - The protobuf Value object
+   */
+  protected convertJSValueToProtobuf(value: any): any {
+    const protobufValue =
+      new (require("google-protobuf/google/protobuf/struct_pb").Value)();
+
+    if (value === null || value === undefined) {
+      protobufValue.setNullValue(0); // NULL_VALUE = 0
+    } else if (typeof value === "number") {
+      protobufValue.setNumberValue(value);
+    } else if (typeof value === "string") {
+      protobufValue.setStringValue(value);
+    } else if (typeof value === "boolean") {
+      protobufValue.setBoolValue(value);
+    } else if (Array.isArray(value)) {
+      const listValue =
+        new (require("google-protobuf/google/protobuf/struct_pb").ListValue)();
+      const convertedValues = value.map((item) =>
+        this.convertJSValueToProtobuf(item)
+      );
+      listValue.setValuesList(convertedValues);
+      protobufValue.setListValue(listValue);
+    } else if (typeof value === "object") {
+      const structValue =
+        new (require("google-protobuf/google/protobuf/struct_pb").Struct)();
+      const fieldsMap = structValue.getFieldsMap();
+      Object.entries(value).forEach(([key, val]) => {
+        fieldsMap.set(key, this.convertJSValueToProtobuf(val));
+      });
+      protobufValue.setStructValue(structValue);
+    } else {
+      // Fallback: convert to string
+      protobufValue.setStringValue(String(value));
+    }
+
+    return protobufValue;
+  }
 }
 
 class Client extends BaseClient {
@@ -364,20 +463,34 @@ class Client extends BaseClient {
   async getWorkflows(
     addresses: string[],
     options?: GetWorkflowsRequest
-  ): Promise<{ cursor: string; result: Workflow[]; hasMore: boolean }> {
+  ): Promise<{
+    items: Workflow[];
+    startCursor: string;
+    endCursor: string;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  }> {
     const request = new avs_pb.ListTasksReq();
     for (const a of addresses) {
       request.addSmartWalletAddress(a);
     }
 
-    if (options?.before && options?.before !== "") {
+    if (options?.before) {
       request.setBefore(options.before);
     }
-    if (options?.after && options?.after !== "") {
+    if (options?.after) {
       request.setAfter(options.after);
     }
 
     request.setLimit(options?.limit || DEFAULT_LIMIT);
+
+    // Set field control options
+    if (options?.includeNodes) {
+      request.setIncludeNodes(options.includeNodes);
+    }
+    if (options?.includeEdges) {
+      request.setIncludeEdges(options.includeEdges);
+    }
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListTasksResp,
@@ -385,11 +498,10 @@ class Client extends BaseClient {
     >("listTasks", request, options);
 
     return {
-      cursor: result.getCursor(),
-      hasMore: result.getHasMore(),
-      result: result
+      items: result
         .getItemsList()
         .map((item) => Workflow.fromListResponse(item)),
+      ...result.getPageInfo()!.toObject(),
     };
   }
 
@@ -422,16 +534,22 @@ class Client extends BaseClient {
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Executions
+   * @returns {Promise<{ cursor: string; result: Execution[]; hasMore: boolean }>} - The list of Execution objects with pagination metadata
    */
   async getExecutions(
     workflows: string[],
     options?: GetExecutionsRequest
-  ): Promise<{ cursor: string; result: Execution[]; hasMore: boolean }> {
+  ): Promise<{
+    items: Execution[];
+    startCursor: string;
+    endCursor: string;
+    hasPreviousPage: boolean;
+    hasNextPage: boolean;
+  }> {
     const request = new avs_pb.ListExecutionsReq();
-    request.setTaskIdsList(workflows);
-
-    request.setLimit(options?.limit || DEFAULT_LIMIT);
+    for (const w of workflows) {
+      request.addTaskIds(w);
+    }
 
     if (options?.before) {
       request.setBefore(options.before);
@@ -440,32 +558,33 @@ class Client extends BaseClient {
       request.setAfter(options.after);
     }
 
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
+
     const result = await this.sendGrpcRequest<
       avs_pb.ListExecutionsResp,
       avs_pb.ListExecutionsReq
     >("listExecutions", request, options);
 
     return {
-      cursor: result.getCursor(),
-      result: result.getItemsList().map((item) => Execution.fromResponse(item)),
-      hasMore: result.getHasMore(),
+      items: result.getItemsList().map((item) => Execution.fromResponse(item)),
+      ...result.getPageInfo()!.toObject(),
     };
   }
 
   /**
-   * Get a single execution for given workflow and execution id
-   * @param {string} workflowId - The workflow id
-   * @param {string} executionId - The exectuion id
+   * Get a specific execution by id
+   * @param {string} workflowId - The workflow id (taskId)
+   * @param {string} executionId - The execution id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<Execution>} - The result execution if it is existed
+   * @returns {Promise<Execution>} - The Execution object
    */
   async getExecution(
-    taskId: string,
+    workflowId: string,
     executionId: string,
     options?: RequestOptions
   ): Promise<Execution> {
     const request = new avs_pb.ExecutionReq();
-    request.setTaskId(taskId);
+    request.setTaskId(workflowId);
     request.setExecutionId(executionId);
 
     const result = await this.sendGrpcRequest<
@@ -478,16 +597,16 @@ class Client extends BaseClient {
 
   /**
    * Get the count of executions for multiple workflows
-   * @param workflowIds - The list of workflow ids
+   * @param workflows - The list of workflow ids
    * @param options - Request options
    * @returns {Promise<number>} - The count of executions
    */
   async getExecutionCount(
-    workflowIds: string[],
+    workflows: string[],
     options?: RequestOptions
   ): Promise<number> {
     const request = new avs_pb.GetExecutionCountReq();
-    request.setWorkflowIdsList(workflowIds);
+    request.setWorkflowIdsList(workflows);
 
     const result = await this.sendGrpcRequest<
       avs_pb.GetExecutionCountResp,
@@ -498,22 +617,19 @@ class Client extends BaseClient {
   }
 
   /**
-   * Get status of an execution.
-   *
-   * When a task is trigger in async manner, it has not run yet, so the data isn't available to return in GetExecution. Calling GetExecution will return in execution not found. We can instad call getExecutionStatus to check whether the execution is finished or not.
-   *
-   * @param {string} workflowId - The workflow id
-   * @param {string} executionId - The exectuion id
+   * Get the status of an execution
+   * @param {string} workflowId - The workflow id (taskId)
+   * @param {string} executionId - The execution id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<ExecutionStatus>} - The result execution if it is existed
+   * @returns {Promise<ExecutionStatus>} - The status of the execution
    */
   async getExecutionStatus(
-    taskId: string,
+    workflowId: string,
     executionId: string,
     options?: RequestOptions
-  ): Promise<avs_pb.ExecutionStatus> {
+  ): Promise<ExecutionStatus> {
     const request = new avs_pb.ExecutionReq();
-    request.setTaskId(taskId);
+    request.setTaskId(workflowId);
     request.setExecutionId(executionId);
 
     const result = await this.sendGrpcRequest<
@@ -525,8 +641,8 @@ class Client extends BaseClient {
   }
 
   /**
-   * Get a workflow by its Id
-   * @param {string} id - The Id of the workflow
+   * Get a workflow by id
+   * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Workflow>} - The Workflow object
    */
@@ -544,12 +660,13 @@ class Client extends BaseClient {
   }
 
   /**
-   * Manually trigger a workflow by its Id, and manual trigger data input
-   * @param id - The Id of the workflow
-   * @param triggerData - The data of the trigger
-   * @param isBlocking - Whether the trigger is blocking
-   * @param options - Request options
-   * @returns {Promise<avs_pb.UserTriggerTaskResp>} - The response from the trigger workflow call
+   * Trigger a workflow manually
+   * @param {object} params - The trigger parameters
+   * @param {string} params.id - The workflow id
+   * @param {TriggerReasonProps} params.reason - The trigger reason
+   * @param {boolean} [params.isBlocking=false] - Whether to wait for execution completion
+   * @param {RequestOptions} [options] - Request options
+   * @returns {Promise<avs_pb.UserTriggerTaskResp.AsObject>} - The execution result
    */
   async triggerWorkflow(
     {
@@ -559,7 +676,7 @@ class Client extends BaseClient {
     }: {
       id: string;
       reason: TriggerReasonProps;
-      isBlocking: boolean;
+      isBlocking?: boolean;
     },
     options?: RequestOptions
   ): Promise<avs_pb.UserTriggerTaskResp.AsObject> {
@@ -578,8 +695,8 @@ class Client extends BaseClient {
   }
 
   /**
-   * Cancel a workflow by its Id
-   * @param {string} id - The Id of the workflow
+   * Cancel a workflow
+   * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
    * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
    */
@@ -597,8 +714,8 @@ class Client extends BaseClient {
   }
 
   /**
-   * Delete a workflow by its Id
-   * @param {string} id - The Id of the workflow
+   * Delete a workflow
+   * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
    * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
    */
@@ -615,13 +732,19 @@ class Client extends BaseClient {
     return result.getValue();
   }
 
+  /**
+   * Create a new secret
+   * @param {string} name - The name of the secret
+   * @param {string} value - The value of the secret
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<boolean>} - True if the secret was created successfully
+   */
   async createSecret(
     name: string,
     value: string,
     options?: SecretRequestOptions
   ): Promise<boolean> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
-
     request.setName(name);
     request.setSecret(value);
 
@@ -636,16 +759,17 @@ class Client extends BaseClient {
     const result = await this.sendGrpcRequest<
       BoolValue,
       avs_pb.CreateOrUpdateSecretReq
-    >("createSecret", request, options);
+          >("createSecret", request, options);
 
     return result.getValue();
   }
 
   /**
-   * Update an existing secret; the secret is updated in the user scope by default, derived from the auth key.
-   * @param secret - The secret object containing updated information
-   * @param options - Request options, including workflowId and orgId for scoping
-   * @returns {Promise<boolean>} - Whether the secret was successfully updated
+   * Update a secret
+   * @param {string} name - The name of the secret
+   * @param {string} value - The value of the secret
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<boolean>} - True if the secret was updated successfully
    */
   async updateSecret(
     name: string,
@@ -653,7 +777,6 @@ class Client extends BaseClient {
     options?: SecretRequestOptions
   ): Promise<boolean> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
-
     request.setName(name);
     request.setSecret(value);
 
@@ -674,14 +797,9 @@ class Client extends BaseClient {
   }
 
   /**
-   * Retrieve a list of secrets with pagination support
-   * @param options - Request options including pagination parameters
-   * @param options.workflowId - Filter secrets by workflow ID
-   * @param options.orgId - Filter secrets by organization ID
-   * @param options.before - Get items before this cursor value (for backward pagination)
-   * @param options.after - Get items after this cursor value (for forward pagination)
-   * @param options.limit - Number of items per page
-   * @returns {Promise<ListSecretsResponse>} - The list of secrets with pagination metadata
+   * Get the list of secrets
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<{ cursor: string; result: Secret[]; hasMore: boolean }>} - The list of Secret objects with pagination metadata
    */
   async getSecrets(
     options?: SecretRequestOptions
@@ -692,46 +810,62 @@ class Client extends BaseClient {
       request.setWorkflowId(options.workflowId);
     }
 
-    if (options?.orgId) {
-      // TODO: wait for the AVS to support orgId in ListSecrets
-      // request.setOrgId(options.orgId);
-    }
-
-    if (options?.limit) {
-      request.setLimit(options.limit || DEFAULT_LIMIT);
-    }
-
     if (options?.before) {
       request.setBefore(options.before);
     }
-
     if (options?.after) {
       request.setAfter(options.after);
+    }
+
+    request.setLimit(options?.limit || DEFAULT_LIMIT);
+
+    // Set field control options
+    if (options?.includeTimestamps) {
+      request.setIncludeTimestamps(options.includeTimestamps);
+    }
+    if (options?.includeCreatedBy) {
+      request.setIncludeCreatedBy(options.includeCreatedBy);
+    }
+    if (options?.includeDescription) {
+      request.setIncludeDescription(options.includeDescription);
     }
 
     const result = await this.sendGrpcRequest<
       avs_pb.ListSecretsResp,
       avs_pb.ListSecretsReq
-    >("listSecrets", request, options);
+          >("listSecrets", request, options);
+
+    const pageInfo = result.getPageInfo();
+
+    if (!pageInfo) {
+      throw new Error("Server response missing pagination info.");
+    }
 
     return {
-      items: result.getItemsList().map((item) => ({
-        name: item.getName(),
-        workflowId: item.getWorkflowId(),
-        orgId: item.getOrgId(),
-      })),
-      cursor: result.getCursor(),
-      hasMore: result.getHasMore(),
+      items: result.getItemsList().map(
+        (item) =>
+          new Secret({
+            name: item.getName(),
+            workflowId: item.getWorkflowId() || undefined,
+            orgId: item.getOrgId() || undefined,
+            createdAt: item.getCreatedAt() || undefined,
+            updatedAt: item.getUpdatedAt() || undefined,
+            createdBy: item.getCreatedBy() || undefined,
+            description: item.getDescription() || undefined,
+          })
+      ),
+      startCursor: pageInfo.getStartCursor(),
+      endCursor: pageInfo.getEndCursor(),
+      hasPreviousPage: pageInfo.getHasPreviousPage(),
+      hasNextPage: pageInfo.getHasNextPage(),
     };
   }
 
   /**
-   * Delete a secret by its name; by default, the secret is deleted from the user scope, derived from the auth key
-   * @param name - The name of the secret
-   * @param options - Request options
-   * @param options.workflowId - The workflow id; if specified, the secret will be deleted from the workflow scope
-   * @param options.orgId - The organization id; if specified, the secret will be deleted from the organization scope
-   * @returns {Promise<boolean>} - Whether the secret was successfully deleted
+   * Delete a secret
+   * @param {string} name - The name of the secret
+   * @param {SecretRequestOptions} options - Request options
+   * @returns {Promise<boolean>} - True if the secret was deleted successfully
    */
   async deleteSecret(
     name: string,
@@ -757,152 +891,265 @@ class Client extends BaseClient {
   }
 
   /**
-   * Execute a single node with custom input variables
-   * @param request - Configuration for node execution including nodeType, nodeConfig, and inputVariables
-   * @param options - Request options
-   * @returns {Promise<RunNodeWithInputsResponse>} - The response from the node execution
+   * Run a node with inputs
+   * @param {RunNodeWithInputsRequest} params - The parameters for running the node
+   * @param {string} params.nodeType - The type of the node
+   * @param {Record<string, any>} params.nodeConfig - The configuration for the node
+   * @param {Record<string, any>} params.inputVariables - The input variables for the node
+   * @param {string} params.walletAddress - The wallet address to use for the node
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<RunNodeWithInputsResponse>} - The response from running the node
    */
   async runNodeWithInputs(
-    request: RunNodeWithInputsRequest,
+    { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
-    let workflowId: string | null = null;
-    let dedicatedWallet: any = null;
-    
     try {
-      // Generate a numeric salt that can be parsed by math.ParseBig256
-      // Use timestamp + random number to ensure uniqueness
-      const timestamp = Date.now();
-      const randomNum = Math.floor(Math.random() * 1000000000); // 9 digits
-      const salt = `${timestamp}${randomNum.toString().padStart(9, '0')}`;
-      dedicatedWallet = await this.getWallet({ salt });
-      
-      // Create a temporary node using NodeFactory patterns
-      const nodeId = `temp_${Date.now()}`;
-      const node = this.createNodeFromConfig(request.nodeType, request.nodeConfig, nodeId);
-      
-      // Create minimal workflow with just this node
-      const triggerId = `trigger_${Date.now()}`;
-      const tempWorkflow = this.createTempWorkflowForNode(node, triggerId, request.inputVariables, dedicatedWallet.address);
-      
-      // Submit and immediately trigger the workflow
-      workflowId = await this.submitWorkflow(tempWorkflow);
-      
-      const execution = await this.triggerWorkflow({
-        id: workflowId,
-        reason: { type: TriggerType.Manual },
-        isBlocking: true
-      });
-      
-      return {
-        success: execution.status === ExecutionStatus.FINISHED,
-        data: this.extractNodeExecutionData(execution),
-        executionId: execution.executionId,
-        nodeId: nodeId
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error)
-      };
-    } finally {
-      if (workflowId) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            await this.deleteWorkflow(workflowId);
-            break; // Success, exit retry loop
-          } catch (cleanupError) {
-            if (attempt === 2) {
-              console.warn(`Failed to cleanup workflow ${workflowId} after 3 attempts:`, cleanupError);
-            } else {
-              await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)));
-            }
-          }
+      // Special handling for blockTrigger nodes - they should reject input variables
+      if (
+        nodeType === "blockTrigger" &&
+        inputVariables &&
+        Object.keys(inputVariables).length > 0
+      ) {
+        const variableNames = Object.keys(inputVariables).join(", ");
+        return {
+          success: false,
+          error: `blockTrigger nodes do not accept input variables. Received: ${variableNames}`,
+          nodeId: "",
+        };
+      }
+
+      // Create the request
+      const request = new avs_pb.RunNodeWithInputsReq();
+      request.setNodeType(nodeType);
+
+      const nodeConfigMap = request.getNodeConfigMap();
+      for (const [key, value] of Object.entries(nodeConfig)) {
+        nodeConfigMap.set(key, this.convertJSValueToProtobuf(value));
+      }
+
+      if (inputVariables && Object.keys(inputVariables).length > 0) {
+        const inputVarsMap = request.getInputVariablesMap();
+        for (const [key, value] of Object.entries(inputVariables)) {
+          inputVarsMap.set(key, this.convertJSValueToProtobuf(value));
         }
       }
+
+      // Send the request directly to the server
+      const result = await this.sendGrpcRequest<
+        avs_pb.RunNodeWithInputsResp,
+        avs_pb.RunNodeWithInputsReq
+      >("runNodeWithInputs", request, options);
+
+      let data: Record<string, any> | undefined;
+
+      const outputCase = result.getOutputDataCase();
+      if (
+        outputCase !==
+        avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET
+      ) {
+        switch (outputCase) {
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
+            data = result.getEthTransfer()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.GRAPHQL:
+            data = result.getGraphql()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_READ:
+            data = result.getContractRead()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_WRITE:
+            data = result.getContractWrite()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CUSTOM_CODE:
+            data = result.getCustomCode()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.REST_API:
+            data = result.getRestApi()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.BRANCH:
+            data = result.getBranch()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.FILTER:
+            data = result.getFilter()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
+            data = result.getLoop()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.BLOCK_TRIGGER:
+            data = result.getBlockTrigger()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.FIXED_TIME_TRIGGER:
+            data = result.getFixedTimeTrigger()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CRON_TRIGGER:
+            data = result.getCronTrigger()?.toObject();
+            break;
+          case avs_pb.RunNodeWithInputsResp.OutputDataCase.EVENT_TRIGGER:
+            data = result.getEventTrigger()?.toObject();
+            break;
+        }
+      }
+
+      return {
+        success: result.getSuccess(),
+        data,
+        error: result.getError(),
+        nodeId: result.getNodeId(),
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || "An error occurred",
+      };
     }
   }
 
-  private createNodeFromConfig(nodeType: string, config: Record<string, any>, nodeId: string): Node {
+  private createNodeFromConfig(
+    nodeType: string,
+    config: Record<string, any>,
+    nodeId: string
+  ): Node {
     const nodeProps: NodeProps = {
       id: nodeId,
-      name: `Single Node Execution - ${nodeType}`,
-      type: this.mapNodeTypeString(nodeType),
-      data: this.createNodeData(nodeType, config)
+      name: `${nodeType}_node`,
+      type: nodeType as NodeType,
+      data: this.createNodeData(nodeType, config),
     };
-    
+
     return NodeFactory.create(nodeProps);
   }
 
-  private mapNodeTypeString(nodeType: string): NodeType {
+  private mapNodeTypeString(nodeType: string): NodeType | null {
     const typeMap: Record<string, NodeType> = {
-      'blockTrigger': NodeType.CustomCode, // Block trigger simulated as custom code
-      'restApi': NodeType.RestAPI,
-      'contractRead': NodeType.ContractRead,
-      'customCode': NodeType.CustomCode,
-      'branch': NodeType.Branch,
-      'filter': NodeType.Filter
+      blockTrigger: NodeType.CustomCode, // Handle blockTrigger as special CustomCode case
+      restApi: NodeType.RestAPI,
+      contractRead: NodeType.ContractRead,
+      contractWrite: NodeType.ContractWrite,
+      customCode: NodeType.CustomCode,
+      ethTransfer: NodeType.ETHTransfer,
+      graphqlQuery: NodeType.GraphQLQuery,
+      branch: NodeType.Branch,
+      filter: NodeType.Filter,
+      loop: NodeType.Loop,
     };
-    
-    return typeMap[nodeType] || NodeType.CustomCode;
+
+    return typeMap[nodeType] || null;
   }
 
-  private createNodeData(nodeType: string, config: Record<string, any>): NodeData {
+  private createNodeData(
+    nodeType: string,
+    config: Record<string, any>
+  ): NodeData {
     switch (nodeType) {
-      case 'restApi':
+      case "blockTrigger":
         return {
-          url: config.url || '',
-          method: config.method || 'GET',
-          body: config.body || '',
-          headersMap: Object.entries(config.headers || {})
+          config: {
+            lang: 0, // JavaScript
+            source:
+              "return { blockNumber: Math.floor(Math.random() * 10000000) };", // Simulate block trigger
+          },
         };
-      case 'contractRead':
+      case "restApi":
         return {
-          contractAddress: config.contractAddress || '',
-          callData: config.callData || '',
-          contractAbi: config.contractAbi || ''
+          config: {
+            url: config.url || "",
+            method: config.method || "GET",
+            body: config.body || "",
+            headersMap: Object.entries(config.headers || {}),
+          },
         };
-      case 'customCode':
-      case 'blockTrigger':
+      case "contractRead":
         return {
-          lang: 0, // JavaScript
-          source: config.source || 'return { message: "Node executed successfully" };'
+          config: {
+            contractAddress: config.contractAddress || "",
+            callData: config.callData || "",
+            contractAbi: config.contractAbi || "",
+          },
         };
-      case 'branch':
+      case "customCode":
         return {
-          conditionsList: config.conditions || []
+          config: {
+            lang: config.lang || 0, // JavaScript
+            source:
+              config.source ||
+              'return { message: "Node executed successfully" };',
+          },
         };
-      case 'filter':
+      case "loop":
         return {
-          expression: config.expression || '',
-          input: config.input || ''
+          config: {
+            sourceId: config.sourceId || "",
+            iterVal: config.iterVal || "",
+            iterKey: config.iterKey || "",
+          },
+        };
+      case "branch":
+        return {
+          config: {
+            conditionsList: config.conditions || [],
+          },
+        };
+      case "filter":
+        return {
+          config: {
+            expression: config.expression || "",
+            sourceId: config.sourceId || config.input || "",
+          },
         };
       default:
         throw new Error(`Unsupported node type: ${nodeType}`);
     }
   }
 
-  private createTempWorkflowForNode(node: Node, triggerId: string, inputVariables: Record<string, any>, walletAddress: string): Workflow {
-    // Create a minimal workflow with manual trigger
+  private createTempWorkflowForNode(
+    node: Node,
+    triggerId: string,
+    inputVariables: Record<string, any>
+  ): Workflow {
+    // For customCode nodes, we need to modify the source to include the input variables
+    if (
+      node.type === NodeType.CustomCode &&
+      inputVariables &&
+      Object.keys(inputVariables).length > 0
+    ) {
+      const customCodeData = node.data as avs_pb.CustomCodeNode.AsObject;
+      if (customCodeData.config) {
+        // Create a wrapper that defines the variables before executing the original code
+        const variableDefinitions = Object.entries(inputVariables)
+          .map(([key, value]) => {
+            const valueStr =
+              typeof value === "string" ? `"${value}"` : JSON.stringify(value);
+            return `const ${key} = ${valueStr};`;
+          })
+          .join("\n");
+
+        customCodeData.config.source = `${variableDefinitions}\n${customCodeData.config.source}`;
+      }
+    }
+
+    // Create a manual trigger and store input variables in its data property
     const trigger = TriggerFactory.create({
       id: triggerId,
-      name: 'manual_trigger',
+      name: "manual_trigger",
       type: TriggerType.Manual,
-      data: null
+      data: inputVariables, // Store input variables in the trigger data
     });
 
     return new Workflow({
-      smartWalletAddress: walletAddress, // Use the dedicated wallet address
+      smartWalletAddress: "",
       trigger: trigger,
       nodes: [node],
-      edges: [new Edge({
-        id: `edge_${Date.now()}`,
-        source: triggerId,
-        target: node.id
-      })],
+      edges: [
+        new Edge({
+          id: `edge_${Date.now()}`,
+          source: triggerId,
+          target: node.id,
+        }),
+      ],
       startAt: Date.now(),
       expiredAt: Date.now() + 3600000, // 1 hour from now
-      maxExecution: 1
+      maxExecution: 1,
     });
   }
 
@@ -936,7 +1183,6 @@ export type {
   StepProps,
   TriggerReasonProps,
   OutputDataProps,
-  SecretProps,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
 };

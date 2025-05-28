@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       docker_image_tag:
-        description: 'Docker Image Tag of avaprotocol/avs-dev'
+        description: "Docker Image Tag of avaprotocol/avs-dev"
         required: false
-        default: 'latest' # Or use an empty default if you want to force it from elsewhere for PRs
+        default: "latest" # Or use an empty default if you want to force it from elsewhere for PRs
 
 jobs:
   dev-test:
@@ -167,3 +167,15 @@ jobs:
       - name: Test Run Node With Inputs
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:node
+
+      - name: Test Loop Node
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:loop
+
+      - name: Test Custom Code
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:customcode
+
+      - name: Test Event Trigger
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: yarn test:event

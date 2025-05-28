@@ -3,7 +3,7 @@ import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { url, query, variablesMap }
+// Required props for constructor: id, name, type and data: { config: { url, query, variablesMap } }
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.AsObject;
 export type GraphQLQueryNodeProps = NodeProps & {
   data: GraphQLQueryNodeData;
@@ -35,13 +35,22 @@ class GraphQLQueryNode extends Node {
     request.setName(this.name);
 
     const nodeData = new avs_pb.GraphQLQueryNode();
-    nodeData.setUrl((this.data as GraphQLQueryNodeData).url);
-    nodeData.setQuery((this.data as GraphQLQueryNodeData).query);
-    const variables = (this.data as GraphQLQueryNodeData).variablesMap;
-    const variablesMap = nodeData.getVariablesMap();
-    variables.forEach(([key, value]) => {
-      variablesMap.set(key, value);
-    });
+    
+    if ((this.data as GraphQLQueryNodeData).config) {
+      const config = new avs_pb.GraphQLQueryNode.Config();
+      config.setUrl((this.data as GraphQLQueryNodeData).config!.url);
+      config.setQuery((this.data as GraphQLQueryNodeData).config!.query);
+      
+      if ((this.data as GraphQLQueryNodeData).config!.variablesMap && 
+          (this.data as GraphQLQueryNodeData).config!.variablesMap.length > 0) {
+        const variablesMap = config.getVariablesMap();
+        (this.data as GraphQLQueryNodeData).config!.variablesMap.forEach(([key, value]: [string, string]) => {
+          variablesMap.set(key, value);
+        });
+      }
+      
+      nodeData.setConfig(config);
+    }
 
     request.setGraphqlQuery(nodeData);
 

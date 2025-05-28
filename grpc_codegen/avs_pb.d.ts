@@ -1771,14 +1771,16 @@ export class ListTasksReq extends jspb.Message {
     getSmartWalletAddressList(): Array<string>;
     setSmartWalletAddressList(value: Array<string>): ListTasksReq;
     addSmartWalletAddress(value: string, index?: number): string;
-    getCursor(): string;
-    setCursor(value: string): ListTasksReq;
     getBefore(): string;
     setBefore(value: string): ListTasksReq;
     getAfter(): string;
     setAfter(value: string): ListTasksReq;
     getLimit(): number;
     setLimit(value: number): ListTasksReq;
+    getIncludeNodes(): boolean;
+    setIncludeNodes(value: boolean): ListTasksReq;
+    getIncludeEdges(): boolean;
+    setIncludeEdges(value: boolean): ListTasksReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksReq.AsObject;
@@ -1793,22 +1795,24 @@ export class ListTasksReq extends jspb.Message {
 export namespace ListTasksReq {
     export type AsObject = {
         smartWalletAddressList: Array<string>,
-        cursor: string,
         before: string,
         after: string,
         limit: number,
+        includeNodes: boolean,
+        includeEdges: boolean,
     }
 }
 
 export class ListTasksResp extends jspb.Message { 
     clearItemsList(): void;
-    getItemsList(): Array<ListTasksResp.Item>;
-    setItemsList(value: Array<ListTasksResp.Item>): ListTasksResp;
-    addItems(value?: ListTasksResp.Item, index?: number): ListTasksResp.Item;
-    getCursor(): string;
-    setCursor(value: string): ListTasksResp;
-    getHasMore(): boolean;
-    setHasMore(value: boolean): ListTasksResp;
+    getItemsList(): Array<Task>;
+    setItemsList(value: Array<Task>): ListTasksResp;
+    addItems(value?: Task, index?: number): Task;
+
+    hasPageInfo(): boolean;
+    clearPageInfo(): void;
+    getPageInfo(): PageInfo | undefined;
+    setPageInfo(value?: PageInfo): ListTasksResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListTasksResp.AsObject;
@@ -1822,68 +1826,9 @@ export class ListTasksResp extends jspb.Message {
 
 export namespace ListTasksResp {
     export type AsObject = {
-        itemsList: Array<ListTasksResp.Item.AsObject>,
-        cursor: string,
-        hasMore: boolean,
+        itemsList: Array<Task.AsObject>,
+        pageInfo?: PageInfo.AsObject,
     }
-
-
-    export class Item extends jspb.Message { 
-        getId(): string;
-        setId(value: string): Item;
-        getOwner(): string;
-        setOwner(value: string): Item;
-        getSmartWalletAddress(): string;
-        setSmartWalletAddress(value: string): Item;
-        getStartAt(): number;
-        setStartAt(value: number): Item;
-        getExpiredAt(): number;
-        setExpiredAt(value: number): Item;
-        getName(): string;
-        setName(value: string): Item;
-        getCompletedAt(): number;
-        setCompletedAt(value: number): Item;
-        getMaxExecution(): number;
-        setMaxExecution(value: number): Item;
-        getExecutionCount(): number;
-        setExecutionCount(value: number): Item;
-        getLastRanAt(): number;
-        setLastRanAt(value: number): Item;
-        getStatus(): TaskStatus;
-        setStatus(value: TaskStatus): Item;
-
-        hasTrigger(): boolean;
-        clearTrigger(): void;
-        getTrigger(): TaskTrigger | undefined;
-        setTrigger(value?: TaskTrigger): Item;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): Item.AsObject;
-        static toObject(includeInstance: boolean, msg: Item): Item.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: Item, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): Item;
-        static deserializeBinaryFromReader(message: Item, reader: jspb.BinaryReader): Item;
-    }
-
-    export namespace Item {
-        export type AsObject = {
-            id: string,
-            owner: string,
-            smartWalletAddress: string,
-            startAt: number,
-            expiredAt: number,
-            name: string,
-            completedAt: number,
-            maxExecution: number,
-            executionCount: number,
-            lastRanAt: number,
-            status: TaskStatus,
-            trigger?: TaskTrigger.AsObject,
-        }
-    }
-
 }
 
 export class ListExecutionsReq extends jspb.Message { 
@@ -1891,8 +1836,6 @@ export class ListExecutionsReq extends jspb.Message {
     getTaskIdsList(): Array<string>;
     setTaskIdsList(value: Array<string>): ListExecutionsReq;
     addTaskIds(value: string, index?: number): string;
-    getCursor(): string;
-    setCursor(value: string): ListExecutionsReq;
     getBefore(): string;
     setBefore(value: string): ListExecutionsReq;
     getAfter(): string;
@@ -1913,7 +1856,6 @@ export class ListExecutionsReq extends jspb.Message {
 export namespace ListExecutionsReq {
     export type AsObject = {
         taskIdsList: Array<string>,
-        cursor: string,
         before: string,
         after: string,
         limit: number,
@@ -1925,10 +1867,11 @@ export class ListExecutionsResp extends jspb.Message {
     getItemsList(): Array<Execution>;
     setItemsList(value: Array<Execution>): ListExecutionsResp;
     addItems(value?: Execution, index?: number): Execution;
-    getCursor(): string;
-    setCursor(value: string): ListExecutionsResp;
-    getHasMore(): boolean;
-    setHasMore(value: boolean): ListExecutionsResp;
+
+    hasPageInfo(): boolean;
+    clearPageInfo(): void;
+    getPageInfo(): PageInfo | undefined;
+    setPageInfo(value?: PageInfo): ListExecutionsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListExecutionsResp.AsObject;
@@ -1943,8 +1886,7 @@ export class ListExecutionsResp extends jspb.Message {
 export namespace ListExecutionsResp {
     export type AsObject = {
         itemsList: Array<Execution.AsObject>,
-        cursor: string,
-        hasMore: boolean,
+        pageInfo?: PageInfo.AsObject,
     }
 }
 
@@ -2253,14 +2195,18 @@ export namespace CreateOrUpdateSecretReq {
 export class ListSecretsReq extends jspb.Message { 
     getWorkflowId(): string;
     setWorkflowId(value: string): ListSecretsReq;
-    getCursor(): string;
-    setCursor(value: string): ListSecretsReq;
     getBefore(): string;
     setBefore(value: string): ListSecretsReq;
     getAfter(): string;
     setAfter(value: string): ListSecretsReq;
     getLimit(): number;
     setLimit(value: number): ListSecretsReq;
+    getIncludeTimestamps(): boolean;
+    setIncludeTimestamps(value: boolean): ListSecretsReq;
+    getIncludeCreatedBy(): boolean;
+    setIncludeCreatedBy(value: boolean): ListSecretsReq;
+    getIncludeDescription(): boolean;
+    setIncludeDescription(value: boolean): ListSecretsReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsReq.AsObject;
@@ -2275,22 +2221,95 @@ export class ListSecretsReq extends jspb.Message {
 export namespace ListSecretsReq {
     export type AsObject = {
         workflowId: string,
-        cursor: string,
         before: string,
         after: string,
         limit: number,
+        includeTimestamps: boolean,
+        includeCreatedBy: boolean,
+        includeDescription: boolean,
+    }
+}
+
+export class PageInfo extends jspb.Message { 
+    getStartCursor(): string;
+    setStartCursor(value: string): PageInfo;
+    getEndCursor(): string;
+    setEndCursor(value: string): PageInfo;
+    getHasPreviousPage(): boolean;
+    setHasPreviousPage(value: boolean): PageInfo;
+    getHasNextPage(): boolean;
+    setHasNextPage(value: boolean): PageInfo;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): PageInfo.AsObject;
+    static toObject(includeInstance: boolean, msg: PageInfo): PageInfo.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: PageInfo, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): PageInfo;
+    static deserializeBinaryFromReader(message: PageInfo, reader: jspb.BinaryReader): PageInfo;
+}
+
+export namespace PageInfo {
+    export type AsObject = {
+        startCursor: string,
+        endCursor: string,
+        hasPreviousPage: boolean,
+        hasNextPage: boolean,
+    }
+}
+
+export class Secret extends jspb.Message { 
+    getName(): string;
+    setName(value: string): Secret;
+    getScope(): string;
+    setScope(value: string): Secret;
+    getWorkflowId(): string;
+    setWorkflowId(value: string): Secret;
+    getOrgId(): string;
+    setOrgId(value: string): Secret;
+    getCreatedAt(): number;
+    setCreatedAt(value: number): Secret;
+    getUpdatedAt(): number;
+    setUpdatedAt(value: number): Secret;
+    getCreatedBy(): string;
+    setCreatedBy(value: string): Secret;
+    getDescription(): string;
+    setDescription(value: string): Secret;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Secret.AsObject;
+    static toObject(includeInstance: boolean, msg: Secret): Secret.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Secret, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Secret;
+    static deserializeBinaryFromReader(message: Secret, reader: jspb.BinaryReader): Secret;
+}
+
+export namespace Secret {
+    export type AsObject = {
+        name: string,
+        scope: string,
+        workflowId: string,
+        orgId: string,
+        createdAt: number,
+        updatedAt: number,
+        createdBy: string,
+        description: string,
     }
 }
 
 export class ListSecretsResp extends jspb.Message { 
     clearItemsList(): void;
-    getItemsList(): Array<ListSecretsResp.ResponseSecret>;
-    setItemsList(value: Array<ListSecretsResp.ResponseSecret>): ListSecretsResp;
-    addItems(value?: ListSecretsResp.ResponseSecret, index?: number): ListSecretsResp.ResponseSecret;
-    getCursor(): string;
-    setCursor(value: string): ListSecretsResp;
-    getHasMore(): boolean;
-    setHasMore(value: boolean): ListSecretsResp;
+    getItemsList(): Array<Secret>;
+    setItemsList(value: Array<Secret>): ListSecretsResp;
+    addItems(value?: Secret, index?: number): Secret;
+
+    hasPageInfo(): boolean;
+    clearPageInfo(): void;
+    getPageInfo(): PageInfo | undefined;
+    setPageInfo(value?: PageInfo): ListSecretsResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ListSecretsResp.AsObject;
@@ -2304,41 +2323,9 @@ export class ListSecretsResp extends jspb.Message {
 
 export namespace ListSecretsResp {
     export type AsObject = {
-        itemsList: Array<ListSecretsResp.ResponseSecret.AsObject>,
-        cursor: string,
-        hasMore: boolean,
+        itemsList: Array<Secret.AsObject>,
+        pageInfo?: PageInfo.AsObject,
     }
-
-
-    export class ResponseSecret extends jspb.Message { 
-        getName(): string;
-        setName(value: string): ResponseSecret;
-        getScope(): string;
-        setScope(value: string): ResponseSecret;
-        getWorkflowId(): string;
-        setWorkflowId(value: string): ResponseSecret;
-        getOrgId(): string;
-        setOrgId(value: string): ResponseSecret;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): ResponseSecret.AsObject;
-        static toObject(includeInstance: boolean, msg: ResponseSecret): ResponseSecret.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: ResponseSecret, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): ResponseSecret;
-        static deserializeBinaryFromReader(message: ResponseSecret, reader: jspb.BinaryReader): ResponseSecret;
-    }
-
-    export namespace ResponseSecret {
-        export type AsObject = {
-            name: string,
-            scope: string,
-            workflowId: string,
-            orgId: string,
-        }
-    }
-
 }
 
 export class DeleteSecretReq extends jspb.Message { 

@@ -46,7 +46,7 @@ Then, run the following command to regenerate the types:
 yarn run proto-download
 
 # Generate the TypeScript types and gRPC code based on the downloaded .proto file
-yarn run gen-protoc
+yarn run protoc-gen
 
 # Build the source files in to ./dist folder
 yarn run build

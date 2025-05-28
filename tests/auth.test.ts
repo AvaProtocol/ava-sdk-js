@@ -117,7 +117,7 @@ describe("Authentication Tests", () => {
         workflowId = await client.submitWorkflow(workflow);
 
         const listResult1 = await client.getWorkflows([wallet.address]);
-        expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
+        expect(listResult1.items.length).toBeGreaterThanOrEqual(1);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -308,14 +308,14 @@ describe("Authentication Tests", () => {
         workflowId1 = await client.submitWorkflow(workflow1);
 
         const listResult1 = await client.getWorkflows([wallet.address]);
-        expect(listResult1.result.length).toBeGreaterThanOrEqual(1);
+        expect(listResult1.items.length).toBeGreaterThanOrEqual(1);
 
         const workflowProps2 = createFromTemplate(wallet.address);
         const workflow2 = client.createWorkflow(workflowProps2);
         workflowId2 = await client.submitWorkflow(workflow2);
 
         const listResult2 = await client.getWorkflows([wallet.address]);
-        expect(listResult2.result.length).toBeGreaterThanOrEqual(2);
+        expect(listResult2.items.length).toBeGreaterThanOrEqual(2);
       } finally {
         if (workflowId1) {
           await client.deleteWorkflow(workflowId1);

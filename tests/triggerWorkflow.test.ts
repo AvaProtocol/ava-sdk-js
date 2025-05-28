@@ -1,6 +1,10 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
-import { TriggerType, WorkflowStatus, ExecutionStatus } from "@avaprotocol/types";
+import {
+  TriggerType,
+  WorkflowStatus,
+  ExecutionStatus,
+} from "@avaprotocol/types";
 import _ from "lodash";
 import {
   getAddress,
@@ -10,10 +14,7 @@ import {
   SaltGlobal,
   TIMEOUT_DURATION,
 } from "./utils";
-import {
-  createFromTemplate,
-  defaultTriggerId,
-} from "./templates";
+import { createFromTemplate, defaultTriggerId } from "./templates";
 import { getConfig } from "./envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
@@ -28,7 +29,6 @@ describe("triggerWorkflow Tests", () => {
 
   beforeAll(async () => {
     ownerAddress = await getAddress(walletPrivateKey);
-    console.log("Owner wallet address:", ownerAddress);
 
     // Initialize the client with test credentials
     client = new Client({
@@ -69,8 +69,8 @@ describe("triggerWorkflow Tests", () => {
       const executions = await client.getExecutions([workflowId]);
 
       // The list should be empty because the workflow has not been executed yet
-      expect(Array.isArray(executions.result)).toBe(true);
-      expect(executions.result.length).toEqual(0);
+      expect(Array.isArray(executions.items)).toBe(true);
+      expect(executions.items.length).toEqual(0);
 
       // Manually trigger the workflow with block number + 5
       await client.triggerWorkflow({
@@ -86,18 +86,17 @@ describe("triggerWorkflow Tests", () => {
       const executions2 = await client.getExecutions([workflowId]);
 
       // Verify that the execution is successfully triggered at block number + 5
-      expect(Array.isArray(executions2.result)).toBe(true);
-      expect(executions2.result.length).toEqual(1);
-      expect(executions2.result[0].success).toEqual(true);
-      expect(executions2.result[0].triggerReason?.blockNumber).toEqual(
+      expect(Array.isArray(executions2.items)).toBe(true);
+      expect(executions2.items.length).toEqual(1);
+      expect(executions2.items[0].success).toEqual(true);
+      expect(executions2.items[0].triggerReason?.blockNumber).toEqual(
         blockNumber + interval
       );
 
-      expect(executions2.result[0].triggerReason?.type).toEqual(
+      expect(executions2.items[0].triggerReason?.type).toEqual(
         TriggerType.Block
       );
-
-      expect(executions2.result[0].triggerOutput).toEqual({
+      expect(executions2.items[0].triggerOutput).toEqual({
         blockNumber: blockNumber + interval,
       });
 
@@ -134,8 +133,8 @@ describe("triggerWorkflow Tests", () => {
     const executions = await client.getExecutions([workflowId]);
 
     // The list should be empty because the workflow has not been executed yet
-    expect(Array.isArray(executions.result)).toBe(true);
-    expect(executions.result.length).toEqual(0);
+    expect(Array.isArray(executions.items)).toBe(true);
+    expect(executions.items.length).toEqual(0);
 
     const result = await client.triggerWorkflow({
       id: workflowId,
@@ -148,11 +147,11 @@ describe("triggerWorkflow Tests", () => {
 
     // The list should now contain one execution, the id from manual trigger should matched
     const executions2 = await client.getExecutions([workflowId]);
-    expect(executions2.result[0].id).toEqual(result.executionId);
-    expect(Array.isArray(executions2.result)).toBe(true);
-    expect(executions2.result.length).toEqual(1);
-    expect(executions2.result[0].triggerReason?.type).toEqual(TriggerType.Cron);
-    expect(executions2.result[0].triggerReason?.epoch).toEqual(epoch + 60);
+    expect(executions2.items[0].id).toEqual(result.executionId);
+    expect(Array.isArray(executions2.items)).toBe(true);
+    expect(executions2.items.length).toEqual(1);
+    expect(executions2.items[0].triggerReason?.type).toEqual(TriggerType.Cron);
+    expect(executions2.items[0].triggerReason?.epoch).toEqual(epoch + 60);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.executionCount).toEqual(1);
@@ -185,8 +184,8 @@ describe("triggerWorkflow Tests", () => {
 
     // The list should be empty because the workflow has not been executed yet
     const executions = await client.getExecutions([workflowId]);
-    expect(Array.isArray(executions.result)).toBe(true);
-    expect(executions.result.length).toEqual(0);
+    expect(Array.isArray(executions.items)).toBe(true);
+    expect(executions.items.length).toEqual(0);
 
     // Manually trigger the workflow
     const result = await client.triggerWorkflow({
@@ -200,14 +199,14 @@ describe("triggerWorkflow Tests", () => {
 
     // The list should now contain one execution
     const executions2 = await client.getExecutions([workflowId]);
-    expect(Array.isArray(executions2.result)).toBe(true);
-    expect(executions2.result.length).toEqual(1);
+    expect(Array.isArray(executions2.items)).toBe(true);
+    expect(executions2.items.length).toEqual(1);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.executionCount).toEqual(1);
-    expect(executions2.result[0].triggerReason?.epoch).toEqual(epoch + 300);
-    expect(executions2.result[0].triggerReason?.type).toEqual(
+    expect(executions2.items[0].triggerReason?.epoch).toEqual(epoch + 300);
+    expect(executions2.items[0].triggerReason?.type).toEqual(
       TriggerType.FixedTime
     );
 
@@ -238,8 +237,8 @@ describe("triggerWorkflow Tests", () => {
 
     // The list should be empty because the workflow has not been executed yet
     const executions = await client.getExecutions([workflowId]);
-    expect(Array.isArray(executions.result)).toBe(true);
-    expect(executions.result.length).toEqual(0);
+    expect(Array.isArray(executions.items)).toBe(true);
+    expect(executions.items.length).toEqual(0);
 
     // Manually trigger the workflow
     await client.triggerWorkflow({
@@ -255,19 +254,17 @@ describe("triggerWorkflow Tests", () => {
 
     // The list should now contain one execution
     const executions2 = await client.getExecutions([workflowId]);
-    expect(Array.isArray(executions2.result)).toBe(true);
-    expect(executions2.result.length).toEqual(1);
+    expect(Array.isArray(executions2.items)).toBe(true);
+    expect(executions2.items.length).toEqual(1);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.executionCount).toEqual(1);
-    expect(executions2.result[0].triggerReason?.blockNumber).toEqual(
+    expect(executions2.items[0].triggerReason?.blockNumber).toEqual(
       blockNumber + 5
     );
-    expect(executions2.result[0].triggerReason?.txHash).toEqual("0x1234567890");
-    expect(executions2.result[0].triggerReason?.type).toEqual(
-      TriggerType.Event
-    );
+    expect(executions2.items[0].triggerReason?.txHash).toEqual("0x1234567890");
+    expect(executions2.items[0].triggerReason?.type).toEqual(TriggerType.Event);
 
     await client.deleteWorkflow(workflowId);
   });
@@ -296,8 +293,8 @@ describe("triggerWorkflow Tests", () => {
     const executions = await client.getExecutions([workflowId]);
 
     // The list should be empty because the workflow has not been executed yet
-    expect(Array.isArray(executions.result)).toBe(true);
-    expect(executions.result.length).toEqual(0);
+    expect(Array.isArray(executions.items)).toBe(true);
+    expect(executions.items.length).toEqual(0);
 
     const result = await client.triggerWorkflow({
       id: workflowId,
@@ -314,10 +311,7 @@ describe("triggerWorkflow Tests", () => {
     expect(execution.triggerReason?.type).toEqual(TriggerType.Cron);
     expect(execution.triggerReason?.epoch).toEqual(epoch + 60);
 
-    const executionStatus = await client.getExecutionStatus(
-      workflowId,
-      result.executionId
-    );
+    const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
     expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
 
     await client.deleteWorkflow(workflowId);

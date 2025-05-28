@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.1
+
+### Patch Changes
+
+- a38f8df: Consolidated pagination response and match protobuf of AVS v1.8.2
+
 ## 1.0.0
 
 ### Major Changes
