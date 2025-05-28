@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 1.6.0
+
+### Minor Changes
+
+- a38f8df: Consolidated pagination response and match protobuf of AVS v1.8.2
+
+### Patch Changes
+
+- Updated dependencies [a38f8df]
+  - @avaprotocol/types@1.0.1
+
 ## 1.5.0
 
 ### Minor Changes
