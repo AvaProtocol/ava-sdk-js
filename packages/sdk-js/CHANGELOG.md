@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.4
+
+### Patch Changes
+
+- fa76ec5: Moved node DataType from sdk-js to types pacakge
+- Updated dependencies [fa76ec5]
+  - @avaprotocol/types@1.0.4
+
 ## 1.6.3
 
 ### Patch Changes
