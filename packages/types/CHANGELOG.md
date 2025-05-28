@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.2
+
+### Patch Changes
+
+- b2db42f: Update getSecrets to use general pageInfo
+
 ## 1.0.1
 
 ### Patch Changes

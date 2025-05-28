@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.2
+
+### Patch Changes
+
+- b2db42f: Update getSecrets to use general pageInfo
+- Updated dependencies [b2db42f]
+  - @avaprotocol/types@1.0.2
+
 ## 1.6.1
 
 ### Patch Changes
