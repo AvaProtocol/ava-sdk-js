@@ -370,20 +370,18 @@ describe("secret Tests", () => {
         return;
       }
 
-      const typedFirstPage = firstPage.pageInfo;
-
-      expect(typedFirstPage.endCursor).toBeTruthy();
+      expect(firstPage.pageInfo.endCursor).toBeTruthy();
 
       // Only test pagination if there are actually more items
-      if (!typedFirstPage.hasNextPage) {
+      if (!firstPage.pageInfo.hasNextPage) {
         console.log("No more items available, skipping pagination test");
         return;
       }
 
-      expect(typedFirstPage.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.hasNextPage).toBe(true);
 
       const secondOptions = {
-        after: typedFirstPage.endCursor,
+        after: firstPage.pageInfo.endCursor,
         limit: pageSize,
       } as SecretRequestOptions;
 
@@ -409,10 +407,8 @@ describe("secret Tests", () => {
         return;
       }
 
-      const typedMiddlePage = middlePage.pageInfo;
-
       // Skip test if no cursor or no more items
-      if (!typedMiddlePage.endCursor || !typedMiddlePage.hasNextPage) {
+      if (!middlePage.pageInfo.endCursor || !middlePage.pageInfo.hasNextPage) {
         console.log(
           "No cursor or no more items, skipping backward pagination test"
         );
@@ -420,7 +416,7 @@ describe("secret Tests", () => {
       }
 
       const previousOptions = {
-        before: typedMiddlePage.endCursor,
+        before: middlePage.pageInfo.endCursor,
         limit: 3,
       } as SecretRequestOptions;
 
@@ -433,10 +429,10 @@ describe("secret Tests", () => {
 
         // Verify that the previous page has the pagination fields
         if (!Array.isArray(previousPage)) {
-          expect(typeof previousPage.startCursor).toBe("string");
-          expect(typeof previousPage.endCursor).toBe("string");
-          expect(typeof previousPage.hasPreviousPage).toBe("boolean");
-          expect(typeof previousPage.hasNextPage).toBe("boolean");
+          expect(typeof previousPage.pageInfo.startCursor).toBe("string");
+          expect(typeof previousPage.pageInfo.endCursor).toBe("string");
+          expect(typeof previousPage.pageInfo.hasPreviousPage).toBe("boolean");
+          expect(typeof previousPage.pageInfo.hasNextPage).toBe("boolean");
         }
       } catch (error) {
         console.log(

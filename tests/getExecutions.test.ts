@@ -90,9 +90,9 @@ describe("getExecutions Tests", () => {
 
       expect(Array.isArray(resultWithLimitOne.items)).toBe(true);
       expect(resultWithLimitOne.items.length).toBe(limitOne);
-      expect(resultWithLimitOne).toHaveProperty("endCursor");
-      expect(resultWithLimitOne.hasNextPage).toBe(true);
-      const firstCursor = resultWithLimitOne.endCursor;
+      expect(resultWithLimitOne).toHaveProperty("pageInfo");
+      expect(resultWithLimitOne.pageInfo.hasNextPage).toBe(true);
+      const firstCursor = resultWithLimitOne.pageInfo.endCursor;
 
       // Get executions with limitTwo
       const resultWithLimitTwo = await client.getExecutions([workflowId], {
@@ -101,7 +101,7 @@ describe("getExecutions Tests", () => {
       });
       expect(Array.isArray(resultWithLimitTwo.items)).toBe(true);
       expect(resultWithLimitTwo.items.length).toBe(limitTwo);
-      expect(resultWithLimitTwo.hasNextPage).toBe(true);
+      expect(resultWithLimitTwo.pageInfo.hasNextPage).toBe(true);
 
       // Make sure there's no overlap between the two lists
       expect(
@@ -110,7 +110,7 @@ describe("getExecutions Tests", () => {
           resultWithLimitTwo.items.map((item: any) => item.id)
         ).length
       ).toBe(0);
-      const secondCursor = resultWithLimitTwo.endCursor;
+      const secondCursor = resultWithLimitTwo.pageInfo.endCursor;
 
       // Get another limit:2 with the second cursor; it should return only 1 item
       const resultWithExtraLimit = await client.getExecutions([workflowId], {
@@ -121,10 +121,10 @@ describe("getExecutions Tests", () => {
       expect(resultWithExtraLimit.items.length).toBe(
         totalTriggerCount - limitTwo - limitOne
       );
-      expect(resultWithExtraLimit.hasNextPage).toBe(false);
+      expect(resultWithExtraLimit.pageInfo.hasNextPage).toBe(false);
 
       // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
-      expect(typeof resultWithExtraLimit.endCursor).toBe("string");
+      expect(typeof resultWithExtraLimit.pageInfo.endCursor).toBe("string");
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -338,11 +338,11 @@ describe("getExecutions Tests", () => {
       });
       
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
-      expect(firstPage.endCursor).toBeTruthy();
-      expect(firstPage.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.endCursor).toBeTruthy();
+      expect(firstPage.pageInfo.hasNextPage).toBe(true);
 
       const secondPage = await client.getExecutions([workflowId], {
-        after: firstPage.endCursor,
+        after: firstPage.pageInfo.endCursor,
         limit: pageSize,
       });
 
@@ -408,10 +408,10 @@ describe("getExecutions Tests", () => {
       });
       
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
-      expect(firstPage.endCursor).toBeTruthy();
+      expect(firstPage.pageInfo.endCursor).toBeTruthy();
 
       const previousPage = await client.getExecutions([workflowId], {
-        before: firstPage.startCursor,
+        before: firstPage.pageInfo.startCursor,
         limit: pageSize,
       });
 
@@ -420,8 +420,8 @@ describe("getExecutions Tests", () => {
       expect(firstPage.items.length).toBeGreaterThan(0);
 
       // Verify the previous page has endCursor and hasPreviousPage fields
-      expect(typeof previousPage.endCursor).toBe("string");
-      expect(typeof previousPage.hasPreviousPage).toBe("boolean");
+      expect(typeof previousPage.pageInfo.endCursor).toBe("string");
+      expect(typeof previousPage.pageInfo.hasPreviousPage).toBe("boolean");
 
       // Verify all returned executions are in our created list
       const previousPageIds = previousPage.items.map((item: any) => item.id);
