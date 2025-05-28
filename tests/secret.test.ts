@@ -8,10 +8,11 @@ import {
   Step,
 } from "@avaprotocol/sdk-js";
 import {
-  GetSecretsResponse,
   SecretRequestOptions,
   NodeType,
   TriggerType,
+  PageInfo,
+  SecretProps,
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -181,7 +182,7 @@ describe("secret Tests", () => {
       // Note: Due to server-side eventual consistency issues, newly created secrets
       // may not immediately appear in getSecrets() responses. However, the secret
       // creation itself succeeds and the secret can be used in workflows.
-      
+
       // Verify we can delete the secret (which also confirms it was created)
       const deleteResult = await client.deleteSecret(inputName);
       expect(deleteResult).toBe(true);
@@ -201,9 +202,11 @@ describe("secret Tests", () => {
       // Note: Due to server-side eventual consistency issues, newly created secrets
       // may not immediately appear in getSecrets() responses. However, the secret
       // creation itself succeeds and the secret can be used in workflows.
-      
+
       // Verify we can delete the secret (which also confirms it was created)
-      const deleteResult = await client.deleteSecret(inputName, { workflowId: inputWorkflowId });
+      const deleteResult = await client.deleteSecret(inputName, {
+        workflowId: inputWorkflowId,
+      });
       expect(deleteResult).toBe(true);
     });
 
@@ -250,15 +253,11 @@ describe("secret Tests", () => {
       const listResultClient2 = await client2.getSecrets();
 
       expect(
-        listResultClient1.items.some(
-          (item) => item.name === inputName2
-        )
+        listResultClient1.items.some((item) => item.name === inputName2)
       ).toBe(false);
 
       expect(
-        listResultClient2.items.some(
-          (item) => item.name === inputName1
-        )
+        listResultClient2.items.some((item) => item.name === inputName1)
       ).toBe(false);
     });
   });
@@ -290,9 +289,13 @@ describe("secret Tests", () => {
       const userResult = await client.createSecret(userLevelName, "value1");
       createdSecretMap.set(userLevelName, false);
 
-      const workflowResult = await client.createSecret(workflowLevelName, "value2", {
-        workflowId: inputWorkflowId,
-      });
+      const workflowResult = await client.createSecret(
+        workflowLevelName,
+        "value2",
+        {
+          workflowId: inputWorkflowId,
+        }
+      );
       createdSecretMap.set(workflowLevelName, false);
 
       // Verify both secret creations succeeded
@@ -367,7 +370,7 @@ describe("secret Tests", () => {
         return;
       }
 
-      const typedFirstPage = firstPage as GetSecretsResponse;
+      const typedFirstPage = firstPage.pageInfo;
 
       expect(typedFirstPage.endCursor).toBeTruthy();
 
@@ -406,7 +409,7 @@ describe("secret Tests", () => {
         return;
       }
 
-      const typedMiddlePage = middlePage as GetSecretsResponse;
+      const typedMiddlePage = middlePage.pageInfo;
 
       // Skip test if no cursor or no more items
       if (!typedMiddlePage.endCursor || !typedMiddlePage.hasNextPage) {
@@ -480,8 +483,8 @@ describe("secret Tests", () => {
       // Verify the API call succeeds and returns a valid response structure
       expect(filteredSecrets).toBeDefined();
       expect(Array.isArray(filteredSecrets.items)).toBe(true);
-      expect(typeof filteredSecrets.hasNextPage).toBe('boolean');
-      expect(typeof filteredSecrets.hasPreviousPage).toBe('boolean');
+      expect(typeof filteredSecrets.pageInfo.hasNextPage).toBe("boolean");
+      expect(typeof filteredSecrets.pageInfo.hasPreviousPage).toBe("boolean");
 
       // Clean up the secret
       const deleteResult = await client.deleteSecret(testName, { workflowId });

@@ -96,11 +96,6 @@ export interface PageInfo {
   hasNextPage: boolean;
 }
 
-export interface GetSecretsResponse {
-  items: SecretProps[];
-  pageInfo: PageInfo;
-}
-
 export interface SecretRequestOptions extends RequestOptions {
   workflowId?: string;
   orgId?: string;

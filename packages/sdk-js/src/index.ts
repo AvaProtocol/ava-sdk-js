@@ -3,7 +3,6 @@ import { credentials, Metadata } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
-import { Timestamp } from "google-protobuf/google/protobuf/timestamp_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
 import Edge, { EdgeProps } from "./models/edge";
 import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
@@ -13,10 +12,7 @@ import Node, { NodeProps, NodeData } from "./models/node/interface";
 import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
 import type {
-  GetKeyRequestApiKey,
-  GetKeyRequestSignature,
   GetKeyResponse,
-  GetSecretsResponse,
   SecretRequestOptions,
   RequestOptions,
   ClientOption,
@@ -774,7 +770,7 @@ class Client extends BaseClient {
     const result = await this.sendGrpcRequest<
       BoolValue,
       avs_pb.CreateOrUpdateSecretReq
-          >("createSecret", request, options);
+    >("createSecret", request, options);
 
     return result.getValue();
   }
@@ -816,9 +812,10 @@ class Client extends BaseClient {
    * @param {SecretRequestOptions} options - Request options
    * @returns {Promise<{ cursor: string; result: Secret[]; hasMore: boolean }>} - The list of Secret objects with pagination metadata
    */
-  async getSecrets(
-    options?: SecretRequestOptions
-  ): Promise<GetSecretsResponse> {
+  async getSecrets(options?: SecretRequestOptions): Promise<{
+    items: SecretProps[];
+    pageInfo: PageInfo;
+  }> {
     const request = new avs_pb.ListSecretsReq();
 
     if (options?.workflowId) {
@@ -848,7 +845,7 @@ class Client extends BaseClient {
     const result = await this.sendGrpcRequest<
       avs_pb.ListSecretsResp,
       avs_pb.ListSecretsReq
-          >("listSecrets", request, options);
+    >("listSecrets", request, options);
 
     const pageInfo = result.getPageInfo();
 

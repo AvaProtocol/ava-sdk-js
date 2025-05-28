@@ -2,16 +2,10 @@ import {
   Client,
   Workflow,
   WorkflowProps,
-  Execution,
   Step,
   StepProps,
 } from "@avaprotocol/sdk-js";
-import {
-  GetKeyRequestApiKey,
-  GetKeyRequestSignature,
-  GetKeyRequestMessage,
-  WorkflowStatus,
-} from "@avaprotocol/types";
+import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
@@ -311,24 +305,24 @@ export const removeCreatedSecrets = async (
 export const cleanupSecrets = async (client: Client) => {
   try {
     const secretsResponse = await client.getSecrets({ limit: 1000 });
-    const secretItems = Array.isArray(secretsResponse) 
-      ? secretsResponse 
+    const secretItems = Array.isArray(secretsResponse)
+      ? secretsResponse
       : secretsResponse.items || [];
 
     // Only cleanup secrets that look like test secrets (have test prefixes)
     const testSecretPrefixes = [
-      'dummysecret_',
-      'testdup',
-      'delete_',
-      'abc_',
-      'def_',
-      'paged_',
-      'secret_name',
-      'test_debug_'
+      "dummysecret_",
+      "testdup",
+      "delete_",
+      "abc_",
+      "def_",
+      "paged_",
+      "secret_name",
+      "test_debug_",
     ];
 
-    const testSecrets = secretItems.filter((item) => 
-      testSecretPrefixes.some(prefix => item.name.startsWith(prefix))
+    const testSecrets = secretItems.filter((item) =>
+      testSecretPrefixes.some((prefix) => item.name.startsWith(prefix))
     );
 
     if (testSecrets.length > 0) {
