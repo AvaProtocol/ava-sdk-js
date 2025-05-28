@@ -4,48 +4,35 @@ import { TriggerType } from "@avaprotocol/types";
 
 describe("EventTrigger Tests", () => {
   describe("toRequest() error handling", () => {
-    test("should throw error when config is missing", () => {
+    test("should throw error when expression is missing", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          // Missing config property
+          // Missing expression property
+          matcherList: [],
         } as any,
       });
 
       expect(() => trigger.toRequest()).toThrowError(
-        "Config is missing for event trigger"
+        "Expression is undefined for event"
       );
     });
 
-    test("should throw error when config is null", () => {
+    test("should throw error when expression is null", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: null,
+          expression: null,
+          matcherList: [],
         } as any,
       });
 
       expect(() => trigger.toRequest()).toThrowError(
-        "Config is missing for event trigger"
-      );
-    });
-
-    test("should throw error when config is undefined", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: {
-          config: undefined,
-        } as any,
-      });
-
-      expect(() => trigger.toRequest()).toThrowError(
-        "Config is missing for event trigger"
+        "Expression is undefined for event"
       );
     });
 
@@ -55,28 +42,8 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: undefined,
-            matcherList: [],
-          },
-        } as any,
-      });
-
-      expect(() => trigger.toRequest()).toThrowError(
-        "Expression is undefined for event"
-      );
-    });
-
-    test("should throw error when expression is missing", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: {
-          config: {
-            // Missing expression property
-            matcherList: [],
-          },
+          expression: undefined,
+          matcherList: [],
         } as any,
       });
 
@@ -91,10 +58,8 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: "trigger1.data.topics[0] == '0x123'",
-            matcherList: [],
-          },
+          expression: "trigger1.data.topics[0] == '0x123'",
+          matcherList: [],
         },
       });
 
@@ -114,19 +79,17 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: "trigger1.data.topics[0] == '0x123'",
-            matcherList: [
-              {
-                type: "topics",
-                valueList: [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                  "",
-                  "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
-                ],
-              },
-            ],
-          },
+          expression: "trigger1.data.topics[0] == '0x123'",
+          matcherList: [
+            {
+              type: "topics",
+              valueList: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "",
+                "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+              ],
+            },
+          ],
         },
       });
 
@@ -147,10 +110,8 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: "trigger1.data.topics[0] == '0x123'",
-            matcherList: [],
-          },
+          expression: "trigger1.data.topics[0] == '0x123'",
+          matcherList: [],
         },
       });
 
@@ -165,10 +126,8 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: "trigger1.data.topics[0] == '0x123'",
-            matcherList: null,
-          },
+          expression: "trigger1.data.topics[0] == '0x123'",
+          matcherList: null,
         } as any,
       });
 
@@ -183,10 +142,8 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: "trigger1.data.topics[0] == '0x123'",
-            matcherList: undefined,
-          },
+          expression: "trigger1.data.topics[0] == '0x123'",
+          matcherList: undefined,
         } as any,
       });
 

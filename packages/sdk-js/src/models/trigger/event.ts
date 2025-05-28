@@ -22,8 +22,8 @@ import util from "util";
 // ]
 // ```
 
-// Required props for constructor: id, name, type and data: { config: { expression, matcherList } }
-export type EventTriggerDataType = avs_pb.EventTrigger.AsObject;
+// Required props for constructor: id, name, type and data: { expression, matcherList }
+export type EventTriggerDataType = avs_pb.EventTrigger.Config.AsObject;
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
 export type EventTriggerOutput = avs_pb.EventTrigger.Output.AsObject;
 
@@ -43,16 +43,13 @@ class EventTrigger extends Trigger {
 
     const trigger = new avs_pb.EventTrigger();
     
-    const dataConfig = (this.data as EventTriggerDataType).config;
-    if (!dataConfig) {
-      throw new Error(`Config is missing for ${this.type} trigger`);
-    }
-
+    const dataConfig = this.data as EventTriggerDataType;
+    
     const config = new avs_pb.EventTrigger.Config();
     const expression = dataConfig.expression;
     const matcherList = dataConfig.matcherList;
 
-    if (_.isUndefined(expression)) {
+    if (_.isUndefined(expression) || _.isNull(expression)) {
       throw new Error(`Expression is undefined for ${this.type}`);
     }
 
@@ -79,19 +76,19 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: EventTriggerDataType = { config: {} } as EventTriggerDataType;
+    let data: EventTriggerDataType = { expression: "", matcherList: [] };
     
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
       
       if (config) {
-        data.config = {
+        data = {
           expression: config.getExpression(),
           matcherList: []
         };
         
         if (config.getMatcherList && config.getMatcherList().length > 0) {
-          data.config.matcherList = config.getMatcherList().map((item: any) => {
+          data.matcherList = config.getMatcherList().map((item: any) => {
             return {
               type: item.getType(),
               valueList: item.getValueList() || [],

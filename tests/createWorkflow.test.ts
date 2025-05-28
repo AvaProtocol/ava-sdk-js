@@ -181,7 +181,7 @@ describe("createWorkflow Tests", () => {
             },
           ],
         },
-      });
+      } as any);
 
       const restApiNode = NodeFactory.create({
         name: "notification",
@@ -216,14 +216,12 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: `
+          expression: `
                 trigger1.data.topics[0] == 
                 "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef" 
                 && trigger1.data.topics[2] == "${wallet.address}"
               `,
-            matcherList: [],
-          },
+          matcherList: [],
         },
       });
 
@@ -273,19 +271,17 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          config: {
-            expression: "// TODO: expression cannot be empty",
-            matcherList: [
-              {
-                type: "topics",
-                valueList: [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                  "",
-                  "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
-                ],
-              },
-            ],
-          },
+          expression: "// TODO: expression cannot be empty",
+          matcherList: [
+            {
+              type: "topics",
+              valueList: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                "",
+                "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+              ],
+            },
+          ],
         },
       });
 

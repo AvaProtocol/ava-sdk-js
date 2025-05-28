@@ -2,8 +2,6 @@ name: Release with Changeset
 
 on:
   workflow_dispatch:
-    branches:
-      - main
 
 jobs:
   release:
