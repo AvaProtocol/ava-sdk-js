@@ -42,6 +42,8 @@ describe("runNodeWithInputs Tests", () => {
       nodeConfig: {},
     });
 
+    console.log("blockTrigger test result:", JSON.stringify(result, null, 2));
+
     expect(result.success).toBe(true);
 
     // Example result

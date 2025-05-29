@@ -413,6 +413,8 @@ export namespace EventTrigger {
 export class TaskTrigger extends jspb.Message { 
     getName(): string;
     setName(value: string): TaskTrigger;
+    getType(): TriggerType;
+    setType(value: TriggerType): TaskTrigger;
 
     hasManual(): boolean;
     clearManual(): void;
@@ -456,6 +458,7 @@ export class TaskTrigger extends jspb.Message {
 export namespace TaskTrigger {
     export type AsObject = {
         name: string,
+        type: TriggerType,
         manual: boolean,
         fixedTime?: FixedTimeTrigger.AsObject,
         cron?: CronTrigger.AsObject,
@@ -1237,6 +1240,8 @@ export class TaskNode extends jspb.Message {
     setId(value: string): TaskNode;
     getName(): string;
     setName(value: string): TaskNode;
+    getType(): NodeType;
+    setType(value: NodeType): TaskNode;
 
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
@@ -1299,6 +1304,7 @@ export namespace TaskNode {
     export type AsObject = {
         id: string,
         name: string,
+        type: NodeType,
         ethTransfer?: ETHTransferNode.AsObject,
         contractWrite?: ContractWriteNode.AsObject,
         contractRead?: ContractReadNode.AsObject,
@@ -1985,8 +1991,8 @@ export class TriggerReason extends jspb.Message {
     setTxHash(value: string): TriggerReason;
     getEpoch(): number;
     setEpoch(value: number): TriggerReason;
-    getType(): TriggerReason.TriggerType;
-    setType(value: TriggerReason.TriggerType): TriggerReason;
+    getType(): TriggerType;
+    setType(value: TriggerType): TriggerReason;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TriggerReason.AsObject;
@@ -2004,18 +2010,8 @@ export namespace TriggerReason {
         logIndex: number,
         txHash: string,
         epoch: number,
-        type: TriggerReason.TriggerType,
+        type: TriggerType,
     }
-
-    export enum TriggerType {
-    UNSET = 0,
-    MANUAL = 2,
-    FIXEDTIME = 3,
-    CRON = 4,
-    BLOCK = 5,
-    EVENT = 6,
-    }
-
 }
 
 export class GetWalletReq extends jspb.Message { 
@@ -2533,8 +2529,8 @@ export namespace GetExecutionStatsResp {
 }
 
 export class RunNodeWithInputsReq extends jspb.Message { 
-    getNodeType(): string;
-    setNodeType(value: string): RunNodeWithInputsReq;
+    getNodeType(): NodeType;
+    setNodeType(value: NodeType): RunNodeWithInputsReq;
 
     getNodeConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
     clearNodeConfigMap(): void;
@@ -2554,7 +2550,7 @@ export class RunNodeWithInputsReq extends jspb.Message {
 
 export namespace RunNodeWithInputsReq {
     export type AsObject = {
-        nodeType: string,
+        nodeType: NodeType,
 
         nodeConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
 
@@ -2872,6 +2868,28 @@ export namespace Evm {
         }
     }
 
+}
+
+export enum TriggerType {
+    TRIGGER_TYPE_UNSPECIFIED = 0,
+    TRIGGER_TYPE_MANUAL = 1,
+    TRIGGER_TYPE_FIXED_TIME = 2,
+    TRIGGER_TYPE_CRON = 3,
+    TRIGGER_TYPE_BLOCK = 4,
+    TRIGGER_TYPE_EVENT = 5,
+}
+
+export enum NodeType {
+    NODE_TYPE_UNSPECIFIED = 0,
+    NODE_TYPE_ETH_TRANSFER = 1,
+    NODE_TYPE_CONTRACT_WRITE = 2,
+    NODE_TYPE_CONTRACT_READ = 3,
+    NODE_TYPE_GRAPHQL_QUERY = 4,
+    NODE_TYPE_REST_API = 5,
+    NODE_TYPE_CUSTOM_CODE = 6,
+    NODE_TYPE_BRANCH = 7,
+    NODE_TYPE_FILTER = 8,
+    NODE_TYPE_LOOP = 9,
 }
 
 export enum Lang {

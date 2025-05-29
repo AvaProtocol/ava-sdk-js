@@ -107,6 +107,7 @@ goog.exportSymbol('proto.aggregator.LoopNode', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode.Output', null, global);
 goog.exportSymbol('proto.aggregator.LoopNode.RunnerCase', null, global);
+goog.exportSymbol('proto.aggregator.NodeType', null, global);
 goog.exportSymbol('proto.aggregator.NonceRequest', null, global);
 goog.exportSymbol('proto.aggregator.NonceResp', null, global);
 goog.exportSymbol('proto.aggregator.PageInfo', null, global);
@@ -127,7 +128,7 @@ goog.exportSymbol('proto.aggregator.TaskStatus', null, global);
 goog.exportSymbol('proto.aggregator.TaskTrigger', null, global);
 goog.exportSymbol('proto.aggregator.TaskTrigger.TriggerTypeCase', null, global);
 goog.exportSymbol('proto.aggregator.TriggerReason', null, global);
-goog.exportSymbol('proto.aggregator.TriggerReason.TriggerType', null, global);
+goog.exportSymbol('proto.aggregator.TriggerType', null, global);
 goog.exportSymbol('proto.aggregator.UserTriggerTaskReq', null, global);
 goog.exportSymbol('proto.aggregator.UserTriggerTaskResp', null, global);
 /**
@@ -4928,6 +4929,7 @@ proto.aggregator.TaskTrigger.prototype.toObject = function(opt_includeInstance) 
 proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    type: jspb.Message.getFieldWithDefault(msg, 8, 0),
     manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
     fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedTimeTrigger.toObject(includeInstance, f),
     cron: (f = msg.getCron()) && proto.aggregator.CronTrigger.toObject(includeInstance, f),
@@ -4973,6 +4975,10 @@ proto.aggregator.TaskTrigger.deserializeBinaryFromReader = function(msg, reader)
     case 1:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
+      break;
+    case 8:
+      var value = /** @type {!proto.aggregator.TriggerType} */ (reader.readEnum());
+      msg.setType(value);
       break;
     case 2:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -5035,6 +5041,13 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
   if (f.length > 0) {
     writer.writeString(
       1,
+      f
+    );
+  }
+  f = message.getType();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      8,
       f
     );
   }
@@ -5102,6 +5115,24 @@ proto.aggregator.TaskTrigger.prototype.getName = function() {
  */
 proto.aggregator.TaskTrigger.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional TriggerType type = 8;
+ * @return {!proto.aggregator.TriggerType}
+ */
+proto.aggregator.TaskTrigger.prototype.getType = function() {
+  return /** @type {!proto.aggregator.TriggerType} */ (jspb.Message.getFieldWithDefault(this, 8, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.TriggerType} value
+ * @return {!proto.aggregator.TaskTrigger} returns this
+ */
+proto.aggregator.TaskTrigger.prototype.setType = function(value) {
+  return jspb.Message.setProto3EnumField(this, 8, value);
 };
 
 
@@ -10431,6 +10462,7 @@ proto.aggregator.TaskNode.toObject = function(includeInstance, msg) {
   var f, obj = {
     id: jspb.Message.getFieldWithDefault(msg, 2, ""),
     name: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    type: jspb.Message.getFieldWithDefault(msg, 1, 0),
     ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.toObject(includeInstance, f),
     contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.toObject(includeInstance, f),
     contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.toObject(includeInstance, f),
@@ -10483,6 +10515,10 @@ proto.aggregator.TaskNode.deserializeBinaryFromReader = function(msg, reader) {
     case 3:
       var value = /** @type {string} */ (reader.readString());
       msg.setName(value);
+      break;
+    case 1:
+      var value = /** @type {!proto.aggregator.NodeType} */ (reader.readEnum());
+      msg.setType(value);
       break;
     case 10:
       var value = new proto.aggregator.ETHTransferNode;
@@ -10569,6 +10605,13 @@ proto.aggregator.TaskNode.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getType();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      1,
       f
     );
   }
@@ -10680,6 +10723,24 @@ proto.aggregator.TaskNode.prototype.getName = function() {
  */
 proto.aggregator.TaskNode.prototype.setName = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional NodeType type = 1;
+ * @return {!proto.aggregator.NodeType}
+ */
+proto.aggregator.TaskNode.prototype.getType = function() {
+  return /** @type {!proto.aggregator.NodeType} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.NodeType} value
+ * @return {!proto.aggregator.TaskNode} returns this
+ */
+proto.aggregator.TaskNode.prototype.setType = function(value) {
+  return jspb.Message.setProto3EnumField(this, 1, value);
 };
 
 
@@ -16049,7 +16110,7 @@ proto.aggregator.TriggerReason.deserializeBinaryFromReader = function(msg, reade
       msg.setEpoch(value);
       break;
     case 5:
-      var value = /** @type {!proto.aggregator.TriggerReason.TriggerType} */ (reader.readEnum());
+      var value = /** @type {!proto.aggregator.TriggerType} */ (reader.readEnum());
       msg.setType(value);
       break;
     default:
@@ -16118,18 +16179,6 @@ proto.aggregator.TriggerReason.serializeBinaryToWriter = function(message, write
   }
 };
 
-
-/**
- * @enum {number}
- */
-proto.aggregator.TriggerReason.TriggerType = {
-  UNSET: 0,
-  MANUAL: 2,
-  FIXEDTIME: 3,
-  CRON: 4,
-  BLOCK: 5,
-  EVENT: 6
-};
 
 /**
  * optional uint64 block_number = 1;
@@ -16205,15 +16254,15 @@ proto.aggregator.TriggerReason.prototype.setEpoch = function(value) {
 
 /**
  * optional TriggerType type = 5;
- * @return {!proto.aggregator.TriggerReason.TriggerType}
+ * @return {!proto.aggregator.TriggerType}
  */
 proto.aggregator.TriggerReason.prototype.getType = function() {
-  return /** @type {!proto.aggregator.TriggerReason.TriggerType} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+  return /** @type {!proto.aggregator.TriggerType} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
 
 /**
- * @param {!proto.aggregator.TriggerReason.TriggerType} value
+ * @param {!proto.aggregator.TriggerType} value
  * @return {!proto.aggregator.TriggerReason} returns this
  */
 proto.aggregator.TriggerReason.prototype.setType = function(value) {
@@ -20073,7 +20122,7 @@ proto.aggregator.RunNodeWithInputsReq.prototype.toObject = function(opt_includeI
  */
 proto.aggregator.RunNodeWithInputsReq.toObject = function(includeInstance, msg) {
   var f, obj = {
-    nodeType: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    nodeType: jspb.Message.getFieldWithDefault(msg, 1, 0),
     nodeConfigMap: (f = msg.getNodeConfigMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : [],
     inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
@@ -20113,7 +20162,7 @@ proto.aggregator.RunNodeWithInputsReq.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = /** @type {!proto.aggregator.NodeType} */ (reader.readEnum());
       msg.setNodeType(value);
       break;
     case 2:
@@ -20158,8 +20207,8 @@ proto.aggregator.RunNodeWithInputsReq.prototype.serializeBinary = function() {
 proto.aggregator.RunNodeWithInputsReq.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getNodeType();
-  if (f.length > 0) {
-    writer.writeString(
+  if (f !== 0.0) {
+    writer.writeEnum(
       1,
       f
     );
@@ -20176,20 +20225,20 @@ proto.aggregator.RunNodeWithInputsReq.serializeBinaryToWriter = function(message
 
 
 /**
- * optional string node_type = 1;
- * @return {string}
+ * optional NodeType node_type = 1;
+ * @return {!proto.aggregator.NodeType}
  */
 proto.aggregator.RunNodeWithInputsReq.prototype.getNodeType = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+  return /** @type {!proto.aggregator.NodeType} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /**
- * @param {string} value
+ * @param {!proto.aggregator.NodeType} value
  * @return {!proto.aggregator.RunNodeWithInputsReq} returns this
  */
 proto.aggregator.RunNodeWithInputsReq.prototype.setNodeType = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3EnumField(this, 1, value);
 };
 
 
@@ -22719,6 +22768,34 @@ proto.aggregator.Evm.UserOp.prototype.setSignature = function(value) {
   return jspb.Message.setProto3StringField(this, 11, value);
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.aggregator.TriggerType = {
+  TRIGGER_TYPE_UNSPECIFIED: 0,
+  TRIGGER_TYPE_MANUAL: 1,
+  TRIGGER_TYPE_FIXED_TIME: 2,
+  TRIGGER_TYPE_CRON: 3,
+  TRIGGER_TYPE_BLOCK: 4,
+  TRIGGER_TYPE_EVENT: 5
+};
+
+/**
+ * @enum {number}
+ */
+proto.aggregator.NodeType = {
+  NODE_TYPE_UNSPECIFIED: 0,
+  NODE_TYPE_ETH_TRANSFER: 1,
+  NODE_TYPE_CONTRACT_WRITE: 2,
+  NODE_TYPE_CONTRACT_READ: 3,
+  NODE_TYPE_GRAPHQL_QUERY: 4,
+  NODE_TYPE_REST_API: 5,
+  NODE_TYPE_CUSTOM_CODE: 6,
+  NODE_TYPE_BRANCH: 7,
+  NODE_TYPE_FILTER: 8,
+  NODE_TYPE_LOOP: 9
+};
 
 /**
  * @enum {number}

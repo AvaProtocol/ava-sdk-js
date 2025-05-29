@@ -28,7 +28,7 @@ import type {
   SecretOptions,
 } from "@avaprotocol/types";
 
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import { NodeType, TriggerType, TriggerTypeConverter, ProtobufNodeTypeUtils } from "@avaprotocol/types";
 
 import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
@@ -948,7 +948,28 @@ class Client extends BaseClient {
 
       // Create the request
       const request = new avs_pb.RunNodeWithInputsReq();
-      request.setNodeType(nodeType);
+      
+      // Convert string nodeType to protobuf enum
+      // The backend supports both trigger types and node types, but the protobuf interface
+      // only accepts NodeType enum. We need to map trigger types appropriately.
+      let protobufNodeType: avs_pb.NodeType;
+      
+      switch (nodeType) {
+        // Trigger types - map to CUSTOM_CODE since they're handled specially by the backend
+        case "blockTrigger":
+        case "fixedTimeTrigger":
+        case "cronTrigger":
+        case "eventTrigger":
+        case "manualTrigger":
+          protobufNodeType = avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE;
+          break;
+        // Regular node types
+        default:
+          protobufNodeType = ProtobufNodeTypeUtils.fromGoString(nodeType);
+          break;
+      }
+      
+      request.setNodeType(protobufNodeType);
 
       const nodeConfigMap = request.getNodeConfigMap();
       for (const [key, value] of Object.entries(nodeConfig)) {

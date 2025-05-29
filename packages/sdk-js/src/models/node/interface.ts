@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, ProtobufNodeTypeUtils } from "@avaprotocol/types";
 import _ from "lodash";
 
 // Function to convert TaskStatus to string
@@ -16,7 +16,7 @@ export function covertNodeTypeToString(
     [avs_pb.TaskNode.TaskTypeCase.FILTER]: NodeType.Filter,
     [avs_pb.TaskNode.TaskTypeCase.LOOP]: NodeType.Loop,
     [avs_pb.TaskNode.TaskTypeCase.CUSTOM_CODE]: NodeType.CustomCode,
-    [avs_pb.TaskNode.TaskTypeCase.TASK_TYPE_NOT_SET]: NodeType.Unset,
+    [avs_pb.TaskNode.TaskTypeCase.TASK_TYPE_NOT_SET]: NodeType.Unspecified,
   };
 
   return conversionMap[status] as NodeType;
@@ -33,6 +33,7 @@ export type NodeData =
   | avs_pb.LoopNode.AsObject
   | avs_pb.CustomCodeNode.AsObject;
 
+// Option 1: Keep using our string-based NodeType (current approach)
 export type NodeProps = Omit<
   avs_pb.TaskNode.AsObject,
   | "ethTransfer"
@@ -44,9 +45,43 @@ export type NodeProps = Omit<
   | "filter"
   | "loop"
   | "customCode"
+  | "type"  // Exclude the protobuf type field to avoid conflict
 > & {
-  type: NodeType;
+  type: NodeType;  // Use our own NodeType enum
   data: NodeData;
+};
+
+// Option 2: Use protobuf NodeType directly
+export type ProtobufNodeProps = Omit<
+  avs_pb.TaskNode.AsObject,
+  | "ethTransfer"
+  | "contractWrite"
+  | "contractRead"
+  | "graphqlDataQuery"
+  | "restApi"
+  | "branch"
+  | "filter"
+  | "loop"
+  | "customCode"
+> & {
+  // Keep the protobuf type field as-is (numeric enum)
+  data: NodeData;
+};
+
+// Utility functions to work with protobuf NodeProps
+export const ProtobufNodePropsUtils = {
+  // Get the Go backend string representation of the node type
+  getGoStringType: (props: ProtobufNodeProps): string => {
+    return ProtobufNodeTypeUtils.toGoString(props.type);
+  },
+  
+  // Create ProtobufNodeProps from Go string type
+  fromGoStringType: (goStringType: string, baseProps: Omit<ProtobufNodeProps, 'type'>): ProtobufNodeProps => {
+    return {
+      ...baseProps,
+      type: ProtobufNodeTypeUtils.fromGoString(goStringType)
+    };
+  }
 };
 
 class Node implements NodeProps {

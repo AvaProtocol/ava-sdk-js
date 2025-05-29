@@ -13,21 +13,21 @@ export type TriggerReasonProps =
       txHash: string;
     }
   | { type: TriggerType.Manual }
-  | { type: TriggerType.Unset };
+  | { type: TriggerType.Unspecified };
 
 // Convert the number values of gRPC TriggerType to string values of TriggerType
 const convertTriggerType = (
-  grpcType: avs_pb.TriggerReason.TriggerType
+  grpcType: avs_pb.TriggerType
 ): TriggerType => {
   const conversionMap: {
-    [key in avs_pb.TriggerReason.TriggerType]: TriggerType;
+    [key in avs_pb.TriggerType]: TriggerType;
   } = {
-    [avs_pb.TriggerReason.TriggerType.FIXEDTIME]: TriggerType.FixedTime,
-    [avs_pb.TriggerReason.TriggerType.CRON]: TriggerType.Cron,
-    [avs_pb.TriggerReason.TriggerType.BLOCK]: TriggerType.Block,
-    [avs_pb.TriggerReason.TriggerType.EVENT]: TriggerType.Event,
-    [avs_pb.TriggerReason.TriggerType.MANUAL]: TriggerType.Manual,
-    [avs_pb.TriggerReason.TriggerType.UNSET]: TriggerType.Unset,
+    [avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME]: TriggerType.FixedTime,
+    [avs_pb.TriggerType.TRIGGER_TYPE_CRON]: TriggerType.Cron,
+    [avs_pb.TriggerType.TRIGGER_TYPE_BLOCK]: TriggerType.Block,
+    [avs_pb.TriggerType.TRIGGER_TYPE_EVENT]: TriggerType.Event,
+    [avs_pb.TriggerType.TRIGGER_TYPE_MANUAL]: TriggerType.Manual,
+    [avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED]: TriggerType.Unspecified,
   };
 
   return conversionMap[grpcType];
@@ -58,7 +58,7 @@ class TriggerReason {
         this.txHash = props.txHash;
         break;
       case TriggerType.Manual:
-      case TriggerType.Unset:
+      case TriggerType.Unspecified:
         break;
       default:
         throw new Error("Unsupported trigger type");
@@ -86,25 +86,25 @@ class TriggerReason {
 
     switch (this.type) {
       case TriggerType.FixedTime:
-        request.setType(avs_pb.TriggerReason.TriggerType.FIXEDTIME);
+        request.setType(avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME);
         if (this.epoch) {
           request.setEpoch(this.epoch);
         }
         break;
       case TriggerType.Cron:
-        request.setType(avs_pb.TriggerReason.TriggerType.CRON);
+        request.setType(avs_pb.TriggerType.TRIGGER_TYPE_CRON);
         if (this.epoch) {
           request.setEpoch(this.epoch);
         }
         break;
       case TriggerType.Block:
-        request.setType(avs_pb.TriggerReason.TriggerType.BLOCK);
+        request.setType(avs_pb.TriggerType.TRIGGER_TYPE_BLOCK);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
         break;
       case TriggerType.Event:
-        request.setType(avs_pb.TriggerReason.TriggerType.EVENT);
+        request.setType(avs_pb.TriggerType.TRIGGER_TYPE_EVENT);
         if (this.blockNumber) {
           request.setBlockNumber(this.blockNumber);
         }
@@ -116,10 +116,10 @@ class TriggerReason {
         }
         break;
       case TriggerType.Manual:
-        request.setType(avs_pb.TriggerReason.TriggerType.MANUAL);
+        request.setType(avs_pb.TriggerType.TRIGGER_TYPE_MANUAL);
         break;
-      case TriggerType.Unset:
-        request.setType(avs_pb.TriggerReason.TriggerType.UNSET);
+      case TriggerType.Unspecified:
+        request.setType(avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED);
         break;
       default:
         throw new Error("Unsupported trigger type");

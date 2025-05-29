@@ -55,8 +55,8 @@ class NodeFactory {
         return new FilterNode(props as FilterNodeProps);
       case NodeType.Loop:
         return new LoopNode(props as LoopNodeProps);
-      case NodeType.Unset:
-        throw new Error("Cannot create node with unset type");
+      case NodeType.Unspecified:
+        throw new Error("Cannot create node with unspecified type");
       default:
         throw new Error(`Unsupported node type: ${props.type}`);
     }
