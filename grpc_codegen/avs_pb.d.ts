@@ -2611,26 +2611,6 @@ export class RunNodeWithInputsResp extends jspb.Message {
     getLoop(): LoopNode.Output | undefined;
     setLoop(value?: LoopNode.Output): RunNodeWithInputsResp;
 
-    hasBlockTrigger(): boolean;
-    clearBlockTrigger(): void;
-    getBlockTrigger(): BlockTrigger.Output | undefined;
-    setBlockTrigger(value?: BlockTrigger.Output): RunNodeWithInputsResp;
-
-    hasFixedTimeTrigger(): boolean;
-    clearFixedTimeTrigger(): void;
-    getFixedTimeTrigger(): FixedTimeTrigger.Output | undefined;
-    setFixedTimeTrigger(value?: FixedTimeTrigger.Output): RunNodeWithInputsResp;
-
-    hasCronTrigger(): boolean;
-    clearCronTrigger(): void;
-    getCronTrigger(): CronTrigger.Output | undefined;
-    setCronTrigger(value?: CronTrigger.Output): RunNodeWithInputsResp;
-
-    hasEventTrigger(): boolean;
-    clearEventTrigger(): void;
-    getEventTrigger(): EventTrigger.Output | undefined;
-    setEventTrigger(value?: EventTrigger.Output): RunNodeWithInputsResp;
-
     getOutputDataCase(): RunNodeWithInputsResp.OutputDataCase;
 
     serializeBinary(): Uint8Array;
@@ -2657,10 +2637,6 @@ export namespace RunNodeWithInputsResp {
         branch?: BranchNode.Output.AsObject,
         filter?: FilterNode.Output.AsObject,
         loop?: LoopNode.Output.AsObject,
-        blockTrigger?: BlockTrigger.Output.AsObject,
-        fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
-        cronTrigger?: CronTrigger.Output.AsObject,
-        eventTrigger?: EventTrigger.Output.AsObject,
     }
 
     export enum OutputDataCase {
@@ -2674,10 +2650,92 @@ export namespace RunNodeWithInputsResp {
         BRANCH = 16,
         FILTER = 17,
         LOOP = 18,
-        BLOCK_TRIGGER = 20,
-        FIXED_TIME_TRIGGER = 21,
-        CRON_TRIGGER = 22,
-        EVENT_TRIGGER = 23,
+    }
+
+}
+
+export class RunTriggerReq extends jspb.Message { 
+    getTriggerType(): TriggerType;
+    setTriggerType(value: TriggerType): RunTriggerReq;
+
+    getTriggerConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearTriggerConfigMap(): void;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RunTriggerReq.AsObject;
+    static toObject(includeInstance: boolean, msg: RunTriggerReq): RunTriggerReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RunTriggerReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RunTriggerReq;
+    static deserializeBinaryFromReader(message: RunTriggerReq, reader: jspb.BinaryReader): RunTriggerReq;
+}
+
+export namespace RunTriggerReq {
+    export type AsObject = {
+        triggerType: TriggerType,
+
+        triggerConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+    }
+}
+
+export class RunTriggerResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): RunTriggerResp;
+    getError(): string;
+    setError(value: string): RunTriggerResp;
+    getTriggerId(): string;
+    setTriggerId(value: string): RunTriggerResp;
+
+    hasBlockTrigger(): boolean;
+    clearBlockTrigger(): void;
+    getBlockTrigger(): BlockTrigger.Output | undefined;
+    setBlockTrigger(value?: BlockTrigger.Output): RunTriggerResp;
+
+    hasFixedTimeTrigger(): boolean;
+    clearFixedTimeTrigger(): void;
+    getFixedTimeTrigger(): FixedTimeTrigger.Output | undefined;
+    setFixedTimeTrigger(value?: FixedTimeTrigger.Output): RunTriggerResp;
+
+    hasCronTrigger(): boolean;
+    clearCronTrigger(): void;
+    getCronTrigger(): CronTrigger.Output | undefined;
+    setCronTrigger(value?: CronTrigger.Output): RunTriggerResp;
+
+    hasEventTrigger(): boolean;
+    clearEventTrigger(): void;
+    getEventTrigger(): EventTrigger.Output | undefined;
+    setEventTrigger(value?: EventTrigger.Output): RunTriggerResp;
+
+    getOutputDataCase(): RunTriggerResp.OutputDataCase;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): RunTriggerResp.AsObject;
+    static toObject(includeInstance: boolean, msg: RunTriggerResp): RunTriggerResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: RunTriggerResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): RunTriggerResp;
+    static deserializeBinaryFromReader(message: RunTriggerResp, reader: jspb.BinaryReader): RunTriggerResp;
+}
+
+export namespace RunTriggerResp {
+    export type AsObject = {
+        success: boolean,
+        error: string,
+        triggerId: string,
+        blockTrigger?: BlockTrigger.Output.AsObject,
+        fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
+        cronTrigger?: CronTrigger.Output.AsObject,
+        eventTrigger?: EventTrigger.Output.AsObject,
+    }
+
+    export enum OutputDataCase {
+        OUTPUT_DATA_NOT_SET = 0,
+        BLOCK_TRIGGER = 10,
+        FIXED_TIME_TRIGGER = 11,
+        CRON_TRIGGER = 12,
+        EVENT_TRIGGER = 13,
     }
 
 }

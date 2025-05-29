@@ -360,6 +360,28 @@ function deserialize_aggregator_RunNodeWithInputsResp(buffer_arg) {
   return avs_pb.RunNodeWithInputsResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_RunTriggerReq(arg) {
+  if (!(arg instanceof avs_pb.RunTriggerReq)) {
+    throw new Error('Expected argument of type aggregator.RunTriggerReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_RunTriggerReq(buffer_arg) {
+  return avs_pb.RunTriggerReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_RunTriggerResp(arg) {
+  if (!(arg instanceof avs_pb.RunTriggerResp)) {
+    throw new Error('Expected argument of type aggregator.RunTriggerResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_RunTriggerResp(buffer_arg) {
+  return avs_pb.RunTriggerResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_SetWalletReq(arg) {
   if (!(arg instanceof avs_pb.SetWalletReq)) {
     throw new Error('Expected argument of type aggregator.SetWalletReq');
@@ -694,6 +716,18 @@ runNodeWithInputs: {
     requestDeserialize: deserialize_aggregator_RunNodeWithInputsReq,
     responseSerialize: serialize_aggregator_RunNodeWithInputsResp,
     responseDeserialize: deserialize_aggregator_RunNodeWithInputsResp,
+  },
+  // RunTrigger allows executing a single trigger for testing purposes (triggers don't accept inputs)
+runTrigger: {
+    path: '/aggregator.Aggregator/RunTrigger',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.RunTriggerReq,
+    responseType: avs_pb.RunTriggerResp,
+    requestSerialize: serialize_aggregator_RunTriggerReq,
+    requestDeserialize: deserialize_aggregator_RunTriggerReq,
+    responseSerialize: serialize_aggregator_RunTriggerResp,
+    responseDeserialize: deserialize_aggregator_RunTriggerResp,
   },
 };
 

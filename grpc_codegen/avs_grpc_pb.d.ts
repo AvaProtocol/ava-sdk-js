@@ -35,6 +35,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     getExecutionCount: IAggregatorService_IGetExecutionCount;
     getExecutionStats: IAggregatorService_IGetExecutionStats;
     runNodeWithInputs: IAggregatorService_IRunNodeWithInputs;
+    runTrigger: IAggregatorService_IRunTrigger;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -244,6 +245,15 @@ interface IAggregatorService_IRunNodeWithInputs extends grpc.MethodDefinition<av
     responseSerialize: grpc.serialize<avs_pb.RunNodeWithInputsResp>;
     responseDeserialize: grpc.deserialize<avs_pb.RunNodeWithInputsResp>;
 }
+interface IAggregatorService_IRunTrigger extends grpc.MethodDefinition<avs_pb.RunTriggerReq, avs_pb.RunTriggerResp> {
+    path: "/aggregator.Aggregator/RunTrigger";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.RunTriggerReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.RunTriggerReq>;
+    responseSerialize: grpc.serialize<avs_pb.RunTriggerResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.RunTriggerResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
@@ -271,6 +281,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getExecutionCount: grpc.handleUnaryCall<avs_pb.GetExecutionCountReq, avs_pb.GetExecutionCountResp>;
     getExecutionStats: grpc.handleUnaryCall<avs_pb.GetExecutionStatsReq, avs_pb.GetExecutionStatsResp>;
     runNodeWithInputs: grpc.handleUnaryCall<avs_pb.RunNodeWithInputsReq, avs_pb.RunNodeWithInputsResp>;
+    runTrigger: grpc.handleUnaryCall<avs_pb.RunTriggerReq, avs_pb.RunTriggerResp>;
 }
 
 export interface IAggregatorClient {
@@ -343,6 +354,9 @@ export interface IAggregatorClient {
     runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
     runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
     runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    runTrigger(request: avs_pb.RunTriggerReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -416,4 +430,7 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
     public runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
     public runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    public runTrigger(request: avs_pb.RunTriggerReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    public runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    public runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
 }

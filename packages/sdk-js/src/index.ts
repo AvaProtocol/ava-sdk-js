@@ -8,7 +8,6 @@ import Edge, { EdgeProps } from "./models/edge";
 import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
 import Step, { StepProps } from "./models/step";
 import NodeFactory from "./models/node/factory";
-import Node, { NodeProps, NodeData } from "./models/node/interface";
 import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
 import type {
@@ -22,20 +21,25 @@ import type {
   GetSignatureFormatResponse,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
+  RunTriggerRequest,
+  RunTriggerResponse,
   SecretProps,
   PageInfo,
   GetSecretsOptions,
   SecretOptions,
 } from "@avaprotocol/types";
 
-import { NodeType, TriggerType, TriggerTypeConverter, NodeTypeGoConverter } from "@avaprotocol/types";
+import {
+  TriggerType,
+  NodeTypeGoConverter,
+  TriggerTypeGoConverter,
+} from "@avaprotocol/types";
 
 import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
-import BlockTrigger, { BlockTriggerProps } from "./models/trigger/block";
 
 class BaseClient {
   readonly endpoint: string;
@@ -918,12 +922,11 @@ class Client extends BaseClient {
   }
 
   /**
-   * Run a node with inputs
+   * Run a node with inputs for testing purposes
    * @param {RunNodeWithInputsRequest} params - The parameters for running the node
-   * @param {string} params.nodeType - The type of the node
+   * @param {string} params.nodeType - The type of the node (restApi, customCode, etc.)
    * @param {Record<string, any>} params.nodeConfig - The configuration for the node
-   * @param {Record<string, any>} params.inputVariables - The input variables for the node
-   * @param {string} params.walletAddress - The wallet address to use for the node
+   * @param {Record<string, any>} params.inputVariables - Variables to pass to the node
    * @param {RequestOptions} options - Request options
    * @returns {Promise<RunNodeWithInputsResponse>} - The response from running the node
    */
@@ -932,16 +935,18 @@ class Client extends BaseClient {
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
     try {
-      // Special handling for blockTrigger nodes - they should reject input variables
-      if (
-        nodeType === "blockTrigger" &&
-        inputVariables &&
-        Object.keys(inputVariables).length > 0
-      ) {
-        const variableNames = Object.keys(inputVariables).join(", ");
+      // Reject trigger types - they should use the runTrigger method instead
+      const triggerTypes = [
+        TriggerType.Block,
+        TriggerType.FixedTime,
+        TriggerType.Cron,
+        TriggerType.Event,
+        TriggerType.Manual
+      ];
+      if (triggerTypes.includes(nodeType as TriggerType)) {
         return {
           success: false,
-          error: `blockTrigger nodes do not accept input variables. Received: ${variableNames}`,
+          error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
           nodeId: "",
         };
       }
@@ -949,26 +954,8 @@ class Client extends BaseClient {
       // Create the request
       const request = new avs_pb.RunNodeWithInputsReq();
       
-      // Convert string nodeType to protobuf enum
-      // The backend supports both trigger types and node types, but the protobuf interface
-      // only accepts NodeType enum. We need to map trigger types appropriately.
-      let protobufNodeType: avs_pb.NodeType;
-      
-      switch (nodeType) {
-        // Trigger types - map to CUSTOM_CODE since they're handled specially by the backend
-        case "blockTrigger":
-        case "fixedTimeTrigger":
-        case "cronTrigger":
-        case "eventTrigger":
-        case "manualTrigger":
-          protobufNodeType = avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE;
-          break;
-        // Regular node types
-        default:
-          protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
-          break;
-      }
-      
+      // Convert string nodeType to protobuf enum for regular nodes
+      const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
       request.setNodeType(protobufNodeType);
 
       const nodeConfigMap = request.getNodeConfigMap();
@@ -1024,18 +1011,7 @@ class Client extends BaseClient {
           case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
             data = result.getLoop()?.toObject();
             break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.BLOCK_TRIGGER:
-            data = result.getBlockTrigger()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.FIXED_TIME_TRIGGER:
-            data = result.getFixedTimeTrigger()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CRON_TRIGGER:
-            data = result.getCronTrigger()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.EVENT_TRIGGER:
-            data = result.getEventTrigger()?.toObject();
-            break;
+          // Trigger cases removed - use runTrigger() method instead
         }
       }
 
@@ -1053,159 +1029,74 @@ class Client extends BaseClient {
     }
   }
 
-  private createNodeFromConfig(
-    nodeType: string,
-    config: Record<string, any>,
-    nodeId: string
-  ): Node {
-    const nodeProps: NodeProps = {
-      id: nodeId,
-      name: `${nodeType}_node`,
-      type: nodeType as NodeType,
-      data: this.createNodeData(nodeType, config),
-    };
+  /**
+   * Run a trigger for testing purposes
+   * @param {RunTriggerRequest} params - The parameters for running the trigger
+   * @param {string} params.triggerType - The type of the trigger (blockTrigger, cronTrigger, etc.)
+   * @param {Record<string, any>} params.triggerConfig - The configuration for the trigger
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<RunTriggerResponse>} - The response from running the trigger
+   */
+  async runTrigger(
+    { triggerType, triggerConfig }: RunTriggerRequest,
+    options?: RequestOptions
+  ): Promise<RunTriggerResponse> {
+    try {
+      // Create the request
+      const request = new avs_pb.RunTriggerReq();
+      
+      // Convert string triggerType to protobuf enum
+      const protobufTriggerType = TriggerTypeGoConverter.fromGoString(triggerType);
+      request.setTriggerType(protobufTriggerType);
 
-    return NodeFactory.create(nodeProps);
-  }
-
-  private mapNodeTypeString(nodeType: string): NodeType | null {
-    const typeMap: Record<string, NodeType> = {
-      blockTrigger: NodeType.CustomCode, // Handle blockTrigger as special CustomCode case
-      restApi: NodeType.RestAPI,
-      contractRead: NodeType.ContractRead,
-      contractWrite: NodeType.ContractWrite,
-      customCode: NodeType.CustomCode,
-      ethTransfer: NodeType.ETHTransfer,
-      graphqlQuery: NodeType.GraphQLQuery,
-      branch: NodeType.Branch,
-      filter: NodeType.Filter,
-      loop: NodeType.Loop,
-    };
-
-    return typeMap[nodeType] || null;
-  }
-
-  private createNodeData(
-    nodeType: string,
-    config: Record<string, any>
-  ): NodeData {
-    switch (nodeType) {
-      case "blockTrigger":
-        return {
-          config: {
-            lang: 0, // JavaScript
-            source:
-              "return { blockNumber: Math.floor(Math.random() * 10000000) };", // Simulate block trigger
-          },
-        };
-      case "restApi":
-        return {
-          config: {
-            url: config.url || "",
-            method: config.method || "GET",
-            body: config.body || "",
-            headersMap: Object.entries(config.headers || {}),
-          },
-        };
-      case "contractRead":
-        return {
-          config: {
-            contractAddress: config.contractAddress || "",
-            callData: config.callData || "",
-            contractAbi: config.contractAbi || "",
-          },
-        };
-      case "customCode":
-        return {
-          config: {
-            lang: config.lang || 0, // JavaScript
-            source:
-              config.source ||
-              'return { message: "Node executed successfully" };',
-          },
-        };
-      case "loop":
-        return {
-          config: {
-            sourceId: config.sourceId || "",
-            iterVal: config.iterVal || "",
-            iterKey: config.iterKey || "",
-          },
-        };
-      case "branch":
-        return {
-          config: {
-            conditionsList: config.conditions || [],
-          },
-        };
-      case "filter":
-        return {
-          config: {
-            expression: config.expression || "",
-            sourceId: config.sourceId || config.input || "",
-          },
-        };
-      default:
-        throw new Error(`Unsupported node type: ${nodeType}`);
-    }
-  }
-
-  private createTempWorkflowForNode(
-    node: Node,
-    triggerId: string,
-    inputVariables: Record<string, any>
-  ): Workflow {
-    // For customCode nodes, we need to modify the source to include the input variables
-    if (
-      node.type === NodeType.CustomCode &&
-      inputVariables &&
-      Object.keys(inputVariables).length > 0
-    ) {
-      const customCodeData = node.data as avs_pb.CustomCodeNode.AsObject;
-      if (customCodeData.config) {
-        // Create a wrapper that defines the variables before executing the original code
-        const variableDefinitions = Object.entries(inputVariables)
-          .map(([key, value]) => {
-            const valueStr =
-              typeof value === "string" ? `"${value}"` : JSON.stringify(value);
-            return `const ${key} = ${valueStr};`;
-          })
-          .join("\n");
-
-        customCodeData.config.source = `${variableDefinitions}\n${customCodeData.config.source}`;
+      // Set trigger configuration
+      const triggerConfigMap = request.getTriggerConfigMap();
+      for (const [key, value] of Object.entries(triggerConfig)) {
+        triggerConfigMap.set(key, this.convertJSValueToProtobuf(value));
       }
+
+      // Send the request directly to the server
+      const result = await this.sendGrpcRequest<
+        avs_pb.RunTriggerResp,
+        avs_pb.RunTriggerReq
+      >("runTrigger", request, options);
+
+      let data: Record<string, any> | undefined;
+
+      // Handle trigger-specific output types
+      const outputCase = result.getOutputDataCase();
+      if (
+        outputCase !==
+        avs_pb.RunTriggerResp.OutputDataCase.OUTPUT_DATA_NOT_SET
+      ) {
+        switch (outputCase) {
+          case avs_pb.RunTriggerResp.OutputDataCase.BLOCK_TRIGGER:
+            data = result.getBlockTrigger()?.toObject();
+            break;
+          case avs_pb.RunTriggerResp.OutputDataCase.FIXED_TIME_TRIGGER:
+            data = result.getFixedTimeTrigger()?.toObject();
+            break;
+          case avs_pb.RunTriggerResp.OutputDataCase.CRON_TRIGGER:
+            data = result.getCronTrigger()?.toObject();
+            break;
+          case avs_pb.RunTriggerResp.OutputDataCase.EVENT_TRIGGER:
+            data = result.getEventTrigger()?.toObject();
+            break;
+        }
+      }
+
+      return {
+        success: result.getSuccess(),
+        data,
+        error: result.getError(),
+        triggerId: result.getTriggerId(),
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message || "An error occurred",
+      };
     }
-
-    // Create a manual trigger and store input variables in its data property
-    const trigger = TriggerFactory.create({
-      id: triggerId,
-      name: "manual_trigger",
-      type: TriggerType.Manual,
-      data: inputVariables, // Store input variables in the trigger data
-    });
-
-    return new Workflow({
-      smartWalletAddress: "",
-      trigger: trigger,
-      nodes: [node],
-      edges: [
-        new Edge({
-          id: `edge_${Date.now()}`,
-          source: triggerId,
-          target: node.id,
-        }),
-      ],
-      startAt: Date.now(),
-      expiredAt: Date.now() + 3600000, // 1 hour from now
-      maxExecution: 1,
-    });
-  }
-
-  private extractNodeExecutionData(execution: any): Record<string, any> {
-    return {
-      executionId: execution.executionId,
-      status: execution.status,
-    };
   }
 }
 
@@ -1233,4 +1124,6 @@ export type {
   OutputDataProps,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
+  RunTriggerRequest,
+  RunTriggerResponse,
 };
