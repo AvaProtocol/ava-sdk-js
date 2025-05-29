@@ -28,7 +28,7 @@ import type {
   SecretOptions,
 } from "@avaprotocol/types";
 
-import { NodeType, TriggerType, TriggerTypeConverter, ProtobufNodeTypeUtils } from "@avaprotocol/types";
+import { NodeType, TriggerType, TriggerTypeConverter, NodeTypeGoConverter } from "@avaprotocol/types";
 
 import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
@@ -965,7 +965,7 @@ class Client extends BaseClient {
           break;
         // Regular node types
         default:
-          protobufNodeType = ProtobufNodeTypeUtils.fromGoString(nodeType);
+          protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
           break;
       }
       

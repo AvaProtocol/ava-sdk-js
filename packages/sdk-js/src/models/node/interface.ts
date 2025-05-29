@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ProtobufNodeTypeUtils } from "@avaprotocol/types";
+import { NodeType, NodeTypeGoConverter, NodeTypeConverter } from "@avaprotocol/types";
 import _ from "lodash";
 
 // Function to convert TaskStatus to string
@@ -72,14 +72,14 @@ export type ProtobufNodeProps = Omit<
 export const ProtobufNodePropsUtils = {
   // Get the Go backend string representation of the node type
   getGoStringType: (props: ProtobufNodeProps): string => {
-    return ProtobufNodeTypeUtils.toGoString(props.type);
+    return NodeTypeGoConverter.toGoString(props.type);
   },
   
   // Create ProtobufNodeProps from Go string type
   fromGoStringType: (goStringType: string, baseProps: Omit<ProtobufNodeProps, 'type'>): ProtobufNodeProps => {
     return {
       ...baseProps,
-      type: ProtobufNodeTypeUtils.fromGoString(goStringType)
+      type: NodeTypeGoConverter.fromGoString(goStringType)
     };
   }
 };
