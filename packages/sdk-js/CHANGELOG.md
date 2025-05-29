@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.5
+
+### Patch Changes
+
+- bda8a74: Unified the node type conversion code and values by updating protobuf
+- Updated dependencies [bda8a74]
+  - @avaprotocol/types@1.0.5
+
 ## 1.6.4
 
 ### Patch Changes

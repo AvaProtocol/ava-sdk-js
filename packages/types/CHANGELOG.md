@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.5
+
+### Patch Changes
+
+- bda8a74: Unified the node type conversion code and values by updating protobuf
+
 ## 1.0.4
 
 ### Patch Changes
