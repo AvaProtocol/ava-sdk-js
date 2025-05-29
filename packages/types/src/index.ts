@@ -378,5 +378,17 @@ export interface RunNodeWithInputsResponse {
   nodeId?: string;
 }
 
+export interface RunTriggerRequest {
+  triggerType: string;
+  triggerConfig: Record<string, any>;
+}
+
+export interface RunTriggerResponse {
+  success: boolean;
+  data?: Record<string, any>;
+  error?: string;
+  triggerId?: string;
+}
+
 // Re-export protobuf enums for direct use
 export { NodeType as ProtobufNodeType, TriggerType as ProtobufTriggerType } from "@/grpc_codegen/avs_pb";
