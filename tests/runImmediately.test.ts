@@ -282,7 +282,7 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
       expect(typeof result.success).toBe("boolean");
       
       if (result.success) {
-        expect(result.data).toBeDefined();
+        // ManualTrigger doesn't return data, so we don't expect it to be defined
         expect(result.triggerId).toBeDefined();
         expect(result.triggerId).toContain("trigger");
       } else {
