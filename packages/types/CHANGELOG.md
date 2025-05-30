@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.6
+
+### Patch Changes
+
+- 491ae98: Added runTrigger method and refactored enums
+
 ## 1.0.5
 
 ### Patch Changes

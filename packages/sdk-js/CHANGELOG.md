@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.6
+
+### Patch Changes
+
+- 491ae98: Added runTrigger method and refactored enums
+- Updated dependencies [491ae98]
+  - @avaprotocol/types@1.0.6
+
 ## 1.6.5
 
 ### Patch Changes
