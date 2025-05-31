@@ -39,6 +39,11 @@ class FilterNode extends Node {
     request.setFilter(nodeData);
     return request;
   }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const filterOutput = outputData.getFilter();
+    return filterOutput?.toObject() || null;
+  }
 }
 
 export default FilterNode;

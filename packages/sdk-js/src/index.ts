@@ -41,6 +41,9 @@ import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
 
+// Import the consolidated conversion utilities
+import { convertProtobufValueToJs, convertJSValueToProtobuf } from "./utils";
+
 class BaseClient {
   readonly endpoint: string;
 
@@ -188,134 +191,38 @@ class BaseClient {
   }
 
   /**
-   * Send a gRPC request with an auth key
-   * @param method - The method name
-   * @param request - The request message
-   * @param options - The request options
-   * @returns {Promise<TResponse>} - The response from the gRPC call
+   * Send a gRPC request with authentication and error handling
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
    */
   protected sendGrpcRequest<TResponse, TRequest>(
     method: string,
     request: TRequest | any,
     options?: RequestOptions
   ): Promise<TResponse> {
-    // Clone the existing metadata from the client
-    const metadata = _.cloneDeep(this.metadata);
-
-    if (options?.authKey) {
-      metadata.set(AUTH_KEY_HEADER, options.authKey);
-    } else if (this.authKey) {
-      metadata.set(AUTH_KEY_HEADER, this.authKey);
-    }
-
     return new Promise((resolve, reject) => {
-      (this.rpcClient as any)[method].bind(this.rpcClient)(
-        request as any,
+      const metadata = new Metadata();
+
+      // Set auth header if available (priority: options > instance variable)
+      const authKey = options?.authKey || this.authKey;
+      if (authKey) {
+        metadata.set(AUTH_KEY_HEADER, authKey);
+      }
+
+      (this.rpcClient as any)[method](
+        request,
         metadata,
         (error: any, response: TResponse) => {
-          if (error) reject(error);
-          else resolve(response);
+          if (error) {
+            reject(error);
+          } else {
+            resolve(response);
+          }
         }
       );
     });
-  }
-
-  /**
-   * Convert a protobuf Value to a JavaScript value
-   * @param value - The protobuf Value object
-   * @returns {any} - The converted JavaScript value
-   */
-  protected convertProtobufValueToJS(value: any): any {
-    if (!value) return null;
-
-    // Handle different value types based on protobuf Value structure
-    if (value.hasNullValue && value.hasNullValue()) {
-      return null;
-    }
-    if (value.hasNumberValue && value.hasNumberValue()) {
-      return value.getNumberValue();
-    }
-    if (value.hasStringValue && value.hasStringValue()) {
-      return value.getStringValue();
-    }
-    if (value.hasBoolValue && value.hasBoolValue()) {
-      return value.getBoolValue();
-    }
-    if (value.hasStructValue && value.hasStructValue()) {
-      const struct = value.getStructValue();
-      const result: any = {};
-      if (struct && struct.getFieldsMap) {
-        const fieldsMap = struct.getFieldsMap();
-        fieldsMap.forEach((fieldValue: any, key: string) => {
-          result[key] = this.convertProtobufValueToJS(fieldValue);
-        });
-      }
-      return result;
-    }
-    if (value.hasListValue && value.hasListValue()) {
-      const list = value.getListValue();
-      if (list && list.getValuesList) {
-        return list
-          .getValuesList()
-          .map((item: any) => this.convertProtobufValueToJS(item));
-      }
-      return [];
-    }
-
-    // Fallback: try to extract primitive values directly
-    if (typeof value.getNumberValue === "function") {
-      return value.getNumberValue();
-    }
-    if (typeof value.getStringValue === "function") {
-      return value.getStringValue();
-    }
-    if (typeof value.getBoolValue === "function") {
-      return value.getBoolValue();
-    }
-
-    // If all else fails, return the raw value
-    return value;
-  }
-
-  /**
-   * Convert a JavaScript value to a protobuf Value
-   * @param value - The JavaScript value to convert
-   * @returns {any} - The protobuf Value object
-   */
-  protected convertJSValueToProtobuf(value: any): any {
-    const protobufValue =
-      new (require("google-protobuf/google/protobuf/struct_pb").Value)();
-
-    if (value === null || value === undefined) {
-      protobufValue.setNullValue(0); // NULL_VALUE = 0
-    } else if (typeof value === "number") {
-      protobufValue.setNumberValue(value);
-    } else if (typeof value === "string") {
-      protobufValue.setStringValue(value);
-    } else if (typeof value === "boolean") {
-      protobufValue.setBoolValue(value);
-    } else if (Array.isArray(value)) {
-      const listValue =
-        new (require("google-protobuf/google/protobuf/struct_pb").ListValue)();
-      const convertedValues = value.map((item) =>
-        this.convertJSValueToProtobuf(item)
-      );
-      listValue.setValuesList(convertedValues);
-      protobufValue.setListValue(listValue);
-    } else if (typeof value === "object") {
-      const structValue =
-        new (require("google-protobuf/google/protobuf/struct_pb").Struct)();
-      const fieldsMap = structValue.getFieldsMap();
-      Object.entries(value).forEach(([key, val]) => {
-        fieldsMap.set(key, this.convertJSValueToProtobuf(val));
-      });
-      protobufValue.setStructValue(structValue);
-    } else {
-      // Fallback: convert to string
-      protobufValue.setStringValue(String(value));
-    }
-
-    return protobufValue;
   }
 }
 
@@ -898,10 +805,7 @@ class Client extends BaseClient {
    * @param {string} [options.authKey] - The auth key for the request
    * @returns {Promise<boolean>} - True if the secret was deleted successfully
    */
-  async deleteSecret(
-    name: string,
-    options?: SecretOptions
-  ): Promise<boolean> {
+  async deleteSecret(name: string, options?: SecretOptions): Promise<boolean> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
 
@@ -934,99 +838,53 @@ class Client extends BaseClient {
     { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
-    try {
-      // Reject trigger types - they should use the runTrigger method instead
-      const triggerTypes = [
-        TriggerType.Block,
-        TriggerType.FixedTime,
-        TriggerType.Cron,
-        TriggerType.Event,
-        TriggerType.Manual
-      ];
-      if (triggerTypes.includes(nodeType as TriggerType)) {
-        return {
-          success: false,
-          error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
-          nodeId: "",
-        };
-      }
-
-      // Create the request
-      const request = new avs_pb.RunNodeWithInputsReq();
-      
-      // Convert string nodeType to protobuf enum for regular nodes
-      const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
-      request.setNodeType(protobufNodeType);
-
-      const nodeConfigMap = request.getNodeConfigMap();
-      for (const [key, value] of Object.entries(nodeConfig)) {
-        nodeConfigMap.set(key, this.convertJSValueToProtobuf(value));
-      }
-
-      if (inputVariables && Object.keys(inputVariables).length > 0) {
-        const inputVarsMap = request.getInputVariablesMap();
-        for (const [key, value] of Object.entries(inputVariables)) {
-          inputVarsMap.set(key, this.convertJSValueToProtobuf(value));
-        }
-      }
-
-      // Send the request directly to the server
-      const result = await this.sendGrpcRequest<
-        avs_pb.RunNodeWithInputsResp,
-        avs_pb.RunNodeWithInputsReq
-      >("runNodeWithInputs", request, options);
-
-      let data: Record<string, any> | undefined;
-
-      const outputCase = result.getOutputDataCase();
-      if (
-        outputCase !==
-        avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET
-      ) {
-        switch (outputCase) {
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
-            data = result.getEthTransfer()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.GRAPHQL:
-            data = result.getGraphql()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_READ:
-            data = result.getContractRead()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_WRITE:
-            data = result.getContractWrite()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.CUSTOM_CODE:
-            data = result.getCustomCode()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.REST_API:
-            data = result.getRestApi()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.BRANCH:
-            data = result.getBranch()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.FILTER:
-            data = result.getFilter()?.toObject();
-            break;
-          case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
-            data = result.getLoop()?.toObject();
-            break;
-          // Trigger cases removed - use runTrigger() method instead
-        }
-      }
-
-      return {
-        success: result.getSuccess(),
-        data,
-        error: result.getError(),
-        nodeId: result.getNodeId(),
-      };
-    } catch (error: any) {
+    // Reject trigger types - they should use the runTrigger method instead
+    const triggerTypes = [
+      TriggerType.Block,
+      TriggerType.FixedTime,
+      TriggerType.Cron,
+      TriggerType.Event,
+      TriggerType.Manual,
+    ];
+    if (triggerTypes.includes(nodeType as TriggerType)) {
       return {
         success: false,
-        error: error.message || "An error occurred",
+        error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
+        nodeId: "",
       };
     }
+
+    // Create the request
+    const request = new avs_pb.RunNodeWithInputsReq();
+
+    // Convert string nodeType to protobuf enum for regular nodes
+    const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
+    request.setNodeType(protobufNodeType);
+
+    const nodeConfigMap = request.getNodeConfigMap();
+    for (const [key, value] of Object.entries(nodeConfig)) {
+      nodeConfigMap.set(key, convertJSValueToProtobuf(value));
+    }
+
+    if (inputVariables && Object.keys(inputVariables).length > 0) {
+      const inputVarsMap = request.getInputVariablesMap();
+      for (const [key, value] of Object.entries(inputVariables)) {
+        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+      }
+    }
+
+    // Send the request directly to the server
+    const result = await this.sendGrpcRequest<
+      avs_pb.RunNodeWithInputsResp,
+      avs_pb.RunNodeWithInputsReq
+    >("runNodeWithInputs", request, options);
+
+    return {
+      success: result.getSuccess(),
+      data: NodeFactory.fromOutputData(result),
+      error: result.getError(),
+      nodeId: result.getNodeId(),
+    };
   }
 
   /**
@@ -1041,62 +899,32 @@ class Client extends BaseClient {
     { triggerType, triggerConfig }: RunTriggerRequest,
     options?: RequestOptions
   ): Promise<RunTriggerResponse> {
-    try {
-      // Create the request
-      const request = new avs_pb.RunTriggerReq();
-      
-      // Convert string triggerType to protobuf enum
-      const protobufTriggerType = TriggerTypeGoConverter.fromGoString(triggerType);
-      request.setTriggerType(protobufTriggerType);
+    // Create the request
+    const request = new avs_pb.RunTriggerReq();
 
-      // Set trigger configuration
-      const triggerConfigMap = request.getTriggerConfigMap();
-      for (const [key, value] of Object.entries(triggerConfig)) {
-        triggerConfigMap.set(key, this.convertJSValueToProtobuf(value));
-      }
+    // Convert string triggerType to protobuf enum
+    const protobufTriggerType =
+      TriggerTypeGoConverter.fromGoString(triggerType);
+    request.setTriggerType(protobufTriggerType);
 
-      // Send the request directly to the server
-      const result = await this.sendGrpcRequest<
-        avs_pb.RunTriggerResp,
-        avs_pb.RunTriggerReq
-      >("runTrigger", request, options);
-
-      let data: Record<string, any> | undefined;
-
-      // Handle trigger-specific output types
-      const outputCase = result.getOutputDataCase();
-      if (
-        outputCase !==
-        avs_pb.RunTriggerResp.OutputDataCase.OUTPUT_DATA_NOT_SET
-      ) {
-        switch (outputCase) {
-          case avs_pb.RunTriggerResp.OutputDataCase.BLOCK_TRIGGER:
-            data = result.getBlockTrigger()?.toObject();
-            break;
-          case avs_pb.RunTriggerResp.OutputDataCase.FIXED_TIME_TRIGGER:
-            data = result.getFixedTimeTrigger()?.toObject();
-            break;
-          case avs_pb.RunTriggerResp.OutputDataCase.CRON_TRIGGER:
-            data = result.getCronTrigger()?.toObject();
-            break;
-          case avs_pb.RunTriggerResp.OutputDataCase.EVENT_TRIGGER:
-            data = result.getEventTrigger()?.toObject();
-            break;
-        }
-      }
-
-      return {
-        success: result.getSuccess(),
-        data,
-        error: result.getError(),
-        triggerId: result.getTriggerId(),
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || "An error occurred",
-      };
+    // Set trigger configuration
+    const triggerConfigMap = request.getTriggerConfigMap();
+    for (const [key, value] of Object.entries(triggerConfig)) {
+      triggerConfigMap.set(key, convertJSValueToProtobuf(value));
     }
+
+    // Send the request directly to the server
+    const result = await this.sendGrpcRequest<
+      avs_pb.RunTriggerResp,
+      avs_pb.RunTriggerReq
+    >("runTrigger", request, options);
+
+    return {
+      success: result.getSuccess(),
+      data: TriggerFactory.fromOutputData(result),
+      error: result.getError(),
+      triggerId: result.getTriggerId(),
+    };
   }
 }
 

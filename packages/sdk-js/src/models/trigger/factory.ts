@@ -52,6 +52,26 @@ class TriggerFactory {
         throw new Error("Unknown trigger type");
     }
   }
+
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    switch (outputData.getOutputDataCase()) {
+      case avs_pb.RunTriggerResp.OutputDataCase.BLOCK_TRIGGER:
+        return BlockTrigger.fromOutputData(outputData);
+      case avs_pb.RunTriggerResp.OutputDataCase.FIXED_TIME_TRIGGER:
+        return FixedTimeTrigger.fromOutputData(outputData);
+      case avs_pb.RunTriggerResp.OutputDataCase.CRON_TRIGGER:
+        return CronTrigger.fromOutputData(outputData);
+      case avs_pb.RunTriggerResp.OutputDataCase.EVENT_TRIGGER:
+        return EventTrigger.fromOutputData(outputData);
+      case avs_pb.RunTriggerResp.OutputDataCase.MANUAL_TRIGGER:
+        return ManualTrigger.fromOutputData(outputData);
+      case avs_pb.RunTriggerResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
+      default:
+        throw new Error(
+          `Unsupported output data case: ${outputData.getOutputDataCase()}`
+        );
+    }
+  }
 }
 
 export default TriggerFactory;

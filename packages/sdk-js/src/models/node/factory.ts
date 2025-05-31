@@ -90,6 +90,32 @@ class NodeFactory {
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
   }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    switch (outputData.getOutputDataCase()) {
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.REST_API:
+        return RestAPINode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.CUSTOM_CODE:
+        return CustomCodeNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_READ:
+        return ContractReadNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_WRITE:
+        return ContractWriteNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
+        return ETHTransferNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.GRAPHQL:
+        return GraphQLQueryNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.BRANCH:
+        return BranchNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.FILTER:
+        return FilterNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
+        return LoopNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
+      default:
+        throw new Error(`Unsupported output data case: ${outputData.getOutputDataCase()}`);
+    }
+  }
 }
 
 export default NodeFactory;

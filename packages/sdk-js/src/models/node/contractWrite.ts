@@ -41,6 +41,11 @@ class ContractWriteNode extends Node {
 
     return request;
   }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const contractWriteOutput = outputData.getContractWrite();
+    return contractWriteOutput?.toObject() || null;
+  }
 }
 
 export default ContractWriteNode;

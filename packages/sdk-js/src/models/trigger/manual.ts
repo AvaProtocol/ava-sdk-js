@@ -1,6 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerProps } from "./interface";
-import { TriggerType } from "@avaprotocol/types";
+import { TriggerType, ManualTriggerOutput } from "@avaprotocol/types";
 
 export type ManualTriggerProps = TriggerProps & { 
   data?: Record<string, any> | null 
@@ -33,6 +33,25 @@ class ManualTrigger extends Trigger {
   
   getInputVariables(): Record<string, any> | null {
     return this.data as Record<string, any> | null;
+  }
+
+  /**
+   * Convert raw data from runTrigger response to ManualOutput format
+   * @param rawData - The raw data from the gRPC response
+   * @returns {ManualTriggerOutput | undefined} - The converted data
+   */
+  getOutput(): ManualTriggerOutput | undefined {
+    return this.output as ManualTriggerOutput;
+  }
+
+  /**
+   * Extract output data from RunTriggerResp for manual triggers
+   * @param outputData - The RunTriggerResp containing manual trigger output
+   * @returns Plain JavaScript object with manual trigger data
+   */
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    const manualOutput = outputData.getManualTrigger();
+    return manualOutput?.toObject() || null;
   }
 }
 

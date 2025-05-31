@@ -2,6 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, CustomCodeNodeData, CustomCodeLangs } from "@avaprotocol/types";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
 export type CustomCodeNodeProps = NodeProps & {
@@ -39,6 +40,15 @@ class CustomCodeNode extends Node {
     request.setCustomCode(nodeData);
 
     return request;
+  }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const customCodeOutput = outputData.getCustomCode();
+    if (customCodeOutput?.getData()) {
+      // Use the modern protobuf conversion function
+      return convertProtobufValueToJs(customCodeOutput.getData());
+    }
+    return null;
   }
 }
 

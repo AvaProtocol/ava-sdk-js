@@ -1,4 +1,4 @@
-import { describe, beforeAll, test, expect } from "@jest/globals";
+import { describe, beforeAll, afterAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
 import {
@@ -8,6 +8,7 @@ import {
   SaltGlobal,
 } from "./utils";
 import { getConfig } from "./envalid";
+import { createServer, Server } from "http";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -15,11 +16,105 @@ const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 let saltIndex = SaltGlobal.CreateWorkflow * 3000; // Salt index 30,000 - 30,999 to avoid conflicts
 
+// Mock Telegram API Server
+let mockTelegramServer: Server;
+const MOCK_SERVER_PORT = 8899;
+const MOCK_SERVER_URL = `http://localhost:${MOCK_SERVER_PORT}`;
+
+const setupMockTelegramServer = (): Promise<void> => {
+  return new Promise((resolve) => {
+    mockTelegramServer = createServer((req, res) => {
+      // Set CORS headers
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+
+      console.log(`Mock server received: ${req.method} ${req.url}`);
+
+      // Mock Telegram Bot API response
+      if (req.url?.includes('/sendMessage')) {
+        const telegramResponse = {
+          "ok": true,
+          "result": {
+            "message_id": 492,
+            "from": {
+              "id": 7771086042,
+              "is_bot": true,
+              "first_name": "AvaProtocolBotDev",
+              "username": "AvaProtocolDevBot"
+            },
+            "chat": {
+              "id": 452247333,
+              "first_name": "Chris | Ava Protocol",
+              "username": "kezjo",
+              "type": "private"
+            },
+            "date": 1748665041,
+            "text": "Hello from script"
+          }
+        };
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(telegramResponse));
+      } else if (req.url?.includes('/getMe')) {
+        // Mock bot info endpoint
+        const botInfoResponse = {
+          "ok": true,
+          "result": {
+            "id": 7771086042,
+            "is_bot": true,
+            "first_name": "AvaProtocolBotDev",
+            "username": "AvaProtocolDevBot",
+            "can_join_groups": true,
+            "can_read_all_group_messages": false,
+            "supports_inline_queries": false
+          }
+        };
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(botInfoResponse));
+      } else {
+        // Default response for other endpoints
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ "ok": false, "error_code": 404, "description": "Not Found" }));
+      }
+    });
+
+    mockTelegramServer.listen(MOCK_SERVER_PORT, () => {
+      console.log(`Mock Telegram server running on port ${MOCK_SERVER_PORT}`);
+      resolve();
+    });
+  });
+};
+
+const teardownMockTelegramServer = (): Promise<void> => {
+  return new Promise((resolve) => {
+    if (mockTelegramServer) {
+      mockTelegramServer.close(() => {
+        console.log('Mock Telegram server closed');
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
+};
+
 describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
   let eoaAddress: string;
   let client: Client;
 
   beforeAll(async () => {
+    // Setup mock server
+    await setupMockTelegramServer();
+
     eoaAddress = await getAddress(walletPrivateKey);
     client = new Client({
       endpoint: avsEndpoint,
@@ -34,6 +129,10 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
     });
 
     client.setAuthKey(res.authKey);
+  });
+
+  afterAll(async () => {
+    await teardownMockTelegramServer();
   });
 
   describe("runNodeWithInputs Tests", () => {
@@ -57,6 +156,118 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
       expect(typeof result.success).toBe("boolean");
       if (!result.success) {
         expect(result.error).toBeDefined();
+      }
+    });
+
+    test("should execute a RestAPI node with Telegram Bot API and verify clean JavaScript response", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: `${MOCK_SERVER_URL}/bot123456789:ABCDEF1234567890abcdef1234567890abcdef12/sendMessage`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chat_id: "452247333",
+            text: "Hello from script"
+          }),
+        },
+        inputVariables: {},
+      });
+
+      console.log("RestAPI Telegram test result:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+
+      if (result.success) {
+        expect(result.data).toBeDefined();
+        expect(result.nodeId).toBeDefined();
+
+        // Verify we get clean JavaScript objects, not protobuf wrappers
+        expect(result.data).not.toHaveProperty('typeUrl');
+        expect(result.data).not.toHaveProperty('value');
+        
+        // Verify the response structure matches Telegram API
+        if (typeof result.data === 'object' && result.data !== null) {
+          const data = result.data as any;
+          
+          // Check for Telegram API response structure
+          expect(data).toHaveProperty('ok');
+          expect(data.ok).toBe(true);
+          
+          if (data.result) {
+            expect(data.result).toHaveProperty('message_id');
+            expect(data.result.message_id).toBe(492);
+            
+            expect(data.result).toHaveProperty('from');
+            expect(data.result.from).toHaveProperty('id');
+            expect(data.result.from.id).toBe(7771086042);
+            expect(data.result.from.is_bot).toBe(true);
+            expect(data.result.from.first_name).toBe("AvaProtocolBotDev");
+            expect(data.result.from.username).toBe("AvaProtocolDevBot");
+            
+            expect(data.result).toHaveProperty('chat');
+            expect(data.result.chat.id).toBe(452247333);
+            expect(data.result.chat.first_name).toBe("Chris | Ava Protocol");
+            expect(data.result.chat.username).toBe("kezjo");
+            expect(data.result.chat.type).toBe("private");
+            
+            expect(data.result).toHaveProperty('date');
+            expect(data.result.date).toBe(1748665041);
+            expect(data.result.text).toBe("Hello from script");
+          }
+        }
+      } else {
+        expect(result.error).toBeDefined();
+        console.log("RestAPI Telegram test failed:", result.error);
+      }
+    });
+
+    test("should execute a RestAPI node with mock Telegram Bot getMe endpoint", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: `${MOCK_SERVER_URL}/bot123456789:ABCDEF1234567890abcdef1234567890abcdef12/getMe`,
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        inputVariables: {},
+      });
+
+      console.log("RestAPI getMe test result:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+
+      if (result.success) {
+        expect(result.data).toBeDefined();
+        expect(result.nodeId).toBeDefined();
+
+        // Verify clean JavaScript objects (no protobuf wrappers)
+        expect(result.data).not.toHaveProperty('typeUrl');
+        expect(result.data).not.toHaveProperty('value');
+
+        if (typeof result.data === 'object' && result.data !== null) {
+          const data = result.data as any;
+          
+          expect(data.ok).toBe(true);
+          if (data.result) {
+            expect(data.result.id).toBe(7771086042);
+            expect(data.result.is_bot).toBe(true);
+            expect(data.result.first_name).toBe("AvaProtocolBotDev");
+            expect(data.result.username).toBe("AvaProtocolDevBot");
+            expect(data.result.can_join_groups).toBe(true);
+            expect(data.result.can_read_all_group_messages).toBe(false);
+            expect(data.result.supports_inline_queries).toBe(false);
+          }
+        }
+      } else {
+        expect(result.error).toBeDefined();
+        console.log("RestAPI getMe test failed:", result.error);
       }
     });
 

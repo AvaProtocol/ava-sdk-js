@@ -2,8 +2,9 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ContractReadNodeData } from "@avaprotocol/types";
+import { convertProtobufValueToJs } from "../../utils";
 
-// Required props for constructor: id, name, type and data: { contractAddress, callData, contractAbi }
+// Required props for constructor: id, name, type and data
 export type ContractReadNodeProps = NodeProps & {
   data: ContractReadNodeData;
 };
@@ -35,11 +36,23 @@ class ContractReadNode extends Node {
     config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
     config.setCallData((this.data as ContractReadNodeData).callData);
     config.setContractAbi((this.data as ContractReadNodeData).contractAbi);
+    
     nodeData.setConfig(config);
 
     request.setContractRead(nodeData);
 
     return request;
+  }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const contractReadOutput = outputData.getContractRead();
+    if (contractReadOutput && contractReadOutput.getDataList()) {
+      const dataList = contractReadOutput.getDataList();
+      return {
+        dataList: dataList.map((value: any) => convertProtobufValueToJs(value))
+      };
+    }
+    return null;
   }
 }
 

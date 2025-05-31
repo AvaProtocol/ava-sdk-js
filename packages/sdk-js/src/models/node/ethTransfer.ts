@@ -40,6 +40,11 @@ class ETHTransferNode extends Node {
 
     return request;
   }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const ethTransferOutput = outputData.getEthTransfer();
+    return ethTransferOutput?.toObject() || null;
+  }
 }
 
 export default ETHTransferNode;

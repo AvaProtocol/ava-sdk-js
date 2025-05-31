@@ -140,6 +140,11 @@ class LoopNode extends Node {
     node.setLoop(loopNode);
     return node;
   }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const loopOutput = outputData.getLoop();
+    return loopOutput?.toObject() || null;
+  }
 }
 
 export default LoopNode;
