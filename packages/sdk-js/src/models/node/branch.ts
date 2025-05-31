@@ -54,6 +54,11 @@ class BranchNode extends Node {
     return request;
   }
 
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const branchOutput = outputData.getBranch();
+    return branchOutput?.toObject() || null;
+  }
+
   // TODO: do we need a getConditionId() to avoid exporting BranchNodeData?
 }
 export default BranchNode;

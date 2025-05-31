@@ -53,12 +53,22 @@ class CronTrigger extends Trigger {
   }
 
   /**
-   * Convert raw data from runNodeWithInputs response to CronOutput format
+   * Convert raw data from runTrigger response to CronOutput format
    * @param rawData - The raw data from the gRPC response
    * @returns {CronTriggerOutput | undefined} - The converted data
    */
   getOutput(): CronTriggerOutput | undefined {
     return this.output as CronTriggerOutput;
+  }
+
+  /**
+   * Extract output data from RunTriggerResp for cron triggers
+   * @param outputData - The RunTriggerResp containing cron trigger output
+   * @returns Plain JavaScript object with cron trigger data
+   */
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    const cronOutput = outputData.getCronTrigger();
+    return cronOutput?.toObject() || null;
   }
 }
 

@@ -104,12 +104,22 @@ class EventTrigger extends Trigger {
   }
 
   /**
-   * Convert raw data from runNodeWithInputs response to EventOutput format
+   * Convert raw data from runTrigger response to EventOutput format
    * @param rawData - The raw data from the gRPC response
    * @returns {EventTriggerOutput | undefined} - The converted data
    */
   getOutput(): EventTriggerOutput | undefined {
     return this.output as EventTriggerOutput;
+  }
+
+  /**
+   * Extract output data from RunTriggerResp for event triggers
+   * @param outputData - The RunTriggerResp containing event trigger output
+   * @returns Plain JavaScript object with event trigger data
+   */
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    const eventOutput = outputData.getEventTrigger();
+    return eventOutput?.toObject() || null;
   }
 }
 

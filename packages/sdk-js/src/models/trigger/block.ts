@@ -60,6 +60,16 @@ class BlockTrigger extends Trigger {
   getOutput(): BlockTriggerOutput | undefined {
     return this.output as BlockTriggerOutput;
   }
+
+  /**
+   * Extract output data from RunTriggerResp for block triggers
+   * @param outputData - The RunTriggerResp containing block trigger output
+   * @returns Plain JavaScript object with block trigger data
+   */
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    const blockOutput = outputData.getBlockTrigger();
+    return blockOutput?.toObject() || null;
+  }
 }
 
 export default BlockTrigger;

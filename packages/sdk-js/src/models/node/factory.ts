@@ -33,6 +33,7 @@ import {
   FilterNodeData,
   LoopNodeData
 } from "@avaprotocol/types";
+import { convertProtobufValueToJs } from "../../utils";
 
 class NodeFactory {
   static create(props: NodeProps): Node {
@@ -89,6 +90,64 @@ class NodeFactory {
       default:
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
+  }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    // Generic approach: try to extract data from any output type using getData() method
+    // This works for all node types that follow the pattern of having a getData() method
+    
+    let nodeOutput: any = null;
+    let rawData: any = null;
+    
+    // Get the specific node output based on the case
+    switch (outputData.getOutputDataCase()) {
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.REST_API:
+        nodeOutput = outputData.getRestApi();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.CUSTOM_CODE:
+        nodeOutput = outputData.getCustomCode();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_READ:
+        nodeOutput = outputData.getContractRead();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_WRITE:
+        nodeOutput = outputData.getContractWrite();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
+        nodeOutput = outputData.getEthTransfer();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.GRAPHQL:
+        nodeOutput = outputData.getGraphql();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.BRANCH:
+        nodeOutput = outputData.getBranch();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.FILTER:
+        nodeOutput = outputData.getFilter();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
+        nodeOutput = outputData.getLoop();
+        break;
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
+      default:
+        throw new Error(`Unsupported output data case: ${outputData.getOutputDataCase()}`);
+    }
+    
+    if (!nodeOutput) {
+      return null;
+    }
+    
+    // Try to get data using getData() method (works for most node types)
+    if (typeof nodeOutput.getData === 'function') {
+      rawData = nodeOutput.getData();
+      if (rawData) {
+        return convertProtobufValueToJs(rawData);
+      }
+    }
+    
+    // For node types that don't have getData() or have special structures,
+    // fall back to toObject() for now (can be specialized later if needed)
+    return nodeOutput.toObject();
   }
 }
 

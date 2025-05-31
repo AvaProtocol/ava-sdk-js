@@ -55,12 +55,22 @@ class FixedTimeTrigger extends Trigger {
   }
 
   /**
-   * Convert raw data from runNodeWithInputs response to FixedTimeOutput format
+   * Convert raw data from runTrigger response to FixedTimeOutput format
    * @param rawData - The raw data from the gRPC response
    * @returns {FixedTimeTriggerOutput | undefined} - The converted data
    */
   getOutput(): FixedTimeTriggerOutput | undefined {
     return this.output as FixedTimeTriggerOutput;
+  }
+
+  /**
+   * Extract output data from RunTriggerResp for fixed time triggers
+   * @param outputData - The RunTriggerResp containing fixed time trigger output
+   * @returns Plain JavaScript object with fixed time trigger data
+   */
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    const fixedTimeOutput = outputData.getFixedTimeTrigger();
+    return fixedTimeOutput?.toObject() || null;
   }
 }
 

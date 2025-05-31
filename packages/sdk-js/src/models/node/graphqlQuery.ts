@@ -53,6 +53,11 @@ class GraphQLQueryNode extends Node {
 
     return request;
   }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    const graphqlOutput = outputData.getGraphql();
+    return graphqlOutput?.toObject() || null;
+  }
 }
 
 export default GraphQLQueryNode;

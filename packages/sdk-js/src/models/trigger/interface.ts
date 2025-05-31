@@ -14,6 +14,7 @@ export type TriggerOutput =
   | avs_pb.CronTrigger.Output.AsObject
   | avs_pb.BlockTrigger.Output.AsObject
   | avs_pb.EventTrigger.Output.AsObject
+  | avs_pb.ManualTrigger.Output.AsObject
   | null;
 
 export type TriggerProps = Omit<

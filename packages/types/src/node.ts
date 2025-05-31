@@ -31,3 +31,4 @@ export type BlockTriggerOutput = avs_pb.BlockTrigger.Output.AsObject;
 export type EventTriggerOutput = avs_pb.EventTrigger.Output.AsObject;
 export type FixedTimeTriggerOutput = avs_pb.FixedTimeTrigger.Output.AsObject;
 export type CronTriggerOutput = avs_pb.CronTrigger.Output.AsObject; 
+export type ManualTriggerOutput = avs_pb.ManualTrigger.Output.AsObject; 
