@@ -67,7 +67,11 @@ class RestAPINode extends Node {
       return null;
     }
 
-    console.log("Debug RestAPI: fromOutputData", restApiOutput.toObject());
+    // Use convertProtobufValueToJs to get clean JavaScript objects
+    const rawData = restApiOutput.getData();
+    if (rawData) {
+      return convertProtobufValueToJs(rawData);
+    }
 
     return restApiOutput.toObject();
   }

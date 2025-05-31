@@ -6,6 +6,7 @@ import FixedTimeTrigger, { FixedTimeTriggerProps } from "./fixedTime";
 import ManualTrigger, { ManualTriggerProps } from "./manual";
 import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
+import { convertProtobufValueToJs } from "../../utils";
 
 class TriggerFactory {
   /**
@@ -54,23 +55,51 @@ class TriggerFactory {
   }
 
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    // Generic approach: try to extract data from any output type using getData() method
+    // This works for all trigger types that follow the pattern of having a getData() method
+    
+    let triggerOutput: any = null;
+    let rawData: any = null;
+    
+    // Get the specific trigger output based on the case
     switch (outputData.getOutputDataCase()) {
       case avs_pb.RunTriggerResp.OutputDataCase.BLOCK_TRIGGER:
-        return BlockTrigger.fromOutputData(outputData);
+        triggerOutput = outputData.getBlockTrigger();
+        break;
       case avs_pb.RunTriggerResp.OutputDataCase.FIXED_TIME_TRIGGER:
-        return FixedTimeTrigger.fromOutputData(outputData);
+        triggerOutput = outputData.getFixedTimeTrigger();
+        break;
       case avs_pb.RunTriggerResp.OutputDataCase.CRON_TRIGGER:
-        return CronTrigger.fromOutputData(outputData);
+        triggerOutput = outputData.getCronTrigger();
+        break;
       case avs_pb.RunTriggerResp.OutputDataCase.EVENT_TRIGGER:
-        return EventTrigger.fromOutputData(outputData);
+        triggerOutput = outputData.getEventTrigger();
+        break;
       case avs_pb.RunTriggerResp.OutputDataCase.MANUAL_TRIGGER:
-        return ManualTrigger.fromOutputData(outputData);
+        triggerOutput = outputData.getManualTrigger();
+        break;
       case avs_pb.RunTriggerResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
       default:
         throw new Error(
           `Unsupported output data case: ${outputData.getOutputDataCase()}`
         );
     }
+    
+    if (!triggerOutput) {
+      return null;
+    }
+    
+    // Try to get data using getData() method (works for most trigger types)
+    if (typeof triggerOutput.getData === 'function') {
+      rawData = triggerOutput.getData();
+      if (rawData) {
+        return convertProtobufValueToJs(rawData);
+      }
+    }
+    
+    // For trigger types that don't have getData() or have special structures,
+    // fall back to toObject() for now (can be specialized later if needed)
+    return triggerOutput.toObject();
   }
 }
 

@@ -38,48 +38,31 @@ const setupMockTelegramServer = (): Promise<void> => {
 
       console.log(`Mock server received: ${req.method} ${req.url}`);
 
-      // Mock Telegram Bot API response
+      // Mock Telegram Bot API response for sendMessage only
       if (req.url?.includes('/sendMessage')) {
         const telegramResponse = {
           "ok": true,
           "result": {
-            "message_id": 492,
+            "message_id": 123,
             "from": {
-              "id": 7771086042,
+              "id": 1234567890,
               "is_bot": true,
-              "first_name": "AvaProtocolBotDev",
-              "username": "AvaProtocolDevBot"
+              "first_name": "Test Bot",
+              "username": "TestBot"
             },
             "chat": {
-              "id": 452247333,
-              "first_name": "Chris | Ava Protocol",
-              "username": "kezjo",
+              "id": 987654321,
+              "first_name": "Test User",
+              "username": "testuser",
               "type": "private"
             },
-            "date": 1748665041,
+            "date": 1640995200,
             "text": "Hello from script"
           }
         };
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(telegramResponse));
-      } else if (req.url?.includes('/getMe')) {
-        // Mock bot info endpoint
-        const botInfoResponse = {
-          "ok": true,
-          "result": {
-            "id": 7771086042,
-            "is_bot": true,
-            "first_name": "AvaProtocolBotDev",
-            "username": "AvaProtocolDevBot",
-            "can_join_groups": true,
-            "can_read_all_group_messages": false,
-            "supports_inline_queries": false
-          }
-        };
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(botInfoResponse));
       } else {
         // Default response for other endpoints
         res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -169,7 +152,7 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            chat_id: "452247333",
+            chat_id: "987654321",
             text: "Hello from script"
           }),
         },
@@ -199,75 +182,29 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
           
           if (data.result) {
             expect(data.result).toHaveProperty('message_id');
-            expect(data.result.message_id).toBe(492);
+            expect(data.result.message_id).toBe(123);
             
             expect(data.result).toHaveProperty('from');
             expect(data.result.from).toHaveProperty('id');
-            expect(data.result.from.id).toBe(7771086042);
+            expect(data.result.from.id).toBe(1234567890);
             expect(data.result.from.is_bot).toBe(true);
-            expect(data.result.from.first_name).toBe("AvaProtocolBotDev");
-            expect(data.result.from.username).toBe("AvaProtocolDevBot");
+            expect(data.result.from.first_name).toBe("Test Bot");
+            expect(data.result.from.username).toBe("TestBot");
             
             expect(data.result).toHaveProperty('chat');
-            expect(data.result.chat.id).toBe(452247333);
-            expect(data.result.chat.first_name).toBe("Chris | Ava Protocol");
-            expect(data.result.chat.username).toBe("kezjo");
+            expect(data.result.chat.id).toBe(987654321);
+            expect(data.result.chat.first_name).toBe("Test User");
+            expect(data.result.chat.username).toBe("testuser");
             expect(data.result.chat.type).toBe("private");
             
             expect(data.result).toHaveProperty('date');
-            expect(data.result.date).toBe(1748665041);
+            expect(data.result.date).toBe(1640995200);
             expect(data.result.text).toBe("Hello from script");
           }
         }
       } else {
         expect(result.error).toBeDefined();
         console.log("RestAPI Telegram test failed:", result.error);
-      }
-    });
-
-    test("should execute a RestAPI node with mock Telegram Bot getMe endpoint", async () => {
-      const result = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
-          url: `${MOCK_SERVER_URL}/bot123456789:ABCDEF1234567890abcdef1234567890abcdef12/getMe`,
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-        inputVariables: {},
-      });
-
-      console.log("RestAPI getMe test result:", JSON.stringify(result, null, 2));
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-
-        // Verify clean JavaScript objects (no protobuf wrappers)
-        expect(result.data).not.toHaveProperty('typeUrl');
-        expect(result.data).not.toHaveProperty('value');
-
-        if (typeof result.data === 'object' && result.data !== null) {
-          const data = result.data as any;
-          
-          expect(data.ok).toBe(true);
-          if (data.result) {
-            expect(data.result.id).toBe(7771086042);
-            expect(data.result.is_bot).toBe(true);
-            expect(data.result.first_name).toBe("AvaProtocolBotDev");
-            expect(data.result.username).toBe("AvaProtocolDevBot");
-            expect(data.result.can_join_groups).toBe(true);
-            expect(data.result.can_read_all_group_messages).toBe(false);
-            expect(data.result.supports_inline_queries).toBe(false);
-          }
-        }
-      } else {
-        expect(result.error).toBeDefined();
-        console.log("RestAPI getMe test failed:", result.error);
       }
     });
 

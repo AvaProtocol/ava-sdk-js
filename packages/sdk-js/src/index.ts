@@ -209,7 +209,7 @@ class BaseClient {
       const authKey = options?.authKey || this.authKey;
       if (authKey) {
         metadata.set(AUTH_KEY_HEADER, authKey);
-      }
+    }
 
       (this.rpcClient as any)[method](
         request,
@@ -220,7 +220,7 @@ class BaseClient {
           } else {
             resolve(response);
           }
-        }
+      }
       );
     });
   }
@@ -847,44 +847,44 @@ class Client extends BaseClient {
       TriggerType.Manual,
     ];
     if (triggerTypes.includes(nodeType as TriggerType)) {
-      return {
-        success: false,
+        return {
+          success: false,
         error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
-        nodeId: "",
-      };
-    }
+          nodeId: "",
+        };
+      }
 
-    // Create the request
-    const request = new avs_pb.RunNodeWithInputsReq();
-
+      // Create the request
+      const request = new avs_pb.RunNodeWithInputsReq();
+      
     // Convert string nodeType to protobuf enum for regular nodes
     const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
-    request.setNodeType(protobufNodeType);
+      request.setNodeType(protobufNodeType);
 
-    const nodeConfigMap = request.getNodeConfigMap();
-    for (const [key, value] of Object.entries(nodeConfig)) {
+      const nodeConfigMap = request.getNodeConfigMap();
+      for (const [key, value] of Object.entries(nodeConfig)) {
       nodeConfigMap.set(key, convertJSValueToProtobuf(value));
-    }
-
-    if (inputVariables && Object.keys(inputVariables).length > 0) {
-      const inputVarsMap = request.getInputVariablesMap();
-      for (const [key, value] of Object.entries(inputVariables)) {
-        inputVarsMap.set(key, convertJSValueToProtobuf(value));
       }
-    }
 
-    // Send the request directly to the server
-    const result = await this.sendGrpcRequest<
-      avs_pb.RunNodeWithInputsResp,
-      avs_pb.RunNodeWithInputsReq
-    >("runNodeWithInputs", request, options);
+      if (inputVariables && Object.keys(inputVariables).length > 0) {
+        const inputVarsMap = request.getInputVariablesMap();
+        for (const [key, value] of Object.entries(inputVariables)) {
+        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+        }
+      }
 
-    return {
-      success: result.getSuccess(),
+      // Send the request directly to the server
+      const result = await this.sendGrpcRequest<
+        avs_pb.RunNodeWithInputsResp,
+        avs_pb.RunNodeWithInputsReq
+      >("runNodeWithInputs", request, options);
+
+      return {
+        success: result.getSuccess(),
       data: NodeFactory.fromOutputData(result),
-      error: result.getError(),
-      nodeId: result.getNodeId(),
-    };
+        error: result.getError(),
+        nodeId: result.getNodeId(),
+      };
   }
 
   /**
