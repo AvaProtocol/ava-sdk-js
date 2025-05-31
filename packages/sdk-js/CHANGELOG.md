@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.7
+
+### Patch Changes
+
+- ca68e9c: Updated output data to Value type for json and runTrigger logic
+- Updated dependencies [ca68e9c]
+  - @avaprotocol/types@1.0.7
+
 ## 1.6.6
 
 ### Patch Changes

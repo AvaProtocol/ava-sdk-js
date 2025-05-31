@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.7
+
+### Patch Changes
+
+- ca68e9c: Updated output data to Value type for json and runTrigger logic
+
 ## 1.0.6
 
 ### Patch Changes
