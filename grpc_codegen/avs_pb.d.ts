@@ -410,6 +410,68 @@ export namespace EventTrigger {
 
 }
 
+export class ManualTrigger extends jspb.Message { 
+
+    hasConfig(): boolean;
+    clearConfig(): void;
+    getConfig(): ManualTrigger.Config | undefined;
+    setConfig(value?: ManualTrigger.Config): ManualTrigger;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ManualTrigger.AsObject;
+    static toObject(includeInstance: boolean, msg: ManualTrigger): ManualTrigger.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ManualTrigger, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ManualTrigger;
+    static deserializeBinaryFromReader(message: ManualTrigger, reader: jspb.BinaryReader): ManualTrigger;
+}
+
+export namespace ManualTrigger {
+    export type AsObject = {
+        config?: ManualTrigger.Config.AsObject,
+    }
+
+
+    export class Config extends jspb.Message { 
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Config.AsObject;
+        static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Config, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Config;
+        static deserializeBinaryFromReader(message: Config, reader: jspb.BinaryReader): Config;
+    }
+
+    export namespace Config {
+        export type AsObject = {
+        }
+    }
+
+    export class Output extends jspb.Message { 
+        getRunAt(): number;
+        setRunAt(value: number): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            runAt: number,
+        }
+    }
+
+}
+
 export class TaskTrigger extends jspb.Message { 
     getName(): string;
     setName(value: string): TaskTrigger;
@@ -2707,6 +2769,11 @@ export class RunTriggerResp extends jspb.Message {
     getEventTrigger(): EventTrigger.Output | undefined;
     setEventTrigger(value?: EventTrigger.Output): RunTriggerResp;
 
+    hasManualTrigger(): boolean;
+    clearManualTrigger(): void;
+    getManualTrigger(): ManualTrigger.Output | undefined;
+    setManualTrigger(value?: ManualTrigger.Output): RunTriggerResp;
+
     getOutputDataCase(): RunTriggerResp.OutputDataCase;
 
     serializeBinary(): Uint8Array;
@@ -2728,6 +2795,7 @@ export namespace RunTriggerResp {
         fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
         cronTrigger?: CronTrigger.Output.AsObject,
         eventTrigger?: EventTrigger.Output.AsObject,
+        manualTrigger?: ManualTrigger.Output.AsObject,
     }
 
     export enum OutputDataCase {
@@ -2736,6 +2804,7 @@ export namespace RunTriggerResp {
         FIXED_TIME_TRIGGER = 11,
         CRON_TRIGGER = 12,
         EVENT_TRIGGER = 13,
+        MANUAL_TRIGGER = 14,
     }
 
 }
