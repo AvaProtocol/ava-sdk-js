@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.6.8
+
+### Patch Changes
+
+- 0bd6c9f: Flatten out and removed TriggerReason in Execution
+- Updated dependencies [0bd6c9f]
+  - @avaprotocol/types@1.0.8
+
 ## 1.6.7
 
 ### Patch Changes

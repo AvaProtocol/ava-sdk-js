@@ -404,26 +404,26 @@ function deserialize_aggregator_Task(buffer_arg) {
   return avs_pb.Task.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_UserTriggerTaskReq(arg) {
-  if (!(arg instanceof avs_pb.UserTriggerTaskReq)) {
-    throw new Error('Expected argument of type aggregator.UserTriggerTaskReq');
+function serialize_aggregator_TriggerTaskReq(arg) {
+  if (!(arg instanceof avs_pb.TriggerTaskReq)) {
+    throw new Error('Expected argument of type aggregator.TriggerTaskReq');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_UserTriggerTaskReq(buffer_arg) {
-  return avs_pb.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_TriggerTaskReq(buffer_arg) {
+  return avs_pb.TriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_UserTriggerTaskResp(arg) {
-  if (!(arg instanceof avs_pb.UserTriggerTaskResp)) {
-    throw new Error('Expected argument of type aggregator.UserTriggerTaskResp');
+function serialize_aggregator_TriggerTaskResp(arg) {
+  if (!(arg instanceof avs_pb.TriggerTaskResp)) {
+    throw new Error('Expected argument of type aggregator.TriggerTaskResp');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_UserTriggerTaskResp(buffer_arg) {
-  return avs_pb.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_TriggerTaskResp(buffer_arg) {
+  return avs_pb.TriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_google_protobuf_BoolValue(arg) {
@@ -601,12 +601,12 @@ createTask: {
     path: '/aggregator.Aggregator/TriggerTask',
     requestStream: false,
     responseStream: false,
-    requestType: avs_pb.UserTriggerTaskReq,
-    responseType: avs_pb.UserTriggerTaskResp,
-    requestSerialize: serialize_aggregator_UserTriggerTaskReq,
-    requestDeserialize: deserialize_aggregator_UserTriggerTaskReq,
-    responseSerialize: serialize_aggregator_UserTriggerTaskResp,
-    responseDeserialize: deserialize_aggregator_UserTriggerTaskResp,
+    requestType: avs_pb.TriggerTaskReq,
+    responseType: avs_pb.TriggerTaskResp,
+    requestSerialize: serialize_aggregator_TriggerTaskReq,
+    requestDeserialize: deserialize_aggregator_TriggerTaskReq,
+    responseSerialize: serialize_aggregator_TriggerTaskResp,
+    responseDeserialize: deserialize_aggregator_TriggerTaskResp,
   },
   // CreateSecret allow you to define a secret to be used in your tasks. The secret can be used with a special syntax of ${{secrets.name }}.
 // You can decide whether to grant secret to a single workflow or many workflow, or all of your workflow

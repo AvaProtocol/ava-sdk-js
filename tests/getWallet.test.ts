@@ -91,7 +91,7 @@ describe("getWallet Tests", () => {
       // Trigger the task and wait for it finished to check the stat
       await client.triggerWorkflow({
         id: workflowId1,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: 1, // set epoch to 1 minute later
         },

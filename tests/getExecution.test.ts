@@ -61,7 +61,7 @@ describe("getExecution Tests", () => {
 
       const triggerResult = await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + 5,
         },
@@ -73,9 +73,7 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
       expect(execution.success).toBe(true);
-      expect(execution.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(execution.triggerReason?.blockNumber).toEqual(blockNumber + 5);
-      console.log("🚀 ~ execution.triggerOutput:", execution.triggerOutput);
+      expect(execution.triggerType).toEqual(TriggerType.Block);
       expect(execution.triggerOutput).toEqual({
         blockNumber: blockNumber + 5,
       });
@@ -143,21 +141,24 @@ describe("getExecution Tests", () => {
 
       const result = await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Cron,
-          epoch: epoch + 60, // set epoch to 1 minute later
+          timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+          timestampIso: new Date((epoch + 60) * 1000).toISOString(),
         },
         isBlocking: true,
       });
 
       const execution = await client.getExecution(workflowId, result.executionId);
       expect(execution.id).toEqual(result.executionId);
-      expect(execution.triggerReason?.type).toEqual(TriggerType.Cron);
-      expect(execution.triggerReason?.epoch).toEqual(epoch + 60);
-      expect(execution.success).toBe(true);
+      expect(execution.triggerType).toEqual(TriggerType.Cron);
+      expect(execution.triggerOutput).toEqual({
+        timestamp: (epoch + 60) * 1000,
+        timestampIso: new Date((epoch + 60) * 1000).toISOString(),
+      });
 
-      const executionStatus = await client.getExecutionStatus(workflowId, execution.id);
-      expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
+      const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
+      expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -188,7 +189,7 @@ describe("getExecution Tests", () => {
       // Trigger the workflow
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + 5,
         },
@@ -208,12 +209,13 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
       expect(execution.success).toBe(true);
-      expect(execution.triggerReason?.type).toEqual(TriggerType.Block);
-      expect(execution.triggerReason?.blockNumber).toEqual(blockNumber + 5);
-      expect(execution.triggerOutput).toEqual({ blockNumber: blockNumber + 5 });
+      expect(execution.triggerType).toEqual(TriggerType.Block);
+      expect(execution.triggerOutput).toEqual({
+        blockNumber: blockNumber + 5,
+      });
 
-      const status = await client.getExecutionStatus(workflowId, execution.id);
-      expect(status).toEqual(ExecutionStatus.FINISHED);
+      const executionStatus = await client.getExecutionStatus(workflowId, execution.id);
+      expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

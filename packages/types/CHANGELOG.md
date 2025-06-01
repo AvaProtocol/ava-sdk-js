@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.0.8
+
+### Patch Changes
+
+- 0bd6c9f: Flatten out and removed TriggerReason in Execution
+
 ## 1.0.7
 
 ### Patch Changes
