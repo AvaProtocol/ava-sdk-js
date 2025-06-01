@@ -393,7 +393,6 @@ export interface RunTriggerResponse {
 // Re-export protobuf enums for direct use
 export { NodeType as ProtobufNodeType, TriggerType as ProtobufTriggerType } from "@/grpc_codegen/avs_pb";
 
-// New trigger data types to replace TriggerReasonProps (flattened structure)
 export type TriggerDataProps =
   | { type: TriggerType.FixedTime; timestamp: number; timestampIso: string }
   | { type: TriggerType.Cron; timestamp: number; timestampIso: string }

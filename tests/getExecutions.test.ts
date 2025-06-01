@@ -75,7 +75,7 @@ describe("getExecutions Tests", () => {
       for (let i = 1; i <= totalTriggerCount; i++) {
         await client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Block,
             blockNumber: startBlockNumber + i * triggerInterval,
           },
@@ -151,7 +151,7 @@ describe("getExecutions Tests", () => {
 
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + 5,
         },
@@ -193,7 +193,7 @@ describe("getExecutions Tests", () => {
       for (let i = 1; i <= 3; i++) {
         await client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Block,
             blockNumber: blockNumber + i * 5,
           },
@@ -245,7 +245,7 @@ describe("getExecutions Tests", () => {
       for (let i = 1; i <= 2; i++) {
         await client.triggerWorkflow({
           id: workflowId1,
-          reason: {
+          triggerData: {
             type: TriggerType.Block,
             blockNumber: blockNumber + i * 5,
           },
@@ -256,7 +256,7 @@ describe("getExecutions Tests", () => {
       // Trigger second workflow once
       await client.triggerWorkflow({
         id: workflowId2,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + 15,
         },
@@ -324,7 +324,7 @@ describe("getExecutions Tests", () => {
       for (let i = 1; i <= totalCount; i++) {
         const result = await client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Block,
             blockNumber: blockNumber + i * 5,
           },
@@ -394,7 +394,7 @@ describe("getExecutions Tests", () => {
       for (let i = 1; i <= totalCount; i++) {
         const result = await client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Block,
             blockNumber: blockNumber + i * 5,
           },

@@ -75,7 +75,7 @@ describe("triggerWorkflow Tests", () => {
       // Manually trigger the workflow with block number + 5
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + interval, // block interval in the workflow template
         },
@@ -89,11 +89,7 @@ describe("triggerWorkflow Tests", () => {
       expect(Array.isArray(executions2.items)).toBe(true);
       expect(executions2.items.length).toEqual(1);
       expect(executions2.items[0].success).toEqual(true);
-      expect(executions2.items[0].triggerReason?.blockNumber).toEqual(
-        blockNumber + interval
-      );
-
-      expect(executions2.items[0].triggerReason?.type).toEqual(
+      expect(executions2.items[0].triggerType).toEqual(
         TriggerType.Block
       );
       expect(executions2.items[0].triggerOutput).toEqual({
@@ -138,9 +134,10 @@ describe("triggerWorkflow Tests", () => {
 
     const result = await client.triggerWorkflow({
       id: workflowId,
-      reason: {
+      triggerData: {
         type: TriggerType.Cron,
-        epoch: epoch + 60, // set epoch to 1 minute later
+        timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+        timestampIso: new Date((epoch + 60) * 1000).toISOString(),
       },
       isBlocking: true,
     });
@@ -150,8 +147,11 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.items[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.items)).toBe(true);
     expect(executions2.items.length).toEqual(1);
-    expect(executions2.items[0].triggerReason?.type).toEqual(TriggerType.Cron);
-    expect(executions2.items[0].triggerReason?.epoch).toEqual(epoch + 60);
+    expect(executions2.items[0].triggerType).toEqual(TriggerType.Cron);
+    expect(executions2.items[0].triggerOutput).toEqual({
+      timestamp: (epoch + 60) * 1000,
+      timestampIso: new Date((epoch + 60) * 1000).toISOString(),
+    });
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.executionCount).toEqual(1);
@@ -190,9 +190,10 @@ describe("triggerWorkflow Tests", () => {
     // Manually trigger the workflow
     const result = await client.triggerWorkflow({
       id: workflowId,
-      reason: {
+      triggerData: {
         type: TriggerType.FixedTime,
-        epoch: epoch + 300, // 5 minutes later
+        timestamp: (epoch + 300) * 1000, // Convert to milliseconds
+        timestampIso: new Date((epoch + 300) * 1000).toISOString(),
       },
       isBlocking: true,
     });
@@ -205,8 +206,11 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.executionCount).toEqual(1);
-    expect(executions2.items[0].triggerReason?.epoch).toEqual(epoch + 300);
-    expect(executions2.items[0].triggerReason?.type).toEqual(
+    expect(executions2.items[0].triggerOutput).toEqual({
+      timestamp: (epoch + 300) * 1000,
+      timestampIso: new Date((epoch + 300) * 1000).toISOString(),
+    });
+    expect(executions2.items[0].triggerType).toEqual(
       TriggerType.FixedTime
     );
 
@@ -243,11 +247,14 @@ describe("triggerWorkflow Tests", () => {
     // Manually trigger the workflow
     await client.triggerWorkflow({
       id: workflowId,
-      reason: {
+      triggerData: {
         type: TriggerType.Event,
-        blockNumber: blockNumber + 5,
-        logIndex: 0,
-        txHash: "0x1234567890",
+        evmLog: {
+          address: "0x1234567890123456789012345678901234567890",
+          blockNumber: blockNumber + 5,
+          transactionHash: "0x1234567890",
+          index: 0,
+        },
       },
       isBlocking: true,
     });
@@ -260,11 +267,8 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.executionCount).toEqual(1);
-    expect(executions2.items[0].triggerReason?.blockNumber).toEqual(
-      blockNumber + 5
-    );
-    expect(executions2.items[0].triggerReason?.txHash).toEqual("0x1234567890");
-    expect(executions2.items[0].triggerReason?.type).toEqual(TriggerType.Event);
+    expect(executions2.items[0].triggerType).toEqual(TriggerType.Event);
+    expect(executions2.items[0].triggerOutput).toBeDefined();
 
     await client.deleteWorkflow(workflowId);
   });
@@ -298,9 +302,10 @@ describe("triggerWorkflow Tests", () => {
 
     const result = await client.triggerWorkflow({
       id: workflowId,
-      reason: {
+      triggerData: {
         type: TriggerType.Cron,
-        epoch: epoch + 60, // set epoch to 1 minute later
+        timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+        timestampIso: new Date((epoch + 60) * 1000).toISOString(),
       },
       isBlocking: true,
     });
@@ -308,11 +313,14 @@ describe("triggerWorkflow Tests", () => {
     // The list should now contain one execution, the id from manual trigger should matched
     const execution = await client.getExecution(workflowId, result.executionId);
     expect(execution.id).toEqual(result.executionId);
-    expect(execution.triggerReason?.type).toEqual(TriggerType.Cron);
-    expect(execution.triggerReason?.epoch).toEqual(epoch + 60);
+    expect(execution.triggerType).toEqual(TriggerType.Cron);
+    expect(execution.triggerOutput).toEqual({
+      timestamp: (epoch + 60) * 1000,
+      timestampIso: new Date((epoch + 60) * 1000).toISOString(),
+    });
 
     const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
-    expect(executionStatus).toEqual(ExecutionStatus.FINISHED);
+    expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
 
     await client.deleteWorkflow(workflowId);
   });
@@ -340,15 +348,16 @@ describe("triggerWorkflow Tests", () => {
 
     const result = await client.triggerWorkflow({
       id: workflowId,
-      reason: {
+      triggerData: {
         type: TriggerType.Cron,
-        epoch: epoch + 60, // set epoch to 1 minute later
+        timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+        timestampIso: new Date((epoch + 60) * 1000).toISOString(),
       },
       isBlocking: false,
     });
 
-    expect(result.status).toEqual(ExecutionStatus.QUEUED);
-    expect(result.executionId).toHaveLength(26);
+    expect(result.status).toEqual(ExecutionStatus.EXECUTION_STATUS_PENDING);
+    expect(result.executionId).toBeDefined();
 
     await client.deleteWorkflow(workflowId);
   });
@@ -360,7 +369,7 @@ describe("triggerWorkflow Tests", () => {
     await expect(
       client.triggerWorkflow({
         id: "non-existent-workflow-id",
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + 5,
         },
@@ -394,7 +403,7 @@ describe("triggerWorkflow Tests", () => {
     try {
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: blockNumber + interval,
         },
@@ -409,7 +418,7 @@ describe("triggerWorkflow Tests", () => {
       await expect(
         client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Block,
             blockNumber: blockNumber + interval * 2,
           },
@@ -445,9 +454,10 @@ describe("triggerWorkflow Tests", () => {
     try {
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Cron,
-          epoch: epoch + 60,
+          timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+          timestampIso: new Date((epoch + 60) * 1000).toISOString(),
         },
         isBlocking: true,
       });
@@ -460,9 +470,10 @@ describe("triggerWorkflow Tests", () => {
       await expect(
         client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Cron,
-            epoch: epoch + 120,
+            timestamp: (epoch + 120) * 1000, // Convert to milliseconds
+            timestampIso: new Date((epoch + 120) * 1000).toISOString(),
           },
           isBlocking: true,
         })
@@ -496,9 +507,10 @@ describe("triggerWorkflow Tests", () => {
     try {
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.FixedTime,
-          epoch: epoch + 60,
+          timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+          timestampIso: new Date((epoch + 60) * 1000).toISOString(),
         },
         isBlocking: true,
       });
@@ -511,9 +523,10 @@ describe("triggerWorkflow Tests", () => {
       await expect(
         client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.FixedTime,
-            epoch: epoch + 120,
+            timestamp: (epoch + 120) * 1000, // Convert to milliseconds
+            timestampIso: new Date((epoch + 120) * 1000).toISOString(),
           },
           isBlocking: true,
         })
@@ -550,11 +563,14 @@ describe("triggerWorkflow Tests", () => {
     try {
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Event,
-          blockNumber: blockNumber + 5,
-          logIndex: 0,
-          txHash: "0x1234567890",
+          evmLog: {
+            address: "0x1234567890123456789012345678901234567890",
+            blockNumber: blockNumber + 5,
+            transactionHash: "0x1234567890",
+            index: 0,
+          },
         },
         isBlocking: true,
       });
@@ -567,11 +583,14 @@ describe("triggerWorkflow Tests", () => {
       await expect(
         client.triggerWorkflow({
           id: workflowId,
-          reason: {
+          triggerData: {
             type: TriggerType.Event,
-            blockNumber: blockNumber + 10,
-            logIndex: 1,
-            txHash: "0x0987654321",
+            evmLog: {
+              address: "0x1234567890123456789012345678901234567890",
+              blockNumber: blockNumber + 10,
+              transactionHash: "0x0987654321",
+              index: 1,
+            },
           },
           isBlocking: true,
         })

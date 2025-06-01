@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerTypeConverter } from "@avaprotocol/types";
+import { TriggerTypeConverter, TriggerType } from "@avaprotocol/types";
 import Step from "./step";
 
 export type StepProps = avs_pb.Execution.Step.AsObject;
@@ -16,7 +16,6 @@ export type OutputDataProps =
   | { timestamp: number; timestampIso: string } // Filtered time trigger output (updated from epoch)
   | undefined;
 
-// Updated to remove triggerReason and use the new flattened structure
 export type ExecutionProps = Omit<
   avs_pb.Execution.AsObject,
   | "stepsList"
@@ -25,9 +24,11 @@ export type ExecutionProps = Omit<
   | "cronTrigger"
   | "eventTrigger"
   | "manualTrigger"
+  | "triggerType" // Exclude protobuf triggerType to override with SDK type
 > & {
   stepsList: Step[];
   triggerOutput: OutputDataProps;
+  triggerType: TriggerType; // Use SDK TriggerType instead of protobuf enum
 };
 
 class Execution implements ExecutionProps {
@@ -38,7 +39,7 @@ class Execution implements ExecutionProps {
   error: string;
   stepsList: Step[];
   triggerName: string;
-  triggerType: avs_pb.TriggerType; // Now using the flattened trigger_type field
+  triggerType: TriggerType; // Now using SDK TriggerType enum
   triggerOutput: OutputDataProps;
 
   constructor(props: ExecutionProps) {
@@ -106,7 +107,7 @@ class Execution implements ExecutionProps {
       success: execution.getSuccess(),
       error: execution.getError(),
       triggerName: execution.getTriggerName(),
-      triggerType: execution.getTriggerType(), // Using the flattened trigger_type field
+      triggerType: TriggerTypeConverter.fromProtobuf(execution.getTriggerType()), // Convert protobuf enum to SDK enum
       triggerOutput: triggerOutputData,
       stepsList: execution
         .getStepsList()

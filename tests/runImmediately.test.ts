@@ -355,9 +355,9 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
         expect(result.triggerId).toBeDefined();
         expect(result.triggerId).toContain("trigger");
         
-        // CronTrigger should return epoch data
+        // CronTrigger should return timestamp data instead of epoch
         if (result.data) {
-          expect(typeof result.data.epoch).toBe("number");
+          expect(typeof result.data.timestamp).toBe("number");
         }
       } else {
         expect(result.error).toBeDefined();
@@ -383,9 +383,9 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
         expect(result.triggerId).toBeDefined();
         expect(result.triggerId).toContain("trigger");
         
-        // FixedTimeTrigger should return epoch data
+        // FixedTimeTrigger should return timestamp data instead of epoch
         if (result.data) {
-          expect(typeof result.data.epoch).toBe("number");
+          expect(typeof result.data.timestamp).toBe("number");
         }
       } else {
         expect(result.error).toBeDefined();

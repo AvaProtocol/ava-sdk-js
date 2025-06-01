@@ -80,7 +80,7 @@ describe("CustomCode Module Imports Tests", () => {
 
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: currentBlockNumber + triggerInterval,
         },
@@ -143,7 +143,7 @@ describe("CustomCode Module Imports Tests", () => {
 
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: currentBlockNumber + triggerInterval,
         },
@@ -206,7 +206,7 @@ describe("CustomCode Module Imports Tests", () => {
 
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: currentBlockNumber + triggerInterval,
         },
@@ -283,7 +283,7 @@ describe("CustomCode Module Imports Tests", () => {
 
       await client.triggerWorkflow({
         id: workflowId,
-        reason: {
+        triggerData: {
           type: TriggerType.Block,
           blockNumber: currentBlockNumber + triggerInterval,
         },
