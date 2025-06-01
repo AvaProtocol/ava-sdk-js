@@ -65,12 +65,20 @@ class FixedTimeTrigger extends Trigger {
 
   /**
    * Extract output data from RunTriggerResp for fixed time triggers
+   * Updated to handle timestamp and timestamp_iso instead of epoch
    * @param outputData - The RunTriggerResp containing fixed time trigger output
    * @returns Plain JavaScript object with fixed time trigger data
    */
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const fixedTimeOutput = outputData.getFixedTimeTrigger();
-    return fixedTimeOutput?.toObject() || null;
+    if (!fixedTimeOutput) return null;
+    
+    const outputObj = fixedTimeOutput.toObject();
+    // The output now contains timestamp and timestampIso instead of epoch
+    return {
+      timestamp: outputObj.timestamp,
+      timestampIso: outputObj.timestampIso
+    };
   }
 }
 

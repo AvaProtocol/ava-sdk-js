@@ -76,8 +76,10 @@ export namespace FixedTimeTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getEpoch(): number;
-        setEpoch(value: number): Output;
+        getTimestamp(): number;
+        setTimestamp(value: number): Output;
+        getTimestampIso(): string;
+        setTimestampIso(value: string): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -91,7 +93,8 @@ export namespace FixedTimeTrigger {
 
     export namespace Output {
         export type AsObject = {
-            epoch: number,
+            timestamp: number,
+            timestampIso: string,
         }
     }
 
@@ -143,10 +146,10 @@ export namespace CronTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getEpoch(): number;
-        setEpoch(value: number): Output;
-        getScheduleMatched(): string;
-        setScheduleMatched(value: string): Output;
+        getTimestamp(): number;
+        setTimestamp(value: number): Output;
+        getTimestampIso(): string;
+        setTimestampIso(value: string): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -160,8 +163,8 @@ export namespace CronTrigger {
 
     export namespace Output {
         export type AsObject = {
-            epoch: number,
-            scheduleMatched: string,
+            timestamp: number,
+            timestampIso: string,
         }
     }
 
@@ -1404,11 +1407,8 @@ export class Execution extends jspb.Message {
     setSuccess(value: boolean): Execution;
     getError(): string;
     setError(value: string): Execution;
-
-    hasReason(): boolean;
-    clearReason(): void;
-    getReason(): TriggerReason | undefined;
-    setReason(value?: TriggerReason): Execution;
+    getTriggerType(): TriggerType;
+    setTriggerType(value: TriggerType): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
@@ -1436,6 +1436,11 @@ export class Execution extends jspb.Message {
     getEventTrigger(): EventTrigger.Output | undefined;
     setEventTrigger(value?: EventTrigger.Output): Execution;
 
+    hasManualTrigger(): boolean;
+    clearManualTrigger(): void;
+    getManualTrigger(): ManualTrigger.Output | undefined;
+    setManualTrigger(value?: ManualTrigger.Output): Execution;
+
     getOutputDataCase(): Execution.OutputDataCase;
 
     serializeBinary(): Uint8Array;
@@ -1455,13 +1460,14 @@ export namespace Execution {
         endAt: number,
         success: boolean,
         error: string,
-        reason?: TriggerReason.AsObject,
+        triggerType: TriggerType,
         stepsList: Array<Execution.Step.AsObject>,
         triggerName: string,
         blockTrigger?: BlockTrigger.Output.AsObject,
         fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
         cronTrigger?: CronTrigger.Output.AsObject,
         eventTrigger?: EventTrigger.Output.AsObject,
+        manualTrigger?: ManualTrigger.Output.AsObject,
     }
 
 
@@ -1582,6 +1588,7 @@ export namespace Execution {
         FIXED_TIME_TRIGGER = 11,
         CRON_TRIGGER = 12,
         EVENT_TRIGGER = 13,
+        MANUAL_TRIGGER = 14,
     }
 
 }
@@ -2025,8 +2032,14 @@ export namespace GetKeyReq {
 }
 
 export class KeyResp extends jspb.Message { 
+    getAddress(): string;
+    setAddress(value: string): KeyResp;
     getKey(): string;
     setKey(value: string): KeyResp;
+    getMessage(): string;
+    setMessage(value: string): KeyResp;
+    getExpiry(): number;
+    setExpiry(value: number): KeyResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): KeyResp.AsObject;
@@ -2040,39 +2053,10 @@ export class KeyResp extends jspb.Message {
 
 export namespace KeyResp {
     export type AsObject = {
+        address: string,
         key: string,
-    }
-}
-
-export class TriggerReason extends jspb.Message { 
-    getBlockNumber(): number;
-    setBlockNumber(value: number): TriggerReason;
-    getLogIndex(): number;
-    setLogIndex(value: number): TriggerReason;
-    getTxHash(): string;
-    setTxHash(value: string): TriggerReason;
-    getEpoch(): number;
-    setEpoch(value: number): TriggerReason;
-    getType(): TriggerType;
-    setType(value: TriggerType): TriggerReason;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): TriggerReason.AsObject;
-    static toObject(includeInstance: boolean, msg: TriggerReason): TriggerReason.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: TriggerReason, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): TriggerReason;
-    static deserializeBinaryFromReader(message: TriggerReason, reader: jspb.BinaryReader): TriggerReason;
-}
-
-export namespace TriggerReason {
-    export type AsObject = {
-        blockNumber: number,
-        logIndex: number,
-        txHash: string,
-        epoch: number,
-        type: TriggerType,
+        message: string,
+        expiry: number,
     }
 }
 
@@ -2169,52 +2153,91 @@ export namespace SetWalletReq {
     }
 }
 
-export class UserTriggerTaskReq extends jspb.Message { 
+export class TriggerTaskReq extends jspb.Message { 
     getTaskId(): string;
-    setTaskId(value: string): UserTriggerTaskReq;
+    setTaskId(value: string): TriggerTaskReq;
+    getTriggerType(): TriggerType;
+    setTriggerType(value: TriggerType): TriggerTaskReq;
 
-    hasReason(): boolean;
-    clearReason(): void;
-    getReason(): TriggerReason | undefined;
-    setReason(value?: TriggerReason): UserTriggerTaskReq;
+    hasBlockTrigger(): boolean;
+    clearBlockTrigger(): void;
+    getBlockTrigger(): BlockTrigger.Output | undefined;
+    setBlockTrigger(value?: BlockTrigger.Output): TriggerTaskReq;
+
+    hasFixedTimeTrigger(): boolean;
+    clearFixedTimeTrigger(): void;
+    getFixedTimeTrigger(): FixedTimeTrigger.Output | undefined;
+    setFixedTimeTrigger(value?: FixedTimeTrigger.Output): TriggerTaskReq;
+
+    hasCronTrigger(): boolean;
+    clearCronTrigger(): void;
+    getCronTrigger(): CronTrigger.Output | undefined;
+    setCronTrigger(value?: CronTrigger.Output): TriggerTaskReq;
+
+    hasEventTrigger(): boolean;
+    clearEventTrigger(): void;
+    getEventTrigger(): EventTrigger.Output | undefined;
+    setEventTrigger(value?: EventTrigger.Output): TriggerTaskReq;
+
+    hasManualTrigger(): boolean;
+    clearManualTrigger(): void;
+    getManualTrigger(): ManualTrigger.Output | undefined;
+    setManualTrigger(value?: ManualTrigger.Output): TriggerTaskReq;
     getIsBlocking(): boolean;
-    setIsBlocking(value: boolean): UserTriggerTaskReq;
+    setIsBlocking(value: boolean): TriggerTaskReq;
+
+    getTriggerOutputCase(): TriggerTaskReq.TriggerOutputCase;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserTriggerTaskReq.AsObject;
-    static toObject(includeInstance: boolean, msg: UserTriggerTaskReq): UserTriggerTaskReq.AsObject;
+    toObject(includeInstance?: boolean): TriggerTaskReq.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerTaskReq): TriggerTaskReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserTriggerTaskReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserTriggerTaskReq;
-    static deserializeBinaryFromReader(message: UserTriggerTaskReq, reader: jspb.BinaryReader): UserTriggerTaskReq;
+    static serializeBinaryToWriter(message: TriggerTaskReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerTaskReq;
+    static deserializeBinaryFromReader(message: TriggerTaskReq, reader: jspb.BinaryReader): TriggerTaskReq;
 }
 
-export namespace UserTriggerTaskReq {
+export namespace TriggerTaskReq {
     export type AsObject = {
         taskId: string,
-        reason?: TriggerReason.AsObject,
+        triggerType: TriggerType,
+        blockTrigger?: BlockTrigger.Output.AsObject,
+        fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
+        cronTrigger?: CronTrigger.Output.AsObject,
+        eventTrigger?: EventTrigger.Output.AsObject,
+        manualTrigger?: ManualTrigger.Output.AsObject,
         isBlocking: boolean,
     }
+
+    export enum TriggerOutputCase {
+        TRIGGER_OUTPUT_NOT_SET = 0,
+        BLOCK_TRIGGER = 3,
+        FIXED_TIME_TRIGGER = 4,
+        CRON_TRIGGER = 5,
+        EVENT_TRIGGER = 6,
+        MANUAL_TRIGGER = 7,
+    }
+
 }
 
-export class UserTriggerTaskResp extends jspb.Message { 
+export class TriggerTaskResp extends jspb.Message { 
     getExecutionId(): string;
-    setExecutionId(value: string): UserTriggerTaskResp;
+    setExecutionId(value: string): TriggerTaskResp;
     getStatus(): ExecutionStatus;
-    setStatus(value: ExecutionStatus): UserTriggerTaskResp;
+    setStatus(value: ExecutionStatus): TriggerTaskResp;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): UserTriggerTaskResp.AsObject;
-    static toObject(includeInstance: boolean, msg: UserTriggerTaskResp): UserTriggerTaskResp.AsObject;
+    toObject(includeInstance?: boolean): TriggerTaskResp.AsObject;
+    static toObject(includeInstance: boolean, msg: TriggerTaskResp): TriggerTaskResp.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: UserTriggerTaskResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): UserTriggerTaskResp;
-    static deserializeBinaryFromReader(message: UserTriggerTaskResp, reader: jspb.BinaryReader): UserTriggerTaskResp;
+    static serializeBinaryToWriter(message: TriggerTaskResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TriggerTaskResp;
+    static deserializeBinaryFromReader(message: TriggerTaskResp, reader: jspb.BinaryReader): TriggerTaskResp;
 }
 
-export namespace UserTriggerTaskResp {
+export namespace TriggerTaskResp {
     export type AsObject = {
         executionId: string,
         status: ExecutionStatus,
@@ -3044,6 +3067,8 @@ export enum TaskStatus {
 }
 
 export enum ExecutionStatus {
-    QUEUED = 0,
-    FINISHED = 2,
+    EXECUTION_STATUS_UNSPECIFIED = 0,
+    EXECUTION_STATUS_PENDING = 1,
+    EXECUTION_STATUS_COMPLETED = 2,
+    EXECUTION_STATUS_FAILED = 3,
 }

@@ -63,12 +63,20 @@ class CronTrigger extends Trigger {
 
   /**
    * Extract output data from RunTriggerResp for cron triggers
+   * Updated to handle timestamp and timestamp_iso instead of epoch
    * @param outputData - The RunTriggerResp containing cron trigger output
    * @returns Plain JavaScript object with cron trigger data
    */
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const cronOutput = outputData.getCronTrigger();
-    return cronOutput?.toObject() || null;
+    if (!cronOutput) return null;
+    
+    const outputObj = cronOutput.toObject();
+    // The output now contains timestamp and timestampIso instead of epoch
+    return {
+      timestamp: outputObj.timestamp,
+      timestampIso: outputObj.timestampIso
+    };
   }
 }
 

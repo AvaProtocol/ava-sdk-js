@@ -27,19 +27,19 @@ import type {
   PageInfo,
   GetSecretsOptions,
   SecretOptions,
+  TriggerDataProps,
 } from "@avaprotocol/types";
 
 import {
   TriggerType,
   NodeTypeGoConverter,
   TriggerTypeGoConverter,
+  TriggerTypeConverter,
 } from "@avaprotocol/types";
 
 import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
-
-import TriggerReason, { TriggerReasonProps } from "./models/trigger/reason";
 
 // Import the consolidated conversion utilities
 import { convertProtobufValueToJs, convertJSValueToProtobuf } from "./utils";
@@ -577,35 +577,109 @@ class Client extends BaseClient {
   }
 
   /**
-   * Trigger a workflow manually
-   * @param {object} params - The trigger parameters
+   * Trigger a workflow with the new flattened trigger data structure
+   * @param {Object} params - The trigger parameters
    * @param {string} params.id - The workflow id
-   * @param {TriggerReasonProps} params.reason - The trigger reason
-   * @param {boolean} [params.isBlocking=false] - Whether to wait for execution completion
-   * @param {RequestOptions} [options] - Request options
-   * @returns {Promise<avs_pb.UserTriggerTaskResp.AsObject>} - The execution result
+   * @param {TriggerDataProps} params.triggerData - The trigger data
+   * @param {boolean} params.isBlocking - Whether to block until execution completes
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<avs_pb.TriggerTaskResp.AsObject>} - The response from triggering the workflow
    */
   async triggerWorkflow(
     {
       id,
-      reason,
+      triggerData,
       isBlocking = false,
     }: {
       id: string;
-      reason: TriggerReasonProps;
+      triggerData: TriggerDataProps;
       isBlocking?: boolean;
     },
     options?: RequestOptions
-  ): Promise<avs_pb.UserTriggerTaskResp.AsObject> {
-    const request = new avs_pb.UserTriggerTaskReq();
+  ): Promise<avs_pb.TriggerTaskResp.AsObject> {
+    const request = new avs_pb.TriggerTaskReq();
 
     request.setTaskId(id);
-    request.setReason(new TriggerReason(reason).toRequest());
+    request.setTriggerType(TriggerTypeConverter.toProtobuf(triggerData.type));
     request.setIsBlocking(isBlocking);
 
+    // Set the appropriate trigger output based on type
+    switch (triggerData.type) {
+      case TriggerType.FixedTime: {
+        const fixedTimeOutput = new avs_pb.FixedTimeTrigger.Output();
+        fixedTimeOutput.setTimestamp((triggerData as any).timestamp);
+        fixedTimeOutput.setTimestampIso((triggerData as any).timestampIso);
+        request.setFixedTimeTrigger(fixedTimeOutput);
+        break;
+      }
+      case TriggerType.Cron: {
+        const cronOutput = new avs_pb.CronTrigger.Output();
+        cronOutput.setTimestamp((triggerData as any).timestamp);
+        cronOutput.setTimestampIso((triggerData as any).timestampIso);
+        request.setCronTrigger(cronOutput);
+        break;
+      }
+      case TriggerType.Block: {
+        const blockData = triggerData as any;
+        const blockOutput = new avs_pb.BlockTrigger.Output();
+        blockOutput.setBlockNumber(blockData.blockNumber);
+        if (blockData.blockHash) blockOutput.setBlockHash(blockData.blockHash);
+        if (blockData.timestamp) blockOutput.setTimestamp(blockData.timestamp);
+        if (blockData.parentHash) blockOutput.setParentHash(blockData.parentHash);
+        if (blockData.difficulty) blockOutput.setDifficulty(blockData.difficulty);
+        if (blockData.gasLimit) blockOutput.setGasLimit(blockData.gasLimit);
+        if (blockData.gasUsed) blockOutput.setGasUsed(blockData.gasUsed);
+        request.setBlockTrigger(blockOutput);
+        break;
+      }
+      case TriggerType.Event: {
+        const eventData = triggerData as any;
+        const eventOutput = new avs_pb.EventTrigger.Output();
+        if (eventData.evmLog) {
+          const evmLog = new avs_pb.Evm.Log();
+          evmLog.setAddress(eventData.evmLog.address);
+          evmLog.setBlockNumber(eventData.evmLog.blockNumber);
+          evmLog.setTransactionHash(eventData.evmLog.transactionHash);
+          evmLog.setIndex(eventData.evmLog.index);
+          eventOutput.setEvmLog(evmLog);
+        }
+        if (eventData.transferLog) {
+          const transferLog = new avs_pb.EventTrigger.TransferLogOutput();
+          transferLog.setTokenName(eventData.transferLog.tokenName);
+          transferLog.setTokenSymbol(eventData.transferLog.tokenSymbol);
+          transferLog.setTokenDecimals(eventData.transferLog.tokenDecimals);
+          transferLog.setTransactionHash(eventData.transferLog.transactionHash);
+          transferLog.setAddress(eventData.transferLog.address);
+          transferLog.setBlockNumber(eventData.transferLog.blockNumber);
+          transferLog.setBlockTimestamp(eventData.transferLog.blockTimestamp);
+          transferLog.setFromAddress(eventData.transferLog.fromAddress);
+          transferLog.setToAddress(eventData.transferLog.toAddress);
+          transferLog.setValue(eventData.transferLog.value);
+          transferLog.setValueFormatted(eventData.transferLog.valueFormatted);
+          transferLog.setTransactionIndex(eventData.transferLog.transactionIndex);
+          transferLog.setLogIndex(eventData.transferLog.logIndex);
+          eventOutput.setTransferLog(transferLog);
+        }
+        request.setEventTrigger(eventOutput);
+        break;
+      }
+      case TriggerType.Manual: {
+        const manualData = triggerData as any;
+        const manualOutput = new avs_pb.ManualTrigger.Output();
+        if (manualData.runAt) manualOutput.setRunAt(manualData.runAt);
+        request.setManualTrigger(manualOutput);
+        break;
+      }
+      case TriggerType.Unspecified:
+        // No output data for unspecified triggers
+        break;
+      default:
+        throw new Error(`Unsupported trigger type: ${(triggerData as any).type}`);
+    }
+
     const result = await this.sendGrpcRequest<
-      avs_pb.UserTriggerTaskResp,
-      avs_pb.UserTriggerTaskReq
+      avs_pb.TriggerTaskResp,
+      avs_pb.TriggerTaskReq
     >("triggerTask", request, options);
 
     return result.toObject();
@@ -939,7 +1013,6 @@ export {
   Step,
   NodeFactory,
   TriggerFactory,
-  TriggerReason,
   Secret,
 };
 
@@ -948,7 +1021,6 @@ export type {
   EdgeProps,
   ExecutionProps,
   StepProps,
-  TriggerReasonProps,
   OutputDataProps,
   RunNodeWithInputsRequest,
   RunNodeWithInputsResponse,
