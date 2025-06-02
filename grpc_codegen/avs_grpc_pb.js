@@ -393,6 +393,28 @@ function deserialize_aggregator_SetWalletReq(buffer_arg) {
   return avs_pb.SetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_SimulateTaskReq(arg) {
+  if (!(arg instanceof avs_pb.SimulateTaskReq)) {
+    throw new Error('Expected argument of type aggregator.SimulateTaskReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_SimulateTaskReq(buffer_arg) {
+  return avs_pb.SimulateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_SimulateTaskResp(arg) {
+  if (!(arg instanceof avs_pb.SimulateTaskResp)) {
+    throw new Error('Expected argument of type aggregator.SimulateTaskResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_SimulateTaskResp(buffer_arg) {
+  return avs_pb.SimulateTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_Task(arg) {
   if (!(arg instanceof avs_pb.Task)) {
     throw new Error('Expected argument of type aggregator.Task');
@@ -728,6 +750,18 @@ runTrigger: {
     requestDeserialize: deserialize_aggregator_RunTriggerReq,
     responseSerialize: serialize_aggregator_RunTriggerResp,
     responseDeserialize: deserialize_aggregator_RunTriggerResp,
+  },
+  // SimulateTask allows executing a complete task simulation including trigger and all workflow nodes
+simulateTask: {
+    path: '/aggregator.Aggregator/SimulateTask',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.SimulateTaskReq,
+    responseType: avs_pb.SimulateTaskResp,
+    requestSerialize: serialize_aggregator_SimulateTaskReq,
+    requestDeserialize: deserialize_aggregator_SimulateTaskReq,
+    responseSerialize: serialize_aggregator_SimulateTaskResp,
+    responseDeserialize: deserialize_aggregator_SimulateTaskResp,
   },
 };
 

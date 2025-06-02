@@ -28,6 +28,8 @@ import type {
   GetSecretsOptions,
   SecretOptions,
   TriggerDataProps,
+  SimulateTaskRequest,
+  SimulateTaskResponse,
 } from "@avaprotocol/types";
 
 import {
@@ -1000,6 +1002,77 @@ class Client extends BaseClient {
       triggerId: result.getTriggerId(),
     };
   }
+
+  /**
+   * Simulate a complete task execution including trigger and all workflow nodes
+   * @param {SimulateTaskRequest} params - The parameters for simulating the task
+   * @param {Record<string, any>} params.trigger - The trigger configuration
+   * @param {Array<Record<string, any>>} params.nodes - The workflow nodes
+   * @param {Array<Record<string, any>>} params.edges - The workflow edges
+   * @param {string} params.triggerType - The type of the trigger
+   * @param {Record<string, any>} params.triggerConfig - The trigger configuration
+   * @param {Record<string, any>} params.inputVariables - Input variables for the simulation
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<SimulateTaskResponse>} - The response from simulating the task
+   */
+  async simulateTask(
+    { trigger, nodes, edges, triggerType, triggerConfig = {}, inputVariables = {} }: SimulateTaskRequest,
+    options?: RequestOptions
+  ): Promise<SimulateTaskResponse> {
+    // Create the request
+    const request = new avs_pb.SimulateTaskReq();
+
+    // Create SDK trigger object and convert to protobuf
+    const triggerSdk = TriggerFactory.create(trigger as any);
+    request.setTrigger(triggerSdk.toRequest());
+
+    // Create SDK node objects and convert to protobuf
+    const nodeMessages = nodes.map((node: any) => {
+      const nodeSdk = NodeFactory.create(node as any);
+      return nodeSdk.toRequest();
+    });
+    request.setNodesList(nodeMessages);
+
+    // Create SDK edge objects and convert to protobuf
+    const edgeMessages = edges.map((edge: any) => {
+      const edgeSdk = new Edge(edge as any);
+      return edgeSdk.toRequest();
+    });
+    request.setEdgesList(edgeMessages);
+
+    // Convert string triggerType to protobuf enum
+    const protobufTriggerType = TriggerTypeGoConverter.fromGoString(triggerType);
+    request.setTriggerType(protobufTriggerType);
+
+    // Set trigger configuration
+    const triggerConfigMap = request.getTriggerConfigMap();
+    for (const [key, value] of Object.entries(triggerConfig)) {
+      triggerConfigMap.set(key, convertJSValueToProtobuf(value));
+    }
+
+    // Set input variables
+    const inputVarsMap = request.getInputVariablesMap();
+    for (const [key, value] of Object.entries(inputVariables)) {
+      inputVarsMap.set(key, convertJSValueToProtobuf(value));
+    }
+
+    // Send the request directly to the server
+    const result = await this.sendGrpcRequest<
+      avs_pb.SimulateTaskResp,
+      avs_pb.SimulateTaskReq
+    >("simulateTask", request, options);
+
+    const executionProto = result.getExecution();
+    if (!executionProto) {
+      return { error: "No execution result returned from server" };
+    }
+
+    const execution = Execution.fromResponse(executionProto);
+    return {
+      execution: execution,
+      error: execution.error || undefined,
+    };
+  }
 }
 
 export * from "./models/node/factory";
@@ -1026,4 +1099,6 @@ export type {
   RunNodeWithInputsResponse,
   RunTriggerRequest,
   RunTriggerResponse,
+  SimulateTaskRequest,
+  SimulateTaskResponse,
 };

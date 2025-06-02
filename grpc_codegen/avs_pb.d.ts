@@ -1533,6 +1533,10 @@ export namespace Execution {
         getInputsList(): Array<string>;
         setInputsList(value: Array<string>): Step;
         addInputs(value: string, index?: number): string;
+        getNodeType(): NodeType;
+        setNodeType(value: NodeType): Step;
+        getNodeName(): string;
+        setNodeName(value: string): Step;
 
         getOutputDataCase(): Step.OutputDataCase;
 
@@ -1564,6 +1568,8 @@ export namespace Execution {
             startAt: number,
             endAt: number,
             inputsList: Array<string>,
+            nodeType: NodeType,
+            nodeName: string,
         }
 
         export enum OutputDataCase {
@@ -3018,6 +3024,75 @@ export namespace Evm {
         }
     }
 
+}
+
+export class SimulateTaskReq extends jspb.Message { 
+
+    hasTrigger(): boolean;
+    clearTrigger(): void;
+    getTrigger(): TaskTrigger | undefined;
+    setTrigger(value?: TaskTrigger): SimulateTaskReq;
+    clearNodesList(): void;
+    getNodesList(): Array<TaskNode>;
+    setNodesList(value: Array<TaskNode>): SimulateTaskReq;
+    addNodes(value?: TaskNode, index?: number): TaskNode;
+    clearEdgesList(): void;
+    getEdgesList(): Array<TaskEdge>;
+    setEdgesList(value: Array<TaskEdge>): SimulateTaskReq;
+    addEdges(value?: TaskEdge, index?: number): TaskEdge;
+    getTriggerType(): TriggerType;
+    setTriggerType(value: TriggerType): SimulateTaskReq;
+
+    getTriggerConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearTriggerConfigMap(): void;
+
+    getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearInputVariablesMap(): void;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SimulateTaskReq.AsObject;
+    static toObject(includeInstance: boolean, msg: SimulateTaskReq): SimulateTaskReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SimulateTaskReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SimulateTaskReq;
+    static deserializeBinaryFromReader(message: SimulateTaskReq, reader: jspb.BinaryReader): SimulateTaskReq;
+}
+
+export namespace SimulateTaskReq {
+    export type AsObject = {
+        trigger?: TaskTrigger.AsObject,
+        nodesList: Array<TaskNode.AsObject>,
+        edgesList: Array<TaskEdge.AsObject>,
+        triggerType: TriggerType,
+
+        triggerConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+
+        inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+    }
+}
+
+export class SimulateTaskResp extends jspb.Message { 
+
+    hasExecution(): boolean;
+    clearExecution(): void;
+    getExecution(): Execution | undefined;
+    setExecution(value?: Execution): SimulateTaskResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SimulateTaskResp.AsObject;
+    static toObject(includeInstance: boolean, msg: SimulateTaskResp): SimulateTaskResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SimulateTaskResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SimulateTaskResp;
+    static deserializeBinaryFromReader(message: SimulateTaskResp, reader: jspb.BinaryReader): SimulateTaskResp;
+}
+
+export namespace SimulateTaskResp {
+    export type AsObject = {
+        execution?: Execution.AsObject,
+    }
 }
 
 export enum TriggerType {
