@@ -29,7 +29,6 @@ import type {
   SecretOptions,
   TriggerDataProps,
   SimulateTaskRequest,
-  SimulateTaskResponse,
 } from "@avaprotocol/types";
 
 import {
@@ -1013,12 +1012,12 @@ class Client extends BaseClient {
    * @param {Record<string, any>} params.triggerConfig - The trigger configuration
    * @param {Record<string, any>} params.inputVariables - Input variables for the simulation
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<SimulateTaskResponse>} - The response from simulating the task
+   * @returns {Promise<Execution>} - The response from simulating the task
    */
   async simulateTask(
     { trigger, nodes, edges, triggerType, triggerConfig = {}, inputVariables = {} }: SimulateTaskRequest,
     options?: RequestOptions
-  ): Promise<SimulateTaskResponse> {
+  ): Promise<Execution> {
     // Create the request
     const request = new avs_pb.SimulateTaskReq();
 
@@ -1058,20 +1057,12 @@ class Client extends BaseClient {
 
     // Send the request directly to the server
     const result = await this.sendGrpcRequest<
-      avs_pb.SimulateTaskResp,
+      avs_pb.Execution,
       avs_pb.SimulateTaskReq
     >("simulateTask", request, options);
 
-    const executionProto = result.getExecution();
-    if (!executionProto) {
-      return { error: "No execution result returned from server" };
-    }
-
-    const execution = Execution.fromResponse(executionProto);
-    return {
-      execution: execution,
-      error: execution.error || undefined,
-    };
+    // Return the execution directly
+    return Execution.fromResponse(result);
   }
 }
 
@@ -1100,5 +1091,4 @@ export type {
   RunTriggerRequest,
   RunTriggerResponse,
   SimulateTaskRequest,
-  SimulateTaskResponse,
 };

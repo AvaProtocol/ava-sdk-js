@@ -89,13 +89,6 @@ describe("triggerWorkflow Tests", () => {
       expect(Array.isArray(executions2.items)).toBe(true);
       expect(executions2.items.length).toEqual(1);
       expect(executions2.items[0].success).toEqual(true);
-      expect(executions2.items[0].triggerType).toEqual(
-        TriggerType.Block
-      );
-      expect(executions2.items[0].triggerOutput).toEqual({
-        blockNumber: blockNumber + interval,
-      });
-
       const workflow = await client.getWorkflow(workflowId);
 
       expect(workflow.status).toEqual(WorkflowStatus.Completed);
@@ -147,11 +140,6 @@ describe("triggerWorkflow Tests", () => {
     expect(executions2.items[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.items)).toBe(true);
     expect(executions2.items.length).toEqual(1);
-    expect(executions2.items[0].triggerType).toEqual(TriggerType.Cron);
-    expect(executions2.items[0].triggerOutput).toEqual({
-      timestamp: (epoch + 60) * 1000,
-      timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-    });
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.executionCount).toEqual(1);
@@ -206,13 +194,6 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.executionCount).toEqual(1);
-    expect(executions2.items[0].triggerOutput).toEqual({
-      timestamp: (epoch + 300) * 1000,
-      timestampIso: new Date((epoch + 300) * 1000).toISOString(),
-    });
-    expect(executions2.items[0].triggerType).toEqual(
-      TriggerType.FixedTime
-    );
 
     await client.deleteWorkflow(workflowId);
   });
@@ -267,8 +248,6 @@ describe("triggerWorkflow Tests", () => {
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.status).toEqual(WorkflowStatus.Completed);
     expect(workflow.executionCount).toEqual(1);
-    expect(executions2.items[0].triggerType).toEqual(TriggerType.Event);
-    expect(executions2.items[0].triggerOutput).toBeDefined();
 
     await client.deleteWorkflow(workflowId);
   });
@@ -313,13 +292,10 @@ describe("triggerWorkflow Tests", () => {
     // The list should now contain one execution, the id from manual trigger should matched
     const execution = await client.getExecution(workflowId, result.executionId);
     expect(execution.id).toEqual(result.executionId);
-    expect(execution.triggerType).toEqual(TriggerType.Cron);
-    expect(execution.triggerOutput).toEqual({
-      timestamp: (epoch + 60) * 1000,
-      timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-    });
-
-    const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
+    const executionStatus = await client.getExecutionStatus(
+      workflowId,
+      result.executionId
+    );
     expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
 
     await client.deleteWorkflow(workflowId);

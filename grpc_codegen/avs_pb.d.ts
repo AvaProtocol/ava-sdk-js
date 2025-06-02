@@ -6,7 +6,6 @@
 
 import * as jspb from "google-protobuf";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
-import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
@@ -1407,41 +1406,10 @@ export class Execution extends jspb.Message {
     setSuccess(value: boolean): Execution;
     getError(): string;
     setError(value: string): Execution;
-    getTriggerType(): TriggerType;
-    setTriggerType(value: TriggerType): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
     addSteps(value?: Execution.Step, index?: number): Execution.Step;
-    getTriggerName(): string;
-    setTriggerName(value: string): Execution;
-
-    hasBlockTrigger(): boolean;
-    clearBlockTrigger(): void;
-    getBlockTrigger(): BlockTrigger.Output | undefined;
-    setBlockTrigger(value?: BlockTrigger.Output): Execution;
-
-    hasFixedTimeTrigger(): boolean;
-    clearFixedTimeTrigger(): void;
-    getFixedTimeTrigger(): FixedTimeTrigger.Output | undefined;
-    setFixedTimeTrigger(value?: FixedTimeTrigger.Output): Execution;
-
-    hasCronTrigger(): boolean;
-    clearCronTrigger(): void;
-    getCronTrigger(): CronTrigger.Output | undefined;
-    setCronTrigger(value?: CronTrigger.Output): Execution;
-
-    hasEventTrigger(): boolean;
-    clearEventTrigger(): void;
-    getEventTrigger(): EventTrigger.Output | undefined;
-    setEventTrigger(value?: EventTrigger.Output): Execution;
-
-    hasManualTrigger(): boolean;
-    clearManualTrigger(): void;
-    getManualTrigger(): ManualTrigger.Output | undefined;
-    setManualTrigger(value?: ManualTrigger.Output): Execution;
-
-    getOutputDataCase(): Execution.OutputDataCase;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Execution.AsObject;
@@ -1460,22 +1428,52 @@ export namespace Execution {
         endAt: number,
         success: boolean,
         error: string,
-        triggerType: TriggerType,
         stepsList: Array<Execution.Step.AsObject>,
-        triggerName: string,
-        blockTrigger?: BlockTrigger.Output.AsObject,
-        fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
-        cronTrigger?: CronTrigger.Output.AsObject,
-        eventTrigger?: EventTrigger.Output.AsObject,
-        manualTrigger?: ManualTrigger.Output.AsObject,
     }
 
 
     export class Step extends jspb.Message { 
-        getNodeId(): string;
-        setNodeId(value: string): Step;
+        getId(): string;
+        setId(value: string): Step;
+        getType(): string;
+        setType(value: string): Step;
+        getName(): string;
+        setName(value: string): Step;
         getSuccess(): boolean;
         setSuccess(value: boolean): Step;
+        getError(): string;
+        setError(value: string): Step;
+        getLog(): string;
+        setLog(value: string): Step;
+        clearInputsList(): void;
+        getInputsList(): Array<string>;
+        setInputsList(value: Array<string>): Step;
+        addInputs(value: string, index?: number): string;
+
+        hasBlockTrigger(): boolean;
+        clearBlockTrigger(): void;
+        getBlockTrigger(): BlockTrigger.Output | undefined;
+        setBlockTrigger(value?: BlockTrigger.Output): Step;
+
+        hasFixedTimeTrigger(): boolean;
+        clearFixedTimeTrigger(): void;
+        getFixedTimeTrigger(): FixedTimeTrigger.Output | undefined;
+        setFixedTimeTrigger(value?: FixedTimeTrigger.Output): Step;
+
+        hasCronTrigger(): boolean;
+        clearCronTrigger(): void;
+        getCronTrigger(): CronTrigger.Output | undefined;
+        setCronTrigger(value?: CronTrigger.Output): Step;
+
+        hasEventTrigger(): boolean;
+        clearEventTrigger(): void;
+        getEventTrigger(): EventTrigger.Output | undefined;
+        setEventTrigger(value?: EventTrigger.Output): Step;
+
+        hasManualTrigger(): boolean;
+        clearManualTrigger(): void;
+        getManualTrigger(): ManualTrigger.Output | undefined;
+        setManualTrigger(value?: ManualTrigger.Output): Step;
 
         hasEthTransfer(): boolean;
         clearEthTransfer(): void;
@@ -1521,22 +1519,10 @@ export namespace Execution {
         clearLoop(): void;
         getLoop(): LoopNode.Output | undefined;
         setLoop(value?: LoopNode.Output): Step;
-        getLog(): string;
-        setLog(value: string): Step;
-        getError(): string;
-        setError(value: string): Step;
         getStartAt(): number;
         setStartAt(value: number): Step;
         getEndAt(): number;
         setEndAt(value: number): Step;
-        clearInputsList(): void;
-        getInputsList(): Array<string>;
-        setInputsList(value: Array<string>): Step;
-        addInputs(value: string, index?: number): string;
-        getNodeType(): NodeType;
-        setNodeType(value: NodeType): Step;
-        getNodeName(): string;
-        setNodeName(value: string): Step;
 
         getOutputDataCase(): Step.OutputDataCase;
 
@@ -1552,8 +1538,18 @@ export namespace Execution {
 
     export namespace Step {
         export type AsObject = {
-            nodeId: string,
+            id: string,
+            type: string,
+            name: string,
             success: boolean,
+            error: string,
+            log: string,
+            inputsList: Array<string>,
+            blockTrigger?: BlockTrigger.Output.AsObject,
+            fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
+            cronTrigger?: CronTrigger.Output.AsObject,
+            eventTrigger?: EventTrigger.Output.AsObject,
+            manualTrigger?: ManualTrigger.Output.AsObject,
             ethTransfer?: ETHTransferNode.Output.AsObject,
             graphql?: GraphQLQueryNode.Output.AsObject,
             contractRead?: ContractReadNode.Output.AsObject,
@@ -1563,17 +1559,17 @@ export namespace Execution {
             branch?: BranchNode.Output.AsObject,
             filter?: FilterNode.Output.AsObject,
             loop?: LoopNode.Output.AsObject,
-            log: string,
-            error: string,
             startAt: number,
             endAt: number,
-            inputsList: Array<string>,
-            nodeType: NodeType,
-            nodeName: string,
         }
 
         export enum OutputDataCase {
             OUTPUT_DATA_NOT_SET = 0,
+            BLOCK_TRIGGER = 20,
+            FIXED_TIME_TRIGGER = 21,
+            CRON_TRIGGER = 22,
+            EVENT_TRIGGER = 23,
+            MANUAL_TRIGGER = 24,
             ETH_TRANSFER = 3,
             GRAPHQL = 4,
             CONTRACT_READ = 5,
@@ -1585,16 +1581,6 @@ export namespace Execution {
             LOOP = 11,
         }
 
-    }
-
-
-    export enum OutputDataCase {
-        OUTPUT_DATA_NOT_SET = 0,
-        BLOCK_TRIGGER = 10,
-        FIXED_TIME_TRIGGER = 11,
-        CRON_TRIGGER = 12,
-        EVENT_TRIGGER = 13,
-        MANUAL_TRIGGER = 14,
     }
 
 }
@@ -3069,29 +3055,6 @@ export namespace SimulateTaskReq {
         triggerConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
 
         inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
-    }
-}
-
-export class SimulateTaskResp extends jspb.Message { 
-
-    hasExecution(): boolean;
-    clearExecution(): void;
-    getExecution(): Execution | undefined;
-    setExecution(value?: Execution): SimulateTaskResp;
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SimulateTaskResp.AsObject;
-    static toObject(includeInstance: boolean, msg: SimulateTaskResp): SimulateTaskResp.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SimulateTaskResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SimulateTaskResp;
-    static deserializeBinaryFromReader(message: SimulateTaskResp, reader: jspb.BinaryReader): SimulateTaskResp;
-}
-
-export namespace SimulateTaskResp {
-    export type AsObject = {
-        execution?: Execution.AsObject,
     }
 }
 

@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
-import { TriggerType, ExecutionStatus } from "@avaprotocol/types";
+import { TriggerType, ExecutionStatus, NodeType } from "@avaprotocol/types";
 import _ from "lodash";
 import {
   getAddress,
@@ -73,11 +73,22 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
       expect(execution.success).toBe(true);
-      expect(execution.triggerType).toEqual(TriggerType.Block);
-      expect(execution.triggerOutput).toEqual({
-        blockNumber: blockNumber + 5,
-      });
-      expect(Array.isArray(execution.stepsList)).toBe(true);
+      
+      // The execution contains only node steps, not trigger steps
+      // Trigger data is available as inputs to the nodes (e.g., "blockTrigger.data")
+      expect(execution.steps).toBeDefined();
+      expect(execution.steps.length).toBeGreaterThan(0);
+      
+      // The first step is the ETH transfer node
+      const ethTransferStep = execution.steps[0];
+      expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
+      expect(ethTransferStep.name).toEqual("send eth");
+      expect(ethTransferStep.success).toBe(true);
+      
+      // Verify the trigger data is available in the inputs
+      expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
+      
+      expect(Array.isArray(execution.steps)).toBe(true);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -151,11 +162,20 @@ describe("getExecution Tests", () => {
 
       const execution = await client.getExecution(workflowId, result.executionId);
       expect(execution.id).toEqual(result.executionId);
-      expect(execution.triggerType).toEqual(TriggerType.Cron);
-      expect(execution.triggerOutput).toEqual({
-        timestamp: (epoch + 60) * 1000,
-        timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-      });
+      
+      // The execution contains only node steps, not trigger steps
+      // Trigger data is available as inputs to the nodes (e.g., "cronTrigger.data")
+      expect(execution.steps).toBeDefined();
+      expect(execution.steps.length).toBeGreaterThan(0);
+      
+      // The first step is the ETH transfer node
+      const ethTransferStep = execution.steps[0];
+      expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
+      expect(ethTransferStep.name).toEqual("send eth");
+      expect(ethTransferStep.success).toBe(true);
+      
+      // Verify the trigger data is available in the inputs
+      expect(ethTransferStep.inputsList).toContain("cronTrigger.data");
 
       const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
       expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
@@ -209,10 +229,20 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
       expect(execution.success).toBe(true);
-      expect(execution.triggerType).toEqual(TriggerType.Block);
-      expect(execution.triggerOutput).toEqual({
-        blockNumber: blockNumber + 5,
-      });
+      
+      // The execution contains only node steps, not trigger steps
+      // Trigger data is available as inputs to the nodes (e.g., "blockTrigger.data")
+      expect(execution.steps).toBeDefined();
+      expect(execution.steps.length).toBeGreaterThan(0);
+      
+      // The first step is the ETH transfer node
+      const ethTransferStep = execution.steps[0];
+      expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
+      expect(ethTransferStep.name).toEqual("send eth");
+      expect(ethTransferStep.success).toBe(true);
+      
+      // Verify the trigger data is available in the inputs
+      expect(ethTransferStep.inputsList).toContain("blockTriggerForGetExecutionsTest.data");
 
       const executionStatus = await client.getExecutionStatus(workflowId, execution.id);
       expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);

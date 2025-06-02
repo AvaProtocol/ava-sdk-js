@@ -74,24 +74,27 @@ describe("SimulateTask", () => {
         trigger,
         nodes,
         edges,
-        triggerType: "manualTrigger",
+        triggerType: TriggerType.Manual,
         triggerConfig: {},
         inputVariables: {},
       });
 
       console.log("result", util.inspect(result, { depth: null }));
-      
-      expect(result).toBeDefined();
-      expect(result.execution).toBeDefined();
-      expect(result.error).toBeUndefined();
 
-      if (result.execution) {
-        expect(result.execution.success).toBe(true);
-        expect(result.execution.stepsList).toHaveLength(2); // trigger + node
-        
-        // TODO: Once server is restarted with new protobuf, we can verify nodeType and nodeName
-        // For now, just verify basic functionality works
-      }
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.steps).toHaveLength(2); // trigger + node
+
+      // Verify unified step structure
+      const triggerStep = result.steps[0];
+      expect(triggerStep.id).toBe(triggerId);
+      expect(triggerStep.type).toBe(TriggerType.Manual);
+      expect(triggerStep.name).toBe("manual trigger");
+
+      const nodeStep = result.steps[1];
+      expect(nodeStep.id).toBe(nodeId);
+      expect(nodeStep.type).toBe(NodeType.CustomCode);
+      expect(nodeStep.name).toBe("custom code");
     });
 
     test("should handle simulation with input variables", async () => {
@@ -129,7 +132,7 @@ describe("SimulateTask", () => {
         trigger,
         nodes,
         edges,
-        triggerType: "manualTrigger",
+        triggerType: TriggerType.Manual,
         triggerConfig: {},
         inputVariables: {
           name: "World",
@@ -138,12 +141,18 @@ describe("SimulateTask", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.execution).toBeDefined();
-      expect(result.error).toBeUndefined();
+      expect(result.success).toBe(true);
+      expect(result.steps).toHaveLength(2); // trigger + node
 
-      if (result.execution) {
-        expect(result.execution.success).toBe(true);
-      }
+      // Verify step structure with input variables
+      const triggerStep = result.steps[0];
+      expect(triggerStep.id).toBe(triggerId);
+      expect(triggerStep.type).toBe(TriggerType.Manual);
+
+      const nodeStep = result.steps[1];
+      expect(nodeStep.id).toBe(nodeId);
+      expect(nodeStep.type).toBe(NodeType.CustomCode);
+      expect(nodeStep.success).toBe(true);
     });
   });
 
@@ -189,7 +198,7 @@ describe("SimulateTask", () => {
         trigger,
         nodes,
         edges,
-        triggerType: "fixedTimeTrigger",
+        triggerType: TriggerType.FixedTime,
         triggerConfig: {
           timestamp: timestamp,
         },
@@ -197,13 +206,19 @@ describe("SimulateTask", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.execution).toBeDefined();
-      expect(result.error).toBeUndefined();
+      expect(result.success).toBe(true);
+      expect(result.steps).toHaveLength(2); // trigger + node
 
-      if (result.execution) {
-        expect(result.execution.success).toBe(true);
-        expect(result.execution.stepsList).toHaveLength(2); // trigger + node
-      }
+      // Verify unified step structure
+      const triggerStep = result.steps[0];
+      expect(triggerStep.id).toBe(triggerId);
+      expect(triggerStep.type).toBe(TriggerType.FixedTime);
+      expect(triggerStep.name).toBe("fixed time trigger");
+
+      const nodeStep = result.steps[1];
+      expect(nodeStep.id).toBe(nodeId);
+      expect(nodeStep.type).toBe(NodeType.RestAPI);
+      expect(nodeStep.name).toBe("rest api call");
     });
   });
 
@@ -259,19 +274,32 @@ describe("SimulateTask", () => {
         trigger,
         nodes,
         edges,
-        triggerType: "manualTrigger",
+        triggerType: TriggerType.Manual,
         triggerConfig: {},
         inputVariables: {},
       });
 
       expect(result).toBeDefined();
-      expect(result.execution).toBeDefined();
-      expect(result.error).toBeUndefined();
+      expect(result.success).toBe(true);
+      expect(result.steps).toHaveLength(3); // trigger + 2 nodes
 
-      if (result.execution) {
-        expect(result.execution.success).toBe(true);
-        expect(result.execution.stepsList).toHaveLength(3); // trigger + 2 nodes
-      }
+      // Verify all steps have unified structure
+      const triggerStep = result.steps[0];
+      expect(triggerStep.id).toBe(triggerId);
+      expect(triggerStep.type).toBe(TriggerType.Manual);
+      expect(triggerStep.name).toBe("manual trigger");
+
+      const node1Step = result.steps[1];
+      expect(node1Step.id).toBe(node1Id);
+      expect(node1Step.type).toBe(NodeType.CustomCode);
+      expect(node1Step.name).toBe("custom code 1");
+      expect(node1Step.success).toBe(true);
+
+      const node2Step = result.steps[2];
+      expect(node2Step.id).toBe(node2Id);
+      expect(node2Step.type).toBe(NodeType.CustomCode);
+      expect(node2Step.name).toBe("custom code 2");
+      expect(node2Step.success).toBe(true);
     });
   });
 
@@ -312,17 +340,26 @@ describe("SimulateTask", () => {
           trigger,
           nodes,
           edges,
-          triggerType: "manualTrigger",
+          triggerType: TriggerType.Manual,
           triggerConfig: {},
           inputVariables: {},
         });
 
         // If we get here, the simulation succeeded despite the error
         expect(result).toBeDefined();
-        if (result.execution) {
-          expect(result.execution.success).toBe(false);
-          expect(result.execution.error).toBeDefined();
-        }
+        expect(result.success).toBe(false);
+        expect(result.error).toBeDefined();
+
+        // Even failed simulations should have unified step structure
+        expect(result.steps).toHaveLength(2); // trigger + node
+        const triggerStep = result.steps[0];
+        expect(triggerStep.id).toBe(triggerId);
+        expect(triggerStep.type).toBe(TriggerType.Manual);
+
+        const nodeStep = result.steps[1];
+        expect(nodeStep.id).toBe(nodeId);
+        expect(nodeStep.type).toBe(NodeType.CustomCode);
+        expect(nodeStep.success).toBe(false);
       } catch (error: any) {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();

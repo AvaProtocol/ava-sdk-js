@@ -399,11 +399,6 @@ export interface SimulateTaskRequest {
   inputVariables?: Record<string, any>;
 }
 
-export interface SimulateTaskResponse {
-  execution?: Record<string, any>;
-  error?: string;
-}
-
 // Re-export protobuf enums for direct use
 export { NodeType as ProtobufNodeType, TriggerType as ProtobufTriggerType } from "@/grpc_codegen/avs_pb";
 
