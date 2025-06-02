@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 1.7.0
+
+### Minor Changes
+
+- a7578b6: Added SimulateWorkflow function and updated protobuf
+
+### Patch Changes
+
+- Updated dependencies [a7578b6]
+  - @avaprotocol/types@1.1.0
+
 ## 1.6.8
 
 ### Patch Changes

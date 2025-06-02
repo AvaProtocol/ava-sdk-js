@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.1.0
+
+### Minor Changes
+
+- a7578b6: Added SimulateWorkflow function and updated protobuf
+
 ## 1.0.8
 
 ### Patch Changes
