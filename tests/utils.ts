@@ -246,7 +246,7 @@ export const verifyExecutionStepResults = (
 ): void => {
   // Verify basic properties
   expect(actual).toBeDefined();
-  expect(actual.nodeId).toBe(expected.nodeId);
+  expect(actual.id).toBe(expected.id);
   expect(actual.success).toBe(expected.success);
   expect(actual.log).toBe(expected.log);
   expect(actual.error).toBe(expected.error);

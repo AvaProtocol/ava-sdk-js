@@ -3,6 +3,7 @@ import {
   Struct as ProtobufStruct,
   ListValue as ProtobufListValue 
 } from "google-protobuf/google/protobuf/struct_pb";
+import { TriggerType, NodeType } from "@avaprotocol/types";
 
 /**
  * Convert a protobuf Value to a JavaScript value
@@ -152,4 +153,83 @@ export function convertJSValueToProtobuf(value: any): ProtobufValue {
   }
 
   return protobufValue;
+}
+
+/**
+ * Convert protobuf trigger type string to SDK trigger type string
+ * 
+ * @param protobufType - The protobuf trigger type string (e.g., "TRIGGER_TYPE_MANUAL")
+ * @returns The SDK trigger type string (e.g., "manualTrigger")
+ */
+export function convertProtobufTriggerTypeToSdk(protobufType: string): string {
+  switch (protobufType) {
+    case 'TRIGGER_TYPE_MANUAL':
+      return TriggerType.Manual; // "manualTrigger"
+    case 'TRIGGER_TYPE_FIXED_TIME':
+      return TriggerType.FixedTime; // "fixedTimeTrigger"
+    case 'TRIGGER_TYPE_CRON':
+      return TriggerType.Cron; // "cronTrigger"
+    case 'TRIGGER_TYPE_BLOCK':
+      return TriggerType.Block; // "blockTrigger"
+    case 'TRIGGER_TYPE_EVENT':
+      return TriggerType.Event; // "eventTrigger"
+    case 'TRIGGER_TYPE_UNSPECIFIED':
+      return TriggerType.Unspecified; // "unspecified"
+    default:
+      console.warn(`Unknown trigger type: ${protobufType}, using raw value`);
+      return protobufType; // fallback to raw value
+  }
+}
+
+/**
+ * Convert protobuf node type string to SDK node type string
+ * 
+ * @param protobufType - The protobuf node type string (e.g., "NODE_TYPE_CUSTOM_CODE")
+ * @returns The SDK node type string (e.g., "customCode")
+ */
+export function convertProtobufNodeTypeToSdk(protobufType: string): string {
+  switch (protobufType) {
+    case 'NODE_TYPE_ETH_TRANSFER':
+      return NodeType.ETHTransfer; // "ethTransfer"
+    case 'NODE_TYPE_CONTRACT_WRITE':
+      return NodeType.ContractWrite; // "contractWrite"
+    case 'NODE_TYPE_CONTRACT_READ':
+      return NodeType.ContractRead; // "contractRead"
+    case 'NODE_TYPE_GRAPHQL_QUERY':
+      return NodeType.GraphQLQuery; // "graphql"
+    case 'NODE_TYPE_REST_API':
+      return NodeType.RestAPI; // "restApi"
+    case 'NODE_TYPE_CUSTOM_CODE':
+      return NodeType.CustomCode; // "customCode"
+    case 'NODE_TYPE_BRANCH':
+      return NodeType.Branch; // "branch"
+    case 'NODE_TYPE_FILTER':
+      return NodeType.Filter; // "filter"
+    case 'NODE_TYPE_LOOP':
+      return NodeType.Loop; // "loop"
+    case 'NODE_TYPE_UNSPECIFIED':
+      return NodeType.Unspecified; // "unspecified"
+    default:
+      console.warn(`Unknown node type: ${protobufType}, using raw value`);
+      return protobufType; // fallback to raw value
+  }
+}
+
+/**
+ * Convert protobuf step type string to SDK step type string
+ * 
+ * Automatically detects whether the type is a trigger or node type and converts accordingly.
+ * 
+ * @param protobufType - The protobuf type string (e.g., "TRIGGER_TYPE_MANUAL" or "NODE_TYPE_CUSTOM_CODE")
+ * @returns The SDK type string (e.g., "manualTrigger" or "customCode")
+ */
+export function convertProtobufStepTypeToSdk(protobufType: string): string {
+  if (protobufType.startsWith('TRIGGER_TYPE_')) {
+    return convertProtobufTriggerTypeToSdk(protobufType);
+  } else if (protobufType.startsWith('NODE_TYPE_')) {
+    return convertProtobufNodeTypeToSdk(protobufType);
+  } else {
+    console.warn(`Unknown step type: ${protobufType}, using raw value`);
+    return protobufType; // fallback to raw value
+  }
 }

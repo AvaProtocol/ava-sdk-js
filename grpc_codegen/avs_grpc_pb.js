@@ -4,7 +4,6 @@
 var grpc = require('@grpc/grpc-js');
 var avs_pb = require('./avs_pb.js');
 var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
-var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
@@ -393,6 +392,17 @@ function deserialize_aggregator_SetWalletReq(buffer_arg) {
   return avs_pb.SetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_SimulateTaskReq(arg) {
+  if (!(arg instanceof avs_pb.SimulateTaskReq)) {
+    throw new Error('Expected argument of type aggregator.SimulateTaskReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_SimulateTaskReq(buffer_arg) {
+  return avs_pb.SimulateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_Task(arg) {
   if (!(arg instanceof avs_pb.Task)) {
     throw new Error('Expected argument of type aggregator.Task');
@@ -728,6 +738,18 @@ runTrigger: {
     requestDeserialize: deserialize_aggregator_RunTriggerReq,
     responseSerialize: serialize_aggregator_RunTriggerResp,
     responseDeserialize: deserialize_aggregator_RunTriggerResp,
+  },
+  // SimulateTask allows executing a complete task simulation including trigger and all workflow nodes
+simulateTask: {
+    path: '/aggregator.Aggregator/SimulateTask',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.SimulateTaskReq,
+    responseType: avs_pb.Execution,
+    requestSerialize: serialize_aggregator_SimulateTaskReq,
+    requestDeserialize: deserialize_aggregator_SimulateTaskReq,
+    responseSerialize: serialize_aggregator_Execution,
+    responseDeserialize: deserialize_aggregator_Execution,
   },
 };
 

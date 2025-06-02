@@ -94,8 +94,8 @@ describe("CustomCode Module Imports Tests", () => {
       expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.items)?.stepsList,
-        (step) => step.nodeId === customCodeNodeProps.id
+        _.first(executions.items)?.steps,
+        (step) => step.id === customCodeNodeProps.id
       );
 
       if (_.isUndefined(matchStep)) {
@@ -157,8 +157,8 @@ describe("CustomCode Module Imports Tests", () => {
       expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.items)?.stepsList,
-        (step) => step.nodeId === customCodeNodeProps.id
+        _.first(executions.items)?.steps,
+        (step) => step.id === customCodeNodeProps.id
       );
 
       if (_.isUndefined(matchStep)) {
@@ -220,8 +220,8 @@ describe("CustomCode Module Imports Tests", () => {
       expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.items)?.stepsList,
-        (step) => step.nodeId === customCodeNodeProps.id
+        _.first(executions.items)?.steps,
+        (step) => step.id === customCodeNodeProps.id
       );
 
       if (_.isUndefined(matchStep)) {
@@ -297,8 +297,8 @@ describe("CustomCode Module Imports Tests", () => {
       expect(executions.items.length).toBe(1);
 
       const matchStep: Step | undefined = _.find(
-        _.first(executions.items)?.stepsList,
-        (step) => step.nodeId === customCodeNodeProps.id
+        _.first(executions.items)?.steps,
+        (step) => step.id === customCodeNodeProps.id
       );
 
       if (_.isUndefined(matchStep)) {
