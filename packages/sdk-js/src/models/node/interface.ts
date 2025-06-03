@@ -1,6 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { NodeTypeGoConverter, NodeTypeConverter } from "../../utils";
+import { NodeTypeGoConverter, NodeTypeConverter } from "@avaprotocol/types";
 import _ from "lodash";
 
 // Function to convert TaskStatus to string

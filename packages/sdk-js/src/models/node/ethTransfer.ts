@@ -2,7 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { ETHTransferNodeData } from "./types";
+import { ETHTransferNodeData } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
 export type ETHTransferNodeProps = NodeProps & {

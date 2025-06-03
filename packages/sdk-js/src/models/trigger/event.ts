@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
-import { EventTriggerDataType, EventTriggerOutput } from "../node/types";
+import { EventTriggerDataType } from "@avaprotocol/types";
 import util from "util";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
@@ -109,8 +109,8 @@ class EventTrigger extends Trigger {
    * @param rawData - The raw data from the gRPC response
    * @returns {EventTriggerOutput | undefined} - The converted data
    */
-  getOutput(): EventTriggerOutput | undefined {
-    return this.output as EventTriggerOutput;
+  getOutput(): any | undefined {
+    return this.output;
   }
 
   /**

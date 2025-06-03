@@ -39,36 +39,18 @@ import {
 
 import {
   NodeTypeGoConverter,
+} from "@avaprotocol/types";
+
+import {
   TriggerTypeGoConverter,
   TriggerTypeConverter,
 } from "./utils";
 
-import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
-export { ExecutionStatus };
 
-export {
-  CustomCodeLangs,
-  ContractWriteNodeData,
-  ContractReadNodeData,
-  BranchNodeData,
-  ETHTransferNodeData,
-  GraphQLQueryNodeData,
-  RestAPINodeData,
-  CustomCodeNodeData,
-  FilterNodeData,
-  LoopNodeData,
-  RestAPINodeOutput,
-  BlockTriggerDataType,
-  EventTriggerDataType,
-  FixedTimeTriggerDataType,
-  CronTriggerDataType,
-  BlockTriggerOutput,
-  EventTriggerOutput,
-  FixedTimeTriggerOutput,
-  CronTriggerOutput,
-  ManualTriggerOutput
-} from "./models/node/types";
+
+
+
 
 // Import the consolidated conversion utilities
 import { convertProtobufValueToJs, convertJSValueToProtobuf } from "./utils";
@@ -575,7 +557,7 @@ class Client extends BaseClient {
     workflowId: string,
     executionId: string,
     options?: RequestOptions
-  ): Promise<ExecutionStatus> {
+  ): Promise<any> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(workflowId);
     request.setExecutionId(executionId);

@@ -2,7 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { ContractReadNodeData } from "./types";
+import { ContractReadNodeData } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data

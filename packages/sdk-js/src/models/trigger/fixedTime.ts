@@ -1,7 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
-import { FixedTimeTriggerDataType, FixedTimeTriggerOutput } from "../node/types";
+import { FixedTimeTriggerDataType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { epochsList }
 export type FixedTimeTriggerProps = TriggerProps & {
@@ -60,8 +60,8 @@ class FixedTimeTrigger extends Trigger {
    * @param rawData - The raw data from the gRPC response
    * @returns {FixedTimeTriggerOutput | undefined} - The converted data
    */
-  getOutput(): FixedTimeTriggerOutput | undefined {
-    return this.output as FixedTimeTriggerOutput;
+  getOutput(): any | undefined {
+    return this.output;
   }
 
   /**

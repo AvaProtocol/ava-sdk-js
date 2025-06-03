@@ -2,7 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { CustomCodeNodeData, CustomCodeLangs } from "./types";
+import { CustomCodeNodeData, CustomCodeLangs } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
@@ -21,7 +21,7 @@ class CustomCodeNode extends Node {
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
-      data: raw.getCustomCode()!.getConfig()!.toObject() as CustomCodeNodeData,
+      data: raw.getCustomCode()!.getConfig()!.toObject() as unknown as CustomCodeNodeData,
     });
   }
 
@@ -34,7 +34,7 @@ class CustomCodeNode extends Node {
     const nodeData = new avs_pb.CustomCodeNode();
     
     const config = new avs_pb.CustomCodeNode.Config();
-    config.setLang((this.data as CustomCodeNodeData).lang);
+    config.setLang((this.data as CustomCodeNodeData).lang as any);
     config.setSource((this.data as CustomCodeNodeData).source);
     nodeData.setConfig(config);
 

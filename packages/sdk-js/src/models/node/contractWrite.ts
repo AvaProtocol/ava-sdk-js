@@ -2,7 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { ContractWriteNodeData } from "./types";
+import { ContractWriteNodeData } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi } }
 export type ContractWriteNodeProps = NodeProps & {

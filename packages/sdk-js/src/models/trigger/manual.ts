@@ -1,7 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerProps } from "./interface";
 import { TriggerType } from "@avaprotocol/types";
-import { ManualTriggerOutput } from "../node/types";
+
 
 export type ManualTriggerProps = TriggerProps & { 
   data?: Record<string, any> | null 
@@ -41,8 +41,8 @@ class ManualTrigger extends Trigger {
    * @param rawData - The raw data from the gRPC response
    * @returns {ManualTriggerOutput | undefined} - The converted data
    */
-  getOutput(): ManualTriggerOutput | undefined {
-    return this.output as ManualTriggerOutput;
+  getOutput(): any | undefined {
+    return this.output;
   }
 
   /**
@@ -56,4 +56,4 @@ class ManualTrigger extends Trigger {
   }
 }
 
-export default ManualTrigger;        
+export default ManualTrigger;                        

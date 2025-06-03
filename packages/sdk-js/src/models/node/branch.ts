@@ -1,6 +1,6 @@
 import { NodeProps } from "./interface";
 import { NodeType } from "@avaprotocol/types";
-import { BranchNodeData } from "./types";
+import { BranchNodeData } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
@@ -33,10 +33,10 @@ class BranchNode extends Node {
     const nodeData = new avs_pb.BranchNode();
     const config = new avs_pb.BranchNode.Config();
     
-    if ((this.data as BranchNodeData).conditionsList && 
-        (this.data as BranchNodeData).conditionsList.length > 0) {
-      
-      const conditionsList = (this.data as BranchNodeData).conditionsList.map(
+    if ((this.data as BranchNodeData).conditionsList &&
+        (this.data as BranchNodeData).conditionsList!.length > 0) {
+
+      const conditionsList = (this.data as BranchNodeData).conditionsList!.map(
         (condition: any) => {
           const conditionObj = new avs_pb.BranchNode.Condition();
           conditionObj.setId(condition.id);

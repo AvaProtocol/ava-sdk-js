@@ -1,7 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput, TriggerProps } from "./interface";
-import { TriggerType } from "@avaprotocol/types";
-import { CronTriggerDataType, CronTriggerOutput } from "../node/types";
+import { TriggerType, CronTriggerDataType } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { scheduleList }
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
@@ -58,8 +57,8 @@ class CronTrigger extends Trigger {
    * @param rawData - The raw data from the gRPC response
    * @returns {CronTriggerOutput | undefined} - The converted data
    */
-  getOutput(): CronTriggerOutput | undefined {
-    return this.output as CronTriggerOutput;
+  getOutput(): any | undefined {
+    return this.output;
   }
 
   /**

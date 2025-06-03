@@ -2,7 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { FilterNodeData } from "./types";
+import { FilterNodeData } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { expression, sourceId }
 export type FilterNodeProps = NodeProps & {
@@ -33,7 +33,7 @@ class FilterNode extends Node {
     const nodeData = new avs_pb.FilterNode();
     
     const config = new avs_pb.FilterNode.Config();
-    config.setExpression((this.data as FilterNodeData).expression);
+    config.setExpression((this.data as FilterNodeData).expression || "");
     config.setSourceId((this.data as FilterNodeData).sourceId || '');
     nodeData.setConfig(config);
 

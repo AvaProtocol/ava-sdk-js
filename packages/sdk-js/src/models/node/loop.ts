@@ -1,7 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Node, { NodeProps } from "./interface";
 import { NodeType } from "@avaprotocol/types";
-import { LoopNodeData } from "./types";
+import { LoopNodeData } from "@avaprotocol/types";
 import _ from "lodash";
 
 export type LoopNodeProps = NodeProps & {

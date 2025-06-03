@@ -1,6 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import _ from "lodash";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, NodeTypeGoConverter } from "@avaprotocol/types";
 import ContractWriteNode, {
   ContractWriteNodeProps,
 } from "./contractWrite";
@@ -30,7 +30,7 @@ import {
   CustomCodeNodeData,
   FilterNodeData,
   LoopNodeData
-} from "./types";
+} from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 class NodeFactory {

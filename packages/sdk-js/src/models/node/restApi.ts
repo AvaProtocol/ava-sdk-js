@@ -5,7 +5,7 @@ import { NodeType } from "@avaprotocol/types";
 import {
   RestAPINodeData,
   RestAPINodeOutput,
-} from "./types";
+} from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
@@ -43,10 +43,10 @@ class RestAPINode extends Node {
 
     if (
       (this.data as RestAPINodeData).headersMap &&
-      (this.data as RestAPINodeData).headersMap.length > 0
+      (this.data as RestAPINodeData).headersMap!.length > 0
     ) {
       const headersMap = config.getHeadersMap();
-      (this.data as RestAPINodeData).headersMap.forEach(
+      (this.data as RestAPINodeData).headersMap!.forEach(
         ([key, value]: [string, string]) => {
           headersMap.set(key, value);
         }

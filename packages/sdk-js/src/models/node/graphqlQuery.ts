@@ -2,7 +2,7 @@ import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType } from "@avaprotocol/types";
-import { GraphQLQueryNodeData } from "./types";
+import { GraphQLQueryNodeData } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, query, variablesMap }
 export type GraphQLQueryNodeProps = NodeProps & {
@@ -41,9 +41,9 @@ class GraphQLQueryNode extends Node {
     config.setQuery((this.data as GraphQLQueryNodeData).query);
     
     if ((this.data as GraphQLQueryNodeData).variablesMap && 
-        (this.data as GraphQLQueryNodeData).variablesMap.length > 0) {
+        (this.data as GraphQLQueryNodeData).variablesMap!.length > 0) {
       const variablesMap = config.getVariablesMap();
-      (this.data as GraphQLQueryNodeData).variablesMap.forEach(([key, value]: [string, string]) => {
+      (this.data as GraphQLQueryNodeData).variablesMap!.forEach(([key, value]: [string, string]) => {
         variablesMap.set(key, value);
       });
     }
