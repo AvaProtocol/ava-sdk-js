@@ -4,6 +4,7 @@ import {
   ListValue as ProtobufListValue 
 } from "google-protobuf/google/protobuf/struct_pb";
 import { TriggerType, NodeType } from "@avaprotocol/types";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 
 /**
  * Convert a protobuf Value to a JavaScript value
@@ -233,3 +234,187 @@ export function convertProtobufStepTypeToSdk(protobufType: string): string {
     return protobufType; // fallback to raw value
   }
 }
+
+export const TriggerTypeConverter = {
+  toProtobuf: (type: TriggerType): avs_pb.TriggerType => {
+    switch (type) {
+      case TriggerType.Manual:
+        return avs_pb.TriggerType.TRIGGER_TYPE_MANUAL;
+      case TriggerType.FixedTime:
+        return avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME;
+      case TriggerType.Cron:
+        return avs_pb.TriggerType.TRIGGER_TYPE_CRON;
+      case TriggerType.Block:
+        return avs_pb.TriggerType.TRIGGER_TYPE_BLOCK;
+      case TriggerType.Event:
+        return avs_pb.TriggerType.TRIGGER_TYPE_EVENT;
+      case TriggerType.Unspecified:
+      default:
+        return avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED;
+    }
+  },
+
+  fromProtobuf: (type: avs_pb.TriggerType): TriggerType => {
+    switch (type) {
+      case avs_pb.TriggerType.TRIGGER_TYPE_MANUAL:
+        return TriggerType.Manual;
+      case avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME:
+        return TriggerType.FixedTime;
+      case avs_pb.TriggerType.TRIGGER_TYPE_CRON:
+        return TriggerType.Cron;
+      case avs_pb.TriggerType.TRIGGER_TYPE_BLOCK:
+        return TriggerType.Block;
+      case avs_pb.TriggerType.TRIGGER_TYPE_EVENT:
+        return TriggerType.Event;
+      case avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED:
+      default:
+        return TriggerType.Unspecified;
+    }
+  }
+};
+
+export const TriggerTypeGoConverter = {
+  toGoString: (triggerType: avs_pb.TriggerType): string => {
+    switch (triggerType) {
+      case avs_pb.TriggerType.TRIGGER_TYPE_MANUAL:
+        return "manualTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME:
+        return "fixedTimeTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_CRON:
+        return "cronTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_BLOCK:
+        return "blockTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_EVENT:
+        return "eventTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED:
+      default:
+        return "unspecified";
+    }
+  },
+  
+  fromGoString: (goString: string): avs_pb.TriggerType => {
+    switch (goString) {
+      case "manualTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_MANUAL;
+      case "fixedTimeTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME;
+      case "cronTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_CRON;
+      case "blockTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_BLOCK;
+      case "eventTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_EVENT;
+      case "unspecified":
+      default:
+        return avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED;
+    }
+  }
+};
+
+export const NodeTypeConverter = {
+  toProtobuf: (type: NodeType): avs_pb.NodeType => {
+    switch (type) {
+      case NodeType.ETHTransfer:
+        return avs_pb.NodeType.NODE_TYPE_ETH_TRANSFER;
+      case NodeType.ContractWrite:
+        return avs_pb.NodeType.NODE_TYPE_CONTRACT_WRITE;
+      case NodeType.ContractRead:
+        return avs_pb.NodeType.NODE_TYPE_CONTRACT_READ;
+      case NodeType.GraphQLQuery:
+        return avs_pb.NodeType.NODE_TYPE_GRAPHQL_QUERY;
+      case NodeType.RestAPI:
+        return avs_pb.NodeType.NODE_TYPE_REST_API;
+      case NodeType.CustomCode:
+        return avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE;
+      case NodeType.Branch:
+        return avs_pb.NodeType.NODE_TYPE_BRANCH;
+      case NodeType.Filter:
+        return avs_pb.NodeType.NODE_TYPE_FILTER;
+      case NodeType.Loop:
+        return avs_pb.NodeType.NODE_TYPE_LOOP;
+      case NodeType.Unspecified:
+      default:
+        return avs_pb.NodeType.NODE_TYPE_UNSPECIFIED;
+    }
+  },
+
+  fromProtobuf: (type: avs_pb.NodeType): NodeType => {
+    switch (type) {
+      case avs_pb.NodeType.NODE_TYPE_ETH_TRANSFER:
+        return NodeType.ETHTransfer;
+      case avs_pb.NodeType.NODE_TYPE_CONTRACT_WRITE:
+        return NodeType.ContractWrite;
+      case avs_pb.NodeType.NODE_TYPE_CONTRACT_READ:
+        return NodeType.ContractRead;
+      case avs_pb.NodeType.NODE_TYPE_GRAPHQL_QUERY:
+        return NodeType.GraphQLQuery;
+      case avs_pb.NodeType.NODE_TYPE_REST_API:
+        return NodeType.RestAPI;
+      case avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE:
+        return NodeType.CustomCode;
+      case avs_pb.NodeType.NODE_TYPE_BRANCH:
+        return NodeType.Branch;
+      case avs_pb.NodeType.NODE_TYPE_FILTER:
+        return NodeType.Filter;
+      case avs_pb.NodeType.NODE_TYPE_LOOP:
+        return NodeType.Loop;
+      case avs_pb.NodeType.NODE_TYPE_UNSPECIFIED:
+      default:
+        return NodeType.Unspecified;
+    }
+  }
+};
+
+export const NodeTypeGoConverter = {
+  toGoString: (nodeType: avs_pb.NodeType): string => {
+    switch (nodeType) {
+      case avs_pb.NodeType.NODE_TYPE_ETH_TRANSFER:
+        return "ethTransfer";
+      case avs_pb.NodeType.NODE_TYPE_CONTRACT_WRITE:
+        return "contractWrite";
+      case avs_pb.NodeType.NODE_TYPE_CONTRACT_READ:
+        return "contractRead";
+      case avs_pb.NodeType.NODE_TYPE_GRAPHQL_QUERY:
+        return "graphql";
+      case avs_pb.NodeType.NODE_TYPE_REST_API:
+        return "restApi";
+      case avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE:
+        return "customCode";
+      case avs_pb.NodeType.NODE_TYPE_BRANCH:
+        return "branch";
+      case avs_pb.NodeType.NODE_TYPE_FILTER:
+        return "filter";
+      case avs_pb.NodeType.NODE_TYPE_LOOP:
+        return "loop";
+      case avs_pb.NodeType.NODE_TYPE_UNSPECIFIED:
+      default:
+        return "unspecified";
+    }
+  },
+  
+  fromGoString: (goString: string): avs_pb.NodeType => {
+    switch (goString) {
+      case "ethTransfer":
+        return avs_pb.NodeType.NODE_TYPE_ETH_TRANSFER;
+      case "contractWrite":
+        return avs_pb.NodeType.NODE_TYPE_CONTRACT_WRITE;
+      case "contractRead":
+        return avs_pb.NodeType.NODE_TYPE_CONTRACT_READ;
+      case "graphql":
+        return avs_pb.NodeType.NODE_TYPE_GRAPHQL_QUERY;
+      case "restApi":
+        return avs_pb.NodeType.NODE_TYPE_REST_API;
+      case "customCode":
+        return avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE;
+      case "branch":
+        return avs_pb.NodeType.NODE_TYPE_BRANCH;
+      case "filter":
+        return avs_pb.NodeType.NODE_TYPE_FILTER;
+      case "loop":
+        return avs_pb.NodeType.NODE_TYPE_LOOP;
+      case "unspecified":
+      default:
+        return avs_pb.NodeType.NODE_TYPE_UNSPECIFIED;
+    }
+  }
+};

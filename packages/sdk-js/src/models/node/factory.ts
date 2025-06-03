@@ -1,5 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import _ from "lodash";
+import { NodeType } from "@avaprotocol/types";
 import ContractWriteNode, {
   ContractWriteNodeProps,
 } from "./contractWrite";
@@ -9,19 +10,16 @@ import CustomCodeNode, {
 import GraphQLQueryNode, {
   GraphQLQueryNodeProps,
 } from "./graphqlQuery";
+import BranchNode, { BranchNodeProps } from "./branch";
+import FilterNode, { FilterNodeProps } from "./filter";
+import LoopNode, { LoopNodeProps } from "./loop";
+import ETHTransferNode, { ETHTransferNodeProps } from "./ethTransfer";
 import Node, { NodeProps } from "./interface";
 import RestAPINode, { RestAPINodeProps } from "./restApi";
 import ContractReadNode, {
   ContractReadNodeProps,
 } from "./contractRead";
-import ETHTransferNode, {
-  ETHTransferNodeProps,
-} from "./ethTransfer";
-import BranchNode, { BranchNodeProps } from "./branch";
-import FilterNode, { FilterNodeProps } from "./filter";
-import LoopNode, { LoopNodeProps } from "./loop";
-import { 
-  NodeType,
+import {
   CustomCodeLangs,
   ContractWriteNodeData,
   ContractReadNodeData,
@@ -32,7 +30,7 @@ import {
   CustomCodeNodeData,
   FilterNodeData,
   LoopNodeData
-} from "@avaprotocol/types";
+} from "./types";
 import { convertProtobufValueToJs } from "../../utils";
 
 class NodeFactory {

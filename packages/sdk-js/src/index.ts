@@ -31,16 +31,41 @@ import type {
   SimulateTaskRequest,
 } from "@avaprotocol/types";
 
+import { TriggerType } from "@avaprotocol/types";
 import {
-  TriggerType,
   NodeTypeGoConverter,
   TriggerTypeGoConverter,
   TriggerTypeConverter,
-} from "@avaprotocol/types";
+} from "./utils";
 
 import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
+
+export { ExecutionStatus };
+
+export {
+  CustomCodeLangs,
+  ContractWriteNodeData,
+  ContractReadNodeData,
+  BranchNodeData,
+  ETHTransferNodeData,
+  GraphQLQueryNodeData,
+  RestAPINodeData,
+  CustomCodeNodeData,
+  FilterNodeData,
+  LoopNodeData,
+  RestAPINodeOutput,
+  BlockTriggerDataType,
+  EventTriggerDataType,
+  FixedTimeTriggerDataType,
+  CronTriggerDataType,
+  BlockTriggerOutput,
+  EventTriggerOutput,
+  FixedTimeTriggerOutput,
+  CronTriggerOutput,
+  ManualTriggerOutput
+} from "./models/node/types";
 
 // Import the consolidated conversion utilities
 import { convertProtobufValueToJs, convertJSValueToProtobuf } from "./utils";
@@ -245,7 +270,7 @@ class Client extends BaseClient {
       avs_pb.ListWalletReq
     >("listWallets", request, options);
 
-    return result.getItemsList().map((item) => item.toObject());
+    return result.getItemsList().map((item) => item.toObject() as any);
   }
 
   /**
@@ -276,6 +301,7 @@ class Client extends BaseClient {
     return {
       address: result.getAddress(),
       salt: result.getSalt(),
+      factoryAddress: result.getFactoryAddress(),
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
@@ -318,6 +344,7 @@ class Client extends BaseClient {
     return {
       address: result.getAddress(),
       salt: result.getSalt(),
+      factoryAddress: result.getFactoryAddress(),
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
