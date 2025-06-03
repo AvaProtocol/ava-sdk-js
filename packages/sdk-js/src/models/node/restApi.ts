@@ -1,17 +1,16 @@
-import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   NodeType,
   RestAPINodeData,
   RestAPINodeOutput,
+  RestAPINodeProps,
+  NodeProps,
 } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
-export type RestAPINodeProps = NodeProps & {
-  data: RestAPINodeData;
-};
+
 
 class RestAPINode extends Node {
   constructor(props: RestAPINodeProps) {
@@ -20,7 +19,7 @@ class RestAPINode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): RestAPINode {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as RestAPINodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new RestAPINode({
       ...obj,
       type: NodeType.RestAPI,

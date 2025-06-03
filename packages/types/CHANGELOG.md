@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.0.0
+
+### Major Changes
+
+- cfbf435: Migrated type definitions for props into types package
+
 ## 1.1.1
 
 ### Patch Changes

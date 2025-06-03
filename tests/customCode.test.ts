@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { describe, beforeAll, expect, it } from "@jest/globals";
-import { Client, CustomCodeLangs, CustomCodeNodeProps, TriggerFactory, Step } from "@avaprotocol/sdk-js";
+import { Client, CustomCodeLangs, TriggerFactory, Step } from "@avaprotocol/sdk-js";
+import { CustomCodeNodeProps } from "@avaprotocol/types";
 import {
   NodeType,
   TriggerType,

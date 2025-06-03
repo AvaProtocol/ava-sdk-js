@@ -2,8 +2,11 @@ import _ from "lodash";
 import {
   Edge,
   NodeFactory,
-  NodeProps,
   TriggerFactory,
+  CustomCodeLangs,
+} from "@avaprotocol/sdk-js";
+import {
+  NodeProps,
   ContractWriteNodeProps,
   ContractReadNodeProps,
   ETHTransferNodeProps,
@@ -11,10 +14,9 @@ import {
   CustomCodeNodeProps,
   GraphQLQueryNodeProps,
   BranchNodeProps,
-  CustomCodeLangs,
   FilterNodeProps,
   WorkflowProps,
-} from "@avaprotocol/sdk-js";
+} from "@avaprotocol/types";
 import { getNextId } from "./utils";
 import { NodeType, TriggerType } from "@avaprotocol/types";
 import { ethers } from "ethers";

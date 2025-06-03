@@ -1,11 +1,9 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Node, { NodeProps } from "./interface";
-import { NodeType, LoopNodeData } from "@avaprotocol/types";
+import Node from "./interface";
+import { NodeType, LoopNodeData, LoopNodeProps, NodeProps } from "@avaprotocol/types";
 import _ from "lodash";
 
-export type LoopNodeProps = NodeProps & {
-  data: LoopNodeData;
-};
+
 
 class LoopNode extends Node {
   constructor(props: LoopNodeProps) {
@@ -13,6 +11,7 @@ class LoopNode extends Node {
   }
 
   static fromResponse(raw: avs_pb.TaskNode): LoopNode {
+    const obj = raw.toObject() as unknown as NodeProps;
     const loopNode = raw.getLoop();
     if (!loopNode) {
       throw new Error("Response does not contain a Loop node");
@@ -36,8 +35,7 @@ class LoopNode extends Node {
     } as LoopNodeData;
 
     return new LoopNode({
-      id: raw.getId(),
-      name: raw.getName(),
+      ...obj,
       type: NodeType.Loop,
       data: data,
     });

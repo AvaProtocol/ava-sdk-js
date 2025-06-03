@@ -1,13 +1,10 @@
-import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ContractReadNodeData } from "@avaprotocol/types";
+import { NodeType, ContractReadNodeData, ContractReadNodeProps, NodeProps } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data
-export type ContractReadNodeProps = NodeProps & {
-  data: ContractReadNodeData;
-};
+
 
 class ContractReadNode extends Node {
   constructor(props: ContractReadNodeProps) {
@@ -16,7 +13,7 @@ class ContractReadNode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): ContractReadNode {
     // Convert the raw object to ContractReadNodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as ContractReadNodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new ContractReadNode({
       ...obj,
       type: NodeType.ContractRead,

@@ -1,12 +1,9 @@
-import { NodeProps } from "./interface";
-import { NodeType, BranchNodeData } from "@avaprotocol/types";
+import { NodeType, BranchNodeData, BranchNodeProps, NodeProps } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
 // Required props for constructor: id, name, type and data: { conditionsList }
-export type BranchNodeProps = NodeProps & {
-  data: BranchNodeData;
-};
+
 
 class BranchNode extends Node {
   constructor(props: BranchNodeProps) {
@@ -15,7 +12,7 @@ class BranchNode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): BranchNode {
     // Convert the raw object to BranchNodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as BranchNodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new BranchNode({
       ...obj,
       type: NodeType.Branch,
