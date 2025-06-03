@@ -15,6 +15,7 @@ class ManualTrigger extends Trigger {
     const trigger = new avs_pb.TaskTrigger();
     trigger.setId(this.id);
     trigger.setName(this.name);
+    trigger.setType(avs_pb.TriggerType.TRIGGER_TYPE_MANUAL);
     
     trigger.setManual(true);
     

@@ -14,6 +14,7 @@ class BlockTrigger extends Trigger {
     const request = new avs_pb.TaskTrigger();
     request.setName(this.name);
     request.setId(this.id);
+    request.setType(avs_pb.TriggerType.TRIGGER_TYPE_BLOCK);
 
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);

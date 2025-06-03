@@ -3026,11 +3026,6 @@ export class SimulateTaskReq extends jspb.Message {
     getEdgesList(): Array<TaskEdge>;
     setEdgesList(value: Array<TaskEdge>): SimulateTaskReq;
     addEdges(value?: TaskEdge, index?: number): TaskEdge;
-    getTriggerType(): TriggerType;
-    setTriggerType(value: TriggerType): SimulateTaskReq;
-
-    getTriggerConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
-    clearTriggerConfigMap(): void;
 
     getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
     clearInputVariablesMap(): void;
@@ -3050,9 +3045,6 @@ export namespace SimulateTaskReq {
         trigger?: TaskTrigger.AsObject,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
-        triggerType: TriggerType,
-
-        triggerConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
 
         inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
     }

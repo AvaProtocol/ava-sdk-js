@@ -16,7 +16,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
-describe("SimulateTask", () => {
+describe("SimulateWorkflow", () => {
   let eoaAddress: string;
   let client: Client;
 
@@ -70,12 +70,10 @@ describe("SimulateTask", () => {
         },
       ];
 
-      const result = await client.simulateTask({
+      const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        triggerType: TriggerType.Manual,
-        triggerConfig: {},
         inputVariables: {},
       });
 
@@ -128,12 +126,10 @@ describe("SimulateTask", () => {
         },
       ];
 
-      const result = await client.simulateTask({
+      const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        triggerType: TriggerType.Manual,
-        triggerConfig: {},
         inputVariables: {
           name: "World",
           value: 42,
@@ -194,14 +190,10 @@ describe("SimulateTask", () => {
         },
       ];
 
-      const result = await client.simulateTask({
+      const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        triggerType: TriggerType.FixedTime,
-        triggerConfig: {
-          timestamp: timestamp,
-        },
         inputVariables: {},
       });
 
@@ -270,12 +262,10 @@ describe("SimulateTask", () => {
         },
       ];
 
-      const result = await client.simulateTask({
+      const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        triggerType: TriggerType.Manual,
-        triggerConfig: {},
         inputVariables: {},
       });
 
@@ -336,12 +326,10 @@ describe("SimulateTask", () => {
       ];
 
       try {
-        const result = await client.simulateTask({
+        const result = await client.simulateWorkflow({
           trigger,
           nodes,
           edges,
-          triggerType: TriggerType.Manual,
-          triggerConfig: {},
           inputVariables: {},
         });
 

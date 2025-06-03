@@ -28,7 +28,7 @@ import type {
   GetSecretsOptions,
   SecretOptions,
   TriggerDataProps,
-  SimulateTaskRequest,
+  SimulateWorkflowRequest,
 } from "@avaprotocol/types";
 
 import {
@@ -1004,18 +1004,16 @@ class Client extends BaseClient {
 
   /**
    * Simulate a complete task execution including trigger and all workflow nodes
-   * @param {SimulateTaskRequest} params - The parameters for simulating the task
+   * @param {SimulateWorkflowRequest} params - The parameters for simulating the task
    * @param {Record<string, any>} params.trigger - The trigger configuration
    * @param {Array<Record<string, any>>} params.nodes - The workflow nodes
    * @param {Array<Record<string, any>>} params.edges - The workflow edges
-   * @param {string} params.triggerType - The type of the trigger
-   * @param {Record<string, any>} params.triggerConfig - The trigger configuration
    * @param {Record<string, any>} params.inputVariables - Input variables for the simulation
    * @param {RequestOptions} options - Request options
    * @returns {Promise<Execution>} - The response from simulating the task
    */
-  async simulateTask(
-    { trigger, nodes, edges, triggerType, triggerConfig = {}, inputVariables = {} }: SimulateTaskRequest,
+  async simulateWorkflow(
+    { trigger, nodes, edges, inputVariables = {} }: SimulateWorkflowRequest,
     options?: RequestOptions
   ): Promise<Execution> {
     // Create the request
@@ -1038,16 +1036,6 @@ class Client extends BaseClient {
       return edgeSdk.toRequest();
     });
     request.setEdgesList(edgeMessages);
-
-    // Convert string triggerType to protobuf enum
-    const protobufTriggerType = TriggerTypeGoConverter.fromGoString(triggerType);
-    request.setTriggerType(protobufTriggerType);
-
-    // Set trigger configuration
-    const triggerConfigMap = request.getTriggerConfigMap();
-    for (const [key, value] of Object.entries(triggerConfig)) {
-      triggerConfigMap.set(key, convertJSValueToProtobuf(value));
-    }
 
     // Set input variables
     const inputVarsMap = request.getInputVariablesMap();
@@ -1090,5 +1078,5 @@ export type {
   RunNodeWithInputsResponse,
   RunTriggerRequest,
   RunTriggerResponse,
-  SimulateTaskRequest,
+  SimulateWorkflowRequest,
 };
