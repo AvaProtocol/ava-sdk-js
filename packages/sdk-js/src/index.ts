@@ -1084,7 +1084,7 @@ class Client extends BaseClient {
     
     return {
       token: token ? {
-        address: token.getAddress().toLowerCase(),
+        address: token.getAddress()?.toLowerCase(),
         name: token.getName(),
         symbol: token.getSymbol(),
         decimals: token.getDecimals()
