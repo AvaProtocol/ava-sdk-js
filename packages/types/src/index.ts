@@ -390,17 +390,12 @@ export interface RunTriggerResponse {
   triggerId?: string;
 }
 
-export interface SimulateTaskRequest {
+export interface SimulateWorkflowRequest {
   trigger: Record<string, any>;
   nodes: Array<Record<string, any>>;
   edges: Array<Record<string, any>>;
-  triggerType: string;
-  triggerConfig?: Record<string, any>;
   inputVariables?: Record<string, any>;
 }
-
-// Re-export protobuf enums for direct use
-export { NodeType as ProtobufNodeType, TriggerType as ProtobufTriggerType } from "@/grpc_codegen/avs_pb";
 
 export type TriggerDataProps =
   | { type: TriggerType.FixedTime; timestamp: number; timestampIso: string }
