@@ -4,9 +4,9 @@ import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import Workflow, { WorkflowProps } from "./models/workflow";
-import Edge, { EdgeProps } from "./models/edge";
-import Execution, { ExecutionProps, OutputDataProps } from "./models/execution";
-import Step, { StepProps } from "./models/step";
+import Edge from "./models/edge";
+import Execution from "./models/execution";
+import Step from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
@@ -29,8 +29,6 @@ import type {
   SecretOptions,
   TriggerDataProps,
   SimulateWorkflowRequest,
-  NodeProps,
-  TriggerProps,
 } from "@avaprotocol/types";
 
 import {
@@ -212,7 +210,7 @@ class BaseClient {
       const authKey = options?.authKey || this.authKey;
       if (authKey) {
         metadata.set(AUTH_KEY_HEADER, authKey);
-    }
+      }
 
       (this.rpcClient as any)[method](
         request,
@@ -223,7 +221,7 @@ class BaseClient {
           } else {
             resolve(response);
           }
-      }
+        }
       );
     });
   }
@@ -628,8 +626,10 @@ class Client extends BaseClient {
         blockOutput.setBlockNumber(blockData.blockNumber);
         if (blockData.blockHash) blockOutput.setBlockHash(blockData.blockHash);
         if (blockData.timestamp) blockOutput.setTimestamp(blockData.timestamp);
-        if (blockData.parentHash) blockOutput.setParentHash(blockData.parentHash);
-        if (blockData.difficulty) blockOutput.setDifficulty(blockData.difficulty);
+        if (blockData.parentHash)
+          blockOutput.setParentHash(blockData.parentHash);
+        if (blockData.difficulty)
+          blockOutput.setDifficulty(blockData.difficulty);
         if (blockData.gasLimit) blockOutput.setGasLimit(blockData.gasLimit);
         if (blockData.gasUsed) blockOutput.setGasUsed(blockData.gasUsed);
         request.setBlockTrigger(blockOutput);
@@ -659,7 +659,9 @@ class Client extends BaseClient {
           transferLog.setToAddress(eventData.transferLog.toAddress);
           transferLog.setValue(eventData.transferLog.value);
           transferLog.setValueFormatted(eventData.transferLog.valueFormatted);
-          transferLog.setTransactionIndex(eventData.transferLog.transactionIndex);
+          transferLog.setTransactionIndex(
+            eventData.transferLog.transactionIndex
+          );
           transferLog.setLogIndex(eventData.transferLog.logIndex);
           eventOutput.setTransferLog(transferLog);
         }
@@ -677,7 +679,9 @@ class Client extends BaseClient {
         // No output data for unspecified triggers
         break;
       default:
-        throw new Error(`Unsupported trigger type: ${(triggerData as any).type}`);
+        throw new Error(
+          `Unsupported trigger type: ${(triggerData as any).type}`
+        );
     }
 
     const result = await this.sendGrpcRequest<
@@ -924,44 +928,44 @@ class Client extends BaseClient {
       TriggerType.Manual,
     ];
     if (triggerTypes.includes(nodeType as TriggerType)) {
-        return {
-          success: false,
+      return {
+        success: false,
         error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
-          nodeId: "",
-        };
-      }
+        nodeId: "",
+      };
+    }
 
-      // Create the request
-      const request = new avs_pb.RunNodeWithInputsReq();
-      
+    // Create the request
+    const request = new avs_pb.RunNodeWithInputsReq();
+
     // Convert string nodeType to protobuf enum for regular nodes
     const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
-      request.setNodeType(protobufNodeType);
+    request.setNodeType(protobufNodeType);
 
-      const nodeConfigMap = request.getNodeConfigMap();
-      for (const [key, value] of Object.entries(nodeConfig)) {
+    const nodeConfigMap = request.getNodeConfigMap();
+    for (const [key, value] of Object.entries(nodeConfig)) {
       nodeConfigMap.set(key, convertJSValueToProtobuf(value));
-      }
+    }
 
-      if (inputVariables && Object.keys(inputVariables).length > 0) {
-        const inputVarsMap = request.getInputVariablesMap();
-        for (const [key, value] of Object.entries(inputVariables)) {
+    if (inputVariables && Object.keys(inputVariables).length > 0) {
+      const inputVarsMap = request.getInputVariablesMap();
+      for (const [key, value] of Object.entries(inputVariables)) {
         inputVarsMap.set(key, convertJSValueToProtobuf(value));
-        }
       }
+    }
 
-      // Send the request directly to the server
-      const result = await this.sendGrpcRequest<
-        avs_pb.RunNodeWithInputsResp,
-        avs_pb.RunNodeWithInputsReq
-      >("runNodeWithInputs", request, options);
+    // Send the request directly to the server
+    const result = await this.sendGrpcRequest<
+      avs_pb.RunNodeWithInputsResp,
+      avs_pb.RunNodeWithInputsReq
+    >("runNodeWithInputs", request, options);
 
-      return {
-        success: result.getSuccess(),
+    return {
+      success: result.getSuccess(),
       data: NodeFactory.fromOutputData(result),
-        error: result.getError(),
-        nodeId: result.getNodeId(),
-      };
+      error: result.getError(),
+      nodeId: result.getNodeId(),
+    };
   }
 
   /**
@@ -1070,4 +1074,4 @@ export {
   Secret,
 };
 
-export type { WorkflowProps, EdgeProps, ExecutionProps, StepProps, OutputDataProps, NodeProps, TriggerProps, };
+export type { WorkflowProps };

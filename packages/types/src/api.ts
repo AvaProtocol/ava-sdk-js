@@ -1,3 +1,7 @@
+import { NodeProps } from "./node";
+import { TriggerProps } from "./trigger";
+import { EdgeProps } from "./workflow";
+
 export interface RequestOptions {
   authKey?: string;
 }
@@ -48,4 +52,11 @@ export interface RunTriggerResponse {
   data?: Record<string, any>;
   error?: string;
   triggerId?: string;
+}
+
+export interface SimulateWorkflowRequest {
+  trigger: TriggerProps;
+  nodes: Array<NodeProps>;
+  edges: Array<EdgeProps>;
+  inputVariables?: Record<string, any>;
 }
