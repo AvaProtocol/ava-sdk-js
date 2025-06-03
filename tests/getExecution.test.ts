@@ -74,21 +74,25 @@ describe("getExecution Tests", () => {
       expect(execution.id).toEqual(triggerResult.executionId);
       expect(execution.success).toBe(true);
       
-      // The execution contains only node steps, not trigger steps
-      // Trigger data is available as inputs to the nodes (e.g., "blockTrigger.data")
+      // The execution now contains both trigger and node steps
+      // Step 0: Trigger step, Step 1: ETH transfer node
       expect(execution.steps).toBeDefined();
-      expect(execution.steps.length).toBeGreaterThan(0);
+      expect(execution.steps.length).toBeGreaterThanOrEqual(2);
       
-      // The first step is the ETH transfer node
-      const ethTransferStep = execution.steps[0];
+      // The first step should be the trigger step
+      const triggerStep = execution.steps[0];
+      expect(triggerStep.type).toEqual(TriggerType.Block);
+      expect(triggerStep.name).toEqual("blockTrigger");
+      expect(triggerStep.success).toBe(true);
+      
+      // The second step should be the ETH transfer node
+      const ethTransferStep = execution.steps[1];
       expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
       expect(ethTransferStep.name).toEqual("send eth");
       expect(ethTransferStep.success).toBe(true);
       
       // Verify the trigger data is available in the inputs
       expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
-      
-      expect(Array.isArray(execution.steps)).toBe(true);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -163,13 +167,19 @@ describe("getExecution Tests", () => {
       const execution = await client.getExecution(workflowId, result.executionId);
       expect(execution.id).toEqual(result.executionId);
       
-      // The execution contains only node steps, not trigger steps
-      // Trigger data is available as inputs to the nodes (e.g., "cronTrigger.data")
+      // The execution now contains both trigger and node steps
+      // Step 0: Trigger step, Step 1: ETH transfer node
       expect(execution.steps).toBeDefined();
-      expect(execution.steps.length).toBeGreaterThan(0);
+      expect(execution.steps.length).toBeGreaterThanOrEqual(2);
       
-      // The first step is the ETH transfer node
-      const ethTransferStep = execution.steps[0];
+      // The first step should be the trigger step
+      const triggerStep = execution.steps[0];
+      expect(triggerStep.type).toEqual(TriggerType.Cron);
+      expect(triggerStep.name).toEqual("cronTrigger");
+      expect(triggerStep.success).toBe(true);
+      
+      // The second step should be the ETH transfer node
+      const ethTransferStep = execution.steps[1];
       expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
       expect(ethTransferStep.name).toEqual("send eth");
       expect(ethTransferStep.success).toBe(true);
@@ -230,13 +240,19 @@ describe("getExecution Tests", () => {
       expect(execution.id).toEqual(executionIdFromList);
       expect(execution.success).toBe(true);
       
-      // The execution contains only node steps, not trigger steps
-      // Trigger data is available as inputs to the nodes (e.g., "blockTrigger.data")
+      // The execution now contains both trigger and node steps
+      // Step 0: Trigger step, Step 1: ETH transfer node
       expect(execution.steps).toBeDefined();
-      expect(execution.steps.length).toBeGreaterThan(0);
+      expect(execution.steps.length).toBeGreaterThanOrEqual(2);
       
-      // The first step is the ETH transfer node
-      const ethTransferStep = execution.steps[0];
+      // The first step should be the trigger step
+      const triggerStep = execution.steps[0];
+      expect(triggerStep.type).toEqual(TriggerType.Block);
+      expect(triggerStep.name).toEqual("blockTriggerForGetExecutionsTest");
+      expect(triggerStep.success).toBe(true);
+      
+      // The second step should be the ETH transfer node
+      const ethTransferStep = execution.steps[1];
       expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
       expect(ethTransferStep.name).toEqual("send eth");
       expect(ethTransferStep.success).toBe(true);
