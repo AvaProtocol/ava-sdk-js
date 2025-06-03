@@ -16,29 +16,26 @@ import {
   TriggerTypeGoConverter,
   TriggerTypeConverter,
   AUTH_KEY_HEADER,
-  DEFAULT_LIMIT
-} from "@avaprotocol/types";
-
-import type {
-  WorkflowProps,
-  GetKeyResponse,
-  RequestOptions,
-  ClientOption,
-  SmartWallet,
-  GetWalletRequest,
-  GetExecutionsOptions,
-  GetWorkflowsOptions,
-  GetSignatureFormatResponse,
-  RunNodeWithInputsRequest,
-  RunNodeWithInputsResponse,
-  RunTriggerRequest,
-  RunTriggerResponse,
-  SecretProps,
-  PageInfo,
-  GetSecretsOptions,
-  SecretOptions,
-  TriggerDataProps,
-  SimulateWorkflowRequest
+  DEFAULT_LIMIT,
+  type WorkflowProps,
+  type GetKeyResponse,
+  type RequestOptions,
+  type ClientOption,
+  type SmartWallet,
+  type GetWalletRequest,
+  type GetExecutionsOptions,
+  type GetWorkflowsOptions,
+  type GetSignatureFormatResponse,
+  type RunNodeWithInputsRequest,
+  type RunNodeWithInputsResponse,
+  type RunTriggerRequest,
+  type RunTriggerResponse,
+  type SecretProps,
+  type PageInfo,
+  type GetSecretsOptions,
+  type SecretOptions,
+  type TriggerDataProps,
+  type SimulateWorkflowRequest
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
