@@ -23873,8 +23873,6 @@ proto.aggregator.SimulateTaskReq.toObject = function(includeInstance, msg) {
     proto.aggregator.TaskNode.toObject, includeInstance),
     edgesList: jspb.Message.toObjectList(msg.getEdgesList(),
     proto.aggregator.TaskEdge.toObject, includeInstance),
-    triggerType: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    triggerConfigMap: (f = msg.getTriggerConfigMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : [],
     inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
@@ -23926,16 +23924,6 @@ proto.aggregator.SimulateTaskReq.deserializeBinaryFromReader = function(msg, rea
       var value = new proto.aggregator.TaskEdge;
       reader.readMessage(value,proto.aggregator.TaskEdge.deserializeBinaryFromReader);
       msg.addEdges(value);
-      break;
-    case 4:
-      var value = /** @type {!proto.aggregator.TriggerType} */ (reader.readEnum());
-      msg.setTriggerType(value);
-      break;
-    case 5:
-      var value = msg.getTriggerConfigMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
-         });
       break;
     case 6:
       var value = msg.getInputVariablesMap();
@@ -23995,17 +23983,6 @@ proto.aggregator.SimulateTaskReq.serializeBinaryToWriter = function(message, wri
       f,
       proto.aggregator.TaskEdge.serializeBinaryToWriter
     );
-  }
-  f = message.getTriggerType();
-  if (f !== 0.0) {
-    writer.writeEnum(
-      4,
-      f
-    );
-  }
-  f = message.getTriggerConfigMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(5, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
   }
   f = message.getInputVariablesMap(true);
   if (f && f.getLength() > 0) {
@@ -24125,46 +24102,6 @@ proto.aggregator.SimulateTaskReq.prototype.addEdges = function(opt_value, opt_in
 proto.aggregator.SimulateTaskReq.prototype.clearEdgesList = function() {
   return this.setEdgesList([]);
 };
-
-
-/**
- * optional TriggerType trigger_type = 4;
- * @return {!proto.aggregator.TriggerType}
- */
-proto.aggregator.SimulateTaskReq.prototype.getTriggerType = function() {
-  return /** @type {!proto.aggregator.TriggerType} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
-};
-
-
-/**
- * @param {!proto.aggregator.TriggerType} value
- * @return {!proto.aggregator.SimulateTaskReq} returns this
- */
-proto.aggregator.SimulateTaskReq.prototype.setTriggerType = function(value) {
-  return jspb.Message.setProto3EnumField(this, 4, value);
-};
-
-
-/**
- * map<string, google.protobuf.Value> trigger_config = 5;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<string,!proto.google.protobuf.Value>}
- */
-proto.aggregator.SimulateTaskReq.prototype.getTriggerConfigMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<string,!proto.google.protobuf.Value>} */ (
-      jspb.Message.getMapField(this, 5, opt_noLazyCreate,
-      proto.google.protobuf.Value));
-};
-
-
-/**
- * Clears values from the map. The map will be non-null.
- * @return {!proto.aggregator.SimulateTaskReq} returns this
- */
-proto.aggregator.SimulateTaskReq.prototype.clearTriggerConfigMap = function() {
-  this.getTriggerConfigMap().clear();
-  return this;};
 
 
 /**
