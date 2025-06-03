@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 1.7.1
+
+### Patch Changes
+
+- 18a2273: Fix types package exported grpc libary; rename simulateTask to simulateWorkflow
+- Updated dependencies [18a2273]
+  - @avaprotocol/types@1.1.1
+
 ## 1.7.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 1.1.1
+
+### Patch Changes
+
+- 18a2273: Fix types package exported grpc libary; rename simulateTask to simulateWorkflow
+
 ## 1.1.0
 
 ### Minor Changes
