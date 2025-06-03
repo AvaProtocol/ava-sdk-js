@@ -4,14 +4,23 @@ import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import Workflow from "./models/workflow";
-import { WorkflowProps } from "@avaprotocol/types";
 import Edge from "./models/edge";
 import Execution from "./models/execution";
 import Step from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
+import {
+  TriggerType,
+  NodeTypeGoConverter,
+  TriggerTypeGoConverter,
+  TriggerTypeConverter,
+  AUTH_KEY_HEADER,
+  DEFAULT_LIMIT
+} from "@avaprotocol/types";
+
 import type {
+  WorkflowProps,
   GetKeyResponse,
   RequestOptions,
   ClientOption,
@@ -29,17 +38,8 @@ import type {
   GetSecretsOptions,
   SecretOptions,
   TriggerDataProps,
-  SimulateWorkflowRequest,
+  SimulateWorkflowRequest
 } from "@avaprotocol/types";
-
-import {
-  TriggerType,
-  NodeTypeGoConverter,
-  TriggerTypeGoConverter,
-  TriggerTypeConverter,
-} from "@avaprotocol/types";
-
-import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
