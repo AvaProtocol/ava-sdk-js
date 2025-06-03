@@ -31,14 +31,17 @@ import type {
   SimulateTaskRequest,
 } from "@avaprotocol/types";
 
-import { TriggerType } from "@avaprotocol/types";
+import {
+  TriggerType,
+  AUTH_KEY_HEADER,
+  DEFAULT_LIMIT,
+} from "@avaprotocol/types";
+
 import {
   NodeTypeGoConverter,
   TriggerTypeGoConverter,
   TriggerTypeConverter,
 } from "./utils";
-
-import { AUTH_KEY_HEADER, DEFAULT_LIMIT } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
