@@ -23,6 +23,11 @@ export interface GetTokenMetadataRequest {
 }
 
 /**
+ * Token source types for better type safety
+ */
+export type TokenSource = "whitelist" | "rpc" | "cache" | "";
+
+/**
  * Response containing token metadata
  */
 export interface GetTokenMetadataResponse {
@@ -31,10 +36,5 @@ export interface GetTokenMetadataResponse {
   /** Whether the token was found */
   found: boolean;
   /** Source of data: "whitelist", "rpc", or "cache" */
-  source: string;
-}
-
-/**
- * Token source types for better type safety
- */
-export type TokenSource = "whitelist" | "rpc" | "cache" | ""; 
+  source: TokenSource;
+} 

@@ -1084,13 +1084,13 @@ class Client extends BaseClient {
     
     return {
       token: token ? {
-        address: token.getAddress(),
+        address: token.getAddress().toLowerCase(),
         name: token.getName(),
         symbol: token.getSymbol(),
         decimals: token.getDecimals()
       } : null,
       found: result.getFound(),
-      source: result.getSource()
+      source: result.getSource() as TokenSource,
     };
   }
 }
