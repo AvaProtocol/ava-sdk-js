@@ -1,10 +1,8 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerProps } from "./interface";
-import { TriggerType, ManualTriggerOutput } from "@avaprotocol/types";
+import Trigger from "./interface";
+import { TriggerType, ManualTriggerOutput, ManualTriggerProps, TriggerProps } from "@avaprotocol/types";
 
-export type ManualTriggerProps = TriggerProps & { 
-  data?: Record<string, any> | null 
-};
+
 
 class ManualTrigger extends Trigger {
   constructor(props: ManualTriggerProps) {
@@ -56,4 +54,4 @@ class ManualTrigger extends Trigger {
   }
 }
 
-export default ManualTrigger;    
+export default ManualTrigger;                

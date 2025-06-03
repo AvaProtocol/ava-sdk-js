@@ -21,18 +21,7 @@ export const CustomCodeLangs = {
   Python: 1,
 };
 
-// Trigger DataTypes
-export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
-export type EventTriggerDataType = avs_pb.EventTrigger.Config.AsObject;
-export type FixedTimeTriggerDataType = avs_pb.FixedTimeTrigger.Config.AsObject;
-export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
 
-// Trigger Output Types
-export type BlockTriggerOutput = avs_pb.BlockTrigger.Output.AsObject;
-export type EventTriggerOutput = avs_pb.EventTrigger.Output.AsObject;
-export type FixedTimeTriggerOutput = avs_pb.FixedTimeTrigger.Output.AsObject;
-export type CronTriggerOutput = avs_pb.CronTrigger.Output.AsObject;
-export type ManualTriggerOutput = avs_pb.ManualTrigger.Output.AsObject;
 
 export type NodeData =
   | avs_pb.ETHTransferNode.AsObject
@@ -61,6 +50,16 @@ export type NodeProps = Omit<
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
 };
+
+export type LoopNodeProps = NodeProps & { data: LoopNodeData };
+export type ContractWriteNodeProps = NodeProps & { data: ContractWriteNodeData };
+export type ContractReadNodeProps = NodeProps & { data: ContractReadNodeData };
+export type ETHTransferNodeProps = NodeProps & { data: ETHTransferNodeData };
+export type RestAPINodeProps = NodeProps & { data: RestAPINodeData };
+export type CustomCodeNodeProps = NodeProps & { data: CustomCodeNodeData };
+export type GraphQLQueryNodeProps = NodeProps & { data: GraphQLQueryNodeData };
+export type BranchNodeProps = NodeProps & { data: BranchNodeData };
+export type FilterNodeProps = NodeProps & { data: FilterNodeData };
 export const NodeTypeConverter = {
   toProtobuf: (type: NodeType): avs_pb.NodeType => {
     switch (type) {

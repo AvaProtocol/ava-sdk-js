@@ -1,12 +1,9 @@
-import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, GraphQLQueryNodeData } from "@avaprotocol/types";
+import { NodeType, GraphQLQueryNodeData, GraphQLQueryNodeProps, NodeProps } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, query, variablesMap }
-export type GraphQLQueryNodeProps = NodeProps & {
-  data: GraphQLQueryNodeData;
-};
+
 
 class GraphQLQueryNode extends Node {
   constructor(props: GraphQLQueryNodeProps) {
@@ -19,7 +16,7 @@ class GraphQLQueryNode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): GraphQLQueryNode {
     // Convert the raw object to GraphQLQueryNodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as GraphQLQueryNodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new GraphQLQueryNode({
       ...obj,
       type: NodeType.GraphQLQuery,

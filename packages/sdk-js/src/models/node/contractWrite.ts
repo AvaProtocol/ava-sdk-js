@@ -1,12 +1,9 @@
-import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ContractWriteNodeData } from "@avaprotocol/types";
+import { NodeType, ContractWriteNodeData, ContractWriteNodeProps, NodeProps } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi } }
-export type ContractWriteNodeProps = NodeProps & {
-  data: ContractWriteNodeData;
-};
+
 
 class ContractWriteNode extends Node {
   constructor(props: ContractWriteNodeProps) {
@@ -15,7 +12,7 @@ class ContractWriteNode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): ContractWriteNode {
     // Convert the raw object to ContractWriteNodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as ContractWriteNodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,

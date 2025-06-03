@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerType } from "@avaprotocol/types";
+import { TriggerType, TriggerProps } from "@avaprotocol/types";
 
 export type TriggerData =
   | avs_pb.FixedTimeTrigger.AsObject
@@ -17,14 +17,7 @@ export type TriggerOutput =
   | avs_pb.ManualTrigger.Output.AsObject
   | null;
 
-export type TriggerProps = Omit<
-  avs_pb.TaskTrigger.AsObject,
-  "manual" | "fixedTime" | "cron" | "block" | "event" | "type"
-> & {
-  type: TriggerType;
-  data: TriggerData;
-  output?: TriggerOutput;
-};
+
 
 class Trigger implements TriggerProps {
   id: string;

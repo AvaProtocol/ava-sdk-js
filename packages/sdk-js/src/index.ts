@@ -3,7 +3,8 @@ import { credentials, Metadata } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
-import Workflow, { WorkflowProps } from "./models/workflow";
+import Workflow from "./models/workflow";
+import { WorkflowProps } from "@avaprotocol/types";
 import Edge from "./models/edge";
 import Execution from "./models/execution";
 import Step from "./models/step";
@@ -1073,5 +1074,3 @@ export {
   TriggerFactory,
   Secret,
 };
-
-export type { WorkflowProps };

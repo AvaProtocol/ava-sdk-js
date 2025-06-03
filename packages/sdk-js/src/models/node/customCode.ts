@@ -1,13 +1,10 @@
-import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, CustomCodeNodeData, CustomCodeLangs } from "@avaprotocol/types";
+import { NodeType, CustomCodeNodeData, CustomCodeLangs, CustomCodeNodeProps, NodeProps } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
-export type CustomCodeNodeProps = NodeProps & {
-  data: CustomCodeNodeData;
-};
+
 
 class CustomCodeNode extends Node {
   constructor(props: CustomCodeNodeProps) {
@@ -16,7 +13,7 @@ class CustomCodeNode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): CustomCodeNode {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as CustomCodeNodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,

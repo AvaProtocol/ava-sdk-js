@@ -1,6 +1,17 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "./enums";
 
+export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
+export type EventTriggerDataType = avs_pb.EventTrigger.Config.AsObject;
+export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
+export type FixedTimeTriggerDataType = avs_pb.FixedTimeTrigger.Config.AsObject;
+
+export type CronTriggerOutput = avs_pb.CronTrigger.Output.AsObject;
+export type EventTriggerOutput = avs_pb.EventTrigger.Output.AsObject;
+export type BlockTriggerOutput = avs_pb.BlockTrigger.Output.AsObject;
+export type FixedTimeTriggerOutput = avs_pb.FixedTimeTrigger.Output.AsObject;
+export type ManualTriggerOutput = avs_pb.ManualTrigger.Output.AsObject;
+
 export type TriggerData =
   | avs_pb.FixedTimeTrigger.AsObject
   | avs_pb.CronTrigger.AsObject
@@ -25,6 +36,14 @@ export type TriggerProps = Omit<
   data: TriggerData;
   output?: TriggerOutput;
 };
+
+export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
+export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
+export type ManualTriggerProps = TriggerProps & { data?: Record<string, any> | null };
+export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
+export type FixedTimeTriggerProps = TriggerProps & { data: FixedTimeTriggerDataType };
+
+
 export const TriggerTypeConverter = {
   toProtobuf: (type: TriggerType): avs_pb.TriggerType => {
     switch (type) {
