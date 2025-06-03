@@ -118,6 +118,8 @@ jobs:
 
       - name: Test Authentication
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
         run: yarn test:auth
 
       - name: Test Create Workflow
@@ -179,3 +181,15 @@ jobs:
       - name: Test Event Trigger
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn test:event
+
+      - name: Test BranchNode
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:branch
+
+      - name: Test FilterNode
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:filter

@@ -36,6 +36,8 @@
     "test:loop": "dotenv -e .env.$TEST_ENV jest tests/loopNode.test.ts --verbose --runInBand",
     "test:customcode": "dotenv -e .env.$TEST_ENV jest tests/customCode.test.ts --verbose --runInBand",
     "test:event": "dotenv -e .env.$TEST_ENV jest tests/eventTrigger.test.ts --verbose --runInBand",
+    "test:branch": "dotenv -e .env.$TEST_ENV jest tests/branchNode.test.ts --verbose --runInBand",
+    "test:filter": "dotenv -e .env.$TEST_ENV jest tests/filterNode.test.ts --verbose --runInBand",
     "test:select": "npm run test -- --testNamePattern",
     "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/"
