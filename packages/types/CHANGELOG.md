@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.0.1
+
+### Patch Changes
+
+- 45212f0: Added GetTokenMetadata function to retrieve whitelist token information
+
 ## 2.0.0
 
 ### Major Changes

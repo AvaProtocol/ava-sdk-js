@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.0.1
+
+### Patch Changes
+
+- 45212f0: Added GetTokenMetadata function to retrieve whitelist token information
+- Updated dependencies [45212f0]
+  - @avaprotocol/types@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
