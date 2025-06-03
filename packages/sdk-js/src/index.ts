@@ -29,6 +29,8 @@ import type {
   SecretOptions,
   TriggerDataProps,
   SimulateWorkflowRequest,
+  NodeProps,
+  TriggerProps,
 } from "@avaprotocol/types";
 
 import {
@@ -1068,15 +1070,4 @@ export {
   Secret,
 };
 
-export type {
-  WorkflowProps,
-  EdgeProps,
-  ExecutionProps,
-  StepProps,
-  OutputDataProps,
-  RunNodeWithInputsRequest,
-  RunNodeWithInputsResponse,
-  RunTriggerRequest,
-  RunTriggerResponse,
-  SimulateWorkflowRequest,
-};
+export type { WorkflowProps, EdgeProps, ExecutionProps, StepProps, OutputDataProps, NodeProps, TriggerProps, };
