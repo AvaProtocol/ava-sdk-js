@@ -161,6 +161,28 @@ function deserialize_aggregator_GetSignatureFormatResp(buffer_arg) {
   return avs_pb.GetSignatureFormatResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_GetTokenMetadataReq(arg) {
+  if (!(arg instanceof avs_pb.GetTokenMetadataReq)) {
+    throw new Error('Expected argument of type aggregator.GetTokenMetadataReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetTokenMetadataReq(buffer_arg) {
+  return avs_pb.GetTokenMetadataReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_GetTokenMetadataResp(arg) {
+  if (!(arg instanceof avs_pb.GetTokenMetadataResp)) {
+    throw new Error('Expected argument of type aggregator.GetTokenMetadataResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_GetTokenMetadataResp(buffer_arg) {
+  return avs_pb.GetTokenMetadataResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_GetWalletReq(arg) {
   if (!(arg instanceof avs_pb.GetWalletReq)) {
     throw new Error('Expected argument of type aggregator.GetWalletReq');
@@ -750,6 +772,18 @@ simulateTask: {
     requestDeserialize: deserialize_aggregator_SimulateTaskReq,
     responseSerialize: serialize_aggregator_Execution,
     responseDeserialize: deserialize_aggregator_Execution,
+  },
+  // GetTokenMetadata allows looking up ERC20 token metadata by contract address
+getTokenMetadata: {
+    path: '/aggregator.Aggregator/GetTokenMetadata',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.GetTokenMetadataReq,
+    responseType: avs_pb.GetTokenMetadataResp,
+    requestSerialize: serialize_aggregator_GetTokenMetadataReq,
+    requestDeserialize: deserialize_aggregator_GetTokenMetadataReq,
+    responseSerialize: serialize_aggregator_GetTokenMetadataResp,
+    responseDeserialize: deserialize_aggregator_GetTokenMetadataResp,
   },
 };
 

@@ -36,6 +36,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     runNodeWithInputs: IAggregatorService_IRunNodeWithInputs;
     runTrigger: IAggregatorService_IRunTrigger;
     simulateTask: IAggregatorService_ISimulateTask;
+    getTokenMetadata: IAggregatorService_IGetTokenMetadata;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -263,6 +264,15 @@ interface IAggregatorService_ISimulateTask extends grpc.MethodDefinition<avs_pb.
     responseSerialize: grpc.serialize<avs_pb.Execution>;
     responseDeserialize: grpc.deserialize<avs_pb.Execution>;
 }
+interface IAggregatorService_IGetTokenMetadata extends grpc.MethodDefinition<avs_pb.GetTokenMetadataReq, avs_pb.GetTokenMetadataResp> {
+    path: "/aggregator.Aggregator/GetTokenMetadata";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetTokenMetadataReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetTokenMetadataReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetTokenMetadataResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetTokenMetadataResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
@@ -292,6 +302,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     runNodeWithInputs: grpc.handleUnaryCall<avs_pb.RunNodeWithInputsReq, avs_pb.RunNodeWithInputsResp>;
     runTrigger: grpc.handleUnaryCall<avs_pb.RunTriggerReq, avs_pb.RunTriggerResp>;
     simulateTask: grpc.handleUnaryCall<avs_pb.SimulateTaskReq, avs_pb.Execution>;
+    getTokenMetadata: grpc.handleUnaryCall<avs_pb.GetTokenMetadataReq, avs_pb.GetTokenMetadataResp>;
 }
 
 export interface IAggregatorClient {
@@ -370,6 +381,9 @@ export interface IAggregatorClient {
     simulateTask(request: avs_pb.SimulateTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
     simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
     simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    getTokenMetadata(request: avs_pb.GetTokenMetadataReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -449,4 +463,7 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public simulateTask(request: avs_pb.SimulateTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
     public simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
     public simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
 }

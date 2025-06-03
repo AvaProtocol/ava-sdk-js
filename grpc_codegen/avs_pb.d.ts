@@ -9,6 +9,84 @@ import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wr
 import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
+export class TokenMetadata extends jspb.Message { 
+    getAddress(): string;
+    setAddress(value: string): TokenMetadata;
+    getName(): string;
+    setName(value: string): TokenMetadata;
+    getSymbol(): string;
+    setSymbol(value: string): TokenMetadata;
+    getDecimals(): number;
+    setDecimals(value: number): TokenMetadata;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): TokenMetadata.AsObject;
+    static toObject(includeInstance: boolean, msg: TokenMetadata): TokenMetadata.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: TokenMetadata, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): TokenMetadata;
+    static deserializeBinaryFromReader(message: TokenMetadata, reader: jspb.BinaryReader): TokenMetadata;
+}
+
+export namespace TokenMetadata {
+    export type AsObject = {
+        address: string,
+        name: string,
+        symbol: string,
+        decimals: number,
+    }
+}
+
+export class GetTokenMetadataReq extends jspb.Message { 
+    getAddress(): string;
+    setAddress(value: string): GetTokenMetadataReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetTokenMetadataReq.AsObject;
+    static toObject(includeInstance: boolean, msg: GetTokenMetadataReq): GetTokenMetadataReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetTokenMetadataReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetTokenMetadataReq;
+    static deserializeBinaryFromReader(message: GetTokenMetadataReq, reader: jspb.BinaryReader): GetTokenMetadataReq;
+}
+
+export namespace GetTokenMetadataReq {
+    export type AsObject = {
+        address: string,
+    }
+}
+
+export class GetTokenMetadataResp extends jspb.Message { 
+
+    hasToken(): boolean;
+    clearToken(): void;
+    getToken(): TokenMetadata | undefined;
+    setToken(value?: TokenMetadata): GetTokenMetadataResp;
+    getFound(): boolean;
+    setFound(value: boolean): GetTokenMetadataResp;
+    getSource(): string;
+    setSource(value: string): GetTokenMetadataResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GetTokenMetadataResp.AsObject;
+    static toObject(includeInstance: boolean, msg: GetTokenMetadataResp): GetTokenMetadataResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GetTokenMetadataResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GetTokenMetadataResp;
+    static deserializeBinaryFromReader(message: GetTokenMetadataResp, reader: jspb.BinaryReader): GetTokenMetadataResp;
+}
+
+export namespace GetTokenMetadataResp {
+    export type AsObject = {
+        token?: TokenMetadata.AsObject,
+        found: boolean,
+        source: string,
+    }
+}
+
 export class IdReq extends jspb.Message { 
     getId(): string;
     setId(value: string): IdReq;

@@ -35,7 +35,11 @@ import {
   type GetSecretsOptions,
   type SecretOptions,
   type TriggerDataProps,
-  type SimulateWorkflowRequest
+  type SimulateWorkflowRequest,
+  type GetTokenMetadataRequest,
+  type GetTokenMetadataResponse,
+  type TokenMetadata,
+  type TokenSource
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -1056,6 +1060,39 @@ class Client extends BaseClient {
     // Return the execution directly
     return Execution.fromResponse(result);
   }
+
+  /**
+   * Get token metadata by contract address
+   * @param {GetTokenMetadataRequest} params - The parameters for getting token metadata
+   * @param {string} params.address - The contract address to look up
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<GetTokenMetadataResponse>} - The response containing token metadata
+   */
+  async getTokenMetadata(
+    { address }: GetTokenMetadataRequest,
+    options?: RequestOptions
+  ): Promise<GetTokenMetadataResponse> {
+    const request = new avs_pb.GetTokenMetadataReq();
+    request.setAddress(address);
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetTokenMetadataResp,
+      avs_pb.GetTokenMetadataReq
+    >("getTokenMetadata", request, options);
+
+    const token = result.getToken();
+    
+    return {
+      token: token ? {
+        address: token.getAddress()?.toLowerCase(),
+        name: token.getName(),
+        symbol: token.getSymbol(),
+        decimals: token.getDecimals()
+      } : null,
+      found: result.getFound(),
+      source: result.getSource() as TokenSource,
+    };
+  }
 }
 
 export * from "./models/node/factory";
@@ -1071,3 +1108,11 @@ export {
   TriggerFactory,
   Secret,
 };
+
+// Re-export token types for convenience
+export type {
+  TokenMetadata,
+  GetTokenMetadataRequest,
+  GetTokenMetadataResponse,
+  TokenSource
+} from "@avaprotocol/types";

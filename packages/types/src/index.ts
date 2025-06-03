@@ -2,6 +2,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 export * from "./auth";
 export * from "./enums";
 export * from "./node";
+export * from "./token";
 export * from "./trigger";
 export * from "./workflow";
 export {
