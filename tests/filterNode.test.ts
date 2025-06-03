@@ -20,12 +20,21 @@ describe("FilterNode Preprocessing Tests", () => {
 
   beforeAll(async () => {
     const address = await getAddress(walletPrivateKey);
-    const signature = await generateSignature(walletPrivateKey, address);
     
     client = new Client({
       endpoint: avsEndpoint,
       factoryAddress,
     });
+
+    const { message } = await client.getSignatureFormat(address);
+    const signature = await generateSignature(message, walletPrivateKey);
+
+    const res = await client.authWithSignature({
+      message: message,
+      signature: signature,
+    });
+
+    client.setAuthKey(res.authKey);
   });
 
   describe("{{}} Preprocessing Tests", () => {
