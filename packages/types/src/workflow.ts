@@ -58,6 +58,13 @@ export type OutputDataProps =
   | avs_pb.Evm.Log.AsObject
   | { blockNumber: number } // Filtered block trigger output
   | { timestamp: number; timestampIso: string } // Filtered time trigger output (updated from epoch)
+  | { transactionHash: string } // ETH transfer output
+  | avs_pb.ETHTransferNode.Output.AsObject // ETH transfer node output
+  | avs_pb.ContractWriteNode.Output.AsObject // Contract write output
+  | avs_pb.BranchNode.Output.AsObject // Branch output
+  | any[] // Contract read output (array of converted protobuf values)
+  | any // Custom code, GraphQL, REST API, Filter outputs (converted JS values)
+  | string // Loop output
   | undefined;
 
 // Step Props
@@ -79,7 +86,7 @@ export type StepProps = Omit<
   | "eventTrigger"
   | "manualTrigger"
 > & {
-  output: any; // Changed to any to hold converted JS value
+  output: OutputDataProps;
 };
 
 // Execution Props

@@ -2,6 +2,15 @@ import { NodeProps } from "./node";
 import { TriggerProps } from "./trigger";
 import { EdgeProps } from "./workflow";
 
+export interface GetWalletRequest {
+  salt: string;
+  factoryAddress?: string;
+}
+export interface ClientOption {
+  endpoint: string;
+  factoryAddress?: string;
+}
+
 export interface RequestOptions {
   authKey?: string;
 }
@@ -23,19 +32,24 @@ export interface GetSecretsOptions extends RequestOptions {
   before?: string;
   after?: string;
   limit?: number;
-  includeTimestamps?: boolean;
-  includeCreatedBy?: boolean;
-  includeDescription?: boolean;
+  // Field control options for flexible response content
+  includeTimestamps?: boolean; // Include created_at and updated_at fields
+  includeCreatedBy?: boolean; // Include created_by field
+  includeDescription?: boolean; // Include description field
 }
 export interface SecretOptions extends RequestOptions {
+  name: string;
+  value: string;
   workflowId?: string;
   orgId?: string;
 }
+
 export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
   inputVariables?: Record<string, any>;
 }
+
 export interface RunNodeWithInputsResponse {
   success: boolean;
   data?: Record<string, any>;
@@ -43,10 +57,12 @@ export interface RunNodeWithInputsResponse {
   executionId?: string;
   nodeId?: string;
 }
+
 export interface RunTriggerRequest {
   triggerType: string;
   triggerConfig: Record<string, any>;
 }
+
 export interface RunTriggerResponse {
   success: boolean;
   data?: Record<string, any>;

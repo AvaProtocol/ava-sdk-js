@@ -1,11 +1,9 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { convertProtobufValueToJs, convertProtobufStepTypeToSdk } from "../utils";
-import { StepProps } from "@avaprotocol/types";
-
-
-
-// OutputDataProps is no longer a union of AsObject, it will be the converted JS type via 'output'
-// export type OutputDataProps = ... (removed)
+import {
+  convertProtobufValueToJs,
+  convertProtobufStepTypeToSdk,
+} from "../utils";
+import { StepProps, OutputDataProps } from "@avaprotocol/types";
 
 class Step implements StepProps {
   id: string;
@@ -15,7 +13,7 @@ class Step implements StepProps {
   error: string;
   log: string;
   inputsList: string[];
-  output: any;
+  output: OutputDataProps;
   startAt: number;
   endAt: number;
 
@@ -32,30 +30,36 @@ class Step implements StepProps {
     this.endAt = props.endAt;
   }
 
-  static getOutput(step: avs_pb.Execution.Step): any {
+  static getOutput(step: avs_pb.Execution.Step): OutputDataProps {
     const outputDataType = step.getOutputDataCase();
     let nodeOutputMessage;
 
     switch (outputDataType) {
       case avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET:
-        return null;
-      
+        return undefined;
+
       // Trigger outputs
       case avs_pb.Execution.Step.OutputDataCase.BLOCK_TRIGGER:
         const blockOutput = step.getBlockTrigger()?.toObject();
-        return blockOutput ? { blockNumber: blockOutput.blockNumber } : undefined;
+        return blockOutput
+          ? { blockNumber: blockOutput.blockNumber }
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.FIXED_TIME_TRIGGER:
         const fixedTimeOutput = step.getFixedTimeTrigger()?.toObject();
-        return fixedTimeOutput ? { 
-          timestamp: fixedTimeOutput.timestamp, 
-          timestampIso: fixedTimeOutput.timestampIso 
-        } : undefined;
+        return fixedTimeOutput
+          ? {
+              timestamp: fixedTimeOutput.timestamp,
+              timestampIso: fixedTimeOutput.timestampIso,
+            }
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.CRON_TRIGGER:
         const cronOutput = step.getCronTrigger()?.toObject();
-        return cronOutput ? { 
-          timestamp: cronOutput.timestamp, 
-          timestampIso: cronOutput.timestampIso
-        } : undefined;
+        return cronOutput
+          ? {
+              timestamp: cronOutput.timestamp,
+              timestampIso: cronOutput.timestampIso,
+            }
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.EVENT_TRIGGER:
         const eventTrigger = step.getEventTrigger();
         if (eventTrigger) {
@@ -69,10 +73,15 @@ class Step implements StepProps {
       case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER:
         const manualOutput = step.getManualTrigger()?.toObject();
         return manualOutput || undefined;
-      
+
       // Node outputs
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
-        return step.getEthTransfer()?.toObject();
+        const ethTransferOutput = step.getEthTransfer()?.toObject();
+        return ethTransferOutput
+          ? {
+              transactionHash: ethTransferOutput.transactionHash,
+            }
+          : undefined;
       case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
         nodeOutputMessage = step.getGraphql();
         return nodeOutputMessage && nodeOutputMessage.hasData()
