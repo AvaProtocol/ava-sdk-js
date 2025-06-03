@@ -183,8 +183,12 @@ jobs:
 
       - name: Test BranchNode
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: ${{ matrix.env }}
         run: yarn test:branch
 
       - name: Test FilterNode
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: ${{ matrix.env }}
         run: yarn test:filter
