@@ -1,9 +1,9 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput, TriggerProps } from "./interface";
-import { TriggerType, CronTriggerDataType, CronTriggerOutput } from "@avaprotocol/types";
+import Trigger, { TriggerOutput } from "./interface";
+import { TriggerType, CronTriggerDataType, CronTriggerOutput, CronTriggerProps, TriggerProps } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { scheduleList }
-export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
+
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {

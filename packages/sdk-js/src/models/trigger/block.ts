@@ -1,9 +1,9 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput, TriggerProps } from "./interface";
-import { TriggerType, BlockTriggerDataType, BlockTriggerOutput } from "@avaprotocol/types";
+import Trigger, { TriggerOutput } from "./interface";
+import { TriggerType, BlockTriggerDataType, BlockTriggerOutput, BlockTriggerProps, TriggerProps } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { interval }
-export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
+
 
 class BlockTrigger extends Trigger {
   constructor(props: BlockTriggerProps) {

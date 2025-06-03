@@ -1,26 +1,8 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { convertProtobufValueToJs, convertProtobufStepTypeToSdk } from "../utils";
+import { StepProps } from "@avaprotocol/types";
 
-export type StepProps = Omit<
-  avs_pb.Execution.Step.AsObject,
-  | "outputDataCase"
-  | "ethTransfer"
-  | "graphql"
-  | "contractRead"
-  | "contractWrite"
-  | "customCode"
-  | "restApi"
-  | "branch"
-  | "filter"
-  | "loop"
-  | "blockTrigger"
-  | "fixedTimeTrigger"
-  | "cronTrigger"
-  | "eventTrigger"
-  | "manualTrigger"
-> & {
-  output: any; // Changed to any to hold converted JS value
-};
+
 
 // OutputDataProps is no longer a union of AsObject, it will be the converted JS type via 'output'
 // export type OutputDataProps = ... (removed)

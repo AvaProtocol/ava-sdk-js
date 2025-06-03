@@ -7,9 +7,7 @@ import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
-import { WorkflowStatus } from "@avaprotocol/types";
-// TODO: Remove this when types package build works
-// import { WorkflowProps } from "@avaprotocol/types";
+import { WorkflowStatus, WorkflowProps } from "@avaprotocol/types";
 
 // Function to convert TaskStatus to string
 export function convertStatusToString(
@@ -26,31 +24,7 @@ export function convertStatusToString(
   return conversionMap[status] as WorkflowStatus;
 }
 
-// TODO: Remove this when types package build works - use import from @avaprotocol/types instead
-export type WorkflowProps = Omit<
-  avs_pb.Task.AsObject,
-  | "id"
-  | "owner"
-  | "completedAt"
-  | "status"
-  | "name"
-  | "trigger"
-  | "nodesList"
-  | "edgesList"
-  | "lastRanAt"
-  | "executionCount"
-> & {
-  id?: string;
-  owner?: string;
-  completedAt?: number;
-  status?: WorkflowStatus;
-  name?: string;
-  trigger: Trigger;
-  nodes: Node[];
-  edges: Edge[];
-  lastRanAt?: number;
-  executionCount?: number;
-};
+
 
 class Workflow implements WorkflowProps {
   smartWalletAddress: string;
@@ -80,9 +54,9 @@ class Workflow implements WorkflowProps {
     }
 
     this.smartWalletAddress = props.smartWalletAddress;
-    this.trigger = props.trigger;
-    this.nodes = props.nodes;
-    this.edges = props.edges;
+    this.trigger = props.trigger as any;
+    this.nodes = props.nodes as any;
+    this.edges = props.edges as any;
     this.startAt = props.startAt;
     this.expiredAt = props.expiredAt;
     this.maxExecution = props.maxExecution;

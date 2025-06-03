@@ -7,10 +7,11 @@ import {
   NodeFactory,
   TriggerFactory,
   LoopNode,
-  LoopNodeProps,
-  LoopNodeData,
   CustomCodeLangs,
 } from "@avaprotocol/sdk-js";
+import {
+  LoopNodeData,
+} from "@avaprotocol/types";
 import { NodeType, WorkflowStatus, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
@@ -71,15 +72,17 @@ describe("LoopNode Tests", () => {
         name: "setup_test_array",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const testArray = [
-              { name: "item1", value: 10 },
-              { name: "item2", value: 20 },
-              { name: "item3", value: 30 }
-            ];
-            return { testArray };
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const testArray = [
+                { name: "item1", value: 10 },
+                { name: "item2", value: 20 },
+                { name: "item3", value: 30 }
+              ];
+              return { testArray };
+            `,
+          }
         },
       });
       
@@ -137,11 +140,13 @@ describe("LoopNode Tests", () => {
         name: "setup_test_array",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const testArray = [1, 2, 3, 4, 5];
-            return { testArray };
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const testArray = [1, 2, 3, 4, 5];
+              return { testArray };
+            `,
+          }
         },
       });
       
@@ -199,15 +204,17 @@ describe("LoopNode Tests", () => {
         name: "setup_address_array",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const addressArray = [
-              "0x1234567890123456789012345678901234567890",
-              "0x2345678901234567890123456789012345678901",
-              "0x3456789012345678901234567890123456789012"
-            ];
-            return { addressArray };
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const addressArray = [
+                "0x1234567890123456789012345678901234567890",
+                "0x2345678901234567890123456789012345678901",
+                "0x3456789012345678901234567890123456789012"
+              ];
+              return { addressArray };
+            `,
+          }
         },
       });
       
@@ -265,22 +272,24 @@ describe("LoopNode Tests", () => {
         name: "setup_contract_array",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const contractArray = [
-              { 
-                address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", 
-                callData: "0x06fdde03", 
-                abi: '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]'
-              },
-              { 
-                address: "0x6b175474e89094c44da98b954eedeac495271d0f", 
-                callData: "0x06fdde03", 
-                abi: '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]'
-              }
-            ];
-            return { contractArray };
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const contractArray = [
+                { 
+                  address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", 
+                  callData: "0x06fdde03", 
+                  abi: '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]'
+                },
+                { 
+                  address: "0x6b175474e89094c44da98b954eedeac495271d0f", 
+                  callData: "0x06fdde03", 
+                  abi: '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]'
+                }
+              ];
+              return { contractArray };
+            `,
+          }
         },
       });
       
@@ -338,15 +347,17 @@ describe("LoopNode Tests", () => {
         name: "setup_query_array",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
-          source: `
-            const queryArray = [
-              { id: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" }, // UNI token
-              { id: "0x6b175474e89094c44da98b954eedeac495271d0f" }, // DAI token
-              { id: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" }  // WETH token
-            ];
-            return { queryArray };
-          `,
+          config: {
+            lang: CustomCodeLangs.JAVASCRIPT,
+            source: `
+              const queryArray = [
+                { id: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" },
+                { id: "0x6b175474e89094c44da98b954eedeac495271d0f" },
+                { id: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" }
+              ];
+              return { queryArray };
+            `,
+          }
         },
       });
       

@@ -1,10 +1,12 @@
 import {
   Client,
   Workflow,
-  WorkflowProps,
   Step,
-  StepProps,
 } from "@avaprotocol/sdk-js";
+import {
+  WorkflowProps,
+  StepProps,
+} from "@avaprotocol/types";
 import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 
 import { ethers } from "ethers";

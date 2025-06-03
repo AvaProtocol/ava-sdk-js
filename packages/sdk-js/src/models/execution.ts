@@ -1,27 +1,8 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerTypeConverter, TriggerType } from "@avaprotocol/types";
+import { TriggerTypeConverter, TriggerType, ExecutionProps } from "@avaprotocol/types";
 import Step from "./step";
 
-export type StepProps = avs_pb.Execution.Step.AsObject;
 
-export type OutputDataProps =
-  | avs_pb.BlockTrigger.Output.AsObject
-  | avs_pb.FixedTimeTrigger.Output.AsObject
-  | avs_pb.CronTrigger.Output.AsObject
-  | avs_pb.EventTrigger.Output.AsObject
-  | avs_pb.EventTrigger.TransferLogOutput.AsObject
-  | avs_pb.ManualTrigger.Output.AsObject
-  | avs_pb.Evm.Log.AsObject
-  | { blockNumber: number } // Filtered block trigger output
-  | { timestamp: number; timestampIso: string } // Filtered time trigger output (updated from epoch)
-  | undefined;
-
-export type ExecutionProps = Omit<
-  avs_pb.Execution.AsObject,
-  | "stepsList"
-> & {
-  steps: Step[];
-};
 
 class Execution implements ExecutionProps {
   id: string;

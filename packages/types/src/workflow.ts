@@ -3,7 +3,7 @@ import { TriggerType, WorkflowStatus } from "./enums";
 import { TriggerProps } from "./trigger";
 import { NodeProps } from "./node";
 
-export type TriggerDataProps =
+export type WorkflowTriggerDataProps =
   | { type: TriggerType.FixedTime; timestamp: number; timestampIso: string }
   | { type: TriggerType.Cron; timestamp: number; timestampIso: string }
   | {

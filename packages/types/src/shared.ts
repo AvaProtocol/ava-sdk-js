@@ -33,3 +33,77 @@ export type SecretProps = {
 export type Environment = "production" | "development" | "staging";
 export const AUTH_KEY_HEADER = "authkey";
 export const DEFAULT_LIMIT = 10;
+
+export type RequestOptions = {
+  limit?: number;
+  cursor?: string;
+  authKey?: string;
+  before?: string;
+  after?: string;
+  includeNodes?: boolean;
+  includeEdges?: boolean;
+  workflowId?: string;
+  includeTimestamps?: boolean;
+  includeCreatedBy?: boolean;
+  includeDescription?: boolean;
+};
+
+export type GetExecutionsOptions = RequestOptions;
+
+export type GetWorkflowsOptions = RequestOptions;
+
+export type RunNodeWithInputsRequest = {
+  nodeId: string;
+  inputs: Record<string, any>;
+  nodeType?: any;
+  nodeConfig?: any;
+  inputVariables?: Record<string, any>;
+};
+
+export type RunNodeWithInputsResponse = {
+  output?: any;
+  success?: boolean;
+  error?: string;
+  data?: any;
+  nodeId?: string;
+};
+
+export type RunTriggerRequest = {
+  triggerId: string;
+  triggerData: any;
+  triggerType?: any;
+  triggerConfig?: any;
+};
+
+export type RunTriggerResponse = {
+  output?: any;
+  success?: boolean;
+  data?: any;
+  error?: string;
+  triggerId?: string;
+};
+
+export type GetSecretsOptions = RequestOptions;
+
+export type SecretOptions = {
+  name: string;
+  value: string;
+  workflowId?: string;
+  orgId?: string;
+};
+
+export type TriggerDataProps = {
+  type: any;
+  blockNumber?: number;
+  timestamp?: number;
+  data?: any;
+};
+
+export type SimulateWorkflowRequest = {
+  workflow: any;
+  triggerData: TriggerDataProps;
+  trigger?: any;
+  nodes: any[];
+  edges: any[];
+  inputVariables?: Record<string, any>;
+};

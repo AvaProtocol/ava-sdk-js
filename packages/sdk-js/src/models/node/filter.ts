@@ -1,12 +1,9 @@
-import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, FilterNodeData } from "@avaprotocol/types";
+import { NodeType, FilterNodeData, FilterNodeProps, NodeProps } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { expression, sourceId }
-export type FilterNodeProps = NodeProps & {
-  data: FilterNodeData;
-};
+
 
 class FilterNode extends Node {
   constructor(props: FilterNodeProps) {
@@ -15,7 +12,7 @@ class FilterNode extends Node {
 
   static fromResponse(raw: avs_pb.TaskNode): FilterNode {
     // Convert the raw object to FilterNodeProps, which should keep name and id
-    const obj = raw.toObject() as unknown as FilterNodeProps;
+    const obj = raw.toObject() as unknown as NodeProps;
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
