@@ -44,7 +44,7 @@ import {
 import {
   TriggerTypeGoConverter,
   TriggerTypeConverter,
-} from "./utils";
+} from "@avaprotocol/types";
 
 
 

@@ -1,6 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "@avaprotocol/types";
-import { TriggerTypeConverter } from "../utils";
+import { TriggerTypeConverter } from "@avaprotocol/types";
 import Step from "./step";
 
 export type StepProps = avs_pb.Execution.Step.AsObject;

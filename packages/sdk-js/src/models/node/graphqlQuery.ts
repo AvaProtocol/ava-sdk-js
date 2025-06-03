@@ -1,8 +1,7 @@
 import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType } from "@avaprotocol/types";
-import { GraphQLQueryNodeData } from "@avaprotocol/types";
+import { NodeType, GraphQLQueryNodeData } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { url, query, variablesMap }
 export type GraphQLQueryNodeProps = NodeProps & {

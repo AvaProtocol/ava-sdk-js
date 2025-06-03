@@ -1,8 +1,7 @@
 import { NodeProps } from "./interface";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType } from "@avaprotocol/types";
-import { FilterNodeData } from "@avaprotocol/types";
+import { NodeType, FilterNodeData } from "@avaprotocol/types";
 
 // Required props for constructor: id, name, type and data: { expression, sourceId }
 export type FilterNodeProps = NodeProps & {

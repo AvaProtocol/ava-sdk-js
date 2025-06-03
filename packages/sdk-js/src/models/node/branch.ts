@@ -1,6 +1,5 @@
 import { NodeProps } from "./interface";
-import { NodeType } from "@avaprotocol/types";
-import { BranchNodeData } from "@avaprotocol/types";
+import { NodeType, BranchNodeData } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 

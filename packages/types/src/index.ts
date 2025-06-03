@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
 export * from "./auth";
+export * from "./node";
 
 export type Environment = "production" | "development" | "staging";
 
@@ -65,6 +66,111 @@ export enum NodeType {
   Filter = "filter",
   Loop = "loop",
 }
+
+/**
+ * TriggerTypeConverter - Converts between SDK TriggerType enum and Protobuf TriggerType enum
+ * Used for gRPC communication between SDK and backend
+ */
+export const TriggerTypeConverter = {
+  /**
+   * Convert SDK TriggerType enum to Protobuf TriggerType enum
+   * @param type - SDK TriggerType enum value
+   * @returns Protobuf TriggerType enum value
+   */
+  toProtobuf: (type: TriggerType): avs_pb.TriggerType => {
+    switch (type) {
+      case TriggerType.Manual:
+        return avs_pb.TriggerType.TRIGGER_TYPE_MANUAL;
+      case TriggerType.FixedTime:
+        return avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME;
+      case TriggerType.Cron:
+        return avs_pb.TriggerType.TRIGGER_TYPE_CRON;
+      case TriggerType.Block:
+        return avs_pb.TriggerType.TRIGGER_TYPE_BLOCK;
+      case TriggerType.Event:
+        return avs_pb.TriggerType.TRIGGER_TYPE_EVENT;
+      case TriggerType.Unspecified:
+      default:
+        return avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED;
+    }
+  },
+
+  /**
+   * Convert Protobuf TriggerType enum to SDK TriggerType enum
+   * @param type - Protobuf TriggerType enum value
+   * @returns SDK TriggerType enum value
+   */
+  fromProtobuf: (type: avs_pb.TriggerType): TriggerType => {
+    switch (type) {
+      case avs_pb.TriggerType.TRIGGER_TYPE_MANUAL:
+        return TriggerType.Manual;
+      case avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME:
+        return TriggerType.FixedTime;
+      case avs_pb.TriggerType.TRIGGER_TYPE_CRON:
+        return TriggerType.Cron;
+      case avs_pb.TriggerType.TRIGGER_TYPE_BLOCK:
+        return TriggerType.Block;
+      case avs_pb.TriggerType.TRIGGER_TYPE_EVENT:
+        return TriggerType.Event;
+      case avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED:
+      default:
+        return TriggerType.Unspecified;
+    }
+  }
+};
+
+/**
+ * TriggerTypeGoConverter - Converts between Protobuf TriggerType enum and Go backend string constants
+ * Used for API compatibility with Go backend services
+ * Note: Go string values match SDK enum values exactly
+ */
+export const TriggerTypeGoConverter = {
+  /**
+   * Convert Protobuf TriggerType enum to Go backend string constant
+   * @param triggerType - Protobuf TriggerType enum value
+   * @returns Go backend string constant (matches SDK enum values)
+   */
+  toGoString: (triggerType: avs_pb.TriggerType): string => {
+    switch (triggerType) {
+      case avs_pb.TriggerType.TRIGGER_TYPE_MANUAL:
+        return "manualTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME:
+        return "fixedTimeTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_CRON:
+        return "cronTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_BLOCK:
+        return "blockTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_EVENT:
+        return "eventTrigger";
+      case avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED:
+      default:
+        return "unspecified";
+    }
+  },
+  
+  /**
+   * Convert Go backend string constant to Protobuf TriggerType enum
+   * @param goString - Go backend string constant
+   * @returns Protobuf TriggerType enum value
+   */
+  fromGoString: (goString: string): avs_pb.TriggerType => {
+    switch (goString) {
+      case "manualTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_MANUAL;
+      case "fixedTimeTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME;
+      case "cronTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_CRON;
+      case "blockTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_BLOCK;
+      case "eventTrigger":
+        return avs_pb.TriggerType.TRIGGER_TYPE_EVENT;
+      case "unspecified":
+      default:
+        return avs_pb.TriggerType.TRIGGER_TYPE_UNSPECIFIED;
+    }
+  }
+};
 
 /**
  * NodeTypeConverter - Converts between SDK NodeType enum and Protobuf NodeType enum
@@ -214,134 +320,6 @@ export type SmartWallet = avs_pb.SmartWallet.AsObject & {
 
 export const ExecutionStatus = avs_pb.ExecutionStatus;
 
-export enum CustomCodeLangs {
-  Javascript = 0,
-  Python = 1,
-}
-
-export type ContractWriteNodeData = {
-  contractAddress: string;
-  callData: string;
-  contractAbi: string;
-  functionName: string;
-  args: Record<string, any>;
-  value?: string;
-};
-
-export type ContractReadNodeData = {
-  contractAddress: string;
-  callData: string;
-  contractAbi: string;
-  functionName: string;
-  args: Record<string, any>;
-};
-
-export type BranchNodeData = {
-  condition?: string;
-  conditionsList?: Array<{
-    expression: string;
-    [key: string]: any;
-  }>;
-};
-
-export type ETHTransferNodeData = {
-  destination: string;
-  amount: string;
-};
-
-export type GraphQLQueryNodeData = {
-  url: string;
-  query: string;
-  variables?: Record<string, any>;
-  variablesMap?: Array<[string, string]>;
-  headers?: Record<string, string>;
-};
-
-export type RestAPINodeData = {
-  url: string;
-  method: string;
-  headers?: Record<string, string>;
-  headersMap?: Array<[string, string]>;
-  body?: string;
-};
-
-export type CustomCodeNodeData = {
-  lang: CustomCodeLangs;
-  source: string;
-};
-
-export type FilterNodeData = {
-  condition?: string;
-  expression?: string;
-  sourceId?: string;
-};
-
-export type LoopNodeData = {
-  condition?: string;
-  sourceId?: string;
-  iterVal?: string;
-  iterKey?: string;
-  restApi?: any;
-  customCode?: any;
-  ethTransfer?: any;
-  contractRead?: any;
-  contractWrite?: any;
-  graphqlDataQuery?: any;
-};
-
-export type BlockTriggerDataType = {
-  interval?: number;
-  blockNumber?: number;
-  blockHash?: string;
-  timestamp?: number;
-  parentHash?: string;
-  difficulty?: string;
-  gasLimit?: number;
-  gasUsed?: number;
-};
-
-export type EventTriggerDataType = {
-  expression?: string;
-  matcherList?: Array<{
-    type: string;
-    valueList: string[];
-    [key: string]: any;
-  }>;
-  evmLog?: {
-    address: string;
-    blockNumber: number;
-    transactionHash: string;
-    index: number;
-    [key: string]: any;
-  };
-  transferLog?: {
-    tokenName: string;
-    tokenSymbol: string;
-    tokenDecimals: number;
-    transactionHash: string;
-    address: string;
-    blockNumber: number;
-    blockTimestamp: number;
-    fromAddress: string;
-    toAddress: string;
-    value: string;
-    valueFormatted: string;
-    transactionIndex: number;
-    logIndex: number;
-  };
-};
-
-export type FixedTimeTriggerDataType = {
-  epochsList?: number[];
-  timestamp?: number;
-  timestampIso?: string;
-};
-
-export type CronTriggerDataType = {
-  scheduleList: string[];
-};
-
-export type RestAPINodeOutput = any;
 
 export type SecretProps = {
   name: string;
