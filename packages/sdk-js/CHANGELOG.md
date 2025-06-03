@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.0.0
+
+### Major Changes
+
+- cfbf435: Migrated type definitions for props into types package
+
+### Patch Changes
+
+- Updated dependencies [cfbf435]
+  - @avaprotocol/types@2.0.0
+
 ## 1.7.1
 
 ### Patch Changes
