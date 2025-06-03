@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.0.2
+
+### Patch Changes
+
+- 8e09a20: Fix the request type of SimulateWorkflow and RunTriggerReq
+- Updated dependencies [8e09a20]
+  - @avaprotocol/types@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.0.2
+
+### Patch Changes
+
+- 8e09a20: Fix the request type of SimulateWorkflow and RunTriggerReq
+
 ## 2.0.1
 
 ### Patch Changes
