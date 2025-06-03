@@ -8,6 +8,8 @@ import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
 import { WorkflowStatus } from "@avaprotocol/types";
+// TODO: Remove this when types package build works
+// import { WorkflowProps } from "@avaprotocol/types";
 
 // Function to convert TaskStatus to string
 export function convertStatusToString(
@@ -24,6 +26,7 @@ export function convertStatusToString(
   return conversionMap[status] as WorkflowStatus;
 }
 
+// TODO: Remove this when types package build works - use import from @avaprotocol/types instead
 export type WorkflowProps = Omit<
   avs_pb.Task.AsObject,
   | "id"

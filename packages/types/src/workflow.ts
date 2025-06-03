@@ -49,3 +49,10 @@ export type TriggerDataProps =
   | { type: TriggerType.Manual; runAt?: number }
   | { type: TriggerType.Unspecified };
 export const ExecutionStatus = avs_pb.ExecutionStatus;
+
+// Edge Props
+export type EdgeProps = avs_pb.TaskEdge.AsObject;
+export type OutputDataProps = avs_pb.BlockTrigger.Output.AsObject | avs_pb.FixedTimeTrigger.Output.AsObject | undefined;
+export type StepProps = Omit<avs_pb.Execution.Step.AsObject, "outputDataCase"> & { output: any; };
+export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList"> & { steps: Array<StepProps>; };
+export type WorkflowProps = Omit<avs_pb.Task.AsObject, "trigger" | "nodesList" | "edgesList"> & { trigger: TriggerProps; nodes: NodeProps[]; edges: EdgeProps[]; };

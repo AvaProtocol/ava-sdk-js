@@ -17,8 +17,8 @@ export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
 
 // Node Constants
 export const CustomCodeLangs = {
-  JAVASCRIPT: 0,
-  PYTHON: 1,
+  Javascript: 0,
+  Python: 1,
 };
 
 // Trigger DataTypes
