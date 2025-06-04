@@ -7,7 +7,6 @@
 import * as grpc from "@grpc/grpc-js";
 import * as avs_pb from "./avs_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
-import * as google_protobuf_timestamp_pb from "google-protobuf/google/protobuf/timestamp_pb";
 import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
@@ -34,6 +33,10 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     getWorkflowCount: IAggregatorService_IGetWorkflowCount;
     getExecutionCount: IAggregatorService_IGetExecutionCount;
     getExecutionStats: IAggregatorService_IGetExecutionStats;
+    runNodeWithInputs: IAggregatorService_IRunNodeWithInputs;
+    runTrigger: IAggregatorService_IRunTrigger;
+    simulateTask: IAggregatorService_ISimulateTask;
+    getTokenMetadata: IAggregatorService_IGetTokenMetadata;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -162,14 +165,14 @@ interface IAggregatorService_IDeleteTask extends grpc.MethodDefinition<avs_pb.Id
     responseSerialize: grpc.serialize<google_protobuf_wrappers_pb.BoolValue>;
     responseDeserialize: grpc.deserialize<google_protobuf_wrappers_pb.BoolValue>;
 }
-interface IAggregatorService_ITriggerTask extends grpc.MethodDefinition<avs_pb.UserTriggerTaskReq, avs_pb.UserTriggerTaskResp> {
+interface IAggregatorService_ITriggerTask extends grpc.MethodDefinition<avs_pb.TriggerTaskReq, avs_pb.TriggerTaskResp> {
     path: "/aggregator.Aggregator/TriggerTask";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<avs_pb.UserTriggerTaskReq>;
-    requestDeserialize: grpc.deserialize<avs_pb.UserTriggerTaskReq>;
-    responseSerialize: grpc.serialize<avs_pb.UserTriggerTaskResp>;
-    responseDeserialize: grpc.deserialize<avs_pb.UserTriggerTaskResp>;
+    requestSerialize: grpc.serialize<avs_pb.TriggerTaskReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.TriggerTaskReq>;
+    responseSerialize: grpc.serialize<avs_pb.TriggerTaskResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.TriggerTaskResp>;
 }
 interface IAggregatorService_ICreateSecret extends grpc.MethodDefinition<avs_pb.CreateOrUpdateSecretReq, google_protobuf_wrappers_pb.BoolValue> {
     path: "/aggregator.Aggregator/CreateSecret";
@@ -234,6 +237,42 @@ interface IAggregatorService_IGetExecutionStats extends grpc.MethodDefinition<av
     responseSerialize: grpc.serialize<avs_pb.GetExecutionStatsResp>;
     responseDeserialize: grpc.deserialize<avs_pb.GetExecutionStatsResp>;
 }
+interface IAggregatorService_IRunNodeWithInputs extends grpc.MethodDefinition<avs_pb.RunNodeWithInputsReq, avs_pb.RunNodeWithInputsResp> {
+    path: "/aggregator.Aggregator/RunNodeWithInputs";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.RunNodeWithInputsReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.RunNodeWithInputsReq>;
+    responseSerialize: grpc.serialize<avs_pb.RunNodeWithInputsResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.RunNodeWithInputsResp>;
+}
+interface IAggregatorService_IRunTrigger extends grpc.MethodDefinition<avs_pb.RunTriggerReq, avs_pb.RunTriggerResp> {
+    path: "/aggregator.Aggregator/RunTrigger";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.RunTriggerReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.RunTriggerReq>;
+    responseSerialize: grpc.serialize<avs_pb.RunTriggerResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.RunTriggerResp>;
+}
+interface IAggregatorService_ISimulateTask extends grpc.MethodDefinition<avs_pb.SimulateTaskReq, avs_pb.Execution> {
+    path: "/aggregator.Aggregator/SimulateTask";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.SimulateTaskReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.SimulateTaskReq>;
+    responseSerialize: grpc.serialize<avs_pb.Execution>;
+    responseDeserialize: grpc.deserialize<avs_pb.Execution>;
+}
+interface IAggregatorService_IGetTokenMetadata extends grpc.MethodDefinition<avs_pb.GetTokenMetadataReq, avs_pb.GetTokenMetadataResp> {
+    path: "/aggregator.Aggregator/GetTokenMetadata";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.GetTokenMetadataReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.GetTokenMetadataReq>;
+    responseSerialize: grpc.serialize<avs_pb.GetTokenMetadataResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.GetTokenMetadataResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
@@ -252,7 +291,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getExecutionStatus: grpc.handleUnaryCall<avs_pb.ExecutionReq, avs_pb.ExecutionStatusResp>;
     cancelTask: grpc.handleUnaryCall<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue>;
     deleteTask: grpc.handleUnaryCall<avs_pb.IdReq, google_protobuf_wrappers_pb.BoolValue>;
-    triggerTask: grpc.handleUnaryCall<avs_pb.UserTriggerTaskReq, avs_pb.UserTriggerTaskResp>;
+    triggerTask: grpc.handleUnaryCall<avs_pb.TriggerTaskReq, avs_pb.TriggerTaskResp>;
     createSecret: grpc.handleUnaryCall<avs_pb.CreateOrUpdateSecretReq, google_protobuf_wrappers_pb.BoolValue>;
     deleteSecret: grpc.handleUnaryCall<avs_pb.DeleteSecretReq, google_protobuf_wrappers_pb.BoolValue>;
     listSecrets: grpc.handleUnaryCall<avs_pb.ListSecretsReq, avs_pb.ListSecretsResp>;
@@ -260,6 +299,10 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getWorkflowCount: grpc.handleUnaryCall<avs_pb.GetWorkflowCountReq, avs_pb.GetWorkflowCountResp>;
     getExecutionCount: grpc.handleUnaryCall<avs_pb.GetExecutionCountReq, avs_pb.GetExecutionCountResp>;
     getExecutionStats: grpc.handleUnaryCall<avs_pb.GetExecutionStatsReq, avs_pb.GetExecutionStatsResp>;
+    runNodeWithInputs: grpc.handleUnaryCall<avs_pb.RunNodeWithInputsReq, avs_pb.RunNodeWithInputsResp>;
+    runTrigger: grpc.handleUnaryCall<avs_pb.RunTriggerReq, avs_pb.RunTriggerResp>;
+    simulateTask: grpc.handleUnaryCall<avs_pb.SimulateTaskReq, avs_pb.Execution>;
+    getTokenMetadata: grpc.handleUnaryCall<avs_pb.GetTokenMetadataReq, avs_pb.GetTokenMetadataResp>;
 }
 
 export interface IAggregatorClient {
@@ -305,9 +348,9 @@ export interface IAggregatorClient {
     deleteTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
-    triggerTask(request: avs_pb.UserTriggerTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
-    triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
-    triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: avs_pb.TriggerTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.TriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: avs_pb.TriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.TriggerTaskResp) => void): grpc.ClientUnaryCall;
+    triggerTask(request: avs_pb.TriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.TriggerTaskResp) => void): grpc.ClientUnaryCall;
     createSecret(request: avs_pb.CreateOrUpdateSecretReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     createSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     createSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -329,6 +372,18 @@ export interface IAggregatorClient {
     getExecutionStats(request: avs_pb.GetExecutionStatsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
     getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
     getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
+    runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    runTrigger(request: avs_pb.RunTriggerReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    simulateTask(request: avs_pb.SimulateTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    getTokenMetadata(request: avs_pb.GetTokenMetadataReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -375,9 +430,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public deleteTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
-    public triggerTask(request: avs_pb.UserTriggerTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
-    public triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
-    public triggerTask(request: avs_pb.UserTriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.UserTriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: avs_pb.TriggerTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.TriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: avs_pb.TriggerTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.TriggerTaskResp) => void): grpc.ClientUnaryCall;
+    public triggerTask(request: avs_pb.TriggerTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.TriggerTaskResp) => void): grpc.ClientUnaryCall;
     public createSecret(request: avs_pb.CreateOrUpdateSecretReq, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public createSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
     public createSecret(request: avs_pb.CreateOrUpdateSecretReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: google_protobuf_wrappers_pb.BoolValue) => void): grpc.ClientUnaryCall;
@@ -399,4 +454,16 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getExecutionStats(request: avs_pb.GetExecutionStatsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
     public getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
     public getExecutionStats(request: avs_pb.GetExecutionStatsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetExecutionStatsResp) => void): grpc.ClientUnaryCall;
+    public runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    public runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    public runNodeWithInputs(request: avs_pb.RunNodeWithInputsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunNodeWithInputsResp) => void): grpc.ClientUnaryCall;
+    public runTrigger(request: avs_pb.RunTriggerReq, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    public runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    public runTrigger(request: avs_pb.RunTriggerReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.RunTriggerResp) => void): grpc.ClientUnaryCall;
+    public simulateTask(request: avs_pb.SimulateTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    public simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    public simulateTask(request: avs_pb.SimulateTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.Execution) => void): grpc.ClientUnaryCall;
+    public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
 }
