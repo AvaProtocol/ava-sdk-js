@@ -565,9 +565,9 @@ class Client extends BaseClient {
    * Get a workflow by id
    * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<WorkflowProps>} - The WorkflowProps object
+   * @returns {Promise<Workflow>} - The Workflow object
    */
-  async getWorkflow(id: string, options?: RequestOptions): Promise<WorkflowProps> {
+  async getWorkflow(id: string, options?: RequestOptions): Promise<Workflow> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
@@ -577,7 +577,7 @@ class Client extends BaseClient {
       options
     );
 
-    return Workflow.fromResponse(result).toJson();
+    return Workflow.fromResponse(result);
   }
 
   /**
