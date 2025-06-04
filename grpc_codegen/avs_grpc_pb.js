@@ -4,6 +4,7 @@
 var grpc = require('@grpc/grpc-js');
 var avs_pb = require('./avs_pb.js');
 var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
+var google_protobuf_timestamp_pb = require('google-protobuf/google/protobuf/timestamp_pb.js');
 var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
@@ -159,28 +160,6 @@ function serialize_aggregator_GetSignatureFormatResp(arg) {
 
 function deserialize_aggregator_GetSignatureFormatResp(buffer_arg) {
   return avs_pb.GetSignatureFormatResp.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_GetTokenMetadataReq(arg) {
-  if (!(arg instanceof avs_pb.GetTokenMetadataReq)) {
-    throw new Error('Expected argument of type aggregator.GetTokenMetadataReq');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_GetTokenMetadataReq(buffer_arg) {
-  return avs_pb.GetTokenMetadataReq.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_GetTokenMetadataResp(arg) {
-  if (!(arg instanceof avs_pb.GetTokenMetadataResp)) {
-    throw new Error('Expected argument of type aggregator.GetTokenMetadataResp');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_GetTokenMetadataResp(buffer_arg) {
-  return avs_pb.GetTokenMetadataResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_GetWalletReq(arg) {
@@ -359,50 +338,6 @@ function deserialize_aggregator_NonceResp(buffer_arg) {
   return avs_pb.NonceResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_RunNodeWithInputsReq(arg) {
-  if (!(arg instanceof avs_pb.RunNodeWithInputsReq)) {
-    throw new Error('Expected argument of type aggregator.RunNodeWithInputsReq');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_RunNodeWithInputsReq(buffer_arg) {
-  return avs_pb.RunNodeWithInputsReq.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_RunNodeWithInputsResp(arg) {
-  if (!(arg instanceof avs_pb.RunNodeWithInputsResp)) {
-    throw new Error('Expected argument of type aggregator.RunNodeWithInputsResp');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_RunNodeWithInputsResp(buffer_arg) {
-  return avs_pb.RunNodeWithInputsResp.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_RunTriggerReq(arg) {
-  if (!(arg instanceof avs_pb.RunTriggerReq)) {
-    throw new Error('Expected argument of type aggregator.RunTriggerReq');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_RunTriggerReq(buffer_arg) {
-  return avs_pb.RunTriggerReq.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_RunTriggerResp(arg) {
-  if (!(arg instanceof avs_pb.RunTriggerResp)) {
-    throw new Error('Expected argument of type aggregator.RunTriggerResp');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_RunTriggerResp(buffer_arg) {
-  return avs_pb.RunTriggerResp.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 function serialize_aggregator_SetWalletReq(arg) {
   if (!(arg instanceof avs_pb.SetWalletReq)) {
     throw new Error('Expected argument of type aggregator.SetWalletReq');
@@ -412,17 +347,6 @@ function serialize_aggregator_SetWalletReq(arg) {
 
 function deserialize_aggregator_SetWalletReq(buffer_arg) {
   return avs_pb.SetWalletReq.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
-function serialize_aggregator_SimulateTaskReq(arg) {
-  if (!(arg instanceof avs_pb.SimulateTaskReq)) {
-    throw new Error('Expected argument of type aggregator.SimulateTaskReq');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_SimulateTaskReq(buffer_arg) {
-  return avs_pb.SimulateTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_Task(arg) {
@@ -436,26 +360,26 @@ function deserialize_aggregator_Task(buffer_arg) {
   return avs_pb.Task.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_TriggerTaskReq(arg) {
-  if (!(arg instanceof avs_pb.TriggerTaskReq)) {
-    throw new Error('Expected argument of type aggregator.TriggerTaskReq');
+function serialize_aggregator_UserTriggerTaskReq(arg) {
+  if (!(arg instanceof avs_pb.UserTriggerTaskReq)) {
+    throw new Error('Expected argument of type aggregator.UserTriggerTaskReq');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_TriggerTaskReq(buffer_arg) {
-  return avs_pb.TriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_UserTriggerTaskReq(buffer_arg) {
+  return avs_pb.UserTriggerTaskReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_TriggerTaskResp(arg) {
-  if (!(arg instanceof avs_pb.TriggerTaskResp)) {
-    throw new Error('Expected argument of type aggregator.TriggerTaskResp');
+function serialize_aggregator_UserTriggerTaskResp(arg) {
+  if (!(arg instanceof avs_pb.UserTriggerTaskResp)) {
+    throw new Error('Expected argument of type aggregator.UserTriggerTaskResp');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_TriggerTaskResp(buffer_arg) {
-  return avs_pb.TriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_UserTriggerTaskResp(buffer_arg) {
+  return avs_pb.UserTriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_google_protobuf_BoolValue(arg) {
@@ -633,12 +557,12 @@ createTask: {
     path: '/aggregator.Aggregator/TriggerTask',
     requestStream: false,
     responseStream: false,
-    requestType: avs_pb.TriggerTaskReq,
-    responseType: avs_pb.TriggerTaskResp,
-    requestSerialize: serialize_aggregator_TriggerTaskReq,
-    requestDeserialize: deserialize_aggregator_TriggerTaskReq,
-    responseSerialize: serialize_aggregator_TriggerTaskResp,
-    responseDeserialize: deserialize_aggregator_TriggerTaskResp,
+    requestType: avs_pb.UserTriggerTaskReq,
+    responseType: avs_pb.UserTriggerTaskResp,
+    requestSerialize: serialize_aggregator_UserTriggerTaskReq,
+    requestDeserialize: deserialize_aggregator_UserTriggerTaskReq,
+    responseSerialize: serialize_aggregator_UserTriggerTaskResp,
+    responseDeserialize: deserialize_aggregator_UserTriggerTaskResp,
   },
   // CreateSecret allow you to define a secret to be used in your tasks. The secret can be used with a special syntax of ${{secrets.name }}.
 // You can decide whether to grant secret to a single workflow or many workflow, or all of your workflow
@@ -736,54 +660,6 @@ getExecutionStats: {
     requestDeserialize: deserialize_aggregator_GetExecutionStatsReq,
     responseSerialize: serialize_aggregator_GetExecutionStatsResp,
     responseDeserialize: deserialize_aggregator_GetExecutionStatsResp,
-  },
-  // RunNodeWithInputs allows executing a single node with provided inputs for testing purposes
-runNodeWithInputs: {
-    path: '/aggregator.Aggregator/RunNodeWithInputs',
-    requestStream: false,
-    responseStream: false,
-    requestType: avs_pb.RunNodeWithInputsReq,
-    responseType: avs_pb.RunNodeWithInputsResp,
-    requestSerialize: serialize_aggregator_RunNodeWithInputsReq,
-    requestDeserialize: deserialize_aggregator_RunNodeWithInputsReq,
-    responseSerialize: serialize_aggregator_RunNodeWithInputsResp,
-    responseDeserialize: deserialize_aggregator_RunNodeWithInputsResp,
-  },
-  // RunTrigger allows executing a single trigger for testing purposes (triggers don't accept inputs)
-runTrigger: {
-    path: '/aggregator.Aggregator/RunTrigger',
-    requestStream: false,
-    responseStream: false,
-    requestType: avs_pb.RunTriggerReq,
-    responseType: avs_pb.RunTriggerResp,
-    requestSerialize: serialize_aggregator_RunTriggerReq,
-    requestDeserialize: deserialize_aggregator_RunTriggerReq,
-    responseSerialize: serialize_aggregator_RunTriggerResp,
-    responseDeserialize: deserialize_aggregator_RunTriggerResp,
-  },
-  // SimulateTask allows executing a complete task simulation including trigger and all workflow nodes
-simulateTask: {
-    path: '/aggregator.Aggregator/SimulateTask',
-    requestStream: false,
-    responseStream: false,
-    requestType: avs_pb.SimulateTaskReq,
-    responseType: avs_pb.Execution,
-    requestSerialize: serialize_aggregator_SimulateTaskReq,
-    requestDeserialize: deserialize_aggregator_SimulateTaskReq,
-    responseSerialize: serialize_aggregator_Execution,
-    responseDeserialize: deserialize_aggregator_Execution,
-  },
-  // GetTokenMetadata allows looking up ERC20 token metadata by contract address
-getTokenMetadata: {
-    path: '/aggregator.Aggregator/GetTokenMetadata',
-    requestStream: false,
-    responseStream: false,
-    requestType: avs_pb.GetTokenMetadataReq,
-    responseType: avs_pb.GetTokenMetadataResp,
-    requestSerialize: serialize_aggregator_GetTokenMetadataReq,
-    requestDeserialize: deserialize_aggregator_GetTokenMetadataReq,
-    responseSerialize: serialize_aggregator_GetTokenMetadataResp,
-    responseDeserialize: deserialize_aggregator_GetTokenMetadataResp,
   },
 };
 

@@ -4,128 +4,28 @@ package aggregator;
 option go_package = "./avsproto";
 
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
-
-// ============================================================================
-// ENUMS - Single source of truth for types
-// ============================================================================
-
-// TriggerType defines all supported trigger types
-// This enum provides a single source of truth for trigger types used across the system
-enum TriggerType {
-  TRIGGER_TYPE_UNSPECIFIED = 0;  // Default unspecified value
-  TRIGGER_TYPE_MANUAL = 1;       // Manual trigger
-  TRIGGER_TYPE_FIXED_TIME = 2;   // Fixed time trigger
-  TRIGGER_TYPE_CRON = 3;         // Cron-based trigger
-  TRIGGER_TYPE_BLOCK = 4;        // Block-based trigger
-  TRIGGER_TYPE_EVENT = 5;        // Event-based trigger
-}
-
-// NodeType defines all supported node types
-// This enum provides a single source of truth for node types used across the system
-enum NodeType {
-  NODE_TYPE_UNSPECIFIED = 0;     // Default unspecified value
-  NODE_TYPE_ETH_TRANSFER = 1;    // Ethereum transfer node
-  NODE_TYPE_CONTRACT_WRITE = 2;  // Contract write node
-  NODE_TYPE_CONTRACT_READ = 3;   // Contract read node
-  NODE_TYPE_GRAPHQL_QUERY = 4;   // GraphQL query node
-  NODE_TYPE_REST_API = 5;        // REST API node
-  NODE_TYPE_CUSTOM_CODE = 6;     // Custom code node
-  NODE_TYPE_BRANCH = 7;          // Branch node
-  NODE_TYPE_FILTER = 8;          // Filter node
-  NODE_TYPE_LOOP = 9;            // Loop node
-}
-
-// ============================================================================
-// TOKEN METADATA MESSAGES
-// ============================================================================
-
-// TokenMetadata represents ERC20 token information
-message TokenMetadata {
-  string address = 1;    // Contract address (lowercase, normalized)
-  string name = 2;       // Token name (e.g., "USD Coin")
-  string symbol = 3;     // Token symbol (e.g., "USDC")
-  uint32 decimals = 4;   // Number of decimal places
-}
-
-// GetTokenMetadataReq is the request for token metadata lookup
-message GetTokenMetadataReq {
-  string address = 1;    // Contract address to look up
-}
-
-// GetTokenMetadataResp is the response containing token metadata
-message GetTokenMetadataResp {
-  TokenMetadata token = 1;  // Token metadata information
-  bool found = 2;           // Whether the token was found
-  string source = 3;        // Source of data: "whitelist", "rpc", or "cache"
-}
-
-// ============================================================================
-// EXISTING MESSAGES
-// ============================================================================
 
 message IdReq {
   string id = 1;
 }
 
-enum Lang {
-  JavaScript = 0;
+message FixedTimeCondition {
+  repeated int64 epochs = 1;
 }
-
-// Triggers are always the first element in a task execution flow
-// They have Config (static parameters) but no Input (no preceding nodes)
-
-message FixedTimeTrigger {
-  message Config {
-    repeated int64 epochs = 1;
-  }
-  
-  message Output {
-    uint64 timestamp = 1; // Timestamp in milliseconds
-    string timestamp_iso = 2; // ISO representation of timestamp in UTC (e.g., "2025-05-31T10:30:00.000Z")
-  }
-
-  // Include Config as field so it is generated in Go
-  Config config = 1;
-}
-
 // Simple timebase or cron syntax.
-message CronTrigger {
-  message Config {
-    repeated string schedule = 1;
-  }
-  
-  message Output {
-    uint64 timestamp = 1; // Timestamp in milliseconds
-    string timestamp_iso = 2; // ISO representation of timestamp in UTC (e.g., "2025-05-31T10:30:00.000Z")
-  }
-
-  // Include Config as field so it is generated in Go
-  Config config = 1;
+message CronCondition {
+  repeated string schedule = 1;
 }
 
-message BlockTrigger {
-  message Config {
-    int64 interval = 1;
-  }
-  
-  message Output {
-    uint64 block_number = 1;
-    string block_hash = 2;
-    uint64 timestamp = 3;
-    string parent_hash = 4;
-    string difficulty = 5;
-    uint64 gas_limit = 6;
-    uint64 gas_used = 7;
-  }
-
-  // Include Config as field so it is generated in Go
-  Config config = 1;
+message BlockCondition {
+  int64 interval = 1;
 }
 
-// EventTrigger is a filter to match on an event. It's adhoc logic expression re-present in an array to match an ethereum event
-message EventTrigger {
+// EventCondition is a filter to match on an event. It's adhoc logic expression re-present in an array to match an ethereum event
+message EventCondition {
   message Matcher {
     // the type of Filter we support, right now, we support below value for 
     //  - topics:
@@ -152,81 +52,28 @@ message EventTrigger {
     repeated string value = 2;
   }
 
-  message Config {
-    // an array of filter to be mach, as soon as any element of the array mach, the trigger is fired.
-    repeated Matcher matcher = 1;
-    string expression = 2;
-  }
-  
-  message Output {
-    // Use oneof to ensure exactly one field is set
-    oneof output_type {
-      // When the trigger is not a transfer event, we will have a raw event output only
-      // These shape of data is https://docs.ethers.org/v6/api/providers/#Log
-      Evm.Log evm_log = 1;
-      
-      // For transfer events specifically, we have enriched data
-      TransferLogOutput transfer_log = 2;
-    }
-  }
-  
-  message TransferLogOutput {
-    string token_name = 1;
-    string token_symbol = 2;
-    uint32 token_decimals = 3;
-    string transaction_hash = 4;
-    string address = 5;
-    uint64 block_number = 6;
-    // timestamp of the block (in milliseconds)
-    uint64 block_timestamp = 7;
-    string from_address = 8;
-    string to_address = 9;
-    string value = 10;
-    string value_formatted = 11;
-    uint32 transaction_index = 12;
-    uint32 log_index = 13;
-  }
-
-  // Include Config as field so it is generated in Go
-  Config config = 1;
+  // an array of filter to be mach, as soon as any element of the array mach, the trigger is fired.
+  repeated Matcher matcher = 1;
+  string expression = 2;
 }
 
-message ManualTrigger {
-  message Config {
-    // Manual triggers typically don't have configuration parameters
-    // but we keep this for consistency
-  }
-  
-  message Output {
-    // Manual triggers typically don't return data
-    // but we keep this for consistency and future extensibility
-    uint64 run_at = 1; // Timestamp when manually run
-  }
-
-  // Include Config as field so it is generated in Go
-  Config config = 1;
-}
 
 message TaskTrigger {
   string name = 1;
-  
-  // NEW: Use the enum for type identification (Phase 1: add alongside existing)
-  TriggerType type = 8;
-  
   oneof trigger_type {
     // manual task will not be check to be trigger, instead it can be trigger adhoc
     bool               manual = 2;
     // run at a specific epoch, name inspired by unix `at` utility
-    FixedTimeTrigger fixed_time   = 3;
+    FixedTimeCondition fixed_time   = 3;
 
     // interval such as every hour/day/ etc can be converted to cronsyntax by the sdk/studio
-    CronTrigger      cron    = 4;
+    CronCondition      cron    = 4;
    
     // currently the only support syntax is every <x> blocks
-    BlockTrigger     block   = 5;
+    BlockCondition     block   = 5;
 
     // support filter by event expression such as topic0, topic1, topoc2 and event_data and contract_address
-    EventTrigger     event   = 6;
+    EventCondition     event   = 6;
   }
   string id = 7;
 }
@@ -266,42 +113,31 @@ enum TaskStatus {
 
 // Execution Status re-present a run of the task
 enum ExecutionStatus {
-  EXECUTION_STATUS_UNSPECIFIED = 0;
-  EXECUTION_STATUS_PENDING = 1;
-  EXECUTION_STATUS_COMPLETED = 2;
-  EXECUTION_STATUS_FAILED = 3;
+  Queued = 0;
+  Finished = 2;
 }
 
 
-// Nodes process data from preceding triggers/nodes
-// They have both Config (static parameters) and Input (runtime variables)
-
 message ETHTransferNode {
-  message Config {
-    string destination = 1;
-    string amount = 2;
-  }
+  string destination = 1;
+  string amount = 2;
 
   message Output {
     string transaction_hash = 1;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 message ContractWriteNode {
-  message Config {
-    string contract_address = 1;
-    string call_data = 2;
-    // The ABI is only required to decode the return value of a method call.
-    // If we don't need the result and only want the transaction hash (which is usually sufficient),
-    // then we don't need to provide the ABI.
-    string contract_abi = 3;
-  }
+  string contract_address = 1;
+  string call_data = 2;
+
+  // The ABI is only required to decode the return value of a method call.
+  // If we don't need the result and only want the transaction hash (which is usually sufficient),
+  // then we don't need to provide the ABI.
+  string contract_abi = 3;
 
   message Output {
-    // The requirement for this shape of data is requested in https://github.com/AvaProtocol/EigenLayer-AVS/issues/153
+    // The requiremen for this shape of data is requested in https://github.com/AvaProtocol/EigenLayer-AVS/issues/153
     // https://docs.ethers.org/v6/api/providers/#TransactionReceipt
     // Ideally we shouldn't have to transport or store this at all. We should only store/pass the txhash, the consumer can construct
     // a full message of these through EVM RPC.
@@ -309,20 +145,16 @@ message ContractWriteNode {
     Evm.UserOp user_op = 1;
     Evm.TransactionReceipt tx_receipt = 2;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 message ContractReadNode {
-  message Config {
-    string contract_address = 1;
-    string call_data = 2;
-    // The ABI are required to decode the return value and pass it to the next step.
-    // Currently, we need to provide the contract ABI as a JSON string.
-    // We don't need to include the full ABI—just enough to decode the method call.
-    string contract_abi = 3;
-  }
+  string contract_address = 1;
+  string call_data = 2;
+
+  // The ABI are required to decode the return value and pass it to the next step.
+  // Currently, we need to provide the contract ABI as a JSON string.
+  // We don't need to include the full ABI—just enough to decode the method call.
+  string contract_abi = 3;
 
   message Output {
     // The data is the result of querying the contract method. Becuase this is fetching data from the outside world,
@@ -331,72 +163,56 @@ message ContractReadNode {
     // In case of smart contract, the return is always an array, then it's up to the client to map to the right field based on method signature
     repeated google.protobuf.Value data = 1;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 
 message GraphQLQueryNode {
-  message Config {
-    // Static configuration set at node creation time
-    string url = 1;
-    string query = 2;
-    map<string, string> variables = 3;
-  }
+  string url   = 1;
+  string query = 2;
+
+  map<string, string> variables = 3;
+
 
   message Output {
     // The data is the result of the graphql query. Becuase this is GraphQL, the data is a json object
     // The field of the json object is unknow, its depend on the query
     google.protobuf.Any data = 1;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 message RestAPINode {
-  message Config {
-    string url = 1;
-    map<string, string> headers = 2;
-    string body = 3;
-    string method = 4;
-  }
+  string              url     = 1;
+  map<string, string> headers = 2;
+  string              body    = 3;
+  string              method  = 4;
 
   message Output {
-    // Changed from google.protobuf.Any to google.protobuf.Value for better JavaScript native type support
-    google.protobuf.Value data = 1;
+    google.protobuf.Any data = 1;
   }
+}
 
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
+enum CustomCodeLang {
+  JavaScript = 0;
 }
 
 message CustomCodeNode {
-  message Config {
-    Lang lang = 1;  // Language is static config set at creation time
-    string source = 2;  // Source code can be provided as input variable
-  }
+  CustomCodeLang lang     = 1;
+  string         source    = 2;
 
   message Output {
     // Changed from google.protobuf.Any to google.protobuf.Value for better JavaScript native type support
     google.protobuf.Value data = 1;
   }
+}
 
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
+message Condition {
+  string id = 1;
+  string type = 2;
+  string expression = 3;
 }
 
 message BranchNode {
-  message Condition {
-    string id = 1;
-    string type = 2;
-    string expression = 3;
-  }
-
-  message Config {
-    repeated Condition conditions = 1;
-  }
+  repeated Condition conditions = 1;
 
   message Output {
     // the output of the branch node is the id of the condition that is true
@@ -404,41 +220,29 @@ message BranchNode {
     // In front-end, when rendering the historical execution, we can draw the relationship coming out of the condition that match this id
     string condition_id = 1;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 message FilterNode {
-  message Config {
-    // Filter node acts like .select or .filter to pluck out element in an array that evaluate the expression to true
-    string expression = 1;
-    
-    // The node Id of a source node; we will extract the output of the source node at runtime.
-    // The data should be iterable (array, object, etc.). Runtime validation will check compatibility.
-    string source_id = 2;
-  }
+  // Filter node acts like .select or .filter to pluck out element in an array that evaluate the expression to true
+  string expression = 1;
+  // input is the id of the node that we will fetch its value from and feed into the iteration.
+  // this input has to be an array. Currently we only know about the error at runtime
+  string input = 2;
 
   message Output {
     // the output of the filter node is the filtered array after apply the filter expression. It works similar to filter of javascript
     google.protobuf.Any data = 1;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 // LoopNode currently not support, but we pre-defined to reverse the field id
 message LoopNode {
-  message Config {
-    // source_variable is the variable name from a previous node whose data will be iterated over.
-    // The node Id of a source node; we will extract the output of the source node at runtime.
-    string source_id = 1;
-    // iter_val is the variable name that will hold the current value during each iteration
-    string iter_val = 2;
-    // iter_key is the variable name that will hold the current key/index during each iteration
-    string iter_key = 3;
-  }
+  // this is the variable name of any previous step so we can took it
+  string input   = 1;
+
+  // a var that the function can refer to it
+  string iter_val = 2;
+  string iter_key = 3;
 
   // inside the runner, it can access to the current value of the loop iteration through the iter_val/iter_key above
   oneof runner {
@@ -458,11 +262,9 @@ message LoopNode {
   }
 
   message Output {
+    // TODO: We haven't implement loop node yet
     string data = 1;
   }
-
-  // Include Config and Input as fields so they are generated in Go
-  Config config = 1;
 }
 
 // The edge is relationship or direct between node
@@ -475,9 +277,6 @@ message TaskEdge {
 message TaskNode {
   string id   = 2;
   string name = 3;
-  
-  // NEW: Use the enum for type identification (Phase 1: add alongside existing)
-  NodeType type = 1;
 
   // based on node_type one and only one of these field are set
   oneof task_type {
@@ -503,31 +302,20 @@ message TaskNode {
 
 message Execution {
   string id      = 1;
-  
-  int64 start_at = 2; // timestamp when execution started (in milliseconds)
-  int64 end_at   = 3; // timestamp when execution ended (in milliseconds)
+  // timestamp when execution started (in milliseconds)
+  int64 start_at = 2;
+  // timestamp when execution ended (in milliseconds)
+  int64 end_at   = 3;
   bool   success = 4;
   string error   = 5;
 
+  TriggerReason reason = 6;
+
   message Step {
-    string id = 1;
+    string node_id = 1;
+    bool   success  = 2;
     
-    // Unified type field - can be trigger type (MANUAL, BLOCK, etc) or node type (CUSTOM_CODE, REST_API, etc)
-    string type = 17;
-    string name = 18;
-    bool success = 2;
-    string error = 13;
-    string log = 12;
-    repeated string inputs = 16;
     oneof output_data {
-      // Trigger outputs
-      BlockTrigger.Output block_trigger = 20;
-      FixedTimeTrigger.Output fixed_time_trigger = 21;
-      CronTrigger.Output cron_trigger = 22;
-      EventTrigger.Output event_trigger = 23;
-      ManualTrigger.Output manual_trigger = 24;
-      
-      // Node outputs  
       ETHTransferNode.Output eth_transfer = 3;
       GraphQLQueryNode.Output graphql = 4;
       ContractReadNode.Output contract_read = 5;
@@ -538,14 +326,80 @@ message Execution {
       FilterNode.Output filter = 10;
       LoopNode.Output loop = 11;
     }
-    
+
+    string log = 12; 
+    string error = 13;
     // timestamp when step started (in milliseconds)
     int64 start_at = 14;
     // timestamp when step ended (in milliseconds)
     int64 end_at = 15;
+
+    // Reference ticket: https://github.com/AvaProtocol/EigenLayer-AVS/issues/151
+    repeated string inputs = 16;
   }
 
   repeated Step steps = 8;
+
+  string trigger_name = 9;
+
+  // Despite the name outputData this is actually the data after we enrich based the metadata at the point where the event is trigger.
+  // Example at the time of triggering a transfer event, the only ifformation we had is ERC20 address, the topics, the from/to and amount, the log id and transaction hash
+  // We then query Etherem RPC to find out more information such as token symbol, token decimal, parse the amount of out event raw data
+  // Reference ticket: https://github.com/AvaProtocol/EigenLayer-AVS/issues/151
+  //  
+  // For transfer event, we had a set of fields
+  // Chris define them here https://avaprotocol.slack.com/archives/D0570FNE0SJ/p1733336982524899
+  // // The selected fields of the response to return to the client
+  //  const FILTERED_FIELDS = [
+  //    "token_name",
+  //    "token_symbol",
+  //    "token_decimals",
+  //    "transaction_hash",
+  //    "address",
+  //    "block_timestamp",
+  //    "block_number",
+  //    "from_address",
+  //    "to_address",
+  //    "value",
+  //    "value_formatted", // Formatted value
+  //    "transaction_index",
+  //    "log_index",
+  //  ];
+  // 
+  // For non transfer event, we just have the raw data
+  // For block event, we had the number at that trigger is meet.
+  // For time trigger, it is the epoch
+  oneof output_data {
+    TransferLogOutput transfer_log = 10;
+
+    // When the trigger is not a transfer event, we will have a raw event output only
+    // These shape of data is https://docs.ethers.org/v6/api/providers/#Log
+    Evm.Log evm_log = 11;
+    BlockOutput block = 12;
+    TimeOutput time = 13;
+  }
+  message TransferLogOutput {
+    string token_name = 1;
+    string token_symbol = 2;
+    uint32 token_decimals = 3;
+    string transaction_hash = 4;
+    string address = 5;
+    uint64 block_number = 6;
+    // timestamp of the block (in milliseconds)
+    uint64 block_timestamp = 7;
+    string from_address = 8;
+    string to_address = 9;
+    string value = 10;
+    string value_formatted = 11;
+    uint32 transaction_index = 12;
+  }
+  
+  message BlockOutput {
+    uint64 block_number = 1;
+  }
+  message TimeOutput {
+    uint64 epoch = 1;
+  }
 }
 
 
@@ -629,34 +483,52 @@ message ListWalletResp {
 message ListTasksReq {
   // Filter out by the smart_wallet_address
   repeated string smart_wallet_address = 1;
-  // Get items before this cursor value (for backward pagination)
-  string before = 2;
-  // Get items after this cursor value (for forward pagination)
-  string after = 3;
-  int64 limit = 4;
-  
-  // Field control options for flexible response content
-  bool include_nodes = 5;  // Include task nodes (expensive field)
-  bool include_edges = 6;  // Include task edges (expensive field)
+  string cursor = 2;
+  int64 limit = 3;
 }
 
 message ListTasksResp {
-  repeated Task items = 1;
-  PageInfo page_info = 2;
+  message Item {
+    string id                   = 1;
+    string owner                = 2;
+    string smart_wallet_address = 3;
+
+    // task won't be check before this (timestamp in milliseconds)
+    int64  start_at   = 4;
+    // task won't be run/check after this (timestamp in milliseconds)
+    int64  expired_at = 5;
+    // arbitrary data about this task. has a limit of 255 character
+    string name = 6;
+
+    // timestamp when task was completed (in milliseconds)
+    int64 completed_at = 7;
+
+    // limit on how many time this task can run. Set to 0 will make it run unlimited until cancelling or reaching its expired time
+    int64 max_execution = 8;
+    // return how many time this task has run
+    int64 execution_count = 9;
+    // timestamp when task was last executed (in milliseconds)
+    int64 last_ran_at = 10;
+
+    TaskStatus status  = 11;
+    TaskTrigger trigger = 12;
+  }
+
+  repeated Item items = 1;
+  string cursor = 2;
+  bool has_more = 3;
 }
 
 message ListExecutionsReq {
   repeated string task_ids = 1;
-  // Get items before this cursor value (for backward pagination)
-  string before = 2;
-  // Get items after this cursor value (for forward pagination)
-  string after = 3;
-  int64 limit = 4;
+  string cursor = 2;
+  int64 limit = 3;
 }
 
 message ListExecutionsResp {
   repeated Execution items = 1;
-  PageInfo page_info = 2;
+  string cursor = 2;
+  bool has_more = 4;
 }
 
 message ExecutionReq {
@@ -676,17 +548,37 @@ message GetKeyReq {
 }
 
 message KeyResp {
-  // The user's address derived from the signature
-  string address = 1;
-  
-  // The auth key to include in all future requests
-  string key = 2;
-  
-  // The message that was signed to produce the signature
-  string message = 3;
-  
-  // Expiry of the auth key in seconds since epoch
-  uint64 expiry = 4;
+  string key=1;
+}
+
+
+// TriggerReason represent a lookup that we can use to identify when/where/how it is trigger
+// In a block trigger, we will have block_number
+// In an event trigger, we will have the log_index, tx_hash and the block_number
+// In a time based trigger(cron/fixed time) we will have the epoch.
+//
+// TriggerReason is used to populate the `<trigger-name>.data` variable. Example, if this is a transfer
+// event, then you will have access to <trigger-name>.data.from_address or <trigger-name>.data.value
+message TriggerReason {
+  uint64 block_number = 1;
+  uint64 log_index    = 2;
+  string tx_hash      = 3;
+  uint64 epoch        = 4;
+
+  // This value isn't needed because when we query an execution or trigger a task, we know the trigger type 
+  // But, The JS SDK needed this value probabaly to saving the lookup time when it only have execution id somehow
+  // So we added this value to the respose for the client to consume and use however it want
+  // Internaly we don't make use of this field.
+  // The client was map the field based on the one-off field number so we need to match this number with TaskTrigger.trigger_type
+  enum TriggerType {
+    Unset     = 0;
+    Manual    = 2;
+    FixedTime = 3;
+    Cron      = 4;
+    Block     = 5;
+    Event     = 6;
+  }
+  TriggerType type = 5;
 }
 
 message GetWalletReq {
@@ -715,28 +607,16 @@ message SetWalletReq {
   bool is_hidden = 3;
 }
 
-message TriggerTaskReq {
+message UserTriggerTaskReq {
   string task_id = 1;
-  
-  // Flattened from TriggerReason: Use the top-level TriggerType enum for consistency
-  TriggerType trigger_type = 2;
-
-  // Flattened from TriggerReason: trigger output data based on type
-  oneof trigger_output {
-    BlockTrigger.Output block_trigger = 3;
-    FixedTimeTrigger.Output fixed_time_trigger = 4;
-    CronTrigger.Output cron_trigger = 5;
-    EventTrigger.Output event_trigger = 6;
-    ManualTrigger.Output manual_trigger = 7;
-  }
-  
+  TriggerReason reason = 2;
   // when setting is_blocking=true, the execution run in the same request. the request is blocked until the execution is done
   // setting to false, the task will be execute in our normal queueu system, and the request won't block.
   // default value is false, for interact testing, set this to true
-  bool is_blocking = 8;
+  bool is_blocking = 3;
 }
 
-message TriggerTaskResp {
+message UserTriggerTaskResp {
   // Regardless whether it is a block or async, we always get back the same kind of id for this trigger.
   // The caller then make a second request to GetExecution to check for the execution status and data.
   // In the blocking mode, the execution_id is materialized and has been created, we can then call GetExecution on it immediately to receive result
@@ -763,43 +643,27 @@ message CreateOrUpdateSecretReq {
 
 message ListSecretsReq {
   string workflow_id = 1;
+  // Deprecated: Use before or after instead
+  string cursor = 2;
   // Get items before this cursor value (for backward pagination)
-  string before = 2;
+  string before = 3;
   // Get items after this cursor value (for forward pagination)
-  string after = 3;
-  int64 limit = 4;
-  
-  // Field control options for flexible response content
-  bool include_timestamps = 5;   // Include created_at and updated_at fields
-  bool include_created_by = 6;   // Include created_by field
-  bool include_description = 7;  // Include description field
-}
-
-// Standard pagination info following GraphQL cursor-based pagination
-message PageInfo {
-  string start_cursor = 1;     // Cursor pointing to the first item in the current page
-  string end_cursor = 2;       // Cursor pointing to the last item in the current page
-  bool has_previous_page = 3;  // Whether there are more items before the current page
-  bool has_next_page = 4;      // Whether there are more items after the current page
-}
-
-// Secret represents a secret configuration without the actual secret value
-message Secret {
-  // when listing secret, we don't return its value, just secret and last update
-  string name = 1;
-  string scope = 2;
-  string workflow_id = 3;
-  string org_id = 4;
-  // Additional fields that can be controlled via field masks
-  int64 created_at = 5;      // Unix timestamp when secret was created
-  int64 updated_at = 6;      // Unix timestamp when secret was last updated
-  string created_by = 7;     // User ID who created the secret
-  string description = 8;    // Optional description of the secret
+  string after = 4;
+  int64 limit = 5;
 }
 
 message ListSecretsResp {
-  repeated Secret items = 1;
-  PageInfo page_info = 2;
+  message ResponseSecret {
+    // when listing secret, we don't return its value, just secret and last update
+    string name = 1;
+    string scope = 2;
+
+    string workflow_id = 4;
+    string org_id = 5;
+  }
+  repeated ResponseSecret items = 1;
+  string cursor = 2;
+  bool has_more = 3;
 }
 
 message DeleteSecretReq {
@@ -847,7 +711,7 @@ service Aggregator {
 
   rpc CancelTask(IdReq)                 returns (google.protobuf.BoolValue) {};
   rpc DeleteTask(IdReq)                 returns (google.protobuf.BoolValue) {};
-  rpc TriggerTask(TriggerTaskReq)   returns (TriggerTaskResp) {};
+  rpc TriggerTask(UserTriggerTaskReq)   returns (UserTriggerTaskResp) {};
 
   // CreateSecret allow you to define a secret to be used in your tasks. The secret can be used with a special syntax of ${{secrets.name }}.
   // You can decide whether to grant secret to a single workflow or many workflow, or all of your workflow
@@ -881,18 +745,6 @@ service Aggregator {
   // It counts total executions, successful executions, and failed executions
   // If no workflow IDs are provided, it counts for all workflows of the authenticated user
   rpc GetExecutionStats(GetExecutionStatsReq) returns (GetExecutionStatsResp);
-
-  // RunNodeWithInputs allows executing a single node with provided inputs for testing purposes
-  rpc RunNodeWithInputs(RunNodeWithInputsReq) returns (RunNodeWithInputsResp);
-  
-  // RunTrigger allows executing a single trigger for testing purposes (triggers don't accept inputs)
-  rpc RunTrigger(RunTriggerReq) returns (RunTriggerResp);
-  
-  // SimulateTask allows executing a complete task simulation including trigger and all workflow nodes
-  rpc SimulateTask(SimulateTaskReq) returns (Execution);
-  
-  // GetTokenMetadata allows looking up ERC20 token metadata by contract address
-  rpc GetTokenMetadata(GetTokenMetadataReq) returns (GetTokenMetadataResp);
 }
 
 // Request message for GetWorkflowCount
@@ -928,56 +780,6 @@ message GetExecutionStatsResp {
   int64 succeeded = 2; // Number of successful executions
   int64 failed = 3; // Number of failed executions
   double avg_execution_time = 4; // Average execution time in milliseconds
-}
-
-// Request message for RunNodeWithInputs
-message RunNodeWithInputsReq {
-  NodeType node_type = 1; // Type of node to execute using the NodeType enum
-  map<string, google.protobuf.Value> node_config = 2; // Configuration for the node
-  map<string, google.protobuf.Value> input_variables = 3; // Input variables for the node
-}
-
-// Response message for RunNodeWithInputs
-message RunNodeWithInputsResp {
-  bool success = 1; // Whether the execution was successful
-  string error = 3; // Error message if execution failed
-  string node_id = 4; // ID of the executed node
-  
-  // Use specific output types for nodes only
-  oneof output_data {
-    // Node outputs
-    ETHTransferNode.Output eth_transfer = 10;
-    GraphQLQueryNode.Output graphql = 11;
-    ContractReadNode.Output contract_read = 12;
-    ContractWriteNode.Output contract_write = 13;
-    CustomCodeNode.Output custom_code = 14;
-    RestAPINode.Output rest_api = 15;
-    BranchNode.Output branch = 16;
-    FilterNode.Output filter = 17;
-    LoopNode.Output loop = 18;
-  }
-}
-
-// Request message for RunTrigger
-message RunTriggerReq {
-  TriggerType trigger_type = 1; // Type of trigger to execute using the TriggerType enum
-  map<string, google.protobuf.Value> trigger_config = 2; // Configuration for the trigger
-}
-
-// Response message for RunTrigger
-message RunTriggerResp {
-  bool success = 1; // Whether the execution was successful
-  string error = 2; // Error message if execution failed
-  string trigger_id = 3; // ID of the executed trigger
-  
-  // Use specific output types for triggers
-  oneof output_data {
-    BlockTrigger.Output block_trigger = 10;
-    FixedTimeTrigger.Output fixed_time_trigger = 11;
-    CronTrigger.Output cron_trigger = 12;
-    EventTrigger.Output event_trigger = 13;
-    ManualTrigger.Output manual_trigger = 14;
-  }
 }
 
 message Evm {
@@ -1031,13 +833,4 @@ message Evm {
     string paymaster_and_data = 10;
     string signature = 11;
   }
-}
-
-// Request message for SimulateTask
-message SimulateTaskReq {
-  // Complete task definition for simulation (no need to save to storage first)
-  TaskTrigger trigger = 1; // The trigger configuration
-  repeated TaskNode nodes = 2; // All workflow nodes
-  repeated TaskEdge edges = 3; // All edges connecting the nodes
-  map<string, google.protobuf.Value> input_variables = 6; // Input variables for the simulation
 }
