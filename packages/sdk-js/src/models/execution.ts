@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerTypeConverter, TriggerType, ExecutionProps } from "@avaprotocol/types";
+import { TriggerTypeConverter, TriggerType, ExecutionProps, StepProps } from "@avaprotocol/types";
 import Step from "./step";
 
 
@@ -18,7 +18,22 @@ class Execution implements ExecutionProps {
     this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
-    this.steps = props.steps;
+    this.steps = props.steps as Step[];
+  }
+
+  /**
+   * Convert Execution instance to plain object (ExecutionProps)
+   * This is useful for serialization, especially with Next.js Server Components
+   */
+  toJson(): ExecutionProps {
+    return {
+      id: this.id,
+      startAt: this.startAt,
+      endAt: this.endAt,
+      success: this.success,
+      error: this.error,
+      steps: this.steps.map(step => step.toJson()),
+    };
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
@@ -30,7 +45,7 @@ class Execution implements ExecutionProps {
       error: execution.getError(),
       steps: execution
         .getStepsList()
-        .map((step) => Step.fromResponse(step)),
+        .map((step) => Step.fromResponse(step)) as StepProps[],
     });
   }
 

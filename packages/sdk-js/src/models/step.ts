@@ -30,6 +30,25 @@ class Step implements StepProps {
     this.endAt = props.endAt;
   }
 
+  /**
+   * Convert Step instance to plain object (StepProps)
+   * This is useful for serialization, especially with Next.js Server Components
+   */
+  toJson(): StepProps {
+    return {
+      id: this.id,
+      type: this.type,
+      name: this.name,
+      success: this.success,
+      error: this.error,
+      log: this.log,
+      inputsList: this.inputsList,
+      output: this.output,
+      startAt: this.startAt,
+      endAt: this.endAt,
+    };
+  }
+
   static getOutput(step: avs_pb.Execution.Step): OutputDataProps {
     const outputDataType = step.getOutputDataCase();
     let nodeOutputMessage;

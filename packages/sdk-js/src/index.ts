@@ -36,6 +36,7 @@ import {
   type SecretOptions,
   type TriggerDataProps,
   type SimulateWorkflowRequest,
+  type ExecutionProps,
   type GetTokenMetadataRequest,
   type GetTokenMetadataResponse,
   type TokenMetadata,
@@ -364,13 +365,13 @@ class Client extends BaseClient {
    * @param {boolean} [options.includeNodes] - Include task nodes (expensive field)
    * @param {boolean} [options.includeEdges] - Include task edges (expensive field)
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ items: Workflow[]; pageInfo: PageInfo }>} - The list of Workflow objects with nested pagination metadata
+   * @returns {Promise<{ items: WorkflowProps[]; pageInfo: PageInfo }>} - The list of WorkflowProps objects with nested pagination metadata
    */
   async getWorkflows(
     addresses: string[],
     options?: GetWorkflowsOptions
   ): Promise<{
-    items: Workflow[];
+    items: WorkflowProps[];
     pageInfo: PageInfo;
   }> {
     const request = new avs_pb.ListTasksReq();
@@ -408,7 +409,7 @@ class Client extends BaseClient {
     return {
       items: result
         .getItemsList()
-        .map((item) => Workflow.fromListResponse(item)),
+        .map((item) => Workflow.fromListResponse(item).toJson()),
       pageInfo: {
         startCursor: pageInfo.getStartCursor(),
         endCursor: pageInfo.getEndCursor(),
@@ -447,13 +448,13 @@ class Client extends BaseClient {
    * @param {string} [options.after] - Get items after this cursor value (for forward pagination)
    * @param {number} [options.limit] - The page limit of the response; default is 10
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<{ items: Execution[]; pageInfo: PageInfo }>} - The list of Execution objects with nested pagination metadata
+   * @returns {Promise<{ items: ExecutionProps[]; pageInfo: PageInfo }>} - The list of ExecutionProps objects with nested pagination metadata
    */
   async getExecutions(
     workflows: string[],
     options?: GetExecutionsOptions
   ): Promise<{
-    items: Execution[];
+    items: ExecutionProps[];
     pageInfo: PageInfo;
   }> {
     const request = new avs_pb.ListExecutionsReq();
@@ -481,7 +482,7 @@ class Client extends BaseClient {
     }
 
     return {
-      items: result.getItemsList().map((item) => Execution.fromResponse(item)),
+      items: result.getItemsList().map((item) => Execution.fromResponse(item).toJson()),
       pageInfo: {
         startCursor: pageInfo.getStartCursor(),
         endCursor: pageInfo.getEndCursor(),
@@ -496,13 +497,13 @@ class Client extends BaseClient {
    * @param {string} workflowId - The workflow id (taskId)
    * @param {string} executionId - The execution id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<Execution>} - The Execution object
+   * @returns {Promise<ExecutionProps>} - The ExecutionProps object
    */
   async getExecution(
     workflowId: string,
     executionId: string,
     options?: RequestOptions
-  ): Promise<Execution> {
+  ): Promise<ExecutionProps> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(workflowId);
     request.setExecutionId(executionId);
@@ -512,7 +513,7 @@ class Client extends BaseClient {
       avs_pb.ExecutionReq
     >("getExecution", request, options);
 
-    return Execution.fromResponse(result);
+    return Execution.fromResponse(result).toJson();
   }
 
   /**
@@ -564,9 +565,9 @@ class Client extends BaseClient {
    * Get a workflow by id
    * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<Workflow>} - The Workflow object
+   * @returns {Promise<WorkflowProps>} - The WorkflowProps object
    */
-  async getWorkflow(id: string, options?: RequestOptions): Promise<Workflow> {
+  async getWorkflow(id: string, options?: RequestOptions): Promise<WorkflowProps> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
@@ -576,7 +577,7 @@ class Client extends BaseClient {
       options
     );
 
-    return Workflow.fromResponse(result);
+    return Workflow.fromResponse(result).toJson();
   }
 
   /**
@@ -1018,12 +1019,12 @@ class Client extends BaseClient {
    * @param {Array<Record<string, any>>} params.edges - The workflow edges
    * @param {Record<string, any>} params.inputVariables - Input variables for the simulation
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<Execution>} - The response from simulating the task
+   * @returns {Promise<ExecutionProps>} - The response from simulating the task
    */
   async simulateWorkflow(
     { trigger, nodes, edges, inputVariables = {} }: SimulateWorkflowRequest,
     options?: RequestOptions
-  ): Promise<Execution> {
+  ): Promise<ExecutionProps> {
     // Create the request
     const request = new avs_pb.SimulateTaskReq();
 
@@ -1057,8 +1058,9 @@ class Client extends BaseClient {
       avs_pb.SimulateTaskReq
     >("simulateTask", request, options);
 
-    // Return the execution directly
-    return Execution.fromResponse(result);
+    // Convert to Execution instance, then return as plain object for serialization
+    const execution = Execution.fromResponse(result);
+    return execution.toJson();
   }
 
   /**
