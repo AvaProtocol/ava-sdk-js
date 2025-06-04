@@ -171,7 +171,7 @@ class Workflow implements WorkflowProps {
       id: this.id,
       owner: this.owner,
       smartWalletAddress: this.smartWalletAddress,
-      trigger: this.trigger as any,
+      trigger: this.trigger.toJson(),
       nodes: this.nodes as any,
       edges: this.edges as any,
       startAt: this.startAt,

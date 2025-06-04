@@ -18,7 +18,7 @@ class Execution implements ExecutionProps {
     this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
-    this.steps = props.steps as Step[];
+    this.steps = props.steps.map(s => new Step(s));
   }
 
   /**
