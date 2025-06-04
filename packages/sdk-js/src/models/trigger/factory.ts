@@ -82,7 +82,14 @@ class TriggerFactory {
         break;
       case avs_pb.RunTriggerResp.OutputDataCase.EVENT_TRIGGER:
         triggerOutput = outputData.getEventTrigger();
-        break;
+        if (triggerOutput) {
+          if (triggerOutput.hasEvmLog()) {
+            return triggerOutput.getEvmLog()?.toObject();
+          } else if (triggerOutput.hasTransferLog()) {
+            return triggerOutput.getTransferLog()?.toObject();
+          }
+        }
+        return null;
       case avs_pb.RunTriggerResp.OutputDataCase.MANUAL_TRIGGER:
         triggerOutput = outputData.getManualTrigger();
         break;

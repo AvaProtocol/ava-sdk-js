@@ -415,6 +415,8 @@ export namespace EventTrigger {
         getTransferLog(): EventTrigger.TransferLogOutput | undefined;
         setTransferLog(value?: EventTrigger.TransferLogOutput): Output;
 
+        getOutputTypeCase(): Output.OutputTypeCase;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
         static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
@@ -430,6 +432,13 @@ export namespace EventTrigger {
             evmLog?: Evm.Log.AsObject,
             transferLog?: EventTrigger.TransferLogOutput.AsObject,
         }
+
+        export enum OutputTypeCase {
+            OUTPUT_TYPE_NOT_SET = 0,
+            EVM_LOG = 1,
+            TRANSFER_LOG = 2,
+        }
+
     }
 
     export class TransferLogOutput extends jspb.Message { 

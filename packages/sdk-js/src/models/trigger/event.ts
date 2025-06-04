@@ -120,7 +120,14 @@ class EventTrigger extends Trigger {
    */
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const eventOutput = outputData.getEventTrigger();
-    return eventOutput?.toObject() || null;
+    if (eventOutput) {
+      if (eventOutput.hasEvmLog()) {
+        return eventOutput.getEvmLog()?.toObject();
+      } else if (eventOutput.hasTransferLog()) {
+        return eventOutput.getTransferLog()?.toObject();
+      }
+    }
+    return null;
   }
 }
 

@@ -58,6 +58,7 @@ goog.exportSymbol('proto.aggregator.EventTrigger', null, global);
 goog.exportSymbol('proto.aggregator.EventTrigger.Config', null, global);
 goog.exportSymbol('proto.aggregator.EventTrigger.Matcher', null, global);
 goog.exportSymbol('proto.aggregator.EventTrigger.Output', null, global);
+goog.exportSymbol('proto.aggregator.EventTrigger.Output.OutputTypeCase', null, global);
 goog.exportSymbol('proto.aggregator.EventTrigger.TransferLogOutput', null, global);
 goog.exportSymbol('proto.aggregator.Evm', null, global);
 goog.exportSymbol('proto.aggregator.Evm.Log', null, global);
@@ -485,7 +486,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.EventTrigger.Output = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, proto.aggregator.EventTrigger.Output.oneofGroups_);
 };
 goog.inherits(proto.aggregator.EventTrigger.Output, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -4905,6 +4906,32 @@ proto.aggregator.EventTrigger.Config.prototype.setExpression = function(value) {
 
 
 
+/**
+ * Oneof group definitions for this message. Each group defines the field
+ * numbers belonging to that group. When of these fields' value is set, all
+ * other fields in the group are cleared. During deserialization, if multiple
+ * fields are encountered for a group, only the last value seen will be kept.
+ * @private {!Array<!Array<number>>}
+ * @const
+ */
+proto.aggregator.EventTrigger.Output.oneofGroups_ = [[1,2]];
+
+/**
+ * @enum {number}
+ */
+proto.aggregator.EventTrigger.Output.OutputTypeCase = {
+  OUTPUT_TYPE_NOT_SET: 0,
+  EVM_LOG: 1,
+  TRANSFER_LOG: 2
+};
+
+/**
+ * @return {proto.aggregator.EventTrigger.Output.OutputTypeCase}
+ */
+proto.aggregator.EventTrigger.Output.prototype.getOutputTypeCase = function() {
+  return /** @type {proto.aggregator.EventTrigger.Output.OutputTypeCase} */(jspb.Message.computeOneofCase(this, proto.aggregator.EventTrigger.Output.oneofGroups_[0]));
+};
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -5047,7 +5074,7 @@ proto.aggregator.EventTrigger.Output.prototype.getEvmLog = function() {
  * @return {!proto.aggregator.EventTrigger.Output} returns this
 */
 proto.aggregator.EventTrigger.Output.prototype.setEvmLog = function(value) {
-  return jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setOneofWrapperField(this, 1, proto.aggregator.EventTrigger.Output.oneofGroups_[0], value);
 };
 
 
@@ -5084,7 +5111,7 @@ proto.aggregator.EventTrigger.Output.prototype.getTransferLog = function() {
  * @return {!proto.aggregator.EventTrigger.Output} returns this
 */
 proto.aggregator.EventTrigger.Output.prototype.setTransferLog = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.aggregator.EventTrigger.Output.oneofGroups_[0], value);
 };
 
 
