@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.0.3
+
+### Patch Changes
+
+- 3bbdc95: Updated runTrigger with EventTrigger output
+
 ## 2.0.2
 
 ### Patch Changes
