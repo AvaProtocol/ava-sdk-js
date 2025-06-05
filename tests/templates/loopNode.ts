@@ -31,7 +31,7 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
     iterKey: "index",
     customCode: {
       config: {
-        lang: CustomCodeLangs.JAVASCRIPT,
+        lang: CustomCodeLangs.Javascript,
         source: `const result = { processedItem: item, position: index }; return result;`,
       },
     },

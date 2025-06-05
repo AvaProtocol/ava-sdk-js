@@ -56,7 +56,7 @@ describe("CustomCode Module Imports Tests", () => {
         name: "lodash test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
+          lang: CustomCodeLangs.Javascript,
           source: `
             const _ = require('lodash');
             return _.map([1, 2, 3], n => n * 2);
@@ -118,7 +118,7 @@ describe("CustomCode Module Imports Tests", () => {
         name: "dayjs test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
+          lang: CustomCodeLangs.Javascript,
           source: `
             const dayjs = require('dayjs');
             const date = dayjs('2023-01-01');
@@ -181,7 +181,7 @@ describe("CustomCode Module Imports Tests", () => {
         name: "uuid test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
+          lang: CustomCodeLangs.Javascript,
           source: `
             const { v4: uuidv4 } = require('uuid');
             const id = uuidv4();
@@ -244,7 +244,7 @@ describe("CustomCode Module Imports Tests", () => {
         name: "complex module test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.JAVASCRIPT,
+          lang: CustomCodeLangs.Javascript,
           source: `
             const _ = require('lodash');
             const dayjs = require('dayjs');

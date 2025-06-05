@@ -159,7 +159,7 @@ const customCodeNodeProps: CustomCodeNodeProps = {
   type: NodeType.CustomCode,
   data: {
     config: {
-      lang: CustomCodeLangs.JAVASCRIPT,
+      lang: CustomCodeLangs.Javascript,
       source: "foo bar",
     }
   },

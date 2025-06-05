@@ -73,7 +73,7 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: `
               const testArray = [
                 { name: "item1", value: 10 },
@@ -141,7 +141,7 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: `
               const testArray = [1, 2, 3, 4, 5];
               return { testArray };
@@ -205,7 +205,7 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: `
               const addressArray = [
                 "0x1234567890123456789012345678901234567890",
@@ -273,7 +273,7 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: `
               const contractArray = [
                 { 
@@ -348,7 +348,7 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           config: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: `
               const queryArray = [
                 { id: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" },
