@@ -45,6 +45,16 @@ class Trigger implements TriggerProps {
   getOutput(): TriggerOutput | undefined {
     return this.output;
   }
+
+  toJson(): TriggerProps {
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      data: this.data,
+      output: this.output,
+    };
+  }
 }
 
 export default Trigger;

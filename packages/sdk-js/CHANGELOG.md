@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.0.4
+
+### Patch Changes
+
+- cd87ed8: Change API response from Execution to ExecutionProps
+
 ## 2.0.3
 
 ### Patch Changes

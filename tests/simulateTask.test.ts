@@ -55,7 +55,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source:
               "return { message: 'Task executed successfully', timestamp: Date.now() };",
           },
@@ -112,7 +112,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: "return { greeting: 'Hello World!', calculated: 42 * 2 };",
           },
         },
@@ -233,7 +233,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code 1",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: "return { step1: 'completed', data: 'from step 1' };",
           },
         },
@@ -242,9 +242,9 @@ describe("SimulateWorkflow", () => {
           name: "custom code 2",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source:
-              "return { step2: 'completed', previousData: trigger.data };",
+              "return { step2: 'completed', previousData: manual_trigger.data };",
           },
         },
       ];
@@ -311,7 +311,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.JAVASCRIPT,
+            lang: CustomCodeLangs.Javascript,
             source: "throw new Error('Intentional error for testing');",
           },
         },

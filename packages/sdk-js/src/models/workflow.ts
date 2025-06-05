@@ -161,6 +161,29 @@ class Workflow implements WorkflowProps {
 
     return request;
   }
+
+  /**
+   * Convert Workflow instance to plain object (WorkflowProps)
+   * This is useful for serialization, especially with Next.js Server Components
+   */
+  toJson(): WorkflowProps {
+    return {
+      id: this.id,
+      owner: this.owner,
+      smartWalletAddress: this.smartWalletAddress,
+      trigger: this.trigger.toJson(),
+      nodes: this.nodes as any,
+      edges: this.edges as any,
+      startAt: this.startAt,
+      expiredAt: this.expiredAt,
+      maxExecution: this.maxExecution,
+      executionCount: this.executionCount,
+      name: this.name,
+      status: this.status,
+      completedAt: this.completedAt,
+      lastRanAt: this.lastRanAt,
+    };
+  }
 }
 
 export default Workflow;
