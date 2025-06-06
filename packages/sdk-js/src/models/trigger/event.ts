@@ -22,7 +22,7 @@ import util from "util";
 // ]
 // ```
 
-// Required props for constructor: id, name, type and data: { expression, matcherList }
+// Required props for constructor: id, name, type and data: { queriesList }
 
 // EventTrigger now uses queries-based filtering instead of expression/matcher
 // Each query represents an independent filter that creates its own subscription
