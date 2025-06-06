@@ -353,38 +353,66 @@ export namespace EventTrigger {
     }
 
 
-    export class Matcher extends jspb.Message { 
-        getType(): string;
-        setType(value: string): Matcher;
-        clearValueList(): void;
-        getValueList(): Array<string>;
-        setValueList(value: Array<string>): Matcher;
-        addValue(value: string, index?: number): string;
+    export class Query extends jspb.Message { 
+        clearAddressesList(): void;
+        getAddressesList(): Array<string>;
+        setAddressesList(value: Array<string>): Query;
+        addAddresses(value: string, index?: number): string;
+        clearTopicsList(): void;
+        getTopicsList(): Array<EventTrigger.Topics>;
+        setTopicsList(value: Array<EventTrigger.Topics>): Query;
+        addTopics(value?: EventTrigger.Topics, index?: number): EventTrigger.Topics;
+
+        hasMaxEventsPerBlock(): boolean;
+        clearMaxEventsPerBlock(): void;
+        getMaxEventsPerBlock(): number | undefined;
+        setMaxEventsPerBlock(value: number): Query;
 
         serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): Matcher.AsObject;
-        static toObject(includeInstance: boolean, msg: Matcher): Matcher.AsObject;
+        toObject(includeInstance?: boolean): Query.AsObject;
+        static toObject(includeInstance: boolean, msg: Query): Query.AsObject;
         static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
         static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: Matcher, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): Matcher;
-        static deserializeBinaryFromReader(message: Matcher, reader: jspb.BinaryReader): Matcher;
+        static serializeBinaryToWriter(message: Query, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Query;
+        static deserializeBinaryFromReader(message: Query, reader: jspb.BinaryReader): Query;
     }
 
-    export namespace Matcher {
+    export namespace Query {
         export type AsObject = {
-            type: string,
-            valueList: Array<string>,
+            addressesList: Array<string>,
+            topicsList: Array<EventTrigger.Topics.AsObject>,
+            maxEventsPerBlock?: number,
+        }
+    }
+
+    export class Topics extends jspb.Message { 
+        clearValuesList(): void;
+        getValuesList(): Array<string>;
+        setValuesList(value: Array<string>): Topics;
+        addValues(value: string, index?: number): string;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Topics.AsObject;
+        static toObject(includeInstance: boolean, msg: Topics): Topics.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Topics, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Topics;
+        static deserializeBinaryFromReader(message: Topics, reader: jspb.BinaryReader): Topics;
+    }
+
+    export namespace Topics {
+        export type AsObject = {
+            valuesList: Array<string>,
         }
     }
 
     export class Config extends jspb.Message { 
-        clearMatcherList(): void;
-        getMatcherList(): Array<EventTrigger.Matcher>;
-        setMatcherList(value: Array<EventTrigger.Matcher>): Config;
-        addMatcher(value?: EventTrigger.Matcher, index?: number): EventTrigger.Matcher;
-        getExpression(): string;
-        setExpression(value: string): Config;
+        clearQueriesList(): void;
+        getQueriesList(): Array<EventTrigger.Query>;
+        setQueriesList(value: Array<EventTrigger.Query>): Config;
+        addQueries(value?: EventTrigger.Query, index?: number): EventTrigger.Query;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -398,8 +426,7 @@ export namespace EventTrigger {
 
     export namespace Config {
         export type AsObject = {
-            matcherList: Array<EventTrigger.Matcher.AsObject>,
-            expression: string,
+            queriesList: Array<EventTrigger.Query.AsObject>,
         }
     }
 
