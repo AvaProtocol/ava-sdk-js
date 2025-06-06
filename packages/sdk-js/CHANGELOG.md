@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.1.0
+
+### Minor Changes
+
+- 2fe0498: Update interface of event trigger to use queries
+
 ## 2.0.4
 
 ### Patch Changes

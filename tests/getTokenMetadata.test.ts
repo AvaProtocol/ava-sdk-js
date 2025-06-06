@@ -134,7 +134,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
   testOrSkip("DEBUG: Check what server returns for USDC", async () => {
     const response = await client.getTokenMetadata({
-      address: '0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8', // Sepolia USDC
+      address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // Sepolia USDC
     });
     
     console.log('DEBUG USDC Response:', JSON.stringify(response, null, 2));

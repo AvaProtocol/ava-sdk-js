@@ -4,51 +4,48 @@ import { TriggerType } from "@avaprotocol/types";
 
 describe("EventTrigger Tests", () => {
   describe("toRequest() error handling", () => {
-    test("should throw error when expression is missing", () => {
+    test("should throw error when queriesList is missing", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          // Missing expression property
-          matcherList: [],
+          // Missing queriesList property
         } as any,
       });
 
       expect(() => trigger.toRequest()).toThrowError(
-        "Expression is undefined for event"
+        "Queries array is required for event"
       );
     });
 
-    test("should throw error when expression is null", () => {
+    test("should throw error when queriesList is null", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: null,
-          matcherList: [],
+          queriesList: null,
         } as any,
       });
 
       expect(() => trigger.toRequest()).toThrowError(
-        "Expression is undefined for event"
+        "Queries array is required for event"
       );
     });
 
-    test("should throw error when expression is undefined", () => {
+    test("should throw error when queriesList is empty", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: undefined,
-          matcherList: [],
-        } as any,
+          queriesList: [],
+        },
       });
 
       expect(() => trigger.toRequest()).toThrowError(
-        "Expression is undefined for event"
+        "Queries array is required for event"
       );
     });
 
@@ -58,37 +55,17 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: "trigger1.data.topics[0] == '0x123'",
-          matcherList: [],
-        },
-      });
-
-      expect(() => trigger.toRequest()).not.toThrow();
-      const request = trigger.toRequest();
-      expect(request).toBeDefined();
-      expect(request.getEvent()).toBeDefined();
-      expect(request.getEvent()!.getConfig()).toBeDefined();
-      expect(request.getEvent()!.getConfig()!.getExpression()).toBe(
-        "trigger1.data.topics[0] == '0x123'"
-      );
-    });
-
-    test("should succeed with config including matcherList", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: {
-          expression: "trigger1.data.topics[0] == '0x123'",
-          matcherList: [
+          queriesList: [
             {
-              type: "topics",
-              valueList: [
-                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                "",
-                "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topicsList: [
+                {
+                  valuesList: [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                  ]
+                }
               ],
-            },
+            }
           ],
         },
       });
@@ -98,58 +75,136 @@ describe("EventTrigger Tests", () => {
       expect(request).toBeDefined();
       expect(request.getEvent()).toBeDefined();
       expect(request.getEvent()!.getConfig()).toBeDefined();
-      expect(request.getEvent()!.getConfig()!.getExpression()).toBe(
-        "trigger1.data.topics[0] == '0x123'"
-      );
-      expect(request.getEvent()!.getConfig()!.getMatcherList()).toHaveLength(1);
+      expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(1);
     });
 
-    test("should handle empty matcherList", () => {
+    test("should succeed with complex query including topics and addresses", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: "trigger1.data.topics[0] == '0x123'",
-          matcherList: [],
+          queriesList: [
+            {
+              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topicsList: [
+                {
+                  valuesList: [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                    null,
+                    "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
+                  ]
+                }
+              ],
+              maxEventsPerBlock: 100,
+            }
+          ],
         },
       });
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
-      expect(request.getEvent()!.getConfig()!.getMatcherList()).toHaveLength(0);
+      expect(request).toBeDefined();
+      expect(request.getEvent()).toBeDefined();
+      expect(request.getEvent()!.getConfig()).toBeDefined();
+      expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(1);
+      
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+      expect(query.getAddressesList()).toEqual(["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"]);
+      expect(query.getTopicsList()).toHaveLength(1);
+      expect(query.getMaxEventsPerBlock()).toBe(100);
     });
 
-    test("should handle null matcherList", () => {
+    test("should handle multiple queries for FROM-OR-TO scenario", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: "trigger1.data.topics[0] == '0x123'",
-          matcherList: null,
-        } as any,
+          queriesList: [
+            {
+              // Query 1: Transfer FROM specific address
+              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topicsList: [
+                {
+                  valuesList: [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                    "0x06DBb141d8275d9eDb8a7446F037D20E215188ff", // FROM
+                    null // Any TO
+                  ]
+                }
+              ],
+              maxEventsPerBlock: 50,
+            },
+            {
+              // Query 2: Transfer TO specific address
+              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topicsList: [
+                {
+                  valuesList: [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                    null, // Any FROM
+                    "0x06DBb141d8275d9eDb8a7446F037D20E215188ff" // TO
+                  ]
+                }
+              ],
+              maxEventsPerBlock: 50,
+            }
+          ],
+        },
       });
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
-      expect(request.getEvent()!.getConfig()!.getMatcherList()).toHaveLength(0);
+      expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(2);
     });
 
-    test("should handle undefined matcherList", () => {
+    test("should handle empty addressesList", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          expression: "trigger1.data.topics[0] == '0x123'",
-          matcherList: undefined,
-        } as any,
+          queriesList: [
+            {
+              addressesList: [],
+              topicsList: [
+                {
+                  valuesList: [
+                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+                  ]
+                }
+              ],
+            }
+          ],
+        },
       });
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
-      expect(request.getEvent()!.getConfig()!.getMatcherList()).toHaveLength(0);
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+      expect(query.getAddressesList()).toEqual([]);
+    });
+
+    test("should handle empty topicsList", () => {
+      const trigger = TriggerFactory.create({
+        id: "test-trigger-id",
+        name: "eventTrigger",
+        type: TriggerType.Event,
+        data: {
+          queriesList: [
+            {
+              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topicsList: [],
+            }
+          ],
+        },
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+      expect(query.getTopicsList()).toEqual([]);
     });
   });
 

@@ -22,8 +22,29 @@ import util from "util";
 // ]
 // ```
 
-// Required props for constructor: id, name, type and data: { expression, matcherList }
+// Required props for constructor: id, name, type and data: { queriesList }
 
+// EventTrigger now uses queries-based filtering instead of expression/matcher
+// Each query represents an independent filter that creates its own subscription
+// For FROM-OR-TO scenarios, provide two queries: one for FROM, one for TO.
+//
+// Example queries structure:
+// ```
+// [
+//   {
+//     addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+//     topicsList: [
+//       {
+//         valuesList: [
+//           "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+//           null,
+//           "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788"
+//         ]
+//       }
+//     ]
+//   }
+// ]
+// ```
 
 class EventTrigger extends Trigger {
   constructor(props: EventTriggerProps) {
@@ -41,31 +62,45 @@ class EventTrigger extends Trigger {
     }
 
     const trigger = new avs_pb.EventTrigger();
+    const config = new avs_pb.EventTrigger.Config();
     
     const dataConfig = this.data as EventTriggerDataType;
-    
-    const config = new avs_pb.EventTrigger.Config();
-    const expression = dataConfig.expression;
-    const matcherList = dataConfig.matcherList;
+    const queries = dataConfig.queriesList;
 
-    if (_.isUndefined(expression) || _.isNull(expression)) {
-      throw new Error(`Expression is undefined for ${this.type}`);
+    if (!queries || queries.length === 0) {
+      throw new Error(`Queries array is required for ${this.type}`);
     }
 
-    config.setExpression(expression);
-
-    if (matcherList && matcherList.length > 0) {
-      const matchers = matcherList.map((element: any) => {
-        const m = new avs_pb.EventTrigger.Matcher();
-        m.setType(element.type);
-        m.setValueList(element.valueList || []);
-        return m;
-      });
-      config.setMatcherList(matchers);
-    }
+    const queryMessages = queries.map((queryData) => {
+      const query = new avs_pb.EventTrigger.Query();
+      
+      // Set addresses if provided
+      if (queryData.addressesList && queryData.addressesList.length > 0) {
+        query.setAddressesList(queryData.addressesList);
+      }
+      
+      // Set topics if provided
+      if (queryData.topicsList && queryData.topicsList.length > 0) {
+        const topicsMessages = queryData.topicsList.map((topicData) => {
+          const topics = new avs_pb.EventTrigger.Topics();
+          if (topicData.valuesList) {
+            topics.setValuesList(topicData.valuesList);
+          }
+          return topics;
+        });
+        query.setTopicsList(topicsMessages);
+      }
+      
+      // Set maxEventsPerBlock if provided
+      if (queryData.maxEventsPerBlock !== undefined) {
+        query.setMaxEventsPerBlock(queryData.maxEventsPerBlock);
+      }
+      
+      return query;
+    });
     
+    config.setQueriesList(queryMessages);
     trigger.setConfig(config);
-
     request.setEvent(trigger);
 
     return request;
@@ -75,25 +110,44 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: EventTriggerDataType = { expression: "", matcherList: [] };
+    let data: EventTriggerDataType = { queriesList: [] };
     
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
       
       if (config) {
-        data = {
-          expression: config.getExpression(),
-          matcherList: []
-        };
+        const queries: EventTriggerDataType['queriesList'] = [];
         
-        if (config.getMatcherList && config.getMatcherList().length > 0) {
-          data.matcherList = config.getMatcherList().map((item: any) => {
-            return {
-              type: item.getType(),
-              valueList: item.getValueList() || [],
+        if (config.getQueriesList && config.getQueriesList().length > 0) {
+          config.getQueriesList().forEach((query) => {
+            const queryData: EventTriggerDataType['queriesList'][0] = {
+              addressesList: [],
+              topicsList: [],
             };
+            
+            // Extract addresses
+            if (query.getAddressesList && query.getAddressesList().length > 0) {
+              queryData.addressesList = query.getAddressesList();
+            }
+            
+            // Extract topics
+            if (query.getTopicsList && query.getTopicsList().length > 0) {
+              queryData.topicsList = query.getTopicsList().map((topics) => ({
+                valuesList: topics.getValuesList() || []
+              }));
+            }
+            
+            // Extract maxEventsPerBlock
+            const maxEvents = query.getMaxEventsPerBlock();
+            if (maxEvents && maxEvents > 0) {
+              queryData.maxEventsPerBlock = maxEvents;
+            }
+            
+            queries.push(queryData);
           });
         }
+        
+        data = { queriesList: queries };
       }
     }
 
