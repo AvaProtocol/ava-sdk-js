@@ -261,6 +261,7 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
         inputVariables: {},
       });
 
+      console.log("contractRead node result:", JSON.stringify(result, null, 2));
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
     });
