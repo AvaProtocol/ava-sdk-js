@@ -289,7 +289,6 @@ async function schedulePriceReport(
         type: NodeType.ContractRead,
         data: {
           contractAddress: getConfig().ORACLE_PRICE_CONTRACT,
-          callData: "0xfeaf968c",
           contractAbi: `[
             {
               "inputs":[],
@@ -305,6 +304,12 @@ async function schedulePriceReport(
               "type":"function"
             }
           ]`,
+          methodCallsList: [
+            {
+              callData: "0xfeaf968c",
+              methodName: "latestRoundData",
+            }
+          ],
         },
       },
       {

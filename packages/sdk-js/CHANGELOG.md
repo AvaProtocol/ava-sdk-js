@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.1.1
+
+### Patch Changes
+
+- ef05955: Updated the request interface of ContractRead
+
 ## 2.1.0
 
 ### Minor Changes

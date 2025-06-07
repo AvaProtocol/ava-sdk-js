@@ -66,8 +66,13 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
     contractRead: {
       config: {
         contractAddress: "{{contract.address}}",
-        callData: "{{contract.callData}}",
         contractAbi: "{{contract.abi}}",
+        methodCallsList: [
+          {
+            callData: "{{contract.callData}}",
+            methodName: "{{contract.methodName}}",
+          }
+        ],
       },
     },
   },

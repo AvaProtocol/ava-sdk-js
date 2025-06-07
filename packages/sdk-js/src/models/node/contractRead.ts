@@ -31,8 +31,18 @@ class ContractReadNode extends Node {
     
     const config = new avs_pb.ContractReadNode.Config();
     config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
-    config.setCallData((this.data as ContractReadNodeData).callData);
     config.setContractAbi((this.data as ContractReadNodeData).contractAbi);
+    
+    // Handle method calls array - use camelCase property name from protobuf AsObject
+    const methodCalls = (this.data as ContractReadNodeData).methodCallsList || [];
+    methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
+      const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
+      methodCallMsg.setCallData(methodCall.callData);
+      if (methodCall.methodName) {
+        methodCallMsg.setMethodName(methodCall.methodName);
+      }
+      config.addMethodCalls(methodCallMsg);
+    });
     
     nodeData.setConfig(config);
 
@@ -43,10 +53,19 @@ class ContractReadNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const contractReadOutput = outputData.getContractRead();
-    if (contractReadOutput && contractReadOutput.getDataList()) {
-      const dataList = contractReadOutput.getDataList();
+    if (contractReadOutput && contractReadOutput.getResultsList()) {
+      const resultsList = contractReadOutput.getResultsList();
       return {
-        dataList: dataList.map((value: any) => convertProtobufValueToJs(value))
+        results: resultsList.map((result: any) => ({
+          methodName: result.getMethodName(),
+          success: result.getSuccess(),
+          error: result.getError(),
+          data: result.getDataList().map((field: any) => ({
+            name: field.getName(),
+            type: field.getType(),
+            value: field.getValue()
+          }))
+        }))
       };
     }
     return null;

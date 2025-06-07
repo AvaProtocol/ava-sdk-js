@@ -82,8 +82,19 @@ class LoopNode extends Node {
       if ((data as any).contractRead.config) {
         const config = new avs_pb.ContractReadNode.Config();
         config.setContractAddress((data as any).contractRead.config.contractAddress);
-        config.setCallData((data as any).contractRead.config.callData);
         config.setContractAbi((data as any).contractRead.config.contractAbi);
+        
+        // Handle method calls array
+        const methodCalls = (data as any).contractRead.config.methodCallsList || [];
+        methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
+          const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
+          methodCallMsg.setCallData(methodCall.callData);
+          if (methodCall.methodName) {
+            methodCallMsg.setMethodName(methodCall.methodName);
+          }
+          config.addMethodCalls(methodCallMsg);
+        });
+        
         contractRead.setConfig(config);
       }
       loopNode.setContractRead(contractRead);

@@ -109,11 +109,39 @@ class Step implements StepProps {
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
         nodeOutputMessage = step.getContractRead();
         if (nodeOutputMessage) {
-          return nodeOutputMessage
-            .getDataList()
-            .map((val) => convertProtobufValueToJs(val));
+          const results = nodeOutputMessage.getResultsList();
+          if (results && results.length > 0) {
+            // If single result, return it directly for backward compatibility
+            if (results.length === 1) {
+              const result = results[0];
+              const structuredData: { [key: string]: string } = {};
+              result.getDataList().forEach((field) => {
+                structuredData[field.getName()] = field.getValue();
+              });
+              return {
+                methodName: result.getMethodName(),
+                success: result.getSuccess(),
+                error: result.getError(),
+                data: structuredData,
+              };
+            } else {
+              // Multiple results - return as array
+              return results.map((result) => {
+                const structuredData: { [key: string]: string } = {};
+                result.getDataList().forEach((field) => {
+                  structuredData[field.getName()] = field.getValue();
+                });
+                return {
+                  methodName: result.getMethodName(),
+                  success: result.getSuccess(),
+                  error: result.getError(),
+                  data: structuredData,
+                };
+              });
+            }
+          }
         }
-        return [];
+        return undefined;
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
         return step.getContractWrite()?.toObject();
       case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
