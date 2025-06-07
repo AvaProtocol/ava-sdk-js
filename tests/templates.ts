@@ -87,11 +87,14 @@ export const createContractReadNodeProps = (
     name: "get account address",
     type: NodeType.ContractRead,
     data: {
-      config: {
-        contractAddress: factoryAddress,
-        callData,
-        contractAbi: factoryProxyAbi,
-      }
+      contractAddress: factoryAddress,
+      contractAbi: factoryProxyAbi,
+      methodCallsList: [
+        {
+          callData,
+          methodName: "getAddress",
+        }
+      ],
     },
   };
 };
