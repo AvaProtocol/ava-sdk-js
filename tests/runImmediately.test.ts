@@ -630,3 +630,91 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
     });
   });
 });
+
+describe("Timeout functionality", () => {
+  test("should timeout when request exceeds specified timeout", async () => {
+    const client = new Client({
+      endpoint: avsEndpoint,
+      factoryAddress,
+    });
+
+    await client.authWithAPIKey({
+      message: "test",
+      apiKey: process.env.AVS_RPC_API_KEY!,
+    });
+
+    const shortTimeout = 1;
+    
+    try {
+      await client.runNodeWithInputs(
+        {
+          nodeType: "RestAPINode",
+          nodeConfig: {
+            url: "https://httpbin.org/delay/5",
+            method: "GET",
+          },
+        },
+        { timeout: shortTimeout }
+      );
+      fail("Expected timeout error");
+    } catch (error: any) {
+      expect(error.code).toBe(4);
+      expect(error.message).toContain("Deadline exceeded");
+    }
+  });
+
+  test("should use client-level timeout when no request timeout specified", async () => {
+    const client = new Client({
+      endpoint: avsEndpoint,
+      factoryAddress,
+      timeout: 1,
+    });
+
+    await client.authWithAPIKey({
+      message: "test",
+      apiKey: process.env.AVS_RPC_API_KEY!,
+    });
+
+    try {
+      await client.runNodeWithInputs({
+        nodeType: "RestAPINode",
+        nodeConfig: {
+          url: "https://httpbin.org/delay/5",
+          method: "GET",
+        },
+      });
+      fail("Expected timeout error");
+    } catch (error: any) {
+      expect(error.code).toBe(4);
+    }
+  });
+
+  test("should prioritize request-level timeout over client-level timeout", async () => {
+    const client = new Client({
+      endpoint: avsEndpoint,
+      factoryAddress,
+      timeout: 10000,
+    });
+
+    await client.authWithAPIKey({
+      message: "test",
+      apiKey: process.env.AVS_RPC_API_KEY!,
+    });
+
+    try {
+      await client.runNodeWithInputs(
+        {
+          nodeType: "RestAPINode",
+          nodeConfig: {
+            url: "https://httpbin.org/delay/5",
+            method: "GET",
+          },
+        },
+        { timeout: 1 }
+      );
+      fail("Expected timeout error");
+    } catch (error: any) {
+      expect(error.code).toBe(4);
+    }
+  });
+});

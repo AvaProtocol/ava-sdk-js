@@ -55,6 +55,7 @@ class BaseClient {
   protected metadata: Metadata;
   protected factoryAddress?: string;
   protected authKey?: string;
+  protected timeout?: number;
 
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
@@ -64,6 +65,7 @@ class BaseClient {
     );
 
     this.factoryAddress = opts.factoryAddress;
+    this.timeout = opts.timeout;
 
     // Create a new Metadata object for request headers
     this.metadata = new Metadata();
@@ -215,9 +217,16 @@ class BaseClient {
         metadata.set(AUTH_KEY_HEADER, authKey);
       }
 
+      const callOptions: any = {};
+      const timeoutMs = options?.timeout || this.timeout;
+      if (timeoutMs) {
+        callOptions.deadline = Date.now() + timeoutMs;
+      }
+
       (this.rpcClient as any)[method](
         request,
         metadata,
+        callOptions,
         (error: any, response: TResponse) => {
           if (error) {
             reject(error);

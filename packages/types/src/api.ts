@@ -9,10 +9,12 @@ export interface GetWalletRequest {
 export interface ClientOption {
   endpoint: string;
   factoryAddress?: string;
+  timeout?: number;
 }
 
 export interface RequestOptions {
   authKey?: string;
+  timeout?: number;
 }
 export interface GetExecutionsOptions extends RequestOptions {
   before?: string;
