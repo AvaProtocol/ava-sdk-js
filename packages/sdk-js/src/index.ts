@@ -209,14 +209,15 @@ class BaseClient {
     options?: RequestOptions
   ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
-      const callOptions: any = {};
+      const metadata = new Metadata();
 
       // Set auth header if available (priority: options > instance variable)
       const authKey = options?.authKey || this.authKey;
       if (authKey) {
-        callOptions[AUTH_KEY_HEADER] = authKey;
+        metadata.set(AUTH_KEY_HEADER, authKey);
       }
 
+      const callOptions: any = {};
       const timeoutMs = options?.timeout || this.timeout;
       if (timeoutMs) {
         callOptions.deadline = Date.now() + timeoutMs;
@@ -224,6 +225,7 @@ class BaseClient {
 
       (this.rpcClient as any)[method](
         request,
+        metadata,
         callOptions,
         (error: any, response: TResponse) => {
           if (error) {
