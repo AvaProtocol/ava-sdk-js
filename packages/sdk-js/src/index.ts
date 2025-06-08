@@ -289,6 +289,25 @@ class BaseClient {
     options?: RequestOptions
   ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
+      const debugMode = process.env.GRPC_DEBUG === 'true';
+      
+      if (debugMode) {
+        console.log(`🔍 [GRPC-DEBUG] Starting ${method} request:`, {
+          method,
+          hasAuthKey: !!(options?.authKey || this.authKey),
+          endpoint: this.endpoint
+        });
+        
+        try {
+          const serializedRequest = (request as any).serializeBinary?.();
+          if (serializedRequest) {
+            console.log(`🔍 [GRPC-DEBUG] Request serialized, size: ${serializedRequest.length} bytes`);
+          }
+        } catch (error) {
+          console.error(`❌ [GRPC-DEBUG] Failed to serialize request for logging:`, error);
+        }
+      }
+
       // Merge timeout configuration (priority: options > instance config > defaults)
       const timeoutConfig = {
         ...this.timeoutConfig,
@@ -300,6 +319,14 @@ class BaseClient {
         retries = timeoutConfig.retries || 3,
         retryDelay = timeoutConfig.retryDelay || 1000
       } = timeoutConfig;
+
+      if (debugMode) {
+        console.log(`🔍 [GRPC-DEBUG] Timeout configuration:`, {
+          timeout,
+          retries,
+          retryDelay
+        });
+      }
 
       let attempt = 0;
 
@@ -328,13 +355,37 @@ class BaseClient {
             metadata.set(AUTH_KEY_HEADER, authKey);
           }
 
+          if (debugMode) {
+            console.log(`🔍 [GRPC-DEBUG] Making gRPC call for ${method}, attempt ${attempt}`);
+          }
+
           const call = (this.rpcClient as any)[method](
             request,
             metadata,
             (error: any, response: TResponse) => {
               if (error) {
+                if (debugMode) {
+                  console.error(`❌ [GRPC-DEBUG] gRPC call failed for ${method}:`, {
+                    code: error.code,
+                    message: error.message,
+                    details: error.details,
+                    metadata: error.metadata?.getMap ? error.metadata.getMap() : error.metadata
+                  });
+                }
                 grpcReject(error);
               } else {
+                if (debugMode) {
+                  try {
+                    const responseObj = (response as any)?.toObject ? (response as any).toObject() : response;
+                    console.log(`✅ [GRPC-DEBUG] gRPC call succeeded for ${method}:`, {
+                      responseType: typeof response,
+                      hasToObject: !!(response as any)?.toObject,
+                      sampleResponse: JSON.stringify(responseObj).substring(0, 500) + (JSON.stringify(responseObj).length > 500 ? '...' : '')
+                    });
+                  } catch (parseError) {
+                    console.log(`✅ [GRPC-DEBUG] gRPC call succeeded for ${method}, but failed to parse response for logging:`, parseError);
+                  }
+                }
                 grpcResolve(response);
               }
             }
@@ -1077,6 +1128,16 @@ class Client extends BaseClient {
     { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
+    const debugMode = process.env.GRPC_DEBUG === 'true';
+    
+    if (debugMode) {
+      console.log('🔍 [GRPC-DEBUG] runNodeWithInputs called with:', {
+        nodeType,
+        nodeConfig: JSON.stringify(nodeConfig, null, 2),
+        inputVariables: JSON.stringify(inputVariables, null, 2)
+      });
+    }
+
     // Reject trigger types - they should use the runTrigger method instead
     const triggerTypes = [
       TriggerType.Block,
@@ -1100,30 +1161,105 @@ class Client extends BaseClient {
     const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
     request.setNodeType(protobufNodeType);
 
+    if (debugMode) {
+      console.log('🔍 [GRPC-DEBUG] Converted nodeType:', {
+        original: nodeType,
+        protobuf: protobufNodeType
+      });
+    }
+
     const nodeConfigMap = request.getNodeConfigMap();
     for (const [key, value] of Object.entries(nodeConfig)) {
-      nodeConfigMap.set(key, convertJSValueToProtobuf(value));
+      try {
+        const protobufValue = convertJSValueToProtobuf(value);
+        nodeConfigMap.set(key, protobufValue);
+        if (debugMode) {
+          console.log(`🔍 [GRPC-DEBUG] Converted nodeConfig[${key}]:`, {
+            original: value,
+            protobuf: protobufValue?.toObject ? protobufValue.toObject() : protobufValue
+          });
+        }
+      } catch (error) {
+        console.error(`❌ [GRPC-DEBUG] Failed to convert nodeConfig[${key}]:`, error);
+        throw error;
+      }
     }
 
     if (inputVariables && Object.keys(inputVariables).length > 0) {
       const inputVarsMap = request.getInputVariablesMap();
       for (const [key, value] of Object.entries(inputVariables)) {
-        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+        try {
+          const protobufValue = convertJSValueToProtobuf(value);
+          inputVarsMap.set(key, protobufValue);
+          if (debugMode) {
+            console.log(`🔍 [GRPC-DEBUG] Converted inputVariable[${key}]:`, {
+              original: value,
+              protobuf: protobufValue?.toObject ? protobufValue.toObject() : protobufValue
+            });
+          }
+        } catch (error) {
+          console.error(`❌ [GRPC-DEBUG] Failed to convert inputVariable[${key}]:`, error);
+          throw error;
+        }
       }
     }
 
-    // Send the request directly to the server
-    const result = await this.sendGrpcRequest<
-      avs_pb.RunNodeWithInputsResp,
-      avs_pb.RunNodeWithInputsReq
-    >("runNodeWithInputs", request, options);
+    if (debugMode) {
+      try {
+        const serializedRequest = request.serializeBinary();
+        console.log('🔍 [GRPC-DEBUG] Request serialized successfully, size:', serializedRequest.length, 'bytes');
+      } catch (error) {
+        console.error('❌ [GRPC-DEBUG] Failed to serialize request:', error);
+        throw error;
+      }
+    }
 
-    return {
-      success: result.getSuccess(),
-      data: NodeFactory.fromOutputData(result),
-      error: result.getError(),
-      nodeId: result.getNodeId(),
-    };
+    try {
+      // Send the request directly to the server
+      const result = await this.sendGrpcRequest<
+        avs_pb.RunNodeWithInputsResp,
+        avs_pb.RunNodeWithInputsReq
+      >("runNodeWithInputs", request, options);
+
+      if (debugMode) {
+        console.log('🔍 [GRPC-DEBUG] Response received successfully:', {
+          success: result.getSuccess(),
+          error: result.getError(),
+          nodeId: result.getNodeId(),
+          outputDataCase: result.getOutputDataCase()
+        });
+      }
+
+      let responseData;
+      try {
+        responseData = NodeFactory.fromOutputData(result);
+        if (debugMode) {
+          console.log('🔍 [GRPC-DEBUG] Output data parsed successfully:', responseData);
+        }
+      } catch (error) {
+        console.error('❌ [GRPC-DEBUG] Failed to parse output data:', error);
+        if (debugMode) {
+          console.log('🔍 [GRPC-DEBUG] Raw response object:', result.toObject());
+        }
+        throw error;
+      }
+
+      return {
+        success: result.getSuccess(),
+        data: responseData,
+        error: result.getError(),
+        nodeId: result.getNodeId(),
+      };
+    } catch (error) {
+      console.error('❌ [GRPC-DEBUG] runNodeWithInputs failed:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        nodeType,
+        nodeConfig,
+        inputVariables
+      });
+      throw error;
+    }
   }
 
   /**
