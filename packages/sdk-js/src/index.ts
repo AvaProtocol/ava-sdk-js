@@ -306,9 +306,10 @@ class BaseClient {
       const executeRequest = () => {
         attempt++;
 
-        // Create a timeout promise
+        // Create a timeout promise with proper cleanup
+        let timeoutId: NodeJS.Timeout;
         const timeoutPromise = new Promise<never>((_, timeoutReject) => {
-          setTimeout(() => {
+          timeoutId = setTimeout(() => {
             const error = new Error(`gRPC request timeout after ${timeout}ms for method ${method}`) as TimeoutError;
             error.isTimeout = true;
             error.attemptsMade = attempt;
@@ -349,8 +350,15 @@ class BaseClient {
 
         // Race between timeout and actual call
         Promise.race([grpcPromise, timeoutPromise])
-          .then(resolve)
+          .then((result) => {
+            // Clear the timeout when request completes successfully
+            clearTimeout(timeoutId);
+            resolve(result);
+          })
           .catch((error: any) => {
+            // Clear the timeout when request fails
+            clearTimeout(timeoutId);
+            
             const isTimeoutError = error.isTimeout || error.message?.includes('timeout');
             const isRetryableError = isTimeoutError || 
               error.code === status.UNAVAILABLE || 
