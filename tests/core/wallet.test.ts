@@ -197,7 +197,7 @@ describe("Wallet Management Tests", () => {
       ).rejects.toThrow(/^3 INVALID_ARGUMENT:.*invalid factory address/);
 
       await expect(client.getWallet({ salt: "0" })).rejects.toThrow(
-        /^3 INVALID_ARGUMENT:.*no contract code at given address/
+        /^3 INVALID_ARGUMENT:.*Factory address cannot be the zero address/
       );
     });
 

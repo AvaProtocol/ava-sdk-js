@@ -19,7 +19,7 @@ class CronTrigger extends Trigger {
 
     const trigger = new avs_pb.CronTrigger();
     const config = new avs_pb.CronTrigger.Config();
-    config.setScheduleList((this.data as CronTriggerDataType).schedules || []);
+    config.setSchedulesList((this.data as CronTriggerDataType).schedules || []);
     trigger.setConfig(config);
     
     request.setCron(trigger);
@@ -38,7 +38,7 @@ class CronTrigger extends Trigger {
       
       if (config) {
         data = {
-          schedules: config.getScheduleList() || []
+          schedules: config.getSchedulesList() || []
         };
       }
     }
