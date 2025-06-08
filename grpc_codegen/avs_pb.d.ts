@@ -827,13 +827,38 @@ export namespace ContractReadNode {
     }
 
 
+    export class MethodCall extends jspb.Message { 
+        getCallData(): string;
+        setCallData(value: string): MethodCall;
+        getMethodName(): string;
+        setMethodName(value: string): MethodCall;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): MethodCall.AsObject;
+        static toObject(includeInstance: boolean, msg: MethodCall): MethodCall.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: MethodCall, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): MethodCall;
+        static deserializeBinaryFromReader(message: MethodCall, reader: jspb.BinaryReader): MethodCall;
+    }
+
+    export namespace MethodCall {
+        export type AsObject = {
+            callData: string,
+            methodName: string,
+        }
+    }
+
     export class Config extends jspb.Message { 
         getContractAddress(): string;
         setContractAddress(value: string): Config;
-        getCallData(): string;
-        setCallData(value: string): Config;
         getContractAbi(): string;
         setContractAbi(value: string): Config;
+        clearMethodCallsList(): void;
+        getMethodCallsList(): Array<ContractReadNode.MethodCall>;
+        setMethodCallsList(value: Array<ContractReadNode.MethodCall>): Config;
+        addMethodCalls(value?: ContractReadNode.MethodCall, index?: number): ContractReadNode.MethodCall;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -848,16 +873,75 @@ export namespace ContractReadNode {
     export namespace Config {
         export type AsObject = {
             contractAddress: string,
-            callData: string,
             contractAbi: string,
+            methodCallsList: Array<ContractReadNode.MethodCall.AsObject>,
         }
     }
 
-    export class Output extends jspb.Message { 
+    export class MethodResult extends jspb.Message { 
         clearDataList(): void;
-        getDataList(): Array<google_protobuf_struct_pb.Value>;
-        setDataList(value: Array<google_protobuf_struct_pb.Value>): Output;
-        addData(value?: google_protobuf_struct_pb.Value, index?: number): google_protobuf_struct_pb.Value;
+        getDataList(): Array<ContractReadNode.MethodResult.StructuredField>;
+        setDataList(value: Array<ContractReadNode.MethodResult.StructuredField>): MethodResult;
+        addData(value?: ContractReadNode.MethodResult.StructuredField, index?: number): ContractReadNode.MethodResult.StructuredField;
+        getMethodName(): string;
+        setMethodName(value: string): MethodResult;
+        getSuccess(): boolean;
+        setSuccess(value: boolean): MethodResult;
+        getError(): string;
+        setError(value: string): MethodResult;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): MethodResult.AsObject;
+        static toObject(includeInstance: boolean, msg: MethodResult): MethodResult.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: MethodResult, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): MethodResult;
+        static deserializeBinaryFromReader(message: MethodResult, reader: jspb.BinaryReader): MethodResult;
+    }
+
+    export namespace MethodResult {
+        export type AsObject = {
+            dataList: Array<ContractReadNode.MethodResult.StructuredField.AsObject>,
+            methodName: string,
+            success: boolean,
+            error: string,
+        }
+
+
+        export class StructuredField extends jspb.Message { 
+            getName(): string;
+            setName(value: string): StructuredField;
+            getType(): string;
+            setType(value: string): StructuredField;
+            getValue(): string;
+            setValue(value: string): StructuredField;
+
+            serializeBinary(): Uint8Array;
+            toObject(includeInstance?: boolean): StructuredField.AsObject;
+            static toObject(includeInstance: boolean, msg: StructuredField): StructuredField.AsObject;
+            static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+            static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+            static serializeBinaryToWriter(message: StructuredField, writer: jspb.BinaryWriter): void;
+            static deserializeBinary(bytes: Uint8Array): StructuredField;
+            static deserializeBinaryFromReader(message: StructuredField, reader: jspb.BinaryReader): StructuredField;
+        }
+
+        export namespace StructuredField {
+            export type AsObject = {
+                name: string,
+                type: string,
+                value: string,
+            }
+        }
+
+    }
+
+    export class Output extends jspb.Message { 
+        clearResultsList(): void;
+        getResultsList(): Array<ContractReadNode.MethodResult>;
+        setResultsList(value: Array<ContractReadNode.MethodResult>): Output;
+        addResults(value?: ContractReadNode.MethodResult, index?: number): ContractReadNode.MethodResult;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -871,7 +955,7 @@ export namespace ContractReadNode {
 
     export namespace Output {
         export type AsObject = {
-            dataList: Array<google_protobuf_struct_pb.Value.AsObject>,
+            resultsList: Array<ContractReadNode.MethodResult.AsObject>,
         }
     }
 
