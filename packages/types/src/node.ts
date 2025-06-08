@@ -3,10 +3,35 @@ import { NodeType } from "./enums";
 
 // Node DataTypes
 export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
-export type ContractWriteNodeData = avs_pb.ContractWriteNode.Config.AsObject;
-export type ContractReadNodeData = avs_pb.ContractReadNode.Config.AsObject;
+// Custom ContractWrite data type with cleaner field names
+export interface ContractWriteNodeData {
+  contractAddress: string;
+  callData: string;
+  contractAbi: string;
+  methodCalls?: Array<{
+    callData: string;
+    methodName?: string;
+  }>;
+}
+
+// Custom ContractRead data type with cleaner field names
+export interface ContractReadNodeData {
+  contractAddress: string;
+  contractAbi: string;
+  methodCalls: Array<{
+    callData: string;
+    methodName?: string;
+  }>;
+}
 export type CustomCodeNodeData = avs_pb.CustomCodeNode.Config.AsObject;
-export type BranchNodeData = avs_pb.BranchNode.Config.AsObject;
+// Custom BranchNode data type with cleaner field names
+export interface BranchNodeData {
+  conditions: Array<{
+    id: string;
+    type: string;
+    expression: string;
+  }>;
+}
 export type RestAPINodeData = avs_pb.RestAPINode.Config.AsObject;
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;

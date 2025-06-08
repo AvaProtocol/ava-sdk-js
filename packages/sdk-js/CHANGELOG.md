@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.3.0
+
+### Minor Changes
+
+- c45a2fb: Complete field name standardization and remove backward compatibility
+
+### Patch Changes
+
+- Updated dependencies [c45a2fb]
+  - @avaprotocol/types@2.2.0
+
 ## 2.2.0
 
 ### Minor Changes

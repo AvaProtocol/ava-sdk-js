@@ -1,9 +1,9 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { getAddress, generateSignature, SaltGlobal } from "./utils";
-import { createFromTemplate } from "./templates";
-import { getConfig } from "./envalid";
+import { getAddress, generateSignature, SaltGlobal } from "../utils/utils";
+import { createFromTemplate } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();

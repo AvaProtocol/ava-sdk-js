@@ -2,7 +2,16 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "./enums";
 
 export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
-export type EventTriggerDataType = avs_pb.EventTrigger.Config.AsObject;
+// Custom EventTrigger data type with cleaner field names
+export interface EventTriggerDataType {
+  queries: Array<{
+    addresses?: string[];
+    topics?: Array<{
+      values?: string[];
+    }>;
+    maxEventsPerBlock?: number;
+  }>;
+}
 export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
 export type FixedTimeTriggerDataType = avs_pb.FixedTimeTrigger.Config.AsObject;
 

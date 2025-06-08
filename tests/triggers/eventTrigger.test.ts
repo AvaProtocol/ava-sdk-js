@@ -4,13 +4,13 @@ import { TriggerType } from "@avaprotocol/types";
 
 describe("EventTrigger Tests", () => {
   describe("toRequest() error handling", () => {
-    test("should throw error when queriesList is missing", () => {
+    test("should throw error when queries is missing", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          // Missing queriesList property
+          // Missing queries property
         } as any,
       });
 
@@ -19,13 +19,13 @@ describe("EventTrigger Tests", () => {
       );
     });
 
-    test("should throw error when queriesList is null", () => {
+    test("should throw error when queries is null", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: null,
+          queries: null,
         } as any,
       });
 
@@ -34,13 +34,13 @@ describe("EventTrigger Tests", () => {
       );
     });
 
-    test("should throw error when queriesList is empty", () => {
+    test("should throw error when queries is empty", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [],
+          queries: [],
         },
       });
 
@@ -55,12 +55,12 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
-              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
-              topicsList: [
+              addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
                   ]
                 }
@@ -84,12 +84,12 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
-              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
-              topicsList: [
+              addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
                     null,
                     "0x06DBb141d8275d9eDb8a7446F037D20E215188ff",
@@ -121,13 +121,13 @@ describe("EventTrigger Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
               // Query 1: Transfer FROM specific address
-              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
-              topicsList: [
+              addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
                     "0x06DBb141d8275d9eDb8a7446F037D20E215188ff", // FROM
                     null // Any TO
@@ -138,10 +138,10 @@ describe("EventTrigger Tests", () => {
             },
             {
               // Query 2: Transfer TO specific address
-              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
-              topicsList: [
+              addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
                     null, // Any FROM
                     "0x06DBb141d8275d9eDb8a7446F037D20E215188ff" // TO
@@ -159,18 +159,18 @@ describe("EventTrigger Tests", () => {
       expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(2);
     });
 
-    test("should handle empty addressesList", () => {
+    test("should handle empty addresses", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
-              addressesList: [],
-              topicsList: [
+              addresses: [],
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
                   ]
                 }
@@ -186,16 +186,16 @@ describe("EventTrigger Tests", () => {
       expect(query.getAddressesList()).toEqual([]);
     });
 
-    test("should handle empty topicsList", () => {
+    test("should handle empty topics", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
-              addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
-              topicsList: [],
+              addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+              topics: [],
             }
           ],
         },

@@ -15,7 +15,7 @@ import {
   getNextId,
   TIMEOUT_DURATION,
   SaltGlobal,
-} from "./utils";
+} from "../utils/utils";
 
 import {
   createFromTemplate,
@@ -24,8 +24,8 @@ import {
   blockTriggerEvery5,
   restApiNodeProps,
   filterNodeProps,
-} from "./templates";
-import { getConfig } from "./envalid";
+} from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
@@ -158,7 +158,7 @@ describe("createWorkflow Tests", () => {
         type: NodeType.Branch,
         id: getNextId(),
         data: {
-          conditionsList: [
+          conditions: [
             {
               id: getNextId(),
               type: "if",
@@ -216,12 +216,12 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
-              addressesList: ["0x7b79995e5f793a07bc00c21412e50ecae098e7f9", "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"], // WETH and USDC
-              topicsList: [
+              addresses: ["0x7b79995e5f793a07bc00c21412e50ecae098e7f9", "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"], // WETH and USDC
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                     "", // Any from address
                     wallet.address, // To specific wallet address
@@ -280,12 +280,12 @@ describe("createWorkflow Tests", () => {
         name: "eventTrigger",
         type: TriggerType.Event,
         data: {
-          queriesList: [
+          queries: [
             {
-              addressesList: ["0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6"], // USDT and DAI
-              topicsList: [
+              addresses: ["0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6"], // USDT and DAI
+              topics: [
                 {
-                  valuesList: [
+                  values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                     "", // Any from address  
                     "0x06DBb141d8275d9eDb8a7446F037D20E215188ff", // To specific address

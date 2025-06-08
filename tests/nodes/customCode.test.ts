@@ -13,9 +13,9 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-} from "./utils";
-import { getConfig } from "./envalid";
-import { defaultTriggerId, createFromTemplate } from "./templates";
+} from "../utils/utils";
+import { getConfig } from "../utils/envalid";
+import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 

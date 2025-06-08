@@ -2,7 +2,7 @@ import { NodeType, BranchNodeData, BranchNodeProps, NodeProps } from "@avaprotoc
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 
-// Required props for constructor: id, name, type and data: { conditionsList }
+// Required props for constructor: id, name, type and data: { conditions }
 
 
 class BranchNode extends Node {
@@ -13,10 +13,21 @@ class BranchNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): BranchNode {
     // Convert the raw object to BranchNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    const protobufData = raw.getBranch()!.toObject().config;
+    
+    // Convert protobuf data to our custom interface
+    const data: BranchNodeData = {
+      conditions: protobufData?.conditionsList?.map(condition => ({
+        id: condition.id,
+        type: condition.type,
+        expression: condition.expression,
+      })) || [],
+    };
+    
     return new BranchNode({
       ...obj,
       type: NodeType.Branch,
-      data: raw.getBranch()!.toObject().config as BranchNodeData,
+      data: data,
     });
   }
 
@@ -29,10 +40,10 @@ class BranchNode extends Node {
     const nodeData = new avs_pb.BranchNode();
     const config = new avs_pb.BranchNode.Config();
     
-    if ((this.data as BranchNodeData).conditionsList && 
-        (this.data as BranchNodeData).conditionsList.length > 0) {
+    if ((this.data as BranchNodeData).conditions && 
+        (this.data as BranchNodeData).conditions.length > 0) {
       
-      const conditionsList = (this.data as BranchNodeData).conditionsList.map(
+      const conditionsList = (this.data as BranchNodeData).conditions.map(
         (condition: any) => {
           const conditionObj = new avs_pb.BranchNode.Condition();
           conditionObj.setId(condition.id);

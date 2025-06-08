@@ -44,7 +44,7 @@ jobs:
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
 
           # Define the source code patterns we want to monitor
-          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests)'
+          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests/)'
 
           echo "=== Debug Information ==="
           echo "Base ref: ${{ github.base_ref }}"
@@ -116,86 +116,38 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
-      - name: Test Authentication
+      - name: Test Core Functionality
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test:auth
+        run: yarn test:core
 
-      - name: Test Create Workflow
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:createWorkflow
-
-      - name: Test Get Workflow
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWorkflow
-
-      - name: Test Get Workflows
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWorkflows
-
-      - name: Test Cancel Workflow
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:cancelWorkflow
-
-      - name: Test Delete Workflow
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:deleteWorkflow
-
-      - name: Test Trigger Workflow
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:triggerWorkflow
-
-      - name: Test Get Execution
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getExecution
-
-      - name: Test Get Executions
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getExecutions
-
-      - name: Test Get Wallet
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWallet
-
-      - name: Test Get Wallets
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:getWallets
-
-      - name: Test Secret
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:secret
-
-      - name: Test Run Node With Inputs
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:node
-
-      - name: Test Loop Node
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:loop
-
-      - name: Test Custom Code
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:customcode
-
-      - name: Test Event Trigger
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn test:event
-
-      - name: Test BranchNode
+      - name: Test Workflows
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test:branch
+        run: yarn test:workflows
 
-      - name: Test FilterNode
+      - name: Test Executions
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test:filter
+        run: yarn test:executions
 
-      - name: Test Simulate Task
+      - name: Test Triggers
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test:simulate
+        run: yarn test:triggers
+
+      - name: Test Nodes
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:nodes
+
+      - name: Test Integrations
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:integrations

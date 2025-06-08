@@ -24,13 +24,13 @@ import {
   cleanupSecrets,
   getBlockNumber,
   TIMEOUT_DURATION,
-} from "./utils";
+} from "../utils/utils";
 
 // Note: Helper functions for waiting for secrets removed due to server-side
 // eventual consistency issues. Tests now focus on API call success rather than
 // immediate visibility in getSecrets() responses.
-import { getConfig } from "./envalid";
-import { defaultTriggerId, createFromTemplate } from "./templates";
+import { getConfig } from "../utils/envalid";
+import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 
 jest.setTimeout(TIMEOUT_DURATION);
 

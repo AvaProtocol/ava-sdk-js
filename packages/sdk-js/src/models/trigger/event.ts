@@ -22,7 +22,7 @@ import util from "util";
 // ]
 // ```
 
-// Required props for constructor: id, name, type and data: { queriesList }
+// Required props for constructor: id, name, type and data: { queries }
 
 // EventTrigger now uses queries-based filtering instead of expression/matcher
 // Each query represents an independent filter that creates its own subscription
@@ -32,10 +32,10 @@ import util from "util";
 // ```
 // [
 //   {
-//     addressesList: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
-//     topicsList: [
+//     addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
+//     topics: [
 //       {
-//         valuesList: [
+//         values: [
 //           "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
 //           null,
 //           "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788"
@@ -65,7 +65,7 @@ class EventTrigger extends Trigger {
     const config = new avs_pb.EventTrigger.Config();
     
     const dataConfig = this.data as EventTriggerDataType;
-    const queries = dataConfig.queriesList;
+    const queries = dataConfig.queries;
 
     if (!queries || queries.length === 0) {
       throw new Error(`Queries array is required for ${this.type}`);
@@ -75,16 +75,16 @@ class EventTrigger extends Trigger {
       const query = new avs_pb.EventTrigger.Query();
       
       // Set addresses if provided
-      if (queryData.addressesList && queryData.addressesList.length > 0) {
-        query.setAddressesList(queryData.addressesList);
+      if (queryData.addresses && queryData.addresses.length > 0) {
+        query.setAddressesList(queryData.addresses);
       }
       
       // Set topics if provided
-      if (queryData.topicsList && queryData.topicsList.length > 0) {
-        const topicsMessages = queryData.topicsList.map((topicData) => {
+      if (queryData.topics && queryData.topics.length > 0) {
+        const topicsMessages = queryData.topics.map((topicData) => {
           const topics = new avs_pb.EventTrigger.Topics();
-          if (topicData.valuesList) {
-            topics.setValuesList(topicData.valuesList);
+          if (topicData.values) {
+            topics.setValuesList(topicData.values);
           }
           return topics;
         });
@@ -110,30 +110,30 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: EventTriggerDataType = { queriesList: [] };
+    let data: EventTriggerDataType = { queries: [] };
     
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
       
       if (config) {
-        const queries: EventTriggerDataType['queriesList'] = [];
+        const queries: EventTriggerDataType['queries'] = [];
         
         if (config.getQueriesList && config.getQueriesList().length > 0) {
           config.getQueriesList().forEach((query) => {
-            const queryData: EventTriggerDataType['queriesList'][0] = {
-              addressesList: [],
-              topicsList: [],
+            const queryData: EventTriggerDataType['queries'][0] = {
+              addresses: [],
+              topics: [],
             };
             
             // Extract addresses
             if (query.getAddressesList && query.getAddressesList().length > 0) {
-              queryData.addressesList = query.getAddressesList();
+              queryData.addresses = query.getAddressesList();
             }
             
             // Extract topics
             if (query.getTopicsList && query.getTopicsList().length > 0) {
-              queryData.topicsList = query.getTopicsList().map((topics) => ({
-                valuesList: topics.getValuesList() || []
+              queryData.topics = query.getTopicsList().map((topics) => ({
+                values: topics.getValuesList() || []
               }));
             }
             
@@ -147,7 +147,7 @@ class EventTrigger extends Trigger {
           });
         }
         
-        data = { queriesList: queries };
+        data = { queries: queries };
       }
     }
 
