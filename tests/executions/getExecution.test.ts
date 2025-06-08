@@ -8,9 +8,9 @@ import {
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
-} from "./utils";
-import { createFromTemplate, defaultTriggerId } from "./templates";
-import { getConfig } from "./envalid";
+} from "../utils/utils";
+import { createFromTemplate, defaultTriggerId } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -154,15 +154,15 @@ describe("getExecution Tests", () => {
       const workflow = client.createWorkflow(workflowProps);
       workflowId = await client.submitWorkflow(workflow);
 
-      const result = await client.triggerWorkflow({
-        id: workflowId,
-        triggerData: {
-          type: TriggerType.Cron,
-          timestamp: (epoch + 60) * 1000, // Convert to milliseconds
-          timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-        },
-        isBlocking: true,
-      });
+              const result = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Cron,
+            timestamp: (epoch + 60) * 1000, // Convert to milliseconds
+            timestampIso: new Date((epoch + 60) * 1000).toISOString(),
+          } as any,
+          isBlocking: true,
+        });
 
       const execution = await client.getExecution(workflowId, result.executionId);
       expect(execution.id).toEqual(result.executionId);

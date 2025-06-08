@@ -13,9 +13,9 @@ import {
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
-} from "./utils";
-import { createFromTemplate, defaultTriggerId } from "./templates";
-import { getConfig } from "./envalid";
+} from "../utils/utils";
+import { createFromTemplate, defaultTriggerId } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
@@ -131,7 +131,7 @@ describe("triggerWorkflow Tests", () => {
         type: TriggerType.Cron,
         timestamp: (epoch + 60) * 1000, // Convert to milliseconds
         timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-      },
+      } as any,
       isBlocking: true,
     });
 
@@ -182,7 +182,7 @@ describe("triggerWorkflow Tests", () => {
         type: TriggerType.FixedTime,
         timestamp: (epoch + 300) * 1000, // Convert to milliseconds
         timestampIso: new Date((epoch + 300) * 1000).toISOString(),
-      },
+      } as any,
       isBlocking: true,
     });
 
@@ -249,7 +249,7 @@ describe("triggerWorkflow Tests", () => {
           transactionHash: "0x1234567890",
           index: 0,
         },
-      },
+      } as any,
       isBlocking: true,
     });
 
@@ -298,7 +298,7 @@ describe("triggerWorkflow Tests", () => {
         type: TriggerType.Cron,
         timestamp: (epoch + 60) * 1000, // Convert to milliseconds
         timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-      },
+      } as any,
       isBlocking: true,
     });
 
@@ -341,7 +341,7 @@ describe("triggerWorkflow Tests", () => {
         type: TriggerType.Cron,
         timestamp: (epoch + 60) * 1000, // Convert to milliseconds
         timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-      },
+      } as any,
       isBlocking: false,
     });
 
@@ -447,7 +447,7 @@ describe("triggerWorkflow Tests", () => {
           type: TriggerType.Cron,
           timestamp: (epoch + 60) * 1000, // Convert to milliseconds
           timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-        },
+        } as any,
         isBlocking: true,
       });
 
@@ -463,7 +463,7 @@ describe("triggerWorkflow Tests", () => {
             type: TriggerType.Cron,
             timestamp: (epoch + 120) * 1000, // Convert to milliseconds
             timestampIso: new Date((epoch + 120) * 1000).toISOString(),
-          },
+          } as any,
           isBlocking: true,
         })
       ).rejects.toThrowError(/FAILED_PRECONDITION/i);
@@ -500,7 +500,7 @@ describe("triggerWorkflow Tests", () => {
           type: TriggerType.FixedTime,
           timestamp: (epoch + 60) * 1000, // Convert to milliseconds
           timestampIso: new Date((epoch + 60) * 1000).toISOString(),
-        },
+        } as any,
         isBlocking: true,
       });
 
@@ -516,7 +516,7 @@ describe("triggerWorkflow Tests", () => {
             type: TriggerType.FixedTime,
             timestamp: (epoch + 120) * 1000, // Convert to milliseconds
             timestampIso: new Date((epoch + 120) * 1000).toISOString(),
-          },
+          } as any,
           isBlocking: true,
         })
       ).rejects.toThrowError(/FAILED_PRECONDITION/i);
@@ -573,7 +573,7 @@ describe("triggerWorkflow Tests", () => {
             transactionHash: "0x1234567890",
             index: 0,
           },
-        },
+        } as any,
         isBlocking: true,
       });
 
@@ -593,7 +593,7 @@ describe("triggerWorkflow Tests", () => {
               transactionHash: "0x0987654321",
               index: 1,
             },
-          },
+          } as any,
           isBlocking: true,
         })
       ).rejects.toThrowError(/FAILED_PRECONDITION/i);

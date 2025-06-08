@@ -1,8 +1,8 @@
 import { describe, beforeAll, afterAll, test, expect } from "@jest/globals";
 import { Client, TimeoutPresets } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
-import { getAddress, generateSignature, SaltGlobal } from "./utils";
-import { getConfig } from "./envalid";
+import { getAddress, generateSignature, SaltGlobal } from "./utils/utils";
+import { getConfig } from "./utils/envalid";
 import { createServer, Server } from "http";
 
 jest.setTimeout(30000); // Increase global timeout

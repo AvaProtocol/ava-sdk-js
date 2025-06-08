@@ -19,7 +19,7 @@ import {
   getNextId,
   TIMEOUT_DURATION,
   SaltGlobal,
-} from "./utils";
+} from "../utils/utils";
 import { 
   defaultTriggerId, 
   createFromTemplate,
@@ -28,8 +28,8 @@ import {
   loopNodeWithETHTransferProps,
   loopNodeWithContractReadProps,
   loopNodeWithGraphQLQueryProps
-} from "./templates";
-import { getConfig } from "./envalid";
+} from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 

@@ -74,6 +74,18 @@ class LoopNode extends Node {
         config.setContractAddress((data as any).contractWrite.config.contractAddress);
         config.setCallData((data as any).contractWrite.config.callData);
         config.setContractAbi((data as any).contractWrite.config.contractAbi);
+        
+        // Handle method calls array for ContractWrite
+        const methodCalls = (data as any).contractWrite.config.methodCallsList || [];
+        methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
+          const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
+          methodCallMsg.setCallData(methodCall.callData);
+          if (methodCall.methodName) {
+            methodCallMsg.setMethodName(methodCall.methodName);
+          }
+          config.addMethodCalls(methodCallMsg);
+        });
+        
         contractWrite.setConfig(config);
       }
       loopNode.setContractWrite(contractWrite);

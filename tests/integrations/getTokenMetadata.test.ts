@@ -1,8 +1,8 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import type { GetTokenMetadataRequest, GetTokenMetadataResponse, TokenMetadata } from "@avaprotocol/types";
-import { getAddress, generateSignature } from "./utils";
-import { getConfig } from "./envalid";
+import { getAddress, generateSignature } from "../utils/utils";
+import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress, chainId, environment } = getConfig();

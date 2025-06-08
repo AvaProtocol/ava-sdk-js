@@ -7,10 +7,10 @@ import {
   generateAuthPayloadWithApiKey,
   compareResults,
   SaltGlobal,
-} from "./utils";
+} from "../utils/utils";
 
-import { createFromTemplate } from "./templates";
-import { getConfig } from "./envalid";
+import { createFromTemplate } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
 const { avsApiKey, avsEndpoint, walletPrivateKey, factoryAddress } =

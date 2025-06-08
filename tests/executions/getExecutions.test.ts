@@ -8,9 +8,9 @@ import {
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
-} from "./utils";
-import { createFromTemplate, defaultTriggerId } from "./templates";
-import { getConfig } from "./envalid";
+} from "../utils/utils";
+import { createFromTemplate, defaultTriggerId } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 // Set a default timeout of 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);

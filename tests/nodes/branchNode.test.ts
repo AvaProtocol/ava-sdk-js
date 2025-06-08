@@ -6,8 +6,8 @@ import {
   generateSignature,
   TIMEOUT_DURATION,
   SaltGlobal,
-} from "./utils";
-import { getConfig } from "./envalid";
+} from "../utils/utils";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 

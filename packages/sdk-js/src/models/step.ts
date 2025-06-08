@@ -143,7 +143,66 @@ class Step implements StepProps {
         }
         return undefined;
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
-        return step.getContractWrite()?.toObject();
+        nodeOutputMessage = step.getContractWrite();
+        if (nodeOutputMessage) {
+          const results = nodeOutputMessage.getResultsList();
+          if (results && results.length > 0) {
+            // Transform enhanced results structure
+            const transformedResults = results.map((result) => ({
+              methodName: result.getMethodName(),
+              success: result.getSuccess(),
+              transaction: result.getTransaction() ? {
+                hash: result.getTransaction()?.getHash(),
+                status: result.getTransaction()?.getStatus(),
+                blockNumber: result.getTransaction()?.getBlockNumber(),
+                blockHash: result.getTransaction()?.getBlockHash(),
+                gasUsed: result.getTransaction()?.getGasUsed(),
+                gasLimit: result.getTransaction()?.getGasLimit(),
+                gasPrice: result.getTransaction()?.getGasPrice(),
+                effectiveGasPrice: result.getTransaction()?.getEffectiveGasPrice(),
+                from: result.getTransaction()?.getFrom(),
+                to: result.getTransaction()?.getTo(),
+                value: result.getTransaction()?.getValue(),
+                nonce: result.getTransaction()?.getNonce(),
+                transactionIndex: result.getTransaction()?.getTransactionIndex(),
+                confirmations: result.getTransaction()?.getConfirmations(),
+                timestamp: result.getTransaction()?.getTimestamp(),
+              } : null,
+              events: result.getEventsList().map((event) => ({
+                eventName: event.getEventName(),
+                address: event.getAddress(),
+                topics: event.getTopicsList(),
+                data: event.getData(),
+                decoded: event.getDecodedMap() ? Object.fromEntries(event.getDecodedMap().toArray()) : {},
+              })),
+              error: result.getError() ? {
+                code: result.getError()?.getCode(),
+                message: result.getError()?.getMessage(),
+                revertReason: result.getError()?.getRevertReason(),
+              } : null,
+              returnData: result.getReturnData() ? {
+                name: result.getReturnData()?.getName(),
+                type: result.getReturnData()?.getType(),
+                value: result.getReturnData()?.getValue(),
+              } : null,
+              inputData: result.getInputData(),
+            }));
+
+            // For single result, also provide legacy fields for backward compatibility
+            if (transformedResults.length === 1) {
+              return {
+                results: transformedResults,
+                // Legacy compatibility fields
+                transaction: transformedResults[0].transaction,
+                success: transformedResults[0].success,
+                hash: transformedResults[0].transaction?.hash,
+              };
+            } else {
+              return { results: transformedResults };
+            }
+          }
+        }
+        return undefined;
       case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
         nodeOutputMessage = step.getCustomCode();
         return nodeOutputMessage && nodeOutputMessage.hasData()

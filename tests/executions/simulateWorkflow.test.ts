@@ -8,8 +8,8 @@ import {
   TIMEOUT_DURATION,
   SaltGlobal,
   getNextId,
-} from "./utils";
-import { getConfig } from "./envalid";
+} from "../utils/utils";
+import { getConfig } from "../utils/envalid";
 import util from "util";
 
 jest.setTimeout(TIMEOUT_DURATION);

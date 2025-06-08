@@ -15,7 +15,7 @@ import {
   getNextId,
   TIMEOUT_DURATION,
   SaltGlobal,
-} from "./utils";
+} from "../utils/utils";
 
 import {
   createFromTemplate,
@@ -24,8 +24,8 @@ import {
   blockTriggerEvery5,
   restApiNodeProps,
   filterNodeProps,
-} from "./templates";
-import { getConfig } from "./envalid";
+} from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
