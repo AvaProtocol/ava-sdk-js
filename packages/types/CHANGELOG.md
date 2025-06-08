@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.3
+
+### Patch Changes
+
+- 38ade5e: Update CustomCodeLange
+
 ## 2.2.2
 
 ### Patch Changes
