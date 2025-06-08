@@ -40,26 +40,26 @@ export type LoopNodeData = avs_pb.LoopNode.Config.AsObject;
 // Node Output Types
 export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
 
-// Node Constants
+// Node Constants  
 export const CustomCodeLangs = {
-  Javascript: "Javascript",
+  JavaScript: "JavaScript",  // Fixed casing to match protobuf enum
 };
 
 export const CustomCodeLangConverter = {
   toProtobuf: (lang: string): avs_pb.Lang => {
     switch (lang) {
-      case "Javascript":
+      case "JavaScript":  // Fixed casing to match protobuf enum
         return avs_pb.Lang.JAVASCRIPT;
       default:
-        return avs_pb.Lang.JAVASCRIPT; // Default to Javascript
+        return avs_pb.Lang.JAVASCRIPT; // Default to JavaScript
     }
   },
   fromProtobuf: (lang: avs_pb.Lang): string => {
     switch (lang) {
       case avs_pb.Lang.JAVASCRIPT:
-        return "Javascript";
+        return "JavaScript";  // Fixed casing to match protobuf enum
       default:
-        return "Javascript"; // Default to Javascript
+        return "JavaScript"; // Default to JavaScript
     }
   },
 };
