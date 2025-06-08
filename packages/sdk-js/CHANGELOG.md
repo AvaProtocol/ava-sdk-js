@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.4
+
+### Patch Changes
+
+- 9c7c1e0: Updated CronTrigger’s scheduleList to schedules
+- Updated dependencies [9c7c1e0]
+  - @avaprotocol/types@2.2.4
+
 ## 2.3.3
 
 ### Patch Changes
