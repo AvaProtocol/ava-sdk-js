@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.2
+
+### Patch Changes
+
+- 2baed44: pdate CustomCodeLang from Javascript to JavaScript to match server string
+
 ## 2.2.1
 
 ### Patch Changes
