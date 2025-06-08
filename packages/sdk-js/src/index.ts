@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { credentials, Metadata } from "@grpc/grpc-js";
+import { credentials, Metadata, status } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
@@ -40,7 +40,10 @@ import {
   type GetTokenMetadataRequest,
   type GetTokenMetadataResponse,
   type TokenMetadata,
-  type TokenSource
+  type TokenSource,
+  type TimeoutConfig,
+  type TimeoutError,
+  TimeoutPresets
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -55,6 +58,7 @@ class BaseClient {
   protected metadata: Metadata;
   protected factoryAddress?: string;
   protected authKey?: string;
+  protected timeoutConfig: TimeoutConfig;
 
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
@@ -64,9 +68,87 @@ class BaseClient {
     );
 
     this.factoryAddress = opts.factoryAddress;
+    
+    // Set default timeout configuration (NO_RETRY strategy)
+    this.timeoutConfig = {
+      timeout: 30000,
+      retries: 0,
+      retryDelay: 0,
+      ...opts.timeout
+    };
 
     // Create a new Metadata object for request headers
     this.metadata = new Metadata();
+  }
+
+  /**
+   * Set default timeout configuration for all requests
+   * @param config - The timeout configuration
+   */
+  public setTimeoutConfig(config: TimeoutConfig): void {
+    this.timeoutConfig = { ...this.timeoutConfig, ...config };
+  }
+
+  /**
+   * Get the current timeout configuration
+   * @returns {TimeoutConfig} - The current timeout configuration
+   */
+  public getTimeoutConfig(): TimeoutConfig {
+    return { ...this.timeoutConfig };
+  }
+
+  /**
+   * Send a fast gRPC request using FAST preset (5s timeout, 2 retries)
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
+   */
+  protected sendFastRequest<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return this.sendGrpcRequest(method, request, {
+      ...options,
+      timeout: TimeoutPresets.FAST
+    });
+  }
+
+  /**
+   * Send a slow gRPC request using SLOW preset (2min timeout, 2 retries)
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
+   */
+  protected sendSlowRequest<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return this.sendGrpcRequest(method, request, {
+      ...options,
+      timeout: TimeoutPresets.SLOW
+    });
+  }
+
+  /**
+   * Send a no-retry gRPC request using NO_RETRY preset (30s timeout, no retries)
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
+   */
+  protected sendNoRetryRequest<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return this.sendGrpcRequest(method, request, {
+      ...options,
+      timeout: TimeoutPresets.NO_RETRY
+    });
   }
 
   /**
@@ -195,10 +277,10 @@ class BaseClient {
   }
 
   /**
-   * Send a gRPC request with authentication and error handling
+   * Send a gRPC request with authentication, timeout support, and error handling
    * @param method - The method name to call
    * @param request - The request object
-   * @param options - Request options
+   * @param options - Request options including timeout configuration
    * @returns {Promise<TResponse>} - The response from the server
    */
   protected sendGrpcRequest<TResponse, TRequest>(
@@ -207,25 +289,90 @@ class BaseClient {
     options?: RequestOptions
   ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
-      const metadata = new Metadata();
+      // Merge timeout configuration (priority: options > instance config > defaults)
+      const timeoutConfig = {
+        ...this.timeoutConfig,
+        ...options?.timeout
+      };
 
-      // Set auth header if available (priority: options > instance variable)
-      const authKey = options?.authKey || this.authKey;
-      if (authKey) {
-        metadata.set(AUTH_KEY_HEADER, authKey);
-      }
+      const {
+        timeout = timeoutConfig.timeout || 30000,
+        retries = timeoutConfig.retries || 3,
+        retryDelay = timeoutConfig.retryDelay || 1000
+      } = timeoutConfig;
 
-      (this.rpcClient as any)[method](
-        request,
-        metadata,
-        (error: any, response: TResponse) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(response);
+      let attempt = 0;
+
+      const executeRequest = () => {
+        attempt++;
+
+        // Create a timeout promise
+        const timeoutPromise = new Promise<never>((_, timeoutReject) => {
+          setTimeout(() => {
+            const error = new Error(`gRPC request timeout after ${timeout}ms for method ${method}`) as TimeoutError;
+            error.isTimeout = true;
+            error.attemptsMade = attempt;
+            error.methodName = method;
+            timeoutReject(error);
+          }, timeout);
+        });
+
+        // Create the actual gRPC call promise
+        const grpcPromise = new Promise<TResponse>((grpcResolve, grpcReject) => {
+          const metadata = new Metadata();
+
+          // Set auth header if available (priority: options > instance variable)
+          const authKey = options?.authKey || this.authKey;
+          if (authKey) {
+            metadata.set(AUTH_KEY_HEADER, authKey);
           }
-        }
-      );
+
+          const call = (this.rpcClient as any)[method](
+            request,
+            metadata,
+            (error: any, response: TResponse) => {
+              if (error) {
+                grpcReject(error);
+              } else {
+                grpcResolve(response);
+              }
+            }
+          );
+
+          // Handle call cancellation on timeout
+          timeoutPromise.catch(() => {
+            if (call && call.cancel) {
+              call.cancel();
+            }
+          });
+        });
+
+        // Race between timeout and actual call
+        Promise.race([grpcPromise, timeoutPromise])
+          .then(resolve)
+          .catch((error: any) => {
+            const isTimeoutError = error.isTimeout || error.message?.includes('timeout');
+            const isRetryableError = isTimeoutError || 
+              error.code === status.UNAVAILABLE || 
+              error.code === status.DEADLINE_EXCEEDED ||
+              error.code === status.RESOURCE_EXHAUSTED;
+
+            if (isRetryableError && attempt < retries) {
+              console.warn(`gRPC ${method} attempt ${attempt} failed, retrying in ${retryDelay}ms:`, error.message);
+              setTimeout(executeRequest, retryDelay);
+            } else {
+              // Add timeout context to error if it's a timeout
+              if (isTimeoutError && !error.isTimeout) {
+                (error as TimeoutError).isTimeout = true;
+                (error as TimeoutError).attemptsMade = attempt;
+                (error as TimeoutError).methodName = method;
+              }
+              reject(error);
+            }
+          });
+      };
+
+      executeRequest();
     });
   }
 }
@@ -1117,4 +1264,11 @@ export type {
   GetTokenMetadataRequest,
   GetTokenMetadataResponse,
   TokenSource
+} from "@avaprotocol/types";
+
+// Re-export timeout-related types and presets
+export {
+  TimeoutPresets,
+  type TimeoutConfig,
+  type TimeoutError
 } from "@avaprotocol/types";

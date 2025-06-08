@@ -192,3 +192,9 @@ jobs:
         env:
           TEST_ENV: ${{ matrix.env }}
         run: yarn test:filter
+
+      - name: Test Simulate Task
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: ${{ matrix.env }}
+        run: yarn test:simulate
