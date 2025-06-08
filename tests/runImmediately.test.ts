@@ -538,15 +538,15 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
         const result = await client.runTrigger({
           triggerType: "eventTrigger",
           triggerConfig: {
-            queriesList: [
+            queries: [
               {
-                addressesList: [
+                addresses: [
                   "0x779877a7b0d9e8603169ddbd7836e478b4624789",
                   "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
                 ], // LINK and UNI
-                topicsList: [
+                topics: [
                   {
-                    valuesList: [transferEventSignature], // ERC20 Transfer event signature
+                    values: [transferEventSignature], // ERC20 Transfer event signature
                   },
                 ],
                 maxEventsPerBlock: 100,

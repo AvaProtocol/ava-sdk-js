@@ -304,7 +304,7 @@ async function schedulePriceReport(
               "type":"function"
             }
           ]`,
-          methodCallsList: [
+          methodCalls: [
             {
               callData: "0xfeaf968c",
               methodName: "latestRoundData",
@@ -459,7 +459,7 @@ async function scheduleSweep(owner: string, token: string, target: string) {
         name: "checktoken",
         type: NodeType.Branch,
         data: {
-          conditionsList: [
+          conditions: [
             {
               id: branchIdCheckToken,
               type: "if",
@@ -523,12 +523,12 @@ async function scheduleSweep(owner: string, token: string, target: string) {
       type: TriggerType.Event,
       name: "demoTriggerName",
       data: {
-        queriesList: [
+        queries: [
           {
-            addressesList: ["0x7b79995e5f793a07bc00c21412e50ecae098e7f9", "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"], // WETH and USDC
-            topicsList: [
+            addresses: ["0x7b79995e5f793a07bc00c21412e50ecae098e7f9", "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"], // WETH and USDC
+            topics: [
               {
-                valuesList: [
+                values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                   "", // Any from address
                   target, // The wallet to monitor here
@@ -585,7 +585,7 @@ async function scheduleMonitorTransfer(
         name: "checkAmount",
         type: NodeType.Branch,
         data: {
-          conditionsList: [
+          conditions: [
             {
               id: branchIdCheckAmount,
               type: "if",
@@ -631,12 +631,12 @@ async function scheduleMonitorTransfer(
       type: TriggerType.Event,
       name: "demoTriggerName",
       data: {
-        queriesList: [
+        queries: [
           {
-            addressesList: ["0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6"], // USDT and DAI
-            topicsList: [
+            addresses: ["0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6"], // USDT and DAI
+            topics: [
               {
-                valuesList: [
+                values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                   "", // Any from address
                   target, // The wallet to monitor here
