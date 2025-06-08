@@ -102,7 +102,7 @@ describe("createWorkflow Tests", () => {
         id: defaultTriggerId,
         name: "cronTrigger",
         type: TriggerType.Cron,
-        data: { schedule: ["5 4 * * *", "5 0 * 8 *"] },
+        data: { schedules: ["5 4 * * *", "5 0 * 8 *"] },
       });
 
       const workflow = client.createWorkflow(workflowProps);

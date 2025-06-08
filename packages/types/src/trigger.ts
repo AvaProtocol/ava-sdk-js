@@ -3,7 +3,7 @@ import { TriggerType } from "./enums";
 
 // Custom CronTrigger data type with cleaner field names
 export interface CronTriggerDataType {
-  schedule: string[];
+  schedules: string[];
 }
 // Custom EventTrigger data type with cleaner field names
 export interface EventTriggerDataType {

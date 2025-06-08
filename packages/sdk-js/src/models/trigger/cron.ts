@@ -19,7 +19,7 @@ class CronTrigger extends Trigger {
 
     const trigger = new avs_pb.CronTrigger();
     const config = new avs_pb.CronTrigger.Config();
-    config.setScheduleList((this.data as CronTriggerDataType).schedule || []);
+    config.setScheduleList((this.data as CronTriggerDataType).schedules || []);
     trigger.setConfig(config);
     
     request.setCron(trigger);
@@ -31,14 +31,14 @@ class CronTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: CronTriggerDataType = { schedule: [] };
+    let data: CronTriggerDataType = { schedules: [] };
     
     if (raw.getCron() && raw.getCron()!.hasConfig()) {
       const config = raw.getCron()!.getConfig();
       
       if (config) {
         data = {
-          schedule: config.getScheduleList() || []
+          schedules: config.getScheduleList() || []
         };
       }
     }
