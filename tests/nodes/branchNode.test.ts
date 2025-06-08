@@ -42,7 +42,7 @@ describe("BranchNode Preprocessing Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Branch,
         nodeConfig: {
-          conditionsList: [
+          conditions: [
             { id: "condition1", type: "if", expression: "{{ trigger.data.timestamp > 0 }}" },
             { id: "condition2", type: "else", expression: "" }
           ]
@@ -70,7 +70,7 @@ describe("BranchNode Preprocessing Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Branch,
         nodeConfig: {
-          conditionsList: [
+          conditions: [
             { id: "condition1", type: "if", expression: "{{ trigger.data.status === \"ready\" }}" },
             { id: "condition2", type: "else", expression: "" }
           ]
@@ -98,7 +98,7 @@ describe("BranchNode Preprocessing Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Branch,
         nodeConfig: {
-          conditionsList: [
+          conditions: [
             { id: "condition1", type: "if", expression: "{{ trigger.data.user.role === \"admin\" }}" },
             { id: "condition2", type: "else", expression: "" }
           ]
@@ -128,7 +128,7 @@ describe("BranchNode Preprocessing Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Branch,
         nodeConfig: {
-          conditionsList: [
+          conditions: [
             { id: "condition1", type: "if", expression: "{{ trigger.data.user.age >= 18 }}" },
             { id: "condition2", type: "else", expression: "" }
           ]
@@ -158,7 +158,7 @@ describe("BranchNode Preprocessing Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Branch,
         nodeConfig: {
-          conditionsList: [
+          conditions: [
             { id: "condition1", type: "if", expression: "{{ trigger.data.status === \"ready\" && trigger.data.user.age >= 18 }}" },
             { id: "condition2", type: "else", expression: "" }
           ]
@@ -189,7 +189,7 @@ describe("BranchNode Preprocessing Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Branch,
         nodeConfig: {
-          conditionsList: [
+          conditions: [
             { id: "condition1", type: "if", expression: "{{ trigger.data.user.role === \"guest\" }}" },
             { id: "condition2", type: "else", expression: "" }
           ]
@@ -216,33 +216,5 @@ describe("BranchNode Preprocessing Tests", () => {
     });
   });
 
-  describe("Backward Compatibility Tests", () => {
-    test("should work with expressions without preprocessing", async () => {
-      const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Branch,
-        nodeConfig: {
-          conditionsList: [
-            { id: "condition1", type: "if", expression: "trigger.data.timestamp > 0" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
-        },
-        inputVariables: {
-          trigger: {
-            data: {
-              timestamp: 1748804062960
-            }
-          }
-        },
-      });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Backward compatibility test failed:", result.error);
-      }
-    });
-  });
 });

@@ -13,10 +13,23 @@ class ContractWriteNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): ContractWriteNode {
     // Convert the raw object to ContractWriteNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    const protobufData = raw.getContractWrite()!.getConfig()!.toObject();
+    
+    // Convert protobuf data to our custom interface
+    const data: ContractWriteNodeData = {
+      contractAddress: protobufData.contractAddress,
+      callData: protobufData.callData,
+      contractAbi: protobufData.contractAbi,
+      methodCalls: protobufData.methodCallsList?.map(call => ({
+        callData: call.callData,
+        methodName: call.methodName,
+      })) || [],
+    };
+    
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,
-      data: raw.getContractWrite()!.getConfig()!.toObject() as ContractWriteNodeData,
+      data: data,
     });
   }
 
@@ -34,7 +47,7 @@ class ContractWriteNode extends Node {
     config.setContractAbi((this.data as ContractWriteNodeData).contractAbi);
     
     // Handle method calls array if present
-    const methodCalls = (this.data as ContractWriteNodeData).methodCallsList || [];
+    const methodCalls = (this.data as ContractWriteNodeData).methodCalls || [];
     methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
       const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
       methodCallMsg.setCallData(methodCall.callData);

@@ -14,10 +14,22 @@ class ContractReadNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): ContractReadNode {
     // Convert the raw object to ContractReadNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    const protobufData = raw.getContractRead()!.getConfig()!.toObject();
+    
+    // Convert protobuf data to our custom interface
+    const data: ContractReadNodeData = {
+      contractAddress: protobufData.contractAddress,
+      contractAbi: protobufData.contractAbi,
+      methodCalls: protobufData.methodCallsList?.map(call => ({
+        callData: call.callData,
+        methodName: call.methodName,
+      })) || [],
+    };
+    
     return new ContractReadNode({
       ...obj,
       type: NodeType.ContractRead,
-      data: raw.getContractRead()!.getConfig()!.toObject() as ContractReadNodeData,
+      data: data,
     });
   }
 
@@ -33,8 +45,8 @@ class ContractReadNode extends Node {
     config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
     config.setContractAbi((this.data as ContractReadNodeData).contractAbi);
     
-    // Handle method calls array - use camelCase property name from protobuf AsObject
-    const methodCalls = (this.data as ContractReadNodeData).methodCallsList || [];
+    // Handle method calls array
+    const methodCalls = (this.data as ContractReadNodeData).methodCalls || [];
     methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
       const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
       methodCallMsg.setCallData(methodCall.callData);

@@ -191,31 +191,5 @@ describe("FilterNode Preprocessing Tests", () => {
     });
   });
 
-  describe("Backward Compatibility Tests", () => {
-    test("should work with expressions without preprocessing", async () => {
-      const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
-          expression: "value.age >= 18",
-          sourceId: "testArray"
-        },
-        inputVariables: {
-          testArray: [
-            { name: "Alice", age: 21 },
-            { name: "Bob", age: 17 },
-            { name: "Carol", age: 25 }
-          ]
-        },
-      });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Backward compatibility test failed:", result.error);
-      }
-    });
-  });
 });

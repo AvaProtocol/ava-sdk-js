@@ -207,12 +207,12 @@ describe("triggerWorkflow Tests", () => {
       name: "eventTrigger",
       type: TriggerType.Event,
       data: {
-        queriesList: [
+        queries: [
           {
-            addressesList: [], // Listen to all contracts
-            topicsList: [
+            addresses: [], // Listen to all contracts
+            topics: [
               {
-                valuesList: [
+                values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
                   null, // Any FROM address
                   wallet.address.toLowerCase() // TO this specific wallet
@@ -534,12 +534,12 @@ describe("triggerWorkflow Tests", () => {
       name: "eventTrigger",
       type: TriggerType.Event,
       data: {
-        queriesList: [
+        queries: [
           {
-            addressesList: [], // Listen to all contracts
-            topicsList: [
+            addresses: [], // Listen to all contracts
+            topics: [
               {
-                valuesList: [
+                values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
                   null, // Any FROM address
                   wallet.address.toLowerCase() // TO this specific wallet
