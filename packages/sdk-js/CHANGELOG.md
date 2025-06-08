@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.2.0
+
+### Minor Changes
+
+- 52a1d86: Added timeout option and strategy to the client
+
+### Patch Changes
+
+- Updated dependencies [52a1d86]
+  - @avaprotocol/types@2.1.0
+
 ## 2.1.1
 
 ### Patch Changes
