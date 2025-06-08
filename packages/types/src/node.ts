@@ -42,11 +42,27 @@ export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
 
 // Node Constants
 export const CustomCodeLangs = {
-  Javascript: 0,
-  Python: 1,
+  Javascript: "Javascript",
 };
 
-
+export const CustomCodeLangConverter = {
+  toProtobuf: (lang: string): avs_pb.Lang => {
+    switch (lang) {
+      case "Javascript":
+        return avs_pb.Lang.JAVASCRIPT;
+      default:
+        return avs_pb.Lang.JAVASCRIPT; // Default to Javascript
+    }
+  },
+  fromProtobuf: (lang: avs_pb.Lang): string => {
+    switch (lang) {
+      case avs_pb.Lang.JAVASCRIPT:
+        return "Javascript";
+      default:
+        return "Javascript"; // Default to Javascript
+    }
+  },
+};
 
 export type NodeData =
   | avs_pb.ETHTransferNode.AsObject
