@@ -108,7 +108,7 @@ describe("triggerWorkflow Tests", () => {
       id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
-      data: { scheduleList: ["* * * * *"] },
+      data: { schedule: ["* * * * *"] },
     });
 
     const workflowId = await client.submitWorkflow(
@@ -275,7 +275,7 @@ describe("triggerWorkflow Tests", () => {
       id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
-      data: { scheduleList: ["* * * * *"] },
+      data: { schedule: ["* * * * *"] },
     });
 
     const workflowId = await client.submitWorkflow(
@@ -324,7 +324,7 @@ describe("triggerWorkflow Tests", () => {
       id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
-      data: { scheduleList: ["* * * * *"] },
+      data: { schedule: ["* * * * *"] },
     });
 
     const workflowId = await client.submitWorkflow(
@@ -427,7 +427,7 @@ describe("triggerWorkflow Tests", () => {
       id: defaultTriggerId,
       name: "cronTrigger",
       type: TriggerType.Cron,
-      data: { scheduleList: ["* * * * *"] },
+      data: { schedule: ["* * * * *"] },
     });
 
     // Create workflow with maxExecution = 1 to ensure it completes after one execution

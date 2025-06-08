@@ -274,7 +274,7 @@ async function schedulePriceReport(
       name: "demoCronTrigger",
       data: {
         // every 5 minutes, multiple crontab is also accepted
-        scheduleList: ["*/2 * * * *"],
+        schedule: ["*/2 * * * *"],
       },
     });
   }
