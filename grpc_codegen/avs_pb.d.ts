@@ -201,10 +201,10 @@ export namespace CronTrigger {
 
 
     export class Config extends jspb.Message { 
-        clearScheduleList(): void;
-        getScheduleList(): Array<string>;
-        setScheduleList(value: Array<string>): Config;
-        addSchedule(value: string, index?: number): string;
+        clearSchedulesList(): void;
+        getSchedulesList(): Array<string>;
+        setSchedulesList(value: Array<string>): Config;
+        addSchedules(value: string, index?: number): string;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -218,7 +218,7 @@ export namespace CronTrigger {
 
     export namespace Config {
         export type AsObject = {
-            scheduleList: Array<string>,
+            schedulesList: Array<string>,
         }
     }
 

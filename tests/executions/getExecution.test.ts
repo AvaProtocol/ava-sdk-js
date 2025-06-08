@@ -146,7 +146,7 @@ describe("getExecution Tests", () => {
         id: defaultTriggerId,
         name: "cronTrigger",
         type: TriggerType.Cron,
-        data: { scheduleList: ["* * * * *"] },
+        data: { schedules: ["* * * * *"] },
       });
 
       const workflowProps = createFromTemplate(wallet.address);

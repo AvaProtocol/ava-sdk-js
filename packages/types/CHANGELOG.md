@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.4
+
+### Patch Changes
+
+- 9c7c1e0: Updated CronTrigger’s scheduleList to schedules
+
 ## 2.2.3
 
 ### Patch Changes

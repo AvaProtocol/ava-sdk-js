@@ -3730,7 +3730,7 @@ proto.aggregator.CronTrigger.Config.prototype.toObject = function(opt_includeIns
  */
 proto.aggregator.CronTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
-    scheduleList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
+    schedulesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -3769,7 +3769,7 @@ proto.aggregator.CronTrigger.Config.deserializeBinaryFromReader = function(msg, 
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.addSchedule(value);
+      msg.addSchedules(value);
       break;
     default:
       reader.skipField();
@@ -3800,7 +3800,7 @@ proto.aggregator.CronTrigger.Config.prototype.serializeBinary = function() {
  */
 proto.aggregator.CronTrigger.Config.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getScheduleList();
+  f = message.getSchedulesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       1,
@@ -3811,10 +3811,10 @@ proto.aggregator.CronTrigger.Config.serializeBinaryToWriter = function(message, 
 
 
 /**
- * repeated string schedule = 1;
+ * repeated string schedules = 1;
  * @return {!Array<string>}
  */
-proto.aggregator.CronTrigger.Config.prototype.getScheduleList = function() {
+proto.aggregator.CronTrigger.Config.prototype.getSchedulesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 1));
 };
 
@@ -3823,7 +3823,7 @@ proto.aggregator.CronTrigger.Config.prototype.getScheduleList = function() {
  * @param {!Array<string>} value
  * @return {!proto.aggregator.CronTrigger.Config} returns this
  */
-proto.aggregator.CronTrigger.Config.prototype.setScheduleList = function(value) {
+proto.aggregator.CronTrigger.Config.prototype.setSchedulesList = function(value) {
   return jspb.Message.setField(this, 1, value || []);
 };
 
@@ -3833,7 +3833,7 @@ proto.aggregator.CronTrigger.Config.prototype.setScheduleList = function(value) 
  * @param {number=} opt_index
  * @return {!proto.aggregator.CronTrigger.Config} returns this
  */
-proto.aggregator.CronTrigger.Config.prototype.addSchedule = function(value, opt_index) {
+proto.aggregator.CronTrigger.Config.prototype.addSchedules = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
 };
 
@@ -3842,8 +3842,8 @@ proto.aggregator.CronTrigger.Config.prototype.addSchedule = function(value, opt_
  * Clears the list making it empty but non-null.
  * @return {!proto.aggregator.CronTrigger.Config} returns this
  */
-proto.aggregator.CronTrigger.Config.prototype.clearScheduleList = function() {
-  return this.setScheduleList([]);
+proto.aggregator.CronTrigger.Config.prototype.clearSchedulesList = function() {
+  return this.setSchedulesList([]);
 };
 
 

@@ -244,7 +244,7 @@ function getTaskDataQuery(owner) {
 
 // Schedule a simple job that get price of an asset and post it to a webhook
 async function schedulePriceReport(
-  schedule: string,
+  schedules: string,
   smartWalletAddress: string,
   { authKey }: { authKey: string }
 ) {
@@ -274,7 +274,7 @@ async function schedulePriceReport(
       name: "demoCronTrigger",
       data: {
         // every 5 minutes, multiple crontab is also accepted
-        scheduleList: ["*/2 * * * *"],
+        schedules: ["*/2 * * * *"],
       },
     });
   }

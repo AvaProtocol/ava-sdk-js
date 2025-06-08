@@ -1,7 +1,10 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "./enums";
 
-export type CronTriggerDataType = avs_pb.CronTrigger.Config.AsObject;
+// Custom CronTrigger data type with cleaner field names
+export interface CronTriggerDataType {
+  schedules: string[];
+}
 // Custom EventTrigger data type with cleaner field names
 export interface EventTriggerDataType {
   queries: Array<{
@@ -22,10 +25,10 @@ export type FixedTimeTriggerOutput = avs_pb.FixedTimeTrigger.Output.AsObject;
 export type ManualTriggerOutput = avs_pb.ManualTrigger.Output.AsObject;
 
 export type TriggerData =
-  | avs_pb.FixedTimeTrigger.AsObject
-  | avs_pb.CronTrigger.AsObject
-  | avs_pb.BlockTrigger.AsObject
-  | avs_pb.EventTrigger.AsObject
+  | FixedTimeTriggerDataType
+  | CronTriggerDataType
+  | BlockTriggerDataType
+  | EventTriggerDataType
   | Record<string, any>
   | null;
 
