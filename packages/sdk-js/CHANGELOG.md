@@ -1,5 +1,12 @@
 # @avaprotocol/sdk-js
 
+## 2.3.1
+
+### Patch Changes
+
+- Updated dependencies [07c05b4]
+  - @avaprotocol/types@2.2.1
+
 ## 2.3.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.1
+
+### Patch Changes
+
+- 07c05b4: Changed CustomCodeLang value from 0 to Javascript
+
 ## 2.2.0
 
 ### Minor Changes
