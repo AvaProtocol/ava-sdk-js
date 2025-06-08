@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { credentials, Metadata } from "@grpc/grpc-js";
+import { credentials, Metadata, status } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
@@ -40,7 +40,10 @@ import {
   type GetTokenMetadataRequest,
   type GetTokenMetadataResponse,
   type TokenMetadata,
-  type TokenSource
+  type TokenSource,
+  type TimeoutConfig,
+  type TimeoutError,
+  TimeoutPresets
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -55,6 +58,7 @@ class BaseClient {
   protected metadata: Metadata;
   protected factoryAddress?: string;
   protected authKey?: string;
+  protected timeoutConfig: TimeoutConfig;
 
   constructor(opts: ClientOption) {
     this.endpoint = opts.endpoint;
@@ -64,9 +68,87 @@ class BaseClient {
     );
 
     this.factoryAddress = opts.factoryAddress;
+    
+    // Set default timeout configuration (NO_RETRY strategy)
+    this.timeoutConfig = {
+      timeout: 30000,
+      retries: 0,
+      retryDelay: 0,
+      ...opts.timeout
+    };
 
     // Create a new Metadata object for request headers
     this.metadata = new Metadata();
+  }
+
+  /**
+   * Set default timeout configuration for all requests
+   * @param config - The timeout configuration
+   */
+  public setTimeoutConfig(config: TimeoutConfig): void {
+    this.timeoutConfig = { ...this.timeoutConfig, ...config };
+  }
+
+  /**
+   * Get the current timeout configuration
+   * @returns {TimeoutConfig} - The current timeout configuration
+   */
+  public getTimeoutConfig(): TimeoutConfig {
+    return { ...this.timeoutConfig };
+  }
+
+  /**
+   * Send a fast gRPC request using FAST preset (5s timeout, 2 retries)
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
+   */
+  protected sendFastRequest<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return this.sendGrpcRequest(method, request, {
+      ...options,
+      timeout: TimeoutPresets.FAST
+    });
+  }
+
+  /**
+   * Send a slow gRPC request using SLOW preset (2min timeout, 2 retries)
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
+   */
+  protected sendSlowRequest<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return this.sendGrpcRequest(method, request, {
+      ...options,
+      timeout: TimeoutPresets.SLOW
+    });
+  }
+
+  /**
+   * Send a no-retry gRPC request using NO_RETRY preset (30s timeout, no retries)
+   * @param method - The method name to call
+   * @param request - The request object
+   * @param options - Request options
+   * @returns {Promise<TResponse>} - The response from the server
+   */
+  protected sendNoRetryRequest<TResponse, TRequest>(
+    method: string,
+    request: TRequest | any,
+    options?: RequestOptions
+  ): Promise<TResponse> {
+    return this.sendGrpcRequest(method, request, {
+      ...options,
+      timeout: TimeoutPresets.NO_RETRY
+    });
   }
 
   /**
@@ -195,10 +277,10 @@ class BaseClient {
   }
 
   /**
-   * Send a gRPC request with authentication and error handling
+   * Send a gRPC request with authentication, timeout support, and error handling
    * @param method - The method name to call
    * @param request - The request object
-   * @param options - Request options
+   * @param options - Request options including timeout configuration
    * @returns {Promise<TResponse>} - The response from the server
    */
   protected sendGrpcRequest<TResponse, TRequest>(
@@ -207,25 +289,149 @@ class BaseClient {
     options?: RequestOptions
   ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
-      const metadata = new Metadata();
-
-      // Set auth header if available (priority: options > instance variable)
-      const authKey = options?.authKey || this.authKey;
-      if (authKey) {
-        metadata.set(AUTH_KEY_HEADER, authKey);
+      const debugMode = process.env.GRPC_DEBUG === 'true';
+      
+      if (debugMode) {
+        console.log(`🔍 [GRPC-DEBUG] Starting ${method} request:`, {
+          method,
+          hasAuthKey: !!(options?.authKey || this.authKey),
+          endpoint: this.endpoint
+        });
+        
+        try {
+          const serializedRequest = (request as any).serializeBinary?.();
+          if (serializedRequest) {
+            console.log(`🔍 [GRPC-DEBUG] Request serialized, size: ${serializedRequest.length} bytes`);
+          }
+        } catch (error) {
+          console.error(`❌ [GRPC-DEBUG] Failed to serialize request for logging:`, error);
+        }
       }
 
-      (this.rpcClient as any)[method](
-        request,
-        metadata,
-        (error: any, response: TResponse) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(response);
+      // Merge timeout configuration (priority: options > instance config > defaults)
+      const timeoutConfig = {
+        ...this.timeoutConfig,
+        ...options?.timeout
+      };
+
+      const {
+        timeout = timeoutConfig.timeout || 30000,
+        retries = timeoutConfig.retries || 3,
+        retryDelay = timeoutConfig.retryDelay || 1000
+      } = timeoutConfig;
+
+      if (debugMode) {
+        console.log(`🔍 [GRPC-DEBUG] Timeout configuration:`, {
+          timeout,
+          retries,
+          retryDelay
+        });
+      }
+
+      let attempt = 0;
+
+      const executeRequest = () => {
+        attempt++;
+
+        // Create a timeout promise with proper cleanup
+        let timeoutId: NodeJS.Timeout;
+        const timeoutPromise = new Promise<never>((_, timeoutReject) => {
+          timeoutId = setTimeout(() => {
+            const error = new Error(`gRPC request timeout after ${timeout}ms for method ${method}`) as TimeoutError;
+            error.isTimeout = true;
+            error.attemptsMade = attempt;
+            error.methodName = method;
+            timeoutReject(error);
+          }, timeout);
+        });
+
+        // Create the actual gRPC call promise
+        const grpcPromise = new Promise<TResponse>((grpcResolve, grpcReject) => {
+          const metadata = new Metadata();
+
+          // Set auth header if available (priority: options > instance variable)
+          const authKey = options?.authKey || this.authKey;
+          if (authKey) {
+            metadata.set(AUTH_KEY_HEADER, authKey);
           }
-        }
-      );
+
+          if (debugMode) {
+            console.log(`🔍 [GRPC-DEBUG] Making gRPC call for ${method}, attempt ${attempt}`);
+          }
+
+          const call = (this.rpcClient as any)[method](
+            request,
+            metadata,
+            (error: any, response: TResponse) => {
+              if (error) {
+                if (debugMode) {
+                  console.error(`❌ [GRPC-DEBUG] gRPC call failed for ${method}:`, {
+                    code: error.code,
+                    message: error.message,
+                    details: error.details,
+                    metadata: error.metadata?.getMap ? error.metadata.getMap() : error.metadata
+                  });
+                }
+                grpcReject(error);
+              } else {
+                if (debugMode) {
+                  try {
+                    const responseObj = (response as any)?.toObject ? (response as any).toObject() : response;
+                    console.log(`✅ [GRPC-DEBUG] gRPC call succeeded for ${method}:`, {
+                      responseType: typeof response,
+                      hasToObject: !!(response as any)?.toObject,
+                      sampleResponse: JSON.stringify(responseObj).substring(0, 500) + (JSON.stringify(responseObj).length > 500 ? '...' : '')
+                    });
+                  } catch (parseError) {
+                    console.log(`✅ [GRPC-DEBUG] gRPC call succeeded for ${method}, but failed to parse response for logging:`, parseError);
+                  }
+                }
+                grpcResolve(response);
+              }
+            }
+          );
+
+          // Handle call cancellation on timeout
+          timeoutPromise.catch(() => {
+            if (call && call.cancel) {
+              call.cancel();
+            }
+          });
+        });
+
+        // Race between timeout and actual call
+        Promise.race([grpcPromise, timeoutPromise])
+          .then((result) => {
+            // Clear the timeout when request completes successfully
+            clearTimeout(timeoutId);
+            resolve(result);
+          })
+          .catch((error: any) => {
+            // Clear the timeout when request fails
+            clearTimeout(timeoutId);
+            
+            const isTimeoutError = error.isTimeout || error.message?.includes('timeout');
+            const isRetryableError = isTimeoutError || 
+              error.code === status.UNAVAILABLE || 
+              error.code === status.DEADLINE_EXCEEDED ||
+              error.code === status.RESOURCE_EXHAUSTED;
+
+            if (isRetryableError && attempt < retries) {
+              console.warn(`gRPC ${method} attempt ${attempt} failed, retrying in ${retryDelay}ms:`, error.message);
+              setTimeout(executeRequest, retryDelay);
+            } else {
+              // Add timeout context to error if it's a timeout
+              if (isTimeoutError && !error.isTimeout) {
+                (error as TimeoutError).isTimeout = true;
+                (error as TimeoutError).attemptsMade = attempt;
+                (error as TimeoutError).methodName = method;
+              }
+              reject(error);
+            }
+          });
+      };
+
+      executeRequest();
     });
   }
 }
@@ -922,6 +1128,16 @@ class Client extends BaseClient {
     { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
+    const debugMode = process.env.GRPC_DEBUG === 'true';
+    
+    if (debugMode) {
+      console.log('🔍 [GRPC-DEBUG] runNodeWithInputs called with:', {
+        nodeType,
+        nodeConfig: JSON.stringify(nodeConfig, null, 2),
+        inputVariables: JSON.stringify(inputVariables, null, 2)
+      });
+    }
+
     // Reject trigger types - they should use the runTrigger method instead
     const triggerTypes = [
       TriggerType.Block,
@@ -945,30 +1161,105 @@ class Client extends BaseClient {
     const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
     request.setNodeType(protobufNodeType);
 
+    if (debugMode) {
+      console.log('🔍 [GRPC-DEBUG] Converted nodeType:', {
+        original: nodeType,
+        protobuf: protobufNodeType
+      });
+    }
+
     const nodeConfigMap = request.getNodeConfigMap();
     for (const [key, value] of Object.entries(nodeConfig)) {
-      nodeConfigMap.set(key, convertJSValueToProtobuf(value));
+      try {
+        const protobufValue = convertJSValueToProtobuf(value);
+        nodeConfigMap.set(key, protobufValue);
+        if (debugMode) {
+          console.log(`🔍 [GRPC-DEBUG] Converted nodeConfig[${key}]:`, {
+            original: value,
+            protobuf: protobufValue?.toObject ? protobufValue.toObject() : protobufValue
+          });
+        }
+      } catch (error) {
+        console.error(`❌ [GRPC-DEBUG] Failed to convert nodeConfig[${key}]:`, error);
+        throw error;
+      }
     }
 
     if (inputVariables && Object.keys(inputVariables).length > 0) {
       const inputVarsMap = request.getInputVariablesMap();
       for (const [key, value] of Object.entries(inputVariables)) {
-        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+        try {
+          const protobufValue = convertJSValueToProtobuf(value);
+          inputVarsMap.set(key, protobufValue);
+          if (debugMode) {
+            console.log(`🔍 [GRPC-DEBUG] Converted inputVariable[${key}]:`, {
+              original: value,
+              protobuf: protobufValue?.toObject ? protobufValue.toObject() : protobufValue
+            });
+          }
+        } catch (error) {
+          console.error(`❌ [GRPC-DEBUG] Failed to convert inputVariable[${key}]:`, error);
+          throw error;
+        }
       }
     }
 
-    // Send the request directly to the server
-    const result = await this.sendGrpcRequest<
-      avs_pb.RunNodeWithInputsResp,
-      avs_pb.RunNodeWithInputsReq
-    >("runNodeWithInputs", request, options);
+    if (debugMode) {
+      try {
+        const serializedRequest = request.serializeBinary();
+        console.log('🔍 [GRPC-DEBUG] Request serialized successfully, size:', serializedRequest.length, 'bytes');
+      } catch (error) {
+        console.error('❌ [GRPC-DEBUG] Failed to serialize request:', error);
+        throw error;
+      }
+    }
 
-    return {
-      success: result.getSuccess(),
-      data: NodeFactory.fromOutputData(result),
-      error: result.getError(),
-      nodeId: result.getNodeId(),
-    };
+    try {
+      // Send the request directly to the server
+      const result = await this.sendGrpcRequest<
+        avs_pb.RunNodeWithInputsResp,
+        avs_pb.RunNodeWithInputsReq
+      >("runNodeWithInputs", request, options);
+
+      if (debugMode) {
+        console.log('🔍 [GRPC-DEBUG] Response received successfully:', {
+          success: result.getSuccess(),
+          error: result.getError(),
+          nodeId: result.getNodeId(),
+          outputDataCase: result.getOutputDataCase()
+        });
+      }
+
+      let responseData;
+      try {
+        responseData = NodeFactory.fromOutputData(result);
+        if (debugMode) {
+          console.log('🔍 [GRPC-DEBUG] Output data parsed successfully:', responseData);
+        }
+      } catch (error) {
+        console.error('❌ [GRPC-DEBUG] Failed to parse output data:', error);
+        if (debugMode) {
+          console.log('🔍 [GRPC-DEBUG] Raw response object:', result.toObject());
+        }
+        throw error;
+      }
+
+      return {
+        success: result.getSuccess(),
+        data: responseData,
+        error: result.getError(),
+        nodeId: result.getNodeId(),
+      };
+    } catch (error) {
+      console.error('❌ [GRPC-DEBUG] runNodeWithInputs failed:', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        nodeType,
+        nodeConfig,
+        inputVariables
+      });
+      throw error;
+    }
   }
 
   /**
@@ -1117,4 +1408,11 @@ export type {
   GetTokenMetadataRequest,
   GetTokenMetadataResponse,
   TokenSource
+} from "@avaprotocol/types";
+
+// Re-export timeout-related types and presets
+export {
+  TimeoutPresets,
+  type TimeoutConfig,
+  type TimeoutError
 } from "@avaprotocol/types";

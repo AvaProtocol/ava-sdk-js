@@ -72,7 +72,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes,
+        nodes: nodes as any,
         edges,
         inputVariables: {},
       });
@@ -128,7 +128,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes,
+        nodes: nodes as any,
         edges,
         inputVariables: {
           name: "World",
@@ -177,7 +177,7 @@ describe("SimulateWorkflow", () => {
           data: {
             url: "https://jsonplaceholder.typicode.com/posts/1",
             method: "GET",
-            headers: {},
+            headersMap: [],
           },
         },
       ];
@@ -192,7 +192,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes,
+        nodes: nodes as any,
         edges,
         inputVariables: {},
       });
@@ -264,7 +264,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes,
+        nodes: nodes as any,
         edges,
         inputVariables: {},
       });
@@ -328,7 +328,7 @@ describe("SimulateWorkflow", () => {
       try {
         const result = await client.simulateWorkflow({
           trigger,
-          nodes,
+          nodes: nodes as any,
           edges,
           inputVariables: {},
         });

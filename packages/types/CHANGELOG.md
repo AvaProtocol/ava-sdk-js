@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.1.0
+
+### Minor Changes
+
+- 52a1d86: Added timeout option and strategy to the client
+
 ## 2.0.2
 
 ### Patch Changes

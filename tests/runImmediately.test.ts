@@ -1,5 +1,5 @@
 import { describe, beforeAll, afterAll, test, expect } from "@jest/globals";
-import { Client } from "@avaprotocol/sdk-js";
+import { Client, TimeoutPresets } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
 import { getAddress, generateSignature, SaltGlobal } from "./utils";
 import { getConfig } from "./envalid";
@@ -762,6 +762,213 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
       if (nodeResult.success && triggerResult.success) {
         expect(nodeResult.nodeId).not.toEqual(triggerResult.triggerId);
       }
+    });
+  });
+
+  describe("SDK Timeout Configuration Tests", () => {
+    test("should use NO_RETRY as default timeout configuration", () => {
+      const defaultClient = new Client({ endpoint: avsEndpoint });
+      const config = defaultClient.getTimeoutConfig();
+
+      expect(config.timeout).toBe(30000); // 30 seconds
+      expect(config.retries).toBe(0); // NO_RETRY default
+      expect(config.retryDelay).toBe(0); // NO_RETRY default
+    });
+
+    test("should use custom timeout configuration when specified", () => {
+      const customClient = new Client({
+        endpoint: avsEndpoint,
+        timeout: {
+          timeout: 5000,
+          retries: 2,
+          retryDelay: 500,
+        },
+      });
+
+      const config = customClient.getTimeoutConfig();
+      expect(config.timeout).toBe(5000);
+      expect(config.retries).toBe(2);
+      expect(config.retryDelay).toBe(500);
+    });
+
+    test("should allow updating timeout configuration after creation", () => {
+      const testClient = new Client({ endpoint: avsEndpoint });
+      
+      const newConfig = {
+        timeout: 15000,
+        retries: 1,
+        retryDelay: 750,
+      };
+
+      testClient.setTimeoutConfig(newConfig);
+      const config = testClient.getTimeoutConfig();
+
+      expect(config.timeout).toBe(15000);
+      expect(config.retries).toBe(1);
+      expect(config.retryDelay).toBe(750);
+    });
+
+    test("should merge partial timeout configurations", () => {
+      const testClient = new Client({ endpoint: avsEndpoint });
+
+      // Set initial config
+      testClient.setTimeoutConfig({ timeout: 10000, retries: 2, retryDelay: 500 });
+
+      // Update only timeout
+      testClient.setTimeoutConfig({ timeout: 20000 });
+
+      const config = testClient.getTimeoutConfig();
+      expect(config.timeout).toBe(20000); // Updated
+      expect(config.retries).toBe(2); // Preserved
+      expect(config.retryDelay).toBe(500); // Preserved
+    });
+
+    test("should have correct timeout preset values", () => {
+      expect(TimeoutPresets.FAST).toEqual({
+        timeout: 5000,
+        retries: 2,
+        retryDelay: 500,
+      });
+
+      expect(TimeoutPresets.NORMAL).toEqual({
+        timeout: 30000,
+        retries: 3,
+        retryDelay: 1000,
+      });
+
+      expect(TimeoutPresets.SLOW).toEqual({
+        timeout: 120000,
+        retries: 2,
+        retryDelay: 2000,
+      });
+
+      expect(TimeoutPresets.NO_RETRY).toEqual({
+        timeout: 30000,
+        retries: 0,
+        retryDelay: 0,
+      });
+    });
+
+    test("should work with preset timeout configurations", () => {
+      const fastClient = new Client({
+        endpoint: avsEndpoint,
+        timeout: TimeoutPresets.FAST,
+      });
+
+      const config = fastClient.getTimeoutConfig();
+      expect(config).toEqual(TimeoutPresets.FAST);
+    });
+
+    test("should allow chaining timeout configurations", () => {
+      const testClient = new Client({
+        endpoint: avsEndpoint,
+        timeout: { timeout: 5000 },
+      });
+
+      testClient.setTimeoutConfig({ retries: 5 });
+      testClient.setTimeoutConfig({ retryDelay: 200 });
+
+      const config = testClient.getTimeoutConfig();
+      expect(config.timeout).toBe(5000);
+      expect(config.retries).toBe(5);
+      expect(config.retryDelay).toBe(200);
+    });
+
+    test("should create independent client configurations", () => {
+      const client1 = new Client({
+        endpoint: avsEndpoint,
+        timeout: TimeoutPresets.FAST,
+      });
+
+      const client2 = new Client({
+        endpoint: avsEndpoint,
+        timeout: TimeoutPresets.SLOW,
+      });
+
+      expect(client1.getTimeoutConfig()).toEqual(TimeoutPresets.FAST);
+      expect(client2.getTimeoutConfig()).toEqual(TimeoutPresets.SLOW);
+
+      // Modifying one shouldn't affect the other
+      client1.setTimeoutConfig({ timeout: 1000 });
+      expect(client1.getTimeoutConfig().timeout).toBe(1000);
+      expect(client2.getTimeoutConfig()).toEqual(TimeoutPresets.SLOW);
+    });
+
+    test("should handle zero values in timeout configuration", () => {
+      const testClient = new Client({
+        endpoint: avsEndpoint,
+        timeout: {
+          timeout: 0,
+          retries: 0,
+          retryDelay: 0,
+        },
+      });
+
+      const config = testClient.getTimeoutConfig();
+      expect(config.timeout).toBe(0);
+      expect(config.retries).toBe(0);
+      expect(config.retryDelay).toBe(0);
+    });
+
+    test("should handle large timeout values", () => {
+      const testClient = new Client({
+        endpoint: avsEndpoint,
+        timeout: {
+          timeout: 300000, // 5 minutes
+          retries: 10,
+          retryDelay: 5000, // 5 seconds
+        },
+      });
+
+      const config = testClient.getTimeoutConfig();
+      expect(config.timeout).toBe(300000);
+      expect(config.retries).toBe(10);
+      expect(config.retryDelay).toBe(5000);
+    });
+
+    test("should handle runNodeWithInputs with custom timeout configuration", async () => {
+      // Use a simple customCode node that should execute quickly
+      const result = await client.runNodeWithInputs(
+        {
+          nodeType: NodeType.CustomCode,
+          nodeConfig: {
+            source: "return { value: 42, timestamp: Date.now() };",
+          },
+          inputVariables: {},
+        },
+        {
+          timeout: TimeoutPresets.FAST, // 5 second timeout
+        }
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+
+      // If the request succeeds, verify the structure
+      if (result.success) {
+        expect(result.data).toBeDefined();
+        expect(result.nodeId).toBeDefined();
+      } else {
+        // If it fails, at least verify we got an error message
+        expect(result.error).toBeDefined();
+        console.log("Custom code execution with timeout failed:", result.error);
+      }
+    });
+
+    test("should successfully execute getWallets with custom timeout", async () => {
+      // Reset to default config first
+      client.setTimeoutConfig({
+        timeout: 30000,
+        retries: 0, // NO_RETRY default
+        retryDelay: 0,
+      });
+
+      // This should work normally
+      const wallets = await client.getWallets({
+        timeout: TimeoutPresets.NORMAL,
+      });
+
+      expect(Array.isArray(wallets)).toBe(true);
     });
   });
 });
