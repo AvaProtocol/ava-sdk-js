@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.8
+
+### Patch Changes
+
+- 36ac928: Replace the old value getScheduleList to getSchedulesList
+- Updated dependencies [36ac928]
+  - @avaprotocol/types@2.2.8
+
 ## 2.3.7
 
 ### Patch Changes
