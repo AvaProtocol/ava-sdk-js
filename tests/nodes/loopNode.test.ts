@@ -1,18 +1,7 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import _ from "lodash";
-import {
-  Client,
-  Edge,
-  Workflow,
-  NodeFactory,
-  TriggerFactory,
-  LoopNode,
-  CustomCodeLangs,
-} from "@avaprotocol/sdk-js";
-import {
-  LoopNodeData,
-} from "@avaprotocol/types";
-import { NodeType, WorkflowStatus, TriggerType } from "@avaprotocol/types";
+import { Client, Edge, Workflow, NodeFactory } from "@avaprotocol/sdk-js";
+import { LoopNodeData, NodeType, CustomCodeLang } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -20,14 +9,14 @@ import {
   TIMEOUT_DURATION,
   SaltGlobal,
 } from "../utils/utils";
-import { 
-  defaultTriggerId, 
+import {
+  defaultTriggerId,
   createFromTemplate,
   loopNodeWithRestApiProps,
   loopNodeWithCustomCodeProps,
   loopNodeWithETHTransferProps,
   loopNodeWithContractReadProps,
-  loopNodeWithGraphQLQueryProps
+  loopNodeWithGraphQLQueryProps,
 } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
@@ -37,11 +26,10 @@ const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 let saltIndex = SaltGlobal.CreateWorkflow * 1000 + 500; // Use a different range than createWorkflow.test.ts
 
-
 describe("LoopNode Tests", () => {
   let eoaAddress: string;
   let client: Client;
-  
+
   beforeAll(async () => {
     eoaAddress = await getAddress(walletPrivateKey);
 
@@ -65,15 +53,17 @@ describe("LoopNode Tests", () => {
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [loopNodeWithRestApiProps]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        loopNodeWithRestApiProps,
+      ]);
+
       const customCodeNode = NodeFactory.create({
         id: getNextId(),
         name: "setup_test_array",
         type: NodeType.CustomCode,
         data: {
           config: {
-            lang: CustomCodeLangs.Javascript,
+            lang: CustomCodeLang.Javascript,
             source: `
               const testArray = [
                 { name: "item1", value: 10 },
@@ -82,12 +72,12 @@ describe("LoopNode Tests", () => {
               ];
               return { testArray };
             `,
-          }
+          },
         },
       });
-      
+
       workflowProps.nodes.push(customCodeNode);
-      
+
       workflowProps.edges = [
         new Edge({
           id: getNextId(),
@@ -108,15 +98,17 @@ describe("LoopNode Tests", () => {
       expect(workflow).toBeInstanceOf(Workflow);
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
-      
+
       const getResult = await client.getWorkflow(workflowId);
       expect(getResult).toBeDefined();
       expect(getResult.nodes).toHaveLength(2);
-      
-      const loopNode = getResult.nodes.find(node => node.type === NodeType.Loop);
+
+      const loopNode = getResult.nodes.find(
+        (node) => node.type === NodeType.Loop
+      );
       expect(loopNode).toBeDefined();
       expect(loopNode?.name).toBe("loop_with_rest_api");
-      
+
       const loopNodeData = loopNode?.data as LoopNodeData;
       expect(loopNodeData.sourceId).toBe("testArray");
       expect(loopNodeData.iterVal).toBe("item");
@@ -133,25 +125,25 @@ describe("LoopNode Tests", () => {
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [loopNodeWithCustomCodeProps]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        loopNodeWithCustomCodeProps,
+      ]);
+
       const customCodeNode = NodeFactory.create({
         id: getNextId(),
         name: "setup_test_array",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.Javascript,
-            source: `
-              const testArray = [1, 2, 3, 4, 5];
-              return { testArray };
-            `,
-          }
+          lang: CustomCodeLang.JavaScript,
+          source: `
+            const testArray = [1, 2, 3, 4, 5];
+            return { testArray };
+          `,
         },
       });
-      
+
       workflowProps.nodes.push(customCodeNode);
-      
+
       workflowProps.edges = [
         new Edge({
           id: getNextId(),
@@ -172,15 +164,17 @@ describe("LoopNode Tests", () => {
       expect(workflow).toBeInstanceOf(Workflow);
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
-      
+
       const getResult = await client.getWorkflow(workflowId);
       expect(getResult).toBeDefined();
       expect(getResult.nodes).toHaveLength(2);
-      
-      const loopNode = getResult.nodes.find(node => node.type === NodeType.Loop);
+
+      const loopNode = getResult.nodes.find(
+        (node) => node.type === NodeType.Loop
+      );
       expect(loopNode).toBeDefined();
       expect(loopNode?.name).toBe("loop_with_custom_code");
-      
+
       const loopNodeData = loopNode?.data as LoopNodeData;
       expect(loopNodeData.sourceId).toBe("testArray");
       expect(loopNodeData.iterVal).toBe("item");
@@ -191,22 +185,23 @@ describe("LoopNode Tests", () => {
       }
     }
   });
-  
+
   test("should create a workflow with a Loop node using ETHTransfer runner", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [loopNodeWithETHTransferProps]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        loopNodeWithETHTransferProps,
+      ]);
+
       const customCodeNode = NodeFactory.create({
         id: getNextId(),
         name: "setup_address_array",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.Javascript,
-            source: `
+          lang: CustomCodeLang.JavaScript,
+          source: `
               const addressArray = [
                 "0x1234567890123456789012345678901234567890",
                 "0x2345678901234567890123456789012345678901",
@@ -214,12 +209,11 @@ describe("LoopNode Tests", () => {
               ];
               return { addressArray };
             `,
-          }
         },
       });
-      
+
       workflowProps.nodes.push(customCodeNode);
-      
+
       workflowProps.edges = [
         new Edge({
           id: getNextId(),
@@ -240,15 +234,17 @@ describe("LoopNode Tests", () => {
       expect(workflow).toBeInstanceOf(Workflow);
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
-      
+
       const getResult = await client.getWorkflow(workflowId);
       expect(getResult).toBeDefined();
       expect(getResult.nodes).toHaveLength(2);
-      
-      const loopNode = getResult.nodes.find(node => node.type === NodeType.Loop);
+
+      const loopNode = getResult.nodes.find(
+        (node) => node.type === NodeType.Loop
+      );
       expect(loopNode).toBeDefined();
       expect(loopNode?.name).toBe("loop_with_eth_transfer");
-      
+
       const loopNodeData = loopNode?.data as LoopNodeData;
       expect(loopNodeData.sourceId).toBe("addressArray");
       expect(loopNodeData.iterVal).toBe("address");
@@ -259,22 +255,23 @@ describe("LoopNode Tests", () => {
       }
     }
   });
-  
+
   test("should create a workflow with a Loop node using ContractRead runner", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [loopNodeWithContractReadProps]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        loopNodeWithContractReadProps,
+      ]);
+
       const customCodeNode = NodeFactory.create({
         id: getNextId(),
         name: "setup_contract_array",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.Javascript,
-            source: `
+          lang: CustomCodeLang.JavaScript,
+          source: `
               const contractArray = [
                 { 
                   address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", 
@@ -289,12 +286,11 @@ describe("LoopNode Tests", () => {
               ];
               return { contractArray };
             `,
-          }
         },
       });
-      
+
       workflowProps.nodes.push(customCodeNode);
-      
+
       workflowProps.edges = [
         new Edge({
           id: getNextId(),
@@ -315,15 +311,17 @@ describe("LoopNode Tests", () => {
       expect(workflow).toBeInstanceOf(Workflow);
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
-      
+
       const getResult = await client.getWorkflow(workflowId);
       expect(getResult).toBeDefined();
       expect(getResult.nodes).toHaveLength(2);
-      
-      const loopNode = getResult.nodes.find(node => node.type === NodeType.Loop);
+
+      const loopNode = getResult.nodes.find(
+        (node) => node.type === NodeType.Loop
+      );
       expect(loopNode).toBeDefined();
       expect(loopNode?.name).toBe("loop_with_contract_read");
-      
+
       const loopNodeData = loopNode?.data as LoopNodeData;
       expect(loopNodeData.sourceId).toBe("contractArray");
       expect(loopNodeData.iterVal).toBe("contract");
@@ -340,16 +338,17 @@ describe("LoopNode Tests", () => {
     let workflowId: string | undefined;
 
     try {
-      const workflowProps = createFromTemplate(wallet.address, [loopNodeWithGraphQLQueryProps]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        loopNodeWithGraphQLQueryProps,
+      ]);
+
       const customCodeNode = NodeFactory.create({
         id: getNextId(),
         name: "setup_query_array",
         type: NodeType.CustomCode,
         data: {
-          config: {
-            lang: CustomCodeLangs.Javascript,
-            source: `
+          lang: CustomCodeLang.JavaScript,
+          source: `
               const queryArray = [
                 { id: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" },
                 { id: "0x6b175474e89094c44da98b954eedeac495271d0f" },
@@ -357,12 +356,11 @@ describe("LoopNode Tests", () => {
               ];
               return { queryArray };
             `,
-          }
         },
       });
-      
+
       workflowProps.nodes.push(customCodeNode);
-      
+
       workflowProps.edges = [
         new Edge({
           id: getNextId(),
@@ -383,15 +381,17 @@ describe("LoopNode Tests", () => {
       expect(workflow).toBeInstanceOf(Workflow);
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
-      
+
       const getResult = await client.getWorkflow(workflowId);
       expect(getResult).toBeDefined();
       expect(getResult.nodes).toHaveLength(2);
-      
-      const loopNode = getResult.nodes.find(node => node.type === NodeType.Loop);
+
+      const loopNode = getResult.nodes.find(
+        (node) => node.type === NodeType.Loop
+      );
       expect(loopNode).toBeDefined();
       expect(loopNode?.name).toBe("loop_with_graphql_query");
-      
+
       const loopNodeData = loopNode?.data as LoopNodeData;
       expect(loopNodeData.sourceId).toBe("queryArray");
       expect(loopNodeData.iterVal).toBe("query");

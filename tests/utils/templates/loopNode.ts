@@ -1,5 +1,5 @@
-import { LoopNodeProps, CustomCodeLangs } from "@avaprotocol/sdk-js";
-import { NodeType } from "@avaprotocol/types";
+import { LoopNodeProps } from "@avaprotocol/sdk-js";
+import { NodeType, CustomCodeLang } from "@avaprotocol/types";
 import { getNextId } from "../utils";
 
 export const loopNodeWithRestApiProps: LoopNodeProps = {
@@ -23,7 +23,7 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
 
 export const loopNodeWithCustomCodeProps: LoopNodeProps = {
   id: getNextId(),
-  name: "loop_with_custom_code", 
+  name: "loop_with_custom_code",
   type: NodeType.Loop,
   data: {
     sourceId: "testArray",
@@ -31,7 +31,7 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
     iterKey: "index",
     customCode: {
       config: {
-        lang: CustomCodeLangs.Javascript,
+        lang: CustomCodeLang.JavaScript,
         source: `const result = { processedItem: item, position: index }; return result;`,
       },
     },
@@ -71,7 +71,7 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
           {
             callData: "{{contract.callData}}",
             methodName: "{{contract.methodName}}",
-          }
+          },
         ],
       },
     },
