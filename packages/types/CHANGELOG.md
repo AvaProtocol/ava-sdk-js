@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.5
+
+### Patch Changes
+
+- b5b1eff: Convert lang of CustomCode to use protobuf value
+
 ## 2.2.4
 
 ### Patch Changes

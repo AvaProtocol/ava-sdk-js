@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.5
+
+### Patch Changes
+
+- b5b1eff: Convert lang of CustomCode to use protobuf value
+- Updated dependencies [b5b1eff]
+  - @avaprotocol/types@2.2.5
+
 ## 2.3.4
 
 ### Patch Changes
