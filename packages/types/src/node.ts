@@ -26,7 +26,7 @@ export interface ContractReadNodeData {
 
 // Custom CustomCode data type with cleaner field names
 export interface CustomCodeNodeData {
-  lang: string;  // Use string instead of protobuf enum for better client UX
+  lang: CustomCodeLang;
   source: string;
 }
 
@@ -42,34 +42,38 @@ export interface BranchNodeData {
 export type RestAPINodeData = avs_pb.RestAPINode.Config.AsObject;
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
-export type LoopNodeData = avs_pb.LoopNode.Config.AsObject;
+export type LoopNodeData = avs_pb.LoopNode.Config.AsObject & {
+  // Optional runner nodes - only one should be present
+  restApi?: {
+    config: avs_pb.RestAPINode.Config.AsObject;
+  };
+  customCode?: {
+    config: {
+      lang: CustomCodeLang;
+      source: string;
+    };
+  };
+  ethTransfer?: {
+    config: avs_pb.ETHTransferNode.Config.AsObject;
+  };
+  contractRead?: {
+    config: avs_pb.ContractReadNode.Config.AsObject;
+  };
+  contractWrite?: {
+    config: avs_pb.ContractWriteNode.Config.AsObject;
+  };
+  graphqlDataQuery?: {
+    config: avs_pb.GraphQLQueryNode.Config.AsObject;
+  };
+};
 
 // Node Output Types
 export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
 
-// Node Constants  
-export const CustomCodeLangs = {
-  JavaScript: "JavaScript",  // Fixed casing to match protobuf enum
-};
-
-export const CustomCodeLangConverter = {
-  toProtobuf: (lang: string): avs_pb.Lang => {
-    switch (lang) {
-      case "JavaScript":  // Fixed casing to match protobuf enum
-        return 0 as avs_pb.Lang; // JAVASCRIPT = 0
-      default:
-        return 0 as avs_pb.Lang; // Default to JavaScript
-    }
-  },
-  fromProtobuf: (lang: avs_pb.Lang): string => {
-    switch (lang) {
-      case 0: // avs_pb.Lang.JAVASCRIPT
-        return "JavaScript";  // Fixed casing to match protobuf enum
-      default:
-        return "JavaScript"; // Default to JavaScript
-    }
-  },
-};
+// Language enum that exactly matches protobuf enum values
+export enum CustomCodeLang {
+  JavaScript = 0, // avs_pb.Lang.JAVASCRIPT
+}
 
 export type NodeData =
   | ETHTransferNodeData
@@ -100,7 +104,9 @@ export type NodeProps = Omit<
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };
-export type ContractWriteNodeProps = NodeProps & { data: ContractWriteNodeData };
+export type ContractWriteNodeProps = NodeProps & {
+  data: ContractWriteNodeData;
+};
 export type ContractReadNodeProps = NodeProps & { data: ContractReadNodeData };
 export type ETHTransferNodeProps = NodeProps & { data: ETHTransferNodeData };
 export type RestAPINodeProps = NodeProps & { data: RestAPINodeData };

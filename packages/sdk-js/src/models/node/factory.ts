@@ -12,7 +12,6 @@ import FilterNode from "./filter";
 import LoopNode from "./loop";
 import { 
   NodeType,
-  CustomCodeLangs,
   ContractWriteNodeData,
   ContractReadNodeData,
   BranchNodeData,
@@ -163,7 +162,6 @@ export {
   GraphQLQueryNode,
   RestAPINode,
   CustomCodeNode,
-  CustomCodeLangs,
   FilterNode,
   LoopNode,
 };

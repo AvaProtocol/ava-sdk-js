@@ -1,7 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType } from "@avaprotocol/types";
-import { CustomCodeLangs } from "@avaprotocol/sdk-js";
+import { TriggerType, NodeType, CustomCodeLang } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -55,7 +54,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.Javascript,
+            lang: CustomCodeLang.JavaScript,
             source:
               "return { message: 'Task executed successfully', timestamp: Date.now() };",
           },
@@ -112,7 +111,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.Javascript,
+            lang: CustomCodeLang.JavaScript,
             source: "return { greeting: 'Hello World!', calculated: 42 * 2 };",
           },
         },
@@ -233,7 +232,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code 1",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.Javascript,
+            lang: CustomCodeLang.JavaScript,
             source: "return { step1: 'completed', data: 'from step 1' };",
           },
         },
@@ -242,7 +241,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code 2",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.Javascript,
+            lang: CustomCodeLang.JavaScript,
             source:
               "return { step2: 'completed', previousData: manual_trigger.data };",
           },
@@ -311,7 +310,7 @@ describe("SimulateWorkflow", () => {
           name: "custom code",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLangs.Javascript,
+            lang: CustomCodeLang.JavaScript,
             source: "throw new Error('Intentional error for testing');",
           },
         },

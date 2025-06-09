@@ -1,18 +1,12 @@
 import _ from "lodash";
 import { describe, beforeAll, expect, it } from "@jest/globals";
-import {
-  Client,
-  CustomCodeLangs,
-  CustomCodeNodeProps,
-  TriggerFactory,
-  Step,
-} from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory, Step } from "@avaprotocol/sdk-js";
 import {
   GetSecretsOptions,
   NodeType,
   TriggerType,
-  PageInfo,
-  SecretProps,
+  CustomCodeNodeProps,
+  CustomCodeLang,
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -111,7 +105,7 @@ describe("secret Tests", () => {
         name: "custom code",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLangs.Javascript,
+          lang: CustomCodeLang.JavaScript,
           source: `return '${testMessage}' + apContext.configVars['${secretName}']`,
         },
       };

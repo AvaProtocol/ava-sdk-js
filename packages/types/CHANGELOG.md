@@ -1,5 +1,17 @@
 # @avaprotocol/types
 
+## 2.2.8
+
+### Patch Changes
+
+- 36ac928: Replace the old value getScheduleList to getSchedulesList
+
+## 2.2.7
+
+### Patch Changes
+
+- 31667f8: Fix CustomCodeLang to match enum value
+
 ## 2.2.6
 
 ### Patch Changes

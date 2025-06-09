@@ -3,7 +3,6 @@ import {
   Edge,
   NodeFactory,
   TriggerFactory,
-  CustomCodeLangs,
 } from "@avaprotocol/sdk-js";
 import {
   NodeProps,
@@ -18,7 +17,7 @@ import {
   WorkflowProps,
 } from "@avaprotocol/types";
 import { getNextId } from "./utils";
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
 import { ethers } from "ethers";
 import { factoryProxyAbi } from "./abis";
 
@@ -89,7 +88,7 @@ export const createContractReadNodeProps = (
     data: {
       contractAddress: factoryAddress,
       contractAbi: factoryProxyAbi,
-      methodCallsList: [
+      methodCalls: [
         {
           callData,
           methodName: "getAddress",
@@ -104,12 +103,10 @@ export const restApiNodeProps: RestAPINodeProps = {
   name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
-    config: {
-      url: "http://localhost:3000/api/test",
-      method: "post",
-      body: `{"test": true}`,
-      headersMap: [["Content-Type", "application/json"]],
-    }
+    url: "http://localhost:3000/api/test",
+    method: "post",
+    body: `{"test": true}`,
+    headersMap: [["Content-Type", "application/json"]],
   },
 };
 
@@ -118,10 +115,8 @@ export const filterNodeProps: FilterNodeProps = {
   name: "filterNode",
   type: NodeType.Filter,
   data: {
-    config: {
-      sourceId: "rest_api_call",
-      expression: "value >= 1",
-    }
+    sourceId: "rest_api_call",
+    expression: "value >= 1",
   },
 };
 
@@ -130,16 +125,14 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql call",
   type: NodeType.GraphQLQuery,
   data: {
-    config: {
-      url: "http://localhost:3000/graphql",
-      query: `query TestQuery {
-        test {
-          id
-          value
-        }
-      }`,
-      variablesMap: [["test", "true"]],
-    }
+    url: "http://localhost:3000/graphql",
+    query: `query TestQuery {
+      test {
+        id
+        value
+      }
+    }`,
+    variablesMap: [["test", "true"]],
   },
 };
 
@@ -148,7 +141,7 @@ const branchNodeProps: BranchNodeProps = {
   name: "branch",
   type: NodeType.Branch,
   data: {
-    conditionsList: [
+    conditions: [
       { id: "b1", type: "if", expression: "foo >= 5" },
       { id: "b2", type: "if", expression: "foo <= -1" },
       { id: "b3", type: "else", expression: "" },
@@ -161,10 +154,8 @@ const customCodeNodeProps: CustomCodeNodeProps = {
   name: "custom code",
   type: NodeType.CustomCode,
   data: {
-    config: {
-      lang: CustomCodeLangs.Javascript,
-      source: "foo bar",
-    }
+    lang: CustomCodeLang.JavaScript,
+    source: "return { foo: 'bar' };",
   },
 };
 

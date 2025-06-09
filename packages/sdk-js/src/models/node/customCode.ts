@@ -3,7 +3,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   NodeType,
   CustomCodeNodeData,
-  CustomCodeLangConverter,
+  CustomCodeLang,
   CustomCodeNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
@@ -19,14 +19,15 @@ class CustomCodeNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): CustomCodeNode {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
-    
+
     // Get the raw protobuf config and convert to our custom interface
     const rawConfig = raw.getCustomCode()!.getConfig()!.toObject();
+
     const convertedConfig: CustomCodeNodeData = {
-      lang: CustomCodeLangConverter.fromProtobuf(rawConfig.lang),
-      source: rawConfig.source
+      lang: rawConfig.lang as unknown as CustomCodeLang,
+      source: rawConfig.source,
     };
-    
+
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
@@ -44,11 +45,10 @@ class CustomCodeNode extends Node {
 
     const config = new avs_pb.CustomCodeNode.Config();
 
-    // Convert string lang to protobuf enum using the converter
-    const langData = (this.data as CustomCodeNodeData).lang;
-    config.setLang(CustomCodeLangConverter.toProtobuf(langData));
-    
+    // Set lang using enum value (cast to protobuf Lang type)
+    config.setLang((this.data as CustomCodeNodeData).lang as any);
     config.setSource((this.data as CustomCodeNodeData).source);
+
     nodeData.setConfig(config);
 
     request.setCustomCode(nodeData);
