@@ -56,14 +56,14 @@ export const CustomCodeLangConverter = {
   toProtobuf: (lang: string): avs_pb.Lang => {
     switch (lang) {
       case "JavaScript":  // Fixed casing to match protobuf enum
-        return avs_pb.Lang.JAVASCRIPT;
+        return 0 as avs_pb.Lang; // JAVASCRIPT = 0
       default:
-        return avs_pb.Lang.JAVASCRIPT; // Default to JavaScript
+        return 0 as avs_pb.Lang; // Default to JavaScript
     }
   },
   fromProtobuf: (lang: avs_pb.Lang): string => {
     switch (lang) {
-      case avs_pb.Lang.JAVASCRIPT:
+      case 0: // avs_pb.Lang.JAVASCRIPT
         return "JavaScript";  // Fixed casing to match protobuf enum
       default:
         return "JavaScript"; // Default to JavaScript
