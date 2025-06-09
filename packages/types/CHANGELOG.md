@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.6
+
+### Patch Changes
+
+- 75c7865: Update types to use correct enum value for CustomCode
+
 ## 2.2.5
 
 ### Patch Changes

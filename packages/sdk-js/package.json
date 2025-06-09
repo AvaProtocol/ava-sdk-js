@@ -1,6 +1,6 @@
 {
   "name": "@avaprotocol/sdk-js",
-  "version": "2.3.5",
+  "version": "2.3.6",
   "description": "A JavaScript/TypeScript SDK designed to simplify integration with Ava Protocol's AVS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
