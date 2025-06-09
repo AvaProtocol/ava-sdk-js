@@ -1,10 +1,16 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, CustomCodeNodeData, CustomCodeLangs, CustomCodeNodeProps, NodeProps } from "@avaprotocol/types";
+import {
+  NodeType,
+  CustomCodeNodeData,
+  CustomCodeLangs,
+  CustomCodeLangConverter,
+  CustomCodeNodeProps,
+  NodeProps,
+} from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
-
 
 class CustomCodeNode extends Node {
   constructor(props: CustomCodeNodeProps) {
@@ -28,9 +34,19 @@ class CustomCodeNode extends Node {
     request.setName(this.name);
 
     const nodeData = new avs_pb.CustomCodeNode();
-    
+
     const config = new avs_pb.CustomCodeNode.Config();
-    config.setLang((this.data as CustomCodeNodeData).lang);
+
+    // Handle both string and enum value for lang field
+    const langData = (this.data as CustomCodeNodeData).lang;
+    if (typeof langData === "string") {
+      // Convert string to protobuf enum using the converter
+      config.setLang(CustomCodeLangConverter.toProtobuf(langData));
+    } else {
+      // Already an enum value
+      config.setLang(langData);
+    }
+
     config.setSource((this.data as CustomCodeNodeData).source);
     nodeData.setConfig(config);
 
