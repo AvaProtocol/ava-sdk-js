@@ -18,8 +18,8 @@
     "start:ethereum": "ts-node example.ts -t ethereum"
   },
   "dependencies": {
-    "@avaprotocol/sdk-js": "^2.0.4",
-    "@avaprotocol/types": "^2.0.2",
+    "@avaprotocol/sdk-js": "file:../packages/sdk-js",
+    "@avaprotocol/types": "file:../packages/types",
     "ethers": "^6.13.3",
     "id128": "^1.6.6",
     "lodash": "^4.17.21"
