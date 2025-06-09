@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.7
+
+### Patch Changes
+
+- 31667f8: Fix CustomCodeLang to match enum value
+- Updated dependencies [31667f8]
+  - @avaprotocol/types@2.2.7
+
 ## 2.3.6
 
 ### Patch Changes

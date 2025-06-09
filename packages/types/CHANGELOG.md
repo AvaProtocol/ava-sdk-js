@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.7
+
+### Patch Changes
+
+- 31667f8: Fix CustomCodeLang to match enum value
+
 ## 2.2.6
 
 ### Patch Changes
