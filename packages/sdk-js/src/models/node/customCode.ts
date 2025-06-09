@@ -3,7 +3,6 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   NodeType,
   CustomCodeNodeData,
-  CustomCodeLangs,
   CustomCodeLangConverter,
   CustomCodeNodeProps,
   NodeProps,
@@ -20,10 +19,18 @@ class CustomCodeNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): CustomCodeNode {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    // Get the raw protobuf config and convert to our custom interface
+    const rawConfig = raw.getCustomCode()!.getConfig()!.toObject();
+    const convertedConfig: CustomCodeNodeData = {
+      lang: CustomCodeLangConverter.fromProtobuf(rawConfig.lang),
+      source: rawConfig.source
+    };
+    
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
-      data: raw.getCustomCode()!.getConfig()!.toObject() as CustomCodeNodeData,
+      data: convertedConfig,
     });
   }
 
@@ -37,16 +44,10 @@ class CustomCodeNode extends Node {
 
     const config = new avs_pb.CustomCodeNode.Config();
 
-    // Handle both string and enum value for lang field
+    // Convert string lang to protobuf enum using the converter
     const langData = (this.data as CustomCodeNodeData).lang;
-    if (typeof langData === "string") {
-      // Convert string to protobuf enum using the converter
-      config.setLang(CustomCodeLangConverter.toProtobuf(langData));
-    } else {
-      // Already an enum value
-      config.setLang(langData);
-    }
-
+    config.setLang(CustomCodeLangConverter.toProtobuf(langData));
+    
     config.setSource((this.data as CustomCodeNodeData).source);
     nodeData.setConfig(config);
 

@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, NodeTypeGoConverter, NodeTypeConverter, NodeProps } from "@avaprotocol/types";
+import { NodeType, NodeTypeGoConverter, NodeTypeConverter, NodeProps, NodeData } from "@avaprotocol/types";
 import _ from "lodash";
 
 // Function to convert TaskStatus to string
@@ -22,20 +22,6 @@ export function covertNodeTypeToString(
   return conversionMap[status] as NodeType;
 }
 
-export type NodeData =
-  | avs_pb.ETHTransferNode.AsObject
-  | avs_pb.ContractWriteNode.AsObject
-  | avs_pb.ContractReadNode.AsObject
-  | avs_pb.GraphQLQueryNode.AsObject
-  | avs_pb.RestAPINode.AsObject
-  | avs_pb.BranchNode.AsObject
-  | avs_pb.FilterNode.AsObject
-  | avs_pb.LoopNode.AsObject
-  | avs_pb.CustomCodeNode.AsObject;
-
-// Option 1: Keep using our string-based NodeType (current approach)
-
-
 // Option 2: Use protobuf NodeType directly
 export type ProtobufNodeProps = Omit<
   avs_pb.TaskNode.AsObject,
@@ -50,7 +36,7 @@ export type ProtobufNodeProps = Omit<
   | "customCode"
 > & {
   // Keep the protobuf type field as-is (numeric enum)
-  data: NodeData;
+  data: any; // Use any for protobuf data since it's different from our custom NodeData
 };
 
 // Utility functions to work with protobuf NodeProps

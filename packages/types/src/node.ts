@@ -23,7 +23,13 @@ export interface ContractReadNodeData {
     methodName?: string;
   }>;
 }
-export type CustomCodeNodeData = avs_pb.CustomCodeNode.Config.AsObject;
+
+// Custom CustomCode data type with cleaner field names
+export interface CustomCodeNodeData {
+  lang: string;  // Use string instead of protobuf enum for better client UX
+  source: string;
+}
+
 // Custom BranchNode data type with cleaner field names
 export interface BranchNodeData {
   conditions: Array<{
@@ -32,6 +38,7 @@ export interface BranchNodeData {
     expression: string;
   }>;
 }
+
 export type RestAPINodeData = avs_pb.RestAPINode.Config.AsObject;
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
@@ -65,15 +72,15 @@ export const CustomCodeLangConverter = {
 };
 
 export type NodeData =
-  | avs_pb.ETHTransferNode.AsObject
-  | avs_pb.ContractWriteNode.AsObject
-  | avs_pb.ContractReadNode.AsObject
-  | avs_pb.GraphQLQueryNode.AsObject
-  | avs_pb.RestAPINode.AsObject
-  | avs_pb.BranchNode.AsObject
-  | avs_pb.FilterNode.AsObject
-  | avs_pb.LoopNode.AsObject
-  | avs_pb.CustomCodeNode.AsObject;
+  | ETHTransferNodeData
+  | ContractWriteNodeData
+  | ContractReadNodeData
+  | GraphQLQueryNodeData
+  | RestAPINodeData
+  | BranchNodeData
+  | FilterNodeData
+  | LoopNodeData
+  | CustomCodeNodeData;
 
 export type NodeProps = Omit<
   avs_pb.TaskNode.AsObject,
