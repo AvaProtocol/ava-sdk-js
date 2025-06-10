@@ -17,9 +17,21 @@ class CronTrigger extends Trigger {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
 
+    const cronData = this.data as CronTriggerDataType;
+    
+    // Validate schedules is present and not null/undefined
+    if (cronData.schedules === null || cronData.schedules === undefined) {
+      throw new Error("Schedules are required for cron trigger");
+    }
+    
+    // Validate schedules is not empty
+    if (!Array.isArray(cronData.schedules) || cronData.schedules.length === 0) {
+      throw new Error("Schedules are required for cron trigger");
+    }
+
     const trigger = new avs_pb.CronTrigger();
     const config = new avs_pb.CronTrigger.Config();
-    config.setSchedulesList((this.data as CronTriggerDataType).schedules || []);
+    config.setSchedulesList(cronData.schedules);
     trigger.setConfig(config);
     
     request.setCron(trigger);

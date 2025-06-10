@@ -46,7 +46,7 @@ describe("CronTrigger Tests", () => {
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
-  describe("TriggerFactory and toRequest() Tests", () => {
+  describe("runTrigger Tests", () => {
     test("should throw error when schedules is missing", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
@@ -171,9 +171,7 @@ describe("CronTrigger Tests", () => {
         "Trigger data is missing for cron"
       );
     });
-  });
 
-  describe("runTrigger Tests", () => {
     test("should run trigger with daily schedule", async () => {
       console.log("🚀 Testing runTrigger with daily cron schedule...");
 
@@ -269,6 +267,114 @@ describe("CronTrigger Tests", () => {
         console.log("Weekly cron trigger failed:", result.error);
       }
     });
+
+    test("should handle standard cron expressions", async () => {
+      console.log("🚀 Testing cron trigger with standard expressions...");
+
+      const result = await client.runTrigger({
+        triggerType: "cronTrigger",
+        triggerConfig: {
+          expression: "0 0 * * *", // Daily at midnight
+        },
+      });
+
+      console.log(
+        "runTrigger standard cron response:",
+        JSON.stringify(result, null, 2)
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+    });
+
+    test("should handle invalid cron expressions gracefully", async () => {
+      console.log("🚀 Testing cron trigger with invalid expression...");
+
+      const result = await client.runTrigger({
+        triggerType: "cronTrigger",
+        triggerConfig: {
+          expression: "invalid-cron-expression",
+        },
+      });
+
+      console.log(
+        "runTrigger invalid cron response:",
+        JSON.stringify(result, null, 2)
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      // Should handle invalid expressions gracefully
+      if (!result.success) {
+        expect(result.error).toBeDefined();
+      }
+    });
+
+    test("should handle complex time specifications", async () => {
+      console.log("🚀 Testing cron trigger with complex time specs...");
+
+      const result = await client.runTrigger({
+        triggerType: "cronTrigger",
+        triggerConfig: {
+          expression: "0 0,12 1 */2 *", // Twice daily on 1st of every other month
+        },
+      });
+
+      console.log(
+        "runTrigger complex cron response:",
+        JSON.stringify(result, null, 2)
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      if (result.success && result.data) {
+        expect(result.triggerId).toBeDefined();
+      } else {
+        console.log("Complex cron trigger failed:", result.error);
+      }
+    });
+
+    test("should handle step values in cron expressions", async () => {
+      console.log("🚀 Testing cron trigger with step values...");
+
+      const result = await client.runTrigger({
+        triggerType: "cronTrigger",
+        triggerConfig: {
+          expression: "*/10 */2 * * *", // Every 10 minutes, every 2 hours
+        },
+      });
+
+      console.log(
+        "runTrigger step values cron response:",
+        JSON.stringify(result, null, 2)
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      if (result.success && result.data) {
+        expect(result.triggerId).toBeDefined();
+      } else {
+        console.log("Step values cron trigger failed:", result.error);
+      }
+    });
+
+    test("should validate cron expression format in TriggerFactory", () => {
+      // Test with valid 5-field cron expression
+      const validTrigger = TriggerFactory.create({
+        id: "test-trigger-id",
+        name: "cronTrigger",
+        type: TriggerType.Cron,
+        data: {
+          schedules: ["0 0 * * *"], // Standard 5-field format
+        },
+      });
+
+      expect(() => validTrigger.toRequest()).not.toThrow();
+      const request = validTrigger.toRequest();
+      expect(request.getCron()!.getConfig()!.getSchedulesList()).toContain(
+        "0 0 * * *"
+      );
+    });
   });
 
   describe("simulateWorkflow Tests", () => {
@@ -299,7 +405,7 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(simulation.success).toBe(true);
-      expect(simulation.steps).toHaveLength(1); // just trigger
+      expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
         (step) => step.id === cronTrigger.id
@@ -490,116 +596,6 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "✅ All trigger methods return consistent cron trigger results!"
-      );
-    });
-  });
-
-  describe("Cron Expression Tests", () => {
-    test("should handle standard cron expressions", async () => {
-      console.log("🚀 Testing cron trigger with standard expressions...");
-
-      const result = await client.runTrigger({
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 0 * * *", // Daily at midnight
-        },
-      });
-
-      console.log(
-        "runTrigger standard cron response:",
-        JSON.stringify(result, null, 2)
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-    });
-
-    test("should handle invalid cron expressions gracefully", async () => {
-      console.log("🚀 Testing cron trigger with invalid expression...");
-
-      const result = await client.runTrigger({
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "invalid-cron-expression",
-        },
-      });
-
-      console.log(
-        "runTrigger invalid cron response:",
-        JSON.stringify(result, null, 2)
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      // Should handle invalid expressions gracefully
-      if (!result.success) {
-        expect(result.error).toBeDefined();
-      }
-    });
-
-    test("should handle complex time specifications", async () => {
-      console.log("🚀 Testing cron trigger with complex time specs...");
-
-      const result = await client.runTrigger({
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 0,12 1 */2 *", // Twice daily on 1st of every other month
-        },
-      });
-
-      console.log(
-        "runTrigger complex cron response:",
-        JSON.stringify(result, null, 2)
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Complex cron trigger failed:", result.error);
-      }
-    });
-
-    test("should handle step values in cron expressions", async () => {
-      console.log("🚀 Testing cron trigger with step values...");
-
-      const result = await client.runTrigger({
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "*/10 */2 * * *", // Every 10 minutes, every 2 hours
-        },
-      });
-
-      console.log(
-        "runTrigger step values cron response:",
-        JSON.stringify(result, null, 2)
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Step values cron trigger failed:", result.error);
-      }
-    });
-
-    test("should validate cron expression format in TriggerFactory", () => {
-      // Test with valid 5-field cron expression
-      const validTrigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          schedules: ["0 0 * * *"], // Standard 5-field format
-        },
-      });
-
-      expect(() => validTrigger.toRequest()).not.toThrow();
-      const request = validTrigger.toRequest();
-      expect(request.getCron()!.getConfig()!.getSchedulesList()).toContain(
-        "0 0 * * *"
       );
     });
   });
