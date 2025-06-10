@@ -1,4 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { Value as ProtobufValue } from "google-protobuf/google/protobuf/struct_pb";
 import {
   convertProtobufValueToJs,
   convertProtobufStepTypeToSdk,
@@ -111,34 +112,25 @@ class Step implements StepProps {
         if (nodeOutputMessage) {
           const results = nodeOutputMessage.getResultsList();
           if (results && results.length > 0) {
-            // If single result, return it directly for backward compatibility
-            if (results.length === 1) {
-              const result = results[0];
-              const structuredData: { [key: string]: string } = {};
-              result.getDataList().forEach((field) => {
-                structuredData[field.getName()] = field.getValue();
-              });
+            // Always return wrapped format { results: [...] } to match ContractReadNode.fromOutputData
+            const resultArray = results.map((result) => {
+              // Match the exact format from ContractReadNode.fromOutputData
+              const dataFields = result.getDataList().map((field) => ({
+                name: field.getName(),
+                type: field.getType(),
+                value: field.getValue()
+              }));
+              
               return {
                 methodName: result.getMethodName(),
                 success: result.getSuccess(),
                 error: result.getError(),
-                data: structuredData,
+                data: dataFields,
               };
-            } else {
-              // Multiple results - return as array
-              return results.map((result) => {
-                const structuredData: { [key: string]: string } = {};
-                result.getDataList().forEach((field) => {
-                  structuredData[field.getName()] = field.getValue();
-                });
-                return {
-                  methodName: result.getMethodName(),
-                  success: result.getSuccess(),
-                  error: result.getError(),
-                  data: structuredData,
-                };
-              });
-            }
+            });
+            
+            // Return wrapped format consistently for all cases
+            return { results: resultArray };
           }
         }
         return undefined;
@@ -217,9 +209,29 @@ class Step implements StepProps {
         return step.getBranch()?.toObject();
       case avs_pb.Execution.Step.OutputDataCase.FILTER:
         nodeOutputMessage = step.getFilter();
-        return nodeOutputMessage && nodeOutputMessage.hasData()
-          ? nodeOutputMessage.getData()
-          : undefined;
+        if (nodeOutputMessage && nodeOutputMessage.hasData()) {
+          const rawData = nodeOutputMessage.getData();
+          if (rawData) {
+            // Handle Any wrapper - need to unpack it first
+            if (typeof rawData.unpack === 'function') {
+              try {
+                // For Any types, unpack to Value and then convert
+                const unpackedValue = rawData.unpack(ProtobufValue.deserializeBinary, 'google.protobuf.Value');
+                if (unpackedValue) {
+                  return convertProtobufValueToJs(unpackedValue);
+                }
+              } catch (error) {
+                // If unpacking fails, log error and return undefined
+                console.warn('Failed to unpack FilterNode Any wrapper:', error);
+                return undefined;
+              }
+            }
+            // If no unpack method, this is unexpected for FilterNode
+            console.warn('FilterNode output data is not an Any wrapper - this is unexpected');
+            return undefined;
+          }
+        }
+        return undefined;
       case avs_pb.Execution.Step.OutputDataCase.LOOP:
         const loopOutput = step.getLoop();
         if (!loopOutput) return undefined;

@@ -103,10 +103,10 @@ export const restApiNodeProps: RestAPINodeProps = {
   name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
-    url: "http://localhost:3000/api/test",
-    method: "post",
-    body: `{"test": true}`,
-    headersMap: [["Content-Type", "application/json"]],
+      url: "http://localhost:3000/api/test",
+      method: "post",
+      body: `{"test": true}`,
+      headersMap: [["Content-Type", "application/json"]],
   },
 };
 
@@ -115,8 +115,8 @@ export const filterNodeProps: FilterNodeProps = {
   name: "filterNode",
   type: NodeType.Filter,
   data: {
-    sourceId: "rest_api_call",
-    expression: "value >= 1",
+      sourceId: "rest_api_call",
+    expression: "current >= 1",
   },
 };
 
@@ -125,14 +125,14 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql call",
   type: NodeType.GraphQLQuery,
   data: {
-    url: "http://localhost:3000/graphql",
-    query: `query TestQuery {
-      test {
-        id
-        value
-      }
-    }`,
-    variablesMap: [["test", "true"]],
+      url: "http://localhost:3000/graphql",
+      query: `query TestQuery {
+        test {
+          id
+          value
+        }
+      }`,
+      variablesMap: [["test", "true"]],
   },
 };
 
@@ -188,7 +188,28 @@ export const createFromTemplate = (
   address: string,
   nodes?: NodeProps[]
 ): WorkflowProps => {
-  const nodesList = nodes || NodesTemplate;
+  let nodesList: NodeProps[];
+  
+  if (nodes === undefined) {
+    // Use default template when nodes is not provided
+    nodesList = NodesTemplate;
+  } else if (nodes.length === 0) {
+    // When empty array is explicitly passed, use a minimal no-op node
+    // This handles cases where tests want to test triggers in isolation
+    nodesList = [{
+      id: getNextId(),
+      name: "minimal_node",
+      type: NodeType.CustomCode,
+      data: {
+        lang: CustomCodeLang.JavaScript,
+        source: "return {};", // Minimal no-op code
+      },
+    } as CustomCodeNodeProps];
+  } else {
+    // Use provided nodes
+    nodesList = nodes;
+  }
+  
   const now = Date.now(); // Get current time in milliseconds
 
   return {

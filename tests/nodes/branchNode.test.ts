@@ -1,4 +1,4 @@
-import { describe, beforeAll, test, expect } from "@jest/globals";
+import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType } from "@avaprotocol/types";
@@ -9,6 +9,7 @@ import {
   TIMEOUT_DURATION,
   SaltGlobal,
   getBlockNumber,
+  removeCreatedWorkflows,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -17,6 +18,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
+const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 4000;
 
 describe("BranchNode Tests", () => {
@@ -40,6 +42,8 @@ describe("BranchNode Tests", () => {
 
     client.setAuthKey(res.authKey);
   });
+
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   describe("runNodeWithInputs Tests", () => {
     test("should evaluate timestamp comparison with preprocessing", async () => {
@@ -256,6 +260,7 @@ describe("BranchNode Tests", () => {
         workflowId = await client.submitWorkflow(
           client.createWorkflow(workflowProps)
         );
+        createdIdMap.set(workflowId, true);
 
         const triggerResult = await client.triggerWorkflow({
           id: workflowId,
@@ -289,6 +294,7 @@ describe("BranchNode Tests", () => {
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
         }
       }
     });
@@ -352,6 +358,7 @@ describe("BranchNode Tests", () => {
         workflowId = await client.submitWorkflow(
           client.createWorkflow(workflowProps)
         );
+        createdIdMap.set(workflowId, true);
 
         await client.triggerWorkflow({
           id: workflowId,
@@ -384,6 +391,7 @@ describe("BranchNode Tests", () => {
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
         }
       }
     });

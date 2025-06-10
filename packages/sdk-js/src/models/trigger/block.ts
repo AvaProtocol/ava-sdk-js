@@ -17,12 +17,24 @@ class BlockTrigger extends Trigger {
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_BLOCK);
 
     if (!this.data) {
-      throw new Error(`Trigger data is missing for ${this.type}`);
+      throw new Error(`Trigger data is missing for block`);
+    }
+
+    const blockData = this.data as BlockTriggerDataType;
+    
+    // Validate interval is present and not null/undefined
+    if (blockData.interval === null || blockData.interval === undefined) {
+      throw new Error("Interval is required for block trigger");
+    }
+    
+    // Validate interval is greater than 0
+    if (blockData.interval <= 0) {
+      throw new Error("Interval must be greater than 0");
     }
 
     const trigger = new avs_pb.BlockTrigger();
     const config = new avs_pb.BlockTrigger.Config();
-    config.setInterval((this.data as BlockTriggerDataType).interval || 0);
+    config.setInterval(blockData.interval);
     trigger.setConfig(config);
     
     request.setBlock(trigger);

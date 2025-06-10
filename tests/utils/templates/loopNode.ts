@@ -23,7 +23,7 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
 
 export const loopNodeWithCustomCodeProps: LoopNodeProps = {
   id: getNextId(),
-  name: "loop_with_custom_code",
+  name: "loop_with_custom_code", 
   type: NodeType.Loop,
   data: {
     sourceId: "testArray",
