@@ -84,22 +84,6 @@ Wallet: ${address}`;
   }
 }
 
-// Add a workflow to the list of created workflows for cleanup, or removal later
-export const queueForRemoval = (
-  workflowIds: Map<string, boolean>,
-  createdIds: string | string[]
-) => {
-  const ids = Array.isArray(createdIds) ? createdIds : [createdIds];
-
-  ids.forEach((id) => {
-    if (workflowIds.has(id)) {
-      return;
-    }
-
-    workflowIds.set(id, false);
-  });
-};
-
 // Remove all workflows from the list of created workflows
 export const removeCreatedWorkflows = async (
   client: Client,
