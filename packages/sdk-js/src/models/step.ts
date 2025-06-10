@@ -112,34 +112,25 @@ class Step implements StepProps {
         if (nodeOutputMessage) {
           const results = nodeOutputMessage.getResultsList();
           if (results && results.length > 0) {
-            // If single result, return it directly for backward compatibility
-            if (results.length === 1) {
-              const result = results[0];
-              const structuredData: { [key: string]: string } = {};
-              result.getDataList().forEach((field) => {
-                structuredData[field.getName()] = field.getValue();
-              });
+            // Always return wrapped format { results: [...] } to match ContractReadNode.fromOutputData
+            const resultArray = results.map((result) => {
+              // Match the exact format from ContractReadNode.fromOutputData
+              const dataFields = result.getDataList().map((field) => ({
+                name: field.getName(),
+                type: field.getType(),
+                value: field.getValue()
+              }));
+              
               return {
                 methodName: result.getMethodName(),
                 success: result.getSuccess(),
                 error: result.getError(),
-                data: structuredData,
+                data: dataFields,
               };
-            } else {
-              // Multiple results - return as array
-              return results.map((result) => {
-                const structuredData: { [key: string]: string } = {};
-                result.getDataList().forEach((field) => {
-                  structuredData[field.getName()] = field.getValue();
-                });
-                return {
-                  methodName: result.getMethodName(),
-                  success: result.getSuccess(),
-                  error: result.getError(),
-                  data: structuredData,
-                };
-              });
-            }
+            });
+            
+            // Return wrapped format consistently for all cases
+            return { results: resultArray };
           }
         }
         return undefined;

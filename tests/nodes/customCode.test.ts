@@ -342,49 +342,57 @@ describe("CustomCode Node Tests", () => {
 
       console.log("🚀 Testing deploy + trigger workflow with custom code...");
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
 
-      const triggerResult = await client.triggerWorkflow({
-        id: workflowId,
-        triggerData: {
-          type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval,
-        },
-        isBlocking: true,
-      });
+        const triggerResult = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
 
-      console.log("=== TRIGGER WORKFLOW TEST ===");
-      console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log("=== TRIGGER WORKFLOW TEST ===");
+        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
 
-      const executions = await client.getExecutions([workflowId], {
-        limit: 1,
-      });
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
 
-      expect(executions.items.length).toBe(1);
-      console.log("Deploy+trigger execution:", JSON.stringify(executions.items[0], null, 2));
+        expect(executions.items.length).toBe(1);
+        console.log("Deploy+trigger execution:", JSON.stringify(executions.items[0], null, 2));
 
-      const customCodeStep = _.find(
-        _.first(executions.items)?.steps,
-        (step) => step.id === customCodeNode.id
-      );
+        const customCodeStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === customCodeNode.id
+        );
 
-      if (_.isUndefined(customCodeStep)) {
-        throw new Error("No corresponding custom code step found.");
+        if (_.isUndefined(customCodeStep)) {
+          throw new Error("No corresponding custom code step found.");
+        }
+
+        console.log("CustomCode step details:", JSON.stringify(customCodeStep, null, 2));
+        expect(customCodeStep.success).toBe(true);
+        console.log("Deploy + trigger custom code step output:", JSON.stringify(customCodeStep.output, null, 2));
+
+        const output = customCodeStep.output as any;
+        expect(output.message).toBe('Custom code executed successfully');
+        expect(output.executedAt).toBeDefined();
+        expect(output.blockNumber).toBeDefined();
+        expect(output.timestamp).toBeDefined();
+        expect(typeof output.calculation).toBe('number');
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
       }
-
-      console.log("CustomCode step details:", JSON.stringify(customCodeStep, null, 2));
-      expect(customCodeStep.success).toBe(true);
-      console.log("Deploy + trigger custom code step output:", JSON.stringify(customCodeStep.output, null, 2));
-
-      const output = customCodeStep.output as any;
-      expect(output.message).toBe('Custom code executed successfully');
-      expect(output.executedAt).toBeDefined();
-      expect(output.blockNumber).toBeDefined();
-      expect(output.timestamp).toBeDefined();
-      expect(typeof output.calculation).toBe('number');
     });
   });
 
@@ -488,63 +496,71 @@ describe("CustomCode Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
 
-      await client.triggerWorkflow({
-        id: workflowId,
-        triggerData: {
-          type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval,
-        },
-        isBlocking: true,
-      });
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
 
-      const executions = await client.getExecutions([workflowId], { limit: 1 });
-      const executedStep = _.find(
-        _.first(executions.items)?.steps,
-        (step) => step.id === customCodeNode.id
-      );
+        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const executedStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === customCodeNode.id
+        );
 
-      // Compare response formats
-      console.log("=== CUSTOM CODE RESPONSE FORMAT COMPARISON ===");
-      console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
-      console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
-      console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
+        // Compare response formats
+        console.log("=== CUSTOM CODE RESPONSE FORMAT COMPARISON ===");
+        console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
+        console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
+        console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
 
-      // All should be successful
-      expect(directResponse.success).toBe(true);
-      expect(simulatedStep).toBeDefined();
-      expect(executedStep).toBeDefined();
-      expect(executedStep!.success).toBe(true);
+        // All should be successful
+        expect(directResponse.success).toBe(true);
+        expect(simulatedStep).toBeDefined();
+        expect(executedStep).toBeDefined();
+        expect(executedStep!.success).toBe(true);
 
-      // Verify consistent structure
-      const directOutput = directResponse.data;
-      const simulatedOutput = simulatedStep!.output as any;
-      const executedOutput = executedStep!.output as any;
+        // Verify consistent structure
+        const directOutput = directResponse.data;
+        const simulatedOutput = simulatedStep!.output as any;
+        const executedOutput = executedStep!.output as any;
 
-      // Check that all outputs have the same structure
-      if (directOutput) {
-        expect(directOutput.computedValue).toBe(15);
-        expect(simulatedOutput.computedValue).toBe(15);
-        expect(executedOutput.computedValue).toBe(15);
-        
-        expect(directOutput.status).toBe('completed');
-        expect(simulatedOutput.status).toBe('completed');
-        expect(executedOutput.status).toBe('completed');
-        
-        expect(directOutput.processingId).toBeDefined();
-        expect(simulatedOutput.processingId).toBeDefined();
-        expect(executedOutput.processingId).toBeDefined();
-        
-        expect(directOutput.inputReceived).toEqual(inputVariables.trigger.data);
-        expect(simulatedOutput.inputReceived).toBeDefined();
-        expect(executedOutput.inputReceived).toBeDefined();
+        // Check that all outputs have the same structure
+        if (directOutput) {
+          expect(directOutput.computedValue).toBe(15);
+          expect(simulatedOutput.computedValue).toBe(15);
+          expect(executedOutput.computedValue).toBe(15);
+          
+          expect(directOutput.status).toBe('completed');
+          expect(simulatedOutput.status).toBe('completed');
+          expect(executedOutput.status).toBe('completed');
+          
+          expect(directOutput.processingId).toBeDefined();
+          expect(simulatedOutput.processingId).toBeDefined();
+          expect(executedOutput.processingId).toBeDefined();
+          
+          expect(directOutput.inputReceived).toEqual(inputVariables.trigger.data);
+          expect(simulatedOutput.inputReceived).toBeDefined();
+          expect(executedOutput.inputReceived).toBeDefined();
+        }
+
+        console.log("✅ All three methods return consistent custom code execution results!");
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
       }
-
-      console.log("✅ All three methods return consistent custom code execution results!");
     });
   });
 
