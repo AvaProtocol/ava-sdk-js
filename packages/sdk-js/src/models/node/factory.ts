@@ -93,75 +93,32 @@ class NodeFactory {
   }
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
-    // Generic approach: try to extract data from any output type using getData() method
-    // This works for all node types that follow the pattern of having a getData() method
+    // Delegate to the specific node type's fromOutputData method
+    // This is the correct approach, similar to how TriggerFactory.fromOutputData works
     
-    let nodeOutput: any = null;
-    let rawData: any = null;
-    
-    // Get the specific node output based on the case
     switch (outputData.getOutputDataCase()) {
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.REST_API:
-        nodeOutput = outputData.getRestApi();
-        break;
+        return RestAPINode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.CUSTOM_CODE:
-        nodeOutput = outputData.getCustomCode();
-        break;
+        return CustomCodeNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_READ:
-        nodeOutput = outputData.getContractRead();
-        break;
+        return ContractReadNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.CONTRACT_WRITE:
-        nodeOutput = outputData.getContractWrite();
-        break;
+        return ContractWriteNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.ETH_TRANSFER:
-        nodeOutput = outputData.getEthTransfer();
-        break;
+        return ETHTransferNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.GRAPHQL:
-        nodeOutput = outputData.getGraphql();
-        break;
+        return GraphQLQueryNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.BRANCH:
-        nodeOutput = outputData.getBranch();
-        break;
+        return BranchNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.FILTER:
-        nodeOutput = outputData.getFilter();
-        break;
+        return FilterNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
-        nodeOutput = outputData.getLoop();
-        break;
+        return LoopNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
       default:
         throw new Error(`Unsupported output data case: ${outputData.getOutputDataCase()}`);
     }
-    
-    if (!nodeOutput) {
-      return null;
-    }
-    
-    // Try to get data using getData() method (works for most node types)
-    if (typeof nodeOutput.getData === 'function') {
-      rawData = nodeOutput.getData();
-      if (rawData) {
-        // Handle Any wrapper - need to unpack it first
-        if (typeof rawData.unpack === 'function') {
-          try {
-            // For Any types, unpack to Value and then convert
-            const unpackedValue = rawData.unpack(ProtobufValue.deserializeBinary, 'google.protobuf.Value');
-            if (unpackedValue) {
-              return convertProtobufValueToJs(unpackedValue);
-            }
-          } catch (error) {
-            // If unpacking fails, try direct conversion or fall back
-            console.warn('Failed to unpack Any wrapper, falling back to direct conversion:', error);
-          }
-        }
-        // For non-Any types or if unpacking failed, try direct conversion
-        return convertProtobufValueToJs(rawData);
-      }
-    }
-    
-    // For node types that don't have getData() or have special structures,
-    // fall back to toObject() for now (can be specialized later if needed)
-    return nodeOutput.toObject();
   }
 }
 

@@ -60,7 +60,17 @@ class CustomCodeNode extends Node {
     const customCodeOutput = outputData.getCustomCode();
     if (customCodeOutput?.getData()) {
       // Use the modern protobuf conversion function
-      return convertProtobufValueToJs(customCodeOutput.getData());
+      const result = convertProtobufValueToJs(customCodeOutput.getData());
+      
+      // SPECIAL FIX: Check if the result is incorrectly wrapped with a single "data" property
+      // This handles the case where primitive values get wrapped as {"data": value}
+      if (result && typeof result === 'object' && 
+          Object.keys(result).length === 1 && 
+          'data' in result) {
+        return result.data;
+      }
+      
+      return result;
     }
     return null;
   }
