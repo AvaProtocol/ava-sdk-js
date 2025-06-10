@@ -116,7 +116,7 @@ export const filterNodeProps: FilterNodeProps = {
   type: NodeType.Filter,
   data: {
     sourceId: "rest_api_call",
-    expression: "value >= 1",
+    expression: "current >= 1",
   },
 };
 

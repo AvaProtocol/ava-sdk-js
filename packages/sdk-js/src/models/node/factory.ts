@@ -1,4 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { Value as ProtobufValue } from "google-protobuf/google/protobuf/struct_pb";
 import _ from "lodash";
 import ContractWriteNode from "./contractWrite";
 import CustomCodeNode from "./customCode";
@@ -140,6 +141,20 @@ class NodeFactory {
     if (typeof nodeOutput.getData === 'function') {
       rawData = nodeOutput.getData();
       if (rawData) {
+        // Handle Any wrapper - need to unpack it first
+        if (typeof rawData.unpack === 'function') {
+          try {
+            // For Any types, unpack to Value and then convert
+            const unpackedValue = rawData.unpack(ProtobufValue.deserializeBinary, 'google.protobuf.Value');
+            if (unpackedValue) {
+              return convertProtobufValueToJs(unpackedValue);
+            }
+          } catch (error) {
+            // If unpacking fails, try direct conversion or fall back
+            console.warn('Failed to unpack Any wrapper, falling back to direct conversion:', error);
+          }
+        }
+        // For non-Any types or if unpacking failed, try direct conversion
         return convertProtobufValueToJs(rawData);
       }
     }
