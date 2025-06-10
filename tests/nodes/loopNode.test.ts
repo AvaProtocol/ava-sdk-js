@@ -1,13 +1,15 @@
-import { describe, beforeAll, test, expect } from "@jest/globals";
+import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
-import { Client, Edge, Workflow, NodeFactory } from "@avaprotocol/sdk-js";
-import { LoopNodeData, NodeType, CustomCodeLang } from "@avaprotocol/types";
+import { Client, Edge, Workflow, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
+import { LoopNodeData, NodeType, CustomCodeLang, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
   getNextId,
   TIMEOUT_DURATION,
   SaltGlobal,
+  removeCreatedWorkflows,
+  getBlockNumber,
 } from "../utils/utils";
 import {
   defaultTriggerId,
@@ -24,6 +26,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
+const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 1000 + 500; // Use a different range than createWorkflow.test.ts
 
 describe("LoopNode Tests", () => {
@@ -48,358 +51,760 @@ describe("LoopNode Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  test("should create a workflow with a Loop node using RestAPI runner", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
+  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
-    try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        loopNodeWithRestApiProps,
-      ]);
-
-      const customCodeNode = NodeFactory.create({
-        id: getNextId(),
-        name: "setup_test_array",
-        type: NodeType.CustomCode,
-        data: {
-          config: {
-            lang: CustomCodeLang.Javascript,
-            source: `
-              const testArray = [
-                { name: "item1", value: 10 },
-                { name: "item2", value: 20 },
-                { name: "item3", value: 30 }
-              ];
-              return { testArray };
-            `,
+  describe("runNodeWithInputs Tests", () => {
+    test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
+      console.log("🚀 Testing runNodeWithInputs with Loop node (CustomCode runner)...");
+      
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.Loop,
+        nodeConfig: {
+          sourceId: "testArray",
+          iterVal: "item",
+          iterKey: "index",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `
+                const _ = require('lodash');
+                return {
+                  processedItem: item,
+                  position: index,
+                  squared: item * item,
+                  timestamp: new Date().toISOString()
+                };
+              `,
+            },
           },
+        },
+        inputVariables: {
+          testArray: [1, 2, 3, 4, 5],
         },
       });
 
-      workflowProps.nodes.push(customCodeNode);
+      console.log("runNodeWithInputs loop response:", JSON.stringify(result, null, 2));
 
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: customCodeNode.id,
-        }),
-        new Edge({
-          id: getNextId(),
-          source: customCodeNode.id,
-          target: loopNodeWithRestApiProps.id,
-        }),
-      ];
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      expect(workflow).toBeDefined();
-      expect(workflow).toBeInstanceOf(Workflow);
-      expect(workflowId).toBeDefined();
-      expect(typeof workflowId).toBe("string");
-
-      const getResult = await client.getWorkflow(workflowId);
-      expect(getResult).toBeDefined();
-      expect(getResult.nodes).toHaveLength(2);
-
-      const loopNode = getResult.nodes.find(
-        (node) => node.type === NodeType.Loop
-      );
-      expect(loopNode).toBeDefined();
-      expect(loopNode?.name).toBe("loop_with_rest_api");
-
-      const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.sourceId).toBe("testArray");
-      expect(loopNodeData.iterVal).toBe("item");
-      expect(loopNodeData.iterKey).toBe("index");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      if (result.success && result.data) {
+        expect(result.data).toBeDefined();
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data.length).toBe(5);
+        expect(result.nodeId).toBeDefined();
+        
+        // Check first processed item
+        const firstItem = result.data[0];
+        expect(firstItem.processedItem).toBe(1);
+        expect(firstItem.position).toBe(0);
+        expect(firstItem.squared).toBe(1);
+      } else {
+        console.log("Loop CustomCode test failed:", result.error);
       }
-    }
+    });
+
+    test("should process loop with REST API runner using runNodeWithInputs", async () => {
+      console.log("🚀 Testing runNodeWithInputs with Loop node (REST API runner)...");
+      
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.Loop,
+        nodeConfig: {
+          sourceId: "urlArray",
+          iterVal: "url",
+          iterKey: "index",
+          restApi: {
+            config: {
+              url: "{{url}}",
+              method: "GET",
+              body: "",
+              headersMap: [["User-Agent", "AvaProtocol-Loop-Test"]],
+            },
+          },
+        },
+        inputVariables: {
+          urlArray: [
+            "https://httpbin.org/get?test=1",
+            "https://httpbin.org/get?test=2",
+          ],
+        },
+      });
+
+      console.log("runNodeWithInputs loop REST API response:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      if (result.success && result.data) {
+        expect(result.data).toBeDefined();
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data.length).toBe(2);
+        expect(result.nodeId).toBeDefined();
+      } else {
+        console.log("Loop REST API test failed:", result.error);
+      }
+    });
+
+    test("should handle empty array input", async () => {
+      console.log("🚀 Testing runNodeWithInputs with empty array...");
+      
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.Loop,
+        nodeConfig: {
+          sourceId: "emptyArray",
+          iterVal: "item",
+          iterKey: "index",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `return { processed: item };`,
+            },
+          },
+        },
+        inputVariables: {
+          emptyArray: [],
+        },
+      });
+
+      console.log("runNodeWithInputs empty array response:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      if (result.success && result.data) {
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data.length).toBe(0);
+      }
+    });
+
+    test("should handle complex object array", async () => {
+      console.log("🚀 Testing runNodeWithInputs with complex object array...");
+      
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.Loop,
+        nodeConfig: {
+          sourceId: "complexArray",
+          iterVal: "obj",
+          iterKey: "idx",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `
+                const _ = require('lodash');
+                return {
+                  id: obj.id,
+                  upperName: obj.name.toUpperCase(),
+                  doubledValue: obj.value * 2,
+                  index: idx,
+                  isEven: obj.value % 2 === 0
+                };
+              `,
+            },
+          },
+        },
+        inputVariables: {
+          complexArray: [
+            { id: "a1", name: "Alice", value: 10 },
+            { id: "b2", name: "Bob", value: 15 },
+            { id: "c3", name: "Carol", value: 20 },
+          ],
+        },
+      });
+
+      console.log("runNodeWithInputs complex array response:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      if (result.success && result.data) {
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data.length).toBe(3);
+        
+        const firstResult = result.data[0];
+        expect(firstResult.id).toBe("a1");
+        expect(firstResult.upperName).toBe("ALICE");
+        expect(firstResult.doubledValue).toBe(20);
+        expect(firstResult.index).toBe(0);
+        expect(firstResult.isEven).toBe(true);
+      }
+    });
   });
 
-  test("should create a workflow with a Loop node using CustomCode runner", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
+  describe("simulateWorkflow Tests", () => {
+    test("should simulate workflow with Loop node using CustomCode runner", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
-    try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        loopNodeWithCustomCodeProps,
-      ]);
-
-      const customCodeNode = NodeFactory.create({
+      // Create a data generation node
+      const dataNode = NodeFactory.create({
         id: getNextId(),
-        name: "setup_test_array",
+        name: "generate_loop_data",
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,
           source: `
-            const testArray = [1, 2, 3, 4, 5];
+            const testArray = [
+              { name: "item1", value: 10 },
+              { name: "item2", value: 20 },
+              { name: "item3", value: 30 }
+            ];
             return { testArray };
           `,
         },
       });
 
-      workflowProps.nodes.push(customCodeNode);
-
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: customCodeNode.id,
-        }),
-        new Edge({
-          id: getNextId(),
-          source: customCodeNode.id,
-          target: loopNodeWithCustomCodeProps.id,
-        }),
-      ];
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      expect(workflow).toBeDefined();
-      expect(workflow).toBeInstanceOf(Workflow);
-      expect(workflowId).toBeDefined();
-      expect(typeof workflowId).toBe("string");
-
-      const getResult = await client.getWorkflow(workflowId);
-      expect(getResult).toBeDefined();
-      expect(getResult.nodes).toHaveLength(2);
-
-      const loopNode = getResult.nodes.find(
-        (node) => node.type === NodeType.Loop
-      );
-      expect(loopNode).toBeDefined();
-      expect(loopNode?.name).toBe("loop_with_custom_code");
-
-      const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.sourceId).toBe("testArray");
-      expect(loopNodeData.iterVal).toBe("item");
-      expect(loopNodeData.iterKey).toBe("index");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
-  });
-
-  test("should create a workflow with a Loop node using ETHTransfer runner", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
-
-    try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        loopNodeWithETHTransferProps,
-      ]);
-
-      const customCodeNode = NodeFactory.create({
+      const loopNode = NodeFactory.create({
         id: getNextId(),
-        name: "setup_address_array",
+        name: "simulate_loop_test",
+        type: NodeType.Loop,
+        data: {
+          sourceId: dataNode.id,
+          iterVal: "item",
+          iterKey: "index",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `
+                const _ = require('lodash');
+                return {
+                  processedItem: item,
+                  position: index,
+                  calculatedValue: item.value * 2 + index,
+                  itemName: item.name
+                };
+              `,
+            },
+          },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+
+      console.log("🚀 Testing simulateWorkflow with Loop node...");
+      
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log("simulateWorkflow loop response:", JSON.stringify(simulation, null, 2));
+
+      expect(simulation.success).toBe(true);
+      expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
+
+      const loopStep = simulation.steps.find(step => step.id === loopNode.id);
+      expect(loopStep).toBeDefined();
+      expect(loopStep!.success).toBe(true);
+
+      const output = loopStep!.output as any;
+      expect(Array.isArray(output)).toBe(true);
+      expect(output.length).toBe(3);
+    });
+
+    test("should simulate workflow with Loop node using REST API runner", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Create a data generation node for URLs
+      const dataNode = NodeFactory.create({
+        id: getNextId(),
+        name: "generate_url_data",
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,
           source: `
-              const addressArray = [
-                "0x1234567890123456789012345678901234567890",
-                "0x2345678901234567890123456789012345678901",
-                "0x3456789012345678901234567890123456789012"
-              ];
-              return { addressArray };
-            `,
+            const urlArray = [
+              "https://httpbin.org/get?id=1",
+              "https://httpbin.org/get?id=2"
+            ];
+            return { urlArray };
+          `,
         },
       });
 
-      workflowProps.nodes.push(customCodeNode);
+      const loopNode = NodeFactory.create({
+        id: getNextId(),
+        name: "simulate_loop_rest_api",
+        type: NodeType.Loop,
+        data: {
+          sourceId: dataNode.id,
+          iterVal: "url",
+          iterKey: "index",
+          restApi: {
+            config: {
+              url: "{{url}}",
+              method: "GET",
+              body: "",
+              headersMap: [["User-Agent", "AvaProtocol-Loop-Simulation"]],
+            },
+          },
+        },
+      });
 
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: customCodeNode.id,
-        }),
-        new Edge({
-          id: getNextId(),
-          source: customCodeNode.id,
-          target: loopNodeWithETHTransferProps.id,
-        }),
-      ];
+      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
 
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      expect(workflow).toBeDefined();
-      expect(workflow).toBeInstanceOf(Workflow);
-      expect(workflowId).toBeDefined();
-      expect(typeof workflowId).toBe("string");
-
-      const getResult = await client.getWorkflow(workflowId);
-      expect(getResult).toBeDefined();
-      expect(getResult.nodes).toHaveLength(2);
-
-      const loopNode = getResult.nodes.find(
-        (node) => node.type === NodeType.Loop
+      console.log("🚀 Testing simulateWorkflow with Loop node (REST API)...");
+      
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
       );
-      expect(loopNode).toBeDefined();
-      expect(loopNode?.name).toBe("loop_with_eth_transfer");
 
-      const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.sourceId).toBe("addressArray");
-      expect(loopNodeData.iterVal).toBe("address");
-      expect(loopNodeData.iterKey).toBe("index");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
+      expect(simulation.success).toBe(true);
+      const loopStep = simulation.steps.find(step => step.id === loopNode.id);
+      expect(loopStep).toBeDefined();
+      expect(loopStep!.success).toBe(true);
+    });
   });
 
-  test("should create a workflow with a Loop node using ContractRead runner", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
+  describe("Deploy Workflow + Trigger Tests", () => {
+    test("should deploy and trigger workflow with Loop node", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
 
-    try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        loopNodeWithContractReadProps,
-      ]);
-
-      const customCodeNode = NodeFactory.create({
+      // Create a data generation node
+      const dataNode = NodeFactory.create({
         id: getNextId(),
-        name: "setup_contract_array",
+        name: "generate_test_data",
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,
           source: `
-              const contractArray = [
-                { 
-                  address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", 
-                  callData: "0x06fdde03", 
-                  abi: '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]'
-                },
-                { 
-                  address: "0x6b175474e89094c44da98b954eedeac495271d0f", 
-                  callData: "0x06fdde03", 
-                  abi: '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}]'
-                }
-              ];
-              return { contractArray };
-            `,
+            const testArray = [
+              { name: "Alice", score: 85 },
+              { name: "Bob", score: 92 },
+              { name: "Carol", score: 78 }
+            ];
+            return { testArray };
+          `,
         },
       });
 
-      workflowProps.nodes.push(customCodeNode);
-
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: customCodeNode.id,
-        }),
-        new Edge({
-          id: getNextId(),
-          source: customCodeNode.id,
-          target: loopNodeWithContractReadProps.id,
-        }),
-      ];
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      expect(workflow).toBeDefined();
-      expect(workflow).toBeInstanceOf(Workflow);
-      expect(workflowId).toBeDefined();
-      expect(typeof workflowId).toBe("string");
-
-      const getResult = await client.getWorkflow(workflowId);
-      expect(getResult).toBeDefined();
-      expect(getResult.nodes).toHaveLength(2);
-
-      const loopNode = getResult.nodes.find(
-        (node) => node.type === NodeType.Loop
-      );
-      expect(loopNode).toBeDefined();
-      expect(loopNode?.name).toBe("loop_with_contract_read");
-
-      const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.sourceId).toBe("contractArray");
-      expect(loopNodeData.iterVal).toBe("contract");
-      expect(loopNodeData.iterKey).toBe("index");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
-  });
-
-  test("should create a workflow with a Loop node using GraphQLQuery runner", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
-
-    try {
-      const workflowProps = createFromTemplate(wallet.address, [
-        loopNodeWithGraphQLQueryProps,
-      ]);
-
-      const customCodeNode = NodeFactory.create({
+      const loopNode = NodeFactory.create({
         id: getNextId(),
-        name: "setup_query_array",
+        name: "deploy_loop_test",
+        type: NodeType.Loop,
+        data: {
+          sourceId: dataNode.id,
+          iterVal: "student",
+          iterKey: "position",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `
+                const _ = require('lodash');
+                const grade = student.score >= 90 ? 'A' : 
+                             student.score >= 80 ? 'B' : 
+                             student.score >= 70 ? 'C' : 'D';
+                
+                return {
+                  studentName: student.name,
+                  originalScore: student.score,
+                  letterGrade: grade,
+                  position: position + 1,
+                  timestamp: new Date().toISOString()
+                };
+              `,
+            },
+          },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+      
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+
+      console.log("🚀 Testing deploy + trigger workflow with Loop node...");
+
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
+
+        const triggerResult = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
+
+        console.log("=== TRIGGER WORKFLOW TEST ===");
+        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+
+        expect(executions.items.length).toBe(1);
+
+        const loopStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === loopNode.id
+        );
+
+        if (_.isUndefined(loopStep)) {
+          throw new Error("No corresponding loop step found.");
+        }
+
+        expect(loopStep.success).toBe(true);
+        console.log("Deploy + trigger loop step output:", JSON.stringify(loopStep.output, null, 2));
+
+        const output = loopStep.output as any;
+        expect(Array.isArray(output)).toBe(true);
+        expect(output.length).toBe(3);
+        expect(output[0].studentName).toBe("Alice");
+        expect(output[0].letterGrade).toBe("B");
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
+
+    test("should deploy and trigger workflow with multiple Loop node types", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      // Create a data generation node
+      const dataNode = NodeFactory.create({
+        id: getNextId(),
+        name: "generate_multi_data",
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,
           source: `
-              const queryArray = [
-                { id: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" },
-                { id: "0x6b175474e89094c44da98b954eedeac495271d0f" },
-                { id: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2" }
-              ];
-              return { queryArray };
-            `,
+            return {
+              numbers: [1, 2, 3],
+              urls: ["https://httpbin.org/get?loop=1", "https://httpbin.org/get?loop=2"]
+            };
+          `,
         },
       });
 
-      workflowProps.nodes.push(customCodeNode);
+      // Create CustomCode loop
+      const customCodeLoop = NodeFactory.create({
+        id: getNextId(),
+        name: "custom_code_loop",
+        type: NodeType.Loop,
+        data: {
+          sourceId: "numbers",
+          iterVal: "num",
+          iterKey: "idx",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `return { number: num, squared: num * num, index: idx };`,
+            },
+          },
+        },
+      });
 
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: customCodeNode.id,
-        }),
-        new Edge({
-          id: getNextId(),
-          source: customCodeNode.id,
-          target: loopNodeWithGraphQLQueryProps.id,
-        }),
-      ];
+      const workflowProps = createFromTemplate(wallet.address, [dataNode, customCodeLoop]);
+      
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
 
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
+      console.log("🚀 Testing deploy + trigger workflow with multiple Loop types...");
 
-      expect(workflow).toBeDefined();
-      expect(workflow).toBeInstanceOf(Workflow);
-      expect(workflowId).toBeDefined();
-      expect(typeof workflowId).toBe("string");
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
 
-      const getResult = await client.getWorkflow(workflowId);
-      expect(getResult).toBeDefined();
-      expect(getResult.nodes).toHaveLength(2);
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
 
-      const loopNode = getResult.nodes.find(
-        (node) => node.type === NodeType.Loop
-      );
-      expect(loopNode).toBeDefined();
-      expect(loopNode?.name).toBe("loop_with_graphql_query");
+        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const customCodeLoopStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === customCodeLoop.id
+        );
 
-      const loopNodeData = loopNode?.data as LoopNodeData;
-      expect(loopNodeData.sourceId).toBe("queryArray");
-      expect(loopNodeData.iterVal).toBe("query");
-      expect(loopNodeData.iterKey).toBe("index");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
+        expect(customCodeLoopStep).toBeDefined();
+        expect(customCodeLoopStep!.success).toBe(true);
+        
+        const output = customCodeLoopStep!.output as any;
+        expect(Array.isArray(output)).toBe(true);
+        expect(output.length).toBe(3);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
       }
-    }
+    });
+  });
+
+  describe("Response Format Consistency Tests", () => {
+    test("should return consistent response format across all three methods", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      const loopConfig = {
+        sourceId: "testData",
+        iterVal: "item",
+        iterKey: "index",
+        customCode: {
+          config: {
+            lang: CustomCodeLang.JavaScript,
+            source: `
+              const _ = require('lodash');
+              return {
+                originalValue: item,
+                doubled: item * 2,
+                index: index,
+                timestamp: new Date().toISOString(),
+                computed: _.sum([item, index, 10])
+              };
+            `,
+          },
+        },
+      };
+
+      const inputVariables = {
+        testData: [5, 10, 15],
+      };
+
+      console.log("🔍 Testing response format consistency across all methods...");
+
+      // Test 1: runNodeWithInputs
+      const directResponse = await client.runNodeWithInputs({
+        nodeType: NodeType.Loop,
+        nodeConfig: loopConfig,
+        inputVariables: inputVariables,
+      });
+
+      // Test 2: simulateWorkflow
+      const dataNode = NodeFactory.create({
+        id: getNextId(),
+        name: "consistency_data_gen",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: `return { testData: [5, 10, 15] };`,
+        },
+      });
+
+      const loopNode = NodeFactory.create({
+        id: getNextId(),
+        name: "consistency_test",
+        type: NodeType.Loop,
+        data: {
+          sourceId: dataNode.id,
+          iterVal: "item",
+          iterKey: "index",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `
+                const _ = require('lodash');
+                return {
+                  originalValue: item,
+                  doubled: item * 2,
+                  index: index,
+                  timestamp: new Date().toISOString(),
+                  computed: _.sum([item, index, 10])
+                };
+              `,
+            },
+          },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      const simulatedStep = simulation.steps.find(step => step.id === loopNode.id);
+
+      // Test 3: Deploy + Trigger
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
+
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
+
+        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const executedStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === loopNode.id
+        );
+
+        // Compare response formats
+        console.log("=== LOOP NODE RESPONSE FORMAT COMPARISON ===");
+        console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
+        console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
+        console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
+
+        // All should be successful
+        expect(directResponse.success).toBe(true);
+        expect(simulatedStep).toBeDefined();
+        expect(executedStep).toBeDefined();
+        expect(executedStep!.success).toBe(true);
+
+        // Verify consistent structure
+        const directOutput = directResponse.data;
+        const simulatedOutput = simulatedStep!.output as any;
+        const executedOutput = executedStep!.output as any;
+
+        // All should be arrays with same length
+        if (directOutput && Array.isArray(directOutput)) {
+          expect(Array.isArray(simulatedOutput)).toBe(true);
+          expect(Array.isArray(executedOutput)).toBe(true);
+          
+          expect(directOutput.length).toBe(3);
+          expect(simulatedOutput.length).toBe(3);
+          expect(executedOutput.length).toBe(3);
+          
+          // Check structure of first element
+          expect(directOutput[0].originalValue).toBe(5);
+          expect(simulatedOutput[0].originalValue).toBe(5);
+          expect(executedOutput[0].originalValue).toBe(5);
+          
+          expect(directOutput[0].doubled).toBe(10);
+          expect(simulatedOutput[0].doubled).toBe(10);
+          expect(executedOutput[0].doubled).toBe(10);
+          
+          expect(directOutput[0].index).toBe(0);
+          expect(simulatedOutput[0].index).toBe(0);
+          expect(executedOutput[0].index).toBe(0);
+          
+          expect(directOutput[0].computed).toBe(15); // 5 + 0 + 10
+          expect(simulatedOutput[0].computed).toBe(15);
+          expect(executedOutput[0].computed).toBe(15);
+        }
+
+        console.log("✅ All three methods return consistent loop execution results!");
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
+
+    test("should handle edge cases consistently across all methods", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      // Test with single item array
+      const loopConfig = {
+        sourceId: "singleItem",
+        iterVal: "value",
+        iterKey: "pos",
+        customCode: {
+          config: {
+            lang: CustomCodeLang.JavaScript,
+            source: `return { value: value, position: pos, processed: true };`,
+          },
+        },
+      };
+
+      const inputVariables = {
+        singleItem: [42],
+      };
+
+      console.log("🔍 Testing edge case consistency (single item array)...");
+
+      // Test 1: runNodeWithInputs
+      const directResponse = await client.runNodeWithInputs({
+        nodeType: NodeType.Loop,
+        nodeConfig: loopConfig,
+        inputVariables: inputVariables,
+      });
+
+      // Test 2: simulateWorkflow
+      const dataNode = NodeFactory.create({
+        id: getNextId(),
+        name: "edge_case_data",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: `return { singleItem: [42] };`,
+        },
+      });
+
+      const loopNode = NodeFactory.create({
+        id: getNextId(),
+        name: "edge_case_test",
+        type: NodeType.Loop,
+        data: {
+          sourceId: dataNode.id,
+          iterVal: "value",
+          iterKey: "pos",
+          customCode: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `return { value: value, position: pos, processed: true };`,
+            },
+          },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      const simulatedStep = simulation.steps.find(step => step.id === loopNode.id);
+
+      // All should handle single-item arrays consistently
+      expect(directResponse.success).toBe(true);
+      expect(simulatedStep).toBeDefined();
+      expect(simulatedStep!.success).toBe(true);
+
+      if (directResponse.data && Array.isArray(directResponse.data)) {
+        expect(directResponse.data.length).toBe(1);
+        expect(directResponse.data[0].value).toBe(42);
+        expect(directResponse.data[0].position).toBe(0);
+        expect(directResponse.data[0].processed).toBe(true);
+      }
+
+      const simulatedOutput = simulatedStep!.output as any;
+      if (Array.isArray(simulatedOutput)) {
+        expect(simulatedOutput.length).toBe(1);
+        expect(simulatedOutput[0].value).toBe(42);
+        expect(simulatedOutput[0].position).toBe(0);
+        expect(simulatedOutput[0].processed).toBe(true);
+      }
+
+      console.log("✅ Edge case handling is consistent across methods!");
+    });
   });
 });

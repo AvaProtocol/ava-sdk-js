@@ -298,7 +298,7 @@ describe("BlockTrigger Tests", () => {
       );
 
       expect(simulation.success).toBe(true);
-      expect(simulation.steps).toHaveLength(1); // just trigger
+      expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
         (step) => step.id === blockTrigger.id
@@ -359,37 +359,54 @@ describe("BlockTrigger Tests", () => {
 
       console.log("🚀 Testing deploy + trigger workflow with block trigger...");
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | null = null;
 
-      // Trigger the workflow manually for testing
-      const triggerResult = await client.triggerWorkflow({
-        id: workflowId,
-        triggerData: {
-          type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval,
-        },
-        isBlocking: true,
-      });
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
 
-      console.log("=== BLOCK TRIGGER WORKFLOW TEST ===");
-      console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        // Trigger the workflow manually for testing
+        const triggerResult = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
 
-      expect(triggerResult).toBeDefined();
-      // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
+        console.log("=== BLOCK TRIGGER WORKFLOW TEST ===");
+        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
 
-      // Check executions
-      const executions = await client.getExecutions([workflowId], {
-        limit: 1,
-      });
+        expect(triggerResult).toBeDefined();
+        // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
 
-      expect(executions.items.length).toBe(1);
-      console.log(
-        "Block trigger executions:",
-        JSON.stringify(executions, null, 2)
-      );
+        // Check executions
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+
+        expect(executions.items.length).toBe(1);
+        console.log(
+          "Block trigger executions:",
+          JSON.stringify(executions, null, 2)
+        );
+      } finally {
+        // Ensure cleanup happens regardless of test success/failure
+        if (workflowId) {
+          try {
+            await client.deleteWorkflow(workflowId);
+            createdIdMap.delete(workflowId);
+          } catch (cleanupError) {
+            console.warn(
+              `Failed to cleanup workflow ${workflowId}:`,
+              cleanupError
+            );
+          }
+        }
+      }
     });
   });
 
@@ -432,60 +449,79 @@ describe("BlockTrigger Tests", () => {
       );
 
       // Test 3: Deploy + Trigger
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | null = null;
 
-      await client.triggerWorkflow({
-        id: workflowId,
-        triggerData: {
-          type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval,
-        },
-        isBlocking: true,
-      });
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
 
-      const executions = await client.getExecutions([workflowId], { limit: 1 });
-      const executedStep = _.find(
-        _.first(executions.items)?.steps,
-        (step) => step.id === blockTrigger.id
-      );
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
 
-      // Compare response formats
-      console.log("=== BLOCK TRIGGER RESPONSE FORMAT COMPARISON ===");
-      console.log(
-        "1. runTrigger response:",
-        JSON.stringify(directResponse.data, null, 2)
-      );
-      console.log(
-        "2. simulateWorkflow step output:",
-        JSON.stringify(simulatedStep?.output, null, 2)
-      );
-      console.log(
-        "3. deploy+trigger step output:",
-        JSON.stringify(executedStep?.output, null, 2)
-      );
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+        const executedStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === blockTrigger.id
+        );
 
-      // All should be successful
-      expect(directResponse.success).toBe(true);
-      expect(simulatedStep).toBeDefined();
-      expect(executedStep).toBeDefined();
-      expect(executedStep!.success).toBe(true);
+        // Compare response formats
+        console.log("=== BLOCK TRIGGER RESPONSE FORMAT COMPARISON ===");
+        console.log(
+          "1. runTrigger response:",
+          JSON.stringify(directResponse.data, null, 2)
+        );
+        console.log(
+          "2. simulateWorkflow step output:",
+          JSON.stringify(simulatedStep?.output, null, 2)
+        );
+        console.log(
+          "3. deploy+trigger step output:",
+          JSON.stringify(executedStep?.output, null, 2)
+        );
 
-      // Verify consistent structure
-      const directOutput = directResponse.data;
-      const simulatedOutput = simulatedStep!.output as any;
-      const executedOutput = executedStep!.output as any;
+        // All should be successful
+        expect(directResponse.success).toBe(true);
+        expect(simulatedStep).toBeDefined();
+        expect(executedStep).toBeDefined();
+        expect(executedStep!.success).toBe(true);
 
-      // Check that all outputs have consistent structure
-      expect(directOutput).toBeDefined();
-      expect(simulatedOutput).toBeDefined();
-      expect(executedOutput).toBeDefined();
+        // Verify consistent structure
+        const directOutput = directResponse.data;
+        const simulatedOutput = simulatedStep!.output as any;
+        const executedOutput = executedStep!.output as any;
 
-      console.log(
-        "✅ All trigger methods return consistent block trigger results!"
-      );
+        // Check that all outputs have consistent structure
+        expect(directOutput).toBeDefined();
+        expect(simulatedOutput).toBeDefined();
+        expect(executedOutput).toBeDefined();
+
+        console.log(
+          "✅ All trigger methods return consistent block trigger results!"
+        );
+      } finally {
+        // Ensure cleanup happens regardless of test success/failure
+        if (workflowId) {
+          try {
+            await client.deleteWorkflow(workflowId);
+            createdIdMap.delete(workflowId);
+          } catch (cleanupError) {
+            console.warn(
+              `Failed to cleanup workflow ${workflowId}:`,
+              cleanupError
+            );
+          }
+        }
+      }
     });
   });
 
@@ -546,7 +582,9 @@ describe("BlockTrigger Tests", () => {
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
-      expect(request.getBlock()!.getConfig()!.getInterval()).toBe(Number.MAX_SAFE_INTEGER);
+      expect(request.getBlock()!.getConfig()!.getInterval()).toBe(
+        Number.MAX_SAFE_INTEGER
+      );
     });
 
     test("should handle decimal intervals by truncating", () => {
@@ -562,7 +600,9 @@ describe("BlockTrigger Tests", () => {
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
       // The interval should be handled as an integer
-      expect(typeof request.getBlock()!.getConfig()!.getInterval()).toBe("number");
+      expect(typeof request.getBlock()!.getConfig()!.getInterval()).toBe(
+        "number"
+      );
     });
   });
 });

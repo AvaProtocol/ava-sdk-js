@@ -188,7 +188,28 @@ export const createFromTemplate = (
   address: string,
   nodes?: NodeProps[]
 ): WorkflowProps => {
-  const nodesList = nodes || NodesTemplate;
+  let nodesList: NodeProps[];
+  
+  if (nodes === undefined) {
+    // Use default template when nodes is not provided
+    nodesList = NodesTemplate;
+  } else if (nodes.length === 0) {
+    // When empty array is explicitly passed, use a minimal no-op node
+    // This handles cases where tests want to test triggers in isolation
+    nodesList = [{
+      id: getNextId(),
+      name: "minimal_node",
+      type: NodeType.CustomCode,
+      data: {
+        lang: CustomCodeLang.JavaScript,
+        source: "return {};", // Minimal no-op code
+      },
+    } as CustomCodeNodeProps];
+  } else {
+    // Use provided nodes
+    nodesList = nodes;
+  }
+  
   const now = Date.now(); // Get current time in milliseconds
 
   return {

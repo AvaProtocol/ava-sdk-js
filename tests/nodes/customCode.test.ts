@@ -26,7 +26,7 @@ describe("CustomCode Node Tests", () => {
 
   beforeAll(async () => {
     const address = await getAddress(walletPrivateKey);
-    
+
     client = new Client({
       endpoint: avsEndpoint,
       factoryAddress,
@@ -48,7 +48,7 @@ describe("CustomCode Node Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should execute simple JavaScript code with input variables", async () => {
       console.log("🚀 Testing runNodeWithInputs with simple JavaScript...");
-      
+
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -63,13 +63,16 @@ describe("CustomCode Node Tests", () => {
           trigger: {
             data: {
               value: 10,
-              multiplier: 3
-            }
-          }
+              multiplier: 3,
+            },
+          },
         },
       });
 
-      console.log("runNodeWithInputs simple JS response:", JSON.stringify(result, null, 2));
+      console.log(
+        "runNodeWithInputs simple JS response:",
+        JSON.stringify(result, null, 2)
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -83,7 +86,7 @@ describe("CustomCode Node Tests", () => {
 
     test("should execute JavaScript with lodash module", async () => {
       console.log("🚀 Testing runNodeWithInputs with lodash module...");
-      
+
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -101,13 +104,16 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {
           trigger: {
             data: {
-              numbers: [1, 2, 3, 4, 5, 6]
-            }
-          }
+              numbers: [1, 2, 3, 4, 5, 6],
+            },
+          },
         },
       });
 
-      console.log("runNodeWithInputs lodash response:", JSON.stringify(result, null, 2));
+      console.log(
+        "runNodeWithInputs lodash response:",
+        JSON.stringify(result, null, 2)
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -123,7 +129,7 @@ describe("CustomCode Node Tests", () => {
 
     test("should execute JavaScript with date manipulation", async () => {
       console.log("🚀 Testing runNodeWithInputs with dayjs module...");
-      
+
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -142,20 +148,23 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {
           trigger: {
             data: {
-              date: '2023-12-25'
-            }
-          }
+              date: "2023-12-25",
+            },
+          },
         },
       });
 
-      console.log("runNodeWithInputs dayjs response:", JSON.stringify(result, null, 2));
+      console.log(
+        "runNodeWithInputs dayjs response:",
+        JSON.stringify(result, null, 2)
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
         expect(result.data).toBeDefined();
-        expect(result.data.formatted).toBe('2023-12-25');
-        expect(result.data.addDays).toBe('2024-01-01');
+        expect(result.data.formatted).toBe("2023-12-25");
+        expect(result.data.addDays).toBe("2024-01-01");
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Date manipulation test failed:", result.error);
@@ -164,7 +173,7 @@ describe("CustomCode Node Tests", () => {
 
     test("should handle error in custom code execution", async () => {
       console.log("🚀 Testing runNodeWithInputs with error handling...");
-      
+
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -178,13 +187,16 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {
           trigger: {
             data: {
-              value: 42
-            }
-          }
+              value: 42,
+            },
+          },
         },
       });
 
-      console.log("runNodeWithInputs error response:", JSON.stringify(result, null, 2));
+      console.log(
+        "runNodeWithInputs error response:",
+        JSON.stringify(result, null, 2)
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -215,20 +227,27 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [customCodeNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        customCodeNode,
+      ]);
 
       console.log("🚀 Testing simulateWorkflow with custom code...");
-      
+
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      console.log("simulateWorkflow response:", JSON.stringify(simulation, null, 2));
+      console.log(
+        "simulateWorkflow response:",
+        JSON.stringify(simulation, null, 2)
+      );
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node
 
-      const customCodeStep = simulation.steps.find(step => step.id === customCodeNode.id);
+      const customCodeStep = simulation.steps.find(
+        (step) => step.id === customCodeNode.id
+      );
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
 
@@ -285,18 +304,28 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, customCodeNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        customCodeNode,
+      ]);
 
-      console.log("🚀 Testing simulateWorkflow with complex data processing...");
-      
+      console.log(
+        "🚀 Testing simulateWorkflow with complex data processing..."
+      );
+
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      console.log("Complex simulation result:", JSON.stringify(simulation, null, 2));
+      console.log(
+        "Complex simulation result:",
+        JSON.stringify(simulation, null, 2)
+      );
 
       expect(simulation.success).toBe(true);
-      const customCodeStep = simulation.steps.find(step => step.id === customCodeNode.id);
+      const customCodeStep = simulation.steps.find(
+        (step) => step.id === customCodeNode.id
+      );
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
     });
@@ -331,8 +360,10 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [customCodeNode]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        customCodeNode,
+      ]);
+
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -366,7 +397,10 @@ describe("CustomCode Node Tests", () => {
         });
 
         expect(executions.items.length).toBe(1);
-        console.log("Deploy+trigger execution:", JSON.stringify(executions.items[0], null, 2));
+        console.log(
+          "Deploy+trigger execution:",
+          JSON.stringify(executions.items[0], null, 2)
+        );
 
         const customCodeStep = _.find(
           _.first(executions.items)?.steps,
@@ -377,16 +411,22 @@ describe("CustomCode Node Tests", () => {
           throw new Error("No corresponding custom code step found.");
         }
 
-        console.log("CustomCode step details:", JSON.stringify(customCodeStep, null, 2));
+        console.log(
+          "CustomCode step details:",
+          JSON.stringify(customCodeStep, null, 2)
+        );
         expect(customCodeStep.success).toBe(true);
-        console.log("Deploy + trigger custom code step output:", JSON.stringify(customCodeStep.output, null, 2));
+        console.log(
+          "Deploy + trigger custom code step output:",
+          JSON.stringify(customCodeStep.output, null, 2)
+        );
 
         const output = customCodeStep.output as any;
-        expect(output.message).toBe('Custom code executed successfully');
+        expect(output.message).toBe("Custom code executed successfully");
         expect(output.executedAt).toBeDefined();
         expect(output.blockNumber).toBeDefined();
         expect(output.timestamp).toBeDefined();
-        expect(typeof output.calculation).toBe('number');
+        expect(typeof output.calculation).toBe("number");
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -425,12 +465,14 @@ describe("CustomCode Node Tests", () => {
         trigger: {
           data: {
             testValue: 42,
-            testArray: [1, 2, 3]
-          }
-        }
+            testArray: [1, 2, 3],
+          },
+        },
       };
 
-      console.log("🔍 Testing response format consistency across all methods...");
+      console.log(
+        "🔍 Testing response format consistency across all methods..."
+      );
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -481,12 +523,17 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, customCodeNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        customCodeNode,
+      ]);
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      const simulatedStep = simulation.steps.find(step => step.id === customCodeNode.id);
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === customCodeNode.id
+      );
 
       // Test 3: Deploy + Trigger
       workflowProps.trigger = TriggerFactory.create({
@@ -512,7 +559,9 @@ describe("CustomCode Node Tests", () => {
           isBlocking: true,
         });
 
-        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
         const executedStep = _.find(
           _.first(executions.items)?.steps,
           (step) => step.id === customCodeNode.id
@@ -520,9 +569,18 @@ describe("CustomCode Node Tests", () => {
 
         // Compare response formats
         console.log("=== CUSTOM CODE RESPONSE FORMAT COMPARISON ===");
-        console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
-        console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
-        console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
+        console.log(
+          "1. runNodeWithInputs response:",
+          JSON.stringify(directResponse.data, null, 2)
+        );
+        console.log(
+          "2. simulateWorkflow step output:",
+          JSON.stringify(simulatedStep?.output, null, 2)
+        );
+        console.log(
+          "3. deploy+trigger step output:",
+          JSON.stringify(executedStep?.output, null, 2)
+        );
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -540,21 +598,25 @@ describe("CustomCode Node Tests", () => {
           expect(directOutput.computedValue).toBe(15);
           expect(simulatedOutput.computedValue).toBe(15);
           expect(executedOutput.computedValue).toBe(15);
-          
-          expect(directOutput.status).toBe('completed');
-          expect(simulatedOutput.status).toBe('completed');
-          expect(executedOutput.status).toBe('completed');
-          
+
+          expect(directOutput.status).toBe("completed");
+          expect(simulatedOutput.status).toBe("completed");
+          expect(executedOutput.status).toBe("completed");
+
           expect(directOutput.processingId).toBeDefined();
           expect(simulatedOutput.processingId).toBeDefined();
           expect(executedOutput.processingId).toBeDefined();
-          
-          expect(directOutput.inputReceived).toEqual(inputVariables.trigger.data);
+
+          expect(directOutput.inputReceived).toEqual(
+            inputVariables.trigger.data
+          );
           expect(simulatedOutput.inputReceived).toBeDefined();
           expect(executedOutput.inputReceived).toBeDefined();
         }
 
-        console.log("✅ All three methods return consistent custom code execution results!");
+        console.log(
+          "✅ All three methods return consistent custom code execution results!"
+        );
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -587,8 +649,10 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [customCodeNode]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        customCodeNode,
+      ]);
+
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -596,39 +660,49 @@ describe("CustomCode Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
 
-      await client.triggerWorkflow({
-        id: workflowId,
-        triggerData: {
-          type: TriggerType.Block,
-          blockNumber: currentBlockNumber + triggerInterval,
-        },
-        isBlocking: true,
-      });
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
 
-      const executions = await client.getExecutions([workflowId], {
-        limit: 1,
-      });
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
 
-      expect(executions.items.length).toBe(1);
+        expect(executions.items.length).toBe(1);
 
-      const matchStep = _.find(
-        _.first(executions.items)?.steps,
-        (step) => step.id === customCodeNode.id
-      );
+        const matchStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === customCodeNode.id
+        );
 
-      if (_.isUndefined(matchStep)) {
-        throw new Error("No corresponding match step found for the triggered execution.");
+        if (_.isUndefined(matchStep)) {
+          throw new Error(
+            "No corresponding match step found for the triggered execution."
+          );
+        }
+
+        const output = matchStep.output as any;
+        expect(output.isValidUuid).toBe(true);
+        expect(typeof output.uuid).toBe("string");
+        expect(output.uuid.length).toBe(36);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
       }
-
-      const output = matchStep.output as any;
-      expect(output.isValidUuid).toBe(true);
-      expect(typeof output.uuid).toBe('string');
-      expect(output.uuid.length).toBe(36);
     });
   });
 });
