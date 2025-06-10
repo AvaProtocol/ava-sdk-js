@@ -36,6 +36,7 @@ export const SaltGlobal = {
   CreateWorkflow: 11,
   Step: 12,
   GetExecution: 13,
+  RestAPITest: 18,
   Pagination: 14,
 };
 

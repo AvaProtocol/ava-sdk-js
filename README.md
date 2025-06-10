@@ -132,7 +132,7 @@ Make sure to set the following environment variables in your `.env.test` file:
 
 Once a package is ready for a new version, we first publish a dev version and test it in local environment.
 
-1. Run `npm version prerelease --preid=dev` under either `packages/sdk-js` or `packages/types` to update the version in `package.json`.
+1. Run `yarn version --prerelease --preid dev` under either `packages/sdk-js` or `packages/types` to update the version in `package.json`.
 2. Run `npm publish --tag dev` under either `packages/sdk-js` or `packages/types` to publish the new dev version to NPM. Most importantly, this **bumps up version number** in `package.json` of `packages/types`.
 3. If the `types` package has a new version, since it is depended on by `sdk-js`, we need to make sure `sdk-js` can build with the new version.
 
