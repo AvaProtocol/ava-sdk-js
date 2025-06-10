@@ -211,7 +211,7 @@ class Step implements StepProps {
       case avs_pb.Execution.Step.OutputDataCase.REST_API:
         nodeOutputMessage = step.getRestApi();
         return nodeOutputMessage && nodeOutputMessage.hasData()
-          ? nodeOutputMessage.getData()
+          ? convertProtobufValueToJs(nodeOutputMessage.getData())
           : undefined;
       case avs_pb.Execution.Step.OutputDataCase.BRANCH:
         return step.getBranch()?.toObject();
@@ -221,7 +221,71 @@ class Step implements StepProps {
           ? nodeOutputMessage.getData()
           : undefined;
       case avs_pb.Execution.Step.OutputDataCase.LOOP:
-        return step.getLoop()?.getData();
+        const loopOutput = step.getLoop();
+        if (!loopOutput) return undefined;
+        
+        const loopData = loopOutput.getData();
+        if (!loopData) return undefined;
+        
+        // Loop nodes return an array of results from child node executions
+        // The backend should serialize this as JSON, but may have issues
+        
+        // Try to parse as JSON first (expected format for array of child results)
+        try {
+          const parsedData = JSON.parse(loopData);
+          
+          // If it's an array, process each item with appropriate child node conversion
+          if (Array.isArray(parsedData)) {
+            return parsedData.map((item, index) => {
+              if (!item || typeof item !== 'object') {
+                return item; // Primitive values, return as-is
+              }
+              
+              // Apply child node-specific conversions based on detected structure
+              
+              // REST API child output (has statusCode, body, headers)
+              if (item.statusCode !== undefined && (item.body !== undefined || item.headers !== undefined)) {
+                return item; // Already in raw format
+              }
+              
+              // Custom Code child output (arbitrary object structure)
+              if (item.result !== undefined || item.output !== undefined || item.error !== undefined) {
+                return item; // Already processed by convertProtobufValueToJs in backend
+              }
+              
+              // ETH Transfer child output (has transactionHash)
+              if (item.transactionHash !== undefined) {
+                return { transactionHash: item.transactionHash };
+              }
+              
+              // Contract Read child output (has methodName and data)
+              if (item.methodName !== undefined && item.data !== undefined) {
+                return item; // Already in structured format
+              }
+              
+              // GraphQL child output (has data field)
+              if (item.data !== undefined && typeof item.data === 'object') {
+                return item; // Already processed
+              }
+              
+              // Generic object - return as-is (might be custom structure)
+              return item;
+            });
+          }
+          
+          // Single object result (not an array)
+          if (parsedData && typeof parsedData === 'object') {
+            return parsedData;
+          }
+          
+          // Parsed successfully but primitive value
+          return { data: parsedData };
+          
+        } catch (e) {
+          // Not JSON or parsing failed - could be a simple string result
+          // This might happen if backend has serialization issues
+          return { data: loopData };
+        }
       default:
         console.warn(
           `Unhandled output data type in Step.getOutput: ${outputDataType}`
