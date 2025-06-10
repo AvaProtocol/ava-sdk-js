@@ -103,10 +103,10 @@ export const restApiNodeProps: RestAPINodeProps = {
   name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
-    url: "http://localhost:3000/api/test",
-    method: "post",
-    body: `{"test": true}`,
-    headersMap: [["Content-Type", "application/json"]],
+      url: "http://localhost:3000/api/test",
+      method: "post",
+      body: `{"test": true}`,
+      headersMap: [["Content-Type", "application/json"]],
   },
 };
 
@@ -115,7 +115,7 @@ export const filterNodeProps: FilterNodeProps = {
   name: "filterNode",
   type: NodeType.Filter,
   data: {
-    sourceId: "rest_api_call",
+      sourceId: "rest_api_call",
     expression: "current >= 1",
   },
 };
@@ -125,14 +125,14 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql call",
   type: NodeType.GraphQLQuery,
   data: {
-    url: "http://localhost:3000/graphql",
-    query: `query TestQuery {
-      test {
-        id
-        value
-      }
-    }`,
-    variablesMap: [["test", "true"]],
+      url: "http://localhost:3000/graphql",
+      query: `query TestQuery {
+        test {
+          id
+          value
+        }
+      }`,
+      variablesMap: [["test", "true"]],
   },
 };
 

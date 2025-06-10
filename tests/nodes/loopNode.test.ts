@@ -215,7 +215,7 @@ describe("LoopNode Tests", () => {
       if (result.success && result.data) {
         expect(Array.isArray(result.data)).toBe(true);
         expect(result.data.length).toBe(3);
-        
+
         const firstResult = result.data[0];
         expect(firstResult.id).toBe("a1");
         expect(firstResult.upperName).toBe("ALICE");
@@ -237,14 +237,14 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,
-          source: `
-            const testArray = [
-              { name: "item1", value: 10 },
-              { name: "item2", value: 20 },
-              { name: "item3", value: 30 }
-            ];
-            return { testArray };
-          `,
+            source: `
+              const testArray = [
+                { name: "item1", value: 10 },
+                { name: "item2", value: 20 },
+                { name: "item3", value: 30 }
+              ];
+              return { testArray };
+            `,
         },
       });
 
@@ -300,7 +300,7 @@ describe("LoopNode Tests", () => {
 
       // Create a data generation node for URLs
       const dataNode = NodeFactory.create({
-        id: getNextId(),
+          id: getNextId(),
         name: "generate_url_data",
         type: NodeType.CustomCode,
         data: {
@@ -316,7 +316,7 @@ describe("LoopNode Tests", () => {
       });
 
       const loopNode = NodeFactory.create({
-        id: getNextId(),
+          id: getNextId(),
         name: "simulate_loop_rest_api",
         type: NodeType.Loop,
         data: {
@@ -337,7 +337,7 @@ describe("LoopNode Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
 
       console.log("🚀 Testing simulateWorkflow with Loop node (REST API)...");
-      
+
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
@@ -351,7 +351,7 @@ describe("LoopNode Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with Loop node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -374,7 +374,7 @@ describe("LoopNode Tests", () => {
       });
 
       const loopNode = NodeFactory.create({
-        id: getNextId(),
+          id: getNextId(),
         name: "deploy_loop_test",
         type: NodeType.Loop,
         data: {
@@ -456,16 +456,16 @@ describe("LoopNode Tests", () => {
         expect(output.length).toBe(3);
         expect(output[0].studentName).toBe("Alice");
         expect(output[0].letterGrade).toBe("B");
-      } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
-        }
       }
-    });
+    }
+  });
 
     test("should deploy and trigger workflow with multiple Loop node types", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -481,13 +481,13 @@ describe("LoopNode Tests", () => {
               numbers: [1, 2, 3],
               urls: ["https://httpbin.org/get?loop=1", "https://httpbin.org/get?loop=2"]
             };
-          `,
+            `,
         },
       });
 
       // Create CustomCode loop
       const customCodeLoop = NodeFactory.create({
-        id: getNextId(),
+          id: getNextId(),
         name: "custom_code_loop",
         type: NodeType.Loop,
         data: {
@@ -538,13 +538,13 @@ describe("LoopNode Tests", () => {
 
         expect(customCodeLoopStep).toBeDefined();
         expect(customCodeLoopStep!.success).toBe(true);
-        
+
         const output = customCodeLoopStep!.output as any;
         expect(Array.isArray(output)).toBe(true);
         expect(output.length).toBe(3);
-      } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
         }
       }
@@ -553,7 +553,7 @@ describe("LoopNode Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -612,8 +612,8 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           customCode: {
             config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `
+          lang: CustomCodeLang.JavaScript,
+          source: `
                 const _ = require('lodash');
                 return {
                   originalValue: item,
@@ -710,16 +710,16 @@ describe("LoopNode Tests", () => {
         }
 
         console.log("✅ All three methods return consistent loop execution results!");
-      } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
-        }
       }
-    });
+    }
+  });
 
     test("should handle edge cases consistently across all methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -761,7 +761,7 @@ describe("LoopNode Tests", () => {
       });
 
       const loopNode = NodeFactory.create({
-        id: getNextId(),
+          id: getNextId(),
         name: "edge_case_test",
         type: NodeType.Loop,
         data: {

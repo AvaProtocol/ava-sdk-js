@@ -19,7 +19,7 @@ class CustomCodeNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): CustomCodeNode {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
-
+    
     // Get the raw protobuf config and convert to our custom interface
     const rawConfig = raw.getCustomCode()!.getConfig()!.toObject();
 
@@ -27,7 +27,7 @@ class CustomCodeNode extends Node {
       lang: rawConfig.lang as unknown as CustomCodeLang,
       source: rawConfig.source,
     };
-
+    
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
