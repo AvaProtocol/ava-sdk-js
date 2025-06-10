@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.3.9
+
+### Patch Changes
+
+- 42b23c8: Fixed contract read Step Output;added data validity check to block and cron
+
 ## 2.3.8
 
 ### Patch Changes
