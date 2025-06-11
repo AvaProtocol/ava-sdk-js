@@ -45,6 +45,100 @@ describe("CustomCode Node Tests", () => {
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
+  describe("CustomCode Return Type Tests", () => {
+    test("CustomCode should return null when code returns null", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return null;",
+        },
+        inputVariables: {},
+      });
+
+      console.log("NULL result:", JSON.stringify(result, null, 2));
+      expect(result.success).toBe(true);
+      expect(result.data).toBeNull();
+    });
+
+    test("CustomCode should return empty object when code returns {}", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return {};",
+        },
+        inputVariables: {},
+      });
+
+      console.log("EMPTY OBJECT result:", JSON.stringify(result, null, 2));
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({});
+    });
+
+    test("CustomCode should return null when code returns undefined (protobuf limitation)", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return undefined;",
+        },
+        inputVariables: {},
+      });
+
+      console.log("UNDEFINED result:", JSON.stringify(result, null, 2));
+      expect(result.success).toBe(true);
+      // Note: JavaScript `undefined` becomes `null` in protobuf conversion since protobuf
+      // only supports JSON-compatible types and has no representation for `undefined`
+      expect(result.data).toBeNull();
+    });
+
+    test("CustomCode should return empty array when code returns []", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return [];",
+        },
+        inputVariables: {},
+      });
+
+      console.log("EMPTY ARRAY result:", JSON.stringify(result, null, 2));
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([]);
+    });
+
+    test("CustomCode should return number when code returns number", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return 42;",
+        },
+        inputVariables: {},
+      });
+
+      console.log("NUMBER result:", JSON.stringify(result, null, 2));
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(42);
+    });
+
+    test("CustomCode should return string when code returns string", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: {
+          lang: CustomCodeLang.JavaScript,
+          source: 'return "hello";',
+        },
+        inputVariables: {},
+      });
+
+      console.log("STRING result:", JSON.stringify(result, null, 2));
+      expect(result.success).toBe(true);
+      expect(result.data).toBe("hello");
+    });
+  });
+
   describe("runNodeWithInputs Tests", () => {
     test("should execute simple JavaScript code with input variables", async () => {
       console.log("🚀 Testing runNodeWithInputs with simple JavaScript...");
@@ -617,6 +711,264 @@ describe("CustomCode Node Tests", () => {
         console.log(
           "✅ All three methods return consistent custom code execution results!"
         );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
+  });
+
+  describe("Empty Data Workflow Tests", () => {
+    // Define reusable node configurations for testing all empty data types
+    const createEmptyDataNodes = (namePrefix: string = "test") => {
+      const nullNodeParams = {
+        id: getNextId(),
+        name: `${namePrefix}_null`,
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return null;",
+        },
+      };
+
+      const emptyObjectNodeParams = {
+        id: getNextId(),
+        name: `${namePrefix}_empty_object`,
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return {};",
+        },
+      };
+
+      const undefinedNodeParams = {
+        id: getNextId(),
+        name: `${namePrefix}_undefined`,
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return undefined;",
+        },
+      };
+
+      const emptyArrayNodeParams = {
+        id: getNextId(),
+        name: `${namePrefix}_empty_array`,
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return [];",
+        },
+      };
+
+      const numberNodeParams = {
+        id: getNextId(),
+        name: `${namePrefix}_number`,
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return 42;",
+        },
+      };
+
+      const stringNodeParams = {
+        id: getNextId(),
+        name: `${namePrefix}_string`,
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: 'return "hello";',
+        },
+      };
+
+      return {
+        nullNodeParams,
+        emptyObjectNodeParams,
+        undefinedNodeParams,
+        emptyArrayNodeParams,
+        numberNodeParams,
+        stringNodeParams,
+      };
+    };
+
+    test("should handle all empty data types in simulateWorkflow", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Create nodes testing all empty data return types
+      const nodeParams = createEmptyDataNodes("simulate");
+      
+      const nullNode = NodeFactory.create(nodeParams.nullNodeParams);
+      const emptyObjectNode = NodeFactory.create(nodeParams.emptyObjectNodeParams);
+      const undefinedNode = NodeFactory.create(nodeParams.undefinedNodeParams);
+      const emptyArrayNode = NodeFactory.create(nodeParams.emptyArrayNodeParams);
+      const numberNode = NodeFactory.create(nodeParams.numberNodeParams);
+      const stringNode = NodeFactory.create(nodeParams.stringNodeParams);
+
+      const workflowProps = createFromTemplate(wallet.address, [
+        nullNode,
+        emptyObjectNode,
+        undefinedNode,
+        emptyArrayNode,
+        numberNode,
+        stringNode,
+      ]);
+
+      console.log("🚀 Testing empty data handling in simulateWorkflow...");
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "Empty data simulation result:",
+        JSON.stringify(simulation, null, 2)
+      );
+
+      // Verify overall workflow success
+      expect(simulation.success).toBe(true);
+      expect(simulation.steps).toHaveLength(7); // trigger + 6 custom code nodes
+
+      // Verify each node returns expected values
+      const nullStep = simulation.steps.find((step) => step.id === nullNode.id);
+      expect(nullStep).toBeDefined();
+      expect(nullStep!.success).toBe(true);
+      expect(nullStep!.output).toBeNull();
+
+      const emptyObjectStep = simulation.steps.find((step) => step.id === emptyObjectNode.id);
+      expect(emptyObjectStep).toBeDefined();
+      expect(emptyObjectStep!.success).toBe(true);
+      expect(emptyObjectStep!.output).toEqual({});
+
+      const undefinedStep = simulation.steps.find((step) => step.id === undefinedNode.id);
+      expect(undefinedStep).toBeDefined();
+      expect(undefinedStep!.success).toBe(true);
+      // Note: undefined becomes null in protobuf conversion
+      expect(undefinedStep!.output).toBeNull();
+
+      const emptyArrayStep = simulation.steps.find((step) => step.id === emptyArrayNode.id);
+      expect(emptyArrayStep).toBeDefined();
+      expect(emptyArrayStep!.success).toBe(true);
+      expect(emptyArrayStep!.output).toEqual([]);
+
+      const numberStep = simulation.steps.find((step) => step.id === numberNode.id);
+      expect(numberStep).toBeDefined();
+      expect(numberStep!.success).toBe(true);
+      expect(numberStep!.output).toBe(42);
+
+      const stringStep = simulation.steps.find((step) => step.id === stringNode.id);
+      expect(stringStep).toBeDefined();
+      expect(stringStep!.success).toBe(true);
+      expect(stringStep!.output).toBe("hello");
+
+      console.log("✅ All empty data types handled correctly in simulateWorkflow!");
+    });
+
+    test("should handle all empty data types in submit and trigger workflow", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      // Create nodes testing all empty data return types
+      const nodeParams = createEmptyDataNodes("deployed");
+      
+      const nullNode = NodeFactory.create(nodeParams.nullNodeParams);
+      const emptyObjectNode = NodeFactory.create(nodeParams.emptyObjectNodeParams);
+      const undefinedNode = NodeFactory.create(nodeParams.undefinedNodeParams);
+      const emptyArrayNode = NodeFactory.create(nodeParams.emptyArrayNodeParams);
+      const numberNode = NodeFactory.create(nodeParams.numberNodeParams);
+      const stringNode = NodeFactory.create(nodeParams.stringNodeParams);
+
+      const workflowProps = createFromTemplate(wallet.address, [
+        nullNode,
+        emptyObjectNode,
+        undefinedNode,
+        emptyArrayNode,
+        numberNode,
+        stringNode,
+      ]);
+
+      // Set up block trigger
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+
+      console.log("🚀 Testing empty data handling in deployed workflow...");
+
+      let workflowId: string | undefined;
+      try {
+        // Deploy workflow
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
+
+        // Trigger workflow
+        const triggerResult = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
+
+        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+
+        // Get execution results
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+
+        expect(executions.items.length).toBe(1);
+        const execution = executions.items[0];
+        
+        console.log(
+          "Empty data workflow execution:",
+          JSON.stringify(execution, null, 2)
+        );
+
+        // Verify overall workflow success
+        expect(execution.success).toBe(true);
+        expect(execution.steps).toHaveLength(7); // trigger + 6 custom code nodes
+
+        // Verify each node returns expected values
+        const nullStep = execution.steps.find((step) => step.id === nullNode.id);
+        expect(nullStep).toBeDefined();
+        expect(nullStep!.success).toBe(true);
+        expect(nullStep!.output).toBeNull();
+
+        const emptyObjectStep = execution.steps.find((step) => step.id === emptyObjectNode.id);
+        expect(emptyObjectStep).toBeDefined();
+        expect(emptyObjectStep!.success).toBe(true);
+        expect(emptyObjectStep!.output).toEqual({});
+
+        const undefinedStep = execution.steps.find((step) => step.id === undefinedNode.id);
+        expect(undefinedStep).toBeDefined();
+        expect(undefinedStep!.success).toBe(true);
+        // Note: undefined becomes null in protobuf conversion
+        expect(undefinedStep!.output).toBeNull();
+
+        const emptyArrayStep = execution.steps.find((step) => step.id === emptyArrayNode.id);
+        expect(emptyArrayStep).toBeDefined();
+        expect(emptyArrayStep!.success).toBe(true);
+        expect(emptyArrayStep!.output).toEqual([]);
+
+        const numberStep = execution.steps.find((step) => step.id === numberNode.id);
+        expect(numberStep).toBeDefined();
+        expect(numberStep!.success).toBe(true);
+        expect(numberStep!.output).toBe(42);
+
+        const stringStep = execution.steps.find((step) => step.id === stringNode.id);
+        expect(stringStep).toBeDefined();
+        expect(stringStep!.success).toBe(true);
+        expect(stringStep!.output).toBe("hello");
+
+        console.log("✅ All empty data types handled correctly in deployed workflow!");
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

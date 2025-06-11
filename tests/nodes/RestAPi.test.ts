@@ -421,4 +421,72 @@ describe("RestAPI Node Tests", () => {
       }
     });
   });
+
+  describe("Empty Data Handling Tests", () => {
+    test("should handle 204 No Content responses", async () => {
+      console.log('🚀 Testing REST API with 204 No Content response...');
+      
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: 'https://httpbin.org/status/204', // Returns empty response with 204 status
+          method: 'GET',
+          headersMap: [['User-Agent', 'AvaProtocol-SDK-Test']],
+        },
+        inputVariables: {},
+      });
+
+      console.log('REST API 204 response:', JSON.stringify(result, null, 2));
+      
+      expect(result.success).toBe(true);
+      expect(result.error).toBe('');
+      expect(result.data).toBeDefined();
+      if (result.data && typeof result.data === 'object') {
+        expect(result.data.statusCode).toBe(204);
+        expect(result.data.body).toBe('');
+      }
+    });
+
+    test("should distinguish between empty data and server errors", async () => {
+      console.log('🚀 Testing empty data vs server error distinction...');
+      
+      // Test 204 No Content (empty but successful)
+      const emptyResponse = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: 'https://httpbin.org/status/204',
+          method: 'GET',
+          headersMap: [['User-Agent', 'AvaProtocol-SDK-Test']],
+        },
+        inputVariables: {},
+      });
+
+      // Test 500 Internal Server Error
+      const errorResponse = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: 'https://httpbin.org/status/500',
+          method: 'GET',
+          headersMap: [['User-Agent', 'AvaProtocol-SDK-Test']],
+        },
+        inputVariables: {},
+      });
+
+      console.log('Empty data result:', JSON.stringify(emptyResponse, null, 2));
+      console.log('Error result:', JSON.stringify(errorResponse, null, 2));
+
+      // Both should succeed at HTTP level but have different status codes
+      expect(emptyResponse.success).toBe(true);
+      expect(errorResponse.success).toBe(true);
+      
+      if (emptyResponse.data && typeof emptyResponse.data === 'object') {
+        expect(emptyResponse.data.statusCode).toBe(204);
+        expect(emptyResponse.data.body).toBe('');
+      }
+      
+      if (errorResponse.data && typeof errorResponse.data === 'object') {
+        expect(errorResponse.data.statusCode).toBe(500);
+      }
+    });
+  });
 });

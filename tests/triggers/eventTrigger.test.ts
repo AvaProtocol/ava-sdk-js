@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
-import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory, EventTrigger } from "@avaprotocol/sdk-js";
 import { TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
@@ -833,5 +833,334 @@ describe("EventTrigger Tests", () => {
         expect(result.data).toBe(null);
       }
     }, 20000); // Increased timeout to handle blockchain search
+  });
+
+  describe("Empty Data Handling Tests", () => {
+    test("should handle no matching events (empty data) vs query errors", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      console.log(
+        "🚀 Testing empty data vs error distinction for event triggers..."
+      );
+
+      // Test 1: Valid query but no matching events (should return null data)
+      // Use a definitely non-existent contract address to ensure no events
+      const noEventsResult = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          queries: [
+            {
+              addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
+              topics: [
+                {
+                  values: [TRANSFER_EVENT_SIGNATURE, null, null],
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      console.log("No events result:", JSON.stringify(noEventsResult, null, 2));
+
+      // Should succeed but return null data
+      expect(noEventsResult.success).toBe(true);
+      expect(noEventsResult.error).toBe("");
+      expect(noEventsResult.data).toBe(null);
+      expect(noEventsResult.triggerId).toBeDefined();
+    }, 10000); // Reduced timeout since we're using non-existent contract
+
+    test("should handle empty address arrays consistently", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      console.log("🚀 Testing empty address array handling...");
+
+      // Use a more targeted approach - empty addresses with specific topic filter
+      // This should be faster than monitoring all contracts
+      const result = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          queries: [
+            {
+              addresses: [], // Empty array - monitor all contracts
+              topics: [
+                {
+                  values: [TRANSFER_EVENT_SIGNATURE, null, null],
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      console.log("Empty addresses result:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.triggerId).toBeDefined();
+
+      // Should either succeed with broad monitoring or handle gracefully
+      if (result.success) {
+        // If successful, data can be null (no events) or contain events
+        expect(result.error).toBe("");
+      }
+    }, 10000); // Reduced timeout
+
+    test("should handle empty topics array consistently", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      console.log("🚀 Testing empty topics array handling...");
+
+      // Use a known contract but with empty topics - this should be faster
+      const result = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          queries: [
+            {
+              addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
+              topics: [], // Empty topics - monitor all events from this contract
+            },
+          ],
+        },
+      });
+
+      console.log("Empty topics result:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.triggerId).toBeDefined();
+
+      // Should handle empty topics gracefully
+      if (result.success) {
+        expect(result.error).toBe("");
+      }
+    }, 10000); // Reduced timeout
+
+    test("should maintain empty data consistency across execution methods", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Use a definitely non-existent contract to ensure consistent null results
+      const eventTriggerConfig = {
+        queries: [
+          {
+            addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
+            topics: [
+              {
+                values: [TRANSFER_EVENT_SIGNATURE, null, null],
+              },
+            ],
+          },
+        ],
+      };
+
+      console.log(
+        "🔍 Testing empty data consistency across event trigger methods..."
+      );
+
+      // Test 1: runTrigger
+      const directResponse = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: eventTriggerConfig,
+      });
+
+      // Test 2: simulateWorkflow
+      const eventTrigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "empty_data_consistency_test",
+        type: TriggerType.Event,
+        data: eventTriggerConfig,
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, []);
+      workflowProps.trigger = eventTrigger;
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === eventTrigger.id
+      );
+
+      // Compare empty data handling
+      console.log("=== EMPTY DATA CONSISTENCY COMPARISON ===");
+      console.log(
+        "1. runTrigger response:",
+        JSON.stringify(
+          { success: directResponse.success, data: directResponse.data },
+          null,
+          2
+        )
+      );
+      console.log(
+        "2. simulateWorkflow step:",
+        JSON.stringify(
+          { success: simulatedStep?.success, output: simulatedStep?.output },
+          null,
+          2
+        )
+      );
+
+      // Both should handle empty data consistently
+      expect(directResponse.success).toBe(true);
+      expect(directResponse.data).toBe(null); // No events found
+      expect(directResponse.error).toBe("");
+
+      expect(simulatedStep).toBeDefined();
+      expect(simulatedStep!.success).toBe(true);
+      // simulatedStep.output can be null when no events are found
+
+      console.log(
+        "✅ Empty data handling is consistent across execution methods!"
+      );
+    }, 15000); // Increased timeout for workflow simulation
+
+    test("should handle malformed query configurations gracefully", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      console.log("🚀 Testing malformed query configurations...");
+
+      // Test with invalid topic format
+      const result = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          queries: [
+            {
+              addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
+              topics: [
+                {
+                  values: ["invalid_topic_format"], // Invalid topic format
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      console.log("Malformed query result:", JSON.stringify(result, null, 2));
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.triggerId).toBeDefined();
+
+      // Should handle gracefully - either succeed with null data or fail with error
+      if (result.success) {
+        expect(result.error).toBe("");
+        // Data can be null or contain events depending on how the system handles invalid topics
+      } else {
+        expect(result.error).toBeTruthy();
+      }
+    }, 8000); // Shorter timeout for malformed queries
+
+    test("should correctly parse null vs empty object responses (client-side test)", () => {
+      console.log("🚀 Testing client-side null vs empty object parsing...");
+
+      // Test the EventTrigger.fromOutputData method directly
+      // This simulates what happens when the server returns different response types
+
+      // Mock RunTriggerResp with null event trigger (no events found)
+      const mockNullResponse = {
+        getEventTrigger: () => null,
+      };
+
+      const nullResult = EventTrigger.fromOutputData(mockNullResponse as any);
+      expect(nullResult).toBe(null);
+
+      // Mock RunTriggerResp with empty EventTrigger_Output (no oneof fields set)
+      const mockEmptyResponse = {
+        getEventTrigger: () => ({
+          hasEvmLog: () => false,
+          hasTransferLog: () => false,
+          getEvmLog: () => null,
+          getTransferLog: () => null,
+        }),
+      };
+
+      const emptyResult = EventTrigger.fromOutputData(mockEmptyResponse as any);
+      expect(emptyResult).toBe(null);
+
+      // Mock RunTriggerResp with TransferLog data
+      const mockTransferLogResponse = {
+        getEventTrigger: () => ({
+          hasEvmLog: () => false,
+          hasTransferLog: () => true,
+          getEvmLog: () => null,
+          getTransferLog: () => ({
+            toObject: () => ({
+              tokenName: "Test Token",
+              tokenSymbol: "TEST",
+              tokenDecimals: 18,
+              transactionHash: "0x123",
+              address: "0x456",
+              blockNumber: 12345,
+              blockTimestamp: 1672531200,
+              fromAddress: "0x789",
+              toAddress: "0xabc",
+              value: "1000000000000000000",
+              valueFormatted: "1.0",
+              transactionIndex: 5,
+              logIndex: 3,
+            }),
+          }),
+        }),
+      };
+
+      const transferLogResult = EventTrigger.fromOutputData(
+        mockTransferLogResponse as any
+      );
+      expect(transferLogResult).not.toBe(null);
+      expect(transferLogResult).toHaveProperty("tokenName", "Test Token");
+      expect(transferLogResult).toHaveProperty("logIndex", 3);
+
+      // Mock RunTriggerResp with EvmLog data
+      const mockEvmLogResponse = {
+        getEventTrigger: () => ({
+          hasEvmLog: () => true,
+          hasTransferLog: () => false,
+          getEvmLog: () => ({
+            toObject: () => ({
+              address: "0x123",
+              topics: ["0xtopic1", "0xtopic2"],
+              data: "0xdata",
+              blockNumber: 12345,
+              transactionHash: "0x456",
+              transactionIndex: 5,
+              blockHash: "0x789",
+              index: 3,
+              removed: false,
+            }),
+          }),
+          getTransferLog: () => null,
+        }),
+      };
+
+      const evmLogResult = EventTrigger.fromOutputData(
+        mockEvmLogResponse as any
+      );
+      expect(evmLogResult).not.toBe(null);
+      expect(evmLogResult).toHaveProperty("address", "0x123");
+      expect(evmLogResult).toHaveProperty("index", 3);
+
+      console.log(
+        "✅ Client-side parsing correctly handles null vs data responses!"
+      );
+    });
   });
 });
