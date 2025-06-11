@@ -89,12 +89,13 @@ describe("LoopNode Tests", () => {
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
         expect(result.data).toBeDefined();
-        expect(Array.isArray(result.data)).toBe(true);
-        expect(result.data.length).toBe(5);
+        expect(result.data.data).toBeDefined();
+        expect(Array.isArray(result.data.data)).toBe(true);
+        expect(result.data.data.length).toBe(5);
         expect(result.nodeId).toBeDefined();
         
         // Check first processed item
-        const firstItem = result.data[0];
+        const firstItem = result.data.data[0];
         expect(firstItem.processedItem).toBe(1);
         expect(firstItem.position).toBe(0);
         expect(firstItem.squared).toBe(1);
@@ -135,8 +136,10 @@ describe("LoopNode Tests", () => {
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
         expect(result.data).toBeDefined();
-        expect(Array.isArray(result.data)).toBe(true);
-        expect(result.data.length).toBe(2);
+        // The actual array is nested in result.data.data
+        expect(result.data.data).toBeDefined();
+        expect(Array.isArray(result.data.data)).toBe(true);
+        expect(result.data.data.length).toBe(2);
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Loop REST API test failed:", result.error);
@@ -169,8 +172,10 @@ describe("LoopNode Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(Array.isArray(result.data)).toBe(true);
-        expect(result.data.length).toBe(0);
+        // The actual array is nested in result.data.data
+        expect(result.data.data).toBeDefined();
+        expect(Array.isArray(result.data.data)).toBe(true);
+        expect(result.data.data.length).toBe(0);
       }
     });
 
@@ -213,10 +218,12 @@ describe("LoopNode Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(Array.isArray(result.data)).toBe(true);
-        expect(result.data.length).toBe(3);
+        // The actual array is nested in result.data.data
+        expect(result.data.data).toBeDefined();
+        expect(Array.isArray(result.data.data)).toBe(true);
+        expect(result.data.data.length).toBe(3);
 
-        const firstResult = result.data[0];
+        const firstResult = result.data.data[0];
         expect(firstResult.id).toBe("a1");
         expect(firstResult.upperName).toBe("ALICE");
         expect(firstResult.doubledValue).toBe(20);
