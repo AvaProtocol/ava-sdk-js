@@ -568,37 +568,53 @@ describe("EventTrigger Tests", () => {
 
       console.log("🚀 Testing deploy + trigger workflow with event trigger...");
 
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | undefined;
 
-      // For event triggers, we don't use triggerWorkflow since they're event-driven
-      // Instead, we can check if the workflow was deployed successfully
-      const workflowsResult = await client.getWorkflows([wallet.address]);
-      const deployedWorkflow = workflowsResult.items.find(
-        (w) => w.id === workflowId
-      );
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
 
-      expect(deployedWorkflow).toBeDefined();
-      expect(deployedWorkflow!.trigger).toBeDefined();
-      expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
+        // For event triggers, we don't use triggerWorkflow since they're event-driven
+        // Instead, we can check if the workflow was deployed successfully
+        const workflowsResult = await client.getWorkflows([wallet.address]);
+        const deployedWorkflow = workflowsResult.items.find(
+          (w) => w.id === workflowId
+        );
 
-      console.log("=== EVENT TRIGGER DEPLOYMENT TEST ===");
-      console.log(
-        "Deployed workflow:",
-        JSON.stringify(deployedWorkflow, null, 2)
-      );
+        expect(deployedWorkflow).toBeDefined();
+        expect(deployedWorkflow!.trigger).toBeDefined();
+        expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
 
-      // Optionally check executions (though event triggers are reactive)
-      const executions = await client.getExecutions([workflowId], {
-        limit: 1,
-      });
+        console.log("=== EVENT TRIGGER DEPLOYMENT TEST ===");
+        console.log(
+          "Deployed workflow:",
+          JSON.stringify(deployedWorkflow, null, 2)
+        );
 
-      console.log(
-        "Event trigger executions:",
-        JSON.stringify(executions, null, 2)
-      );
+        // Optionally check executions (though event triggers are reactive)
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+
+        console.log(
+          "Event trigger executions:",
+          JSON.stringify(executions, null, 2)
+        );
+      } finally {
+        // Always clean up the workflow, even if test fails
+        if (workflowId) {
+          try {
+            await client.deleteWorkflow(workflowId);
+            console.log(`✅ Cleaned up workflow: ${workflowId}`);
+          } catch (deleteError) {
+            console.warn(
+              `⚠️  Failed to delete workflow ${workflowId}:`,
+              deleteError
+            );
+          }
+        }
+      }
     });
   });
 
@@ -674,48 +690,64 @@ describe("EventTrigger Tests", () => {
       );
 
       // Test 3: Deploy (event triggers are reactive, so we just check deployment)
-      const workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-      createdIdMap.set(workflowId, true);
+      let workflowId: string | undefined;
 
-      const workflowsResult = await client.getWorkflows([wallet.address]);
-      const deployedWorkflow = workflowsResult.items.find(
-        (w) => w.id === workflowId
-      );
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
 
-      // Compare response formats
-      console.log("=== EVENT TRIGGER RESPONSE FORMAT COMPARISON ===");
-      console.log(
-        "1. runTrigger response:",
-        JSON.stringify(directResponse.data, null, 2)
-      );
-      console.log(
-        "2. simulateWorkflow step output:",
-        JSON.stringify(simulatedStep?.output, null, 2)
-      );
-      console.log(
-        "3. deployed workflow trigger:",
-        JSON.stringify(deployedWorkflow?.trigger, null, 2)
-      );
+        const workflowsResult = await client.getWorkflows([wallet.address]);
+        const deployedWorkflow = workflowsResult.items.find(
+          (w) => w.id === workflowId
+        );
 
-      // All should be successful
-      expect(directResponse.success).toBe(true);
-      expect(simulatedStep).toBeDefined();
-      expect(deployedWorkflow).toBeDefined();
-      expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
+        // Compare response formats
+        console.log("=== EVENT TRIGGER RESPONSE FORMAT COMPARISON ===");
+        console.log(
+          "1. runTrigger response:",
+          JSON.stringify(directResponse.data, null, 2)
+        );
+        console.log(
+          "2. simulateWorkflow step output:",
+          JSON.stringify(simulatedStep?.output, null, 2)
+        );
+        console.log(
+          "3. deployed workflow trigger:",
+          JSON.stringify(deployedWorkflow?.trigger, null, 2)
+        );
 
-      // Verify consistent structure
-      const directOutput = directResponse.data;
-      const simulatedOutput = simulatedStep!.output as any;
+        // All should be successful
+        expect(directResponse.success).toBe(true);
+        expect(simulatedStep).toBeDefined();
+        expect(deployedWorkflow).toBeDefined();
+        expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
 
-      // Check that all outputs have consistent structure
-      expect(directOutput).toBeDefined();
-      expect(simulatedOutput).toBeDefined();
+        // Verify consistent structure
+        const directOutput = directResponse.data;
+        const simulatedOutput = simulatedStep!.output as any;
 
-      console.log(
-        "✅ All trigger methods return consistent event trigger results!"
-      );
+        // Check that all outputs have consistent structure
+        expect(directOutput).toBeDefined();
+        expect(simulatedOutput).toBeDefined();
+
+        console.log(
+          "✅ All trigger methods return consistent event trigger results!"
+        );
+      } finally {
+        // Always clean up the workflow, even if test fails
+        if (workflowId) {
+          try {
+            await client.deleteWorkflow(workflowId);
+            console.log(`✅ Cleaned up workflow: ${workflowId}`);
+          } catch (deleteError) {
+            console.warn(
+              `⚠️  Failed to delete workflow ${workflowId}:`,
+              deleteError
+            );
+          }
+        }
+      }
     });
 
     test("should handle empty address array", async () => {
