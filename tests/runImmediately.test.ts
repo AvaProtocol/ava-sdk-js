@@ -201,30 +201,33 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
         if (typeof result.data === "object" && result.data !== null) {
           const data = result.data as any;
 
+          // Handle new REST API response format - check if body is nested
+          const apiResponse = data.body || data;
+
           // Check for Telegram API response structure
-          expect(data).toHaveProperty("ok");
-          expect(data.ok).toBe(true);
+          expect(apiResponse).toHaveProperty("ok");
+          expect(apiResponse.ok).toBe(true);
 
-          if (data.result) {
-            expect(data.result).toHaveProperty("message_id");
-            expect(data.result.message_id).toBe(123);
+          if (apiResponse.result) {
+            expect(apiResponse.result).toHaveProperty("message_id");
+            expect(apiResponse.result.message_id).toBe(123);
 
-            expect(data.result).toHaveProperty("from");
-            expect(data.result.from).toHaveProperty("id");
-            expect(data.result.from.id).toBe(1234567890);
-            expect(data.result.from.is_bot).toBe(true);
-            expect(data.result.from.first_name).toBe("Test Bot");
-            expect(data.result.from.username).toBe("TestBot");
+            expect(apiResponse.result).toHaveProperty("from");
+            expect(apiResponse.result.from).toHaveProperty("id");
+            expect(apiResponse.result.from.id).toBe(1234567890);
+            expect(apiResponse.result.from.is_bot).toBe(true);
+            expect(apiResponse.result.from.first_name).toBe("Test Bot");
+            expect(apiResponse.result.from.username).toBe("TestBot");
 
-            expect(data.result).toHaveProperty("chat");
-            expect(data.result.chat.id).toBe(987654321);
-            expect(data.result.chat.first_name).toBe("Test User");
-            expect(data.result.chat.username).toBe("testuser");
-            expect(data.result.chat.type).toBe("private");
+            expect(apiResponse.result).toHaveProperty("chat");
+            expect(apiResponse.result.chat.id).toBe(987654321);
+            expect(apiResponse.result.chat.first_name).toBe("Test User");
+            expect(apiResponse.result.chat.username).toBe("testuser");
+            expect(apiResponse.result.chat.type).toBe("private");
 
-            expect(data.result).toHaveProperty("date");
-            expect(data.result.date).toBe(1640995200);
-            expect(data.result.text).toBe("Hello from script");
+            expect(apiResponse.result).toHaveProperty("date");
+            expect(apiResponse.result.date).toBe(1640995200);
+            expect(apiResponse.result.text).toBe("Hello from script");
           }
         }
       } else {
