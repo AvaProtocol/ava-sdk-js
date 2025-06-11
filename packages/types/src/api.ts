@@ -89,9 +89,49 @@ export interface RunNodeWithInputsRequest {
   inputVariables?: Record<string, any>;
 }
 
+/**
+ * Comprehensive type for node output data that handles all possible return types
+ * 
+ * This type represents the actual data returned by nodes after execution.
+ * The data can be:
+ * - Primitive values (string, number, boolean, null) - especially from CustomCode nodes
+ * - Objects (Record<string, any>) - from REST API responses, structured data
+ * - Arrays (any[]) - from Filter nodes, loop results, etc.
+ * - null - for empty results (protobuf limitation: cannot be undefined)
+ * 
+ * Note: Due to protobuf limitations, undefined is not supported and will be converted to null.
+ * This type is designed to be compatible with the existing OutputDataProps type used in workflow executions.
+ */
+export type NodeOutputData = 
+  | string 
+  | number 
+  | boolean 
+  | null
+  | Record<string, any>
+  | any[];
+
+/**
+ * Comprehensive type for trigger output data that handles all possible return types
+ * 
+ * This type represents the actual data returned by triggers after execution.
+ * The data can be:
+ * - Primitive values (string, number, boolean, null) - from various trigger types
+ * - Objects (Record<string, any>) - from structured trigger data
+ * - null - for empty results (protobuf limitation: cannot be undefined)
+ * 
+ * Note: Due to protobuf limitations, undefined is not supported and will be converted to null.
+ * This type is designed to be compatible with the existing OutputDataProps type used in workflow executions.
+ */
+export type TriggerOutputData = 
+  | string 
+  | number 
+  | boolean 
+  | null
+  | Record<string, any>;
+
 export interface RunNodeWithInputsResponse {
   success: boolean;
-  data?: Record<string, any>;
+  data: NodeOutputData;
   error?: string;
   executionId?: string;
   nodeId?: string;
@@ -104,7 +144,7 @@ export interface RunTriggerRequest {
 
 export interface RunTriggerResponse {
   success: boolean;
-  data?: Record<string, any>;
+  data: TriggerOutputData;
   error?: string;
   triggerId?: string;
 }

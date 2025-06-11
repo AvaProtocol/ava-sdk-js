@@ -1,9 +1,13 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Node from "./interface";
-import { NodeType, LoopNodeData, LoopNodeProps, NodeProps } from "@avaprotocol/types";
+import {
+  NodeType,
+  LoopNodeData,
+  LoopNodeProps,
+  NodeProps,
+} from "@avaprotocol/types";
+import { convertProtobufValueToJs } from "../../utils";
 import _ from "lodash";
-
-
 
 class LoopNode extends Node {
   constructor(props: LoopNodeProps) {
@@ -20,7 +24,7 @@ class LoopNode extends Node {
     // Get the config data directly as flat structure
     const configData = loopNode.getConfig()?.toObject();
     const loopNodeData = loopNode.toObject() as any;
-    
+
     // Since LoopNodeData is now Config.AsObject, we need to merge the config properties
     // with the nested node data from the full object
     const data: LoopNodeData = {
@@ -71,21 +75,26 @@ class LoopNode extends Node {
       const contractWrite = new avs_pb.ContractWriteNode();
       if ((data as any).contractWrite.config) {
         const config = new avs_pb.ContractWriteNode.Config();
-        config.setContractAddress((data as any).contractWrite.config.contractAddress);
+        config.setContractAddress(
+          (data as any).contractWrite.config.contractAddress
+        );
         config.setCallData((data as any).contractWrite.config.callData);
         config.setContractAbi((data as any).contractWrite.config.contractAbi);
-        
+
         // Handle method calls array for ContractWrite
-        const methodCalls = (data as any).contractWrite.config.methodCallsList || [];
-        methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
-          const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
-          methodCallMsg.setCallData(methodCall.callData);
-          if (methodCall.methodName) {
-            methodCallMsg.setMethodName(methodCall.methodName);
+        const methodCalls =
+          (data as any).contractWrite.config.methodCallsList || [];
+        methodCalls.forEach(
+          (methodCall: { callData: string; methodName?: string }) => {
+            const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
+            methodCallMsg.setCallData(methodCall.callData);
+            if (methodCall.methodName) {
+              methodCallMsg.setMethodName(methodCall.methodName);
+            }
+            config.addMethodCalls(methodCallMsg);
           }
-          config.addMethodCalls(methodCallMsg);
-        });
-        
+        );
+
         contractWrite.setConfig(config);
       }
       loopNode.setContractWrite(contractWrite);
@@ -93,20 +102,25 @@ class LoopNode extends Node {
       const contractRead = new avs_pb.ContractReadNode();
       if ((data as any).contractRead.config) {
         const config = new avs_pb.ContractReadNode.Config();
-        config.setContractAddress((data as any).contractRead.config.contractAddress);
+        config.setContractAddress(
+          (data as any).contractRead.config.contractAddress
+        );
         config.setContractAbi((data as any).contractRead.config.contractAbi);
-        
+
         // Handle method calls array
-        const methodCalls = (data as any).contractRead.config.methodCallsList || [];
-        methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
-          const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
-          methodCallMsg.setCallData(methodCall.callData);
-          if (methodCall.methodName) {
-            methodCallMsg.setMethodName(methodCall.methodName);
+        const methodCalls =
+          (data as any).contractRead.config.methodCallsList || [];
+        methodCalls.forEach(
+          (methodCall: { callData: string; methodName?: string }) => {
+            const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
+            methodCallMsg.setCallData(methodCall.callData);
+            if (methodCall.methodName) {
+              methodCallMsg.setMethodName(methodCall.methodName);
+            }
+            config.addMethodCalls(methodCallMsg);
           }
-          config.addMethodCalls(methodCallMsg);
-        });
-        
+        );
+
         contractRead.setConfig(config);
       }
       loopNode.setContractRead(contractRead);
@@ -121,9 +135,11 @@ class LoopNode extends Node {
           (data as any).graphqlDataQuery.config.variablesMap &&
           (data as any).graphqlDataQuery.config.variablesMap.length > 0
         ) {
-          (data as any).graphqlDataQuery.config.variablesMap.forEach(([key, value]: [string, string]) => {
-            config.getVariablesMap().set(key, value);
-          });
+          (data as any).graphqlDataQuery.config.variablesMap.forEach(
+            ([key, value]: [string, string]) => {
+              config.getVariablesMap().set(key, value);
+            }
+          );
         }
         graphqlQuery.setConfig(config);
       }
@@ -140,9 +156,11 @@ class LoopNode extends Node {
           (data as any).restApi.config.headersMap &&
           (data as any).restApi.config.headersMap.length > 0
         ) {
-          (data as any).restApi.config.headersMap.forEach(([key, value]: [string, string]) => {
-            config.getHeadersMap().set(key, value);
-          });
+          (data as any).restApi.config.headersMap.forEach(
+            ([key, value]: [string, string]) => {
+              config.getHeadersMap().set(key, value);
+            }
+          );
         }
         restApi.setConfig(config);
       }
@@ -163,8 +181,43 @@ class LoopNode extends Node {
   }
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+    // For immediate execution, data comes as CustomCode format
+    const customCodeOutput = outputData.getCustomCode();
+    if (customCodeOutput) {
+      const result = customCodeOutput.toObject();
+
+      // Handle nested data structure
+      if (
+        result &&
+        typeof result === "object" &&
+        Object.keys(result).length === 1 &&
+        "data" in result
+      ) {
+        return result.data;
+      }
+
+      return result;
+    }
+
+    // For workflow execution, data comes as Loop format with JSON string
     const loopOutput = outputData.getLoop();
-    return loopOutput?.toObject() || null;
+    if (loopOutput) {
+      const loopObj = loopOutput.toObject();
+
+      // If there's a data field that's a JSON string, parse it
+      if (loopObj.data && typeof loopObj.data === "string") {
+        try {
+          return JSON.parse(loopObj.data);
+        } catch (e) {
+          // If JSON parsing fails, return the raw data
+          return loopObj.data;
+        }
+      }
+
+      return loopObj;
+    }
+
+    return null;
   }
 }
 
