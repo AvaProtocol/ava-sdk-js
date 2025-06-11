@@ -181,30 +181,19 @@ class LoopNode extends Node {
   }
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
-    // For immediate execution, the server returns loop data as CustomCode format
+    // For immediate execution, data comes as CustomCode format
     const customCodeOutput = outputData.getCustomCode();
-    if (customCodeOutput?.getData()) {
-      const result = convertProtobufValueToJs(customCodeOutput.getData());
+    if (customCodeOutput) {
+      const result = customCodeOutput.toObject();
 
-      // Check if the result is wrapped with a single "data" property
+      // Handle nested data structure
       if (
         result &&
         typeof result === "object" &&
         Object.keys(result).length === 1 &&
         "data" in result
       ) {
-        // If data is a Go map string, parse it
-        if (typeof result.data === "string") {
-          const parsed = LoopNode.parseGoMapStringArray(result.data);
-          return parsed !== null ? parsed : result.data;
-        }
         return result.data;
-      }
-
-      // If result is directly a Go map string, parse it
-      if (typeof result === "string") {
-        const parsed = LoopNode.parseGoMapStringArray(result);
-        return parsed !== null ? parsed : result;
       }
 
       return result;
@@ -220,9 +209,8 @@ class LoopNode extends Node {
         try {
           return JSON.parse(loopObj.data);
         } catch (e) {
-          // If JSON parsing fails, try Go map parsing
-          const parsed = LoopNode.parseGoMapStringArray(loopObj.data);
-          return parsed !== null ? parsed : loopObj.data;
+          // If JSON parsing fails, return the raw data
+          return loopObj.data;
         }
       }
 
@@ -230,195 +218,6 @@ class LoopNode extends Node {
     }
 
     return null;
-  }
-
-  /**
-   * Parse Go map string array format like "[map[key:value] map[key2:value2]]"
-   * into proper JavaScript array of objects
-   */
-  private static parseGoMapStringArray(input: string): any[] | null {
-    if (!input || typeof input !== "string") {
-      return null;
-    }
-
-    // Handle empty array
-    if (input.trim() === "[]") {
-      return [];
-    }
-
-    // Check if it looks like a Go map array: starts with [ and contains map[
-    if (!input.startsWith("[") || !input.includes("map[")) {
-      return null;
-    }
-
-    try {
-      // Extract content between the outer brackets
-      const content = input.slice(1, -1).trim();
-      if (!content) {
-        return [];
-      }
-
-      const results: any[] = [];
-      let pos = 0;
-
-      while (pos < content.length) {
-        // Skip whitespace
-        while (pos < content.length && /\s/.test(content[pos])) {
-          pos++;
-        }
-
-        if (pos >= content.length) break;
-
-        // Look for "map[" start
-        if (content.substr(pos, 4) === "map[") {
-          pos += 4; // Skip "map["
-
-          // Find the matching closing bracket
-          let bracketCount = 1;
-          let start = pos;
-
-          while (pos < content.length && bracketCount > 0) {
-            if (content[pos] === "[") {
-              bracketCount++;
-            } else if (content[pos] === "]") {
-              bracketCount--;
-            }
-            if (bracketCount > 0) {
-              pos++;
-            }
-          }
-
-          if (bracketCount === 0) {
-            // Extract the map content
-            const mapContent = content.slice(start, pos);
-            const parsedMap = LoopNode.parseGoMapContent(mapContent);
-            if (parsedMap) {
-              results.push(parsedMap);
-            }
-            pos++; // Skip the closing ']'
-          } else {
-            // Malformed, break
-            break;
-          }
-        } else {
-          // Skip unknown content
-          pos++;
-        }
-      }
-
-      return results.length > 0 ? results : null;
-    } catch (e) {
-      console.warn("Failed to parse Go map string:", e);
-      return null;
-    }
-  }
-
-  /**
-   * Parse the content inside a Go map like "key:value key2:value2"
-   */
-  private static parseGoMapContent(content: string): any | null {
-    if (!content) {
-      return {};
-    }
-
-    try {
-      const result: any = {};
-      let pos = 0;
-
-      while (pos < content.length) {
-        // Skip whitespace
-        while (pos < content.length && /\s/.test(content[pos])) {
-          pos++;
-        }
-
-        if (pos >= content.length) break;
-
-        // Find key (everything up to the first colon)
-        let keyStart = pos;
-        while (pos < content.length && content[pos] !== ":") {
-          pos++;
-        }
-
-        if (pos >= content.length) break; // No colon found
-
-        const key = content.slice(keyStart, pos).trim();
-        pos++; // Skip the colon
-
-        // Find value (everything up to the next space that precedes a key, or end)
-        let valueStart = pos;
-        let valueEnd = pos;
-
-        // Look ahead to find the end of this value
-        while (valueEnd < content.length) {
-          if (/\s/.test(content[valueEnd])) {
-            // Found whitespace, check if next non-whitespace has a colon
-            let nextKeyPos = valueEnd + 1;
-            while (
-              nextKeyPos < content.length &&
-              /\s/.test(content[nextKeyPos])
-            ) {
-              nextKeyPos++;
-            }
-
-            // Look for a colon in the next word
-            let hasColon = false;
-            let checkPos = nextKeyPos;
-            while (checkPos < content.length && !/\s/.test(content[checkPos])) {
-              if (content[checkPos] === ":") {
-                hasColon = true;
-                break;
-              }
-              checkPos++;
-            }
-
-            if (hasColon) {
-              // Next word has a colon, so this is the end of current value
-              break;
-            }
-          }
-          valueEnd++;
-        }
-
-        const value = content.slice(valueStart, valueEnd).trim();
-
-        // Convert value to appropriate type
-        result[key] = LoopNode.parseValue(value);
-
-        pos = valueEnd;
-      }
-
-      return result;
-    } catch (e) {
-      console.warn("Failed to parse Go map content:", content, e);
-      return null;
-    }
-  }
-
-  /**
-   * Parse a value string to appropriate JavaScript type
-   */
-  private static parseValue(value: string): any {
-    if (!value) return "";
-
-    // Try boolean
-    if (value === "true") return true;
-    if (value === "false") return false;
-
-    // Try number (int or float)
-    if (/^-?\d+$/.test(value)) {
-      return parseInt(value, 10);
-    }
-    if (/^-?\d*\.\d+$/.test(value)) {
-      return parseFloat(value);
-    }
-
-    // Try ISO date
-    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value)) {
-      return value; // Keep as string for JSON compatibility
-    }
-
-    // Default to string
-    return value;
   }
 }
 
