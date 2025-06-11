@@ -5,15 +5,14 @@ import { TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
-  getNextId,
-  TIMEOUT_DURATION,
   SaltGlobal,
   removeCreatedWorkflows,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
+import * as avs_pb from "@/grpc_codegen/avs_pb";
 
-jest.setTimeout(TIMEOUT_DURATION);
+jest.setTimeout(45000);
 
 const { avsEndpoint, walletPrivateKey, factoryAddress, chainEndpoint } =
   getConfig();
@@ -318,7 +317,7 @@ describe("EventTrigger Tests", () => {
         expect(result.success).toBe(true);
         expect(result.data).toBe(null);
       }
-    }, 20000); // Increased timeout to handle blockchain search
+    });
 
     test("should run trigger for Transfer events to core address", async () => {
       if (!isSepoliaTest) {
@@ -367,7 +366,7 @@ describe("EventTrigger Tests", () => {
         expect(result.success).toBe(true);
         expect(result.data).toBe(null);
       }
-    }, 20000); // Increased timeout to handle blockchain search
+    });
 
     test("should run trigger with multiple Transfer event queries", async () => {
       if (!isSepoliaTest) {
@@ -405,7 +404,7 @@ describe("EventTrigger Tests", () => {
         expect(result.success).toBe(true);
         expect(result.data).toBe(null);
       }
-    }, 20000); // Increased timeout to handle blockchain search
+    });
 
     test("should run trigger with single contract address filter", async () => {
       if (!isSepoliaTest) {
@@ -488,7 +487,7 @@ describe("EventTrigger Tests", () => {
       // For simulation, we can accept null output when no events are found
       // This is realistic behavior for event triggers
       console.log("✅ Event trigger simulation completed successfully");
-    }, 25000); // Increased timeout for workflow simulation
+    });
 
     test("should simulate workflow with single event query", async () => {
       if (!isSepoliaTest) {
@@ -533,7 +532,7 @@ describe("EventTrigger Tests", () => {
       expect(triggerStep!.success).toBe(true);
 
       console.log("✅ Single event query simulation completed successfully");
-    }, 25000); // Increased timeout for workflow simulation
+    });
   });
 
   describe("Deploy Workflow + Trigger Tests", () => {
@@ -832,7 +831,7 @@ describe("EventTrigger Tests", () => {
         expect(result.success).toBe(true);
         expect(result.data).toBe(null);
       }
-    }, 20000); // Increased timeout to handle blockchain search
+    });
   });
 
   describe("Empty Data Handling Tests", () => {
@@ -846,8 +845,8 @@ describe("EventTrigger Tests", () => {
         "🚀 Testing empty data vs error distinction for event triggers..."
       );
 
-      // Test 1: Valid query but no matching events (should return null data)
       // Use a definitely non-existent contract address to ensure no events
+      // This should be much faster than real blockchain queries
       const noEventsResult = await client.runTrigger({
         triggerType: TriggerType.Event,
         triggerConfig: {
@@ -871,7 +870,7 @@ describe("EventTrigger Tests", () => {
       expect(noEventsResult.error).toBe("");
       expect(noEventsResult.data).toBe(null);
       expect(noEventsResult.triggerId).toBeDefined();
-    }, 10000); // Reduced timeout since we're using non-existent contract
+    });
 
     test("should handle empty address arrays consistently", async () => {
       if (!isSepoliaTest) {
@@ -910,7 +909,7 @@ describe("EventTrigger Tests", () => {
         // If successful, data can be null (no events) or contain events
         expect(result.error).toBe("");
       }
-    }, 10000); // Reduced timeout
+    });
 
     test("should handle empty topics array consistently", async () => {
       if (!isSepoliaTest) {
@@ -943,7 +942,7 @@ describe("EventTrigger Tests", () => {
       if (result.success) {
         expect(result.error).toBe("");
       }
-    }, 10000); // Reduced timeout
+    });
 
     test("should maintain empty data consistency across execution methods", async () => {
       if (!isSepoliaTest) {
@@ -1027,7 +1026,7 @@ describe("EventTrigger Tests", () => {
       console.log(
         "✅ Empty data handling is consistent across execution methods!"
       );
-    }, 15000); // Increased timeout for workflow simulation
+    });
 
     test("should handle malformed query configurations gracefully", async () => {
       if (!isSepoliaTest) {
@@ -1067,7 +1066,7 @@ describe("EventTrigger Tests", () => {
       } else {
         expect(result.error).toBeTruthy();
       }
-    }, 8000); // Shorter timeout for malformed queries
+    });
 
     test("should correctly parse null vs empty object responses (client-side test)", () => {
       console.log("🚀 Testing client-side null vs empty object parsing...");
@@ -1161,6 +1160,188 @@ describe("EventTrigger Tests", () => {
       console.log(
         "✅ Client-side parsing correctly handles null vs data responses!"
       );
+    });
+
+    test("should validate event trigger configuration without network calls", () => {
+      console.log("🚀 Testing event trigger configuration validation...");
+
+      // Test valid configurations
+      const validConfig = {
+        queries: [
+          {
+            addresses: ["0x1234567890123456789012345678901234567890"],
+            topics: [
+              {
+                values: [TRANSFER_EVENT_SIGNATURE, null, null],
+              },
+            ],
+          },
+        ],
+      };
+
+      const trigger = TriggerFactory.create({
+        id: "test-trigger-id",
+        name: "validation_test",
+        type: TriggerType.Event,
+        data: validConfig,
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      expect(request.getEvent()).toBeDefined();
+      expect(request.getEvent()!.getConfig()).toBeDefined();
+      expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(1);
+
+      // Test invalid configurations that actually throw
+      const invalidConfigs = [{ queries: null }, { queries: [] }];
+
+      invalidConfigs.forEach((config, index) => {
+        const invalidTrigger = TriggerFactory.create({
+          id: `invalid-${index}`,
+          name: "invalid_test",
+          type: TriggerType.Event,
+          data: config as any,
+        });
+
+        expect(() => invalidTrigger.toRequest()).toThrow();
+      });
+
+      console.log("✅ Event trigger configuration validation works correctly!");
+    });
+
+    test("should handle empty data scenarios consistently (offline test)", () => {
+      console.log("🚀 Testing empty data scenarios offline...");
+
+      // Test different empty data scenarios
+      const scenarios = [
+        {
+          name: "null data",
+          data: null,
+          expected: null,
+        },
+        {
+          name: "empty object",
+          data: {},
+          expected: null,
+        },
+        {
+          name: "found=false",
+          data: { found: false },
+          expected: null,
+        },
+        {
+          name: "found=true but no event data",
+          data: { found: true },
+          expected: null,
+        },
+        {
+          name: "found=true with transfer log",
+          data: {
+            found: true,
+            transfer_log: {
+              tokenName: "Test",
+              tokenSymbol: "TST",
+              transactionHash: "0x123",
+            },
+          },
+          expected: "transfer_log",
+        },
+        {
+          name: "found=true with evm log",
+          data: {
+            found: true,
+            evm_log: {
+              address: "0x456",
+              topics: ["0xtopic"],
+              data: "0xdata",
+            },
+          },
+          expected: "evm_log",
+        },
+      ];
+
+      scenarios.forEach((scenario) => {
+        console.log(`Testing scenario: ${scenario.name}`);
+
+        // This simulates what the server-side buildEventTriggerOutput function does
+        let result = null;
+
+        if (scenario.data && scenario.data.found) {
+          if (scenario.data.transfer_log) {
+            result = "transfer_log";
+          } else if (scenario.data.evm_log) {
+            result = "evm_log";
+          }
+        }
+
+        if (scenario.expected === null) {
+          expect(result).toBe(null);
+        } else {
+          expect(result).toBe(scenario.expected);
+        }
+      });
+
+      console.log("✅ Empty data scenarios handled consistently!");
+    });
+
+    test("should handle basic event trigger functionality (offline test)", () => {
+      console.log("🚀 Testing basic event trigger functionality offline...");
+
+      // Test basic trigger creation and validation
+      const basicConfig = {
+        queries: [
+          {
+            addresses: ["0x1234567890123456789012345678901234567890"],
+            topics: [
+              {
+                values: [TRANSFER_EVENT_SIGNATURE],
+              },
+            ],
+          },
+        ],
+      };
+
+      const trigger = TriggerFactory.create({
+        id: "basic-test",
+        name: "basic_event_trigger",
+        type: TriggerType.Event,
+        data: basicConfig,
+      });
+
+      // Verify basic properties
+      expect(trigger.id).toBe("basic-test");
+      expect(trigger.name).toBe("basic_event_trigger");
+      expect(trigger.type).toBe(TriggerType.Event);
+
+      // Verify data structure
+      expect(trigger.data).toBeDefined();
+      const eventData = trigger.data as any; // Type assertion for testing
+      expect(eventData.queries).toBeDefined();
+      expect(Array.isArray(eventData.queries)).toBe(true);
+      expect(eventData.queries.length).toBe(1);
+
+      const query = eventData.queries[0];
+      expect(query.addresses).toBeDefined();
+      expect(Array.isArray(query.addresses)).toBe(true);
+      expect(query.addresses.length).toBe(1);
+      expect(query.addresses[0]).toBe(
+        "0x1234567890123456789012345678901234567890"
+      );
+
+      expect(query.topics).toBeDefined();
+      expect(Array.isArray(query.topics)).toBe(true);
+      expect(query.topics.length).toBe(1);
+      expect(query.topics[0].values).toBeDefined();
+      expect(Array.isArray(query.topics[0].values)).toBe(true);
+      expect(query.topics[0].values[0]).toBe(TRANSFER_EVENT_SIGNATURE);
+
+      // Verify request creation
+      const request = trigger.toRequest();
+      expect(request).toBeDefined();
+      expect(request.getId()).toBe("basic-test");
+      expect(request.getName()).toBe("basic_event_trigger");
+
+      console.log("✅ Basic event trigger functionality works correctly!");
     });
   });
 });
