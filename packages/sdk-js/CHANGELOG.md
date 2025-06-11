@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.10
+
+### Patch Changes
+
+- 72339c5: Updated and tested loop functions; test empty data returned
+- Updated dependencies [72339c5]
+  - @avaprotocol/types@2.2.9
+
 ## 2.3.9
 
 ### Patch Changes

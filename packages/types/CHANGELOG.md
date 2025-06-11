@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.9
+
+### Patch Changes
+
+- 72339c5: Updated and tested loop functions; test empty data returned
+
 ## 2.2.8
 
 ### Patch Changes
