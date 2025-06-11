@@ -27,10 +27,11 @@
     "build:declarations": "tsc -b tsconfig.json",
     "build:js": "tsup src/index.ts --format cjs,esm",
     "build": "yarn build:declarations && yarn build:js",
-    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo",
+    "prepare": "node ../../scripts/prepare-package.js"
   },
   "dependencies": {
-    "@avaprotocol/types": "^2.2.9",
+    "@avaprotocol/types": "workspace:*",
     "@grpc/grpc-js": "^1.11.3",
     "@grpc/proto-loader": "^0.7.13",
     "dotenv": "^16.4.5",

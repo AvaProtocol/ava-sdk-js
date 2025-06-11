@@ -25,7 +25,8 @@
     "build:declarations": "tsc -b tsconfig.json",
     "build:js": "tsup src/index.ts --format cjs,esm",
     "build": "yarn build:declarations && yarn build:js",
-    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo"
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo",
+    "prepare": "node ../../scripts/prepare-package.js"
   },
   "dependencies": {
     "typescript": "^5.4.2"

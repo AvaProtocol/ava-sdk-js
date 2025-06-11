@@ -1,6 +1,6 @@
 {
   "name": "@avaprotocol/root",
-  "version": "1.3.0",
+  "version": "1.2.1-dev.9",
   "engines": {
     "node": ">=20.18.0",
     "yarn": ">=1.22.19"
@@ -28,9 +28,6 @@
     "test:integrations": "dotenv -e .env.$TEST_ENV jest tests/integrations/ --verbose --runInBand",
     "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/",
-    "publish:types": "node scripts/publish-package.js types",
-    "publish:sdk": "node scripts/publish-package.js sdk-js",
-    "publish:all": "yarn publish:types && yarn publish:sdk",
     "release": "node scripts/release.js"
   },
   "devDependencies": {

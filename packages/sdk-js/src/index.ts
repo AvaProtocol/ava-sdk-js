@@ -43,7 +43,7 @@ import {
   type TokenSource,
   type TimeoutConfig,
   type TimeoutError,
-  TimeoutPresets
+  TimeoutPresets,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -68,13 +68,13 @@ class BaseClient {
     );
 
     this.factoryAddress = opts.factoryAddress;
-    
+
     // Set default timeout configuration (NO_RETRY strategy)
     this.timeoutConfig = {
       timeout: 30000,
       retries: 0,
       retryDelay: 0,
-      ...opts.timeout
+      ...opts.timeout,
     };
 
     // Create a new Metadata object for request headers
@@ -111,7 +111,7 @@ class BaseClient {
   ): Promise<TResponse> {
     return this.sendGrpcRequest(method, request, {
       ...options,
-      timeout: TimeoutPresets.FAST
+      timeout: TimeoutPresets.FAST,
     });
   }
 
@@ -129,7 +129,7 @@ class BaseClient {
   ): Promise<TResponse> {
     return this.sendGrpcRequest(method, request, {
       ...options,
-      timeout: TimeoutPresets.SLOW
+      timeout: TimeoutPresets.SLOW,
     });
   }
 
@@ -147,7 +147,7 @@ class BaseClient {
   ): Promise<TResponse> {
     return this.sendGrpcRequest(method, request, {
       ...options,
-      timeout: TimeoutPresets.NO_RETRY
+      timeout: TimeoutPresets.NO_RETRY,
     });
   }
 
@@ -292,13 +292,13 @@ class BaseClient {
       // Merge timeout configuration (priority: options > instance config > defaults)
       const timeoutConfig = {
         ...this.timeoutConfig,
-        ...options?.timeout
+        ...options?.timeout,
       };
 
       const {
         timeout = timeoutConfig.timeout || 30000,
         retries = timeoutConfig.retries || 3,
-        retryDelay = timeoutConfig.retryDelay || 1000
+        retryDelay = timeoutConfig.retryDelay || 1000,
       } = timeoutConfig;
 
       let attempt = 0;
@@ -310,7 +310,9 @@ class BaseClient {
         let timeoutId: NodeJS.Timeout;
         const timeoutPromise = new Promise<never>((_, timeoutReject) => {
           timeoutId = setTimeout(() => {
-            const error = new Error(`gRPC request timeout after ${timeout}ms for method ${method}`) as TimeoutError;
+            const error = new Error(
+              `gRPC request timeout after ${timeout}ms for method ${method}`
+            ) as TimeoutError;
             error.isTimeout = true;
             error.attemptsMade = attempt;
             error.methodName = method;
@@ -319,34 +321,36 @@ class BaseClient {
         });
 
         // Create the actual gRPC call promise
-        const grpcPromise = new Promise<TResponse>((grpcResolve, grpcReject) => {
-          const metadata = new Metadata();
+        const grpcPromise = new Promise<TResponse>(
+          (grpcResolve, grpcReject) => {
+            const metadata = new Metadata();
 
-          // Set auth header if available (priority: options > instance variable)
-          const authKey = options?.authKey || this.authKey;
-          if (authKey) {
-            metadata.set(AUTH_KEY_HEADER, authKey);
-          }
+            // Set auth header if available (priority: options > instance variable)
+            const authKey = options?.authKey || this.authKey;
+            if (authKey) {
+              metadata.set(AUTH_KEY_HEADER, authKey);
+            }
 
-          const call = (this.rpcClient as any)[method](
-            request,
-            metadata,
-            (error: any, response: TResponse) => {
-              if (error) {
-                grpcReject(error);
-              } else {
-                grpcResolve(response);
+            const call = (this.rpcClient as any)[method](
+              request,
+              metadata,
+              (error: any, response: TResponse) => {
+                if (error) {
+                  grpcReject(error);
+                } else {
+                  grpcResolve(response);
+                }
               }
-            }
-          );
+            );
 
-          // Handle call cancellation on timeout
-          timeoutPromise.catch(() => {
-            if (call && call.cancel) {
-              call.cancel();
-            }
-          });
-        });
+            // Handle call cancellation on timeout
+            timeoutPromise.catch(() => {
+              if (call && call.cancel) {
+                call.cancel();
+              }
+            });
+          }
+        );
 
         // Race between timeout and actual call
         Promise.race([grpcPromise, timeoutPromise])
@@ -358,15 +362,20 @@ class BaseClient {
           .catch((error: any) => {
             // Clear the timeout when request fails
             clearTimeout(timeoutId);
-            
-            const isTimeoutError = error.isTimeout || error.message?.includes('timeout');
-            const isRetryableError = isTimeoutError || 
-              error.code === status.UNAVAILABLE || 
+
+            const isTimeoutError =
+              error.isTimeout || error.message?.includes("timeout");
+            const isRetryableError =
+              isTimeoutError ||
+              error.code === status.UNAVAILABLE ||
               error.code === status.DEADLINE_EXCEEDED ||
               error.code === status.RESOURCE_EXHAUSTED;
 
             if (isRetryableError && attempt < retries) {
-              console.warn(`gRPC ${method} attempt ${attempt} failed, retrying in ${retryDelay}ms:`, error.message);
+              console.warn(
+                `gRPC ${method} attempt ${attempt} failed, retrying in ${retryDelay}ms:`,
+                error.message
+              );
               setTimeout(executeRequest, retryDelay);
             } else {
               // Add timeout context to error if it's a timeout
@@ -637,7 +646,9 @@ class Client extends BaseClient {
     }
 
     return {
-      items: result.getItemsList().map((item) => Execution.fromResponse(item).toJson()),
+      items: result
+        .getItemsList()
+        .map((item) => Execution.fromResponse(item).toJson()),
       pageInfo: {
         startCursor: pageInfo.getStartCursor(),
         endCursor: pageInfo.getEndCursor(),
@@ -1085,10 +1096,12 @@ class Client extends BaseClient {
       TriggerType.Event,
       TriggerType.Manual,
     ];
+
     if (triggerTypes.includes(nodeType as TriggerType)) {
       return {
         success: false,
         error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
+        data: null,
         nodeId: "",
       };
     }
@@ -1238,14 +1251,16 @@ class Client extends BaseClient {
     >("getTokenMetadata", request, options);
 
     const token = result.getToken();
-    
+
     return {
-      token: token ? {
-        address: token.getAddress()?.toLowerCase(),
-        name: token.getName(),
-        symbol: token.getSymbol(),
-        decimals: token.getDecimals()
-      } : null,
+      token: token
+        ? {
+            address: token.getAddress()?.toLowerCase(),
+            name: token.getName(),
+            symbol: token.getSymbol(),
+            decimals: token.getDecimals(),
+          }
+        : null,
       found: result.getFound(),
       source: result.getSource() as TokenSource,
     };
@@ -1271,12 +1286,12 @@ export type {
   TokenMetadata,
   GetTokenMetadataRequest,
   GetTokenMetadataResponse,
-  TokenSource
+  TokenSource,
 } from "@avaprotocol/types";
 
 // Re-export timeout-related types and presets
 export {
   TimeoutPresets,
   type TimeoutConfig,
-  type TimeoutError
+  type TimeoutError,
 } from "@avaprotocol/types";
