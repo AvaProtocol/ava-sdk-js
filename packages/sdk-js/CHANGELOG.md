@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.3.12
+
+### Patch Changes
+
+- 0a0c764: Use new release proces
+
 ## 2.3.11
 
 ### Patch Changes
