@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.3.11
+
+### Patch Changes
+
+- 8ebfb1e: Update the RunNodeWithInputsResponse type dependency
+
 ## 2.3.10
 
 ### Patch Changes
