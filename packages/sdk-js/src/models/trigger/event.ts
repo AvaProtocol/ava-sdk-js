@@ -69,7 +69,7 @@ class EventTrigger extends Trigger {
 
     const trigger = new avs_pb.EventTrigger();
     const config = new avs_pb.EventTrigger.Config();
-
+    
     const dataConfig = this.data as EventTriggerDataType;
     const queries = dataConfig.queries;
 
@@ -79,12 +79,12 @@ class EventTrigger extends Trigger {
 
     const queryMessages = queries.map((queryData) => {
       const query = new avs_pb.EventTrigger.Query();
-
+      
       // Set addresses if provided
       if (queryData.addresses && queryData.addresses.length > 0) {
         query.setAddressesList(queryData.addresses);
       }
-
+      
       // Set topics if provided
       if (queryData.topics && queryData.topics.length > 0) {
         const topicsMessages = queryData.topics.map((topicData) => {
@@ -101,15 +101,15 @@ class EventTrigger extends Trigger {
         });
         query.setTopicsList(topicsMessages);
       }
-
+      
       // Set maxEventsPerBlock if provided
       if (queryData.maxEventsPerBlock !== undefined) {
         query.setMaxEventsPerBlock(queryData.maxEventsPerBlock);
       }
-
+      
       return query;
     });
-
+    
     config.setQueriesList(queryMessages);
     trigger.setConfig(config);
     request.setEvent(trigger);
@@ -122,25 +122,25 @@ class EventTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: EventTriggerDataType = { queries: [] };
-
+    
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
-
+      
       if (config) {
         const queries: EventTriggerDataType["queries"] = [];
-
+        
         if (config.getQueriesList && config.getQueriesList().length > 0) {
           config.getQueriesList().forEach((query) => {
             const queryData: EventTriggerDataType["queries"][0] = {
               addresses: [],
               topics: [],
             };
-
+            
             // Extract addresses
             if (query.getAddressesList && query.getAddressesList().length > 0) {
               queryData.addresses = query.getAddressesList();
             }
-
+            
             // Extract topics
             if (query.getTopicsList && query.getTopicsList().length > 0) {
               queryData.topics = query.getTopicsList().map((topics) => ({
@@ -150,17 +150,17 @@ class EventTrigger extends Trigger {
                 values: topics.getValuesList() || []
               })) as EventTriggerDataType["queries"][0]["topics"];
             }
-
+            
             // Extract maxEventsPerBlock
             const maxEvents = query.getMaxEventsPerBlock();
             if (maxEvents && maxEvents > 0) {
               queryData.maxEventsPerBlock = maxEvents;
             }
-
+            
             queries.push(queryData);
           });
         }
-
+        
         data = { queries: queries };
       }
     }

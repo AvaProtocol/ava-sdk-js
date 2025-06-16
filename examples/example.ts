@@ -23,7 +23,12 @@ const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private
 const DEFAULT_PAGE_LIMIT = 5;
 
 // Initialize SDK
-console.log("Current environment is: ", currentEnv);
+console.log(
+  "Current environment is: ",
+  currentEnv,
+  "endpoint: ",
+  getConfig().AP_AVS_RPC
+);
 
 const client = new Client({
   endpoint: getConfig().AP_AVS_RPC,
@@ -111,15 +116,43 @@ async function getWorkflows(
     validOptions.limit
   );
 
-  const result = await client.getWorkflows(params, {
-    after: validOptions.cursor,
-    limit: validOptions.limit,
-  });
+  try {
+    const result = await client.getWorkflows(params, {
+      after: validOptions.cursor,
+      limit: validOptions.limit,
+    });
 
-  console.log(
-    "getWorkflows response:\n",
-    util.inspect(result, { depth: 6, colors: true })
-  );
+    console.log(
+      "getWorkflows response:\n",
+      util.inspect(result, { depth: null, colors: true })
+    );
+  } catch (error: any) {
+    if (
+      error.message &&
+      error.message.includes("invalid smart account address")
+    ) {
+      console.error("❌ Error: Invalid smart account address");
+      console.error(
+        "This means the address you provided is not owned by your authenticated account."
+      );
+      console.error("");
+      console.error("To fix this:");
+      console.error("1. First, check what wallets you own:");
+      console.error("   yarn start getWallets");
+      console.error("");
+      console.error(
+        "2. Then use one of those addresses, or create a new wallet:"
+      );
+      console.error("   yarn start getWallet <salt>");
+      console.error("");
+      console.error(
+        "3. Or simply run without an address to use all your wallets:"
+      );
+      console.error("   yarn start getWorkflows");
+    } else {
+      console.error("❌ Error:", error.message || error);
+    }
+  }
 }
 
 async function getExecutions(
@@ -165,7 +198,7 @@ async function getExecutions(
 
   console.log(
     "getExecutions response:\n",
-    util.inspect(result, { depth: 6, colors: true })
+    util.inspect(result, { depth: null, colors: true })
   );
 }
 
@@ -254,7 +287,7 @@ async function hideAllWallets() {
 
   console.log(
     "Found nonHiddenWallets:\n",
-    util.inspect(nonHiddenWallets, { depth: 6, colors: true })
+    util.inspect(nonHiddenWallets, { depth: null, colors: true })
   );
 
   if (_.isEmpty(nonHiddenWallets)) {
@@ -755,7 +788,7 @@ const main = async (cmd: string) => {
       const wallets = await client.getWallets();
       console.log(
         "getWallets response:\n",
-        util.inspect(wallets, { depth: 6, colors: true })
+        util.inspect(wallets, { depth: null, colors: true })
       );
       break;
     case "hideAllWallets":
@@ -794,7 +827,7 @@ const main = async (cmd: string) => {
 
       console.log(
         "schedule",
-        util.inspect(resultSchedule, { depth: 6, colors: true })
+        util.inspect(resultSchedule, { depth: null, colors: true })
       );
       break;
 
@@ -813,7 +846,7 @@ const main = async (cmd: string) => {
 
       console.log(
         "getWorkflow response:\n",
-        util.inspect(result, { depth: 6, colors: true })
+        util.inspect(result, { depth: null, colors: true })
       );
       break;
 
@@ -832,7 +865,7 @@ const main = async (cmd: string) => {
 
       console.log(
         "getExecution response:\n",
-        util.inspect(resultExecution, { depth: 6, colors: true })
+        util.inspect(resultExecution, { depth: null, colors: true })
       );
       break;
     case "cancelWorkflow":
@@ -866,12 +899,12 @@ const main = async (cmd: string) => {
 
       console.log(
         "secret",
-        util.inspect(isSuccess, { depth: 6, colors: true })
+        util.inspect(isSuccess, { depth: null, colors: true })
       );
       break;
     case "list-secrets":
       const secrets = await client.getSecrets();
-      console.log("secrets", util.inspect(secrets, { depth: 6, colors: true }));
+      console.log("secrets", util.inspect(secrets, { depth: null, colors: true }));
       break;
 
     default:
