@@ -20,6 +20,11 @@ class CustomCodeNode extends Node {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
     
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     // Get the raw protobuf config and convert to our custom interface
     const rawConfig = raw.getCustomCode()!.getConfig()!.toObject();
 
@@ -32,6 +37,7 @@ class CustomCodeNode extends Node {
       ...obj,
       type: NodeType.CustomCode,
       data: convertedConfig,
+      input: input,
     });
   }
 

@@ -16,6 +16,12 @@ class FixedTimeTrigger extends Trigger {
     request.setId(this.id);
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME);
 
+    if (this.input !== undefined) {
+      const { convertJSValueToProtobuf } = require("../../utils");
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
+
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
@@ -34,6 +40,12 @@ class FixedTimeTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+
     let data: FixedTimeTriggerDataType = { epochsList: [] };
     
     if (raw.getFixedTime() && raw.getFixedTime()!.hasConfig()) {
@@ -50,6 +62,7 @@ class FixedTimeTrigger extends Trigger {
       ...obj,
       type: TriggerType.FixedTime,
       data: data,
+      input: input,
     });
   }
 

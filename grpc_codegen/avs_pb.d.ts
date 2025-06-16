@@ -594,6 +594,11 @@ export class TaskTrigger extends jspb.Message {
     getType(): TriggerType;
     setType(value: TriggerType): TaskTrigger;
 
+    hasInput(): boolean;
+    clearInput(): void;
+    getInput(): google_protobuf_struct_pb.Value | undefined;
+    setInput(value?: google_protobuf_struct_pb.Value): TaskTrigger;
+
     hasManual(): boolean;
     clearManual(): void;
     getManual(): boolean;
@@ -637,6 +642,7 @@ export namespace TaskTrigger {
     export type AsObject = {
         name: string,
         type: TriggerType,
+        input?: google_protobuf_struct_pb.Value.AsObject,
         manual: boolean,
         fixedTime?: FixedTimeTrigger.AsObject,
         cron?: CronTrigger.AsObject,
@@ -1725,6 +1731,11 @@ export class TaskNode extends jspb.Message {
     getType(): NodeType;
     setType(value: NodeType): TaskNode;
 
+    hasInput(): boolean;
+    clearInput(): void;
+    getInput(): google_protobuf_struct_pb.Value | undefined;
+    setInput(value?: google_protobuf_struct_pb.Value): TaskNode;
+
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
     getEthTransfer(): ETHTransferNode | undefined;
@@ -1787,6 +1798,7 @@ export namespace TaskNode {
         id: string,
         name: string,
         type: NodeType,
+        input?: google_protobuf_struct_pb.Value.AsObject,
         ethTransfer?: ETHTransferNode.AsObject,
         contractWrite?: ContractWriteNode.AsObject,
         contractRead?: ContractReadNode.AsObject,

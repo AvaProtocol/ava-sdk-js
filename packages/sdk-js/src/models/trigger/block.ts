@@ -16,6 +16,12 @@ class BlockTrigger extends Trigger {
     request.setId(this.id);
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_BLOCK);
 
+    if (this.input !== undefined) {
+      const { convertJSValueToProtobuf } = require("../../utils");
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
+
     if (!this.data) {
       throw new Error(`Trigger data is missing for block`);
     }
@@ -57,11 +63,18 @@ class BlockTrigger extends Trigger {
         };
       }
     }
+
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
     
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
       data: data,
+      input: input,
     });
   }
 

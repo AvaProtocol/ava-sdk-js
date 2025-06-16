@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput } from "./interface";
 import { TriggerType, CronTriggerDataType, CronTriggerOutput, CronTriggerProps, TriggerProps } from "@avaprotocol/types";
+import { convertProtobufValueToJs } from "../../utils";
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
@@ -12,6 +13,12 @@ class CronTrigger extends Trigger {
     request.setName(this.name);
     request.setId(this.id);
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_CRON);
+
+    if (this.input !== undefined) {
+      const { convertJSValueToProtobuf } = require("../../utils");
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
 
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
@@ -43,6 +50,11 @@ class CronTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+
     let data: CronTriggerDataType = { schedules: [] };
     
     if (raw.getCron() && raw.getCron()!.hasConfig()) {
@@ -59,6 +71,7 @@ class CronTrigger extends Trigger {
       ...obj,
       type: TriggerType.Cron,
       data: data,
+      input: input,
     });
   }
 

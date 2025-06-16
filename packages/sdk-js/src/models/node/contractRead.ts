@@ -16,6 +16,11 @@ class ContractReadNode extends Node {
     const obj = raw.toObject() as unknown as NodeProps;
     const protobufData = raw.getContractRead()!.getConfig()!.toObject();
     
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     // Convert protobuf data to our custom interface
     const data: ContractReadNodeData = {
       contractAddress: protobufData.contractAddress,
@@ -30,6 +35,7 @@ class ContractReadNode extends Node {
       ...obj,
       type: NodeType.ContractRead,
       data: data,
+      input: input,
     });
   }
 

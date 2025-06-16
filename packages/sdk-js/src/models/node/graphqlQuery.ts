@@ -17,10 +17,18 @@ class GraphQLQueryNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): GraphQLQueryNode {
     // Convert the raw object to GraphQLQueryNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     return new GraphQLQueryNode({
       ...obj,
       type: NodeType.GraphQLQuery,
       data: raw.getGraphqlQuery()!.getConfig()!.toObject() as GraphQLQueryNodeData,
+      input: input,
     });
   }
 

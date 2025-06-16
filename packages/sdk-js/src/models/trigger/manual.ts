@@ -14,6 +14,12 @@ class ManualTrigger extends Trigger {
     trigger.setId(this.id);
     trigger.setName(this.name);
     trigger.setType(avs_pb.TriggerType.TRIGGER_TYPE_MANUAL);
+
+    if (this.input !== undefined) {
+      const { convertJSValueToProtobuf } = require("../../utils");
+      const inputValue = convertJSValueToProtobuf(this.input);
+      trigger.setInput(inputValue);
+    }
     
     trigger.setManual(true);
     
@@ -23,10 +29,17 @@ class ManualTrigger extends Trigger {
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
     
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     return new ManualTrigger({
       ...obj,
       type: TriggerType.Manual,
       data: null, // Manual triggers don't have data in the protobuf response
+      input: input
     });
   }
   
@@ -54,4 +67,4 @@ class ManualTrigger extends Trigger {
   }
 }
 
-export default ManualTrigger;                
+export default ManualTrigger;                                                                

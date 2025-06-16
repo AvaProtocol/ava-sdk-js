@@ -1,6 +1,7 @@
 import { NodeType, BranchNodeData, BranchNodeProps, NodeProps } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { convertProtobufValueToJs, convertJSValueToProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { conditions }
 
@@ -15,6 +16,11 @@ class BranchNode extends Node {
     const obj = raw.toObject() as unknown as NodeProps;
     const protobufData = raw.getBranch()!.toObject().config;
     
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     // Convert protobuf data to our custom interface
     const data: BranchNodeData = {
       conditions: protobufData?.conditionsList?.map(condition => ({
@@ -28,6 +34,7 @@ class BranchNode extends Node {
       ...obj,
       type: NodeType.Branch,
       data: data,
+      input: input,
     });
   }
 

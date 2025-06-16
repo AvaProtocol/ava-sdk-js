@@ -21,6 +21,11 @@ class LoopNode extends Node {
       throw new Error("Response does not contain a Loop node");
     }
 
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+
     // Get the config data directly as flat structure
     const configData = loopNode.getConfig()?.toObject();
     const loopNodeData = loopNode.toObject() as any;
@@ -42,6 +47,7 @@ class LoopNode extends Node {
       ...obj,
       type: NodeType.Loop,
       data: data,
+      input: input,
     });
   }
 

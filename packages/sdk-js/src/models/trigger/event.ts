@@ -57,6 +57,12 @@ class EventTrigger extends Trigger {
     request.setId(this.id);
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_EVENT);
 
+    if (this.input !== undefined) {
+      const { convertJSValueToProtobuf } = require("../../utils");
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
+
     if (!this.data) {
       throw new Error(`Trigger data is missing for ${this.type}`);
     }
@@ -110,6 +116,13 @@ class EventTrigger extends Trigger {
     // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
+    // Extract input field if present
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+
     let data: EventTriggerDataType = { queries: [] };
     
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
@@ -155,6 +168,7 @@ class EventTrigger extends Trigger {
       ...obj,
       type: TriggerType.Event,
       data: data,
+      input: input,
     });
   }
 

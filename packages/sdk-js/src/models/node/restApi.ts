@@ -20,10 +20,17 @@ class RestAPINode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): RestAPINode {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     return new RestAPINode({
       ...obj,
       type: NodeType.RestAPI,
       data: raw.getRestApi()!.getConfig()!.toObject() as RestAPINodeData,
+      input: input,
     });
   }
 

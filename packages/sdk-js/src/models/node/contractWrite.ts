@@ -15,6 +15,13 @@ class ContractWriteNode extends Node {
     const obj = raw.toObject() as unknown as NodeProps;
     const protobufData = raw.getContractWrite()!.getConfig()!.toObject();
     
+    // Extract input field if present
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     // Convert protobuf data to our custom interface
     const data: ContractWriteNodeData = {
       contractAddress: protobufData.contractAddress,
@@ -30,6 +37,7 @@ class ContractWriteNode extends Node {
       ...obj,
       type: NodeType.ContractWrite,
       data: data,
+      input: input,
     });
   }
 

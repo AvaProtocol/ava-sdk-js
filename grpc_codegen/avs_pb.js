@@ -6522,6 +6522,7 @@ proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     type: jspb.Message.getFieldWithDefault(msg, 8, 0),
+    input: (f = msg.getInput()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
     fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedTimeTrigger.toObject(includeInstance, f),
     cron: (f = msg.getCron()) && proto.aggregator.CronTrigger.toObject(includeInstance, f),
@@ -6571,6 +6572,11 @@ proto.aggregator.TaskTrigger.deserializeBinaryFromReader = function(msg, reader)
     case 8:
       var value = /** @type {!proto.aggregator.TriggerType} */ (reader.readEnum());
       msg.setType(value);
+      break;
+    case 9:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setInput(value);
       break;
     case 2:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -6641,6 +6647,14 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
     writer.writeEnum(
       8,
       f
+    );
+  }
+  f = message.getInput();
+  if (f != null) {
+    writer.writeMessage(
+      9,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
   f = /** @type {boolean} */ (jspb.Message.getField(message, 2));
@@ -6725,6 +6739,43 @@ proto.aggregator.TaskTrigger.prototype.getType = function() {
  */
 proto.aggregator.TaskTrigger.prototype.setType = function(value) {
   return jspb.Message.setProto3EnumField(this, 8, value);
+};
+
+
+/**
+ * optional google.protobuf.Value input = 9;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.TaskTrigger.prototype.getInput = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 9));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.TaskTrigger} returns this
+*/
+proto.aggregator.TaskTrigger.prototype.setInput = function(value) {
+  return jspb.Message.setWrapperField(this, 9, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.TaskTrigger} returns this
+ */
+proto.aggregator.TaskTrigger.prototype.clearInput = function() {
+  return this.setInput(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.TaskTrigger.prototype.hasInput = function() {
+  return jspb.Message.getField(this, 9) != null;
 };
 
 
@@ -14475,6 +14526,7 @@ proto.aggregator.TaskNode.toObject = function(includeInstance, msg) {
     id: jspb.Message.getFieldWithDefault(msg, 2, ""),
     name: jspb.Message.getFieldWithDefault(msg, 3, ""),
     type: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    input: (f = msg.getInput()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.toObject(includeInstance, f),
     contractWrite: (f = msg.getContractWrite()) && proto.aggregator.ContractWriteNode.toObject(includeInstance, f),
     contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.toObject(includeInstance, f),
@@ -14531,6 +14583,11 @@ proto.aggregator.TaskNode.deserializeBinaryFromReader = function(msg, reader) {
     case 1:
       var value = /** @type {!proto.aggregator.NodeType} */ (reader.readEnum());
       msg.setType(value);
+      break;
+    case 4:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setInput(value);
       break;
     case 10:
       var value = new proto.aggregator.ETHTransferNode;
@@ -14625,6 +14682,14 @@ proto.aggregator.TaskNode.serializeBinaryToWriter = function(message, writer) {
     writer.writeEnum(
       1,
       f
+    );
+  }
+  f = message.getInput();
+  if (f != null) {
+    writer.writeMessage(
+      4,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
   f = message.getEthTransfer();
@@ -14753,6 +14818,43 @@ proto.aggregator.TaskNode.prototype.getType = function() {
  */
 proto.aggregator.TaskNode.prototype.setType = function(value) {
   return jspb.Message.setProto3EnumField(this, 1, value);
+};
+
+
+/**
+ * optional google.protobuf.Value input = 4;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.TaskNode.prototype.getInput = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 4));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.TaskNode} returns this
+*/
+proto.aggregator.TaskNode.prototype.setInput = function(value) {
+  return jspb.Message.setWrapperField(this, 4, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.TaskNode} returns this
+ */
+proto.aggregator.TaskNode.prototype.clearInput = function() {
+  return this.setInput(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.TaskNode.prototype.hasInput = function() {
+  return jspb.Message.getField(this, 4) != null;
 };
 
 

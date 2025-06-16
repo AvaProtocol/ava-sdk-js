@@ -13,10 +13,18 @@ class ETHTransferNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): ETHTransferNode {
     // Convert the raw object to ETHTransferNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     return new ETHTransferNode({
       ...obj,
       type: NodeType.ETHTransfer,
       data: raw.getEthTransfer()!.getConfig()!.toObject() as ETHTransferNodeData,
+      input: input,
     });
   }
 

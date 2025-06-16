@@ -13,10 +13,18 @@ class FilterNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): FilterNode {
     // Convert the raw object to FilterNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    let input: any = undefined;
+    if (raw.hasInput()) {
+      const { convertProtobufValueToJs } = require("../../utils");
+      input = convertProtobufValueToJs(raw.getInput());
+    }
+    
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
       data: raw.getFilter()!.getConfig()!.toObject() as FilterNodeData,
+      input: input,
     });
   }
 
