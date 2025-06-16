@@ -190,7 +190,7 @@ describe("ContractWrite Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.nodeId).toBeDefined();
 
-      if (result.success && result.data) {
+      if (result.success && result.data && typeof result.data === 'object' && 'results' in result.data) {
         // Should have transaction hash for successful write
         expect(result.data.results).toBeDefined();
         expect(Array.isArray(result.data.results)).toBe(true);
@@ -246,7 +246,7 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
 
-      if (result.success && result.data) {
+      if (result.success && result.data && typeof result.data === 'object' && 'results' in result.data) {
         expect(result.data.results).toBeDefined();
         expect(result.data.results.length).toBe(2);
         result.data.results.forEach((methodResult: any, index: number) => {

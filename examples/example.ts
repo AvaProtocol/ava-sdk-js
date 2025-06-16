@@ -76,7 +76,25 @@ async function getWorkflows(
   address: string,
   options: { authKey: string; cursor: string; limit: number }
 ) {
-  const params = _.split(address, ",");
+  // If no address provided, get wallets first and use their addresses
+  let params: string[];
+
+  if (!address || address.trim() === "") {
+    console.log("No smart wallet address provided, fetching all wallets...");
+    const wallets = await client.getWallets();
+
+    if (_.isEmpty(wallets)) {
+      console.log(
+        "No wallets found. Please create a wallet first using 'getWallet <salt>'"
+      );
+      return;
+    }
+
+    params = _.map(wallets, (wallet: any) => wallet.address);
+    console.log(`Found ${wallets.length} wallets:`, params);
+  } else {
+    params = _.split(address, ",");
+  }
 
   const validOptions = {
     authKey: options.authKey,
@@ -227,6 +245,61 @@ const createWallet = async (owner, token, salt, factoryAddress) => {
   });
 };
 
+// Hide all wallets except the default salt:0 wallet
+async function hideAllWallets() {
+  console.log("Getting all wallets...");
+  const wallets = await client.getWallets();
+
+  const nonHiddenWallets = wallets.filter((wallet) => !wallet.isHidden);
+
+  console.log(
+    "Found nonHiddenWallets:\n",
+    util.inspect(nonHiddenWallets, { depth: 6, colors: true })
+  );
+
+  if (_.isEmpty(nonHiddenWallets)) {
+    console.log("No wallets found to hide.");
+    return;
+  }
+
+  console.log(
+    `\nHiding ${nonHiddenWallets.length} wallets (excluding salt:0)...`
+  );
+
+  for (const wallet of nonHiddenWallets) {
+    // Skip the default salt:0 wallet - never hide it
+    if (wallet.salt === "0") {
+      console.log(
+        `Skipping default wallet with salt:0 (address: ${wallet.address})`
+      );
+      continue;
+    }
+
+    try {
+      console.log(
+        `Hiding wallet with salt:${wallet.salt} (address: ${wallet.address})...`
+      );
+
+      const result = await client.setWallet(
+        {
+          salt: wallet.salt,
+          factoryAddress: wallet.factory,
+        },
+        { isHidden: true }
+      );
+
+      console.log(`✅ Successfully hid wallet with salt:${wallet.salt}`);
+    } catch (error) {
+      console.error(
+        `❌ Failed to hide wallet with salt:${wallet.salt}:`,
+        error
+      );
+    }
+  }
+
+  console.log("\n🎉 Finished hiding wallets!");
+}
+
 function getTaskData() {
   let ABI = ["function transfer(address to, uint amount)"];
   let iface = new ethers.Interface(ABI);
@@ -267,7 +340,7 @@ async function schedulePriceReport(
     },
   });
 
-  if (schedule === "schedule-cron") {
+  if (schedules === "schedule-cron") {
     trigger = TriggerFactory.create({
       id: triggerId,
       type: TriggerType.Cron,
@@ -308,7 +381,7 @@ async function schedulePriceReport(
             {
               callData: "0xfeaf968c",
               methodName: "latestRoundData",
-            }
+            },
           ],
         },
       },
@@ -525,15 +598,18 @@ async function scheduleSweep(owner: string, token: string, target: string) {
       data: {
         queries: [
           {
-            addresses: ["0x7b79995e5f793a07bc00c21412e50ecae098e7f9", "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"], // WETH and USDC
+            addresses: [
+              "0x7b79995e5f793a07bc00c21412e50ecae098e7f9",
+              "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+            ], // WETH and USDC
             topics: [
               {
                 values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                   "", // Any from address
                   target, // The wallet to monitor here
-                ]
-              }
+                ],
+              },
             ],
             maxEventsPerBlock: 100,
           },
@@ -633,15 +709,18 @@ async function scheduleMonitorTransfer(
       data: {
         queries: [
           {
-            addresses: ["0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6"], // USDT and DAI
+            addresses: [
+              "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0",
+              "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6",
+            ], // USDT and DAI
             topics: [
               {
                 values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                   "", // Any from address
                   target, // The wallet to monitor here
-                ]
-              }
+                ],
+              },
             ],
             maxEventsPerBlock: 100,
           },
@@ -678,6 +757,9 @@ const main = async (cmd: string) => {
         "getWallets response:\n",
         util.inspect(wallets, { depth: 6, colors: true })
       );
+      break;
+    case "hideAllWallets":
+      await hideAllWallets();
       break;
     case "getWallet":
       const salt = commandArgs.args[0];
@@ -717,10 +799,10 @@ const main = async (cmd: string) => {
       break;
 
     case "getWorkflows":
-      const address = commandArgs.args[0];
+      const address = commandArgs.args[0] || ""; // Provide default empty string
       await getWorkflows(address, {
-        cursor: commandArgs.args[1],
-        limit: _.toNumber(commandArgs.args[2]),
+        cursor: commandArgs.args[1] || "",
+        limit: _.toNumber(commandArgs.args[2]) || 20,
         authKey,
       });
       break;
@@ -797,6 +879,7 @@ const main = async (cmd: string) => {
 
       getWallet <salt> <factory-address(optional)>:      to create/get a smart wallet with a salt, and optionally a factory contract
       getWallets:                                         to list smart wallet addresses that have been created
+      hideAllWallets:                                     to hide all wallets except the default salt:0 wallet
       getWorkflows <smart-wallet>,... <cursor> <limit>:  to list all workflows of given smart wallet addresses, with cursor and limit
       getWorkflow <workflow-id>:                          to get workflow detail. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecutions <workflow-id> <cursor> <limit>:       to get workflow execution history. a permission error is thrown if the eoa isn't the smart wallet owner

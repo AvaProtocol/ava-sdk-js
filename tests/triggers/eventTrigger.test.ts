@@ -10,7 +10,6 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-import * as avs_pb from "@/grpc_codegen/avs_pb";
 
 jest.setTimeout(45000);
 
