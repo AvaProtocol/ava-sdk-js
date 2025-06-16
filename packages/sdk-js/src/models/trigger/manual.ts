@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
 import { TriggerType, ManualTriggerOutput, ManualTriggerProps, TriggerProps } from "@avaprotocol/types";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 
 
 
@@ -16,7 +17,6 @@ class ManualTrigger extends Trigger {
     trigger.setType(avs_pb.TriggerType.TRIGGER_TYPE_MANUAL);
 
     if (this.input !== undefined) {
-      const { convertJSValueToProtobuf } = require("../../utils");
       const inputValue = convertJSValueToProtobuf(this.input);
       trigger.setInput(inputValue);
     }
@@ -31,7 +31,6 @@ class ManualTrigger extends Trigger {
     
     let input: any = undefined;
     if (raw.hasInput()) {
-      const { convertProtobufValueToJs } = require("../../utils");
       input = convertProtobufValueToJs(raw.getInput());
     }
     
@@ -67,4 +66,4 @@ class ManualTrigger extends Trigger {
   }
 }
 
-export default ManualTrigger;                                                                
+export default ManualTrigger;                                                                                                                                

@@ -7,7 +7,7 @@ import {
   CustomCodeNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
 
@@ -46,6 +46,11 @@ class CustomCodeNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+
+    if (this.input !== undefined) {
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
 
     const nodeData = new avs_pb.CustomCodeNode();
 

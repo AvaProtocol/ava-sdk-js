@@ -1,6 +1,7 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ContractWriteNodeData, ContractWriteNodeProps, NodeProps } from "@avaprotocol/types";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi, methodCallsList? } }
 
@@ -18,7 +19,6 @@ class ContractWriteNode extends Node {
     // Extract input field if present
     let input: any = undefined;
     if (raw.hasInput()) {
-      const { convertProtobufValueToJs } = require("../../utils");
       input = convertProtobufValueToJs(raw.getInput());
     }
     
@@ -46,6 +46,11 @@ class ContractWriteNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+
+    if (this.input !== undefined) {
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
 
     const nodeData = new avs_pb.ContractWriteNode();
     

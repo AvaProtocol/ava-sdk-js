@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput } from "./interface";
 import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput, FixedTimeTriggerProps, TriggerProps } from "@avaprotocol/types";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { epochsList }
 
@@ -17,7 +18,6 @@ class FixedTimeTrigger extends Trigger {
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME);
 
     if (this.input !== undefined) {
-      const { convertJSValueToProtobuf } = require("../../utils");
       const inputValue = convertJSValueToProtobuf(this.input);
       request.setInput(inputValue);
     }
@@ -42,7 +42,6 @@ class FixedTimeTrigger extends Trigger {
 
     let input: any = undefined;
     if (raw.hasInput()) {
-      const { convertProtobufValueToJs } = require("../../utils");
       input = convertProtobufValueToJs(raw.getInput());
     }
 

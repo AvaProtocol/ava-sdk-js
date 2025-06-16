@@ -1,6 +1,7 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ETHTransferNodeData, ETHTransferNodeProps, NodeProps } from "@avaprotocol/types";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
 
@@ -16,7 +17,6 @@ class ETHTransferNode extends Node {
     
     let input: any = undefined;
     if (raw.hasInput()) {
-      const { convertProtobufValueToJs } = require("../../utils");
       input = convertProtobufValueToJs(raw.getInput());
     }
     
@@ -33,6 +33,11 @@ class ETHTransferNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+
+    if (this.input !== undefined) {
+      const inputValue = convertJSValueToProtobuf(this.input);
+      request.setInput(inputValue);
+    }
 
     const nodeData = new avs_pb.ETHTransferNode();
     

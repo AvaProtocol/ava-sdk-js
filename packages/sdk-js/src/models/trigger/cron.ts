@@ -1,7 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput } from "./interface";
 import { TriggerType, CronTriggerDataType, CronTriggerOutput, CronTriggerProps, TriggerProps } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
@@ -15,7 +15,6 @@ class CronTrigger extends Trigger {
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_CRON);
 
     if (this.input !== undefined) {
-      const { convertJSValueToProtobuf } = require("../../utils");
       const inputValue = convertJSValueToProtobuf(this.input);
       request.setInput(inputValue);
     }

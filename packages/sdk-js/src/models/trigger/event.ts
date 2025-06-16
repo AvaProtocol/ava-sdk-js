@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger, { TriggerOutput } from "./interface";
 import { TriggerType, EventTriggerDataType, EventTriggerOutput, EventTriggerProps, TriggerProps } from "@avaprotocol/types";
+import { convertJSValueToProtobuf, convertProtobufValueToJs } from "../../utils";
 import util from "util";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
@@ -58,7 +59,6 @@ class EventTrigger extends Trigger {
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_EVENT);
 
     if (this.input !== undefined) {
-      const { convertJSValueToProtobuf } = require("../../utils");
       const inputValue = convertJSValueToProtobuf(this.input);
       request.setInput(inputValue);
     }
@@ -119,7 +119,6 @@ class EventTrigger extends Trigger {
     // Extract input field if present
     let input: any = undefined;
     if (raw.hasInput()) {
-      const { convertProtobufValueToJs } = require("../../utils");
       input = convertProtobufValueToJs(raw.getInput());
     }
 
