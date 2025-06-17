@@ -1964,6 +1964,11 @@ export namespace Execution {
         setInputsList(value: Array<string>): Step;
         addInputs(value: string, index?: number): string;
 
+        hasInput(): boolean;
+        clearInput(): void;
+        getInput(): google_protobuf_struct_pb.Value | undefined;
+        setInput(value?: google_protobuf_struct_pb.Value): Step;
+
         hasBlockTrigger(): boolean;
         clearBlockTrigger(): void;
         getBlockTrigger(): BlockTrigger.Output | undefined;
@@ -2059,6 +2064,7 @@ export namespace Execution {
             error: string,
             log: string,
             inputsList: Array<string>,
+            input?: google_protobuf_struct_pb.Value.AsObject,
             blockTrigger?: BlockTrigger.Output.AsObject,
             fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
             cronTrigger?: CronTrigger.Output.AsObject,

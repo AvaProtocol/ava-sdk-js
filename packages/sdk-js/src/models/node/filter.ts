@@ -1,6 +1,7 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, FilterNodeData, FilterNodeProps, NodeProps } from "@avaprotocol/types";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { expression, sourceId }
 
@@ -13,10 +14,15 @@ class FilterNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): FilterNode {
     // Convert the raw object to FilterNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    // Extract input data if present
+    const input = extractInputFromProtobuf(raw.getFilter()?.getInput());
+    
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
       data: raw.getFilter()!.getConfig()!.toObject() as FilterNodeData,
+      input: input,
     });
   }
 
@@ -32,6 +38,12 @@ class FilterNode extends Node {
     config.setExpression((this.data as FilterNodeData).expression);
     config.setSourceId((this.data as FilterNodeData).sourceId || '');
     nodeData.setConfig(config);
+
+    // Set input data if provided
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      nodeData.setInput(inputValue);
+    }
 
     request.setFilter(nodeData);
     return request;

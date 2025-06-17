@@ -14,6 +14,7 @@ class Step implements StepProps {
   error: string;
   log: string;
   inputsList: string[];
+  input?: any;
   output: OutputDataProps;
   startAt: number;
   endAt: number;
@@ -26,6 +27,7 @@ class Step implements StepProps {
     this.error = props.error;
     this.log = props.log;
     this.inputsList = props.inputsList;
+    this.input = props.input;
     this.output = props.output;
     this.startAt = props.startAt;
     this.endAt = props.endAt;
@@ -44,6 +46,7 @@ class Step implements StepProps {
       error: this.error,
       log: this.log,
       inputsList: this.inputsList,
+      input: this.input,
       output: this.output,
       startAt: this.startAt,
       endAt: this.endAt,
@@ -307,6 +310,15 @@ class Step implements StepProps {
   }
 
   static fromResponse(step: avs_pb.Execution.Step): Step {
+    // Extract input data if present
+    let inputData: any = undefined;
+    if (step.hasInput()) {
+      const inputValue = step.getInput();
+      if (inputValue) {
+        inputData = convertProtobufValueToJs(inputValue);
+      }
+    }
+
     return new Step({
       id: step.getId(),
       type: convertProtobufStepTypeToSdk(step.getType()),
@@ -315,6 +327,7 @@ class Step implements StepProps {
       error: step.getError(),
       log: step.getLog(),
       inputsList: step.getInputsList(),
+      input: inputData,
       output: Step.getOutput(step),
       startAt: step.getStartAt(),
       endAt: step.getEndAt(),

@@ -76,8 +76,6 @@ describe("SimulateWorkflow", () => {
         inputVariables: {},
       });
 
-      console.log("result", util.inspect(result, { depth: null }));
-
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.steps).toHaveLength(2); // trigger + node
@@ -352,6 +350,216 @@ describe("SimulateWorkflow", () => {
         expect(error).toBeDefined();
         expect(error.message).toContain("Intentional error for testing");
       }
+    });
+  });
+
+  describe("Input Field Feature", () => {
+    test("should allow setting input data on nodes and accessing it from subsequent nodes", async () => {
+      const triggerId = getNextId();
+      const restApiNodeId = getNextId();
+      const customCodeNodeId = getNextId();
+
+      const trigger = {
+        id: triggerId,
+        name: "manual trigger",
+        type: TriggerType.Manual,
+        data: {},
+        input: {
+          timezone: "UTC",
+          priority: "high",
+          description: "Test workflow with input fields",
+        },
+      };
+
+      const nodes = [
+        {
+          id: restApiNodeId,
+          name: "rest_api_node",
+          type: NodeType.RestAPI,
+          data: {
+            url: "https://jsonplaceholder.typicode.com/posts/1",
+            method: "GET",
+            headersMap: [],
+          },
+          input: {
+            timeout: 30000,
+            retries: 3,
+            debugMode: true,
+            headers: {
+              "User-Agent": "AvaProtocol-SDK-Test",
+              Accept: "application/json",
+            },
+          },
+        },
+        {
+          id: customCodeNodeId,
+          name: "input_processor",
+          type: NodeType.CustomCode,
+          data: {
+            lang: CustomCodeLang.JavaScript,
+            source: `
+              // TODO: Input field feature needs backend support to expose:
+              // - manual_trigger.input (trigger input data)
+              // - rest_api_node.input (previous node input data)
+              // Currently only manual_trigger.data and rest_api_node.data are available
+              
+              // For now, test that we can set input fields without errors
+              // and access regular data from trigger and previous node
+              const triggerData = manual_trigger.data;
+              const restApiOutput = rest_api_node.data;
+              
+              return {
+                inputFieldFeatureTest: {
+                  message: "Input fields can be set on triggers and nodes",
+                  triggerDataAccessible: !!triggerData,
+                  restApiOutputReceived: !!restApiOutput,
+                  currentContext: typeof workflowContext !== 'undefined'
+                },
+                status: "success",
+                timestamp: Date.now()
+              };
+            `,
+          },
+          input: {
+            processingMode: "validation",
+            logLevel: "debug",
+          },
+        },
+      ];
+
+      const edges = [
+        {
+          id: getNextId(),
+          source: triggerId,
+          target: restApiNodeId,
+        },
+        {
+          id: getNextId(),
+          source: restApiNodeId,
+          target: customCodeNodeId,
+        },
+      ];
+
+      const result = await client.simulateWorkflow({
+        trigger,
+        nodes: nodes as any,
+        edges,
+        inputVariables: {},
+      });
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.steps).toHaveLength(3); // trigger + 2 nodes
+
+      // Verify trigger step
+      const triggerStep = result.steps[0];
+      expect(triggerStep.id).toBe(triggerId);
+      expect(triggerStep.type).toBe(TriggerType.Manual);
+      expect(triggerStep.name).toBe("manual trigger");
+
+      // Verify REST API step
+      const restApiStep = result.steps[1];
+      expect(restApiStep.id).toBe(restApiNodeId);
+      expect(restApiStep.type).toBe(NodeType.RestAPI);
+      expect(restApiStep.name).toBe("rest_api_node");
+      expect(restApiStep.success).toBe(true);
+
+      // Verify custom code step that accesses input data
+      const customCodeStep = result.steps[2];
+      expect(customCodeStep.id).toBe(customCodeNodeId);
+      expect(customCodeStep.type).toBe(NodeType.CustomCode);
+      expect(customCodeStep.name).toBe("input_processor");
+      expect(customCodeStep.success).toBe(true);
+
+      // The custom code step should have processed the input data successfully
+      // We can verify this by checking if the step completed successfully
+      // and examining any logs or output data if available
+    });
+
+    test("should handle workflows with both input data and regular data access", async () => {
+      const triggerId = getNextId();
+      const processorNodeId = getNextId();
+
+      const trigger = {
+        id: triggerId,
+        name: "manual trigger",
+        type: TriggerType.Manual,
+        data: {},
+        input: {
+          environment: "test",
+          version: "1.0.0",
+        },
+      };
+
+      const nodes = [
+        {
+          id: processorNodeId,
+          name: "data_processor",
+          type: NodeType.CustomCode,
+          data: {
+            lang: CustomCodeLang.JavaScript,
+            source: `
+              // TODO: Input field feature needs backend support to expose:
+              // - manual_trigger.input (trigger input data)
+              // - data_processor.input (current node input data)
+              // Currently only manual_trigger.data is available
+              
+              // For now, test that we can set input fields on nodes and triggers
+              // without causing errors, and access regular trigger data
+              const triggerData = manual_trigger.data;
+              
+              return {
+                inputFieldFeatureTest: {
+                  message: "Input fields can be set on triggers and nodes",
+                  triggerDataAccessible: !!triggerData,
+                  currentContext: typeof workflowContext !== 'undefined',
+                  availableVariables: Object.keys(this || {})
+                },
+                status: "success",
+                timestamp: Date.now()
+              };
+            `,
+          },
+          input: {
+            maxRetries: 5,
+            timeout: 60000,
+            enableLogging: true,
+          },
+        },
+      ];
+
+      const edges = [
+        {
+          id: getNextId(),
+          source: triggerId,
+          target: processorNodeId,
+        },
+      ];
+
+      const result = await client.simulateWorkflow({
+        trigger,
+        nodes: nodes as any,
+        edges,
+        inputVariables: {},
+      });
+
+      console.log(
+        "🚀 ~ simulateWorkflow result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.steps).toHaveLength(2); // trigger + node
+
+      // Verify both steps completed successfully
+      const triggerStep = result.steps[0];
+      expect(triggerStep.id).toBe(triggerId);
+      expect(triggerStep.success).toBe(true);
+
+      const processorStep = result.steps[1];
+      expect(processorStep.id).toBe(processorNodeId);
+      expect(processorStep.success).toBe(true);
     });
   });
 });

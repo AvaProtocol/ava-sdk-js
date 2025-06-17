@@ -1,6 +1,7 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ETHTransferNodeData, ETHTransferNodeProps, NodeProps } from "@avaprotocol/types";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
 
@@ -13,10 +14,15 @@ class ETHTransferNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): ETHTransferNode {
     // Convert the raw object to ETHTransferNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+    
+    // Extract input data if present
+    const input = extractInputFromProtobuf(raw.getEthTransfer()?.getInput());
+    
     return new ETHTransferNode({
       ...obj,
       type: NodeType.ETHTransfer,
       data: raw.getEthTransfer()!.getConfig()!.toObject() as ETHTransferNodeData,
+      input: input,
     });
   }
 
@@ -32,6 +38,12 @@ class ETHTransferNode extends Node {
     config.setDestination((this.data as ETHTransferNodeData).destination);
     config.setAmount((this.data as ETHTransferNodeData).amount);
     nodeData.setConfig(config);
+
+    // Set input data if provided
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      nodeData.setInput(inputValue);
+    }
 
     request.setEthTransfer(nodeData);
 

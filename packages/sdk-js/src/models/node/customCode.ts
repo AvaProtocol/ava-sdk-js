@@ -7,7 +7,7 @@ import {
   CustomCodeNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs, convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
 
@@ -27,11 +27,15 @@ class CustomCodeNode extends Node {
       lang: rawConfig.lang as unknown as CustomCodeLang,
       source: rawConfig.source,
     };
+
+    // Extract input data if present
+    const input = extractInputFromProtobuf(raw.getCustomCode()?.getInput());
     
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
       data: convertedConfig,
+      input: input,
     });
   }
 
@@ -50,6 +54,12 @@ class CustomCodeNode extends Node {
     config.setSource((this.data as CustomCodeNodeData).source);
 
     nodeData.setConfig(config);
+
+    // Set input data if provided
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      nodeData.setInput(inputValue);
+    }
 
     request.setCustomCode(nodeData);
 

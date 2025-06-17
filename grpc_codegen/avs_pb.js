@@ -16171,6 +16171,7 @@ proto.aggregator.Execution.Step.toObject = function(includeInstance, msg) {
     error: jspb.Message.getFieldWithDefault(msg, 13, ""),
     log: jspb.Message.getFieldWithDefault(msg, 12, ""),
     inputsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
+    input: (f = msg.getInput()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
     fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
     cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
@@ -16250,6 +16251,11 @@ proto.aggregator.Execution.Step.deserializeBinaryFromReader = function(msg, read
     case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.addInputs(value);
+      break;
+    case 19:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setInput(value);
       break;
     case 20:
       var value = new proto.aggregator.BlockTrigger.Output;
@@ -16405,6 +16411,14 @@ proto.aggregator.Execution.Step.serializeBinaryToWriter = function(message, writ
     writer.writeRepeatedString(
       16,
       f
+    );
+  }
+  f = message.getInput();
+  if (f != null) {
+    writer.writeMessage(
+      19,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
   f = message.getBlockTrigger();
@@ -16678,6 +16692,43 @@ proto.aggregator.Execution.Step.prototype.addInputs = function(value, opt_index)
  */
 proto.aggregator.Execution.Step.prototype.clearInputsList = function() {
   return this.setInputsList([]);
+};
+
+
+/**
+ * optional google.protobuf.Value input = 19;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.Execution.Step.prototype.getInput = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 19));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setInput = function(value) {
+  return jspb.Message.setWrapperField(this, 19, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearInput = function() {
+  return this.setInput(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasInput = function() {
+  return jspb.Message.getField(this, 19) != null;
 };
 
 

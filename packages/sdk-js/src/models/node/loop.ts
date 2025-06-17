@@ -6,7 +6,7 @@ import {
   LoopNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs, convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import _ from "lodash";
 
 class LoopNode extends Node {
@@ -38,10 +38,14 @@ class LoopNode extends Node {
       graphqlDataQuery: loopNodeData.graphqlDataQuery,
     } as LoopNodeData;
 
+    // Extract input data if present
+    const input = extractInputFromProtobuf(raw.getLoop()?.getInput());
+
     return new LoopNode({
       ...obj,
       type: NodeType.Loop,
       data: data,
+      input: input,
     });
   }
 
@@ -60,6 +64,12 @@ class LoopNode extends Node {
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
     loopNode.setConfig(config);
+
+    // Set input data if provided
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      loopNode.setInput(inputValue);
+    }
 
     // Handle nested nodes - these still use the nested structure within LoopNodeData
     if ((data as any).ethTransfer) {
