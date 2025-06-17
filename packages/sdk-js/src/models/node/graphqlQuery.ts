@@ -36,7 +36,7 @@ class GraphQLQueryNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.GraphQLQueryNode();
+    const node = new avs_pb.GraphQLQueryNode();
     
     const config = new avs_pb.GraphQLQueryNode.Config();
     config.setUrl((this.data as GraphQLQueryNodeData).url);
@@ -50,15 +50,15 @@ class GraphQLQueryNode extends Node {
       });
     }
     
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setGraphqlQuery(nodeData);
+    request.setGraphqlQuery(node);
 
     return request;
   }

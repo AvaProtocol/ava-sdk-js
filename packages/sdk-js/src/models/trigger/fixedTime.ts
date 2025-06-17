@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput } from "./interface";
-import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput, FixedTimeTriggerProps, TriggerProps } from "@avaprotocol/types";
+import Trigger from "./interface";
+import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput, FixedTimeTriggerProps, TriggerProps, TriggerOutput } from "@avaprotocol/types";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { epochsList }
 

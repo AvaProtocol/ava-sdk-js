@@ -42,7 +42,7 @@ class BranchNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.BranchNode();
+    const node = new avs_pb.BranchNode();
     const config = new avs_pb.BranchNode.Config();
     
     if ((this.data as BranchNodeData).conditions && 
@@ -61,15 +61,15 @@ class BranchNode extends Node {
       config.setConditionsList(conditionsList);
     }
     
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setBranch(nodeData);
+    request.setBranch(node);
 
     return request;
   }

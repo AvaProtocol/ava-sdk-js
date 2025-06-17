@@ -54,283 +54,301 @@ class Step implements StepProps {
   }
 
   static getOutput(step: avs_pb.Execution.Step): OutputDataProps {
-    const outputDataType = step.getOutputDataCase();
-    let nodeOutputMessage;
+    // Handle both protobuf instances and plain objects
+    const getOutputDataCase = () => {
+      if (typeof step.getOutputDataCase === "function") {
+        return step.getOutputDataCase();
+      }
+      // For plain objects, determine the case by checking which properties exist
+      const stepObj = step as any;
+      if (stepObj.blockTrigger)
+        return avs_pb.Execution.Step.OutputDataCase.BLOCK_TRIGGER;
+      if (stepObj.fixedTimeTrigger)
+        return avs_pb.Execution.Step.OutputDataCase.FIXED_TIME_TRIGGER;
+      if (stepObj.cronTrigger)
+        return avs_pb.Execution.Step.OutputDataCase.CRON_TRIGGER;
+      if (stepObj.eventTrigger)
+        return avs_pb.Execution.Step.OutputDataCase.EVENT_TRIGGER;
+      if (stepObj.manualTrigger)
+        return avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER;
+      if (stepObj.ethTransfer)
+        return avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER;
+      if (stepObj.graphql) return avs_pb.Execution.Step.OutputDataCase.GRAPHQL;
+      if (stepObj.contractRead)
+        return avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ;
+      if (stepObj.contractWrite)
+        return avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE;
+      if (stepObj.customCode)
+        return avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE;
+      if (stepObj.restApi) return avs_pb.Execution.Step.OutputDataCase.REST_API;
+      if (stepObj.branch) return avs_pb.Execution.Step.OutputDataCase.BRANCH;
+      if (stepObj.filter) return avs_pb.Execution.Step.OutputDataCase.FILTER;
+      if (stepObj.loop) return avs_pb.Execution.Step.OutputDataCase.LOOP;
+      return avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET;
+    };
 
-    switch (outputDataType) {
+    switch (getOutputDataCase()) {
       case avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET:
         return undefined;
 
       // Trigger outputs
       case avs_pb.Execution.Step.OutputDataCase.BLOCK_TRIGGER:
-        const blockOutput = step.getBlockTrigger()?.toObject();
-        return blockOutput
-          ? { blockNumber: blockOutput.blockNumber }
-          : undefined;
+        return typeof step.getBlockTrigger === "function"
+          ? step.getBlockTrigger()?.toObject()
+          : (step as any).blockTrigger;
       case avs_pb.Execution.Step.OutputDataCase.FIXED_TIME_TRIGGER:
-        const fixedTimeOutput = step.getFixedTimeTrigger()?.toObject();
-        return fixedTimeOutput
-          ? {
-              timestamp: fixedTimeOutput.timestamp,
-              timestampIso: fixedTimeOutput.timestampIso,
-            }
-          : undefined;
+        return typeof step.getFixedTimeTrigger === "function"
+          ? step.getFixedTimeTrigger()?.toObject()
+          : (step as any).fixedTimeTrigger;
       case avs_pb.Execution.Step.OutputDataCase.CRON_TRIGGER:
-        const cronOutput = step.getCronTrigger()?.toObject();
-        return cronOutput
-          ? {
-              timestamp: cronOutput.timestamp,
-              timestampIso: cronOutput.timestampIso,
-            }
-          : undefined;
+        return typeof step.getCronTrigger === "function"
+          ? step.getCronTrigger()?.toObject()
+          : (step as any).cronTrigger;
       case avs_pb.Execution.Step.OutputDataCase.EVENT_TRIGGER:
-        const eventTrigger = step.getEventTrigger();
+        const eventTrigger =
+          typeof step.getEventTrigger === "function"
+            ? step.getEventTrigger()
+            : (step as any).eventTrigger;
         if (eventTrigger) {
-          if (eventTrigger.hasEvmLog()) {
+          if (
+            typeof eventTrigger.hasEvmLog === "function" &&
+            eventTrigger.hasEvmLog()
+          ) {
             return eventTrigger.getEvmLog()?.toObject();
-          } else if (eventTrigger.hasTransferLog()) {
+          } else if (
+            typeof eventTrigger.hasTransferLog === "function" &&
+            eventTrigger.hasTransferLog()
+          ) {
             return eventTrigger.getTransferLog()?.toObject();
+          } else if (eventTrigger.evmLog) {
+            return eventTrigger.evmLog;
+          } else if (eventTrigger.transferLog) {
+            return eventTrigger.transferLog;
           }
         }
         return undefined;
       case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER:
-        const manualOutput = step.getManualTrigger()?.toObject();
-        return manualOutput || undefined;
+        return typeof step.getManualTrigger === "function"
+          ? step.getManualTrigger()?.toObject() || undefined
+          : (step as any).manualTrigger;
 
-      // Node outputs
+      // Node outputs - RESTORE MISSING CASES
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
-        const ethTransferOutput = step.getEthTransfer()?.toObject();
-        return ethTransferOutput
-          ? {
-              transactionHash: ethTransferOutput.transactionHash,
-            }
-          : undefined;
-      case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
-        nodeOutputMessage = step.getGraphql();
-        return nodeOutputMessage && nodeOutputMessage.hasData()
-          ? nodeOutputMessage.getData()
-          : undefined;
-      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
-        nodeOutputMessage = step.getContractRead();
-        if (nodeOutputMessage) {
-          const results = nodeOutputMessage.getResultsList();
-          if (results && results.length > 0) {
-            // Always return wrapped format { results: [...] } to match ContractReadNode.fromOutputData
-            const resultArray = results.map((result) => {
-              // Match the exact format from ContractReadNode.fromOutputData
-              const dataFields = result.getDataList().map((field) => ({
-                name: field.getName(),
-                type: field.getType(),
-                value: field.getValue()
-              }));
-              
-              return {
-                methodName: result.getMethodName(),
-                success: result.getSuccess(),
-                error: result.getError(),
-                data: dataFields,
-              };
-            });
-            
-            // Return wrapped format consistently for all cases
-            return { results: resultArray };
-          }
-        }
-        return undefined;
-      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
-        nodeOutputMessage = step.getContractWrite();
-        if (nodeOutputMessage) {
-          const results = nodeOutputMessage.getResultsList();
-          if (results && results.length > 0) {
-            // Transform enhanced results structure
-            const transformedResults = results.map((result) => ({
-              methodName: result.getMethodName(),
-              success: result.getSuccess(),
-              transaction: result.getTransaction() ? {
-                hash: result.getTransaction()?.getHash(),
-                status: result.getTransaction()?.getStatus(),
-                blockNumber: result.getTransaction()?.getBlockNumber(),
-                blockHash: result.getTransaction()?.getBlockHash(),
-                gasUsed: result.getTransaction()?.getGasUsed(),
-                gasLimit: result.getTransaction()?.getGasLimit(),
-                gasPrice: result.getTransaction()?.getGasPrice(),
-                effectiveGasPrice: result.getTransaction()?.getEffectiveGasPrice(),
-                from: result.getTransaction()?.getFrom(),
-                to: result.getTransaction()?.getTo(),
-                value: result.getTransaction()?.getValue(),
-                nonce: result.getTransaction()?.getNonce(),
-                transactionIndex: result.getTransaction()?.getTransactionIndex(),
-                confirmations: result.getTransaction()?.getConfirmations(),
-                timestamp: result.getTransaction()?.getTimestamp(),
-              } : null,
-              events: result.getEventsList().map((event) => ({
-                eventName: event.getEventName(),
-                address: event.getAddress(),
-                topics: event.getTopicsList(),
-                data: event.getData(),
-                decoded: event.getDecodedMap() ? Object.fromEntries(event.getDecodedMap().toArray()) : {},
-              })),
-              error: result.getError() ? {
-                code: result.getError()?.getCode(),
-                message: result.getError()?.getMessage(),
-                revertReason: result.getError()?.getRevertReason(),
-              } : null,
-              returnData: result.getReturnData() ? {
-                name: result.getReturnData()?.getName(),
-                type: result.getReturnData()?.getType(),
-                value: result.getReturnData()?.getValue(),
-              } : null,
-              inputData: result.getInputData(),
-            }));
+        return typeof step.getEthTransfer === "function"
+          ? step.getEthTransfer()?.toObject()
+          : (step as any).ethTransfer;
 
-            // For single result, also provide legacy fields for backward compatibility
-            if (transformedResults.length === 1) {
-              return {
-                results: transformedResults,
-                // Legacy compatibility fields
-                transaction: transformedResults[0].transaction,
-                success: transformedResults[0].success,
-                hash: transformedResults[0].transaction?.hash,
-              };
-            } else {
-              return { results: transformedResults };
+      case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
+        const customCodeOutput =
+          typeof step.getCustomCode === "function"
+            ? step.getCustomCode()
+            : (step as any).customCode;
+        if (customCodeOutput) {
+          if (
+            typeof customCodeOutput.hasData === "function" &&
+            customCodeOutput.hasData()
+          ) {
+            try {
+              return convertProtobufValueToJs(customCodeOutput.getData());
+            } catch {
+              // Fallback: if conversion fails, return the raw data
+              return customCodeOutput.getData();
+            }
+          } else if (customCodeOutput.data) {
+            // For plain objects, try to convert or use directly
+            return typeof customCodeOutput.data.getKindCase === "function"
+              ? convertProtobufValueToJs(customCodeOutput.data)
+              : customCodeOutput.data;
+          }
+        }
+        return undefined;
+
+      case avs_pb.Execution.Step.OutputDataCase.REST_API:
+        const restApiOutput =
+          typeof step.getRestApi === "function"
+            ? step.getRestApi()
+            : (step as any).restApi;
+        if (restApiOutput) {
+          if (
+            typeof restApiOutput.hasData === "function" &&
+            restApiOutput.hasData()
+          ) {
+            try {
+              return convertProtobufValueToJs(restApiOutput.getData());
+            } catch {
+              // Fallback: if conversion fails, return the raw data
+              return restApiOutput.getData();
+            }
+          } else if (restApiOutput.data) {
+            // For plain objects, try to convert or use directly
+            return typeof restApiOutput.data.getKindCase === "function"
+              ? convertProtobufValueToJs(restApiOutput.data)
+              : restApiOutput.data;
+          }
+        }
+        return undefined;
+
+      case avs_pb.Execution.Step.OutputDataCase.BRANCH:
+        return typeof step.getBranch === "function"
+          ? step.getBranch()?.toObject()
+          : (step as any).branch;
+
+      case avs_pb.Execution.Step.OutputDataCase.LOOP:
+        const loopOutput =
+          typeof step.getLoop === "function"
+            ? step.getLoop()
+            : (step as any).loop;
+        if (loopOutput) {
+          if (
+            typeof loopOutput.getData === "function" &&
+            loopOutput.getData()
+          ) {
+            try {
+              return JSON.parse(loopOutput.getData());
+            } catch {
+              return loopOutput.getData();
+            }
+          } else if (loopOutput.data) {
+            // For plain objects
+            try {
+              return typeof loopOutput.data === "string"
+                ? JSON.parse(loopOutput.data)
+                : loopOutput.data;
+            } catch {
+              return loopOutput.data;
             }
           }
         }
         return undefined;
-      case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
-        nodeOutputMessage = step.getCustomCode();
-        return nodeOutputMessage && nodeOutputMessage.hasData()
-          ? convertProtobufValueToJs(nodeOutputMessage.getData())
-          : undefined;
-      case avs_pb.Execution.Step.OutputDataCase.REST_API:
-        nodeOutputMessage = step.getRestApi();
-        return nodeOutputMessage && nodeOutputMessage.hasData()
-          ? convertProtobufValueToJs(nodeOutputMessage.getData())
-          : undefined;
-      case avs_pb.Execution.Step.OutputDataCase.BRANCH:
-        return step.getBranch()?.toObject();
-      case avs_pb.Execution.Step.OutputDataCase.FILTER:
-        nodeOutputMessage = step.getFilter();
-        if (nodeOutputMessage && nodeOutputMessage.hasData()) {
-          const rawData = nodeOutputMessage.getData();
-          if (rawData) {
-            // Handle Any wrapper - need to unpack it first
-            if (typeof rawData.unpack === 'function') {
-              try {
-                // For Any types, unpack to Value and then convert
-                const unpackedValue = rawData.unpack(ProtobufValue.deserializeBinary, 'google.protobuf.Value');
-                if (unpackedValue) {
-                  return convertProtobufValueToJs(unpackedValue);
-                }
-              } catch (error) {
-                // If unpacking fails, log error and return undefined
-                console.warn('Failed to unpack FilterNode Any wrapper:', error);
-                return undefined;
-              }
-            }
-            // If no unpack method, this is unexpected for FilterNode
-            console.warn('FilterNode output data is not an Any wrapper - this is unexpected');
+
+      case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
+        const graphqlOutput =
+          typeof step.getGraphql === "function"
+            ? step.getGraphql()
+            : (step as any).graphql;
+        if (graphqlOutput) {
+          try {
+            return typeof graphqlOutput.toObject === "function"
+              ? graphqlOutput.toObject()
+              : graphqlOutput;
+          } catch {
             return undefined;
           }
         }
         return undefined;
-      case avs_pb.Execution.Step.OutputDataCase.LOOP:
-        const loopOutput = step.getLoop();
-        if (!loopOutput) return undefined;
-        
-        const loopData = loopOutput.getData();
-        if (!loopData) return undefined;
-        
-        // Loop nodes return an array of results from child node executions
-        // The backend should serialize this as JSON, but may have issues
-        
-        // Try to parse as JSON first (expected format for array of child results)
-        try {
-          const parsedData = JSON.parse(loopData);
-          
-          // If it's an array, process each item with appropriate child node conversion
-          if (Array.isArray(parsedData)) {
-            return parsedData.map((item, index) => {
-              if (!item || typeof item !== 'object') {
-                return item; // Primitive values, return as-is
-              }
-              
-              // Apply child node-specific conversions based on detected structure
-              
-              // REST API child output (has statusCode, body, headers)
-              if (item.statusCode !== undefined && (item.body !== undefined || item.headers !== undefined)) {
-                return item; // Already in raw format
-              }
-              
-              // Custom Code child output (arbitrary object structure)
-              if (item.result !== undefined || item.output !== undefined || item.error !== undefined) {
-                return item; // Already processed by convertProtobufValueToJs in backend
-              }
-              
-              // ETH Transfer child output (has transactionHash)
-              if (item.transactionHash !== undefined) {
-                return { transactionHash: item.transactionHash };
-              }
-              
-              // Contract Read child output (has methodName and data)
-              if (item.methodName !== undefined && item.data !== undefined) {
-                return item; // Already in structured format
-              }
-              
-              // GraphQL child output (has data field)
-              if (item.data !== undefined && typeof item.data === 'object') {
-                return item; // Already processed
-              }
-              
-              // Generic object - return as-is (might be custom structure)
-              return item;
-            });
+
+      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
+        return typeof step.getContractRead === "function"
+          ? step.getContractRead()?.toObject()
+          : (step as any).contractRead;
+
+      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
+        return typeof step.getContractWrite === "function"
+          ? step.getContractWrite()?.toObject()
+          : (step as any).contractWrite;
+
+      case avs_pb.Execution.Step.OutputDataCase.FILTER:
+        const filterOutput =
+          typeof step.getFilter === "function"
+            ? step.getFilter()
+            : (step as any).filter;
+        if (filterOutput) {
+          try {
+            return typeof filterOutput.toObject === "function"
+              ? filterOutput.toObject()
+              : filterOutput;
+          } catch {
+            return undefined;
           }
-          
-          // Single object result (not an array)
-          if (parsedData && typeof parsedData === 'object') {
-            return parsedData;
-          }
-          
-          // Parsed successfully but primitive value
-          return { data: parsedData };
-          
-        } catch (e) {
-          // Not JSON or parsing failed - could be a simple string result
-          // This might happen if backend has serialization issues
-          return { data: loopData };
         }
+        return undefined;
+
       default:
         console.warn(
-          `Unhandled output data type in Step.getOutput: ${outputDataType}`
+          `Unhandled output data type in Step.getOutput: ${step.getOutputDataCase()}`
         );
         return undefined;
     }
   }
 
   static fromResponse(step: avs_pb.Execution.Step): Step {
-    // Extract input data if present
+    // Extract input data if present - USE PROPER PROTOBUF GETTER
     let inputData: any = undefined;
-    if (step.hasInput()) {
-      const inputValue = step.getInput();
+
+    // Check for input using proper protobuf methods
+    if (typeof (step as any).hasInput === "function" && (step as any).hasInput()) {
+      const inputValue = (step as any).getInput();
+      
       if (inputValue) {
-        inputData = convertProtobufValueToJs(inputValue);
+        // If it's a protobuf Value instance, convert it
+        try {
+          inputData = convertProtobufValueToJs(inputValue);
+        } catch (error) {
+          console.warn('Failed to convert protobuf input value:', error);
+          // Fallback: if conversion fails, use the raw value
+          inputData = inputValue;
+        }
+      }
+    } else if ((step as any).input) {
+      // Fallback for plain objects (from .toObject() calls)
+      const inputValue = (step as any).input;
+      
+      // If it's already a plain JavaScript object, use it directly
+      if (typeof inputValue === "object" && !inputValue.getKindCase) {
+        inputData = inputValue;
+      } else {
+        // If it's a protobuf Value instance, convert it
+        try {
+          inputData = convertProtobufValueToJs(inputValue);
+        } catch (error) {
+          // Fallback: if conversion fails, use the raw value
+          inputData = inputValue;
+        }
       }
     }
 
+    // Handle method calls safely for both protobuf instances and plain objects
+    const getId = () =>
+      typeof step.getId === "function" ? step.getId() : (step as any).id;
+    const getType = () =>
+      typeof step.getType === "function" ? step.getType() : (step as any).type;
+    const getName = () =>
+      typeof step.getName === "function" ? step.getName() : (step as any).name;
+    const getSuccess = () =>
+      typeof step.getSuccess === "function"
+        ? step.getSuccess()
+        : (step as any).success;
+    const getError = () =>
+      typeof step.getError === "function"
+        ? step.getError()
+        : (step as any).error;
+    const getLog = () =>
+      typeof step.getLog === "function" ? step.getLog() : (step as any).log;
+    const getInputsList = () =>
+      typeof step.getInputsList === "function"
+        ? step.getInputsList()
+        : (step as any).inputsList || [];
+    const getStartAt = () =>
+      typeof step.getStartAt === "function"
+        ? step.getStartAt()
+        : (step as any).startAt;
+    const getEndAt = () =>
+      typeof step.getEndAt === "function"
+        ? step.getEndAt()
+        : (step as any).endAt;
+
     return new Step({
-      id: step.getId(),
-      type: convertProtobufStepTypeToSdk(step.getType()),
-      name: step.getName(),
-      success: step.getSuccess(),
-      error: step.getError(),
-      log: step.getLog(),
-      inputsList: step.getInputsList(),
+      id: getId(),
+      type: convertProtobufStepTypeToSdk(getType()),
+      name: getName(),
+      success: getSuccess(),
+      error: getError(),
+      log: getLog(),
+      inputsList: getInputsList(),
       input: inputData,
       output: Step.getOutput(step),
-      startAt: step.getStartAt(),
-      endAt: step.getEndAt(),
+      startAt: getStartAt(),
+      endAt: getEndAt(),
     });
   }
 

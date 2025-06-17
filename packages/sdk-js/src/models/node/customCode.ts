@@ -45,7 +45,7 @@ class CustomCodeNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.CustomCodeNode();
+    const node = new avs_pb.CustomCodeNode();
 
     const config = new avs_pb.CustomCodeNode.Config();
 
@@ -53,15 +53,15 @@ class CustomCodeNode extends Node {
     config.setLang((this.data as CustomCodeNodeData).lang as any);
     config.setSource((this.data as CustomCodeNodeData).source);
 
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setCustomCode(nodeData);
+    request.setCustomCode(node);
 
     return request;
   }

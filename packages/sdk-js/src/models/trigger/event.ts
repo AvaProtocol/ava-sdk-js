@@ -1,14 +1,16 @@
 import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput } from "./interface";
+import Trigger from "./interface";
 import {
   TriggerType,
   EventTriggerDataType,
   EventTriggerOutput,
   EventTriggerProps,
   TriggerProps,
+  TriggerOutput,
 } from "@avaprotocol/types";
 import util from "util";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
 // We imply or operator among all conditions.

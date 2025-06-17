@@ -1,4 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import { TriggerType } from "./enums";
 
 // Custom CronTrigger data type with cleaner field names
@@ -47,7 +48,7 @@ export type TriggerProps = Omit<
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
-  input?: Record<string, any>;
+  input?: google_protobuf_struct_pb.Value.AsObject;
 };
 
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };

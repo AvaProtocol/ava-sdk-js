@@ -43,7 +43,7 @@ class ContractReadNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.ContractReadNode();
+    const node = new avs_pb.ContractReadNode();
     
     const config = new avs_pb.ContractReadNode.Config();
     config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
@@ -60,15 +60,15 @@ class ContractReadNode extends Node {
       config.addMethodCalls(methodCallMsg);
     });
     
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setContractRead(nodeData);
+    request.setContractRead(node);
 
     return request;
   }

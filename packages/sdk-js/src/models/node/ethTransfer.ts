@@ -32,20 +32,20 @@ class ETHTransferNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.ETHTransferNode();
+    const node = new avs_pb.ETHTransferNode();
     
     const config = new avs_pb.ETHTransferNode.Config();
     config.setDestination((this.data as ETHTransferNodeData).destination);
     config.setAmount((this.data as ETHTransferNodeData).amount);
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setEthTransfer(nodeData);
+    request.setEthTransfer(node);
 
     return request;
   }

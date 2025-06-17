@@ -32,20 +32,20 @@ class FilterNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.FilterNode();
+    const node = new avs_pb.FilterNode();
     
     const config = new avs_pb.FilterNode.Config();
     config.setExpression((this.data as FilterNodeData).expression);
     config.setSourceId((this.data as FilterNodeData).sourceId || '');
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setFilter(nodeData);
+    request.setFilter(node);
     return request;
   }
 

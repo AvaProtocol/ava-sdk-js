@@ -1,25 +1,17 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerType, TriggerProps } from "@avaprotocol/types";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
+import {
+  TriggerType,
+  TriggerTypeGoConverter,
+  TriggerTypeConverter,
+  TriggerProps,
+  TriggerData,
+  TriggerOutput,
+} from "@avaprotocol/types";
+import _ from "lodash";
+import { extractInputFromProtobuf } from "../../utils";
 
-export type TriggerData =
-  | avs_pb.FixedTimeTrigger.AsObject
-  | avs_pb.CronTrigger.AsObject
-  | avs_pb.BlockTrigger.AsObject
-  | avs_pb.EventTrigger.AsObject
-  | Record<string, any>
-  | null;
-
-export type TriggerOutput =
-  | avs_pb.FixedTimeTrigger.Output.AsObject
-  | avs_pb.CronTrigger.Output.AsObject
-  | avs_pb.BlockTrigger.Output.AsObject
-  | avs_pb.EventTrigger.Output.AsObject
-  | avs_pb.ManualTrigger.Output.AsObject
-  | null;
-
-
-
-class Trigger implements TriggerProps {
+export default abstract class Trigger implements TriggerProps {
   id: string;
   name: string;
   type: TriggerType;
@@ -37,7 +29,7 @@ class Trigger implements TriggerProps {
     this.type = props.type;
     this.data = props.data;
     this.output = props.output;
-    this.input = props.input;
+    this.input = props.input ? extractInputFromProtobuf(props.input as any) : undefined;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -59,5 +51,3 @@ class Trigger implements TriggerProps {
     };
   }
 }
-
-export default Trigger;

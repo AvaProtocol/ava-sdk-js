@@ -256,17 +256,35 @@ export function convertInputToProtobuf(input?: Record<string, any>): ProtobufVal
  * Pure utility function for extracting trigger/node input data from protobuf format.
  * Can be used by both triggers and nodes.
  * 
- * @param inputValue - protobuf Value from response, or undefined
+ * @param inputValue - protobuf Value from response, plain JavaScript object, or undefined
  * @returns JavaScript object or undefined
  */
-export function extractInputFromProtobuf(inputValue?: ProtobufValue): Record<string, any> | undefined {
+export function extractInputFromProtobuf(inputValue?: ProtobufValue | Record<string, any>): Record<string, any> | undefined {
   if (!inputValue) {
     return undefined;
   }
   
-  const inputJavaScript = inputValue.toJavaScript();
-  if (inputJavaScript && typeof inputJavaScript === 'object' && !Array.isArray(inputJavaScript)) {
-    return inputJavaScript as Record<string, any>;
+  // Check if it's already a plain JavaScript object
+  if (typeof inputValue === 'object' && !inputValue.toJavaScript) {
+    // It's a plain JavaScript object, return as-is
+    if (!Array.isArray(inputValue)) {
+      return inputValue as Record<string, any>;
+    }
+    return undefined;
+  }
+  
+  // It's a protobuf Value object, convert it
+  try {
+    const protobufValue = inputValue as ProtobufValue;
+    const inputJavaScript = protobufValue.toJavaScript();
+    if (inputJavaScript && typeof inputJavaScript === 'object' && !Array.isArray(inputJavaScript)) {
+      return inputJavaScript as Record<string, any>;
+    }
+  } catch (error) {
+    // If conversion fails, try to return the object as-is if it looks like a valid input object
+    if (typeof inputValue === 'object' && !Array.isArray(inputValue)) {
+      return inputValue as Record<string, any>;
+    }
   }
   
   return undefined;

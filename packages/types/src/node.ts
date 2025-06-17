@@ -1,4 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import { NodeType } from "./enums";
 
 // Node DataTypes
@@ -102,7 +103,7 @@ export type NodeProps = Omit<
 > & {
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
-  input?: Record<string, any>; // ✨ Re-add with simple JavaScript object type
+  input?: google_protobuf_struct_pb.Value.AsObject; // ✨ Re-add with correct protobuf type
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };

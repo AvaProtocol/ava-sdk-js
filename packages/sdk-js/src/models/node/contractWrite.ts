@@ -44,7 +44,7 @@ class ContractWriteNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.ContractWriteNode();
+    const node = new avs_pb.ContractWriteNode();
     
     const config = new avs_pb.ContractWriteNode.Config();
     config.setContractAddress((this.data as ContractWriteNodeData).contractAddress);
@@ -62,15 +62,15 @@ class ContractWriteNode extends Node {
       config.addMethodCalls(methodCallMsg);
     });
     
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      nodeData.setInput(inputValue);
+      node.setInput(inputValue);
     }
 
-    request.setContractWrite(nodeData);
+    request.setContractWrite(node);
 
     return request;
   }
