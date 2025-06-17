@@ -639,5 +639,120 @@ describe("ContractWrite Node Tests", () => {
         }
       }
     });
+
+    test("should use 'results' format (not 'resultsList') in all response types", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      const contractWriteConfig = {
+        contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+        contractAbi: ERC20_ABI,
+        methodCalls: [
+          {
+            callData: createApproveCallData("0x0000000000000000000000000000000000000005", "500"),
+            methodName: "approve",
+          },
+        ],
+      };
+
+      console.log("🔍 Testing that all responses use 'results' not 'resultsList'...");
+
+      // Test 1: runNodeWithInputs should use 'results'
+      const directResponse = await client.runNodeWithInputs({
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: contractWriteConfig,
+        inputVariables: {},
+      });
+
+      if (directResponse.success && directResponse.data) {
+        // Should have 'results', NOT 'resultsList'
+        expect(directResponse.data).toHaveProperty('results');
+        expect(directResponse.data).not.toHaveProperty('resultsList');
+        console.log("✅ runNodeWithInputs uses 'results' format");
+      }
+
+      // Test 2: simulateWorkflow should use 'results'
+      const contractWriteNode = NodeFactory.create({
+        id: getNextId(),
+        name: "format_test_simulate",
+        type: NodeType.ContractWrite,
+        data: contractWriteConfig,
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === contractWriteNode.id
+      );
+
+      if (simulatedStep?.output) {
+        // Should have 'results', NOT 'resultsList'
+        expect(simulatedStep.output).not.toHaveProperty('resultsList');
+        // If there's data, it should use 'results'
+        if (typeof simulatedStep.output === 'object' && simulatedStep.output !== null && 'results' in simulatedStep.output) {
+          expect(simulatedStep.output).toHaveProperty('results');
+          console.log("✅ simulateWorkflow uses 'results' format");
+        }
+      }
+
+      // Test 3: Deploy + Trigger should use 'results'
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
+
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
+
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+        const executedStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === contractWriteNode.id
+        );
+
+        if (executedStep?.output) {
+          // Should have 'results', NOT 'resultsList'
+          expect(executedStep.output).not.toHaveProperty('resultsList');
+          // If there's data, it should use 'results'
+          if (typeof executedStep.output === 'object' && executedStep.output !== null && 'results' in executedStep.output) {
+            expect(executedStep.output).toHaveProperty('results');
+            console.log("✅ deploy+trigger execution uses 'results' format");
+          }
+        }
+
+        console.log("✅ All contract write responses use 'results' format, NOT 'resultsList'!");
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
   });
 });

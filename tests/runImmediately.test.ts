@@ -369,12 +369,12 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
 
       // If the test succeeds, verify the new multiple method structure
       if (result.success && result.data) {
-        expect(result.data).toHaveProperty("resultsList");
-        expect(Array.isArray(result.data.resultsList)).toBe(true);
-        expect(result.data.resultsList.length).toBe(2); // Should have 2 method results
+        expect(result.data).toHaveProperty("results");
+        expect(Array.isArray(result.data.results)).toBe(true);
+        expect(result.data.results.length).toBe(2); // Should have 2 method results
 
         // Check each method result has the expected structure
-        result.data.resultsList.forEach((methodResult: any) => {
+        result.data.results.forEach((methodResult: any) => {
           expect(methodResult).toHaveProperty("methodName");
           expect(methodResult).toHaveProperty("success");
           expect(["latestRoundData", "decimals"]).toContain(
@@ -796,7 +796,7 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
 
     test("should allow updating timeout configuration after creation", () => {
       const testClient = new Client({ endpoint: avsEndpoint });
-      
+
       const newConfig = {
         timeout: 15000,
         retries: 1,
@@ -815,7 +815,11 @@ describe("Immediate Execution Tests (runNodeWithInputs & runTrigger)", () => {
       const testClient = new Client({ endpoint: avsEndpoint });
 
       // Set initial config
-      testClient.setTimeoutConfig({ timeout: 10000, retries: 2, retryDelay: 500 });
+      testClient.setTimeoutConfig({
+        timeout: 10000,
+        retries: 2,
+        retryDelay: 500,
+      });
 
       // Update only timeout
       testClient.setTimeoutConfig({ timeout: 20000 });

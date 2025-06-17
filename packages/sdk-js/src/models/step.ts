@@ -238,14 +238,99 @@ class Step implements StepProps {
         return undefined;
 
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
-        return typeof step.getContractRead === "function"
-          ? step.getContractRead()?.toObject()
-          : (step as any).contractRead;
+        const contractReadOutput = 
+          typeof step.getContractRead === "function"
+            ? step.getContractRead()
+            : (step as any).contractRead;
+        if (contractReadOutput) {
+          // Get the raw output object
+          const outputObj = typeof contractReadOutput.toObject === "function"
+            ? contractReadOutput.toObject()
+            : contractReadOutput;
+          
+          // Convert resultsList to results for consistency with ContractReadNode.fromOutputData
+          if (outputObj && outputObj.resultsList) {
+            return {
+              ...outputObj,
+              results: outputObj.resultsList.map((result: any) => ({
+                methodName: result.methodName,
+                success: result.success,
+                error: result.error,
+                data: result.dataList || []
+              }))
+            };
+          }
+          return outputObj;
+        }
+        return undefined;
 
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
-        return typeof step.getContractWrite === "function"
-          ? step.getContractWrite()?.toObject()
-          : (step as any).contractWrite;
+        const contractWriteOutput = 
+          typeof step.getContractWrite === "function"
+            ? step.getContractWrite()
+            : (step as any).contractWrite;
+        if (contractWriteOutput) {
+          // Get the raw output object
+          const outputObj = typeof contractWriteOutput.toObject === "function"
+            ? contractWriteOutput.toObject()
+            : contractWriteOutput;
+          
+          // Convert resultsList to results for consistency with ContractWriteNode.fromOutputData
+          if (outputObj && outputObj.resultsList) {
+            const transformedResults = outputObj.resultsList.map((result: any) => ({
+              methodName: result.methodName,
+              success: result.success,
+              transaction: result.transaction ? {
+                hash: result.transaction.hash,
+                status: result.transaction.status,
+                blockNumber: result.transaction.blockNumber,
+                blockHash: result.transaction.blockHash,
+                gasUsed: result.transaction.gasUsed,
+                gasLimit: result.transaction.gasLimit,
+                gasPrice: result.transaction.gasPrice,
+                effectiveGasPrice: result.transaction.effectiveGasPrice,
+                from: result.transaction.from,
+                to: result.transaction.to,
+                value: result.transaction.value,
+                nonce: result.transaction.nonce,
+                transactionIndex: result.transaction.transactionIndex,
+                confirmations: result.transaction.confirmations,
+                timestamp: result.transaction.timestamp,
+              } : null,
+              events: result.eventsList?.map((event: any) => ({
+                eventName: event.eventName,
+                address: event.address,
+                topics: event.topicsList || [],
+                data: event.data,
+                decoded: event.decodedMap || {},
+              })) || [],
+              error: result.error ? {
+                code: result.error.code,
+                message: result.error.message,
+                revertReason: result.error.revertReason,
+              } : null,
+              returnData: result.returnData ? {
+                name: result.returnData.name,
+                type: result.returnData.type,
+                value: result.returnData.value,
+              } : null,
+              inputData: result.inputData,
+            }));
+
+            return {
+              ...outputObj,
+              results: transformedResults,
+              // For backward compatibility, provide legacy fields from first result
+              ...(transformedResults.length > 0 && {
+                transaction: transformedResults[0].transaction,
+                success: transformedResults[0].success,
+                hash: transformedResults[0].transaction?.hash,
+              }),
+            };
+          }
+          return outputObj;
+        }
+        return undefined;
 
       case avs_pb.Execution.Step.OutputDataCase.FILTER:
         const filterOutput =
@@ -355,4 +440,4 @@ class Step implements StepProps {
   // Client side does not generate the step, so there's no toRequest() method
 }
 
-export default Step;
+export default Step; 
