@@ -60,12 +60,14 @@ class Node implements NodeProps {
   name: string;
   type: NodeType;
   data: NodeData;
+  input?: Record<string, any>;
 
   constructor(props: NodeProps) {
     this.id = props.id;
     this.name = props.name;
     this.type = props.type;
     this.data = props.data;
+    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskNode {

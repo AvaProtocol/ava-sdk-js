@@ -101,6 +101,7 @@ export type NodeProps = Omit<
 > & {
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
+  input?: Record<string, any>; // ✨ Simple JavaScript object - much cleaner!
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };

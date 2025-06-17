@@ -25,6 +25,7 @@ class Trigger implements TriggerProps {
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
+  input?: Record<string, any>;
 
   /**
    * Create an instance of Trigger from user inputs
@@ -36,6 +37,7 @@ class Trigger implements TriggerProps {
     this.type = props.type;
     this.data = props.data;
     this.output = props.output;
+    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -53,6 +55,7 @@ class Trigger implements TriggerProps {
       type: this.type,
       data: this.data,
       output: this.output,
+      input: this.input,
     };
   }
 }

@@ -1,5 +1,6 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import {
   NodeType,
   RestAPINodeData,
@@ -20,10 +21,21 @@ class RestAPINode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): RestAPINode {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+
+    // ✨ NEW: Extract input data if present
+    let input: google_protobuf_struct_pb.Value.AsObject | undefined;
+    if (raw.getRestApi() && raw.getRestApi()!.hasInput()) {
+      const inputValue = raw.getRestApi()!.getInput();
+      if (inputValue) {
+        input = inputValue.toObject();
+      }
+    }
+
     return new RestAPINode({
       ...obj,
       type: NodeType.RestAPI,
       data: raw.getRestApi()!.getConfig()!.toObject() as RestAPINodeData,
+      input: input, // ✨ NEW: Include input data
     });
   }
 
@@ -53,6 +65,16 @@ class RestAPINode extends Node {
     }
 
     nodeData.setConfig(config);
+
+    // ✨ NEW: Set input data if provided
+    if (this.input) {
+      try {
+        const inputValue = google_protobuf_struct_pb.Value.fromJavaScript(this.input);
+        nodeData.setInput(inputValue);
+      } catch (error) {
+        throw new Error(`Failed to convert input data to protobuf.Value: ${error}`);
+      }
+    }
 
     request.setRestApi(nodeData);
 

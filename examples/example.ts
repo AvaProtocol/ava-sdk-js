@@ -9,7 +9,7 @@
  */
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
 
 import _ from "lodash";
 import { ethers, Wallet } from "ethers";
@@ -774,6 +774,173 @@ async function scheduleMonitorTransfer(
   return workflowId;
 }
 
+// ✨ NEW: Example using input fields with triggers and nodes
+export async function exampleWithInputFields() {
+  const client = new Client({
+    endpoint: "https://avs-aggregator-holesky.avaprotocol.org"
+  });
+
+  // For now, let's comment out the input helper functions since they need to be properly exported
+  // TODO: Uncomment when createInputData, extractInputData, hasInputData are properly exported
+  
+  /*
+  // Create input data for the trigger
+  const triggerInput = createInputData({
+    timezone: "UTC",
+    description: "Daily report generation",
+    priority: "high"
+  });
+
+  // Create input data for the nodes
+  const apiNodeInput = createInputData({
+    timeout: 30000,
+    retries: 3,
+    headers: {
+      "User-Agent": "AvaProtocol-SDK/1.0",
+      "Accept": "application/json"
+    }
+  });
+
+  const customCodeInput = createInputData({
+    debugMode: true,
+    maxProcessingTime: 60000,
+    outputFormat: "json"
+  });
+  */
+
+  // For now, manually create input data objects
+  const triggerInput = {
+    timezone: "UTC",
+    description: "Daily report generation",
+    priority: "high"
+  };
+
+  const apiNodeInput = {
+    timeout: 30000,
+    retries: 3,
+    headers: {
+      "User-Agent": "AvaProtocol-SDK/1.0",
+      "Accept": "application/json"
+    }
+  };
+
+  const customCodeInput = {
+    debugMode: true,
+    maxProcessingTime: 60000,
+    outputFormat: "json"
+  };
+
+  // Create a workflow with input fields
+  const workflow = client.createWorkflow({
+    name: "Daily Report with Input Data",
+    trigger: {
+      id: "daily-trigger",
+      name: "dailyTrigger", 
+      type: TriggerType.Cron,
+      data: {
+        schedules: ["0 9 * * *"] // Every day at 9 AM
+      },
+      input: triggerInput as any // ✨ NEW: Input data for the trigger (cast to any for now)
+    },
+    nodes: [
+      {
+        id: "fetch-data",
+        name: "Fetch Market Data",
+        type: NodeType.RestAPI,
+        data: {
+          url: "https://api.coingecko.com/api/v3/simple/price",
+          method: "GET",
+          body: "symbol=bitcoin&vs_currencies=usd",
+          headersMap: []
+        },
+        input: apiNodeInput as any // ✨ NEW: Input data for the REST API node (cast to any for now)
+      },
+      {
+        id: "process-data", 
+        name: "Process and Format Data",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: `
+            // Access trigger input data
+            const triggerConfig = dailyTrigger.input;
+            console.log("Trigger timezone:", triggerConfig.timezone);
+            console.log("Report priority:", triggerConfig.priority);
+            
+            // Access node input data
+            const nodeConfig = fetch_data.input;
+            console.log("API timeout setting:", nodeConfig.timeout);
+            console.log("Retry count:", nodeConfig.retries);
+            
+            // Access actual output data (same as before)
+            const marketData = fetch_data.data;
+            
+            // Access current node's input data
+            const processingConfig = process_data.input;
+            const debugMode = processingConfig.debugMode;
+            
+            if (debugMode) {
+              console.log("Debug mode enabled");
+              console.log("Market data:", JSON.stringify(marketData));
+            }
+            
+            return {
+              processedAt: new Date().toISOString(),
+              price: marketData.bitcoin?.usd || 0,
+              timezone: triggerConfig.timezone,
+              format: processingConfig.outputFormat
+            };
+          `
+        },
+        input: customCodeInput as any // ✨ NEW: Input data for the custom code node (cast to any for now)
+      }
+    ],
+    edges: [
+      {
+        id: "edge1",
+        source: "daily-trigger",
+        target: "fetch-data"
+      },
+      {
+        id: "edge2", 
+        source: "fetch-data",
+        target: "process-data"
+      }
+    ]
+  });
+
+  console.log("✨ Workflow with input fields created (example only)");
+  console.log("- Trigger has input data:", !!(workflow.trigger as any).input);
+  console.log("- Nodes with input data:", workflow.nodes.filter(n => !!(n as any).input).length);
+
+  return workflow;
+}
+
+// Helper function to demonstrate input data concepts
+export function demonstrateInputDataHelpers() {
+  console.log("✨ Input Data Helper Functions Demo:");
+  
+  // Example input data structure
+  const inputData = {
+    timeout: 5000,
+    retries: 3,
+    headers: { "Authorization": "Bearer token123" },
+    nested: {
+      config: { debug: true },
+      values: [1, 2, 3]
+    }
+  };
+
+  console.log("Input data example:", inputData);
+  console.log("This demonstrates the structure that will be supported once helper functions are exported");
+
+  return {
+    inputData,
+    hasInput: true,
+    message: "Helper functions will be available in future SDK versions"
+  };
+}
+
 const main = async (cmd: string) => {
   const result = await generateApiToken();
   // Get the wallet address directly
@@ -907,6 +1074,14 @@ const main = async (cmd: string) => {
       console.log("secrets", util.inspect(secrets, { depth: null, colors: true }));
       break;
 
+    case "example-with-input-fields":
+      await exampleWithInputFields();
+      break;
+
+    case "demonstrate-input-data-helpers":
+      demonstrateInputDataHelpers();
+      break;
+
     default:
       console.log(`Usage:
 
@@ -932,6 +1107,8 @@ const main = async (cmd: string) => {
       list-secrets:                                       list all user secrets
       gen-task-data:                                      generate a task data for a contract call
       auth-key:                                           get auth key for your EOA when you want to construct grpc call manually
+      example-with-input-fields:                          example using input fields with triggers and nodes
+      demonstrate-input-data-helpers:                      demonstrate input data helpers
       `);
   }
 };
