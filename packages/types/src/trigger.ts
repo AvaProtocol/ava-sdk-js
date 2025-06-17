@@ -48,7 +48,7 @@ export type TriggerProps = Omit<
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
-  input?: google_protobuf_struct_pb.Value.AsObject;
+  input?: google_protobuf_struct_pb.Value.AsObject | Record<string, any>;
 };
 
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };

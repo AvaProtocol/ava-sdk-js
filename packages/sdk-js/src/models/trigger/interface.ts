@@ -17,7 +17,7 @@ export default abstract class Trigger implements TriggerProps {
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
-  input?: Record<string, any>;
+  input?: google_protobuf_struct_pb.Value.AsObject | Record<string, any>;
 
   /**
    * Create an instance of Trigger from user inputs

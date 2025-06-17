@@ -103,7 +103,7 @@ export type NodeProps = Omit<
 > & {
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
-  input?: google_protobuf_struct_pb.Value.AsObject; // ✨ Re-add with correct protobuf type
+  input?: google_protobuf_struct_pb.Value.AsObject | Record<string, any>; // ✨ Re-add with correct protobuf type
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };
