@@ -29,7 +29,7 @@ export default abstract class Trigger implements TriggerProps {
     this.type = props.type;
     this.data = props.data;
     this.output = props.output;
-    this.input = props.input ? extractInputFromProtobuf(props.input as any) : undefined;
+    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskTrigger {

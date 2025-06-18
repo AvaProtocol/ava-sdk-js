@@ -7,9 +7,8 @@ import {
   EventTriggerOutput,
   EventTriggerProps,
   TriggerProps,
-  TriggerOutput,
 } from "@avaprotocol/types";
-import util from "util";
+
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
@@ -114,6 +113,13 @@ class EventTrigger extends Trigger {
     
     config.setQueriesList(queryMessages);
     trigger.setConfig(config);
+    
+    // Convert input field to protobuf format and set on EventTrigger
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      trigger.setInput(inputValue);
+    }
+    
     request.setEvent(trigger);
 
     return request;
@@ -124,6 +130,7 @@ class EventTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: EventTriggerDataType = { queries: [] };
+    let input: Record<string, any> | undefined = undefined;
     
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
@@ -165,12 +172,18 @@ class EventTrigger extends Trigger {
         
         data = { queries: queries };
       }
+      
+      // Extract input data if present
+      if (raw.getEvent()!.hasInput()) {
+        input = extractInputFromProtobuf(raw.getEvent()!.getInput());
+      }
     }
 
     return new EventTrigger({
       ...obj,
       type: TriggerType.Event,
       data: data,
+      input: input,
     });
   }
 

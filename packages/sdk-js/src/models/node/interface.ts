@@ -69,8 +69,8 @@ export default abstract class Node implements NodeProps {
     this.name = props.name;
     this.type = props.type;
     this.data = props.data;
-    // Convert from protobuf AsObject to JavaScript object if needed
-    this.input = props.input ? extractInputFromProtobuf(props.input as any) : undefined;
+    // Direct assignment - no protobuf conversion needed for user input
+    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskNode {
