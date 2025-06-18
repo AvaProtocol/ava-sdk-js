@@ -23,11 +23,11 @@ const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
   let eoaAddress: string;
+  let testWalletAddress: string;
   const createdWorkflowIds: string[] = [];
 
   // Real client data for USDC transfer monitoring
   const REAL_WALLET_ADDRESS = "0xB3Fb744d8B811B4fb19586cdbEc821b4aAFbEEe7";
-  const REAL_EOA_ADDRESS = "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
   const USDC_CONTRACT_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // Sepolia USDC
   const TRANSFER_TOPIC =
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
@@ -44,6 +44,7 @@ describe("Template: Telegram Alert on Transfer", () => {
 
   beforeAll(async () => {
     eoaAddress = await getAddress(walletPrivateKey);
+    testWalletAddress = await getAddress(walletPrivateKey);
 
     // Initialize the client with test credentials
     client = new Client({
@@ -89,7 +90,7 @@ describe("Template: Telegram Alert on Transfer", () => {
               {
                 values: [
                   TRANSFER_TOPIC,
-                  REAL_EOA_ADDRESS, // from address
+                  testWalletAddress, // from address
                   null, // to address (any)
                 ],
               },
@@ -103,7 +104,7 @@ describe("Template: Telegram Alert on Transfer", () => {
                 values: [
                   TRANSFER_TOPIC,
                   null, // from address (any)
-                  REAL_EOA_ADDRESS, // to address
+                  testWalletAddress, // to address
                 ],
               },
             ],
@@ -119,7 +120,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             decimals: 6,
           },
         ],
-        address: REAL_EOA_ADDRESS,
+        address: testWalletAddress,
         chainId: 11155111, // Sepolia
         subType: "transfer",
       },
@@ -201,10 +202,14 @@ return message;`,
 
       const eventTrigger = createEventTrigger();
 
-      // Use the correct runTrigger API with triggerType and triggerConfig
       const result = await client.runTrigger({
         triggerType: TriggerType.Event,
         triggerConfig: eventTrigger.data,
+        inputVariables: {
+          eventTrigger: {
+            input: eventTrigger.input,
+          },
+        },
       });
 
       console.log(
@@ -219,11 +224,11 @@ return message;`,
       // For event triggers, no matching events is a valid outcome
       if (result.success && result.data !== null) {
         expect(result.data).toBeDefined();
-        console.log("✅ Found Transfer events for address:", REAL_EOA_ADDRESS);
+        console.log("✅ Found Transfer events for address:", testWalletAddress);
       } else {
         console.log(
           "ℹ️  No Transfer events found for address (expected):",
-          REAL_EOA_ADDRESS
+          testWalletAddress
         );
         expect(result.success).toBe(true);
       }
@@ -241,11 +246,11 @@ return message;`,
             tokenSymbol: "USDC",
             valueFormatted: 100.5,
             fromAddress: "0x1234567890123456789012345678901234567890",
-            toAddress: REAL_EOA_ADDRESS,
+            toAddress: testWalletAddress,
             blockTimestamp: new Date("2025-01-15T14:30:00Z").getTime(),
           },
           input: {
-            address: REAL_EOA_ADDRESS,
+            address: testWalletAddress,
             tokens: [{ symbol: "USDC", name: "USD Coin" }],
           },
         },

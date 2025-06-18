@@ -1,6 +1,5 @@
 import _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Execution from "./execution";
 import Node from "./node/interface";
 import Edge from "./edge";
 import Trigger from "./trigger/interface";
@@ -23,8 +22,6 @@ export function convertStatusToString(
 
   return conversionMap[status] as WorkflowStatus;
 }
-
-
 
 class Workflow implements WorkflowProps {
   smartWalletAddress: string;
@@ -189,6 +186,9 @@ class Workflow implements WorkflowProps {
     if (this.name) {
       request.setName(this.name);
     }
+
+    // Log final summary for debugging (only errors and counts)
+    console.log(`📤 Workflow serialization: ${this.nodes.length} nodes, ${this.edges.length} edges -> protobuf: ${request.getNodesList().length} nodes, ${request.getEdgesList().length} edges`);
 
     return request;
   }
