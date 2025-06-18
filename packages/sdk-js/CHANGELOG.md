@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.13
+
+### Patch Changes
+
+- 272c26e: Fixed types package include protobuf library issue
+- Updated dependencies [272c26e]
+  - @avaprotocol/types@2.2.11
+
 ## 2.3.12
 
 ### Patch Changes

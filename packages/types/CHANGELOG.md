@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.11
+
+### Patch Changes
+
+- 272c26e: Fixed types package include protobuf library issue
+
 ## 2.2.9
 
 ### Patch Changes
