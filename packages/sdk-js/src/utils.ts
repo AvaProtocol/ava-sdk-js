@@ -247,7 +247,7 @@ export function convertInputToProtobuf(input?: Record<string, any>): ProtobufVal
   if (!input) {
     return undefined;
   }
-  return ProtobufValue.fromJavaScript(input);
+  return convertJSValueToProtobuf(input);
 }
 
 /**

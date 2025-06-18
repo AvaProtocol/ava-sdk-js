@@ -147,8 +147,39 @@ class Workflow implements WorkflowProps {
 
     request.setTrigger(this.trigger.toRequest());
 
-    _.map(this.nodes, (node) => request.addNodes(node.toRequest()));
-    _.map(this.edges, (edge) => request.addEdges(edge.toRequest()));
+    // Add error handling for node serialization
+    try {
+      _.map(this.nodes, (node, index) => {
+        try {
+          const nodeRequest = node.toRequest();
+          request.addNodes(nodeRequest);
+        } catch (nodeError) {
+          console.error(`🚨 Node ${index} (${node.name}) serialization failed:`, nodeError);
+          const errorMessage = nodeError instanceof Error ? nodeError.message : String(nodeError);
+          throw new Error(`Node serialization failed: ${node.name} - ${errorMessage}`);
+        }
+      });
+    } catch (nodesError) {
+      console.error('🚨 Nodes serialization failed:', nodesError);
+      throw nodesError;
+    }
+
+    // Add error handling for edge serialization  
+    try {
+      _.map(this.edges, (edge, index) => {
+        try {
+          const edgeRequest = edge.toRequest();
+          request.addEdges(edgeRequest);
+        } catch (edgeError) {
+          console.error(`🚨 Edge ${index} serialization failed:`, edgeError);
+          const errorMessage = edgeError instanceof Error ? edgeError.message : String(edgeError);
+          throw new Error(`Edge serialization failed: ${edge.id} - ${errorMessage}`);
+        }
+      });
+    } catch (edgesError) {
+      console.error('🚨 Edges serialization failed:', edgesError);
+      throw edgesError;
+    }
 
     request.setStartAt(this.startAt);
     request.setExpiredAt(this.expiredAt);
