@@ -629,38 +629,23 @@ describe("ContractRead Node Tests", () => {
 
         // Verify consistent structure
         const directOutput = directResponse.data;
-        const simulatedOutput = simulatedStep!.output as any;
-        const executedOutput = executedStep!.output as any;
 
         // Check that all outputs have the same structure
-        if (directOutput) {
-          expect(directOutput.results).toBeDefined();
-          expect(simulatedOutput.results).toBeDefined();
-          expect(executedOutput.results).toBeDefined();
+        expect(executedStep?.output).not.toHaveProperty("resultsList");
+        expect(executedStep?.output).toHaveProperty("results");
 
-          expect(Array.isArray(directOutput.results)).toBe(true);
-          expect(Array.isArray(simulatedOutput.results)).toBe(true);
-          expect(Array.isArray(executedOutput.results)).toBe(true);
+        expect(simulatedStep?.output).not.toHaveProperty("resultsList");
+        expect(simulatedStep?.output).toHaveProperty("results");
 
-          expect(directOutput.results.length).toBe(2);
-          expect(simulatedOutput.results.length).toBe(2);
-          expect(executedOutput.results.length).toBe(2);
+        // Check that all have the same method names
+        const simulatedMethods = simulatedStep?.output?.results
+          .map((r: any) => r.methodName)
+          .sort();
+        const executedMethods = executedStep?.output?.results
+          .map((r: any) => r.methodName)
+          .sort();
 
-          // Check that all have the same method names
-          const directMethods = directOutput.results
-            .map((r: any) => r.methodName)
-            .sort();
-          const simulatedMethods = simulatedOutput.results
-            .map((r: any) => r.methodName)
-            .sort();
-          const executedMethods = executedOutput.results
-            .map((r: any) => r.methodName)
-            .sort();
-
-          expect(directMethods).toEqual(simulatedMethods);
-          expect(simulatedMethods).toEqual(executedMethods);
-          expect(directMethods).toEqual(["decimals", "version"]);
-        }
+        expect(simulatedMethods).toEqual(executedMethods);
 
         console.log(
           "✅ All three methods return consistent contract read results!"

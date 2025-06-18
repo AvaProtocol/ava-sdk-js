@@ -238,26 +238,29 @@ class Step implements StepProps {
         return undefined;
 
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
-        const contractReadOutput = 
+        const contractReadOutput =
           typeof step.getContractRead === "function"
             ? step.getContractRead()
             : (step as any).contractRead;
         if (contractReadOutput) {
           // Get the raw output object
-          const outputObj = typeof contractReadOutput.toObject === "function"
-            ? contractReadOutput.toObject()
-            : contractReadOutput;
-          
+          const outputObj =
+            typeof contractReadOutput.toObject === "function"
+              ? contractReadOutput.toObject()
+              : contractReadOutput;
+
           // Convert resultsList to results for consistency with ContractReadNode.fromOutputData
           if (outputObj && outputObj.resultsList) {
+            // Exclude resultsList from the spread to avoid duplication
+            const { resultsList, ...cleanOutputObj } = outputObj;
             return {
-              ...outputObj,
-              results: outputObj.resultsList.map((result: any) => ({
+              ...cleanOutputObj,
+              results: resultsList.map((result: any) => ({
                 methodName: result.methodName,
                 success: result.success,
                 error: result.error,
-                data: result.dataList || []
-              }))
+                data: result.dataList || [],
+              })),
             };
           }
           return outputObj;
@@ -265,60 +268,72 @@ class Step implements StepProps {
         return undefined;
 
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
-        const contractWriteOutput = 
+        const contractWriteOutput =
           typeof step.getContractWrite === "function"
             ? step.getContractWrite()
             : (step as any).contractWrite;
         if (contractWriteOutput) {
           // Get the raw output object
-          const outputObj = typeof contractWriteOutput.toObject === "function"
-            ? contractWriteOutput.toObject()
-            : contractWriteOutput;
-          
+          const outputObj =
+            typeof contractWriteOutput.toObject === "function"
+              ? contractWriteOutput.toObject()
+              : contractWriteOutput;
+
           // Convert resultsList to results for consistency with ContractWriteNode.fromOutputData
           if (outputObj && outputObj.resultsList) {
-            const transformedResults = outputObj.resultsList.map((result: any) => ({
-              methodName: result.methodName,
-              success: result.success,
-              transaction: result.transaction ? {
-                hash: result.transaction.hash,
-                status: result.transaction.status,
-                blockNumber: result.transaction.blockNumber,
-                blockHash: result.transaction.blockHash,
-                gasUsed: result.transaction.gasUsed,
-                gasLimit: result.transaction.gasLimit,
-                gasPrice: result.transaction.gasPrice,
-                effectiveGasPrice: result.transaction.effectiveGasPrice,
-                from: result.transaction.from,
-                to: result.transaction.to,
-                value: result.transaction.value,
-                nonce: result.transaction.nonce,
-                transactionIndex: result.transaction.transactionIndex,
-                confirmations: result.transaction.confirmations,
-                timestamp: result.transaction.timestamp,
-              } : null,
-              events: result.eventsList?.map((event: any) => ({
-                eventName: event.eventName,
-                address: event.address,
-                topics: event.topicsList || [],
-                data: event.data,
-                decoded: event.decodedMap || {},
-              })) || [],
-              error: result.error ? {
-                code: result.error.code,
-                message: result.error.message,
-                revertReason: result.error.revertReason,
-              } : null,
-              returnData: result.returnData ? {
-                name: result.returnData.name,
-                type: result.returnData.type,
-                value: result.returnData.value,
-              } : null,
-              inputData: result.inputData,
-            }));
+            const transformedResults = outputObj.resultsList.map(
+              (result: any) => ({
+                methodName: result.methodName,
+                success: result.success,
+                transaction: result.transaction
+                  ? {
+                      hash: result.transaction.hash,
+                      status: result.transaction.status,
+                      blockNumber: result.transaction.blockNumber,
+                      blockHash: result.transaction.blockHash,
+                      gasUsed: result.transaction.gasUsed,
+                      gasLimit: result.transaction.gasLimit,
+                      gasPrice: result.transaction.gasPrice,
+                      effectiveGasPrice: result.transaction.effectiveGasPrice,
+                      from: result.transaction.from,
+                      to: result.transaction.to,
+                      value: result.transaction.value,
+                      nonce: result.transaction.nonce,
+                      transactionIndex: result.transaction.transactionIndex,
+                      confirmations: result.transaction.confirmations,
+                      timestamp: result.transaction.timestamp,
+                    }
+                  : null,
+                events:
+                  result.eventsList?.map((event: any) => ({
+                    eventName: event.eventName,
+                    address: event.address,
+                    topics: event.topicsList || [],
+                    data: event.data,
+                    decoded: event.decodedMap || {},
+                  })) || [],
+                error: result.error
+                  ? {
+                      code: result.error.code,
+                      message: result.error.message,
+                      revertReason: result.error.revertReason,
+                    }
+                  : null,
+                returnData: result.returnData
+                  ? {
+                      name: result.returnData.name,
+                      type: result.returnData.type,
+                      value: result.returnData.value,
+                    }
+                  : null,
+                inputData: result.inputData,
+              })
+            );
 
+            // Exclude resultsList from the spread to avoid duplication
+            const { resultsList, ...cleanOutputObj } = outputObj;
             return {
-              ...outputObj,
+              ...cleanOutputObj,
               results: transformedResults,
               // For backward compatibility, provide legacy fields from first result
               ...(transformedResults.length > 0 && {
@@ -361,15 +376,18 @@ class Step implements StepProps {
     let inputData: any = undefined;
 
     // Check for input using proper protobuf methods
-    if (typeof (step as any).hasInput === "function" && (step as any).hasInput()) {
+    if (
+      typeof (step as any).hasInput === "function" &&
+      (step as any).hasInput()
+    ) {
       const inputValue = (step as any).getInput();
-      
+
       if (inputValue) {
         // If it's a protobuf Value instance, convert it
         try {
           inputData = convertProtobufValueToJs(inputValue);
         } catch (error) {
-          console.warn('Failed to convert protobuf input value:', error);
+          console.warn("Failed to convert protobuf input value:", error);
           // Fallback: if conversion fails, use the raw value
           inputData = inputValue;
         }
@@ -377,7 +395,7 @@ class Step implements StepProps {
     } else if ((step as any).input) {
       // Fallback for plain objects (from .toObject() calls)
       const inputValue = (step as any).input;
-      
+
       // If it's already a plain JavaScript object, use it directly
       if (typeof inputValue === "object" && !inputValue.getKindCase) {
         inputData = inputValue;
@@ -440,4 +458,4 @@ class Step implements StepProps {
   // Client side does not generate the step, so there's no toRequest() method
 }
 
-export default Step; 
+export default Step;
