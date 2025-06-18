@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.3.14
+
+### Patch Changes
+
+- ba5ec8f: Fix input is not correctly entered into eventTrigger issue
+
 ## 2.3.13
 
 ### Patch Changes
