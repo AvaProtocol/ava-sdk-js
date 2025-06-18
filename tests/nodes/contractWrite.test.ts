@@ -31,7 +31,7 @@ const SEPOLIA_TOKEN_CONFIGS = {
     decimals: 6,
   },
   LINK: {
-    address: "0x779877a7b0d9e8603169ddbd7836e478b4624789", 
+    address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
     name: "ChainLink Token",
     symbol: "LINK",
     decimals: 18,
@@ -41,45 +41,45 @@ const SEPOLIA_TOKEN_CONFIGS = {
 // Standard ERC20 ABI for testing (approve and transfer functions)
 const ERC20_ABI = JSON.stringify([
   {
-    "constant": false,
-    "inputs": [
-      {"name": "_spender", "type": "address"},
-      {"name": "_value", "type": "uint256"}
+    constant: false,
+    inputs: [
+      { name: "_spender", type: "address" },
+      { name: "_value", type: "uint256" },
     ],
-    "name": "approve",
-    "outputs": [{"name": "", "type": "bool"}],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "approve",
+    outputs: [{ name: "", type: "bool" }],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "constant": false,
-    "inputs": [
-      {"name": "_to", "type": "address"},
-      {"name": "_value", "type": "uint256"}
+    constant: false,
+    inputs: [
+      { name: "_to", type: "address" },
+      { name: "_value", type: "uint256" },
     ],
-    "name": "transfer",
-    "outputs": [{"name": "", "type": "bool"}],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "transfer",
+    outputs: [{ name: "", type: "bool" }],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "constant": true,
-    "inputs": [{"name": "_owner", "type": "address"}],
-    "name": "balanceOf",
-    "outputs": [{"name": "balance", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
+    constant: true,
+    inputs: [{ name: "_owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "balance", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "name",
-    "outputs": [{"name": "", "type": "string"}],
-    "stateMutability": "view",
-    "type": "function"
-  }
+    constant: true,
+    inputs: [],
+    name: "name",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ]);
 
 // Helper function to check if we're on Sepolia
@@ -92,7 +92,10 @@ async function isSepoliaChain(): Promise<boolean> {
 }
 
 // Helper function to create approve call data for ERC20
-function createApproveCallData(spender: string, amount: string = "1000000"): string {
+function createApproveCallData(
+  spender: string,
+  amount: string = "1000000"
+): string {
   // approve(address,uint256) function selector: 0x095ea7b3
   // Pad spender address to 32 bytes
   const paddedSpender = spender.replace("0x", "").padStart(64, "0");
@@ -190,7 +193,12 @@ describe("ContractWrite Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.nodeId).toBeDefined();
 
-      if (result.success && result.data && typeof result.data === 'object' && 'results' in result.data) {
+      if (
+        result.success &&
+        result.data &&
+        typeof result.data === "object" &&
+        "results" in result.data
+      ) {
         // Should have transaction hash for successful write
         expect(result.data.results).toBeDefined();
         expect(Array.isArray(result.data.results)).toBe(true);
@@ -198,7 +206,10 @@ describe("ContractWrite Node Tests", () => {
           expect(result.data.results[0].methodName).toBe("approve");
           if (result.data.results[0].transaction) {
             expect(result.data.results[0].transaction.hash).toBeDefined();
-            console.log("✅ Transaction hash:", result.data.results[0].transaction.hash);
+            console.log(
+              "✅ Transaction hash:",
+              result.data.results[0].transaction.hash
+            );
           }
         }
       } else {
@@ -246,7 +257,12 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
 
-      if (result.success && result.data && typeof result.data === 'object' && 'results' in result.data) {
+      if (
+        result.success &&
+        result.data &&
+        typeof result.data === "object" &&
+        "results" in result.data
+      ) {
         expect(result.data.results).toBeDefined();
         expect(result.data.results.length).toBe(2);
         result.data.results.forEach((methodResult: any, index: number) => {
@@ -264,7 +280,9 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runNodeWithInputs with invalid contract address...");
+      console.log(
+        "🚀 Testing runNodeWithInputs with invalid contract address..."
+      );
 
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.ContractWrite,
@@ -273,7 +291,9 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData("0x0000000000000000000000000000000000000001"),
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000001"
+              ),
               methodName: "approve",
             },
           ],
@@ -288,7 +308,7 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
+
       // Should fail gracefully
       if (!result.success) {
         expect(result.error).toBeDefined();
@@ -326,7 +346,7 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
+
       // Should fail gracefully
       if (!result.success) {
         expect(result.error).toBeDefined();
@@ -353,14 +373,19 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData("0x0000000000000000000000000000000000000001", "200"),
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000001",
+                "200"
+              ),
               methodName: "approve",
             },
           ],
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
 
       console.log("🚀 Testing simulateWorkflow with contract write...");
 
@@ -380,7 +405,7 @@ describe("ContractWrite Node Tests", () => {
         (step) => step.id === contractWriteNode.id
       );
       expect(contractWriteStep).toBeDefined();
-      
+
       // Note: Simulation might succeed even if actual execution would fail
       // This depends on the simulation implementation
       console.log("Contract write step success:", contractWriteStep!.success);
@@ -406,20 +431,30 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData("0x0000000000000000000000000000000001", "100"),
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000001",
+                "100"
+              ),
               methodName: "approve",
             },
             {
-              callData: createApproveCallData("0x0000000000000000000000000000000002", "150"),
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000002",
+                "150"
+              ),
               methodName: "approve",
             },
           ],
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
 
-      console.log("🚀 Testing simulateWorkflow with multiple contract writes...");
+      console.log(
+        "🚀 Testing simulateWorkflow with multiple contract writes..."
+      );
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -430,8 +465,11 @@ describe("ContractWrite Node Tests", () => {
         (step) => step.id === contractWriteNode.id
       );
       expect(contractWriteStep).toBeDefined();
-      
-      console.log("Multiple writes simulation result:", contractWriteStep!.success);
+
+      console.log(
+        "Multiple writes simulation result:",
+        contractWriteStep!.success
+      );
     });
   });
 
@@ -455,14 +493,19 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData("0x0000000000000000000000000000000000000003", "300"),
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000003",
+                "300"
+              ),
               methodName: "approve",
             },
           ],
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -470,7 +513,9 @@ describe("ContractWrite Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with contract write...");
+      console.log(
+        "🚀 Testing deploy + trigger workflow with contract write..."
+      );
 
       let workflowId: string | undefined;
       try {
@@ -511,7 +556,10 @@ describe("ContractWrite Node Tests", () => {
         // Note: The step might succeed or fail depending on wallet funding and gas
         console.log("Contract write step success:", contractWriteStep.success);
         if (!contractWriteStep.success) {
-          console.log("Execution error (may be expected):", contractWriteStep.error);
+          console.log(
+            "Execution error (may be expected):",
+            contractWriteStep.error
+          );
         }
       } finally {
         if (workflowId) {
@@ -538,7 +586,10 @@ describe("ContractWrite Node Tests", () => {
         contractAbi: ERC20_ABI,
         methodCalls: [
           {
-            callData: createApproveCallData("0x0000000000000000000000000000000000000004", "400"),
+            callData: createApproveCallData(
+              "0x0000000000000000000000000000000000000004",
+              "400"
+            ),
             methodName: "approve",
           },
         ],
@@ -563,7 +614,9 @@ describe("ContractWrite Node Tests", () => {
         data: contractWriteConfig,
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
@@ -631,6 +684,123 @@ describe("ContractWrite Node Tests", () => {
 
         console.log(
           "✅ All three methods return consistent contract write response formats!"
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
+
+    test("should use 'results' format (not 'resultsList') in all response types", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      const contractWriteConfig = {
+        contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+        contractAbi: ERC20_ABI,
+        methodCalls: [
+          {
+            callData: createApproveCallData(
+              "0x0000000000000000000000000000000000000005",
+              "500"
+            ),
+            methodName: "approve",
+          },
+        ],
+      };
+
+      console.log(
+        "🔍 Testing that all responses use 'results' not 'resultsList'..."
+      );
+
+      // Test 1: runNodeWithInputs should use 'results'
+      const directResponse = await client.runNodeWithInputs({
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: contractWriteConfig,
+        inputVariables: {},
+      });
+
+      expect(directResponse.data).toHaveProperty("results");
+      console.log("✅ runNodeWithInputs uses 'results' format");
+
+      // Test 2: simulateWorkflow should use 'results'
+      const contractWriteNode = NodeFactory.create({
+        id: getNextId(),
+        name: "format_test_simulate",
+        type: NodeType.ContractWrite,
+        data: contractWriteConfig,
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === contractWriteNode.id
+      );
+
+      if (simulatedStep?.output) {
+        // If there's data, it should use 'results'
+        if (
+          typeof simulatedStep.output === "object" &&
+          simulatedStep.output !== null &&
+          "results" in simulatedStep.output
+        ) {
+          expect(simulatedStep.output).toHaveProperty("results");
+          console.log("✅ simulateWorkflow uses 'results' format");
+        }
+      }
+
+      // Test 3: Deploy + Trigger should use 'results'
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
+
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
+
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+        const executedStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === contractWriteNode.id
+        );
+
+        console.log("🚀 ~ test ~ executedStep:", executedStep);
+
+        expect(executedStep?.output).not.toHaveProperty("resultsList");
+        expect(executedStep?.output).toHaveProperty("results");
+
+        console.log(
+          "✅ All contract write responses use 'results' format, NOT 'resultsList'!"
         );
       } finally {
         if (workflowId) {

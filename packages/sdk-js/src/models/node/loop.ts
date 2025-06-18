@@ -6,7 +6,7 @@ import {
   LoopNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import _ from "lodash";
 
 class LoopNode extends Node {
@@ -38,10 +38,18 @@ class LoopNode extends Node {
       graphqlDataQuery: loopNodeData.graphqlDataQuery,
     } as LoopNodeData;
 
+    // Extract input data from top-level TaskNode.input field (not nested LoopNode.input)
+    // This matches where we set it in toRequest() and where the Go backend looks for it
+    let input: Record<string, any> | undefined = undefined;
+    if (raw.hasInput()) {
+      input = extractInputFromProtobuf(raw.getInput());
+    }
+
     return new LoopNode({
       ...obj,
       type: NodeType.Loop,
       data: data,
+      input: input,
     });
   }
 
@@ -60,6 +68,13 @@ class LoopNode extends Node {
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
     loopNode.setConfig(config);
+
+    // Set input data on the top-level TaskNode, not the nested LoopNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      node.setInput(inputValue);
+    }
 
     // Handle nested nodes - these still use the nested structure within LoopNodeData
     if ((data as any).ethTransfer) {

@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput } from "./interface";
-import { TriggerType, BlockTriggerDataType, BlockTriggerOutput, BlockTriggerProps, TriggerProps } from "@avaprotocol/types";
+import Trigger from "./interface";
+import { TriggerType, BlockTriggerDataType, BlockTriggerOutput, BlockTriggerProps, TriggerProps, TriggerOutput } from "@avaprotocol/types";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { interval }
 
@@ -37,6 +38,12 @@ class BlockTrigger extends Trigger {
     config.setInterval(blockData.interval);
     trigger.setConfig(config);
     
+    // Use utility function to convert input field to protobuf format
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      trigger.setInput(inputValue);
+    }
+    
     request.setBlock(trigger);
 
     return request;
@@ -47,6 +54,7 @@ class BlockTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: BlockTriggerDataType = { interval: 0 };
+    let input: Record<string, any> | undefined = undefined;
     
     if (raw.getBlock() && raw.getBlock()!.hasConfig()) {
       const config = raw.getBlock()!.getConfig();
@@ -56,12 +64,19 @@ class BlockTrigger extends Trigger {
           interval: config.getInterval() || 0
         };
       }
+      
+      // Use utility function to extract input field from protobuf format
+      const blockTrigger = raw.getBlock()!;
+      if (blockTrigger.hasInput()) {
+        input = extractInputFromProtobuf(blockTrigger.getInput());
+      }
     }
     
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
       data: data,
+      input: input,
     });
   }
 

@@ -3,14 +3,16 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   NodeType,
   RestAPINodeData,
-  RestAPINodeOutput,
   RestAPINodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import {
+  convertProtobufValueToJs,
+  convertInputToProtobuf,
+  extractInputFromProtobuf,
+} from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
-
 
 class RestAPINode extends Node {
   constructor(props: RestAPINodeProps) {
@@ -20,10 +22,19 @@ class RestAPINode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): RestAPINode {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
+
+    // Extract input data from top-level TaskNode.input field (not nested RestAPINode.input)
+    // This matches where we set it in toRequest() and where the Go backend looks for it
+    let input: Record<string, any> | undefined = undefined;
+    if (raw.hasInput()) {
+      input = extractInputFromProtobuf(raw.getInput());
+    }
+
     return new RestAPINode({
       ...obj,
       type: NodeType.RestAPI,
       data: raw.getRestApi()!.getConfig()!.toObject() as RestAPINodeData,
+      input: input, // Include input data from top-level TaskNode
     });
   }
 
@@ -53,6 +64,15 @@ class RestAPINode extends Node {
     }
 
     nodeData.setConfig(config);
+
+    // Use the standard utility function to convert input field to protobuf format
+    const inputValue = convertInputToProtobuf(this.input);
+
+    if (inputValue) {
+      // Set input on the top-level TaskNode, not the nested RestAPINode
+      // This matches where the Go backend's ExtractNodeInputData() looks for it
+      request.setInput(inputValue);
+    }
 
     request.setRestApi(nodeData);
 

@@ -7,7 +7,7 @@ import {
   CustomCodeNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs, convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
 
@@ -27,11 +27,19 @@ class CustomCodeNode extends Node {
       lang: rawConfig.lang as unknown as CustomCodeLang,
       source: rawConfig.source,
     };
+
+    // Extract input data from top-level TaskNode.input field (not nested CustomCodeNode.input)
+    // This matches where we set it in toRequest() and where the Go backend looks for it
+    let input: Record<string, any> | undefined = undefined;
+    if (raw.hasInput()) {
+      input = extractInputFromProtobuf(raw.getInput());
+    }
     
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
       data: convertedConfig,
+      input: input,
     });
   }
 
@@ -41,7 +49,7 @@ class CustomCodeNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.CustomCodeNode();
+    const node = new avs_pb.CustomCodeNode();
 
     const config = new avs_pb.CustomCodeNode.Config();
 
@@ -49,9 +57,16 @@ class CustomCodeNode extends Node {
     config.setLang((this.data as CustomCodeNodeData).lang as any);
     config.setSource((this.data as CustomCodeNodeData).source);
 
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
-    request.setCustomCode(nodeData);
+    // Set input data on the top-level TaskNode, not the nested CustomCodeNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      request.setInput(inputValue);
+    }
+
+    request.setCustomCode(node);
 
     return request;
   }

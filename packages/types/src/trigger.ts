@@ -42,11 +42,12 @@ export type TriggerOutput =
 
 export type TriggerProps = Omit<
   avs_pb.TaskTrigger.AsObject,
-  "manual" | "fixedTime" | "cron" | "block" | "event" | "type"
+  "manual" | "fixedTime" | "cron" | "block" | "event" | "type" | "input"
 > & {
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
+  input?: Record<string, any>;
 };
 
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };

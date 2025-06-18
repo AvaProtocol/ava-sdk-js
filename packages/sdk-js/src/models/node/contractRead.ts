@@ -1,7 +1,7 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ContractReadNodeData, ContractReadNodeProps, NodeProps } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs, convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data
 
@@ -25,11 +25,19 @@ class ContractReadNode extends Node {
         methodName: call.methodName,
       })) || [],
     };
+
+    // Extract input data from top-level TaskNode.input field (not nested ContractReadNode.input)
+    // This matches where we set it in toRequest() and where the Go backend looks for it
+    let input: Record<string, any> | undefined = undefined;
+    if (raw.hasInput()) {
+      input = extractInputFromProtobuf(raw.getInput());
+    }
     
     return new ContractReadNode({
       ...obj,
       type: NodeType.ContractRead,
       data: data,
+      input: input,
     });
   }
 
@@ -39,7 +47,7 @@ class ContractReadNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.ContractReadNode();
+    const node = new avs_pb.ContractReadNode();
     
     const config = new avs_pb.ContractReadNode.Config();
     config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
@@ -56,9 +64,16 @@ class ContractReadNode extends Node {
       config.addMethodCalls(methodCallMsg);
     });
     
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
-    request.setContractRead(nodeData);
+    // Set input data on the top-level TaskNode, not the nested ContractReadNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      request.setInput(inputValue);
+    }
+
+    request.setContractRead(node);
 
     return request;
   }

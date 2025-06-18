@@ -98,9 +98,11 @@ export type NodeProps = Omit<
   | "loop"
   | "customCode"
   | "type" // Exclude the protobuf type field to avoid conflict
+  | "input" // ✨ Omit the protobuf input field
 > & {
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
+  input?: Record<string, any>; // Simplified to plain JS object - transformation handled in SDK
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };

@@ -1,6 +1,7 @@
 import { NodeType, BranchNodeData, BranchNodeProps, NodeProps } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { conditions }
 
@@ -23,11 +24,15 @@ class BranchNode extends Node {
         expression: condition.expression,
       })) || [],
     };
+
+    // Extract input data if present
+    const input = extractInputFromProtobuf(raw.getBranch()?.getInput());
     
     return new BranchNode({
       ...obj,
       type: NodeType.Branch,
       data: data,
+      input: input,
     });
   }
 
@@ -37,7 +42,7 @@ class BranchNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.BranchNode();
+    const node = new avs_pb.BranchNode();
     const config = new avs_pb.BranchNode.Config();
     
     if ((this.data as BranchNodeData).conditions && 
@@ -56,8 +61,15 @@ class BranchNode extends Node {
       config.setConditionsList(conditionsList);
     }
     
-    nodeData.setConfig(config);
-    request.setBranch(nodeData);
+    node.setConfig(config);
+
+    // Set input data if provided
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      node.setInput(inputValue);
+    }
+
+    request.setBranch(node);
 
     return request;
   }

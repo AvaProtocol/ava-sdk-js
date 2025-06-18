@@ -1,6 +1,7 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ContractWriteNodeData, ContractWriteNodeProps, NodeProps } from "@avaprotocol/types";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi, methodCallsList? } }
 
@@ -25,11 +26,19 @@ class ContractWriteNode extends Node {
         methodName: call.methodName,
       })) || [],
     };
+
+    // Extract input data from top-level TaskNode.input field (not nested ContractWriteNode.input)
+    // This matches where we set it in toRequest() and where the Go backend looks for it
+    let input: Record<string, any> | undefined = undefined;
+    if (raw.hasInput()) {
+      input = extractInputFromProtobuf(raw.getInput());
+    }
     
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,
       data: data,
+      input: input,
     });
   }
 
@@ -39,7 +48,7 @@ class ContractWriteNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.ContractWriteNode();
+    const node = new avs_pb.ContractWriteNode();
     
     const config = new avs_pb.ContractWriteNode.Config();
     config.setContractAddress((this.data as ContractWriteNodeData).contractAddress);
@@ -57,9 +66,16 @@ class ContractWriteNode extends Node {
       config.addMethodCalls(methodCallMsg);
     });
     
-    nodeData.setConfig(config);
+    node.setConfig(config);
 
-    request.setContractWrite(nodeData);
+    // Set input data on the top-level TaskNode, not the nested ContractWriteNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      request.setInput(inputValue);
+    }
+
+    request.setContractWrite(node);
 
     return request;
   }

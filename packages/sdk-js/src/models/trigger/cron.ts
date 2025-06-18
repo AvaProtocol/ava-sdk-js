@@ -1,5 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput } from "./interface";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
+import Trigger from "./interface";
 import { TriggerType, CronTriggerDataType, CronTriggerOutput, CronTriggerProps, TriggerProps } from "@avaprotocol/types";
 
 class CronTrigger extends Trigger {
@@ -34,6 +35,16 @@ class CronTrigger extends Trigger {
     config.setSchedulesList(cronData.schedules);
     trigger.setConfig(config);
     
+    // ✨ NEW: Set input data if provided
+    if (this.input) {
+      try {
+        const inputValue = google_protobuf_struct_pb.Value.fromJavaScript(this.input);
+        trigger.setInput(inputValue);
+      } catch (error) {
+        throw new Error(`Failed to convert input data to protobuf.Value: ${error}`);
+      }
+    }
+    
     request.setCron(trigger);
 
     return request;
@@ -54,11 +65,21 @@ class CronTrigger extends Trigger {
         };
       }
     }
+
+    // ✨ NEW: Extract input data if present
+    let input: google_protobuf_struct_pb.Value.AsObject | undefined;
+    if (raw.getCron() && raw.getCron()!.hasInput()) {
+      const inputValue = raw.getCron()!.getInput();
+      if (inputValue) {
+        input = inputValue.toObject();
+      }
+    }
     
     return new CronTrigger({
       ...obj,
       type: TriggerType.Cron,
       data: data,
+      input: input, // ✨ NEW: Include input data
     });
   }
 

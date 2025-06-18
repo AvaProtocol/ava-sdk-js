@@ -1,5 +1,25 @@
 # @avaprotocol/sdk-js
 
+## 2.3.15
+
+### Patch Changes
+
+- 567e1ab: Fixed nodes data not serialized for deploy problem
+
+## 2.3.14
+
+### Patch Changes
+
+- ba5ec8f: Fix input is not correctly entered into eventTrigger issue
+
+## 2.3.13
+
+### Patch Changes
+
+- 272c26e: Fixed types package include protobuf library issue
+- Updated dependencies [272c26e]
+  - @avaprotocol/types@2.2.11
+
 ## 2.3.12
 
 ### Patch Changes

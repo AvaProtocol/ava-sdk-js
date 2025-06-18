@@ -749,7 +749,7 @@ runNodeWithInputs: {
     responseSerialize: serialize_aggregator_RunNodeWithInputsResp,
     responseDeserialize: deserialize_aggregator_RunNodeWithInputsResp,
   },
-  // RunTrigger allows executing a single trigger for testing purposes (triggers don't accept inputs)
+  // RunTrigger allows executing a single trigger for testing purposes
 runTrigger: {
     path: '/aggregator.Aggregator/RunTrigger',
     requestStream: false,

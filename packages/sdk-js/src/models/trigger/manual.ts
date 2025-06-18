@@ -1,5 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import { TriggerType, ManualTriggerOutput, ManualTriggerProps, TriggerProps } from "@avaprotocol/types";
 
 
@@ -17,16 +18,30 @@ class ManualTrigger extends Trigger {
     
     trigger.setManual(true);
     
+    // Convert input field to protobuf format and set on top-level TaskTrigger
+    // Manual triggers use the top-level input field since they don't have nested structure
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      trigger.setInput(inputValue);
+    }
+    
     return trigger;
   }
 
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
     
+    // Extract input from top-level TaskTrigger input field for manual triggers
+    let input: Record<string, any> | undefined = undefined;
+    if (raw.hasInput()) {
+      input = extractInputFromProtobuf(raw.getInput());
+    }
+    
     return new ManualTrigger({
       ...obj,
       type: TriggerType.Manual,
       data: null, // Manual triggers don't have data in the protobuf response
+      input: input,
     });
   }
   

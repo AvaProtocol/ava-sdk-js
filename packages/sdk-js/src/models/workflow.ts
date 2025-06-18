@@ -1,6 +1,5 @@
 import _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Execution from "./execution";
 import Node from "./node/interface";
 import Edge from "./edge";
 import Trigger from "./trigger/interface";
@@ -23,8 +22,6 @@ export function convertStatusToString(
 
   return conversionMap[status] as WorkflowStatus;
 }
-
-
 
 class Workflow implements WorkflowProps {
   smartWalletAddress: string;
@@ -147,8 +144,39 @@ class Workflow implements WorkflowProps {
 
     request.setTrigger(this.trigger.toRequest());
 
-    _.map(this.nodes, (node) => request.addNodes(node.toRequest()));
-    _.map(this.edges, (edge) => request.addEdges(edge.toRequest()));
+    // Add error handling for node serialization
+    try {
+      _.map(this.nodes, (node, index) => {
+        try {
+          const nodeRequest = node.toRequest();
+          request.addNodes(nodeRequest);
+        } catch (nodeError) {
+          console.error(`🚨 Node ${index} (${node.name}) serialization failed:`, nodeError);
+          const errorMessage = nodeError instanceof Error ? nodeError.message : String(nodeError);
+          throw new Error(`Node serialization failed: ${node.name} - ${errorMessage}`);
+        }
+      });
+    } catch (nodesError) {
+      console.error('🚨 Nodes serialization failed:', nodesError);
+      throw nodesError;
+    }
+
+    // Add error handling for edge serialization  
+    try {
+      _.map(this.edges, (edge, index) => {
+        try {
+          const edgeRequest = edge.toRequest();
+          request.addEdges(edgeRequest);
+        } catch (edgeError) {
+          console.error(`🚨 Edge ${index} serialization failed:`, edgeError);
+          const errorMessage = edgeError instanceof Error ? edgeError.message : String(edgeError);
+          throw new Error(`Edge serialization failed: ${edge.id} - ${errorMessage}`);
+        }
+      });
+    } catch (edgesError) {
+      console.error('🚨 Edges serialization failed:', edgesError);
+      throw edgesError;
+    }
 
     request.setStartAt(this.startAt);
     request.setExpiredAt(this.expiredAt);
@@ -158,6 +186,9 @@ class Workflow implements WorkflowProps {
     if (this.name) {
       request.setName(this.name);
     }
+
+    // Log final summary for debugging (only errors and counts)
+    console.log(`📤 Workflow serialization: ${this.nodes.length} nodes, ${this.edges.length} edges -> protobuf: ${request.getNodesList().length} nodes, ${request.getEdgesList().length} edges`);
 
     return request;
   }

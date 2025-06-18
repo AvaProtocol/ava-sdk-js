@@ -233,3 +233,60 @@ export function convertProtobufStepTypeToSdk(protobufType: string): string {
     return protobufType; // fallback to raw value
   }
 }
+
+/**
+ * Convert input field from JavaScript object to protobuf Value format
+ * 
+ * Pure utility function for converting trigger/node input data to protobuf format.
+ * Can be used by both triggers and nodes.
+ * 
+ * @param input - JavaScript object with input data, or undefined
+ * @returns protobuf Value or undefined if no input
+ */
+export function convertInputToProtobuf(input?: Record<string, any>): ProtobufValue | undefined {
+  if (!input) {
+    return undefined;
+  }
+  return convertJSValueToProtobuf(input);
+}
+
+/**
+ * Extract input field from protobuf Value format to JavaScript object
+ * 
+ * Pure utility function for extracting trigger/node input data from protobuf format.
+ * Can be used by both triggers and nodes.
+ * 
+ * @param inputValue - protobuf Value from response, plain JavaScript object, or undefined
+ * @returns JavaScript object or undefined
+ */
+export function extractInputFromProtobuf(inputValue?: ProtobufValue | Record<string, any>): Record<string, any> | undefined {
+  if (!inputValue) {
+    return undefined;
+  }
+  
+  // Check if it's already a plain JavaScript object
+  if (typeof inputValue === 'object' && !inputValue.toJavaScript) {
+    // It's a plain JavaScript object, return as-is
+    if (!Array.isArray(inputValue)) {
+      return inputValue as Record<string, any>;
+    }
+    return undefined;
+  }
+  
+  // It's a protobuf Value object, convert it
+  try {
+    const protobufValue = inputValue as ProtobufValue;
+    const inputJavaScript = protobufValue.toJavaScript();
+    if (inputJavaScript && typeof inputJavaScript === 'object' && !Array.isArray(inputJavaScript)) {
+      return inputJavaScript as Record<string, any>;
+    }
+  } catch (error) {
+    // If conversion fails, try to return the object as-is if it looks like a valid input object
+    if (typeof inputValue === 'object' && !Array.isArray(inputValue)) {
+      return inputValue as Record<string, any>;
+    }
+  }
+  
+  return undefined;
+}
+

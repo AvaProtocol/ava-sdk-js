@@ -1,6 +1,8 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import { NodeType, NodeTypeGoConverter, NodeTypeConverter, NodeProps, NodeData } from "@avaprotocol/types";
 import _ from "lodash";
+import { extractInputFromProtobuf } from "../../utils";
 
 // Function to convert TaskStatus to string
 export function covertNodeTypeToString(
@@ -55,17 +57,20 @@ export const ProtobufNodePropsUtils = {
   }
 };
 
-class Node implements NodeProps {
+export default abstract class Node implements NodeProps {
   id: string;
   name: string;
   type: NodeType;
   data: NodeData;
+  input?: Record<string, any>; // Use JavaScript object type for internal storage
 
   constructor(props: NodeProps) {
     this.id = props.id;
     this.name = props.name;
     this.type = props.type;
     this.data = props.data;
+    // Direct assignment - no protobuf conversion needed for user input
+    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskNode {
@@ -78,6 +83,20 @@ class Node implements NodeProps {
 
     return request;
   }
-}
 
-export default Node;
+  static fromResponse(raw: avs_pb.TaskNode): Node {
+    // Convert the raw object to NodeProps, which should keep name and id
+    const obj = raw.toObject() as unknown as NodeProps;
+
+    // Extract input data using the utility function
+    let input: google_protobuf_struct_pb.Value.AsObject | undefined = undefined;
+    if (raw.hasInput()) {
+      input = raw.getInput()!.toObject();
+    }
+
+    return new (this as any)({
+      ...obj,
+      input: input,
+    });
+  }
+}

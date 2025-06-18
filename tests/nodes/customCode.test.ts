@@ -212,9 +212,10 @@ describe("CustomCode Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(result.data).toBeDefined();
-        expect(result.data.sum).toBe(21);
-        expect(result.data.max).toBe(6);
+        const data = result.data as any;
+        expect(data).toBeDefined();
+        expect(data.sum).toBe(21);
+        expect(data.max).toBe(6);
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Lodash module test failed:", result.error);
@@ -256,9 +257,10 @@ describe("CustomCode Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(result.data).toBeDefined();
-        expect(result.data.formatted).toBe("2023-12-25");
-        expect(result.data.addDays).toBe("2024-01-01");
+        const data = result.data as any;
+        expect(data).toBeDefined();
+        expect(data.formatted).toBe("2023-12-25");
+        expect(data.addDays).toBe("2024-01-01");
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Date manipulation test failed:", result.error);
@@ -689,23 +691,35 @@ describe("CustomCode Node Tests", () => {
 
         // Check that all outputs have the same structure
         if (directOutput) {
-          expect(directOutput.computedValue).toBe(15);
-          expect(simulatedOutput.computedValue).toBe(15);
-          expect(executedOutput.computedValue).toBe(15);
+          const directOutputObj = directOutput as any;
+          const simulatedOutputObj = simulatedOutput as any;
+          const executedOutputObj = executedOutput as any;
 
-          expect(directOutput.status).toBe("completed");
-          expect(simulatedOutput.status).toBe("completed");
-          expect(executedOutput.status).toBe("completed");
+          expect(directOutputObj.computedValue).toBe(15);
+          expect(simulatedOutputObj.computedValue).toBe(15);
+          expect(executedOutputObj.computedValue).toBe(15);
 
-          expect(directOutput.processingId).toBeDefined();
-          expect(simulatedOutput.processingId).toBeDefined();
-          expect(executedOutput.processingId).toBeDefined();
+          expect(directOutputObj.status).toBe("completed");
+          expect(simulatedOutputObj.status).toBe("completed");
+          expect(executedOutputObj.status).toBe("completed");
 
-          expect(directOutput.inputReceived).toEqual(
+          expect(directOutputObj.processingId).toBeDefined();
+          expect(simulatedOutputObj.processingId).toBeDefined();
+          expect(executedOutputObj.processingId).toBeDefined();
+
+          // Check that the expected camelCase fields exist in inputReceived
+          // Note: The backend now provides both camelCase and snake_case versions for compatibility
+          expect(directOutputObj.inputReceived).toMatchObject(
             inputVariables.trigger.data
           );
-          expect(simulatedOutput.inputReceived).toBeDefined();
-          expect(executedOutput.inputReceived).toBeDefined();
+          expect(simulatedOutputObj.inputReceived).toBeDefined();
+          expect(executedOutputObj.inputReceived).toBeDefined();
+
+          // Verify that the core data fields are present (regardless of dual naming)
+          expect(simulatedOutputObj.inputReceived.testValue).toBe(42);
+          expect(simulatedOutputObj.inputReceived.testArray).toEqual([1, 2, 3]);
+          expect(executedOutputObj.inputReceived.testValue).toBe(42);
+          expect(executedOutputObj.inputReceived.testArray).toEqual([1, 2, 3]);
         }
 
         console.log(
@@ -798,11 +812,15 @@ describe("CustomCode Node Tests", () => {
 
       // Create nodes testing all empty data return types
       const nodeParams = createEmptyDataNodes("simulate");
-      
+
       const nullNode = NodeFactory.create(nodeParams.nullNodeParams);
-      const emptyObjectNode = NodeFactory.create(nodeParams.emptyObjectNodeParams);
+      const emptyObjectNode = NodeFactory.create(
+        nodeParams.emptyObjectNodeParams
+      );
       const undefinedNode = NodeFactory.create(nodeParams.undefinedNodeParams);
-      const emptyArrayNode = NodeFactory.create(nodeParams.emptyArrayNodeParams);
+      const emptyArrayNode = NodeFactory.create(
+        nodeParams.emptyArrayNodeParams
+      );
       const numberNode = NodeFactory.create(nodeParams.numberNodeParams);
       const stringNode = NodeFactory.create(nodeParams.stringNodeParams);
 
@@ -836,33 +854,45 @@ describe("CustomCode Node Tests", () => {
       expect(nullStep!.success).toBe(true);
       expect(nullStep!.output).toBeNull();
 
-      const emptyObjectStep = simulation.steps.find((step) => step.id === emptyObjectNode.id);
+      const emptyObjectStep = simulation.steps.find(
+        (step) => step.id === emptyObjectNode.id
+      );
       expect(emptyObjectStep).toBeDefined();
       expect(emptyObjectStep!.success).toBe(true);
       expect(emptyObjectStep!.output).toEqual({});
 
-      const undefinedStep = simulation.steps.find((step) => step.id === undefinedNode.id);
+      const undefinedStep = simulation.steps.find(
+        (step) => step.id === undefinedNode.id
+      );
       expect(undefinedStep).toBeDefined();
       expect(undefinedStep!.success).toBe(true);
       // Note: undefined becomes null in protobuf conversion
       expect(undefinedStep!.output).toBeNull();
 
-      const emptyArrayStep = simulation.steps.find((step) => step.id === emptyArrayNode.id);
+      const emptyArrayStep = simulation.steps.find(
+        (step) => step.id === emptyArrayNode.id
+      );
       expect(emptyArrayStep).toBeDefined();
       expect(emptyArrayStep!.success).toBe(true);
       expect(emptyArrayStep!.output).toEqual([]);
 
-      const numberStep = simulation.steps.find((step) => step.id === numberNode.id);
+      const numberStep = simulation.steps.find(
+        (step) => step.id === numberNode.id
+      );
       expect(numberStep).toBeDefined();
       expect(numberStep!.success).toBe(true);
       expect(numberStep!.output).toBe(42);
 
-      const stringStep = simulation.steps.find((step) => step.id === stringNode.id);
+      const stringStep = simulation.steps.find(
+        (step) => step.id === stringNode.id
+      );
       expect(stringStep).toBeDefined();
       expect(stringStep!.success).toBe(true);
       expect(stringStep!.output).toBe("hello");
 
-      console.log("✅ All empty data types handled correctly in simulateWorkflow!");
+      console.log(
+        "✅ All empty data types handled correctly in simulateWorkflow!"
+      );
     });
 
     test("should handle all empty data types in submit and trigger workflow", async () => {
@@ -872,11 +902,15 @@ describe("CustomCode Node Tests", () => {
 
       // Create nodes testing all empty data return types
       const nodeParams = createEmptyDataNodes("deployed");
-      
+
       const nullNode = NodeFactory.create(nodeParams.nullNodeParams);
-      const emptyObjectNode = NodeFactory.create(nodeParams.emptyObjectNodeParams);
+      const emptyObjectNode = NodeFactory.create(
+        nodeParams.emptyObjectNodeParams
+      );
       const undefinedNode = NodeFactory.create(nodeParams.undefinedNodeParams);
-      const emptyArrayNode = NodeFactory.create(nodeParams.emptyArrayNodeParams);
+      const emptyArrayNode = NodeFactory.create(
+        nodeParams.emptyArrayNodeParams
+      );
       const numberNode = NodeFactory.create(nodeParams.numberNodeParams);
       const stringNode = NodeFactory.create(nodeParams.stringNodeParams);
 
@@ -926,7 +960,7 @@ describe("CustomCode Node Tests", () => {
 
         expect(executions.items.length).toBe(1);
         const execution = executions.items[0];
-        
+
         console.log(
           "Empty data workflow execution:",
           JSON.stringify(execution, null, 2)
@@ -937,38 +971,52 @@ describe("CustomCode Node Tests", () => {
         expect(execution.steps).toHaveLength(7); // trigger + 6 custom code nodes
 
         // Verify each node returns expected values
-        const nullStep = execution.steps.find((step) => step.id === nullNode.id);
+        const nullStep = execution.steps.find(
+          (step) => step.id === nullNode.id
+        );
         expect(nullStep).toBeDefined();
         expect(nullStep!.success).toBe(true);
         expect(nullStep!.output).toBeNull();
 
-        const emptyObjectStep = execution.steps.find((step) => step.id === emptyObjectNode.id);
+        const emptyObjectStep = execution.steps.find(
+          (step) => step.id === emptyObjectNode.id
+        );
         expect(emptyObjectStep).toBeDefined();
         expect(emptyObjectStep!.success).toBe(true);
         expect(emptyObjectStep!.output).toEqual({});
 
-        const undefinedStep = execution.steps.find((step) => step.id === undefinedNode.id);
+        const undefinedStep = execution.steps.find(
+          (step) => step.id === undefinedNode.id
+        );
         expect(undefinedStep).toBeDefined();
         expect(undefinedStep!.success).toBe(true);
         // Note: undefined becomes null in protobuf conversion
         expect(undefinedStep!.output).toBeNull();
 
-        const emptyArrayStep = execution.steps.find((step) => step.id === emptyArrayNode.id);
+        const emptyArrayStep = execution.steps.find(
+          (step) => step.id === emptyArrayNode.id
+        );
         expect(emptyArrayStep).toBeDefined();
         expect(emptyArrayStep!.success).toBe(true);
         expect(emptyArrayStep!.output).toEqual([]);
 
-        const numberStep = execution.steps.find((step) => step.id === numberNode.id);
+        const numberStep = execution.steps.find(
+          (step) => step.id === numberNode.id
+        );
         expect(numberStep).toBeDefined();
         expect(numberStep!.success).toBe(true);
         expect(numberStep!.output).toBe(42);
 
-        const stringStep = execution.steps.find((step) => step.id === stringNode.id);
+        const stringStep = execution.steps.find(
+          (step) => step.id === stringNode.id
+        );
         expect(stringStep).toBeDefined();
         expect(stringStep!.success).toBe(true);
         expect(stringStep!.output).toBe("hello");
 
-        console.log("✅ All empty data types handled correctly in deployed workflow!");
+        console.log(
+          "✅ All empty data types handled correctly in deployed workflow!"
+        );
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

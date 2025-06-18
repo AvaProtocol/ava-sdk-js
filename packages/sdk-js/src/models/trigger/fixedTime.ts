@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import Trigger, { TriggerOutput } from "./interface";
-import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput, FixedTimeTriggerProps, TriggerProps } from "@avaprotocol/types";
+import Trigger from "./interface";
+import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput, FixedTimeTriggerProps, TriggerProps, TriggerOutput } from "@avaprotocol/types";
+import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { epochsList }
 
@@ -25,6 +26,12 @@ class FixedTimeTrigger extends Trigger {
     config.setEpochsList((this.data as FixedTimeTriggerDataType).epochsList || []);
     trigger.setConfig(config);
     
+    // Convert input field to protobuf format and set on FixedTimeTrigger
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      trigger.setInput(inputValue);
+    }
+    
     request.setFixedTime(trigger);
 
     return request;
@@ -35,6 +42,7 @@ class FixedTimeTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: FixedTimeTriggerDataType = { epochsList: [] };
+    let input: Record<string, any> | undefined = undefined;
     
     if (raw.getFixedTime() && raw.getFixedTime()!.hasConfig()) {
       const config = raw.getFixedTime()!.getConfig();
@@ -44,12 +52,18 @@ class FixedTimeTrigger extends Trigger {
           epochsList: config.getEpochsList() || []
         };
       }
+      
+      // Extract input data if present
+      if (raw.getFixedTime()!.hasInput()) {
+        input = extractInputFromProtobuf(raw.getFixedTime()!.getInput());
+      }
     }
     
     return new FixedTimeTrigger({
       ...obj,
       type: TriggerType.FixedTime,
       data: data,
+      input: input,
     });
   }
 
