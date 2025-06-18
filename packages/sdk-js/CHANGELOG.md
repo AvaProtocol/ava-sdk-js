@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.3.15
+
+### Patch Changes
+
+- 567e1ab: Fixed nodes data not serialized for deploy problem
+
 ## 2.3.14
 
 ### Patch Changes
