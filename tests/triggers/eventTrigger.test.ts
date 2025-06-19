@@ -1,7 +1,7 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, EventTrigger } from "@avaprotocol/sdk-js";
-import { TriggerType } from "@avaprotocol/types";
+import { TriggerType, EventConditionType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -26,9 +26,45 @@ const SEPOLIA_TOKEN_ADDRESSES = [
   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", // WETH on Sepolia
 ];
 
+// Chainlink Price Feed Aggregator address on Sepolia (ETH/USD)
+const CHAINLINK_ETH_USD_SEPOLIA = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
+
 // ERC-20 Transfer event signature
 const TRANSFER_EVENT_SIGNATURE =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
+// Chainlink AnswerUpdated event signature
+const CHAINLINK_ANSWER_UPDATED_SIGNATURE = 
+  "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f";
+
+// Chainlink Price Feed ABI for AnswerUpdated event
+const CHAINLINK_AGGREGATOR_ABI = `[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "int256",
+        "name": "current",
+        "type": "int256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "roundId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "updatedAt",
+        "type": "uint256"
+      }
+    ],
+    "name": "AnswerUpdated",
+    "type": "event"
+  }
+]`;
 
 // Helper function to check if we're on Sepolia
 async function isSepoliaChain(): Promise<boolean> {
@@ -61,6 +97,37 @@ function createEventTriggerConfig(
             values: [TRANSFER_EVENT_SIGNATURE, null, coreAddress], // Transfer to coreAddress
           },
         ],
+      },
+    ],
+  };
+}
+
+// Helper function to create Chainlink price condition event trigger config
+function createChainlinkPriceConditionConfig(
+  priceThreshold: string,
+  operator: string = "gt"
+) {
+  const conditions: EventConditionType[] = [
+    {
+      fieldName: "current",
+      operator: operator,
+      value: priceThreshold, // Price threshold in 8 decimals (e.g., "200000000000" for $2000)
+      fieldType: "int256",
+    },
+  ];
+
+  return {
+    queries: [
+      {
+        addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+        topics: [
+          {
+            values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE], // AnswerUpdated events
+          },
+        ],
+        contractAbi: CHAINLINK_AGGREGATOR_ABI,
+        conditions: conditions,
+        maxEventsPerBlock: 5,
       },
     ],
   };
@@ -441,6 +508,421 @@ describe("EventTrigger Tests", () => {
       } else {
         console.log("Single contract filter trigger failed:", result.error);
       }
+    });
+  });
+
+  describe("Low-level Protobuf Tests", () => {
+    test("should verify EventCondition protobuf class availability", () => {
+      // Import protobuf directly to test low-level functionality
+      const avs_pb = require("../../grpc_codegen/avs_pb.js");
+      
+      expect(typeof avs_pb.EventCondition).toBe("function");
+      expect(typeof avs_pb.EventTrigger.Query).toBe("function");
+    });
+
+    test("should create and manipulate EventCondition protobuf objects", () => {
+      const avs_pb = require("../../grpc_codegen/avs_pb.js");
+      
+      const condition = new avs_pb.EventCondition();
+      condition.setFieldName("current");
+      condition.setOperator("gt");
+      condition.setValue("200000000000");
+      condition.setFieldType("int256");
+      
+      expect(condition.getFieldName()).toBe("current");
+      expect(condition.getOperator()).toBe("gt");
+      expect(condition.getValue()).toBe("200000000000");
+      expect(condition.getFieldType()).toBe("int256");
+    });
+
+    test("should handle protobuf Query serialization/deserialization with conditions", () => {
+      const avs_pb = require("../../grpc_codegen/avs_pb.js");
+      
+      const condition = new avs_pb.EventCondition();
+      condition.setFieldName("current");
+      condition.setOperator("gt");
+      condition.setValue("200000000000");
+      condition.setFieldType("int256");
+      
+      const query = new avs_pb.EventTrigger.Query();
+      query.setAddressesList([CHAINLINK_ETH_USD_SEPOLIA]);
+      query.setContractAbi(CHAINLINK_AGGREGATOR_ABI);
+      query.setConditionsList([condition]);
+      query.setMaxEventsPerBlock(5);
+      
+      // Test serialization
+      const serialized = query.serializeBinary();
+      expect(serialized).toBeInstanceOf(Uint8Array);
+      expect(serialized.length).toBeGreaterThan(0);
+      
+      // Test deserialization
+      const deserialized = avs_pb.EventTrigger.Query.deserializeBinary(serialized);
+      const deserializedConditions = deserialized.getConditionsList();
+      
+      expect(deserializedConditions).toHaveLength(1);
+      expect(deserializedConditions[0].getFieldName()).toBe("current");
+      expect(deserializedConditions[0].getOperator()).toBe("gt");
+      expect(deserializedConditions[0].getValue()).toBe("200000000000");
+      expect(deserializedConditions[0].getFieldType()).toBe("int256");
+      expect(deserialized.getContractAbi()).toBe(CHAINLINK_AGGREGATOR_ABI);
+      expect(deserialized.getMaxEventsPerBlock()).toBe(5);
+    });
+  });
+
+  describe("EventCondition Tests", () => {
+    test("should create trigger with contractAbi and conditions", () => {
+      const conditions: EventConditionType[] = [
+        {
+          fieldName: "current",
+          operator: "gt",
+          value: "200000000000", // $2000 with 8 decimals
+          fieldType: "int256",
+        },
+      ];
+
+      const trigger = TriggerFactory.create({
+        id: "test-condition-trigger",
+        name: "chainlinkPriceCondition",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [
+                {
+                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              conditions: conditions,
+              maxEventsPerBlock: 5,
+            },
+          ],
+        },
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      expect(request).toBeDefined();
+      expect(request.getEvent()).toBeDefined();
+      expect(request.getEvent()!.getConfig()).toBeDefined();
+      expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(1);
+
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+      expect(query.getContractAbi()).toBe(CHAINLINK_AGGREGATOR_ABI);
+      expect(query.getConditionsList()).toHaveLength(1);
+      expect(query.getMaxEventsPerBlock()).toBe(5);
+
+      const condition = query.getConditionsList()[0];
+      expect(condition.getFieldName()).toBe("current");
+      expect(condition.getOperator()).toBe("gt");
+      expect(condition.getValue()).toBe("200000000000");
+      expect(condition.getFieldType()).toBe("int256");
+    });
+
+    test("should create trigger with multiple conditions", () => {
+      const conditions: EventConditionType[] = [
+        {
+          fieldName: "current",
+          operator: "gt",
+          value: "150000000000", // $1500 minimum
+          fieldType: "int256",
+        },
+        {
+          fieldName: "current",
+          operator: "lt",
+          value: "300000000000", // $3000 maximum
+          fieldType: "int256",
+        },
+      ];
+
+      const trigger = TriggerFactory.create({
+        id: "test-multi-condition-trigger",
+        name: "chainlinkPriceRange",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [
+                {
+                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              conditions: conditions,
+            },
+          ],
+        },
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+      expect(query.getConditionsList()).toHaveLength(2);
+
+      const conditions_pb = query.getConditionsList();
+      expect(conditions_pb[0].getOperator()).toBe("gt");
+      expect(conditions_pb[0].getValue()).toBe("150000000000");
+      expect(conditions_pb[1].getOperator()).toBe("lt");
+      expect(conditions_pb[1].getValue()).toBe("300000000000");
+    });
+
+    test("should create trigger without conditions (backward compatibility)", () => {
+      const trigger = TriggerFactory.create({
+        id: "test-no-condition-trigger",
+        name: "regularEventTrigger",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [
+                {
+                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              // No conditions field
+            },
+          ],
+        },
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+      expect(query.getContractAbi()).toBe(CHAINLINK_AGGREGATOR_ABI);
+      expect(query.getConditionsList()).toHaveLength(0);
+    });
+
+    test("should validate condition operators", () => {
+      const validOperators = ["gt", "gte", "lt", "lte", "eq", "ne"];
+      
+      validOperators.forEach(operator => {
+        const conditions: EventConditionType[] = [
+          {
+            fieldName: "current",
+            operator: operator,
+            value: "200000000000",
+            fieldType: "int256",
+          },
+        ];
+
+        const trigger = TriggerFactory.create({
+          id: `test-${operator}-condition`,
+          name: `condition_${operator}`,
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+                topics: [
+                  {
+                    values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                  },
+                ],
+                contractAbi: CHAINLINK_AGGREGATOR_ABI,
+                conditions: conditions,
+              },
+            ],
+          },
+        });
+
+        expect(() => trigger.toRequest()).not.toThrow();
+        const request = trigger.toRequest();
+        const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+        const condition = query.getConditionsList()[0];
+        expect(condition.getOperator()).toBe(operator);
+      });
+    });
+
+    test("should handle different field types", () => {
+      const fieldTypes = ["uint256", "int256", "address", "bool", "bytes32"];
+      
+      fieldTypes.forEach(fieldType => {
+        const conditions: EventConditionType[] = [
+          {
+            fieldName: "testField",
+            operator: "eq",
+            value: fieldType === "bool" ? "true" : "123",
+            fieldType: fieldType,
+          },
+        ];
+
+        const trigger = TriggerFactory.create({
+          id: `test-${fieldType}-condition`,
+          name: `condition_${fieldType}`,
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+                topics: [
+                  {
+                    values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                  },
+                ],
+                contractAbi: CHAINLINK_AGGREGATOR_ABI,
+                conditions: conditions,
+              },
+            ],
+          },
+        });
+
+        expect(() => trigger.toRequest()).not.toThrow();
+        const request = trigger.toRequest();
+        const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+        const condition = query.getConditionsList()[0];
+        expect(condition.getFieldType()).toBe(fieldType);
+      });
+    });
+
+    test("should run trigger with Chainlink price condition", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      console.log("🚀 Testing runTrigger with Chainlink price condition...");
+
+      const result = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: createChainlinkPriceConditionConfig("200000000000", "gt"), // ETH > $2000
+      });
+
+      console.log(
+        "runTrigger Chainlink condition response:",
+        JSON.stringify(result, null, 2)
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.triggerId).toBeDefined();
+
+      // Conditions filter events, so no matching events is expected when condition is not met
+      if (result.success && result.data !== null) {
+        expect(result.data).toBeDefined();
+        console.log("✅ Found Chainlink events matching price condition > $2000");
+      } else {
+        console.log("ℹ️  No events matching price condition (expected behavior)");
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(null);
+      }
+    });
+
+    test("should run trigger with multiple price range conditions", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      console.log("🚀 Testing runTrigger with price range conditions...");
+
+      const conditions: EventConditionType[] = [
+        {
+          fieldName: "current",
+          operator: "gte",
+          value: "150000000000", // >= $1500
+          fieldType: "int256",
+        },
+        {
+          fieldName: "current",
+          operator: "lte",
+          value: "400000000000", // <= $4000
+          fieldType: "int256",
+        },
+      ];
+
+      const result = await client.runTrigger({
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [
+                {
+                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              conditions: conditions,
+              maxEventsPerBlock: 3,
+            },
+          ],
+        },
+      });
+
+      console.log(
+        "runTrigger price range response:",
+        JSON.stringify(result, null, 2)
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.triggerId).toBeDefined();
+
+      if (result.success && result.data !== null) {
+        expect(result.data).toBeDefined();
+        console.log("✅ Found Chainlink events in price range $1500-$4000");
+      } else {
+        console.log("ℹ️  No events in price range (expected if price is outside range)");
+        expect(result.success).toBe(true);
+        expect(result.data).toBe(null);
+      }
+    });
+
+    test("should deserialize trigger with conditions from response", () => {
+      // Create a trigger with conditions
+      const originalConditions: EventConditionType[] = [
+        {
+          fieldName: "current",
+          operator: "gt",
+          value: "200000000000",
+          fieldType: "int256",
+        },
+      ];
+
+      const originalTrigger = TriggerFactory.create({
+        id: "test-deserialize-trigger",
+        name: "chainlinkPriceCondition",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [
+                {
+                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              conditions: originalConditions,
+              maxEventsPerBlock: 5,
+            },
+          ],
+        },
+      });
+
+      // Convert to protobuf and back
+      const request = originalTrigger.toRequest();
+      const deserializedTrigger = EventTrigger.fromResponse(request);
+
+      // Verify deserialized trigger has the same data
+      expect(deserializedTrigger.data).toBeDefined();
+      const queries = (deserializedTrigger.data as any).queries;
+      expect(queries).toHaveLength(1);
+      
+      const query = queries[0];
+      expect(query.contractAbi).toBe(CHAINLINK_AGGREGATOR_ABI);
+      expect(query.conditions).toHaveLength(1);
+      expect(query.maxEventsPerBlock).toBe(5);
+
+      const condition = query.conditions[0];
+      expect(condition.fieldName).toBe("current");
+      expect(condition.operator).toBe("gt");
+      expect(condition.value).toBe("200000000000");
+      expect(condition.fieldType).toBe("int256");
     });
   });
 

@@ -7,6 +7,7 @@ import {
   EventTriggerOutput,
   EventTriggerProps,
   TriggerProps,
+  EventConditionType,
 } from "@avaprotocol/types";
 
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
@@ -108,6 +109,24 @@ class EventTrigger extends Trigger {
         query.setMaxEventsPerBlock(queryData.maxEventsPerBlock);
       }
       
+      // Set contractAbi if provided
+      if (queryData.contractAbi) {
+        query.setContractAbi(queryData.contractAbi);
+      }
+      
+      // Set conditions if provided
+      if (queryData.conditions && queryData.conditions.length > 0) {
+        const conditionMessages = queryData.conditions.map((conditionData) => {
+          const condition = new avs_pb.EventCondition();
+          condition.setFieldName(conditionData.fieldName);
+          condition.setOperator(conditionData.operator);
+          condition.setValue(conditionData.value);
+          condition.setFieldType(conditionData.fieldType);
+          return condition;
+        });
+        query.setConditionsList(conditionMessages);
+      }
+      
       return query;
     });
     
@@ -165,6 +184,29 @@ class EventTrigger extends Trigger {
             if (maxEvents && maxEvents > 0) {
               queryData.maxEventsPerBlock = maxEvents;
             }
+            
+            // Extract contractAbi
+            const contractAbi = query.getContractAbi();
+            if (contractAbi) {
+              queryData.contractAbi = contractAbi;
+            }
+            
+                         // Extract conditions
+             const conditions: EventConditionType[] = [];
+             if (query.getConditionsList && query.getConditionsList().length > 0) {
+               query.getConditionsList().forEach((condition) => {
+                 const conditionData: EventConditionType = {
+                   fieldName: condition.getFieldName(),
+                   operator: condition.getOperator(),
+                   value: condition.getValue(),
+                   fieldType: condition.getFieldType(),
+                 };
+                 conditions.push(conditionData);
+               });
+             }
+             if (conditions.length > 0) {
+               queryData.conditions = conditions;
+             }
             
             queries.push(queryData);
           });
