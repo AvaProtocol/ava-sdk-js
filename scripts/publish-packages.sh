@@ -75,26 +75,46 @@ run_version_bump() {
 check_npm_auth() {
     print_status "Checking npm authentication..."
     
-    npm whoami > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
+    # First check with output to debug
+    local npm_check_output
+    npm_check_output=$(npm whoami 2>&1)
+    local npm_check_exit_code=$?
+    
+    print_status "npm whoami output: '$npm_check_output'"
+    print_status "npm whoami exit code: $npm_check_exit_code"
+    
+    if [[ $npm_check_exit_code -ne 0 ]]; then
         print_error "You are not logged in to npm. Please run 'npm login' first."
+        print_error "npm whoami failed with: $npm_check_output"
         exit 1
     fi
     
-    local npm_user=$(npm whoami)
-    print_success "Authenticated as: $npm_user"
+    if [[ -z "$npm_check_output" ]]; then
+        print_error "npm whoami returned empty output. Please check your npm configuration."
+        exit 1
+    fi
+    
+    print_success "Authenticated as: $npm_check_output"
 }
 
 # Function to get package version
 get_package_version() {
     local package_path=$1
-    node -p "require('$package_path/package.json').version"
+    if [[ ! -f "$package_path/package.json" ]]; then
+        print_error "package.json not found at $package_path"
+        exit 1
+    fi
+    jq -r '.version' "$package_path/package.json"
 }
 
 # Function to get package name
 get_package_name() {
     local package_path=$1
-    node -p "require('$package_path/package.json').name"
+    if [[ ! -f "$package_path/package.json" ]]; then
+        print_error "package.json not found at $package_path"
+        exit 1
+    fi
+    jq -r '.name' "$package_path/package.json"
 }
 
 # Function to check if package version exists on npm
@@ -192,6 +212,7 @@ main_publish() {
     done
     
     print_status "Starting package publish process..."
+    print_status "Working directory: $(pwd)"
     
     # Preliminary checks
     check_directory

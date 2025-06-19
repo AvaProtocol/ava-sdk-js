@@ -62,12 +62,24 @@ function checkNpmAuth() {
   log.info('Checking npm authentication...');
   const result = runCommand('npm whoami', { silent: true });
   
+  log.info(`npm whoami exit code: ${result.success ? 0 : 'failed'}`);
+  log.info(`npm whoami output: '${result.output || ''}'`);
+  if (result.error) {
+    log.info(`npm whoami error: '${result.error}'`);
+  }
+  
   if (!result.success) {
     log.error('You are not logged in to npm. Please run "npm login" first.');
+    log.error(`Error details: ${result.error || 'Unknown error'}`);
     process.exit(1);
   }
   
   const npmUser = result.output.trim();
+  if (!npmUser) {
+    log.error('npm whoami returned empty output. Please check your npm configuration.');
+    process.exit(1);
+  }
+  
   log.success(`Authenticated as: ${npmUser}`);
   return npmUser;
 }

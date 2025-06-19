@@ -7,14 +7,11 @@ This directory contains automated scripts to simplify the package publishing pro
 After running `yarn changeset` and `yarn changeset version` manually:
 
 ```bash
-# Dry run to see what would be published
+# Dry run to see what would be published (recommended first)
 npm run publish:dry-run
 
-# Publish packages (recommended)
+# Publish packages
 npm run publish
-
-# Or use the Node.js version
-npm run publish:node
 ```
 
 ## Available Scripts
@@ -23,21 +20,20 @@ npm run publish:node
 
 | Script | Description |
 |--------|-------------|
-| `npm run publish` | Main publish command (uses bash script) |
-| `npm run publish:dry-run` | Dry run to preview what would be published |
-| `npm run publish:packages` | Publish using bash script |
-| `npm run publish:node` | Publish using Node.js script (cross-platform) |
-| `npm run publish:node:dry-run` | Node.js dry run |
+| `npm run publish` | **Main publish command** |
+| `npm run publish:dry-run` | **Dry run to preview what would be published (recommended first)** |
+| `npm run publish:bash` | Alternative bash script version |
+| `npm run publish:bash:dry-run` | Bash script dry run |
 | `npm run publish:help` | Show help for bash script |
 
 ### Direct Script Usage
 
 ```bash
-# Bash script (Linux/macOS/WSL)
-./scripts/publish-packages.sh [--dry-run] [--help]
-
-# Node.js script (cross-platform)
+# Node.js script (cross-platform) - default
 node ./scripts/publish-packages.js [--dry-run] [--help]
+
+# Bash script (alternative)  
+./scripts/publish-packages.sh [--dry-run] [--help]
 ```
 
 ## What the Scripts Do
@@ -96,7 +92,11 @@ This will:
 
 ## Platform Compatibility
 
-- **Bash Script**: Linux, macOS, Windows WSL
-- **Node.js Script**: All platforms (Windows, Linux, macOS)
+The default publish commands (`npm run publish` and `npm run publish:dry-run`) use the **Node.js script** which works on all platforms:
 
-Choose the one that works best for your environment. 
+- ✅ **Windows** (PowerShell, Command Prompt)
+- ✅ **macOS** (Terminal, iTerm)  
+- ✅ **Linux** (bash, zsh, fish)
+- ✅ **Windows WSL**
+
+Alternative bash script is available if needed (`npm run publish:bash`). 
