@@ -391,6 +391,12 @@ export namespace EventTrigger {
         clearMaxEventsPerBlock(): void;
         getMaxEventsPerBlock(): number | undefined;
         setMaxEventsPerBlock(value: number): Query;
+        getContractAbi(): string;
+        setContractAbi(value: string): Query;
+        clearConditionsList(): void;
+        getConditionsList(): Array<EventCondition>;
+        setConditionsList(value: Array<EventCondition>): Query;
+        addConditions(value?: EventCondition, index?: number): EventCondition;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Query.AsObject;
@@ -407,6 +413,8 @@ export namespace EventTrigger {
             addressesList: Array<string>,
             topicsList: Array<EventTrigger.Topics.AsObject>,
             maxEventsPerBlock?: number,
+            contractAbi: string,
+            conditionsList: Array<EventCondition.AsObject>,
         }
     }
 
@@ -3572,6 +3580,35 @@ export namespace SimulateTaskReq {
         edgesList: Array<TaskEdge.AsObject>,
 
         inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+    }
+}
+
+export class EventCondition extends jspb.Message { 
+    getFieldName(): string;
+    setFieldName(value: string): EventCondition;
+    getOperator(): string;
+    setOperator(value: string): EventCondition;
+    getValue(): string;
+    setValue(value: string): EventCondition;
+    getFieldType(): string;
+    setFieldType(value: string): EventCondition;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EventCondition.AsObject;
+    static toObject(includeInstance: boolean, msg: EventCondition): EventCondition.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EventCondition, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EventCondition;
+    static deserializeBinaryFromReader(message: EventCondition, reader: jspb.BinaryReader): EventCondition;
+}
+
+export namespace EventCondition {
+    export type AsObject = {
+        fieldName: string,
+        operator: string,
+        value: string,
+        fieldType: string,
     }
 }
 
