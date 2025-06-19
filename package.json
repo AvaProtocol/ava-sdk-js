@@ -28,7 +28,13 @@
     "test:integrations": "dotenv -e .env.$TEST_ENV jest tests/integrations/ --verbose --runInBand",
     "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "publish:packages": "bash ./scripts/publish-packages.sh",
+    "publish:dry-run": "bash ./scripts/publish-packages.sh --dry-run",
+    "publish:help": "bash ./scripts/publish-packages.sh --help",
+    "publish:node": "node ./scripts/publish-packages.js",
+    "publish:node:dry-run": "node ./scripts/publish-packages.js --dry-run",
+    "publish": "npm run publish:packages"
   },
   "devDependencies": {
     "@avaprotocol/sdk-js": "^2.3.13-dev.1",
