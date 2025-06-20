@@ -22,7 +22,7 @@ export interface EventTriggerDataType {
       values?: string[];
     }>;
     maxEventsPerBlock?: number;
-    contractAbi?: any[];               // Contract ABI as array (automatically stringified for protobuf)
+    contractAbi?: string;               // Contract ABI as string
     conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
   }>;
 }

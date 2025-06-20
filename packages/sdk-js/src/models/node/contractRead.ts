@@ -19,7 +19,7 @@ class ContractReadNode extends Node {
     // Convert protobuf data to our custom interface
     const data: ContractReadNodeData = {
       contractAddress: protobufData.contractAddress,
-      contractAbi: JSON.parse(protobufData.contractAbi),
+      contractAbi: protobufData.contractAbi,
       methodCalls: protobufData.methodCallsList?.map(call => ({
         callData: call.callData,
         methodName: call.methodName,
@@ -51,7 +51,7 @@ class ContractReadNode extends Node {
     
     const config = new avs_pb.ContractReadNode.Config();
     config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
-    config.setContractAbi(JSON.stringify((this.data as ContractReadNodeData).contractAbi));
+    config.setContractAbi((this.data as ContractReadNodeData).contractAbi);
     
     // Handle method calls array
     const methodCalls = (this.data as ContractReadNodeData).methodCalls || [];

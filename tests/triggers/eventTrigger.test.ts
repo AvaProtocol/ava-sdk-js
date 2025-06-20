@@ -67,30 +67,30 @@ const CHAINLINK_ANSWER_UPDATED_SIGNATURE =
 // Chainlink Price Feed ABI for AnswerUpdated event
 const CHAINLINK_AGGREGATOR_ABI = [
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "int256",
-        "name": "current",
-        "type": "int256"
+        indexed: true,
+        internalType: "int256",
+        name: "current",
+        type: "int256",
       },
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "roundId",
-        "type": "uint256"
+        indexed: true,
+        internalType: "uint256",
+        name: "roundId",
+        type: "uint256",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "updatedAt",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "updatedAt",
+        type: "uint256",
+      },
     ],
-    "name": "AnswerUpdated",
-    "type": "event"
-  }
+    name: "AnswerUpdated",
+    type: "event",
+  },
 ];
 
 // Helper function to check if we're on Sepolia
@@ -153,7 +153,7 @@ function createChainlinkPriceConditionConfig(
             values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE], // AnswerUpdated events
           },
         ],
-        contractAbi: CHAINLINK_AGGREGATOR_ABI,
+        contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
         conditions: conditions,
         maxEventsPerBlock: 5,
       },
@@ -619,7 +619,7 @@ describe("EventTrigger Tests", () => {
 
       const query = new avs_pb.EventTrigger.Query();
       query.setAddressesList([CHAINLINK_ETH_USD_SEPOLIA]);
-      query.setContractAbi(CHAINLINK_AGGREGATOR_ABI);
+      query.setContractAbi(JSON.stringify(CHAINLINK_AGGREGATOR_ABI)); // Convert array to JSON string for protobuf
       query.setConditionsList([condition]);
       query.setMaxEventsPerBlock(5);
 
@@ -638,7 +638,9 @@ describe("EventTrigger Tests", () => {
       expect(deserializedConditions[0].getOperator()).toBe("gt");
       expect(deserializedConditions[0].getValue()).toBe("200000000000");
       expect(deserializedConditions[0].getFieldType()).toBe("int256");
-      expect(deserialized.getContractAbi()).toBe(JSON.stringify(CHAINLINK_AGGREGATOR_ABI));
+      expect(deserialized.getContractAbi()).toBe(
+        JSON.stringify(CHAINLINK_AGGREGATOR_ABI)
+      );
       expect(deserialized.getMaxEventsPerBlock()).toBe(5);
     });
   });
@@ -667,7 +669,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
               conditions: conditions,
               maxEventsPerBlock: 5,
             },
@@ -683,7 +685,9 @@ describe("EventTrigger Tests", () => {
       expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(1);
 
       const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
-      expect(query.getContractAbi()).toBe(JSON.stringify(CHAINLINK_AGGREGATOR_ABI));
+      expect(query.getContractAbi()).toBe(
+        JSON.stringify(CHAINLINK_AGGREGATOR_ABI)
+      );
       expect(query.getConditionsList()).toHaveLength(1);
       expect(query.getMaxEventsPerBlock()).toBe(5);
 
@@ -723,7 +727,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
               conditions: conditions,
             },
           ],
@@ -756,7 +760,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
               // No conditions field
             },
           ],
@@ -766,7 +770,9 @@ describe("EventTrigger Tests", () => {
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
       const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
-      expect(query.getContractAbi()).toBe(JSON.stringify(CHAINLINK_AGGREGATOR_ABI));
+      expect(query.getContractAbi()).toBe(
+        JSON.stringify(CHAINLINK_AGGREGATOR_ABI)
+      );
       expect(query.getConditionsList()).toHaveLength(0);
     });
 
@@ -796,7 +802,7 @@ describe("EventTrigger Tests", () => {
                     values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                   },
                 ],
-                contractAbi: CHAINLINK_AGGREGATOR_ABI,
+                contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
                 conditions: conditions,
               },
             ],
@@ -837,7 +843,7 @@ describe("EventTrigger Tests", () => {
                     values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                   },
                 ],
-                contractAbi: CHAINLINK_AGGREGATOR_ABI,
+                contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
                 conditions: conditions,
               },
             ],
@@ -940,7 +946,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
               conditions: conditions,
               maxEventsPerBlock: 3,
             },
@@ -993,7 +999,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
               conditions: originalConditions,
               maxEventsPerBlock: 5,
             },
@@ -1011,7 +1017,9 @@ describe("EventTrigger Tests", () => {
       expect(queries).toHaveLength(1);
 
       const query = queries[0];
-      expect(query.contractAbi).toEqual(CHAINLINK_AGGREGATOR_ABI);
+      expect(query.contractAbi).toEqual(
+        JSON.stringify(CHAINLINK_AGGREGATOR_ABI)
+      );
       expect(query.conditions).toHaveLength(1);
       expect(query.maxEventsPerBlock).toBe(5);
 
@@ -1022,7 +1030,7 @@ describe("EventTrigger Tests", () => {
       expect(condition.fieldType).toBe("int256");
     });
 
-    test("should handle contractAbi as array format", () => {
+    test("should handle contractAbi as string format", () => {
       const abiArray = [
         {
           anonymous: false,
@@ -1051,10 +1059,10 @@ describe("EventTrigger Tests", () => {
         },
       ];
 
-      // Test with array format (should auto-convert to string for protobuf)
+      // Test with string format (contractAbi is always a string)
       const trigger = TriggerFactory.create({
-        id: "test-array-abi",
-        name: "eventTriggerArray",
+        id: "test-string-abi",
+        name: "eventTriggerString",
         type: TriggerType.Event,
         data: {
           queries: [
@@ -1065,7 +1073,7 @@ describe("EventTrigger Tests", () => {
                   values: [TRANSFER_EVENT_SIGNATURE],
                 },
               ],
-              contractAbi: abiArray, // Pass as array
+              contractAbi: JSON.stringify(abiArray), // Pass as string
             },
           ],
         },
@@ -1078,13 +1086,13 @@ describe("EventTrigger Tests", () => {
       const request = trigger.toRequest();
       const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
 
-      // Should be converted to JSON string in protobuf
+      // Should remain as JSON string in protobuf
       expect(query.getContractAbi()).toBe(JSON.stringify(abiArray));
 
-      // Test round-trip: fromResponse should parse it back to array
+      // Test round-trip: fromResponse should keep it as string
       const deserializedTrigger = EventTrigger.fromResponse(request);
       const deserializedQuery = (deserializedTrigger.data as any).queries[0];
-      expect(deserializedQuery.contractAbi).toEqual(abiArray);
+      expect(deserializedQuery.contractAbi).toBe(JSON.stringify(abiArray));
     });
 
     test("should handle optional contractAbi (not provided)", () => {

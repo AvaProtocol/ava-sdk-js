@@ -111,8 +111,7 @@ class EventTrigger extends Trigger {
 
       // Set contractAbi if provided
       if (queryData.contractAbi) {
-        // Convert ABI array to JSON string for protobuf
-        query.setContractAbi(JSON.stringify(queryData.contractAbi));
+        query.setContractAbi(queryData.contractAbi);
       }
 
       // Set conditions if provided
@@ -189,19 +188,8 @@ class EventTrigger extends Trigger {
             // Extract contractAbi
             const contractAbi = query.getContractAbi();
             if (contractAbi) {
-              try {
-                // Parse JSON string back to array
-                queryData.contractAbi = JSON.parse(contractAbi);
-              } catch (error) {
-                // If parsing fails, keep as string for backward compatibility
-                console.warn(
-                  "Failed to parse contractAbi as JSON, keeping as string:",
-                  error
-                );
-                queryData.contractAbi = contractAbi as any;
-              }
+              queryData.contractAbi = contractAbi;
             }
-            // If contractAbi is empty string, don't set the field (keep it undefined)
 
             // Extract conditions
             const conditions: EventConditionType[] = [];
