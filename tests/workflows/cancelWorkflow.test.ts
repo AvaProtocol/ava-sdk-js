@@ -58,6 +58,6 @@ describe("cancelWorkflow Tests", () => {
   test("should throw error when canceling an non-existent task", async () => {
     await expect(
       client.cancelWorkflow("non-existent-task-id")
-    ).rejects.toThrowError(/NOT_FOUND/i);
+    ).rejects.toThrowError(/task not found|NOT_FOUND/i);
   });
 });

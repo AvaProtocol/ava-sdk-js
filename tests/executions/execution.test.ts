@@ -105,7 +105,7 @@ describe("Execution Management Tests", () => {
 
       await expect(
         client.getExecution("non-existent-workflow-id", nonExistentExecutionId)
-      ).rejects.toThrowError(/NOT_FOUND|resource not found/i);
+      ).rejects.toThrowError(/task not found|NOT_FOUND|resource not found/i);
     });
 
     test("should throw error when using a valid workflow ID but a non-existent execution ID", async () => {
@@ -121,7 +121,7 @@ describe("Execution Management Tests", () => {
 
         await expect(
           client.getExecution(workflowId, nonExistentExecutionId)
-        ).rejects.toThrowError(/NOT_FOUND|resource not found/i);
+        ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -552,12 +552,12 @@ describe("Execution Management Tests", () => {
         // Invalid before parameter should throw INVALID_ARGUMENT
         await expect(
           client.getExecutions([workflowId], { before: "invalid-cursor" })
-        ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+        ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
 
         // Invalid after parameter should throw INVALID_ARGUMENT
         await expect(
           client.getExecutions([workflowId], { after: "invalid-cursor" })
-        ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+        ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

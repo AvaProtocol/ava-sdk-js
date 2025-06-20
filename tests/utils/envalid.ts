@@ -110,7 +110,7 @@ const validatedEnv = cleanEnv(
     AVS_API_KEY: str({ desc: "AVS API Key" }),
     CHAIN_ENDPOINT: str({ desc: "Chain RPC Endpoint" }),
     TEST_PRIVATE_KEY: privateKeyValidator({ desc: "Wallet Private Key" }),
-    TEST_ENV: environmentValidator({ desc: "Test environment" }),
+    TEST_ENV: environmentValidator({ desc: "Test environment", default: "dev" }),
   }
 );
 

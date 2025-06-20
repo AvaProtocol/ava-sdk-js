@@ -364,7 +364,7 @@ describe("triggerWorkflow Tests", () => {
         },
         isBlocking: true,
       })
-    ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+    ).rejects.toThrowError(/invalid task id|INVALID_ARGUMENT/i);
   });
 
   test("should throw error when triggering a completed block workflow", async () => {
@@ -413,7 +413,7 @@ describe("triggerWorkflow Tests", () => {
           },
           isBlocking: true,
         })
-      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+      ).rejects.toThrowError(/task cannot be executed|FAILED_PRECONDITION/i);
     } finally {
       await client.deleteWorkflow(workflowId);
     }
@@ -466,7 +466,7 @@ describe("triggerWorkflow Tests", () => {
           } as any,
           isBlocking: true,
         })
-      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+      ).rejects.toThrowError(/task cannot be executed|FAILED_PRECONDITION/i);
     } finally {
       await client.deleteWorkflow(workflowId);
     }
@@ -519,7 +519,7 @@ describe("triggerWorkflow Tests", () => {
           } as any,
           isBlocking: true,
         })
-      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+      ).rejects.toThrowError(/task cannot be executed|FAILED_PRECONDITION/i);
     } finally {
       await client.deleteWorkflow(workflowId);
     }
@@ -596,7 +596,7 @@ describe("triggerWorkflow Tests", () => {
           } as any,
           isBlocking: true,
         })
-      ).rejects.toThrowError(/FAILED_PRECONDITION/i);
+      ).rejects.toThrowError(/task cannot be executed|FAILED_PRECONDITION/i);
     } finally {
       await client.deleteWorkflow(workflowId);
     }

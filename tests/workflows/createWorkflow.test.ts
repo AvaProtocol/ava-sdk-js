@@ -89,7 +89,7 @@ describe("createWorkflow Tests", () => {
       client.submitWorkflow(
         client.createWorkflow(createFromTemplate(eoaAddress))
       )
-    ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+    ).rejects.toThrowError(/invalid smart account address|INVALID_ARGUMENT/i);
   });
 
   test("create cron trigger", async () => {

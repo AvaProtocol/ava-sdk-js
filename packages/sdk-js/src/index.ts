@@ -813,33 +813,15 @@ class Client extends BaseClient {
       case TriggerType.Event: {
         const eventData = triggerData as any;
         const eventOutput = new avs_pb.EventTrigger.Output();
-        if (eventData.evmLog) {
-          const evmLog = new avs_pb.Evm.Log();
-          evmLog.setAddress(eventData.evmLog.address);
-          evmLog.setBlockNumber(eventData.evmLog.blockNumber);
-          evmLog.setTransactionHash(eventData.evmLog.transactionHash);
-          evmLog.setIndex(eventData.evmLog.index);
-          eventOutput.setEvmLog(evmLog);
+        
+        // Just set the data directly - it should be JSON string or object
+        if (eventData.data) {
+          const dataString = typeof eventData.data === 'string' 
+            ? eventData.data 
+            : JSON.stringify(eventData.data);
+          eventOutput.setData(dataString);
         }
-        if (eventData.transferLog) {
-          const transferLog = new avs_pb.EventTrigger.TransferLogOutput();
-          transferLog.setTokenName(eventData.transferLog.tokenName);
-          transferLog.setTokenSymbol(eventData.transferLog.tokenSymbol);
-          transferLog.setTokenDecimals(eventData.transferLog.tokenDecimals);
-          transferLog.setTransactionHash(eventData.transferLog.transactionHash);
-          transferLog.setAddress(eventData.transferLog.address);
-          transferLog.setBlockNumber(eventData.transferLog.blockNumber);
-          transferLog.setBlockTimestamp(eventData.transferLog.blockTimestamp);
-          transferLog.setFromAddress(eventData.transferLog.fromAddress);
-          transferLog.setToAddress(eventData.transferLog.toAddress);
-          transferLog.setValue(eventData.transferLog.value);
-          transferLog.setValueFormatted(eventData.transferLog.valueFormatted);
-          transferLog.setTransactionIndex(
-            eventData.transferLog.transactionIndex
-          );
-          transferLog.setLogIndex(eventData.transferLog.logIndex);
-          eventOutput.setTransferLog(transferLog);
-        }
+        
         request.setEventTrigger(eventOutput);
         break;
       }

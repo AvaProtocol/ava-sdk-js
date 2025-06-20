@@ -249,10 +249,14 @@ class EventTrigger extends Trigger {
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const eventOutput = outputData.getEventTrigger();
     if (eventOutput) {
-      if (eventOutput.hasEvmLog()) {
-        return eventOutput.getEvmLog()?.toObject();
-      } else if (eventOutput.hasTransferLog()) {
-        return eventOutput.getTransferLog()?.toObject();
+      const dataString = eventOutput.getData();
+      if (dataString) {
+        try {
+          return JSON.parse(dataString);
+        } catch (error) {
+          console.warn('Failed to parse event trigger data as JSON:', error);
+          return { rawData: dataString };
+        }
       }
     }
     return null;

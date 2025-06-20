@@ -164,7 +164,7 @@ describe("Authentication Tests", () => {
 
       await expect(async () => {
         await client.getWorkflow(workflowId!);
-      }).rejects.toThrow("5 NOT_FOUND: task not found");
+      }).rejects.toThrow(/task not found|5 NOT_FOUND: task not found/);
     });
   });
 
@@ -391,7 +391,7 @@ describe("Authentication Tests", () => {
 
       await expect(async () => {
         await client.getWorkflow(workflowId1!);
-      }).rejects.toThrow("5 NOT_FOUND: task not found");
+      }).rejects.toThrow(/task not found|5 NOT_FOUND: task not found/);
 
       const workflowProps2 = createFromTemplate(wallet.address);
       const workflow2 = client.createWorkflow(workflowProps2);
@@ -408,7 +408,7 @@ describe("Authentication Tests", () => {
 
       await expect(async () => {
         await client.getWorkflow(workflowId2!);
-      }).rejects.toThrow("5 NOT_FOUND: task not found");
+      }).rejects.toThrow(/task not found|5 NOT_FOUND: task not found/);
     });
   });
 
@@ -480,11 +480,11 @@ describe("Authentication Tests", () => {
       client.setAuthKey(undefined);
       await expect(
         client.getWallet({ salt: _.toString(saltIndex++) })
-      ).rejects.toThrow(/unauthenticated/i);
+      ).rejects.toThrow(/User authentication error|unauthenticated/i);
     });
 
     test("getWallets should throw error", async () => {
-      await expect(client.getWallets()).rejects.toThrow(/unauthenticated/i);
+      await expect(client.getWallets()).rejects.toThrow(/User authentication error|unauthenticated/i);
     });
 
     test("createWorkflow should throw error", async () => {
@@ -500,7 +500,7 @@ describe("Authentication Tests", () => {
         client.submitWorkflow(
           client.createWorkflow(createFromTemplate(wallet.address))
         )
-      ).rejects.toThrow(/unauthenticated/i);
+      ).rejects.toThrow(/User Auth key is invalid|unauthenticated/i);
     });
 
     test("getWorkflow should throw error", async () => {
@@ -522,7 +522,7 @@ describe("Authentication Tests", () => {
 
         client.setAuthKey(undefined);
         await expect(client.getWorkflow(workflowId)).rejects.toThrow(
-          /unauthenticated/i
+          /User authentication error|unauthenticated/i
         );
       } finally {
         if (workflowId) {
@@ -536,7 +536,7 @@ describe("Authentication Tests", () => {
     test("getWorkflows should throw error", async () => {
       client.setAuthKey(undefined);
       await expect(client.getWorkflows([eoaAddress])).rejects.toThrow(
-        /unauthenticated/i
+        /User authentication error|unauthenticated/i
       );
     });
 
@@ -559,7 +559,7 @@ describe("Authentication Tests", () => {
 
         client.setAuthKey(undefined);
         await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(
-          /unauthenticated/i
+          /User authentication error|unauthenticated/i
         );
       } finally {
         if (workflowId) {
@@ -587,7 +587,7 @@ describe("Authentication Tests", () => {
 
         client.setAuthKey(undefined);
         await expect(client.deleteWorkflow(workflowId)).rejects.toThrow(
-          /unauthenticated/i
+          /User authentication error|unauthenticated/i
         );
       } finally {
         if (workflowId) {
