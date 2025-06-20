@@ -155,7 +155,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: approveCallData,
@@ -234,7 +234,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: createApproveCallData(spender1, "50"),
@@ -288,7 +288,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Zero address
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -328,7 +328,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: "0xinvalidcalldata", // Invalid call data
@@ -370,7 +370,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -428,7 +428,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -490,7 +490,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: ERC20_ABI,
+          contractAbi: JSON.stringify(ERC20_ABI),
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -583,7 +583,7 @@ describe("ContractWrite Node Tests", () => {
 
       const contractWriteConfig = {
         contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-        contractAbi: ERC20_ABI,
+        contractAbi: JSON.stringify(ERC20_ABI),
         methodCalls: [
           {
             callData: createApproveCallData(
@@ -705,7 +705,7 @@ describe("ContractWrite Node Tests", () => {
 
       const contractWriteConfig = {
         contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-        contractAbi: ERC20_ABI,
+        contractAbi: JSON.stringify(ERC20_ABI),
         methodCalls: [
           {
             callData: createApproveCallData(

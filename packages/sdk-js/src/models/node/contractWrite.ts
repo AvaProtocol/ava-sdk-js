@@ -55,7 +55,7 @@ class ContractWriteNode extends Node {
     config.setCallData((this.data as ContractWriteNodeData).callData);
     config.setContractAbi((this.data as ContractWriteNodeData).contractAbi);
     
-    // Handle method calls array if present
+    // Handle method calls array
     const methodCalls = (this.data as ContractWriteNodeData).methodCalls || [];
     methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
       const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();

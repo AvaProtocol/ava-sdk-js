@@ -25,8 +25,55 @@ let saltIndex = SaltGlobal.CreateWorkflow * 6000;
 // Sepolia Chainlink ETH/USD Price Feed Oracle
 const SEPOLIA_ORACLE_CONFIG = {
   contractAddress: "0xB0C712f98daE15264c8E26132BCC91C40aD4d5F9",
-  contractAbi:
-    '[{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"}]',
+  contractAbi: JSON.stringify([
+    {
+      inputs: [],
+      name: "decimals",
+      outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "description",
+      outputs: [{ internalType: "string", name: "", type: "string" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "version",
+      outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+      name: "getRoundData",
+      outputs: [
+        { internalType: "uint80", name: "roundId", type: "uint80" },
+        { internalType: "int256", name: "answer", type: "int256" },
+        { internalType: "uint256", name: "startedAt", type: "uint256" },
+        { internalType: "uint256", name: "updatedAt", type: "uint256" },
+        { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "latestRoundData",
+      outputs: [
+        { internalType: "uint80", name: "roundId", type: "uint80" },
+        { internalType: "int256", name: "answer", type: "int256" },
+        { internalType: "uint256", name: "startedAt", type: "uint256" },
+        { internalType: "uint256", name: "updatedAt", type: "uint256" },
+        { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ]),
   methodCalls: [
     { callData: "0xfeaf968c", methodName: "latestRoundData" },
     { callData: "0x313ce567", methodName: "decimals" },
@@ -125,11 +172,11 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(result.data.results).toBeDefined();
-        expect(Array.isArray(result.data.results)).toBe(true);
-        expect(result.data.results.length).toBeGreaterThan(0);
+        expect((result.data as any).results).toBeDefined();
+        expect(Array.isArray((result.data as any).results)).toBe(true);
+        expect((result.data as any).results.length).toBeGreaterThan(0);
 
-        const latestRoundResult = result.data.results.find(
+        const latestRoundResult = (result.data as any).results.find(
           (r: any) => r.methodName === "latestRoundData"
         );
         expect(latestRoundResult).toBeDefined();
@@ -181,14 +228,14 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(result.data.results).toBeDefined();
-        expect(Array.isArray(result.data.results)).toBe(true);
-        expect(result.data.results.length).toBe(2); // latestRoundData + decimals
+        expect((result.data as any).results).toBeDefined();
+        expect(Array.isArray((result.data as any).results)).toBe(true);
+        expect((result.data as any).results.length).toBe(2); // latestRoundData + decimals
 
-        const latestRoundResult = result.data.results.find(
+        const latestRoundResult = (result.data as any).results.find(
           (r: any) => r.methodName === "latestRoundData"
         );
-        const decimalsResult = result.data.results.find(
+        const decimalsResult = (result.data as any).results.find(
           (r: any) => r.methodName === "decimals"
         );
 
@@ -211,8 +258,15 @@ describe("ContractRead Node Tests", () => {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Invalid address
-          contractAbi:
-            '[{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]',
+          contractAbi: JSON.stringify([
+            {
+              inputs: [],
+              name: "totalSupply",
+              outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+              stateMutability: "view",
+              type: "function",
+            },
+          ]),
           methodCalls: [{ callData: "0x18160ddd", methodName: "totalSupply" }],
         },
         inputVariables: {
@@ -290,8 +344,8 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect(result.data.results).toBeDefined();
-        const descriptionResult = result.data.results.find(
+        expect((result.data as any).results).toBeDefined();
+        const descriptionResult = (result.data as any).results.find(
           (r: any) => r.methodName === "description"
         );
         expect(descriptionResult).toBeDefined();
@@ -667,8 +721,15 @@ describe("ContractRead Node Tests", () => {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
-          contractAbi:
-            '[{"inputs":[],"name":"nonExistentMethod","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]',
+          contractAbi: JSON.stringify([
+            {
+              inputs: [],
+              name: "nonExistentMethod",
+              outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+              stateMutability: "view",
+              type: "function",
+            },
+          ]),
           methodCalls: [
             { callData: "0x12345678", methodName: "nonExistentMethod" },
           ],
@@ -703,8 +764,8 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
 
       // Should either fail the node execution or return error results
-      if (result.success && result.data && result.data.results) {
-        const errorResult = result.data.results.find(
+      if (result.success && result.data && (result.data as any).results) {
+        const errorResult = (result.data as any).results.find(
           (r: any) => r.methodName === "nonExistentMethod"
         );
         if (errorResult) {

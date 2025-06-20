@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.16
+
+### Patch Changes
+
+- 27551e0: Added EventCondition to EventTrigger
+- Updated dependencies [27551e0]
+  - @avaprotocol/types@2.2.12
+
 ## 2.3.15
 
 ### Patch Changes

@@ -7,7 +7,7 @@ export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
 export interface ContractWriteNodeData {
   contractAddress: string;
   callData: string;
-  contractAbi: string;
+  contractAbi: string;  // Contract ABI as string
   methodCalls?: Array<{
     callData: string;
     methodName?: string;
@@ -17,7 +17,7 @@ export interface ContractWriteNodeData {
 // Custom ContractRead data type with cleaner field names
 export interface ContractReadNodeData {
   contractAddress: string;
-  contractAbi: string;
+  contractAbi: string;  // Contract ABI as string
   methodCalls: Array<{
     callData: string;
     methodName?: string;

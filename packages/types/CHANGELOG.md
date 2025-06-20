@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.12
+
+### Patch Changes
+
+- 27551e0: Added EventCondition to EventTrigger
+
 ## 2.2.11
 
 ### Patch Changes

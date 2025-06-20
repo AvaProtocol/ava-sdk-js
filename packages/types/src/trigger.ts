@@ -5,6 +5,15 @@ import { TriggerType } from "./enums";
 export interface CronTriggerDataType {
   schedules: string[];
 }
+
+// EventCondition interface for condition-based filtering
+export interface EventConditionType {
+  fieldName: string;        // Event field name (e.g., "answer", "roundId")
+  operator: string;         // Comparison operator: "gt", "gte", "lt", "lte", "eq", "ne"
+  value: string;            // Value to compare against (as string, parsed based on type)
+  fieldType: string;        // Field type: "uint256", "int256", "address", "bool", "bytes32", etc.
+}
+
 // Custom EventTrigger data type with cleaner field names
 export interface EventTriggerDataType {
   queries: Array<{
@@ -13,6 +22,8 @@ export interface EventTriggerDataType {
       values?: string[];
     }>;
     maxEventsPerBlock?: number;
+    contractAbi?: string;               // Contract ABI as string
+    conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
   }>;
 }
 export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;

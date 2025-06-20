@@ -13,9 +13,22 @@ import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import _ from "lodash";
 import { inspect } from "util";
-import { getConfig } from "./envalid";
 
-const { chainEndpoint, chainId } = getConfig();
+// Lazy-load configuration to handle CI/CD environments gracefully
+function getTestConfig() {
+  try {
+    const { getConfig } = require("./envalid");
+    return getConfig();
+  } catch (error) {
+    console.warn("⚠️ Environment validation failed in utils, using mock config:", error);
+    // Return mock config for CI/CD or when real credentials aren't available
+    return {
+      avsEndpoint: "localhost:2206",
+      chainEndpoint: "https://mock-chain-endpoint.com",
+      chainId: "1",
+    };
+  }
+}
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 15000; // 15 seconds
@@ -62,19 +75,21 @@ export async function generateAuthPayloadWithApiKey(
   apiKey: string
 ): Promise<GetKeyRequestApiKey> {
   try {
+    const config = getTestConfig();
     const client = new Client({
-      endpoint: getConfig().avsEndpoint,
+      endpoint: config.avsEndpoint,
     });
 
     const { message } = await client.getSignatureFormat(address);
     return { message, apiKey };
   } catch (error) {
     console.warn("GetSignatureFormat not available, using fallback format");
+    const config = getTestConfig();
     const now = Date.now();
     const message = `Please sign the below text for ownership verification.
 
 URI: https://app.avaprotocol.org
-Chain ID: ${_.toNumber(chainId)}
+Chain ID: ${_.toNumber(config.chainId)}
 Version: 1
 Issued At: ${new Date(now).toISOString()}
 Expire At: ${new Date(now + EXPIRATION_DURATION_MS).toISOString()}
@@ -192,7 +207,8 @@ export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
  * @returns number
  */
 export const getBlockNumber = async (): Promise<number> => {
-  const provider = new ethers.JsonRpcProvider(chainEndpoint);
+  const config = getTestConfig();
+  const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
   try {
     // Set a 5 second timeout for the connection
     const blockNumber = await Promise.race<number>([
@@ -210,7 +226,8 @@ export const getBlockNumber = async (): Promise<number> => {
 };
 
 export const getChainId = async (): Promise<number> => {
-  const provider = new ethers.JsonRpcProvider(chainEndpoint);
+  const config = getTestConfig();
+  const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
   try {
     // Set a 5 second timeout for the connection
     const network = await Promise.race<ethers.Network>([
