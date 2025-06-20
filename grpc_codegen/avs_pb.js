@@ -62,7 +62,7 @@ goog.exportSymbol('proto.aggregator.DeleteSecretReq', null, global);
 goog.exportSymbol('proto.aggregator.ETHTransferNode', null, global);
 goog.exportSymbol('proto.aggregator.ETHTransferNode.Config', null, global);
 goog.exportSymbol('proto.aggregator.ETHTransferNode.Output', null, global);
-goog.exportSymbol('proto.aggregator.Error', null, global);
+goog.exportSymbol('proto.aggregator.ErrorCode', null, global);
 goog.exportSymbol('proto.aggregator.EventCondition', null, global);
 goog.exportSymbol('proto.aggregator.EventTrigger', null, global);
 goog.exportSymbol('proto.aggregator.EventTrigger.Config', null, global);
@@ -26648,16 +26648,46 @@ proto.aggregator.Lang = {
 /**
  * @enum {number}
  */
-proto.aggregator.Error = {
-  UNKNOWERROR: 0,
-  RPCNODEERROR: 1000,
-  STORAGEUNAVAILABLE: 2000,
-  STORAGEWRITEERROR: 2001,
-  SMARTWALLETRPCERROR: 6000,
-  SMARTWALLETNOTFOUNDERROR: 6001,
-  TASKDATACORRUPTED: 7000,
-  TASKDATAMISSINGERROR: 7001,
-  TASKTRIGGERERROR: 7003
+proto.aggregator.ErrorCode = {
+  ERROR_CODE_UNSPECIFIED: 0,
+  UNAUTHORIZED: 1000,
+  FORBIDDEN: 1001,
+  INVALID_SIGNATURE: 1002,
+  EXPIRED_TOKEN: 1003,
+  TASK_NOT_FOUND: 2000,
+  EXECUTION_NOT_FOUND: 2001,
+  WALLET_NOT_FOUND: 2002,
+  SECRET_NOT_FOUND: 2003,
+  TOKEN_METADATA_NOT_FOUND: 2004,
+  INVALID_REQUEST: 3000,
+  INVALID_TRIGGER_CONFIG: 3001,
+  INVALID_NODE_CONFIG: 3002,
+  INVALID_WORKFLOW: 3003,
+  INVALID_ADDRESS: 3004,
+  INVALID_SIGNATURE_FORMAT: 3005,
+  MISSING_REQUIRED_FIELD: 3006,
+  TASK_ALREADY_EXISTS: 4000,
+  TASK_ALREADY_COMPLETED: 4001,
+  TASK_ALREADY_CANCELLED: 4002,
+  EXECUTION_IN_PROGRESS: 4003,
+  WALLET_ALREADY_EXISTS: 4004,
+  SECRET_ALREADY_EXISTS: 4005,
+  RPC_NODE_ERROR: 5000,
+  TENDERLY_API_ERROR: 5001,
+  TOKEN_LOOKUP_ERROR: 5002,
+  SIMULATION_ERROR: 5003,
+  STORAGE_UNAVAILABLE: 6000,
+  STORAGE_WRITE_ERROR: 6001,
+  STORAGE_READ_ERROR: 6002,
+  TASK_DATA_CORRUPTED: 6003,
+  EXECUTION_ENGINE_ERROR: 6004,
+  RATE_LIMIT_EXCEEDED: 7000,
+  QUOTA_EXCEEDED: 7001,
+  TOO_MANY_REQUESTS: 7002,
+  SMART_WALLET_RPC_ERROR: 8000,
+  SMART_WALLET_NOT_FOUND: 8001,
+  SMART_WALLET_DEPLOYMENT_ERROR: 8002,
+  INSUFFICIENT_BALANCE: 8003
 };
 
 /**
