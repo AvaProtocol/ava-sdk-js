@@ -49,7 +49,7 @@ import {
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 // Import the consolidated conversion utilities
-import { convertProtobufValueToJs, convertJSValueToProtobuf } from "./utils";
+import { convertProtobufValueToJs, convertJSValueToProtobuf, cleanGrpcErrorMessage } from "./utils";
 
 class BaseClient {
   readonly endpoint: string;
@@ -384,6 +384,12 @@ class BaseClient {
                 (error as TimeoutError).attemptsMade = attempt;
                 (error as TimeoutError).methodName = method;
               }
+              
+              // Clean up gRPC error messages before rejecting
+              if (error.message) {
+                error.message = cleanGrpcErrorMessage(error.message);
+              }
+              
               reject(error);
             }
           });
@@ -1279,6 +1285,7 @@ export {
   NodeFactory,
   TriggerFactory,
   Secret,
+  cleanGrpcErrorMessage,
 };
 
 // Re-export token types for convenience
