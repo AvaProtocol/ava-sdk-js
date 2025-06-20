@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.3.17
+
+### Patch Changes
+
+- 0dfcf69: Added EventCondition, and unified contractAbi to string type
+- Updated dependencies [0dfcf69]
+  - @avaprotocol/types@2.2.13
+
 ## 2.3.16
 
 ### Patch Changes

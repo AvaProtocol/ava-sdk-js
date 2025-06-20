@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.13
+
+### Patch Changes
+
+- 0dfcf69: Added EventCondition, and unified contractAbi to string type
+
 ## 2.2.12
 
 ### Patch Changes
