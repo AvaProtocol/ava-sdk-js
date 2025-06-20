@@ -20,7 +20,7 @@ class ContractWriteNode extends Node {
     const data: ContractWriteNodeData = {
       contractAddress: protobufData.contractAddress,
       callData: protobufData.callData,
-      contractAbi: protobufData.contractAbi,
+      contractAbi: JSON.parse(protobufData.contractAbi),
       methodCalls: protobufData.methodCallsList?.map(call => ({
         callData: call.callData,
         methodName: call.methodName,
@@ -53,7 +53,7 @@ class ContractWriteNode extends Node {
     const config = new avs_pb.ContractWriteNode.Config();
     config.setContractAddress((this.data as ContractWriteNodeData).contractAddress);
     config.setCallData((this.data as ContractWriteNodeData).callData);
-    config.setContractAbi((this.data as ContractWriteNodeData).contractAbi);
+    config.setContractAbi(JSON.stringify((this.data as ContractWriteNodeData).contractAbi));
     
     // Handle method calls array if present
     const methodCalls = (this.data as ContractWriteNodeData).methodCalls || [];

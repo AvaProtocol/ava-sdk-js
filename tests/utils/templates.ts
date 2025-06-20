@@ -21,9 +21,19 @@ import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
 import { ethers } from "ethers";
 import { factoryProxyAbi } from "./abis";
 
-import { getConfig } from "./envalid";
-
-const { factoryAddress } = getConfig();
+// Lazy-load configuration to handle CI/CD environments gracefully
+function getTestConfig() {
+  try {
+    const { getConfig } = require("./envalid");
+    return getConfig();
+  } catch (error) {
+    console.warn("⚠️ Environment validation failed in templates, using mock config:", error);
+    // Return mock config for CI/CD or when real credentials aren't available
+    return {
+      factoryAddress: "0x0000000000000000000000000000000000000000",
+    };
+  }
+}
 
 export const defaultTriggerId = getNextId();
 
@@ -51,8 +61,9 @@ export const createContractWriteNodeProps = (
   owner: string,
   salt: string
 ): ContractWriteNodeProps => {
+  const config = getTestConfig();
   // Encode the createAccount function call
-  const contract = new ethers.Contract(factoryAddress, factoryProxyAbi);
+  const contract = new ethers.Contract(config.factoryAddress, factoryProxyAbi);
   const callData = contract.interface.encodeFunctionData("createAccount", [
     owner,
     ethers.toBigInt(salt),
@@ -63,7 +74,7 @@ export const createContractWriteNodeProps = (
     name: "create account",
     type: NodeType.ContractWrite,
     data: {
-      contractAddress: factoryAddress,
+      contractAddress: config.factoryAddress,
       callData,
       contractAbi: factoryProxyAbi,
     },
@@ -74,8 +85,9 @@ export const createContractReadNodeProps = (
   owner: string,
   salt: string
 ): ContractReadNodeProps => {
+  const config = getTestConfig();
   // Encode the getAddress function call
-  const contract = new ethers.Contract(factoryAddress, factoryProxyAbi);
+  const contract = new ethers.Contract(config.factoryAddress, factoryProxyAbi);
   const callData = contract.interface.encodeFunctionData("getAddress", [
     owner,
     ethers.toBigInt(salt),
@@ -86,7 +98,7 @@ export const createContractReadNodeProps = (
     name: "get account address",
     type: NodeType.ContractRead,
     data: {
-      contractAddress: factoryAddress,
+      contractAddress: config.factoryAddress,
       contractAbi: factoryProxyAbi,
       methodCalls: [
         {

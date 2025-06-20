@@ -71,7 +71,7 @@ class EventTrigger extends Trigger {
 
     const trigger = new avs_pb.EventTrigger();
     const config = new avs_pb.EventTrigger.Config();
-    
+
     const dataConfig = this.data as EventTriggerDataType;
     const queries = dataConfig.queries;
 
@@ -81,12 +81,12 @@ class EventTrigger extends Trigger {
 
     const queryMessages = queries.map((queryData) => {
       const query = new avs_pb.EventTrigger.Query();
-      
+
       // Set addresses if provided
       if (queryData.addresses && queryData.addresses.length > 0) {
         query.setAddressesList(queryData.addresses);
       }
-      
+
       // Set topics if provided
       if (queryData.topics && queryData.topics.length > 0) {
         const topicsMessages = queryData.topics.map((topicData) => {
@@ -103,17 +103,18 @@ class EventTrigger extends Trigger {
         });
         query.setTopicsList(topicsMessages);
       }
-      
+
       // Set maxEventsPerBlock if provided
       if (queryData.maxEventsPerBlock !== undefined) {
         query.setMaxEventsPerBlock(queryData.maxEventsPerBlock);
       }
-      
+
       // Set contractAbi if provided
       if (queryData.contractAbi) {
-        query.setContractAbi(queryData.contractAbi);
+        // Convert ABI array to JSON string for protobuf
+        query.setContractAbi(JSON.stringify(queryData.contractAbi));
       }
-      
+
       // Set conditions if provided
       if (queryData.conditions && queryData.conditions.length > 0) {
         const conditionMessages = queryData.conditions.map((conditionData) => {
@@ -126,19 +127,19 @@ class EventTrigger extends Trigger {
         });
         query.setConditionsList(conditionMessages);
       }
-      
+
       return query;
     });
-    
+
     config.setQueriesList(queryMessages);
     trigger.setConfig(config);
-    
+
     // Convert input field to protobuf format and set on EventTrigger
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
       trigger.setInput(inputValue);
     }
-    
+
     request.setEvent(trigger);
 
     return request;
@@ -150,71 +151,85 @@ class EventTrigger extends Trigger {
 
     let data: EventTriggerDataType = { queries: [] };
     let input: Record<string, any> | undefined = undefined;
-    
+
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
-      
+
       if (config) {
         const queries: EventTriggerDataType["queries"] = [];
-        
+
         if (config.getQueriesList && config.getQueriesList().length > 0) {
           config.getQueriesList().forEach((query) => {
             const queryData: EventTriggerDataType["queries"][0] = {
               addresses: [],
               topics: [],
             };
-            
+
             // Extract addresses
             if (query.getAddressesList && query.getAddressesList().length > 0) {
               queryData.addresses = query.getAddressesList();
             }
-            
+
             // Extract topics
             if (query.getTopicsList && query.getTopicsList().length > 0) {
               queryData.topics = query.getTopicsList().map((topics) => ({
                 // Don't convert empty strings back to null - preserve the original values
                 // The backend may legitimately use empty strings, and we shouldn't assume
                 // they were originally null values from the client
-                values: topics.getValuesList() || []
+                values: topics.getValuesList() || [],
               })) as EventTriggerDataType["queries"][0]["topics"];
             }
-            
+
             // Extract maxEventsPerBlock
             const maxEvents = query.getMaxEventsPerBlock();
             if (maxEvents && maxEvents > 0) {
               queryData.maxEventsPerBlock = maxEvents;
             }
-            
+
             // Extract contractAbi
             const contractAbi = query.getContractAbi();
             if (contractAbi) {
-              queryData.contractAbi = contractAbi;
+              try {
+                // Parse JSON string back to array
+                queryData.contractAbi = JSON.parse(contractAbi);
+              } catch (error) {
+                // If parsing fails, keep as string for backward compatibility
+                console.warn(
+                  "Failed to parse contractAbi as JSON, keeping as string:",
+                  error
+                );
+                queryData.contractAbi = contractAbi as any;
+              }
             }
-            
-                         // Extract conditions
-             const conditions: EventConditionType[] = [];
-             if (query.getConditionsList && query.getConditionsList().length > 0) {
-               query.getConditionsList().forEach((condition) => {
-                 const conditionData: EventConditionType = {
-                   fieldName: condition.getFieldName(),
-                   operator: condition.getOperator(),
-                   value: condition.getValue(),
-                   fieldType: condition.getFieldType(),
-                 };
-                 conditions.push(conditionData);
-               });
-             }
-             if (conditions.length > 0) {
-               queryData.conditions = conditions;
-             }
-            
+            // If contractAbi is empty string, don't set the field (keep it undefined)
+
+            // Extract conditions
+            const conditions: EventConditionType[] = [];
+            if (
+              query.getConditionsList &&
+              query.getConditionsList().length > 0
+            ) {
+              query.getConditionsList().forEach((condition) => {
+                const conditionData: EventConditionType = {
+                  fieldName: condition.getFieldName(),
+                  operator: condition.getOperator(),
+                  value: condition.getValue(),
+                  fieldType: condition.getFieldType(),
+                };
+                conditions.push(conditionData);
+              });
+            }
+            if (conditions.length > 0) {
+              queryData.conditions = conditions;
+            }
+
             queries.push(queryData);
           });
         }
-        
+
         data = { queries: queries };
       }
-      
+
       // Extract input data if present
       if (raw.getEvent()!.hasInput()) {
         input = extractInputFromProtobuf(raw.getEvent()!.getInput());
