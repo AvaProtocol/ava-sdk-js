@@ -23,6 +23,7 @@ function getTestConfig() {
     console.warn("⚠️ Environment validation failed in utils, using mock config:", error);
     // Return mock config for CI/CD or when real credentials aren't available
     return {
+      avsEndpoint: "localhost:2206",
       chainEndpoint: "https://mock-chain-endpoint.com",
       chainId: "1",
     };
