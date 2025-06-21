@@ -112,7 +112,7 @@ describe("getExecution Tests", () => {
 
     await expect(
       client.getExecution("non-existent-workflow-id", nonExistentExecutionId)
-    ).rejects.toThrowError(/NOT_FOUND|resource not found/i);
+    ).rejects.toThrowError(/task not found|NOT_FOUND|resource not found/i);
   });
 
   test("should throw error when using a valid workflow ID but a non-existent execution ID", async () => {
@@ -130,7 +130,7 @@ describe("getExecution Tests", () => {
 
       await expect(
         client.getExecution(workflowId, nonExistentExecutionId)
-      ).rejects.toThrowError(/NOT_FOUND|resource not found/i);
+      ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

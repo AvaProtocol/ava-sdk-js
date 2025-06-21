@@ -8,9 +8,14 @@ import {
   EventTriggerProps,
   TriggerProps,
   EventConditionType,
+  MethodCallType,
 } from "@avaprotocol/types";
 
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import {
+  convertInputToProtobuf,
+  extractInputFromProtobuf,
+  convertProtobufValueToJs,
+} from "../../utils";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
 // We imply or operator among all conditions.
@@ -125,6 +130,25 @@ class EventTrigger extends Trigger {
           return condition;
         });
         query.setConditionsList(conditionMessages);
+      }
+
+      // Set method calls if provided
+      if (queryData.methodCalls && queryData.methodCalls.length > 0) {
+        const methodCallMessages = queryData.methodCalls.map(
+          (methodCallData: MethodCallType) => {
+            const methodCall = new avs_pb.EventTrigger.MethodCall();
+            methodCall.setMethodName(methodCallData.methodName);
+            methodCall.setCallData(methodCallData.callData);
+            if (
+              methodCallData.applyToFields &&
+              methodCallData.applyToFields.length > 0
+            ) {
+              methodCall.setApplyToFieldsList(methodCallData.applyToFields);
+            }
+            return methodCall;
+          }
+        );
+        query.setMethodCallsList(methodCallMessages);
       }
 
       return query;
@@ -247,12 +271,27 @@ class EventTrigger extends Trigger {
    * @returns Plain JavaScript object with event trigger data
    */
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
+    // Try to get data from protobuf structure first
     const eventOutput = outputData.getEventTrigger();
     if (eventOutput) {
-      if (eventOutput.hasEvmLog()) {
-        return eventOutput.getEvmLog()?.toObject();
-      } else if (eventOutput.hasTransferLog()) {
-        return eventOutput.getTransferLog()?.toObject();
+      const dataValue = eventOutput.getData();
+      if (dataValue) {
+        try {
+          // Convert protobuf Value to JavaScript object
+          const convertedData = convertProtobufValueToJs(dataValue);
+          // If the converted data is an empty string, return null
+          if (convertedData === "") {
+            return null;
+          }
+          return convertedData;
+        } catch (error) {
+          console.warn(
+            "Failed to convert event trigger data from protobuf Value:",
+            error
+          );
+          // Return the raw protobuf Value object as fallback
+          return dataValue;
+        }
       }
     }
     return null;

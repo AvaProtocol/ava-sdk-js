@@ -18,28 +18,7 @@ export type WorkflowTriggerDataProps =
     }
   | {
       type: TriggerType.Event;
-      evmLog?: {
-        address: string;
-        blockNumber: number;
-        transactionHash: string;
-        index: number;
-        [key: string]: any;
-      };
-      transferLog?: {
-        tokenName: string;
-        tokenSymbol: string;
-        tokenDecimals: number;
-        transactionHash: string;
-        address: string;
-        blockNumber: number;
-        blockTimestamp: number;
-        fromAddress: string;
-        toAddress: string;
-        value: string;
-        valueFormatted: string;
-        transactionIndex: number;
-        logIndex: number;
-      };
+      data?: string | Record<string, any>; // JSON string or object containing event data
     }
   | { type: TriggerType.Manual; runAt?: number }
   | { type: TriggerType.Unspecified };
@@ -53,9 +32,7 @@ export type OutputDataProps =
   | avs_pb.FixedTimeTrigger.Output.AsObject
   | avs_pb.CronTrigger.Output.AsObject
   | avs_pb.EventTrigger.Output.AsObject
-  | avs_pb.EventTrigger.TransferLogOutput.AsObject
   | avs_pb.ManualTrigger.Output.AsObject
-  | avs_pb.Evm.Log.AsObject
   | { blockNumber: number } // Filtered block trigger output
   | { timestamp: number; timestampIso: string } // Filtered time trigger output (updated from epoch)
   | { transactionHash: string } // ETH transfer output

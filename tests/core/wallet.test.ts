@@ -194,10 +194,10 @@ describe("Wallet Management Tests", () => {
 
       await expect(
         client.getWallet({ salt: "0", factoryAddress: "0x1234" })
-      ).rejects.toThrow(/^3 INVALID_ARGUMENT:.*invalid factory address/);
+      ).rejects.toThrow(/invalid factory address|^3 INVALID_ARGUMENT:.*invalid factory address/);
 
       await expect(client.getWallet({ salt: "0" })).rejects.toThrow(
-        /^3 INVALID_ARGUMENT:.*Factory address cannot be the zero address/
+        /Factory address cannot be the zero address|^3 INVALID_ARGUMENT:.*Factory address cannot be the zero address/
       );
     });
 

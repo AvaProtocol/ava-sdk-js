@@ -49,7 +49,11 @@ import {
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 // Import the consolidated conversion utilities
-import { convertProtobufValueToJs, convertJSValueToProtobuf } from "./utils";
+import {
+  convertProtobufValueToJs,
+  convertJSValueToProtobuf,
+  cleanGrpcErrorMessage,
+} from "./utils";
 
 class BaseClient {
   readonly endpoint: string;
@@ -384,6 +388,12 @@ class BaseClient {
                 (error as TimeoutError).attemptsMade = attempt;
                 (error as TimeoutError).methodName = method;
               }
+
+              // Clean up gRPC error messages before rejecting
+              if (error.message) {
+                error.message = cleanGrpcErrorMessage(error.message);
+              }
+
               reject(error);
             }
           });
@@ -807,33 +817,13 @@ class Client extends BaseClient {
       case TriggerType.Event: {
         const eventData = triggerData as any;
         const eventOutput = new avs_pb.EventTrigger.Output();
-        if (eventData.evmLog) {
-          const evmLog = new avs_pb.Evm.Log();
-          evmLog.setAddress(eventData.evmLog.address);
-          evmLog.setBlockNumber(eventData.evmLog.blockNumber);
-          evmLog.setTransactionHash(eventData.evmLog.transactionHash);
-          evmLog.setIndex(eventData.evmLog.index);
-          eventOutput.setEvmLog(evmLog);
+
+        // Convert JavaScript data to protobuf Value
+        if (eventData.data) {
+          const protobufValue = convertJSValueToProtobuf(eventData.data);
+          eventOutput.setData(protobufValue);
         }
-        if (eventData.transferLog) {
-          const transferLog = new avs_pb.EventTrigger.TransferLogOutput();
-          transferLog.setTokenName(eventData.transferLog.tokenName);
-          transferLog.setTokenSymbol(eventData.transferLog.tokenSymbol);
-          transferLog.setTokenDecimals(eventData.transferLog.tokenDecimals);
-          transferLog.setTransactionHash(eventData.transferLog.transactionHash);
-          transferLog.setAddress(eventData.transferLog.address);
-          transferLog.setBlockNumber(eventData.transferLog.blockNumber);
-          transferLog.setBlockTimestamp(eventData.transferLog.blockTimestamp);
-          transferLog.setFromAddress(eventData.transferLog.fromAddress);
-          transferLog.setToAddress(eventData.transferLog.toAddress);
-          transferLog.setValue(eventData.transferLog.value);
-          transferLog.setValueFormatted(eventData.transferLog.valueFormatted);
-          transferLog.setTransactionIndex(
-            eventData.transferLog.transactionIndex
-          );
-          transferLog.setLogIndex(eventData.transferLog.logIndex);
-          eventOutput.setTransferLog(transferLog);
-        }
+
         request.setEventTrigger(eventOutput);
         break;
       }
@@ -1171,11 +1161,38 @@ class Client extends BaseClient {
       avs_pb.RunTriggerReq
     >("runTrigger", request, options);
 
+    // Convert metadata from protobuf Value to JavaScript object
+    let metadata: any = undefined;
+    const metadataValue = result.getMetadata();
+    if (metadataValue) {
+      if (typeof metadataValue === "string") {
+        // Handle string metadata (gRPC gateway case)
+        try {
+          metadata = JSON.parse(metadataValue);
+        } catch (parseError) {
+          console.warn("Failed to parse metadata as JSON:", parseError);
+          metadata = metadataValue; // fallback to raw value
+        }
+      } else {
+        // Handle protobuf Value metadata
+        try {
+          metadata = convertProtobufValueToJs(metadataValue);
+        } catch (error) {
+          console.warn(
+            "Failed to convert metadata from protobuf Value:",
+            error
+          );
+          metadata = metadataValue; // fallback to raw value
+        }
+      }
+    }
+
     return {
       success: result.getSuccess(),
       data: TriggerFactory.fromOutputData(result),
       error: result.getError(),
       triggerId: result.getTriggerId(),
+      metadata: metadata,
     };
   }
 
@@ -1279,6 +1296,7 @@ export {
   NodeFactory,
   TriggerFactory,
   Secret,
+  cleanGrpcErrorMessage,
 };
 
 // Re-export token types for convenience

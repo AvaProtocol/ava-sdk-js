@@ -23,6 +23,7 @@ class ContractReadNode extends Node {
       methodCalls: protobufData.methodCallsList?.map(call => ({
         callData: call.callData,
         methodName: call.methodName,
+        applyToFields: call.applyToFieldsList || [],
       })) || [],
     };
 
@@ -55,11 +56,14 @@ class ContractReadNode extends Node {
     
     // Handle method calls array
     const methodCalls = (this.data as ContractReadNodeData).methodCalls || [];
-    methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
+    methodCalls.forEach((methodCall: { callData: string; methodName?: string; applyToFields?: string[] }) => {
       const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
       methodCallMsg.setCallData(methodCall.callData);
       if (methodCall.methodName) {
         methodCallMsg.setMethodName(methodCall.methodName);
+      }
+      if (methodCall.applyToFields) {
+        methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
       }
       config.addMethodCalls(methodCallMsg);
     });

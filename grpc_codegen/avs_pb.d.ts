@@ -397,6 +397,10 @@ export namespace EventTrigger {
         getConditionsList(): Array<EventCondition>;
         setConditionsList(value: Array<EventCondition>): Query;
         addConditions(value?: EventCondition, index?: number): EventCondition;
+        clearMethodCallsList(): void;
+        getMethodCallsList(): Array<EventTrigger.MethodCall>;
+        setMethodCallsList(value: Array<EventTrigger.MethodCall>): Query;
+        addMethodCalls(value?: EventTrigger.MethodCall, index?: number): EventTrigger.MethodCall;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Query.AsObject;
@@ -415,6 +419,35 @@ export namespace EventTrigger {
             maxEventsPerBlock?: number,
             contractAbi: string,
             conditionsList: Array<EventCondition.AsObject>,
+            methodCallsList: Array<EventTrigger.MethodCall.AsObject>,
+        }
+    }
+
+    export class MethodCall extends jspb.Message { 
+        getMethodName(): string;
+        setMethodName(value: string): MethodCall;
+        getCallData(): string;
+        setCallData(value: string): MethodCall;
+        clearApplyToFieldsList(): void;
+        getApplyToFieldsList(): Array<string>;
+        setApplyToFieldsList(value: Array<string>): MethodCall;
+        addApplyToFields(value: string, index?: number): string;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): MethodCall.AsObject;
+        static toObject(includeInstance: boolean, msg: MethodCall): MethodCall.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: MethodCall, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): MethodCall;
+        static deserializeBinaryFromReader(message: MethodCall, reader: jspb.BinaryReader): MethodCall;
+    }
+
+    export namespace MethodCall {
+        export type AsObject = {
+            methodName: string,
+            callData: string,
+            applyToFieldsList: Array<string>,
         }
     }
 
@@ -464,17 +497,10 @@ export namespace EventTrigger {
 
     export class Output extends jspb.Message { 
 
-        hasEvmLog(): boolean;
-        clearEvmLog(): void;
-        getEvmLog(): Evm.Log | undefined;
-        setEvmLog(value?: Evm.Log): Output;
-
-        hasTransferLog(): boolean;
-        clearTransferLog(): void;
-        getTransferLog(): EventTrigger.TransferLogOutput | undefined;
-        setTransferLog(value?: EventTrigger.TransferLogOutput): Output;
-
-        getOutputTypeCase(): Output.OutputTypeCase;
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -488,71 +514,7 @@ export namespace EventTrigger {
 
     export namespace Output {
         export type AsObject = {
-            evmLog?: Evm.Log.AsObject,
-            transferLog?: EventTrigger.TransferLogOutput.AsObject,
-        }
-
-        export enum OutputTypeCase {
-            OUTPUT_TYPE_NOT_SET = 0,
-            EVM_LOG = 1,
-            TRANSFER_LOG = 2,
-        }
-
-    }
-
-    export class TransferLogOutput extends jspb.Message { 
-        getTokenName(): string;
-        setTokenName(value: string): TransferLogOutput;
-        getTokenSymbol(): string;
-        setTokenSymbol(value: string): TransferLogOutput;
-        getTokenDecimals(): number;
-        setTokenDecimals(value: number): TransferLogOutput;
-        getTransactionHash(): string;
-        setTransactionHash(value: string): TransferLogOutput;
-        getAddress(): string;
-        setAddress(value: string): TransferLogOutput;
-        getBlockNumber(): number;
-        setBlockNumber(value: number): TransferLogOutput;
-        getBlockTimestamp(): number;
-        setBlockTimestamp(value: number): TransferLogOutput;
-        getFromAddress(): string;
-        setFromAddress(value: string): TransferLogOutput;
-        getToAddress(): string;
-        setToAddress(value: string): TransferLogOutput;
-        getValue(): string;
-        setValue(value: string): TransferLogOutput;
-        getValueFormatted(): string;
-        setValueFormatted(value: string): TransferLogOutput;
-        getTransactionIndex(): number;
-        setTransactionIndex(value: number): TransferLogOutput;
-        getLogIndex(): number;
-        setLogIndex(value: number): TransferLogOutput;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): TransferLogOutput.AsObject;
-        static toObject(includeInstance: boolean, msg: TransferLogOutput): TransferLogOutput.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: TransferLogOutput, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): TransferLogOutput;
-        static deserializeBinaryFromReader(message: TransferLogOutput, reader: jspb.BinaryReader): TransferLogOutput;
-    }
-
-    export namespace TransferLogOutput {
-        export type AsObject = {
-            tokenName: string,
-            tokenSymbol: string,
-            tokenDecimals: number,
-            transactionHash: string,
-            address: string,
-            blockNumber: number,
-            blockTimestamp: number,
-            fromAddress: string,
-            toAddress: string,
-            value: string,
-            valueFormatted: string,
-            transactionIndex: number,
-            logIndex: number,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1114,6 +1076,10 @@ export namespace ContractReadNode {
         setCallData(value: string): MethodCall;
         getMethodName(): string;
         setMethodName(value: string): MethodCall;
+        clearApplyToFieldsList(): void;
+        getApplyToFieldsList(): Array<string>;
+        setApplyToFieldsList(value: Array<string>): MethodCall;
+        addApplyToFields(value: string, index?: number): string;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): MethodCall.AsObject;
@@ -1129,6 +1095,7 @@ export namespace ContractReadNode {
         export type AsObject = {
             callData: string,
             methodName: string,
+            applyToFieldsList: Array<string>,
         }
     }
 
@@ -3171,6 +3138,11 @@ export class RunNodeWithInputsResp extends jspb.Message {
     getNodeId(): string;
     setNodeId(value: string): RunNodeWithInputsResp;
 
+    hasMetadata(): boolean;
+    clearMetadata(): void;
+    getMetadata(): google_protobuf_struct_pb.Value | undefined;
+    setMetadata(value?: google_protobuf_struct_pb.Value): RunNodeWithInputsResp;
+
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
     getEthTransfer(): ETHTransferNode.Output | undefined;
@@ -3233,6 +3205,7 @@ export namespace RunNodeWithInputsResp {
         success: boolean,
         error: string,
         nodeId: string,
+        metadata?: google_protobuf_struct_pb.Value.AsObject,
         ethTransfer?: ETHTransferNode.Output.AsObject,
         graphql?: GraphQLQueryNode.Output.AsObject,
         contractRead?: ContractReadNode.Output.AsObject,
@@ -3297,6 +3270,11 @@ export class RunTriggerResp extends jspb.Message {
     getTriggerId(): string;
     setTriggerId(value: string): RunTriggerResp;
 
+    hasMetadata(): boolean;
+    clearMetadata(): void;
+    getMetadata(): google_protobuf_struct_pb.Value | undefined;
+    setMetadata(value?: google_protobuf_struct_pb.Value): RunTriggerResp;
+
     hasBlockTrigger(): boolean;
     clearBlockTrigger(): void;
     getBlockTrigger(): BlockTrigger.Output | undefined;
@@ -3339,6 +3317,7 @@ export namespace RunTriggerResp {
         success: boolean,
         error: string,
         triggerId: string,
+        metadata?: google_protobuf_struct_pb.Value.AsObject,
         blockTrigger?: BlockTrigger.Output.AsObject,
         fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
         cronTrigger?: CronTrigger.Output.AsObject,
@@ -3353,194 +3332,6 @@ export namespace RunTriggerResp {
         CRON_TRIGGER = 12,
         EVENT_TRIGGER = 13,
         MANUAL_TRIGGER = 14,
-    }
-
-}
-
-export class Evm extends jspb.Message { 
-
-    serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): Evm.AsObject;
-    static toObject(includeInstance: boolean, msg: Evm): Evm.AsObject;
-    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: Evm, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): Evm;
-    static deserializeBinaryFromReader(message: Evm, reader: jspb.BinaryReader): Evm;
-}
-
-export namespace Evm {
-    export type AsObject = {
-    }
-
-
-    export class Log extends jspb.Message { 
-        getAddress(): string;
-        setAddress(value: string): Log;
-        clearTopicsList(): void;
-        getTopicsList(): Array<string>;
-        setTopicsList(value: Array<string>): Log;
-        addTopics(value: string, index?: number): string;
-        getData(): string;
-        setData(value: string): Log;
-        getBlockNumber(): number;
-        setBlockNumber(value: number): Log;
-        getTransactionHash(): string;
-        setTransactionHash(value: string): Log;
-        getTransactionIndex(): number;
-        setTransactionIndex(value: number): Log;
-        getBlockHash(): string;
-        setBlockHash(value: string): Log;
-        getIndex(): number;
-        setIndex(value: number): Log;
-        getRemoved(): boolean;
-        setRemoved(value: boolean): Log;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): Log.AsObject;
-        static toObject(includeInstance: boolean, msg: Log): Log.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: Log, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): Log;
-        static deserializeBinaryFromReader(message: Log, reader: jspb.BinaryReader): Log;
-    }
-
-    export namespace Log {
-        export type AsObject = {
-            address: string,
-            topicsList: Array<string>,
-            data: string,
-            blockNumber: number,
-            transactionHash: string,
-            transactionIndex: number,
-            blockHash: string,
-            index: number,
-            removed: boolean,
-        }
-    }
-
-    export class TransactionReceipt extends jspb.Message { 
-        getHash(): string;
-        setHash(value: string): TransactionReceipt;
-        getBlockHash(): string;
-        setBlockHash(value: string): TransactionReceipt;
-        getBlockNumber(): number;
-        setBlockNumber(value: number): TransactionReceipt;
-        getFrom(): string;
-        setFrom(value: string): TransactionReceipt;
-        getGasUsed(): number;
-        setGasUsed(value: number): TransactionReceipt;
-        getGasPrice(): number;
-        setGasPrice(value: number): TransactionReceipt;
-        getCumulativeGasUsed(): number;
-        setCumulativeGasUsed(value: number): TransactionReceipt;
-        getFee(): number;
-        setFee(value: number): TransactionReceipt;
-        getContractAddress(): string;
-        setContractAddress(value: string): TransactionReceipt;
-        getIndex(): number;
-        setIndex(value: number): TransactionReceipt;
-        clearLogsList(): void;
-        getLogsList(): Array<string>;
-        setLogsList(value: Array<string>): TransactionReceipt;
-        addLogs(value: string, index?: number): string;
-        getLogsBloom(): string;
-        setLogsBloom(value: string): TransactionReceipt;
-        getRoot(): string;
-        setRoot(value: string): TransactionReceipt;
-        getStatus(): number;
-        setStatus(value: number): TransactionReceipt;
-        getType(): number;
-        setType(value: number): TransactionReceipt;
-        getBlobGasPrice(): number;
-        setBlobGasPrice(value: number): TransactionReceipt;
-        getBlobGasUsed(): number;
-        setBlobGasUsed(value: number): TransactionReceipt;
-        getTo(): string;
-        setTo(value: string): TransactionReceipt;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): TransactionReceipt.AsObject;
-        static toObject(includeInstance: boolean, msg: TransactionReceipt): TransactionReceipt.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: TransactionReceipt, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): TransactionReceipt;
-        static deserializeBinaryFromReader(message: TransactionReceipt, reader: jspb.BinaryReader): TransactionReceipt;
-    }
-
-    export namespace TransactionReceipt {
-        export type AsObject = {
-            hash: string,
-            blockHash: string,
-            blockNumber: number,
-            from: string,
-            gasUsed: number,
-            gasPrice: number,
-            cumulativeGasUsed: number,
-            fee: number,
-            contractAddress: string,
-            index: number,
-            logsList: Array<string>,
-            logsBloom: string,
-            root: string,
-            status: number,
-            type: number,
-            blobGasPrice: number,
-            blobGasUsed: number,
-            to: string,
-        }
-    }
-
-    export class UserOp extends jspb.Message { 
-        getSender(): string;
-        setSender(value: string): UserOp;
-        getNonce(): string;
-        setNonce(value: string): UserOp;
-        getInitCode(): string;
-        setInitCode(value: string): UserOp;
-        getCallData(): string;
-        setCallData(value: string): UserOp;
-        getCallGasLimit(): string;
-        setCallGasLimit(value: string): UserOp;
-        getVerificationGasLimit(): string;
-        setVerificationGasLimit(value: string): UserOp;
-        getPreVerificationGas(): string;
-        setPreVerificationGas(value: string): UserOp;
-        getMaxFeePerGas(): string;
-        setMaxFeePerGas(value: string): UserOp;
-        getMaxPriorityFeePerGas(): string;
-        setMaxPriorityFeePerGas(value: string): UserOp;
-        getPaymasterAndData(): string;
-        setPaymasterAndData(value: string): UserOp;
-        getSignature(): string;
-        setSignature(value: string): UserOp;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): UserOp.AsObject;
-        static toObject(includeInstance: boolean, msg: UserOp): UserOp.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: UserOp, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): UserOp;
-        static deserializeBinaryFromReader(message: UserOp, reader: jspb.BinaryReader): UserOp;
-    }
-
-    export namespace UserOp {
-        export type AsObject = {
-            sender: string,
-            nonce: string,
-            initCode: string,
-            callData: string,
-            callGasLimit: string,
-            verificationGasLimit: string,
-            preVerificationGas: string,
-            maxFeePerGas: string,
-            maxPriorityFeePerGas: string,
-            paymasterAndData: string,
-            signature: string,
-        }
     }
 
 }
@@ -3638,16 +3429,46 @@ export enum Lang {
     JAVASCRIPT = 0,
 }
 
-export enum Error {
-    UNKNOWERROR = 0,
-    RPCNODEERROR = 1000,
-    STORAGEUNAVAILABLE = 2000,
-    STORAGEWRITEERROR = 2001,
-    SMARTWALLETRPCERROR = 6000,
-    SMARTWALLETNOTFOUNDERROR = 6001,
-    TASKDATACORRUPTED = 7000,
-    TASKDATAMISSINGERROR = 7001,
-    TASKTRIGGERERROR = 7003,
+export enum ErrorCode {
+    ERROR_CODE_UNSPECIFIED = 0,
+    UNAUTHORIZED = 1000,
+    FORBIDDEN = 1001,
+    INVALID_SIGNATURE = 1002,
+    EXPIRED_TOKEN = 1003,
+    TASK_NOT_FOUND = 2000,
+    EXECUTION_NOT_FOUND = 2001,
+    WALLET_NOT_FOUND = 2002,
+    SECRET_NOT_FOUND = 2003,
+    TOKEN_METADATA_NOT_FOUND = 2004,
+    INVALID_REQUEST = 3000,
+    INVALID_TRIGGER_CONFIG = 3001,
+    INVALID_NODE_CONFIG = 3002,
+    INVALID_WORKFLOW = 3003,
+    INVALID_ADDRESS = 3004,
+    INVALID_SIGNATURE_FORMAT = 3005,
+    MISSING_REQUIRED_FIELD = 3006,
+    TASK_ALREADY_EXISTS = 4000,
+    TASK_ALREADY_COMPLETED = 4001,
+    TASK_ALREADY_CANCELLED = 4002,
+    EXECUTION_IN_PROGRESS = 4003,
+    WALLET_ALREADY_EXISTS = 4004,
+    SECRET_ALREADY_EXISTS = 4005,
+    RPC_NODE_ERROR = 5000,
+    TENDERLY_API_ERROR = 5001,
+    TOKEN_LOOKUP_ERROR = 5002,
+    SIMULATION_ERROR = 5003,
+    STORAGE_UNAVAILABLE = 6000,
+    STORAGE_WRITE_ERROR = 6001,
+    STORAGE_READ_ERROR = 6002,
+    TASK_DATA_CORRUPTED = 6003,
+    EXECUTION_ENGINE_ERROR = 6004,
+    RATE_LIMIT_EXCEEDED = 7000,
+    QUOTA_EXCEEDED = 7001,
+    TOO_MANY_REQUESTS = 7002,
+    SMART_WALLET_RPC_ERROR = 8000,
+    SMART_WALLET_NOT_FOUND = 8001,
+    SMART_WALLET_DEPLOYMENT_ERROR = 8002,
+    INSUFFICIENT_BALANCE = 8003,
 }
 
 export enum TaskStatus {

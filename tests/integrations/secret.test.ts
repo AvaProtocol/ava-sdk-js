@@ -486,7 +486,7 @@ describe("secret Tests", () => {
     it("should throw error with an invalid limit", async () => {
       // Invalid cursor should throw INVALID_ARGUMENT
       await expect(client.getSecrets({ limit: -1 })).rejects.toThrowError(
-        /INVALID_ARGUMENT/i
+        /item per page is not valid|INVALID_ARGUMENT/i
       );
     });
 
@@ -494,11 +494,11 @@ describe("secret Tests", () => {
       // Invalid cursor should throw INVALID_ARGUMENT
       await expect(
         client.getSecrets({ before: "invalid-cursor" })
-      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+      ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
 
       await expect(
         client.getSecrets({ after: "invalid-cursor" })
-      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+      ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
     });
   });
 });

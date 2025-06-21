@@ -459,12 +459,12 @@ describe("getExecutions Tests", () => {
       // Invalid before parameter should throw INVALID_ARGUMENT
       await expect(
         client.getExecutions([workflowId], { before: "invalid-cursor" })
-      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+      ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
 
       // Invalid after parameter should throw INVALID_ARGUMENT
       await expect(
         client.getExecutions([workflowId], { after: "invalid-cursor" })
-      ).rejects.toThrowError(/INVALID_ARGUMENT/i);
+      ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

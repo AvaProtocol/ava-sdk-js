@@ -21,6 +21,7 @@ export interface ContractReadNodeData {
   methodCalls: Array<{
     callData: string;
     methodName?: string;
+    applyToFields?: string[];  // Fields to apply decimal formatting to
   }>;
 }
 

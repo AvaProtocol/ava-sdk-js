@@ -52,7 +52,7 @@ describe("deleteWorkflow Tests", () => {
 
   test("should throw error when deleting an non-existent task", async () => {
     await expect(client.deleteWorkflow("non-existent-task-id")).rejects.toThrow(
-      /NOT_FOUND/i
+      /task not found/i
     );
   });
 });
