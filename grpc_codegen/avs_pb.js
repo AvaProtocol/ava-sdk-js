@@ -765,7 +765,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.ContractWriteNode.Output = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ContractWriteNode.Output.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.aggregator.ContractWriteNode.Output, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -996,7 +996,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.ContractReadNode.Output = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ContractReadNode.Output.repeatedFields_, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
 goog.inherits(proto.aggregator.ContractReadNode.Output, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -7985,13 +7985,6 @@ proto.aggregator.ContractWriteNode.MethodCall.prototype.setMethodName = function
 
 
 
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.aggregator.ContractWriteNode.Output.repeatedFields_ = [1];
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -8023,8 +8016,7 @@ proto.aggregator.ContractWriteNode.Output.prototype.toObject = function(opt_incl
  */
 proto.aggregator.ContractWriteNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    resultsList: jspb.Message.toObjectList(msg.getResultsList(),
-    proto.aggregator.ContractWriteNode.MethodResult.toObject, includeInstance)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -8062,9 +8054,9 @@ proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader = function
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new proto.aggregator.ContractWriteNode.MethodResult;
-      reader.readMessage(value,proto.aggregator.ContractWriteNode.MethodResult.deserializeBinaryFromReader);
-      msg.addResults(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -8095,52 +8087,51 @@ proto.aggregator.ContractWriteNode.Output.prototype.serializeBinary = function()
  */
 proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getResultsList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
       f,
-      proto.aggregator.ContractWriteNode.MethodResult.serializeBinaryToWriter
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * repeated MethodResult results = 1;
- * @return {!Array<!proto.aggregator.ContractWriteNode.MethodResult>}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.ContractWriteNode.Output.prototype.getResultsList = function() {
-  return /** @type{!Array<!proto.aggregator.ContractWriteNode.MethodResult>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.ContractWriteNode.MethodResult, 1));
+proto.aggregator.ContractWriteNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {!Array<!proto.aggregator.ContractWriteNode.MethodResult>} value
+ * @param {?proto.google.protobuf.Value|undefined} value
  * @return {!proto.aggregator.ContractWriteNode.Output} returns this
 */
-proto.aggregator.ContractWriteNode.Output.prototype.setResultsList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+proto.aggregator.ContractWriteNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.aggregator.ContractWriteNode.MethodResult=} opt_value
- * @param {number=} opt_index
- * @return {!proto.aggregator.ContractWriteNode.MethodResult}
- */
-proto.aggregator.ContractWriteNode.Output.prototype.addResults = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.ContractWriteNode.MethodResult, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ContractWriteNode.Output} returns this
  */
-proto.aggregator.ContractWriteNode.Output.prototype.clearResultsList = function() {
-  return this.setResultsList([]);
+proto.aggregator.ContractWriteNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -8593,7 +8584,10 @@ proto.aggregator.ContractWriteNode.TransactionData.toObject = function(includeIn
     nonce: jspb.Message.getFieldWithDefault(msg, 12, ""),
     transactionIndex: jspb.Message.getFieldWithDefault(msg, 13, ""),
     confirmations: jspb.Message.getFieldWithDefault(msg, 14, ""),
-    timestamp: jspb.Message.getFieldWithDefault(msg, 15, 0)
+    timestamp: jspb.Message.getFieldWithDefault(msg, 15, 0),
+    simulation: jspb.Message.getBooleanFieldWithDefault(msg, 16, false),
+    simulationMode: jspb.Message.getFieldWithDefault(msg, 17, ""),
+    chainId: jspb.Message.getFieldWithDefault(msg, 18, 0)
   };
 
   if (includeInstance) {
@@ -8689,6 +8683,18 @@ proto.aggregator.ContractWriteNode.TransactionData.deserializeBinaryFromReader =
     case 15:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setTimestamp(value);
+      break;
+    case 16:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setSimulation(value);
+      break;
+    case 17:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSimulationMode(value);
+      break;
+    case 18:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setChainId(value);
       break;
     default:
       reader.skipField();
@@ -8821,6 +8827,27 @@ proto.aggregator.ContractWriteNode.TransactionData.serializeBinaryToWriter = fun
   if (f !== 0) {
     writer.writeInt64(
       15,
+      f
+    );
+  }
+  f = message.getSimulation();
+  if (f) {
+    writer.writeBool(
+      16,
+      f
+    );
+  }
+  f = message.getSimulationMode();
+  if (f.length > 0) {
+    writer.writeString(
+      17,
+      f
+    );
+  }
+  f = message.getChainId();
+  if (f !== 0) {
+    writer.writeInt64(
+      18,
       f
     );
   }
@@ -9094,6 +9121,60 @@ proto.aggregator.ContractWriteNode.TransactionData.prototype.getTimestamp = func
  */
 proto.aggregator.ContractWriteNode.TransactionData.prototype.setTimestamp = function(value) {
   return jspb.Message.setProto3IntField(this, 15, value);
+};
+
+
+/**
+ * optional bool simulation = 16;
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.TransactionData.prototype.getSimulation = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 16, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.aggregator.ContractWriteNode.TransactionData} returns this
+ */
+proto.aggregator.ContractWriteNode.TransactionData.prototype.setSimulation = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 16, value);
+};
+
+
+/**
+ * optional string simulation_mode = 17;
+ * @return {string}
+ */
+proto.aggregator.ContractWriteNode.TransactionData.prototype.getSimulationMode = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 17, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractWriteNode.TransactionData} returns this
+ */
+proto.aggregator.ContractWriteNode.TransactionData.prototype.setSimulationMode = function(value) {
+  return jspb.Message.setProto3StringField(this, 17, value);
+};
+
+
+/**
+ * optional int64 chain_id = 18;
+ * @return {number}
+ */
+proto.aggregator.ContractWriteNode.TransactionData.prototype.getChainId = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 18, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.ContractWriteNode.TransactionData} returns this
+ */
+proto.aggregator.ContractWriteNode.TransactionData.prototype.setChainId = function(value) {
+  return jspb.Message.setProto3IntField(this, 18, value);
 };
 
 
@@ -10835,13 +10916,6 @@ proto.aggregator.ContractReadNode.MethodResult.prototype.setError = function(val
 
 
 
-/**
- * List of repeated fields within this message type.
- * @private {!Array<number>}
- * @const
- */
-proto.aggregator.ContractReadNode.Output.repeatedFields_ = [1];
-
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -10873,8 +10947,7 @@ proto.aggregator.ContractReadNode.Output.prototype.toObject = function(opt_inclu
  */
 proto.aggregator.ContractReadNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    resultsList: jspb.Message.toObjectList(msg.getResultsList(),
-    proto.aggregator.ContractReadNode.MethodResult.toObject, includeInstance)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -10912,9 +10985,9 @@ proto.aggregator.ContractReadNode.Output.deserializeBinaryFromReader = function(
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new proto.aggregator.ContractReadNode.MethodResult;
-      reader.readMessage(value,proto.aggregator.ContractReadNode.MethodResult.deserializeBinaryFromReader);
-      msg.addResults(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -10945,52 +11018,51 @@ proto.aggregator.ContractReadNode.Output.prototype.serializeBinary = function() 
  */
 proto.aggregator.ContractReadNode.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getResultsList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
       f,
-      proto.aggregator.ContractReadNode.MethodResult.serializeBinaryToWriter
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * repeated MethodResult results = 1;
- * @return {!Array<!proto.aggregator.ContractReadNode.MethodResult>}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.ContractReadNode.Output.prototype.getResultsList = function() {
-  return /** @type{!Array<!proto.aggregator.ContractReadNode.MethodResult>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.ContractReadNode.MethodResult, 1));
+proto.aggregator.ContractReadNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {!Array<!proto.aggregator.ContractReadNode.MethodResult>} value
+ * @param {?proto.google.protobuf.Value|undefined} value
  * @return {!proto.aggregator.ContractReadNode.Output} returns this
 */
-proto.aggregator.ContractReadNode.Output.prototype.setResultsList = function(value) {
-  return jspb.Message.setRepeatedWrapperField(this, 1, value);
+proto.aggregator.ContractReadNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.aggregator.ContractReadNode.MethodResult=} opt_value
- * @param {number=} opt_index
- * @return {!proto.aggregator.ContractReadNode.MethodResult}
- */
-proto.aggregator.ContractReadNode.Output.prototype.addResults = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.aggregator.ContractReadNode.MethodResult, opt_index);
-};
-
-
-/**
- * Clears the list making it empty but non-null.
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ContractReadNode.Output} returns this
  */
-proto.aggregator.ContractReadNode.Output.prototype.clearResultsList = function() {
-  return this.setResultsList([]);
+proto.aggregator.ContractReadNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractReadNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
