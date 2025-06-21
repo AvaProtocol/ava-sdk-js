@@ -912,7 +912,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.ContractReadNode.MethodCall = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.ContractReadNode.MethodCall.repeatedFields_, null);
 };
 goog.inherits(proto.aggregator.ContractReadNode.MethodCall, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -9959,6 +9959,13 @@ proto.aggregator.ContractReadNode.serializeBinaryToWriter = function(message, wr
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.ContractReadNode.MethodCall.repeatedFields_ = [3];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -9991,7 +9998,8 @@ proto.aggregator.ContractReadNode.MethodCall.prototype.toObject = function(opt_i
 proto.aggregator.ContractReadNode.MethodCall.toObject = function(includeInstance, msg) {
   var f, obj = {
     callData: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    methodName: jspb.Message.getFieldWithDefault(msg, 2, "")
+    methodName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    applyToFieldsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -10036,6 +10044,10 @@ proto.aggregator.ContractReadNode.MethodCall.deserializeBinaryFromReader = funct
       var value = /** @type {string} */ (reader.readString());
       msg.setMethodName(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addApplyToFields(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -10079,6 +10091,13 @@ proto.aggregator.ContractReadNode.MethodCall.serializeBinaryToWriter = function(
       f
     );
   }
+  f = message.getApplyToFieldsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -10115,6 +10134,43 @@ proto.aggregator.ContractReadNode.MethodCall.prototype.getMethodName = function(
  */
 proto.aggregator.ContractReadNode.MethodCall.prototype.setMethodName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * repeated string apply_to_fields = 3;
+ * @return {!Array<string>}
+ */
+proto.aggregator.ContractReadNode.MethodCall.prototype.getApplyToFieldsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.ContractReadNode.MethodCall} returns this
+ */
+proto.aggregator.ContractReadNode.MethodCall.prototype.setApplyToFieldsList = function(value) {
+  return jspb.Message.setField(this, 3, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.ContractReadNode.MethodCall} returns this
+ */
+proto.aggregator.ContractReadNode.MethodCall.prototype.addApplyToFields = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.ContractReadNode.MethodCall} returns this
+ */
+proto.aggregator.ContractReadNode.MethodCall.prototype.clearApplyToFieldsList = function() {
+  return this.setApplyToFieldsList([]);
 };
 
 

@@ -126,11 +126,14 @@ class LoopNode extends Node {
         const methodCalls =
           (data as any).contractRead.config.methodCallsList || [];
         methodCalls.forEach(
-          (methodCall: { callData: string; methodName?: string }) => {
+          (methodCall: { callData: string; methodName?: string; applyToFields?: string[] }) => {
             const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
             methodCallMsg.setCallData(methodCall.callData);
             if (methodCall.methodName) {
               methodCallMsg.setMethodName(methodCall.methodName);
+            }
+            if (methodCall.applyToFields) {
+              methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
             }
             config.addMethodCalls(methodCallMsg);
           }

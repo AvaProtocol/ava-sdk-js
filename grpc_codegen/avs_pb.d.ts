@@ -1076,6 +1076,10 @@ export namespace ContractReadNode {
         setCallData(value: string): MethodCall;
         getMethodName(): string;
         setMethodName(value: string): MethodCall;
+        clearApplyToFieldsList(): void;
+        getApplyToFieldsList(): Array<string>;
+        setApplyToFieldsList(value: Array<string>): MethodCall;
+        addApplyToFields(value: string, index?: number): string;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): MethodCall.AsObject;
@@ -1091,6 +1095,7 @@ export namespace ContractReadNode {
         export type AsObject = {
             callData: string,
             methodName: string,
+            applyToFieldsList: Array<string>,
         }
     }
 
