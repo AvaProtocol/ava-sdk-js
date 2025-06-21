@@ -1,5 +1,6 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
+import util from "util";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType } from "@avaprotocol/types";
 import {
@@ -164,29 +165,38 @@ describe("ContractRead Node Tests", () => {
 
       console.log(
         "🚀 ~ runNodeWithInputs with Chainlink oracle read ~ params:",
-        params
+        util.inspect(params, { depth: null, colors: true })
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
-        "runNodeWithInputs oracle response:",
-        JSON.stringify(result, null, 2)
+        "🚀 ~ runNodeWithInputs with Chainlink oracle read ~ result:",
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect((result.data as any).results).toBeDefined();
-        expect(Array.isArray((result.data as any).results)).toBe(true);
-        expect((result.data as any).results.length).toBeGreaterThan(0);
-
-        const latestRoundResult = (result.data as any).results.find(
-          (r: any) => r.methodName === "latestRoundData"
-        );
-        expect(latestRoundResult).toBeDefined();
-        expect(latestRoundResult.success).toBe(true);
-        expect(latestRoundResult.data).toBeDefined();
+        // Handle both flattened (single method) and array (multiple methods) formats
+        if (Array.isArray((result.data as any).results)) {
+          // Multiple methods format
+          expect((result.data as any).results.length).toBeGreaterThan(0);
+          const latestRoundResult = (result.data as any).results.find(
+            (r: any) => r.methodName === "latestRoundData"
+          );
+          expect(latestRoundResult).toBeDefined();
+          expect(latestRoundResult.success).toBe(true);
+          expect(latestRoundResult.data).toBeDefined();
+        } else {
+          // Flattened format for single method - data fields should be directly accessible
+          expect((result.data as any).roundId).toBeDefined();
+          expect((result.data as any).answer).toBeDefined();
+          expect((result.data as any).startedAt).toBeDefined();
+          expect((result.data as any).updatedAt).toBeDefined();
+          expect((result.data as any).answeredInRound).toBeDefined();
+          expect((result.data as any).method_name).toBe("latestRoundData");
+        }
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Oracle read test failed:", result.error);
@@ -199,9 +209,7 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runNodeWithInputs with multiple method calls...");
-
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
@@ -209,11 +217,18 @@ describe("ContractRead Node Tests", () => {
           methodCalls: SEPOLIA_ORACLE_CONFIG.methodCalls,
         },
         inputVariables: {},
-      });
+      };
 
       console.log(
-        "runNodeWithInputs multiple methods response:",
-        JSON.stringify(result, null, 2)
+        "🚀 ~ runNodeWithInputs with multiple methods ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with multiple methods ~ result:",
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -240,11 +255,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should handle invalid contract address", async () => {
-      console.log(
-        "🚀 Testing runNodeWithInputs with invalid contract address..."
-      );
-
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Invalid address
@@ -278,11 +289,18 @@ describe("ContractRead Node Tests", () => {
             updatedAt: new Date(),
           },
         },
-      });
+      };
 
       console.log(
-        "runNodeWithInputs invalid contract response:",
-        JSON.stringify(result, null, 2)
+        "🚀 ~ runNodeWithInputs with invalid contract address ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with invalid contract address ~ result:",
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -296,9 +314,7 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runNodeWithInputs with description method...");
-
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
@@ -324,22 +340,38 @@ describe("ContractRead Node Tests", () => {
             updatedAt: new Date(),
           },
         },
-      });
+      };
 
       console.log(
-        "runNodeWithInputs description response:",
-        JSON.stringify(result, null, 2)
+        "🚀 ~ runNodeWithInputs with description method ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with description method ~ result:",
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect((result.data as any).results).toBeDefined();
-        const descriptionResult = (result.data as any).results.find(
-          (r: any) => r.methodName === "description"
-        );
-        expect(descriptionResult).toBeDefined();
-        expect(descriptionResult.success).toBe(true);
+        // Handle both flattened (single method) and array (multiple methods) formats
+        if (Array.isArray((result.data as any).results)) {
+          // Multiple methods format
+          expect((result.data as any).results).toBeDefined();
+          const descriptionResult = (result.data as any).results.find(
+            (r: any) => r.methodName === "description"
+          );
+          expect(descriptionResult).toBeDefined();
+          expect(descriptionResult.success).toBe(true);
+        } else {
+          // Flattened format for single method - should have the description data directly
+          expect((result.data as any).method_name).toBe("description");
+          // The description method returns a string, so we should have that field
+          expect(typeof (result.data as any)["0"]).toBe("string"); // First return value
+        }
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Description method test failed:", result.error);
@@ -352,9 +384,7 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runNodeWithInputs with decimal formatting...");
-
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
@@ -372,57 +402,92 @@ describe("ContractRead Node Tests", () => {
           ],
         },
         inputVariables: {},
-      });
+      };
 
       console.log(
-        "=== CONTRACT READ WITH DECIMAL FORMATTING RESULT ===",
-        JSON.stringify(result, null, 2)
+        "🚀 ~ runNodeWithInputs with decimal formatting ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with decimal formatting ~ result:",
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
 
       if (result.success && result.data) {
-        expect((result.data as any).results).toBeDefined();
-        expect(Array.isArray((result.data as any).results)).toBe(true);
+        // Handle both flattened (single method) and array (multiple methods) formats
+        if (Array.isArray((result.data as any).results)) {
+          // Multiple methods format
+          expect((result.data as any).results).toBeDefined();
+          expect(Array.isArray((result.data as any).results)).toBe(true);
 
-        // ✅ Fixed: The Go backend now correctly skips decimals() calls when they have applyToFields
-        const results = (result.data as any).results;
-        expect(results.length).toBe(1); // Only latestRoundData (decimals call is skipped)
+          // ✅ Fixed: The Go backend now correctly skips decimals() calls when they have applyToFields
+          const results = (result.data as any).results;
+          expect(results.length).toBe(1); // Only latestRoundData (decimals call is skipped)
 
-        // Find the latestRoundData result
-        const latestRoundResult = results.find(
-          (r: any) => r.methodName === "latestRoundData"
-        );
-        expect(latestRoundResult).toBeDefined();
-        expect(latestRoundResult.success).toBe(true);
-        expect(latestRoundResult.data).toBeDefined();
-
-        if (latestRoundResult.data) {
-          // Check for answer field
-          const answerField = latestRoundResult.data.find(
-            (field: any) => field.name === "answer"
+          // Find the latestRoundData result
+          const latestRoundResult = results.find(
+            (r: any) => r.methodName === "latestRoundData"
           );
-          expect(answerField).toBeDefined();
+          expect(latestRoundResult).toBeDefined();
+          expect(latestRoundResult.success).toBe(true);
+          expect(latestRoundResult.data).toBeDefined();
 
-          if (answerField) {
-            console.log("Answer field found:", answerField);
-            console.log("Expected: Decimal formatted (e.g., '645.22000000')");
-            console.log("Actual:", answerField.value);
+          if (latestRoundResult.data) {
+            // Check for answer field
+            const answerField = latestRoundResult.data.find(
+              (field: any) => field.name === "answer"
+            );
+            expect(answerField).toBeDefined();
 
-            // ✅ Decimal formatting is now working! Verify the formatted value
-            expect(typeof answerField.value).toBe("string");
-            expect(answerField.value).toBeTruthy();
+            if (answerField) {
+              console.log("Answer field found:", answerField);
+              console.log("Expected: Decimal formatted (e.g., '645.22000000')");
+              console.log("Actual:", answerField.value);
 
-            // Check if decimal formatting was applied (should contain a decimal point)
-            expect(answerField.value).toMatch(/^\d+\.\d+$/); // Should be a decimal number
-            console.log("✅ Decimal formatting is working! Value:", answerField.value);
-            
-            // The raw value 64522000 with 8 decimals should be around 0.64522
-            const numericValue = parseFloat(answerField.value);
-            expect(numericValue).toBeGreaterThan(0);
-            expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
+              // ✅ Decimal formatting is now working! Verify the formatted value
+              expect(typeof answerField.value).toBe("string");
+              expect(answerField.value).toBeTruthy();
+
+              // Check if decimal formatting was applied (should contain a decimal point)
+              expect(answerField.value).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+              console.log(
+                "✅ Decimal formatting is working! Value:",
+                answerField.value
+              );
+
+              // The raw value 64522000 with 8 decimals should be around 0.64522
+              const numericValue = parseFloat(answerField.value);
+              expect(numericValue).toBeGreaterThan(0);
+              expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
+            }
           }
+        } else {
+          // Flattened format for single method - answer field should be directly accessible and formatted
+          expect((result.data as any).method_name).toBe("latestRoundData");
+          expect((result.data as any).answer).toBeDefined();
+          
+          const answerValue = (result.data as any).answer;
+          console.log("Flattened answer field found:", answerValue);
+          console.log("Expected: Decimal formatted (e.g., '645.22000000')");
+          
+          // ✅ Decimal formatting should work in flattened format too
+          expect(typeof answerValue).toBe("string");
+          expect(answerValue).toBeTruthy();
+          
+          // Check if decimal formatting was applied (should contain a decimal point)
+          expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+          console.log("✅ Decimal formatting is working in flattened format! Value:", answerValue);
+          
+          // The raw value with decimals should be much smaller than raw value
+          const numericValue = parseFloat(answerValue);
+          expect(numericValue).toBeGreaterThan(0);
+          expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
         }
 
         expect(result.nodeId).toBeDefined();
@@ -461,15 +526,18 @@ describe("ContractRead Node Tests", () => {
         contractReadNode,
       ]);
 
-      console.log("🚀 Testing simulateWorkflow with contract read...");
+      console.log(
+        "🚀 ~ simulateWorkflow with contract read ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
       console.log(
-        "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        "🚀 ~ simulateWorkflow with contract read ~ result:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -510,10 +578,18 @@ describe("ContractRead Node Tests", () => {
         contractReadNode,
       ]);
 
-      console.log("🚀 Testing simulateWorkflow with single method call...");
+      console.log(
+        "🚀 ~ simulateWorkflow with single method call ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ simulateWorkflow with single method call ~ result:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -569,7 +645,8 @@ describe("ContractRead Node Tests", () => {
         });
 
         console.log(
-          "🚀 Testing deploy + trigger workflow with contract read..."
+          "🚀 ~ deploy + trigger workflow with contract read ~ workflowProps:",
+          util.inspect(workflowProps, { depth: null, colors: true })
         );
 
         workflowId = await client.submitWorkflow(
@@ -577,17 +654,26 @@ describe("ContractRead Node Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        const triggerResult = await client.triggerWorkflow({
+        const triggerParams = {
           id: workflowId,
           triggerData: {
             type: TriggerType.Block,
             blockNumber: currentBlockNumber + triggerInterval,
           },
           isBlocking: true,
-        });
+        };
 
-        console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log(
+          "🚀 ~ triggerWorkflow ~ params:",
+          util.inspect(triggerParams, { depth: null, colors: true })
+        );
+
+        const triggerResult = await client.triggerWorkflow(triggerParams);
+
+        console.log(
+          "🚀 ~ triggerWorkflow ~ result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -682,25 +768,47 @@ describe("ContractRead Node Tests", () => {
         );
 
         // Test 1: runNodeWithInputs
-        const directResponse = await client.runNodeWithInputs({
+        const directParams = {
           nodeType: NodeType.ContractRead,
           nodeConfig: contractReadConfig,
           inputVariables: inputVariables,
-        });
+        };
+
+        console.log(
+          "🚀 ~ runNodeWithInputs consistency test ~ params:",
+          util.inspect(directParams, { depth: null, colors: true })
+        );
+
+        const directResponse = await client.runNodeWithInputs(directParams);
+
+        console.log(
+          "🚀 ~ runNodeWithInputs consistency test ~ result:",
+          util.inspect(directResponse, { depth: null, colors: true })
+        );
 
         // Test 2: simulateWorkflow
         const contractReadNode = NodeFactory.create({
           id: getNextId(),
           name: "consistency_test",
-          type: NodeType.ContractRead,
           data: contractReadConfig,
         });
 
         const workflowProps = createFromTemplate(wallet.address, [
           contractReadNode,
         ]);
+
+        console.log(
+          "🚀 ~ simulateWorkflow consistency test ~ workflowProps:",
+          util.inspect(workflowProps, { depth: null, colors: true })
+        );
+
         const simulation = await client.simulateWorkflow(
           client.createWorkflow(workflowProps)
+        );
+
+        console.log(
+          "🚀 ~ simulateWorkflow consistency test ~ result:",
+          util.inspect(simulation, { depth: null, colors: true })
         );
 
         const simulatedStep = simulation.steps.find(
@@ -715,19 +823,31 @@ describe("ContractRead Node Tests", () => {
           data: { interval: triggerInterval },
         });
 
+        console.log(
+          "🚀 ~ deploy workflow consistency test ~ workflowProps:",
+          util.inspect(workflowProps, { depth: null, colors: true })
+        );
+
         workflowId = await client.submitWorkflow(
           client.createWorkflow(workflowProps)
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
+        const triggerParams = {
           id: workflowId,
           triggerData: {
             type: TriggerType.Block,
             blockNumber: currentBlockNumber + triggerInterval,
           },
           isBlocking: true,
-        });
+        };
+
+        console.log(
+          "🚀 ~ triggerWorkflow consistency test ~ params:",
+          util.inspect(triggerParams, { depth: null, colors: true })
+        );
+
+        await client.triggerWorkflow(triggerParams);
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -792,9 +912,7 @@ describe("ContractRead Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle invalid method signature gracefully", async () => {
-      console.log("🚀 Testing error handling with invalid method signature...");
-
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
@@ -830,11 +948,18 @@ describe("ContractRead Node Tests", () => {
             updatedAt: new Date(),
           },
         },
-      });
+      };
 
       console.log(
-        "runNodeWithInputs error handling response:",
-        JSON.stringify(result, null, 2)
+        "🚀 ~ runNodeWithInputs error handling ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs error handling ~ result:",
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -878,28 +1003,30 @@ describe("ContractRead Node Tests", () => {
 
       // Convert to protobuf request
       const request = contractReadNode.toRequest();
-      
+
       // Verify the structure
       expect(request.getContractRead()).toBeDefined();
       const config = request.getContractRead()!.getConfig();
       expect(config).toBeDefined();
-      
+
       const methodCalls = config!.getMethodCallsList();
       expect(methodCalls).toHaveLength(2);
-      
+
       // Check first method call (decimals with applyToFields)
       const decimalsCall = methodCalls[0];
       expect(decimalsCall.getMethodName()).toBe("decimals");
       expect(decimalsCall.getCallData()).toBe("0x313ce567");
       expect(decimalsCall.getApplyToFieldsList()).toEqual(["answer"]);
-      
+
       // Check second method call (no applyToFields)
       const latestRoundCall = methodCalls[1];
       expect(latestRoundCall.getMethodName()).toBe("latestRoundData");
       expect(latestRoundCall.getCallData()).toBe("0xfeaf968c");
       expect(latestRoundCall.getApplyToFieldsList()).toEqual([]);
-      
-      console.log("✅ Protobuf serialization test passed - applyToFields is properly serialized");
+
+      console.log(
+        "✅ Protobuf serialization test passed - applyToFields is properly serialized"
+      );
     });
   });
 });
