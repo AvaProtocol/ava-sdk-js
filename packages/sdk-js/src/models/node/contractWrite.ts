@@ -2,6 +2,7 @@ import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ContractWriteNodeData, ContractWriteNodeProps, NodeProps } from "@avaprotocol/types";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi, methodCallsList? } }
 
@@ -84,12 +85,20 @@ class ContractWriteNode extends Node {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 
-    const outputObj = contractWriteOutput.toObject();
+    // Use the new getData() method instead of the old resultsList
+    const data = contractWriteOutput.getData();
+    if (!data) return null;
+
+    // Convert protobuf Value to JavaScript object
+    const jsData = convertProtobufValueToJs(data);
+    
+    // Handle the data as an array of method results
+    const results = Array.isArray(jsData) ? jsData : [jsData];
     
     // Transform the new enhanced response structure for easier consumption
-    const transformedResults = outputObj.resultsList?.map((result: any) => ({
-      methodName: result.methodName,
-      success: result.success,
+    const transformedResults = results.map((result: any) => ({
+      methodName: result.methodName || 'unknown',
+      success: result.success !== false, // Default to true if not specified
       transaction: result.transaction ? {
         hash: result.transaction.hash,
         status: result.transaction.status,
@@ -110,12 +119,12 @@ class ContractWriteNode extends Node {
         simulationMode: result.transaction.simulationMode,
         chainId: result.transaction.chainId,
       } : null,
-      events: result.eventsList?.map((event: any) => ({
+      events: result.events?.map((event: any) => ({
         eventName: event.eventName,
         address: event.address,
-        topics: event.topicsList || [],
+        topics: event.topics || [],
         data: event.data,
-        decoded: event.decodedMap || {},
+        decoded: event.decoded || {},
       })) || [],
       error: result.error ? {
         code: result.error.code,
@@ -128,7 +137,7 @@ class ContractWriteNode extends Node {
         value: result.returnData.value,
       } : null,
       inputData: result.inputData,
-    })) || [];
+    }));
 
     return {
       results: transformedResults,

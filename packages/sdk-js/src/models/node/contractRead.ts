@@ -84,20 +84,30 @@ class ContractReadNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const contractReadOutput = outputData.getContractRead();
-    if (contractReadOutput && contractReadOutput.getResultsList()) {
-      const resultsList = contractReadOutput.getResultsList();
-      return {
-        results: resultsList.map((result: any) => ({
-          methodName: result.getMethodName(),
-          success: result.getSuccess(),
-          error: result.getError(),
-          data: result.getDataList().map((field: any) => ({
-            name: field.getName(),
-            type: field.getType(),
-            value: field.getValue()
-          }))
-        }))
-      };
+    if (contractReadOutput && contractReadOutput.getData()) {
+      // The new structure uses getData() which returns a protobuf Value
+      const data = contractReadOutput.getData();
+      if (data) {
+        // Convert protobuf Value to JavaScript object
+        const jsData = convertProtobufValueToJs(data);
+        
+        // Handle both array format (multiple methods) and flattened format (single method)
+        if (Array.isArray(jsData)) {
+          // Multiple method results - return as results array
+          return {
+            results: jsData.map((result: any) => ({
+              methodName: result.methodName,
+              success: result.success,
+              error: result.error || '',
+              data: result.data || {}
+            }))
+          };
+        } else {
+          // Single method result - jsData should be an array with one element
+          // or it could be the flattened direct result from run_node_immediately
+          return jsData;
+        }
+      }
     }
     return null;
   }

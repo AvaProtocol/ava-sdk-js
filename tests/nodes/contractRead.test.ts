@@ -178,16 +178,25 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect((result.data as any).results).toBeDefined();
-        expect(Array.isArray((result.data as any).results)).toBe(true);
-        expect((result.data as any).results.length).toBeGreaterThan(0);
-
-        const latestRoundResult = (result.data as any).results.find(
-          (r: any) => r.methodName === "latestRoundData"
-        );
-        expect(latestRoundResult).toBeDefined();
-        expect(latestRoundResult.success).toBe(true);
-        expect(latestRoundResult.data).toBeDefined();
+        // Handle both flattened (single method) and array (multiple methods) formats
+        if (Array.isArray((result.data as any).results)) {
+          // Multiple methods format
+          expect((result.data as any).results.length).toBeGreaterThan(0);
+          const latestRoundResult = (result.data as any).results.find(
+            (r: any) => r.methodName === "latestRoundData"
+          );
+          expect(latestRoundResult).toBeDefined();
+          expect(latestRoundResult.success).toBe(true);
+          expect(latestRoundResult.data).toBeDefined();
+        } else {
+          // Flattened format for single method - data fields should be directly accessible
+          expect((result.data as any).roundId).toBeDefined();
+          expect((result.data as any).answer).toBeDefined();
+          expect((result.data as any).startedAt).toBeDefined();
+          expect((result.data as any).updatedAt).toBeDefined();
+          expect((result.data as any).answeredInRound).toBeDefined();
+          expect((result.data as any).method_name).toBe("latestRoundData");
+        }
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Oracle read test failed:", result.error);
@@ -348,12 +357,21 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
-        expect((result.data as any).results).toBeDefined();
-        const descriptionResult = (result.data as any).results.find(
-          (r: any) => r.methodName === "description"
-        );
-        expect(descriptionResult).toBeDefined();
-        expect(descriptionResult.success).toBe(true);
+        // Handle both flattened (single method) and array (multiple methods) formats
+        if (Array.isArray((result.data as any).results)) {
+          // Multiple methods format
+          expect((result.data as any).results).toBeDefined();
+          const descriptionResult = (result.data as any).results.find(
+            (r: any) => r.methodName === "description"
+          );
+          expect(descriptionResult).toBeDefined();
+          expect(descriptionResult.success).toBe(true);
+        } else {
+          // Flattened format for single method - should have the description data directly
+          expect((result.data as any).method_name).toBe("description");
+          // The description method returns a string, so we should have that field
+          expect(typeof (result.data as any)["0"]).toBe("string"); // First return value
+        }
         expect(result.nodeId).toBeDefined();
       } else {
         console.log("Description method test failed:", result.error);
@@ -402,49 +420,74 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
 
       if (result.success && result.data) {
-        expect((result.data as any).results).toBeDefined();
-        expect(Array.isArray((result.data as any).results)).toBe(true);
+        // Handle both flattened (single method) and array (multiple methods) formats
+        if (Array.isArray((result.data as any).results)) {
+          // Multiple methods format
+          expect((result.data as any).results).toBeDefined();
+          expect(Array.isArray((result.data as any).results)).toBe(true);
 
-        // ✅ Fixed: The Go backend now correctly skips decimals() calls when they have applyToFields
-        const results = (result.data as any).results;
-        expect(results.length).toBe(1); // Only latestRoundData (decimals call is skipped)
+          // ✅ Fixed: The Go backend now correctly skips decimals() calls when they have applyToFields
+          const results = (result.data as any).results;
+          expect(results.length).toBe(1); // Only latestRoundData (decimals call is skipped)
 
-        // Find the latestRoundData result
-        const latestRoundResult = results.find(
-          (r: any) => r.methodName === "latestRoundData"
-        );
-        expect(latestRoundResult).toBeDefined();
-        expect(latestRoundResult.success).toBe(true);
-        expect(latestRoundResult.data).toBeDefined();
-
-        if (latestRoundResult.data) {
-          // Check for answer field
-          const answerField = latestRoundResult.data.find(
-            (field: any) => field.name === "answer"
+          // Find the latestRoundData result
+          const latestRoundResult = results.find(
+            (r: any) => r.methodName === "latestRoundData"
           );
-          expect(answerField).toBeDefined();
+          expect(latestRoundResult).toBeDefined();
+          expect(latestRoundResult.success).toBe(true);
+          expect(latestRoundResult.data).toBeDefined();
 
-          if (answerField) {
-            console.log("Answer field found:", answerField);
-            console.log("Expected: Decimal formatted (e.g., '645.22000000')");
-            console.log("Actual:", answerField.value);
-
-            // ✅ Decimal formatting is now working! Verify the formatted value
-            expect(typeof answerField.value).toBe("string");
-            expect(answerField.value).toBeTruthy();
-
-            // Check if decimal formatting was applied (should contain a decimal point)
-            expect(answerField.value).toMatch(/^\d+\.\d+$/); // Should be a decimal number
-            console.log(
-              "✅ Decimal formatting is working! Value:",
-              answerField.value
+          if (latestRoundResult.data) {
+            // Check for answer field
+            const answerField = latestRoundResult.data.find(
+              (field: any) => field.name === "answer"
             );
+            expect(answerField).toBeDefined();
 
-            // The raw value 64522000 with 8 decimals should be around 0.64522
-            const numericValue = parseFloat(answerField.value);
-            expect(numericValue).toBeGreaterThan(0);
-            expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
+            if (answerField) {
+              console.log("Answer field found:", answerField);
+              console.log("Expected: Decimal formatted (e.g., '645.22000000')");
+              console.log("Actual:", answerField.value);
+
+              // ✅ Decimal formatting is now working! Verify the formatted value
+              expect(typeof answerField.value).toBe("string");
+              expect(answerField.value).toBeTruthy();
+
+              // Check if decimal formatting was applied (should contain a decimal point)
+              expect(answerField.value).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+              console.log(
+                "✅ Decimal formatting is working! Value:",
+                answerField.value
+              );
+
+              // The raw value 64522000 with 8 decimals should be around 0.64522
+              const numericValue = parseFloat(answerField.value);
+              expect(numericValue).toBeGreaterThan(0);
+              expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
+            }
           }
+        } else {
+          // Flattened format for single method - answer field should be directly accessible and formatted
+          expect((result.data as any).method_name).toBe("latestRoundData");
+          expect((result.data as any).answer).toBeDefined();
+          
+          const answerValue = (result.data as any).answer;
+          console.log("Flattened answer field found:", answerValue);
+          console.log("Expected: Decimal formatted (e.g., '645.22000000')");
+          
+          // ✅ Decimal formatting should work in flattened format too
+          expect(typeof answerValue).toBe("string");
+          expect(answerValue).toBeTruthy();
+          
+          // Check if decimal formatting was applied (should contain a decimal point)
+          expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+          console.log("✅ Decimal formatting is working in flattened format! Value:", answerValue);
+          
+          // The raw value with decimals should be much smaller than raw value
+          const numericValue = parseFloat(answerValue);
+          expect(numericValue).toBeGreaterThan(0);
+          expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
         }
 
         expect(result.nodeId).toBeDefined();
