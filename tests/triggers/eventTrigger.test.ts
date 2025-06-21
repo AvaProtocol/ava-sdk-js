@@ -1505,6 +1505,7 @@ describe("EventTrigger Tests", () => {
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
+          simulationMode: false, // Use historical search to get null when no events are found
           queries: [
             {
               addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
@@ -1623,6 +1624,7 @@ describe("EventTrigger Tests", () => {
 
       // Use a definitely non-existent contract to ensure consistent null results
       const eventTriggerConfig = {
+        simulationMode: false, // Use historical search to get null when no events are found
         queries: [
           {
             addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
@@ -1683,17 +1685,24 @@ describe("EventTrigger Tests", () => {
         )
       );
 
-      // Both should handle empty data consistently
+      // runTrigger should return null for no events (uses simulationMode: false)
       expect(directResponse.success).toBe(true);
       expect(directResponse.data).toBe(null); // No events found
       expect(directResponse.error).toBe("");
 
+      // simulateWorkflow always returns sample data (it's a simulation environment)
       expect(simulatedStep).toBeDefined();
       expect(simulatedStep!.success).toBe(true);
-      // simulatedStep.output can be null when no events are found
+      expect(simulatedStep!.output).not.toBe(null); // Simulation always provides sample data
 
       console.log(
-        "✅ Empty data handling is consistent across execution methods!"
+        "✅ Empty data handling behavior documented:"
+      );
+      console.log(
+        "   - runTrigger with simulationMode: false → null when no events"
+      );
+      console.log(
+        "   - simulateWorkflow → always provides sample data for development"
       );
     });
 
