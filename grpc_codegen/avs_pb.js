@@ -5515,7 +5515,7 @@ proto.aggregator.EventTrigger.Output.prototype.toObject = function(opt_includeIn
  */
 proto.aggregator.EventTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: jspb.Message.getFieldWithDefault(msg, 1, "")
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -5553,7 +5553,8 @@ proto.aggregator.EventTrigger.Output.deserializeBinaryFromReader = function(msg,
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
     default:
@@ -5586,30 +5587,50 @@ proto.aggregator.EventTrigger.Output.prototype.serializeBinary = function() {
 proto.aggregator.EventTrigger.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getData();
-  if (f.length > 0) {
-    writer.writeString(
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional string data = 1;
- * @return {string}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
 proto.aggregator.EventTrigger.Output.prototype.getData = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.EventTrigger.Output} returns this
+*/
+proto.aggregator.EventTrigger.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.EventTrigger.Output} returns this
  */
-proto.aggregator.EventTrigger.Output.prototype.setData = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.EventTrigger.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.EventTrigger.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

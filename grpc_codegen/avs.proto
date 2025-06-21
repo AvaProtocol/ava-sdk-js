@@ -195,7 +195,7 @@ message EventTrigger {
   }
   
   message Output {
-    string data = 1;  // JSON-encoded parsed event data
+    google.protobuf.Value data = 1;  // Parsed event data as structured value
   }
 
   // Include Config as field so it is generated in Go

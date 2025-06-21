@@ -463,8 +463,11 @@ export namespace EventTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getData(): string;
-        setData(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -478,7 +481,7 @@ export namespace EventTrigger {
 
     export namespace Output {
         export type AsObject = {
-            data: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
