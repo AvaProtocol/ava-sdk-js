@@ -106,6 +106,9 @@ class ContractWriteNode extends Node {
         transactionIndex: result.transaction.transactionIndex,
         confirmations: result.transaction.confirmations,
         timestamp: result.transaction.timestamp,
+        simulation: result.transaction.simulation,
+        simulationMode: result.transaction.simulationMode,
+        chainId: result.transaction.chainId,
       } : null,
       events: result.eventsList?.map((event: any) => ({
         eventName: event.eventName,
@@ -134,6 +137,9 @@ class ContractWriteNode extends Node {
         transaction: transformedResults[0].transaction,
         success: transformedResults[0].success,
         hash: transformedResults[0].transaction?.hash,
+        simulation: transformedResults[0].transaction?.simulation,
+        simulationMode: transformedResults[0].transaction?.simulationMode,
+        chainId: transformedResults[0].transaction?.chainId,
       }),
     };
   }
