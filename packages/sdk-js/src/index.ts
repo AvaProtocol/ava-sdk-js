@@ -818,13 +818,10 @@ class Client extends BaseClient {
         const eventData = triggerData as any;
         const eventOutput = new avs_pb.EventTrigger.Output();
 
-        // Just set the data directly - it should be JSON string or object
+        // Convert JavaScript data to protobuf Value
         if (eventData.data) {
-          const dataString =
-            typeof eventData.data === "string"
-              ? eventData.data
-              : JSON.stringify(eventData.data);
-          eventOutput.setData(dataString);
+          const protobufValue = convertJSValueToProtobuf(eventData.data);
+          eventOutput.setData(protobufValue);
         }
 
         request.setEventTrigger(eventOutput);

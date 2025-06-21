@@ -8,6 +8,7 @@ import {
   EventTriggerProps,
   TriggerProps,
   EventConditionType,
+  MethodCallType,
 } from "@avaprotocol/types";
 
 import {
@@ -129,6 +130,25 @@ class EventTrigger extends Trigger {
           return condition;
         });
         query.setConditionsList(conditionMessages);
+      }
+
+      // Set method calls if provided
+      if (queryData.methodCalls && queryData.methodCalls.length > 0) {
+        const methodCallMessages = queryData.methodCalls.map(
+          (methodCallData: MethodCallType) => {
+            const methodCall = new avs_pb.EventTrigger.MethodCall();
+            methodCall.setMethodName(methodCallData.methodName);
+            methodCall.setCallData(methodCallData.callData);
+            if (
+              methodCallData.applyToFields &&
+              methodCallData.applyToFields.length > 0
+            ) {
+              methodCall.setApplyToFieldsList(methodCallData.applyToFields);
+            }
+            return methodCall;
+          }
+        );
+        query.setMethodCallsList(methodCallMessages);
       }
 
       return query;

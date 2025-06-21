@@ -640,7 +640,9 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with Chainlink price condition and decimal formatting...");
+      console.log(
+        "🚀 Testing runTrigger with Chainlink price condition and decimal formatting..."
+      );
 
       const params = {
         triggerType: TriggerType.Event,
@@ -694,33 +696,37 @@ describe("EventTrigger Tests", () => {
 
       if (result.success && result.data) {
         console.log("✅ Found Chainlink events with decimal formatting");
-        
+
         // Check that we have both formatted and raw values
-        expect(result.data.current).toBeDefined();
-        expect(result.data.currentRaw).toBeDefined();
-        expect(result.data.decimals).toBeDefined();
-        
+        expect((result.data as any).current).toBeDefined();
+        expect((result.data as any).currentRaw).toBeDefined();
+        expect((result.data as any).decimals).toBeDefined();
+
         // Verify the formatting makes sense
-        const formattedValue = parseFloat(result.data.current);
-        const rawValue = parseInt(result.data.currentRaw);
-        const decimals = parseInt(result.data.decimals);
-        
+        const formattedValue = parseFloat((result.data as any).current);
+        const rawValue = parseInt((result.data as any).currentRaw);
+        const decimals = parseInt((result.data as any).decimals);
+
         console.log(`📊 Price Data:
-          - Formatted: ${result.data.current} USD
-          - Raw: ${result.data.currentRaw}
-          - Decimals: ${result.data.decimals}
+          - Formatted: ${(result.data as any).current} USD
+          - Raw: ${(result.data as any).currentRaw}
+          - Decimals: ${(result.data as any).decimals}
           - Calculated: ${rawValue / Math.pow(10, decimals)}`);
-        
+
         // Verify the math is correct
         const calculatedValue = rawValue / Math.pow(10, decimals);
-        expect(Math.abs(formattedValue - calculatedValue)).toBeLessThan(0.00000001);
-        
+        expect(Math.abs(formattedValue - calculatedValue)).toBeLessThan(
+          0.00000001
+        );
+
         // Verify metadata contains raw blockchain data
         expect(result.metadata).toBeDefined();
-        expect(result.metadata.address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
-        expect(result.metadata.topics).toBeDefined();
-        expect(Array.isArray(result.metadata.topics)).toBe(true);
-        expect(result.metadata.topics.length).toBeGreaterThan(0);
+        expect((result.metadata as any).address).toBe(
+          CHAINLINK_ETH_USD_SEPOLIA
+        );
+        expect((result.metadata as any).topics).toBeDefined();
+        expect(Array.isArray((result.metadata as any).topics)).toBe(true);
+        expect((result.metadata as any).topics.length).toBeGreaterThan(0);
       } else {
         console.log("⚠️ No Chainlink events found or success was false");
       }
@@ -758,10 +764,19 @@ describe("EventTrigger Tests", () => {
         },
       });
 
+      console.log(
+        "🚀 ~ should deserialize trigger with conditions from response ~ originalTrigger:",
+        util.inspect(originalTrigger, { depth: null, colors: true })
+      );
+
       // Convert to protobuf and back
       const request = originalTrigger.toRequest();
       const deserializedTrigger = EventTrigger.fromResponse(request);
 
+      console.log(
+        "🚀 ~ should deserialize trigger with conditions from response ~ deserializedTrigger:",
+        util.inspect(deserializedTrigger, { depth: null, colors: true })
+      );
       // Verify deserialized trigger has the same data
       expect(deserializedTrigger.data).toBeDefined();
       const queries = (deserializedTrigger.data as any).queries;
@@ -885,7 +900,7 @@ describe("EventTrigger Tests", () => {
   });
 
   describe("simulateWorkflow Tests", () => {
-    test("should simulate workflow with event trigger", async () => {
+    test("should simulate workflow without contractAbi or methodCalls", async () => {
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -903,7 +918,10 @@ describe("EventTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with event trigger...");
+      console.log(
+        "🚀 simulateWorkflow with event trigger:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -972,6 +990,101 @@ describe("EventTrigger Tests", () => {
 
       console.log("✅ Single event query simulation completed successfully");
     });
+
+    test("should simulate workflow with event trigger and method calls", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const params = {
+        id: defaultTriggerId,
+        name: "simulate_event_trigger_with_method_calls",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [
+                {
+                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                },
+              ],
+              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
+              methodCalls: [
+                {
+                  methodName: "decimals",
+                  callData: "0x313ce567",
+                  applyToFields: ["current"],
+                },
+              ],
+              conditions: [
+                {
+                  fieldName: "current",
+                  operator: "gt",
+                  value: "2000.00000000",
+                  fieldType: "decimal",
+                },
+              ],
+              maxEventsPerBlock: 5,
+            },
+          ],
+        },
+      };
+      console.log(
+        "🚀 simulateWorkflow with event trigger and method calls:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+      const eventTrigger = TriggerFactory.create(params);
+
+      const workflowProps = createFromTemplate(wallet.address, []);
+      workflowProps.trigger = eventTrigger;
+
+      console.log(
+        "🚀 Testing simulateWorkflow with event trigger and method calls..."
+      );
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "simulateWorkflow with method calls response:",
+        JSON.stringify(simulation, null, 2)
+      );
+
+      expect(simulation.success).toBe(true);
+      expect(simulation.steps).toHaveLength(2); // trigger + minimal node
+
+      const triggerStep = simulation.steps.find(
+        (step) => step.id === eventTrigger.id
+      );
+      expect(triggerStep).toBeDefined();
+      expect(triggerStep!.success).toBe(true);
+
+      // Check if the trigger step now has output data with decimal formatting
+      const output = triggerStep!.output as any;
+      expect(output).toBeDefined();
+      console.log("✅ Event trigger simulation has output data:", output);
+
+      // Check for decimal formatting
+      if (output.current && output.decimals) {
+        console.log("🎉 Method calls working in simulation!");
+        console.log(`  - Formatted: ${output.current}`);
+        console.log(`  - Raw: ${output.currentRaw}`);
+        console.log(`  - Decimals: ${output.decimals}`);
+
+        expect(output.decimals).toBe("8");
+        expect(output.current).toMatch(/^\d+\.\d{8}$/); // Should be decimal format
+        expect(output.currentRaw).toMatch(/^\d+$/); // Should be raw number
+      } else {
+        console.log(
+          "ℹ️  No decimal formatting found - this may be expected if no events match conditions"
+        );
+      }
+    });
   });
 
   describe("Deploy Workflow + Trigger Tests", () => {
@@ -1013,8 +1126,7 @@ describe("EventTrigger Tests", () => {
           client.createWorkflow(workflowProps)
         );
 
-        // For event triggers, we don't use triggerWorkflow since they're event-driven
-        // Instead, we can check if the workflow was deployed successfully
+        // Verify deployment was successful
         const workflowsResult = await client.getWorkflows([wallet.address]);
         const deployedWorkflow = workflowsResult.items.find(
           (w) => w.id === workflowId
@@ -1030,15 +1142,60 @@ describe("EventTrigger Tests", () => {
           JSON.stringify(deployedWorkflow, null, 2)
         );
 
-        // Optionally check executions (though event triggers are reactive)
-        const executions = await client.getExecutions([workflowId], {
+        // Now actually TRIGGER the deployed workflow with sample event data
+        console.log("🔥 Triggering the deployed event workflow...");
+        
+        const triggerData = {
+          type: TriggerType.Event,
+          data: {
+            // Sample Transfer event data that matches our trigger criteria
+            blockNumber: 12345678,
+            chainId: 11155111,
+            contractAddress: SEPOLIA_TOKEN_ADDRESSES[0],
+            eventFound: true,
+            eventSignature: TRANSFER_EVENT_SIGNATURE,
+            eventType: "Transfer",
+            logIndex: 0,
+            rawData: "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
+            topics: [
+              TRANSFER_EVENT_SIGNATURE,
+              "0x000000000000000000000000" + "1234567890123456789012345678901234567890".substring(2),
+              "0x000000000000000000000000" + coreAddress.substring(2)
+            ],
+            transactionHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            from: "0x1234567890123456789012345678901234567890",
+            to: coreAddress,
+            value: "1000000000000000000" // 1 ETH in wei
+          }
+        };
+
+        const triggerResponse = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData,
+          isBlocking: true // Wait for execution to complete
+        });
+
+        console.log("🎯 Trigger response:", JSON.stringify(triggerResponse, null, 2));
+
+        expect(triggerResponse.executionId).toBeDefined();
+        expect(triggerResponse.status).toBeDefined();
+
+        // Check that the execution was created
+        const executionsAfterTrigger = await client.getExecutions([workflowId], {
           limit: 1,
         });
 
         console.log(
-          "Event trigger executions:",
-          JSON.stringify(executions, null, 2)
+          "Event trigger executions after manual trigger:",
+          JSON.stringify(executionsAfterTrigger, null, 2)
         );
+
+        // Verify that an execution was created
+        expect(executionsAfterTrigger.items).toHaveLength(1);
+        expect(executionsAfterTrigger.items[0].id).toBe(triggerResponse.executionId);
+        
+        console.log("✅ Successfully deployed AND triggered event workflow!");
+
       } finally {
         // Always clean up the workflow, even if test fails
         if (workflowId) {
@@ -1078,26 +1235,6 @@ describe("EventTrigger Tests", () => {
         ],
       };
 
-      const inputVariables = {
-        workflowContext: {
-          id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-          chainId: null,
-          name: "Consistency Test",
-          userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-          eoaAddress: coreAddress,
-          runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
-          startAt: new Date(),
-          expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          maxExecution: 0,
-          status: "draft",
-          completedAt: null,
-          lastRanAt: null,
-          executionCount: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      };
-
       console.log(
         "🔍 Testing response format consistency across trigger methods..."
       );
@@ -1134,7 +1271,7 @@ describe("EventTrigger Tests", () => {
         (step) => step.id === eventTrigger.id
       );
 
-      // Test 3: Deploy (event triggers are reactive, so we just check deployment)
+      // Test 3: Deploy and trigger the workflow
       let workflowId: string | undefined;
 
       try {
@@ -1145,6 +1282,46 @@ describe("EventTrigger Tests", () => {
         const workflowsResult = await client.getWorkflows([wallet.address]);
         const deployedWorkflow = workflowsResult.items.find(
           (w) => w.id === workflowId
+        );
+
+        // Actually TRIGGER the deployed workflow with sample event data
+        const triggerData = {
+          type: TriggerType.Event,
+          data: {
+            // Sample Transfer event data that matches our trigger criteria
+            blockNumber: 12345678,
+            chainId: 11155111,
+            contractAddress: SEPOLIA_TOKEN_ADDRESSES[0],
+            eventFound: true,
+            eventSignature: TRANSFER_EVENT_SIGNATURE,
+            eventType: "Transfer",
+            logIndex: 0,
+            rawData: "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
+            topics: [
+              TRANSFER_EVENT_SIGNATURE,
+              "0x000000000000000000000000" + "1234567890123456789012345678901234567890".substring(2),
+              "0x000000000000000000000000" + coreAddress.substring(2)
+            ],
+            transactionHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            from: "0x1234567890123456789012345678901234567890",
+            to: coreAddress,
+            value: "1000000000000000000" // 1 ETH in wei
+          }
+        };
+
+        const triggerResponse = await client.triggerWorkflow({
+          id: workflowId,
+          triggerData,
+          isBlocking: true // Wait for execution to complete
+        });
+
+        // Get the execution to access the trigger step output
+        const executionsAfterTrigger = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+
+        const triggeredStep = executionsAfterTrigger.items[0]?.steps.find(
+          (step) => step.id === eventTrigger.id
         );
 
         // Compare response formats
@@ -1158,8 +1335,8 @@ describe("EventTrigger Tests", () => {
           JSON.stringify(simulatedStep?.output, null, 2)
         );
         console.log(
-          "3. deployed workflow trigger:",
-          JSON.stringify(deployedWorkflow?.trigger, null, 2)
+          "3. triggerWorkflow step output:",
+          JSON.stringify(triggeredStep?.output, null, 2)
         );
 
         // All should be successful
@@ -1167,13 +1344,19 @@ describe("EventTrigger Tests", () => {
         expect(simulatedStep).toBeDefined();
         expect(deployedWorkflow).toBeDefined();
         expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
+        expect(triggerResponse.executionId).toBeDefined();
+        expect(triggeredStep).toBeDefined();
+        expect(triggeredStep!.success).toBe(true);
 
-        // Verify consistent structure
+        // Verify consistent structure across all three methods
         const directOutput = directResponse.data;
         const simulatedOutput = simulatedStep!.output as any;
+        const triggeredOutput = triggeredStep!.output as any;
 
         // Check that all outputs have consistent structure
         expect(directOutput).toBeDefined();
+        expect(triggeredOutput).toBeDefined();
+        
         // simulatedOutput can be undefined when no events are found, which is correct behavior
         if (simulatedOutput) {
           expect(simulatedOutput).toBeDefined();
@@ -1182,6 +1365,11 @@ describe("EventTrigger Tests", () => {
             "ℹ️  Simulation output is undefined (no events found) - this is expected behavior"
           );
         }
+
+        // The triggered output should have the event data we passed in
+        expect(triggeredOutput.eventFound).toBe(true);
+        expect(triggeredOutput.eventType).toBe("Transfer");
+        expect(triggeredOutput.contractAddress).toBe(SEPOLIA_TOKEN_ADDRESSES[0]);
 
         console.log(
           "✅ All trigger methods return consistent event trigger results!"

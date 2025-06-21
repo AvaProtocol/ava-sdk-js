@@ -14,6 +14,13 @@ export interface EventConditionType {
   fieldType: string;        // Field type: "uint256", "int256", "address", "bool", "bytes32", etc.
 }
 
+// MethodCall interface for enhanced event data formatting
+export interface MethodCallType {
+  methodName: string;       // Method name (e.g., "decimals")
+  callData: string;         // Hex-encoded calldata for the method
+  applyToFields: string[];  // Fields to apply formatting to (e.g., ["current", "answer"])
+}
+
 // Custom EventTrigger data type with cleaner field names
 export interface EventTriggerDataType {
   queries: Array<{
@@ -23,7 +30,8 @@ export interface EventTriggerDataType {
     }>;
     maxEventsPerBlock?: number;
     contractAbi?: string;               // Contract ABI as string
-    conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
+    conditions?: EventConditionType[];  // Event conditions to evaluate on decoded event data
+    methodCalls?: MethodCallType[];     // Method calls for enhanced formatting (e.g., decimals)
   }>;
 }
 export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
