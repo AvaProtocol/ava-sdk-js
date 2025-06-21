@@ -397,6 +397,10 @@ export namespace EventTrigger {
         getConditionsList(): Array<EventCondition>;
         setConditionsList(value: Array<EventCondition>): Query;
         addConditions(value?: EventCondition, index?: number): EventCondition;
+        clearMethodCallsList(): void;
+        getMethodCallsList(): Array<EventTrigger.MethodCall>;
+        setMethodCallsList(value: Array<EventTrigger.MethodCall>): Query;
+        addMethodCalls(value?: EventTrigger.MethodCall, index?: number): EventTrigger.MethodCall;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Query.AsObject;
@@ -415,6 +419,35 @@ export namespace EventTrigger {
             maxEventsPerBlock?: number,
             contractAbi: string,
             conditionsList: Array<EventCondition.AsObject>,
+            methodCallsList: Array<EventTrigger.MethodCall.AsObject>,
+        }
+    }
+
+    export class MethodCall extends jspb.Message { 
+        getMethodName(): string;
+        setMethodName(value: string): MethodCall;
+        getCallData(): string;
+        setCallData(value: string): MethodCall;
+        clearApplyToFieldsList(): void;
+        getApplyToFieldsList(): Array<string>;
+        setApplyToFieldsList(value: Array<string>): MethodCall;
+        addApplyToFields(value: string, index?: number): string;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): MethodCall.AsObject;
+        static toObject(includeInstance: boolean, msg: MethodCall): MethodCall.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: MethodCall, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): MethodCall;
+        static deserializeBinaryFromReader(message: MethodCall, reader: jspb.BinaryReader): MethodCall;
+    }
+
+    export namespace MethodCall {
+        export type AsObject = {
+            methodName: string,
+            callData: string,
+            applyToFieldsList: Array<string>,
         }
     }
 
@@ -3099,8 +3132,11 @@ export class RunNodeWithInputsResp extends jspb.Message {
     setError(value: string): RunNodeWithInputsResp;
     getNodeId(): string;
     setNodeId(value: string): RunNodeWithInputsResp;
-    getMetadata(): string;
-    setMetadata(value: string): RunNodeWithInputsResp;
+
+    hasMetadata(): boolean;
+    clearMetadata(): void;
+    getMetadata(): google_protobuf_struct_pb.Value | undefined;
+    setMetadata(value?: google_protobuf_struct_pb.Value): RunNodeWithInputsResp;
 
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
@@ -3164,7 +3200,7 @@ export namespace RunNodeWithInputsResp {
         success: boolean,
         error: string,
         nodeId: string,
-        metadata: string,
+        metadata?: google_protobuf_struct_pb.Value.AsObject,
         ethTransfer?: ETHTransferNode.Output.AsObject,
         graphql?: GraphQLQueryNode.Output.AsObject,
         contractRead?: ContractReadNode.Output.AsObject,
@@ -3228,8 +3264,11 @@ export class RunTriggerResp extends jspb.Message {
     setError(value: string): RunTriggerResp;
     getTriggerId(): string;
     setTriggerId(value: string): RunTriggerResp;
-    getMetadata(): string;
-    setMetadata(value: string): RunTriggerResp;
+
+    hasMetadata(): boolean;
+    clearMetadata(): void;
+    getMetadata(): google_protobuf_struct_pb.Value | undefined;
+    setMetadata(value?: google_protobuf_struct_pb.Value): RunTriggerResp;
 
     hasBlockTrigger(): boolean;
     clearBlockTrigger(): void;
@@ -3273,7 +3312,7 @@ export namespace RunTriggerResp {
         success: boolean,
         error: string,
         triggerId: string,
-        metadata: string,
+        metadata?: google_protobuf_struct_pb.Value.AsObject,
         blockTrigger?: BlockTrigger.Output.AsObject,
         fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
         cronTrigger?: CronTrigger.Output.AsObject,
