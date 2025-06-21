@@ -147,6 +147,7 @@ export interface RunTriggerResponse {
   data: TriggerOutputData;
   error?: string;
   triggerId?: string;
+  metadata?: string; // Optional JSON-encoded metadata for testing/debugging
 }
 
 export interface SimulateWorkflowRequest {

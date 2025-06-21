@@ -110,6 +110,25 @@ class Step implements StepProps {
             ? step.getEventTrigger()
             : (step as any).eventTrigger;
         if (eventTrigger) {
+          // Check for the new data field structure
+          if (
+            typeof eventTrigger.hasData === "function" &&
+            eventTrigger.hasData()
+          ) {
+            try {
+              return convertProtobufValueToJs(eventTrigger.getData());
+            } catch (error) {
+              console.warn('Failed to convert event trigger data from protobuf Value:', error);
+              return eventTrigger.getData();
+            }
+          } else if (eventTrigger.data) {
+            // For plain objects, try to convert or use directly
+            return typeof eventTrigger.data.getKindCase === "function"
+              ? convertProtobufValueToJs(eventTrigger.data)
+              : eventTrigger.data;
+          }
+          
+          // Fallback to old structure for backward compatibility
           if (
             typeof eventTrigger.hasEvmLog === "function" &&
             eventTrigger.hasEvmLog()

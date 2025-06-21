@@ -49,7 +49,11 @@ import {
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 // Import the consolidated conversion utilities
-import { convertProtobufValueToJs, convertJSValueToProtobuf, cleanGrpcErrorMessage } from "./utils";
+import {
+  convertProtobufValueToJs,
+  convertJSValueToProtobuf,
+  cleanGrpcErrorMessage,
+} from "./utils";
 
 class BaseClient {
   readonly endpoint: string;
@@ -384,12 +388,12 @@ class BaseClient {
                 (error as TimeoutError).attemptsMade = attempt;
                 (error as TimeoutError).methodName = method;
               }
-              
+
               // Clean up gRPC error messages before rejecting
               if (error.message) {
                 error.message = cleanGrpcErrorMessage(error.message);
               }
-              
+
               reject(error);
             }
           });
@@ -813,15 +817,16 @@ class Client extends BaseClient {
       case TriggerType.Event: {
         const eventData = triggerData as any;
         const eventOutput = new avs_pb.EventTrigger.Output();
-        
+
         // Just set the data directly - it should be JSON string or object
         if (eventData.data) {
-          const dataString = typeof eventData.data === 'string' 
-            ? eventData.data 
-            : JSON.stringify(eventData.data);
+          const dataString =
+            typeof eventData.data === "string"
+              ? eventData.data
+              : JSON.stringify(eventData.data);
           eventOutput.setData(dataString);
         }
-        
+
         request.setEventTrigger(eventOutput);
         break;
       }
@@ -1159,11 +1164,38 @@ class Client extends BaseClient {
       avs_pb.RunTriggerReq
     >("runTrigger", request, options);
 
+    // Convert metadata from protobuf Value to JavaScript object
+    let metadata: any = undefined;
+    const metadataValue = result.getMetadata();
+    if (metadataValue) {
+      if (typeof metadataValue === "string") {
+        // Handle string metadata (gRPC gateway case)
+        try {
+          metadata = JSON.parse(metadataValue);
+        } catch (parseError) {
+          console.warn("Failed to parse metadata as JSON:", parseError);
+          metadata = metadataValue; // fallback to raw value
+        }
+      } else {
+        // Handle protobuf Value metadata
+        try {
+          metadata = convertProtobufValueToJs(metadataValue);
+        } catch (error) {
+          console.warn(
+            "Failed to convert metadata from protobuf Value:",
+            error
+          );
+          metadata = metadataValue; // fallback to raw value
+        }
+      }
+    }
+
     return {
       success: result.getSuccess(),
       data: TriggerFactory.fromOutputData(result),
       error: result.getError(),
       triggerId: result.getTriggerId(),
+      metadata: metadata,
     };
   }
 
