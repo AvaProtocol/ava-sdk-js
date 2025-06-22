@@ -135,6 +135,11 @@ export interface RunNodeWithInputsResponse {
   error?: string;
   executionId?: string;
   nodeId?: string;
+  metadata?: {
+    _raw?: any[]; // Array of raw method results for contract reads
+    eval?: any; // Evaluation metadata (for consistency with eventTrigger)
+    [key: string]: any; // Allow additional metadata fields for other node types
+  };
 }
 
 export interface RunTriggerRequest {

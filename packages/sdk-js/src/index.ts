@@ -1122,6 +1122,7 @@ class Client extends BaseClient {
       data: NodeFactory.fromOutputData(result),
       error: result.getError(),
       nodeId: result.getNodeId(),
+      metadata: result.hasMetadata() ? convertProtobufValueToJs(result.getMetadata()!) : undefined,
     };
   }
 

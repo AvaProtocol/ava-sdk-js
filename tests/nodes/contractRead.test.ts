@@ -2,7 +2,11 @@ import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import {
+  NodeType,
+  RunNodeWithInputsResponse,
+  TriggerType,
+} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -409,7 +413,9 @@ describe("ContractRead Node Tests", () => {
         util.inspect(params, { depth: null, colors: true })
       );
 
-      const result = await client.runNodeWithInputs(params);
+      const result: RunNodeWithInputsResponse = await client.runNodeWithInputs(
+        params
+      );
 
       console.log(
         "🚀 ~ runNodeWithInputs with decimal formatting ~ result:",
@@ -420,82 +426,85 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
 
       if (result.success && result.data) {
-        // Handle both flattened (single method) and array (multiple methods) formats
-        if (Array.isArray((result.data as any).results)) {
-          // Multiple methods format
-          expect((result.data as any).results).toBeDefined();
-          expect(Array.isArray((result.data as any).results)).toBe(true);
+        // With our new flattened implementation, the data should be directly accessible
+        // The test calls decimals() for formatting and latestRoundData() for the actual data
+        // The result should be flattened data directly from latestRoundData with decimal formatting applied
 
-          // ✅ Fixed: The Go backend now correctly skips decimals() calls when they have applyToFields
-          const results = (result.data as any).results;
-          expect(results.length).toBe(1); // Only latestRoundData (decimals call is skipped)
+        const data = result.data as any;
 
-          // Find the latestRoundData result
-          const latestRoundResult = results.find(
-            (r: any) => r.methodName === "latestRoundData"
-          );
-          expect(latestRoundResult).toBeDefined();
-          expect(latestRoundResult.success).toBe(true);
-          expect(latestRoundResult.data).toBeDefined();
+        // For our new implementation, we expect direct field access (no results array)
+        expect(data.answer).toBeDefined();
+        expect(data.roundId).toBeDefined();
+        expect(data.startedAt).toBeDefined();
+        expect(data.updatedAt).toBeDefined();
+        expect(data.answeredInRound).toBeDefined();
 
-          if (latestRoundResult.data) {
-            // Check for answer field
-            const answerField = latestRoundResult.data.find(
-              (field: any) => field.name === "answer"
-            );
-            expect(answerField).toBeDefined();
+        const answerValue = data.answer;
+        console.log("Flattened answer field found:", answerValue);
+        console.log("Expected: Decimal formatted (e.g., '0.64522')");
+        console.log("Actual:", answerValue);
 
-            if (answerField) {
-              console.log("Answer field found:", answerField);
-              console.log("Expected: Decimal formatted (e.g., '645.22000000')");
-              console.log("Actual:", answerField.value);
+        // ✅ Decimal formatting should be working! Verify the formatted value
+        expect(typeof answerValue).toBe("string");
+        expect(answerValue).toBeTruthy();
 
-              // ✅ Decimal formatting is now working! Verify the formatted value
-              expect(typeof answerField.value).toBe("string");
-              expect(answerField.value).toBeTruthy();
+        // Check if decimal formatting was applied (should contain a decimal point)
+        expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+        console.log(
+          "✅ Decimal formatting is working in flattened format! Value:",
+          answerValue
+        );
 
-              // Check if decimal formatting was applied (should contain a decimal point)
-              expect(answerField.value).toMatch(/^\d+\.\d+$/); // Should be a decimal number
-              console.log(
-                "✅ Decimal formatting is working! Value:",
-                answerField.value
-              );
-
-              // The raw value 64522000 with 8 decimals should be around 0.64522
-              const numericValue = parseFloat(answerField.value);
-              expect(numericValue).toBeGreaterThan(0);
-              expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
-            }
-          }
-        } else {
-          // Flattened format for single method - answer field should be directly accessible and formatted
-          expect((result.data as any).method_name).toBe("latestRoundData");
-          expect((result.data as any).answer).toBeDefined();
-          
-          const answerValue = (result.data as any).answer;
-          console.log("Flattened answer field found:", answerValue);
-          console.log("Expected: Decimal formatted (e.g., '645.22000000')");
-          
-          // ✅ Decimal formatting should work in flattened format too
-          expect(typeof answerValue).toBe("string");
-          expect(answerValue).toBeTruthy();
-          
-          // Check if decimal formatting was applied (should contain a decimal point)
-          expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
-          console.log("✅ Decimal formatting is working in flattened format! Value:", answerValue);
-          
-          // The raw value with decimals should be much smaller than raw value
-          const numericValue = parseFloat(answerValue);
-          expect(numericValue).toBeGreaterThan(0);
-          expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
-        }
+        // The raw value with decimals should be much smaller than raw value
+        const numericValue = parseFloat(answerValue);
+        expect(numericValue).toBeGreaterThan(0);
+        expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
 
         expect(result.nodeId).toBeDefined();
+
+        // ✅ Check if metadata is included for flattened format
+        console.log("Checking metadata field:", result.metadata);
+        if (
+          result.metadata &&
+          result.metadata._raw &&
+          result.metadata._raw.length > 0
+        ) {
+          console.log("✅ Metadata is included:", result.metadata);
+          const firstMethod = result.metadata._raw[0];
+          expect(firstMethod.methodName).toBeDefined();
+          expect(firstMethod.success).toBe(true);
+          expect(firstMethod.methodName).toBe("latestRoundData");
+
+          // Check if the structured fields data is present
+          if (firstMethod.data && Array.isArray(firstMethod.data)) {
+            console.log(
+              "✅ Raw structured fields found in metadata:",
+              firstMethod.data.length,
+              "fields"
+            );
+            expect(firstMethod.data.length).toBeGreaterThan(0);
+
+            // Check the format of the first field
+            const firstField = firstMethod.data[0];
+            expect(firstField).toHaveProperty("name");
+            expect(firstField).toHaveProperty("type");
+            expect(firstField).toHaveProperty("value");
+            console.log("✅ Field structure is correct:", firstField);
+          } else {
+            console.log("❌ Raw structured fields missing in metadata");
+          }
+        } else {
+          console.log("❌ Metadata is missing or incorrectly structured");
+        }
       } else {
         console.log("Decimal formatting test failed:", result.error);
         // Don't fail the test if it's a network error, just log it
         expect(result.error).toBeDefined();
       }
+
+      expect(result.metadata?._raw).toBeDefined();
+      expect(result.metadata?._raw?.length).toBeGreaterThan(0);
+      expect(result.metadata?._raw?.[0]?.data).toBeDefined();
     });
   });
 
