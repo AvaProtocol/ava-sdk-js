@@ -7,11 +7,11 @@ export default [
   { files: ["**/*.{js,mjs,cjs,ts}"] },
   { 
     ignores: [
-      "**/dist/**",
-      "**/grpc_codegen/**",
-      "**/*.d.ts",
-      "**/*_pb.js",
-      "**/*_grpc_pb.js"
+      "**/dist/**",           // Build output directories
+      "**/grpc_codegen/**",   // Generated gRPC code
+      "**/*.d.ts",            // TypeScript declaration files
+      "**/*_pb.js",           // Protocol buffer generated files
+      "**/*_grpc_pb.js"       // gRPC generated files
     ]
   },
   { languageOptions: { globals: globals.node } },
