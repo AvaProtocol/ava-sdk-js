@@ -820,10 +820,11 @@ export namespace ContractWriteNode {
     }
 
     export class Output extends jspb.Message { 
-        clearResultsList(): void;
-        getResultsList(): Array<ContractWriteNode.MethodResult>;
-        setResultsList(value: Array<ContractWriteNode.MethodResult>): Output;
-        addResults(value?: ContractWriteNode.MethodResult, index?: number): ContractWriteNode.MethodResult;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -837,7 +838,7 @@ export namespace ContractWriteNode {
 
     export namespace Output {
         export type AsObject = {
-            resultsList: Array<ContractWriteNode.MethodResult.AsObject>,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -921,6 +922,12 @@ export namespace ContractWriteNode {
         setConfirmations(value: string): TransactionData;
         getTimestamp(): number;
         setTimestamp(value: number): TransactionData;
+        getSimulation(): boolean;
+        setSimulation(value: boolean): TransactionData;
+        getSimulationMode(): string;
+        setSimulationMode(value: string): TransactionData;
+        getChainId(): number;
+        setChainId(value: number): TransactionData;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): TransactionData.AsObject;
@@ -949,6 +956,9 @@ export namespace ContractWriteNode {
             transactionIndex: string,
             confirmations: string,
             timestamp: number,
+            simulation: boolean,
+            simulationMode: string,
+            chainId: number,
         }
     }
 
@@ -1187,10 +1197,11 @@ export namespace ContractReadNode {
     }
 
     export class Output extends jspb.Message { 
-        clearResultsList(): void;
-        getResultsList(): Array<ContractReadNode.MethodResult>;
-        setResultsList(value: Array<ContractReadNode.MethodResult>): Output;
-        addResults(value?: ContractReadNode.MethodResult, index?: number): ContractReadNode.MethodResult;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1204,7 +1215,7 @@ export namespace ContractReadNode {
 
     export namespace Output {
         export type AsObject = {
-            resultsList: Array<ContractReadNode.MethodResult.AsObject>,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 

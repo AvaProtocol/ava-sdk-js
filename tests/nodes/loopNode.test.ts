@@ -1,3 +1,4 @@
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, Edge, Workflow, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
@@ -55,7 +56,7 @@ describe("LoopNode Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
-      console.log("🚀 Testing runNodeWithInputs with Loop node (CustomCode runner)...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -83,7 +84,7 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs loop response:", JSON.stringify(result, null, 2));
+      console.log("runNodeWithInputs loop response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -105,7 +106,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should process loop with REST API runner using runNodeWithInputs", async () => {
-      console.log("🚀 Testing runNodeWithInputs with Loop node (REST API runner)...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -130,7 +131,7 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs loop REST API response:", JSON.stringify(result, null, 2));
+      console.log("runNodeWithInputs loop REST API response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -147,7 +148,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle empty array input", async () => {
-      console.log("🚀 Testing runNodeWithInputs with empty array...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -167,7 +168,7 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs empty array response:", JSON.stringify(result, null, 2));
+      console.log("runNodeWithInputs empty array response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -180,7 +181,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle complex object array", async () => {
-      console.log("🚀 Testing runNodeWithInputs with complex object array...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -213,7 +214,7 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs complex array response:", JSON.stringify(result, null, 2));
+      console.log("runNodeWithInputs complex array response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -282,13 +283,13 @@ describe("LoopNode Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
 
-      console.log("🚀 Testing simulateWorkflow with Loop node...");
+      
       
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      console.log("simulateWorkflow loop response:", JSON.stringify(simulation, null, 2));
+      console.log("simulateWorkflow loop response:", util.inspect(simulation, { depth: null, colors: true }));
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
@@ -342,7 +343,7 @@ describe("LoopNode Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
 
-      console.log("🚀 Testing simulateWorkflow with Loop node (REST API)...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -423,7 +424,7 @@ describe("LoopNode Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with Loop node...");
+      
 
       let workflowId: string | undefined;
       try {
@@ -442,7 +443,7 @@ describe("LoopNode Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -460,7 +461,7 @@ describe("LoopNode Tests", () => {
         }
 
         expect(loopStep.success).toBe(true);
-        console.log("Deploy + trigger loop step output:", JSON.stringify(loopStep.output, null, 2));
+        console.log("Deploy + trigger loop step output:", util.inspect(loopStep.output, { depth: null, colors: true }));
 
         const output = loopStep.output as any;
         expect(Array.isArray(output)).toBe(true);
@@ -522,7 +523,7 @@ describe("LoopNode Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with multiple Loop types...");
+      
 
       let workflowId: string | undefined;
       try {
@@ -677,9 +678,9 @@ describe("LoopNode Tests", () => {
 
         // Compare response formats
         console.log("=== LOOP NODE RESPONSE FORMAT COMPARISON ===");
-        console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
-        console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
-        console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
+        console.log("1. runNodeWithInputs response:", util.inspect(directResponse.data, { depth: null, colors: true }));
+        console.log("2. simulateWorkflow step output:", util.inspect(simulatedStep?.output, { depth: null, colors: true }));
+        console.log("3. deploy+trigger step output:", util.inspect(executedStep?.output, { depth: null, colors: true }));
 
         // All should be successful
         expect(directResponse.success).toBe(true);

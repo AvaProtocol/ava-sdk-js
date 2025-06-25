@@ -312,7 +312,7 @@ return message;`,
 
   describe("2. Workflow Simulation Testing", () => {
     test("should simulate complete workflow", async () => {
-      console.log("🚀 Testing complete workflow simulation...");
+      
 
       const eventTrigger = createEventTrigger();
       const customCodeNode = createCustomCodeNode();
@@ -358,7 +358,7 @@ return message;`,
 
   describe("3. Full Deployment and Execution Testing", () => {
     test("should deploy and trigger workflow", async () => {
-      console.log("🚀 Testing full workflow deployment and execution...");
+      
 
       const eventTrigger = createEventTrigger();
       const customCodeNode = createCustomCodeNode();

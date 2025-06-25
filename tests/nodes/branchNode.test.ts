@@ -1,3 +1,4 @@
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -26,7 +27,7 @@ describe("BranchNode Tests", () => {
 
   beforeAll(async () => {
     const address = await getAddress(walletPrivateKey);
-    
+
     client = new Client({
       endpoint: avsEndpoint,
       factoryAddress,
@@ -51,16 +52,20 @@ describe("BranchNode Tests", () => {
         nodeType: NodeType.Branch,
         nodeConfig: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.timestamp > 0 }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression: "{{ trigger.data.timestamp > 0 }}",
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
         inputVariables: {
           trigger: {
             data: {
-              timestamp: 1748804062960
-            }
-          }
+              timestamp: 1748804062960,
+            },
+          },
         },
       });
 
@@ -79,16 +84,20 @@ describe("BranchNode Tests", () => {
         nodeType: NodeType.Branch,
         nodeConfig: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.status === \"ready\" }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression: '{{ trigger.data.status === "ready" }}',
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
         inputVariables: {
           trigger: {
             data: {
-              status: "ready"
-            }
-          }
+              status: "ready",
+            },
+          },
         },
       });
 
@@ -107,18 +116,22 @@ describe("BranchNode Tests", () => {
         nodeType: NodeType.Branch,
         nodeConfig: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.user.role === \"admin\" }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression: '{{ trigger.data.user.role === "admin" }}',
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
         inputVariables: {
           trigger: {
             data: {
               user: {
-                role: "admin"
-              }
-            }
-          }
+                role: "admin",
+              },
+            },
+          },
         },
       });
 
@@ -137,19 +150,24 @@ describe("BranchNode Tests", () => {
         nodeType: NodeType.Branch,
         nodeConfig: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.status === \"ready\" && trigger.data.user.age >= 18 }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression:
+                '{{ trigger.data.status === "ready" && trigger.data.user.age >= 18 }}',
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
         inputVariables: {
           trigger: {
             data: {
               status: "ready",
               user: {
-                age: 21
-              }
-            }
-          }
+                age: 21,
+              },
+            },
+          },
         },
       });
 
@@ -174,26 +192,33 @@ describe("BranchNode Tests", () => {
         type: NodeType.Branch,
         data: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.user.age >= 18 }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression: "{{ trigger.data.user.age >= 18 }}",
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
       });
 
       const workflowProps = createFromTemplate(wallet.address, [branchNode]);
 
-      console.log("🚀 Testing simulateWorkflow with branch node...");
-      
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      console.log("simulateWorkflow response:", JSON.stringify(simulation, null, 2));
+      console.log(
+        "simulateWorkflow response:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(2); // trigger + branch node
 
-      const branchStep = simulation.steps.find(step => step.id === branchNode.id);
+      const branchStep = simulation.steps.find(
+        (step) => step.id === branchNode.id
+      );
       expect(branchStep).toBeDefined();
     });
 
@@ -206,22 +231,26 @@ describe("BranchNode Tests", () => {
         type: NodeType.Branch,
         data: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.user.role === \"guest\" }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression: '{{ trigger.data.user.role === "guest" }}',
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
       });
 
       const workflowProps = createFromTemplate(wallet.address, [branchNode]);
 
-      console.log("🚀 Testing simulateWorkflow with false condition...");
-      
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
       expect(simulation.success).toBe(true);
-      const branchStep = simulation.steps.find(step => step.id === branchNode.id);
+      const branchStep = simulation.steps.find(
+        (step) => step.id === branchNode.id
+      );
       expect(branchStep).toBeDefined();
     });
   });
@@ -238,22 +267,24 @@ describe("BranchNode Tests", () => {
         type: NodeType.Branch,
         data: {
           conditions: [
-            { id: "condition1", type: "if", expression: "{{ trigger.data.timestamp > 0 }}" },
-            { id: "condition2", type: "else", expression: "" }
-          ]
+            {
+              id: "condition1",
+              type: "if",
+              expression: "{{ trigger.data.timestamp > 0 }}",
+            },
+            { id: "condition2", type: "else", expression: "" },
+          ],
         },
       });
 
       const workflowProps = createFromTemplate(wallet.address, [branchNode]);
-      
+
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
         data: { interval: triggerInterval },
       });
-
-      console.log("🚀 Testing deploy + trigger workflow with branch node...");
 
       let workflowId: string | undefined;
       try {
@@ -272,7 +303,10 @@ describe("BranchNode Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log(
+          "Trigger result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -290,7 +324,10 @@ describe("BranchNode Tests", () => {
         }
 
         expect(branchStep.success).toBe(true);
-        console.log("Deploy + trigger branch step output:", JSON.stringify(branchStep.output, null, 2));
+        console.log(
+          "Deploy + trigger branch step output:",
+          util.inspect(branchStep.output, { depth: null, colors: true })
+        );
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -308,20 +345,26 @@ describe("BranchNode Tests", () => {
 
       const branchConfig = {
         conditions: [
-          { id: "condition1", type: "if", expression: "{{ trigger.data.status === \"active\" }}" },
-          { id: "condition2", type: "else", expression: "" }
-        ]
+          {
+            id: "condition1",
+            type: "if",
+            expression: '{{ trigger.data.status === "active" }}',
+          },
+          { id: "condition2", type: "else", expression: "" },
+        ],
       };
 
       const inputVariables = {
         trigger: {
           data: {
-            status: "active"
-          }
-        }
+            status: "active",
+          },
+        },
       };
 
-      console.log("🔍 Testing condition evaluation consistency across all methods...");
+      console.log(
+        "🔍 Testing condition evaluation consistency across all methods..."
+      );
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -343,7 +386,9 @@ describe("BranchNode Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      const simulatedStep = simulation.steps.find(step => step.id === branchNode.id);
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === branchNode.id
+      );
 
       // Test 3: Deploy + Trigger
       workflowProps.trigger = TriggerFactory.create({
@@ -369,7 +414,9 @@ describe("BranchNode Tests", () => {
           isBlocking: true,
         });
 
-        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
         const executedStep = _.find(
           _.first(executions.items)?.steps,
           (step) => step.id === branchNode.id
@@ -377,9 +424,18 @@ describe("BranchNode Tests", () => {
 
         // Compare response formats
         console.log("=== CONDITION EVALUATION COMPARISON ===");
-        console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
-        console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
-        console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
+        console.log(
+          "1. runNodeWithInputs response:",
+          util.inspect(directResponse.data, { depth: null, colors: true })
+        );
+        console.log(
+          "2. simulateWorkflow step output:",
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
+        );
+        console.log(
+          "3. deploy+trigger step output:",
+          util.inspect(executedStep?.output, { depth: null, colors: true })
+        );
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -387,7 +443,9 @@ describe("BranchNode Tests", () => {
         expect(executedStep).toBeDefined();
         expect(executedStep!.success).toBe(true);
 
-        console.log("✅ All three methods return consistent condition evaluation results!");
+        console.log(
+          "✅ All three methods return consistent condition evaluation results!"
+        );
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

@@ -1,10 +1,18 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ContractReadNodeData, ContractReadNodeProps, NodeProps } from "@avaprotocol/types";
-import { convertProtobufValueToJs, convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import {
+  NodeType,
+  ContractReadNodeData,
+  ContractReadNodeProps,
+  NodeProps,
+} from "@avaprotocol/types";
+import {
+  convertProtobufValueToJs,
+  convertInputToProtobuf,
+  extractInputFromProtobuf,
+} from "../../utils";
 
 // Required props for constructor: id, name, type and data
-
 
 class ContractReadNode extends Node {
   constructor(props: ContractReadNodeProps) {
@@ -15,16 +23,17 @@ class ContractReadNode extends Node {
     // Convert the raw object to ContractReadNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
     const protobufData = raw.getContractRead()!.getConfig()!.toObject();
-    
+
     // Convert protobuf data to our custom interface
     const data: ContractReadNodeData = {
       contractAddress: protobufData.contractAddress,
       contractAbi: protobufData.contractAbi,
-      methodCalls: protobufData.methodCallsList?.map(call => ({
-        callData: call.callData,
-        methodName: call.methodName,
-        applyToFields: call.applyToFieldsList || [],
-      })) || [],
+      methodCalls:
+        protobufData.methodCallsList?.map((call) => ({
+          callData: call.callData,
+          methodName: call.methodName,
+          applyToFields: call.applyToFieldsList || [],
+        })) || [],
     };
 
     // Extract input data from top-level TaskNode.input field (not nested ContractReadNode.input)
@@ -33,7 +42,7 @@ class ContractReadNode extends Node {
     if (raw.hasInput()) {
       input = extractInputFromProtobuf(raw.getInput());
     }
-    
+
     return new ContractReadNode({
       ...obj,
       type: NodeType.ContractRead,
@@ -49,25 +58,33 @@ class ContractReadNode extends Node {
     request.setName(this.name);
 
     const node = new avs_pb.ContractReadNode();
-    
+
     const config = new avs_pb.ContractReadNode.Config();
-    config.setContractAddress((this.data as ContractReadNodeData).contractAddress);
+    config.setContractAddress(
+      (this.data as ContractReadNodeData).contractAddress
+    );
     config.setContractAbi((this.data as ContractReadNodeData).contractAbi);
-    
+
     // Handle method calls array
     const methodCalls = (this.data as ContractReadNodeData).methodCalls || [];
-    methodCalls.forEach((methodCall: { callData: string; methodName?: string; applyToFields?: string[] }) => {
-      const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
-      methodCallMsg.setCallData(methodCall.callData);
-      if (methodCall.methodName) {
-        methodCallMsg.setMethodName(methodCall.methodName);
+    methodCalls.forEach(
+      (methodCall: {
+        callData: string;
+        methodName?: string;
+        applyToFields?: string[];
+      }) => {
+        const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
+        methodCallMsg.setCallData(methodCall.callData);
+        if (methodCall.methodName) {
+          methodCallMsg.setMethodName(methodCall.methodName);
+        }
+        if (methodCall.applyToFields) {
+          methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
+        }
+        config.addMethodCalls(methodCallMsg);
       }
-      if (methodCall.applyToFields) {
-        methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
-      }
-      config.addMethodCalls(methodCallMsg);
-    });
-    
+    );
+
     node.setConfig(config);
 
     // Set input data on the top-level TaskNode, not the nested ContractReadNode
@@ -84,20 +101,26 @@ class ContractReadNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const contractReadOutput = outputData.getContractRead();
-    if (contractReadOutput && contractReadOutput.getResultsList()) {
-      const resultsList = contractReadOutput.getResultsList();
-      return {
-        results: resultsList.map((result: any) => ({
-          methodName: result.getMethodName(),
-          success: result.getSuccess(),
-          error: result.getError(),
-          data: result.getDataList().map((field: any) => ({
-            name: field.getName(),
-            type: field.getType(),
-            value: field.getValue()
-          }))
-        }))
-      };
+    if (contractReadOutput && contractReadOutput.getData()) {
+      // The new structure uses getData() which returns a protobuf Value
+      const data = contractReadOutput.getData();
+      if (data) {
+        // Convert protobuf Value to JavaScript object
+        const jsData = convertProtobufValueToJs(data);
+
+        // The data should now be directly an array of results
+        if (Array.isArray(jsData)) {
+          return jsData.map((result: any) => ({
+            methodName: result.methodName,
+            success: result.success,
+            error: result.error || "",
+            data: result.data || {},
+          }));
+        } else {
+          // Fallback for old format or unexpected structure
+          return jsData;
+        }
+      }
     }
     return null;
   }

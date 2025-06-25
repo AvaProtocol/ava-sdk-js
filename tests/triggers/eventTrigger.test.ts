@@ -390,7 +390,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger Transfer FROM response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -420,7 +420,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with Transfer TO events...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -447,7 +447,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger Transfer TO response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -477,7 +477,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with multiple Transfer queries...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -493,7 +493,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger multiple queries response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -522,7 +522,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with Chainlink price condition...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -541,7 +541,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger Chainlink condition response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -570,7 +570,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with price range conditions...");
+      
 
       const conditions: EventConditionType[] = [
         {
@@ -615,7 +615,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger price range response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -686,7 +686,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger decimal formatting response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -929,7 +929,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -975,7 +975,7 @@ describe("EventTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with single event query...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -1042,17 +1042,13 @@ describe("EventTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
 
-      console.log(
-        "🚀 Testing simulateWorkflow with event trigger and method calls..."
-      );
-
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
       console.log(
         "simulateWorkflow with method calls response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -1117,7 +1113,7 @@ describe("EventTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
 
-      console.log("🚀 Testing deploy + trigger workflow with event trigger...");
+      
 
       let workflowId: string | undefined;
 
@@ -1139,12 +1135,12 @@ describe("EventTrigger Tests", () => {
         console.log("=== EVENT TRIGGER DEPLOYMENT TEST ===");
         console.log(
           "Deployed workflow:",
-          JSON.stringify(deployedWorkflow, null, 2)
+          util.inspect(deployedWorkflow, { depth: null, colors: true })
         );
 
         // Now actually TRIGGER the deployed workflow with sample event data
         console.log("🔥 Triggering the deployed event workflow...");
-        
+
         const triggerData = {
           type: TriggerType.Event,
           data: {
@@ -1156,46 +1152,56 @@ describe("EventTrigger Tests", () => {
             eventSignature: TRANSFER_EVENT_SIGNATURE,
             eventType: "Transfer",
             logIndex: 0,
-            rawData: "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
+            rawData:
+              "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
             topics: [
               TRANSFER_EVENT_SIGNATURE,
-              "0x000000000000000000000000" + "1234567890123456789012345678901234567890".substring(2),
-              "0x000000000000000000000000" + coreAddress.substring(2)
+              "0x000000000000000000000000" +
+                "1234567890123456789012345678901234567890".substring(2),
+              "0x000000000000000000000000" + coreAddress.substring(2),
             ],
-            transactionHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            transactionHash:
+              "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
             from: "0x1234567890123456789012345678901234567890",
             to: coreAddress,
-            value: "1000000000000000000" // 1 ETH in wei
-          }
+            value: "1000000000000000000", // 1 ETH in wei
+          },
         };
 
         const triggerResponse = await client.triggerWorkflow({
           id: workflowId,
           triggerData,
-          isBlocking: true // Wait for execution to complete
+          isBlocking: true, // Wait for execution to complete
         });
 
-        console.log("🎯 Trigger response:", JSON.stringify(triggerResponse, null, 2));
+        console.log(
+          "🎯 Trigger response:",
+          util.inspect(triggerResponse, { depth: null, colors: true })
+        );
 
         expect(triggerResponse.executionId).toBeDefined();
         expect(triggerResponse.status).toBeDefined();
 
         // Check that the execution was created
-        const executionsAfterTrigger = await client.getExecutions([workflowId], {
-          limit: 1,
-        });
+        const executionsAfterTrigger = await client.getExecutions(
+          [workflowId],
+          {
+            limit: 1,
+          }
+        );
 
         console.log(
           "Event trigger executions after manual trigger:",
-          JSON.stringify(executionsAfterTrigger, null, 2)
+          util.inspect(executionsAfterTrigger, { depth: null, colors: true })
         );
 
         // Verify that an execution was created
         expect(executionsAfterTrigger.items).toHaveLength(1);
-        expect(executionsAfterTrigger.items[0].id).toBe(triggerResponse.executionId);
-        
-        console.log("✅ Successfully deployed AND triggered event workflow!");
+        expect(executionsAfterTrigger.items[0].id).toBe(
+          triggerResponse.executionId
+        );
 
+        console.log("✅ Successfully deployed AND triggered event workflow!");
       } finally {
         // Always clean up the workflow, even if test fails
         if (workflowId) {
@@ -1296,29 +1302,35 @@ describe("EventTrigger Tests", () => {
             eventSignature: TRANSFER_EVENT_SIGNATURE,
             eventType: "Transfer",
             logIndex: 0,
-            rawData: "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
+            rawData:
+              "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
             topics: [
               TRANSFER_EVENT_SIGNATURE,
-              "0x000000000000000000000000" + "1234567890123456789012345678901234567890".substring(2),
-              "0x000000000000000000000000" + coreAddress.substring(2)
+              "0x000000000000000000000000" +
+                "1234567890123456789012345678901234567890".substring(2),
+              "0x000000000000000000000000" + coreAddress.substring(2),
             ],
-            transactionHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            transactionHash:
+              "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
             from: "0x1234567890123456789012345678901234567890",
             to: coreAddress,
-            value: "1000000000000000000" // 1 ETH in wei
-          }
+            value: "1000000000000000000", // 1 ETH in wei
+          },
         };
 
         const triggerResponse = await client.triggerWorkflow({
           id: workflowId,
           triggerData,
-          isBlocking: true // Wait for execution to complete
+          isBlocking: true, // Wait for execution to complete
         });
 
         // Get the execution to access the trigger step output
-        const executionsAfterTrigger = await client.getExecutions([workflowId], {
-          limit: 1,
-        });
+        const executionsAfterTrigger = await client.getExecutions(
+          [workflowId],
+          {
+            limit: 1,
+          }
+        );
 
         const triggeredStep = executionsAfterTrigger.items[0]?.steps.find(
           (step) => step.id === eventTrigger.id
@@ -1328,15 +1340,15 @@ describe("EventTrigger Tests", () => {
         console.log("=== EVENT TRIGGER RESPONSE FORMAT COMPARISON ===");
         console.log(
           "1. runTrigger response:",
-          JSON.stringify(directResponse.data, null, 2)
+          util.inspect(directResponse.data, { depth: null, colors: true })
         );
         console.log(
           "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
         );
         console.log(
           "3. triggerWorkflow step output:",
-          JSON.stringify(triggeredStep?.output, null, 2)
+          util.inspect(triggeredStep?.output, { depth: null, colors: true })
         );
 
         // All should be successful
@@ -1356,7 +1368,7 @@ describe("EventTrigger Tests", () => {
         // Check that all outputs have consistent structure
         expect(directOutput).toBeDefined();
         expect(triggeredOutput).toBeDefined();
-        
+
         // simulatedOutput can be undefined when no events are found, which is correct behavior
         if (simulatedOutput) {
           expect(simulatedOutput).toBeDefined();
@@ -1369,7 +1381,9 @@ describe("EventTrigger Tests", () => {
         // The triggered output should have the event data we passed in
         expect(triggeredOutput.eventFound).toBe(true);
         expect(triggeredOutput.eventType).toBe("Transfer");
-        expect(triggeredOutput.contractAddress).toBe(SEPOLIA_TOKEN_ADDRESSES[0]);
+        expect(triggeredOutput.contractAddress).toBe(
+          SEPOLIA_TOKEN_ADDRESSES[0]
+        );
 
         console.log(
           "✅ All trigger methods return consistent event trigger results!"
@@ -1396,7 +1410,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing event trigger with empty address array...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1423,7 +1437,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger empty addresses response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -1437,7 +1451,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing event trigger with complex topic filtering...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1468,7 +1482,7 @@ describe("EventTrigger Tests", () => {
 
       console.log(
         "runTrigger complex topics response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -1526,7 +1540,10 @@ describe("EventTrigger Tests", () => {
 
       const noEventsResult = await client.runTrigger(params);
 
-      console.log("No events result:", JSON.stringify(noEventsResult, null, 2));
+      console.log(
+        "No events result:",
+        util.inspect(noEventsResult, { depth: null, colors: true })
+      );
 
       // Should succeed but return null data
       expect(noEventsResult.success).toBe(true);
@@ -1541,7 +1558,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing empty address array handling...");
+      
 
       // Use a more targeted approach - empty addresses with specific topic filter
       // This should be faster than monitoring all contracts
@@ -1561,7 +1578,10 @@ describe("EventTrigger Tests", () => {
         },
       });
 
-      console.log("Empty addresses result:", JSON.stringify(result, null, 2));
+      console.log(
+        "Empty addresses result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -1580,7 +1600,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing empty topics array handling...");
+      
 
       // Use a known contract but with empty topics - this should be faster
       const params = {
@@ -1602,7 +1622,10 @@ describe("EventTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      console.log("Empty topics result:", JSON.stringify(result, null, 2));
+      console.log(
+        "Empty topics result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -1670,18 +1693,16 @@ describe("EventTrigger Tests", () => {
       console.log("=== EMPTY DATA CONSISTENCY COMPARISON ===");
       console.log(
         "1. runTrigger response:",
-        JSON.stringify(
+        util.inspect(
           { success: directResponse.success, data: directResponse.data },
-          null,
-          2
+          { depth: null, colors: true }
         )
       );
       console.log(
         "2. simulateWorkflow step:",
-        JSON.stringify(
+        util.inspect(
           { success: simulatedStep?.success, output: simulatedStep?.output },
-          null,
-          2
+          { depth: null, colors: true }
         )
       );
 
@@ -1695,9 +1716,7 @@ describe("EventTrigger Tests", () => {
       expect(simulatedStep!.success).toBe(true);
       expect(simulatedStep!.output).not.toBe(null); // Simulation always provides sample data
 
-      console.log(
-        "✅ Empty data handling behavior documented:"
-      );
+      console.log("✅ Empty data handling behavior documented:");
       console.log(
         "   - runTrigger with simulationMode: false → null when no events"
       );
@@ -1712,7 +1731,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing malformed query configurations...");
+      
 
       // Test with invalid topic format
       const params = {
@@ -1738,7 +1757,10 @@ describe("EventTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      console.log("Malformed query result:", JSON.stringify(result, null, 2));
+      console.log(
+        "Malformed query result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -1754,7 +1776,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should correctly parse null vs empty object responses (client-side test)", () => {
-      console.log("🚀 Testing client-side null vs empty object parsing...");
+      
 
       // Test the EventTrigger.fromOutputData method directly
       // This simulates what happens when the server returns different response types
@@ -1808,7 +1830,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should validate event trigger configuration without network calls", () => {
-      console.log("🚀 Testing event trigger configuration validation...");
+      
 
       // Test valid configurations
       const validConfig = {
@@ -1855,7 +1877,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty data scenarios consistently (offline test)", () => {
-      console.log("🚀 Testing empty data scenarios offline...");
+      
 
       // Test different empty data scenarios
       const scenarios = [
@@ -1916,7 +1938,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle basic event trigger functionality (offline test)", () => {
-      console.log("🚀 Testing basic event trigger functionality offline...");
+      
 
       // Test basic trigger creation and validation
       const basicConfig = {

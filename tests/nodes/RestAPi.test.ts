@@ -1,3 +1,4 @@
+import util from "util";
 import _ from "lodash";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import { Client, TriggerFactory, Step, NodeFactory } from "@avaprotocol/sdk-js";
@@ -62,7 +63,7 @@ describe("RestAPI Node Tests", () => {
 
       console.log(
         "runNodeWithInputs server response:",
-        JSON.stringify(response, null, 2)
+        util.inspect(response, { depth: null, colors: true })
       );
 
       expect(response.success).toBe(true);
@@ -80,7 +81,7 @@ describe("RestAPI Node Tests", () => {
     test("should handle REST API POST call", async () => {
       const postData = { test: "data", timestamp: Date.now() };
 
-      console.log("🚀 Testing runNodeWithInputs with POST request...");
+      
 
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
@@ -98,7 +99,7 @@ describe("RestAPI Node Tests", () => {
 
       console.log(
         "runNodeWithInputs POST response:",
-        JSON.stringify(response, null, 2)
+        util.inspect(response, { depth: null, colors: true })
       );
 
       expect(response.success).toBe(true);
@@ -109,7 +110,7 @@ describe("RestAPI Node Tests", () => {
     });
 
     test("should handle REST API error responses", async () => {
-      console.log("🚀 Testing runNodeWithInputs with error response...");
+      
 
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
@@ -123,7 +124,7 @@ describe("RestAPI Node Tests", () => {
 
       console.log(
         "runNodeWithInputs error response:",
-        JSON.stringify(response, null, 2)
+        util.inspect(response, { depth: null, colors: true })
       );
 
       expect(response.success).toBe(true); // HTTP call succeeds even with 404
@@ -161,7 +162,7 @@ describe("RestAPI Node Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -195,7 +196,7 @@ describe("RestAPI Node Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
 
-      console.log("🚀 Testing simulateWorkflow with REST API error...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -203,7 +204,7 @@ describe("RestAPI Node Tests", () => {
 
       console.log(
         "simulateWorkflow error response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       const restApiStep = simulation.steps.find(
@@ -244,7 +245,7 @@ describe("RestAPI Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with REST API call...");
+      
 
       let workflowId: string | undefined;
       try {
@@ -279,7 +280,7 @@ describe("RestAPI Node Tests", () => {
 
         console.log(
           "Deploy + trigger REST API step output:",
-          JSON.stringify(restApiStep.output, null, 2)
+          util.inspect(restApiStep.output, { depth: null, colors: true })
         );
 
         expect(restApiStep.success).toBe(true);
@@ -376,15 +377,15 @@ describe("RestAPI Node Tests", () => {
         console.log("=== RESPONSE FORMAT COMPARISON ===");
         console.log(
           "1. runNodeWithInputs response:",
-          JSON.stringify(directResponse.data, null, 2)
+          util.inspect(directResponse.data, { depth: null, colors: true })
         );
         console.log(
           "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
         );
         console.log(
           "3. deploy+trigger step output:",
-          JSON.stringify(executedStep?.output, null, 2)
+          util.inspect(executedStep?.output, { depth: null, colors: true })
         );
 
         // All should have the same structure
@@ -436,7 +437,7 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log('REST API 204 response:', JSON.stringify(result, null, 2));
+      console.log('REST API 204 response:', util.inspect(result, { depth: null, colors: true }));
       
       expect(result.success).toBe(true);
       expect(result.error).toBe('');
@@ -472,8 +473,8 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log('Empty data result:', JSON.stringify(emptyResponse, null, 2));
-      console.log('Error result:', JSON.stringify(errorResponse, null, 2));
+      console.log('Empty data result:', util.inspect(emptyResponse, { depth: null, colors: true }));
+      console.log('Error result:', util.inspect(errorResponse, { depth: null, colors: true }));
 
       // Both should succeed at HTTP level but have different status codes
       expect(emptyResponse.success).toBe(true);

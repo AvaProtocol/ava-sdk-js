@@ -1,10 +1,15 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ContractWriteNodeData, ContractWriteNodeProps, NodeProps } from "@avaprotocol/types";
+import {
+  NodeType,
+  ContractWriteNodeData,
+  ContractWriteNodeProps,
+  NodeProps,
+} from "@avaprotocol/types";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi, methodCallsList? } }
-
 
 class ContractWriteNode extends Node {
   constructor(props: ContractWriteNodeProps) {
@@ -15,16 +20,17 @@ class ContractWriteNode extends Node {
     // Convert the raw object to ContractWriteNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
     const protobufData = raw.getContractWrite()!.getConfig()!.toObject();
-    
+
     // Convert protobuf data to our custom interface
     const data: ContractWriteNodeData = {
       contractAddress: protobufData.contractAddress,
       callData: protobufData.callData,
       contractAbi: protobufData.contractAbi,
-      methodCalls: protobufData.methodCallsList?.map(call => ({
-        callData: call.callData,
-        methodName: call.methodName,
-      })) || [],
+      methodCalls:
+        protobufData.methodCallsList?.map((call) => ({
+          callData: call.callData,
+          methodName: call.methodName,
+        })) || [],
     };
 
     // Extract input data from top-level TaskNode.input field (not nested ContractWriteNode.input)
@@ -33,7 +39,7 @@ class ContractWriteNode extends Node {
     if (raw.hasInput()) {
       input = extractInputFromProtobuf(raw.getInput());
     }
-    
+
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,
@@ -49,23 +55,27 @@ class ContractWriteNode extends Node {
     request.setName(this.name);
 
     const node = new avs_pb.ContractWriteNode();
-    
+
     const config = new avs_pb.ContractWriteNode.Config();
-    config.setContractAddress((this.data as ContractWriteNodeData).contractAddress);
+    config.setContractAddress(
+      (this.data as ContractWriteNodeData).contractAddress
+    );
     config.setCallData((this.data as ContractWriteNodeData).callData);
     config.setContractAbi((this.data as ContractWriteNodeData).contractAbi);
-    
+
     // Handle method calls array
     const methodCalls = (this.data as ContractWriteNodeData).methodCalls || [];
-    methodCalls.forEach((methodCall: { callData: string; methodName?: string }) => {
-      const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
-      methodCallMsg.setCallData(methodCall.callData);
-      if (methodCall.methodName) {
-        methodCallMsg.setMethodName(methodCall.methodName);
+    methodCalls.forEach(
+      (methodCall: { callData: string; methodName?: string }) => {
+        const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
+        methodCallMsg.setCallData(methodCall.callData);
+        if (methodCall.methodName) {
+          methodCallMsg.setMethodName(methodCall.methodName);
+        }
+        config.addMethodCalls(methodCallMsg);
       }
-      config.addMethodCalls(methodCallMsg);
-    });
-    
+    );
+
     node.setConfig(config);
 
     // Set input data on the top-level TaskNode, not the nested ContractWriteNode
@@ -84,58 +94,15 @@ class ContractWriteNode extends Node {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 
-    const outputObj = contractWriteOutput.toObject();
-    
-    // Transform the new enhanced response structure for easier consumption
-    const transformedResults = outputObj.resultsList?.map((result: any) => ({
-      methodName: result.methodName,
-      success: result.success,
-      transaction: result.transaction ? {
-        hash: result.transaction.hash,
-        status: result.transaction.status,
-        blockNumber: result.transaction.blockNumber,
-        blockHash: result.transaction.blockHash,
-        gasUsed: result.transaction.gasUsed,
-        gasLimit: result.transaction.gasLimit,
-        gasPrice: result.transaction.gasPrice,
-        effectiveGasPrice: result.transaction.effectiveGasPrice,
-        from: result.transaction.from,
-        to: result.transaction.to,
-        value: result.transaction.value,
-        nonce: result.transaction.nonce,
-        transactionIndex: result.transaction.transactionIndex,
-        confirmations: result.transaction.confirmations,
-        timestamp: result.transaction.timestamp,
-      } : null,
-      events: result.eventsList?.map((event: any) => ({
-        eventName: event.eventName,
-        address: event.address,
-        topics: event.topicsList || [],
-        data: event.data,
-        decoded: event.decodedMap || {},
-      })) || [],
-      error: result.error ? {
-        code: result.error.code,
-        message: result.error.message,
-        revertReason: result.error.revertReason,
-      } : null,
-      returnData: result.returnData ? {
-        name: result.returnData.name,
-        type: result.returnData.type,
-        value: result.returnData.value,
-      } : null,
-      inputData: result.inputData,
-    })) || [];
+    // Use the new getData() method instead of the old resultsList
+    const data = contractWriteOutput.getData();
+    if (!data) return null;
 
-    return {
-      results: transformedResults,
-      // For backward compatibility, provide legacy fields from first result
-      ...(transformedResults.length > 0 && {
-        transaction: transformedResults[0].transaction,
-        success: transformedResults[0].success,
-        hash: transformedResults[0].transaction?.hash,
-      }),
-    };
+    // Convert protobuf Value to JavaScript object
+    const jsData = convertProtobufValueToJs(data);
+
+    // Return the array directly, matching ContractRead format
+    return Array.isArray(jsData) ? jsData : [jsData];
   }
 }
 
