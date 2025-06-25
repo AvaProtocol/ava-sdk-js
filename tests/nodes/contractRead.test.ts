@@ -423,83 +423,40 @@ describe("ContractRead Node Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
 
-      if (result.success && result.data) {
-        // With our new flattened implementation, the data should be directly accessible
-        // The test calls decimals() for formatting and latestRoundData() for the actual data
-        // The result should be flattened data directly from latestRoundData with decimal formatting applied
+      const data = result.data as any;
 
-        const data = result.data as any;
+      // For our new implementation, we expect direct field access (no results array)
+      expect(data.answer).toBeDefined();
+      expect(data.roundId).toBeDefined();
+      expect(data.startedAt).toBeDefined();
+      expect(data.updatedAt).toBeDefined();
+      expect(data.answeredInRound).toBeDefined();
 
-        // For our new implementation, we expect direct field access (no results array)
-        expect(data.answer).toBeDefined();
-        expect(data.roundId).toBeDefined();
-        expect(data.startedAt).toBeDefined();
-        expect(data.updatedAt).toBeDefined();
-        expect(data.answeredInRound).toBeDefined();
+      const answerValue = data.answer;
+      expect(answerValue).toBeTruthy();
+      expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
 
-        const answerValue = data.answer;
-        console.log("Flattened answer field found:", answerValue);
-        console.log("Expected: Decimal formatted (e.g., '0.64522')");
-        console.log("Actual:", answerValue);
+      expect(result.nodeId).toBeDefined();
 
-        // ✅ Decimal formatting should be working! Verify the formatted value
-        expect(typeof answerValue).toBe("string");
-        expect(answerValue).toBeTruthy();
+      expect(result.metadata?._raw).toBeDefined();
 
-        // Check if decimal formatting was applied (should contain a decimal point)
-        expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
-        console.log(
-          "✅ Decimal formatting is working in flattened format! Value:",
-          answerValue
-        );
+      const firstMethod = result.metadata?._raw?.[0];
+      expect(firstMethod.methodName).toBeDefined();
+      expect(firstMethod.success).toBe(true);
+      expect(firstMethod.methodName).toBe("latestRoundData");
 
-        // The raw value with decimals should be much smaller than raw value
-        const numericValue = parseFloat(answerValue);
-        expect(numericValue).toBeGreaterThan(0);
-        expect(numericValue).toBeLessThan(1000); // Should be much smaller than raw value
+      // Check if the structured fields data is present
+      if (firstMethod.data && Array.isArray(firstMethod.data)) {
+        expect(firstMethod.data.length).toBeGreaterThan(0);
 
-        expect(result.nodeId).toBeDefined();
-
-        // ✅ Check if metadata is included for flattened format
-        console.log("Checking metadata field:", result.metadata);
-        if (
-          result.metadata &&
-          result.metadata._raw &&
-          result.metadata._raw.length > 0
-        ) {
-          console.log("✅ Metadata is included:", result.metadata);
-          const firstMethod = result.metadata._raw[0];
-          expect(firstMethod.methodName).toBeDefined();
-          expect(firstMethod.success).toBe(true);
-          expect(firstMethod.methodName).toBe("latestRoundData");
-
-          // Check if the structured fields data is present
-          if (firstMethod.data && Array.isArray(firstMethod.data)) {
-            console.log(
-              "✅ Raw structured fields found in metadata:",
-              firstMethod.data.length,
-              "fields"
-            );
-            expect(firstMethod.data.length).toBeGreaterThan(0);
-
-            // Check the format of the first field
-            const firstField = firstMethod.data[0];
-            expect(firstField).toHaveProperty("name");
-            expect(firstField).toHaveProperty("type");
-            expect(firstField).toHaveProperty("value");
-            console.log("✅ Field structure is correct:", firstField);
-          } else {
-            console.log("❌ Raw structured fields missing in metadata");
-          }
-        } else {
-          console.log("❌ Metadata is missing or incorrectly structured");
-        }
-      } else {
-        console.log("Decimal formatting test failed:", result.error);
-        // Don't fail the test if it's a network error, just log it
-        expect(result.error).toBeDefined();
+        // Check the format of the first field
+        const firstField = firstMethod.data[0];
+        expect(firstField).toHaveProperty("name");
+        expect(firstField).toHaveProperty("type");
+        expect(firstField).toHaveProperty("value");
       }
 
       expect(result.metadata?._raw).toBeDefined();
