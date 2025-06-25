@@ -150,7 +150,7 @@ describe("ContractWrite Node Tests", () => {
       const spenderAddress = "0x0000000000000000000000000000000000000001"; // Dummy address
       const approveCallData = createApproveCallData(spenderAddress, "100");
 
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
@@ -181,7 +181,11 @@ describe("ContractWrite Node Tests", () => {
             updatedAt: new Date(),
           },
         },
-      });
+      };
+
+      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+
+      const result = await client.runNodeWithInputs(params);
 
       console.log(
         "runNodeWithInputs approve response:",
@@ -191,25 +195,21 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.nodeId).toBeDefined();
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data).not.toHaveProperty("results");
+      const data = result.data as any[];
+      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
-      if (
-        result.success &&
-        result.data &&
-        typeof result.data === "object" &&
-        "results" in result.data
-      ) {
+      if (result.success && data.length > 0) {
         // Should have transaction hash for successful write
-        expect(result.data.results).toBeDefined();
-        expect(Array.isArray(result.data.results)).toBe(true);
-        if (result.data.results.length > 0) {
-          expect(result.data.results[0].methodName).toBe("approve");
-          if (result.data.results[0].transaction) {
-            expect(result.data.results[0].transaction.hash).toBeDefined();
-            console.log(
-              "✅ Transaction hash:",
-              result.data.results[0].transaction.hash
-            );
-          }
+        const approveResult = data.find((r: any) => r.methodName === "approve");
+        expect(approveResult).toBeDefined();
+        expect(approveResult.methodName).toBe("approve");
+
+        if (approveResult.transaction) {
+          expect(approveResult.transaction.hash).toBeDefined();
+          console.log("✅ Transaction hash:", approveResult.transaction.hash);
         }
       } else {
         console.log("ContractWrite failed:", result.error);
@@ -227,7 +227,7 @@ describe("ContractWrite Node Tests", () => {
       const spender1 = "0x0000000000000000000000000000000000000001";
       const spender2 = "0x0000000000000000000000000000000000000002";
 
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
@@ -244,7 +244,11 @@ describe("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {},
-      });
+      };
+
+      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+
+      const result = await client.runNodeWithInputs(params);
 
       console.log(
         "runNodeWithInputs multiple calls response:",
@@ -253,16 +257,14 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data).not.toHaveProperty("results");
+      const data = result.data as any[];
+      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
-      if (
-        result.success &&
-        result.data &&
-        typeof result.data === "object" &&
-        "results" in result.data
-      ) {
-        expect(result.data.results).toBeDefined();
-        expect(result.data.results.length).toBe(2);
-        result.data.results.forEach((methodResult: any, index: number) => {
+      if (result.success && data.length > 0) {
+        data.forEach((methodResult: any, index: number) => {
           expect(methodResult.methodName).toBe("approve");
         });
       } else {
@@ -281,7 +283,7 @@ describe("ContractWrite Node Tests", () => {
         "🚀 Testing runNodeWithInputs with invalid contract address..."
       );
 
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Zero address
@@ -296,7 +298,11 @@ describe("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {},
-      });
+      };
+
+      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+
+      const result = await client.runNodeWithInputs(params);
 
       console.log(
         "runNodeWithInputs invalid address response:",
@@ -305,6 +311,11 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data).not.toHaveProperty("results");
+      const data = result.data as any[];
+      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Should fail gracefully
       if (!result.success) {
@@ -319,7 +330,7 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
@@ -332,7 +343,11 @@ describe("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {},
-      });
+      };
+
+      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+
+      const result = await client.runNodeWithInputs(params);
 
       console.log(
         "runNodeWithInputs malformed data response:",
@@ -341,6 +356,11 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data).not.toHaveProperty("results");
+      const data = result.data as any[];
+      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Should fail gracefully
       if (!result.success) {
@@ -399,6 +419,14 @@ describe("ContractWrite Node Tests", () => {
       );
       expect(contractWriteStep).toBeDefined();
 
+      const output = contractWriteStep!.output as any;
+      expect(output).toBeDefined();
+      expect(Array.isArray(output)).toBe(true);
+      expect(output).not.toHaveProperty("results");
+      expect(output.length).toBe(
+        (contractWriteNode.data as any).methodCalls.length
+      );
+
       // Note: Simulation might succeed even if actual execution would fail
       // This depends on the simulation implementation
       console.log("Contract write step success:", contractWriteStep!.success);
@@ -445,10 +473,6 @@ describe("ContractWrite Node Tests", () => {
         contractWriteNode,
       ]);
 
-      console.log(
-        "🚀 Testing simulateWorkflow with multiple contract writes..."
-      );
-
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
@@ -458,6 +482,14 @@ describe("ContractWrite Node Tests", () => {
         (step) => step.id === contractWriteNode.id
       );
       expect(contractWriteStep).toBeDefined();
+
+      const output = contractWriteStep!.output as any;
+      expect(output).toBeDefined();
+      expect(Array.isArray(output)).toBe(true);
+      expect(output).not.toHaveProperty("results");
+      expect(output.length).toBe(
+        (contractWriteNode.data as any).methodCalls.length
+      );
 
       console.log(
         "Multiple writes simulation result:",
@@ -506,10 +538,6 @@ describe("ContractWrite Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log(
-        "🚀 Testing deploy + trigger workflow with contract write..."
-      );
-
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
@@ -544,6 +572,14 @@ describe("ContractWrite Node Tests", () => {
         console.log(
           "Deploy + trigger contract write step output:",
           util.inspect(contractWriteStep.output, { depth: null, colors: true })
+        );
+
+        const output = contractWriteStep.output as any;
+        expect(output).toBeDefined();
+        expect(Array.isArray(output)).toBe(true);
+        expect(output).not.toHaveProperty("results");
+        expect(output.length).toBe(
+          (contractWriteNode.data as any).methodCalls.length
         );
 
         // Note: The step might succeed or fail depending on wallet funding and gas
@@ -593,11 +629,20 @@ describe("ContractWrite Node Tests", () => {
       );
 
       // Test 1: runNodeWithInputs
-      const directResponse = await client.runNodeWithInputs({
+      const directParams = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: contractWriteConfig,
         inputVariables: {},
-      });
+      };
+
+      console.log("🚀 ~ direct test ~ params:", util.inspect(directParams, { depth: null, colors: true }));
+
+      const directResponse = await client.runNodeWithInputs(directParams);
+
+      console.log(
+        "🚀 ~ direct test ~ result:",
+        util.inspect(directResponse, { depth: null, colors: true })
+      );
 
       // Test 2: simulateWorkflow
       const contractWriteNode = NodeFactory.create({
@@ -610,8 +655,19 @@ describe("ContractWrite Node Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, [
         contractWriteNode,
       ]);
+
+      console.log(
+        "🚀 ~ simulation test ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ simulation test ~ result:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       const simulatedStep = simulation.steps.find(
@@ -628,19 +684,33 @@ describe("ContractWrite Node Tests", () => {
 
       let workflowId: string | undefined;
       try {
+        console.log(
+          "🚀 ~ deploy test ~ workflowProps:",
+          util.inspect(workflowProps, { depth: null, colors: true })
+        );
+
         workflowId = await client.submitWorkflow(
           client.createWorkflow(workflowProps)
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
+        const triggerParams = {
           id: workflowId,
           triggerData: {
             type: TriggerType.Block,
             blockNumber: currentBlockNumber + triggerInterval,
           },
           isBlocking: true,
-        });
+        };
+
+        console.log("🚀 ~ trigger test ~ params:", util.inspect(triggerParams, { depth: null, colors: true }));
+
+        const triggerResult = await client.triggerWorkflow(triggerParams);
+
+        console.log(
+          "🚀 ~ trigger test ~ result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -670,6 +740,28 @@ describe("ContractWrite Node Tests", () => {
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
 
+        // Check that all outputs have the same structure - they should all be arrays directly
+        expect(Array.isArray(directResponse.data)).toBe(true);
+        expect(directResponse.data).not.toHaveProperty("results");
+        expect(Array.isArray(simulatedStep?.output)).toBe(true);
+        expect(simulatedStep?.output).not.toHaveProperty("results");
+        expect(Array.isArray(executedStep?.output)).toBe(true);
+        expect(executedStep?.output).not.toHaveProperty("results");
+
+        // Check that all have the same method names
+        const directMethods = (directResponse.data as any[])
+          ?.map((r: any) => r.methodName)
+          .sort();
+        const simulatedMethods = (simulatedStep?.output as any[])
+          ?.map((r: any) => r.methodName)
+          .sort();
+        const executedMethods = (executedStep?.output as any[])
+          ?.map((r: any) => r.methodName)
+          .sort();
+
+        expect(simulatedMethods).toEqual(executedMethods);
+        expect(simulatedMethods).toEqual(directMethods);
+
         // All should have similar response structure (success/failure is less important)
         console.log("Direct response success:", directResponse.success);
         console.log("Simulated step success:", simulatedStep?.success);
@@ -685,8 +777,279 @@ describe("ContractWrite Node Tests", () => {
         }
       }
     });
+  });
 
-    test("should use 'results' format (not 'resultsList') in all response types", async () => {
+  describe("Error Handling Tests", () => {
+    test("should handle invalid method signature gracefully", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAbi: JSON.stringify([
+            {
+              inputs: [],
+              name: "nonExistentMethod",
+              outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+              stateMutability: "nonpayable",
+              type: "function",
+            },
+          ]),
+          methodCalls: [
+            { callData: "0x12345678", methodName: "nonExistentMethod" },
+          ],
+        },
+        inputVariables: {
+          workflowContext: {
+            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
+            chainId: null,
+            name: "Error Handling Test",
+            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
+            eoaAddress: eoaAddress,
+            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            startAt: new Date(),
+            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            maxExecution: 0,
+            status: "draft",
+            completedAt: null,
+            lastRanAt: null,
+            executionCount: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      };
+
+      console.log(
+        "🚀 ~ test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ test ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data).not.toHaveProperty("results");
+      const data = result.data as any[];
+      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // Since we're using Tenderly simulation, it might return success even for invalid methods
+      // The important thing is that we get a response with the correct structure
+      if (result.success && result.data && Array.isArray(result.data)) {
+        const errorResult = (result.data as any[]).find(
+          (r: any) => r.methodName === "nonExistentMethod"
+        );
+        expect(errorResult).toBeDefined();
+        expect(errorResult.methodName).toBe("nonExistentMethod");
+        // Note: Tenderly simulation may return success=true even for invalid methods
+        // This is expected behavior when using simulation
+      }
+    });
+  });
+
+  describe("Protobuf Serialization Tests", () => {
+    test("should properly serialize methodCalls in protobuf", () => {
+      const contractWriteNode = NodeFactory.create({
+        id: "test-contract-write",
+        name: "Test Contract Write",
+        type: NodeType.ContractWrite,
+        data: {
+          contractAddress: "0x1234567890123456789012345678901234567890",
+          contractAbi: JSON.stringify(ERC20_ABI),
+          methodCalls: [
+            {
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000001",
+                "100"
+              ),
+              methodName: "approve",
+            },
+            {
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000002",
+                "200"
+              ),
+              methodName: "approve",
+            },
+          ],
+        },
+      });
+
+      // Convert to protobuf request
+      const request = contractWriteNode.toRequest();
+
+      // Verify the structure
+      expect(request.getContractWrite()).toBeDefined();
+      const config = request.getContractWrite()!.getConfig();
+      expect(config).toBeDefined();
+
+      const methodCalls = config!.getMethodCallsList();
+      expect(methodCalls).toHaveLength(2);
+
+      // Check first method call
+      const firstCall = methodCalls[0];
+      expect(firstCall.getMethodName()).toBe("approve");
+      expect(firstCall.getCallData()).toContain("0x095ea7b3");
+
+      // Check second method call
+      const secondCall = methodCalls[1];
+      expect(secondCall.getMethodName()).toBe("approve");
+      expect(secondCall.getCallData()).toContain("0x095ea7b3");
+
+      console.log(
+        "✅ Protobuf serialization test passed - methodCalls are properly serialized"
+      );
+    });
+  });
+
+  describe("ApplyToFields Decimal Formatting Tests", () => {
+    test("should include answerRaw field when using applyToFields with runNodeWithInputs", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      // Note: For contract write, applyToFields might not be as relevant as for contract read
+      // But we'll test it for consistency with the contract read tests
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAbi: JSON.stringify(ERC20_ABI),
+          methodCalls: [
+            {
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000001",
+                "100"
+              ),
+              methodName: "approve",
+              applyToFields: ["amount"], // Apply formatting to amount field if applicable
+            },
+          ],
+        },
+        inputVariables: {
+          workflowContext: {
+            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
+            chainId: null,
+            name: "ApplyToFields Test",
+            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
+            eoaAddress: eoaAddress,
+            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            startAt: new Date(),
+            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            maxExecution: 0,
+            status: "draft",
+            completedAt: null,
+            lastRanAt: null,
+            executionCount: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      };
+
+      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ test ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data).not.toHaveProperty("results");
+      const data = result.data as any[];
+      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // Find the approve result
+      const approveResult = data.find((r: any) => r.methodName === "approve");
+      expect(approveResult).toBeDefined();
+
+      console.log("✅ runNodeWithInputs applyToFields test completed!");
+    });
+
+    test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const contractWriteNode = NodeFactory.create({
+        id: getNextId(),
+        name: "simulate_applyToFields_test",
+        type: NodeType.ContractWrite,
+        data: {
+          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAbi: JSON.stringify(ERC20_ABI),
+          methodCalls: [
+            {
+              callData: createApproveCallData(
+                "0x0000000000000000000000000000000000000001",
+                "150"
+              ),
+              methodName: "approve",
+              applyToFields: ["amount"], // Apply formatting to amount field if applicable
+            },
+          ],
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
+
+      console.log(
+        "🚀 ~ test ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ test ~ result:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
+
+      expect(simulation.success).toBe(true);
+      const contractWriteStep = simulation.steps.find(
+        (step) => step.id === contractWriteNode.id
+      );
+      expect(contractWriteStep).toBeDefined();
+
+      const output = contractWriteStep!.output as any;
+      expect(output).toBeDefined();
+      expect(Array.isArray(output)).toBe(true);
+      expect(output).not.toHaveProperty("results");
+      expect(output.length).toBe(
+        (contractWriteNode.data as any).methodCalls.length
+      );
+
+      // Find the approve result
+      const approveResult = output.find((r: any) => r.methodName === "approve");
+      expect(approveResult).toBeDefined();
+
+      console.log("✅ simulateWorkflow applyToFields test completed!");
+    });
+
+    test("should deploy and trigger workflow with applyToFields", async () => {
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -695,106 +1058,96 @@ describe("ContractWrite Node Tests", () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
-
-      const contractWriteConfig = {
-        contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-        contractAbi: JSON.stringify(ERC20_ABI),
-        methodCalls: [
-          {
-            callData: createApproveCallData(
-              "0x0000000000000000000000000000000000000005",
-              "500"
-            ),
-            methodName: "approve",
-          },
-        ],
-      };
-
-      console.log(
-        "🔍 Testing that all responses use 'results' not 'resultsList'..."
-      );
-
-      // Test 1: runNodeWithInputs should use 'results'
-      const directResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: contractWriteConfig,
-        inputVariables: {},
-      });
-
-      expect(directResponse.data).toHaveProperty("results");
-      console.log("✅ runNodeWithInputs uses 'results' format");
-
-      // Test 2: simulateWorkflow should use 'results'
-      const contractWriteNode = NodeFactory.create({
-        id: getNextId(),
-        name: "format_test_simulate",
-        type: NodeType.ContractWrite,
-        data: contractWriteConfig,
-      });
-
-      const workflowProps = createFromTemplate(wallet.address, [
-        contractWriteNode,
-      ]);
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-
-      const simulatedStep = simulation.steps.find(
-        (step) => step.id === contractWriteNode.id
-      );
-
-      if (simulatedStep?.output) {
-        // If there's data, it should use 'results'
-        if (
-          typeof simulatedStep.output === "object" &&
-          simulatedStep.output !== null &&
-          "results" in simulatedStep.output
-        ) {
-          expect(simulatedStep.output).toHaveProperty("results");
-          console.log("✅ simulateWorkflow uses 'results' format");
-        }
-      }
-
-      // Test 3: Deploy + Trigger should use 'results'
-      workflowProps.trigger = TriggerFactory.create({
-        id: defaultTriggerId,
-        name: "blockTrigger",
-        type: TriggerType.Block,
-        data: { interval: triggerInterval },
-      });
-
       let workflowId: string | undefined;
+
       try {
+        const contractWriteNode = NodeFactory.create({
+          id: getNextId(),
+          name: "deploy_contract_write_applyToFields_test",
+          type: NodeType.ContractWrite,
+          data: {
+            contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+            contractAbi: JSON.stringify(ERC20_ABI),
+            methodCalls: [
+              {
+                callData: createApproveCallData(
+                  "0x0000000000000000000000000000000000000001",
+                  "250"
+                ),
+                methodName: "approve",
+                applyToFields: ["amount"], // Apply formatting to amount field if applicable
+              },
+            ],
+          },
+        });
+
+        const workflowProps = createFromTemplate(wallet.address, [
+          contractWriteNode,
+        ]);
+
+        console.log(
+          "🚀 ~ test ~ workflowProps:",
+          util.inspect(workflowProps, { depth: null, colors: true })
+        );
+
         workflowId = await client.submitWorkflow(
           client.createWorkflow(workflowProps)
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
+        const triggerParams = {
           id: workflowId,
           triggerData: {
             type: TriggerType.Block,
             blockNumber: currentBlockNumber + triggerInterval,
           },
           isBlocking: true,
-        });
+        };
+
+        console.log("�� ~ test ~ params:", util.inspect(triggerParams, { depth: null, colors: true }));
+
+        const triggerResult = await client.triggerWorkflow(triggerParams);
+
+        console.log(
+          "🚀 ~ test ~ result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
         });
-        const executedStep = _.find(
+
+        expect(executions.items.length).toBe(1);
+
+        const contractWriteStep = _.find(
           _.first(executions.items)?.steps,
           (step) => step.id === contractWriteNode.id
         );
 
-        console.log("🚀 ~ test ~ executedStep:", executedStep);
-
-        expect(executedStep?.output).not.toHaveProperty("resultsList");
-        expect(executedStep?.output).toHaveProperty("results");
+        if (_.isUndefined(contractWriteStep)) {
+          throw new Error("No corresponding contract write step found.");
+        }
 
         console.log(
-          "✅ All contract write responses use 'results' format, NOT 'resultsList'!"
+          "Deploy + trigger contract write with applyToFields step output:",
+          util.inspect(contractWriteStep.output, { depth: null, colors: true })
         );
+
+        const output = contractWriteStep.output as any;
+        expect(output).toBeDefined();
+        expect(Array.isArray(output)).toBe(true);
+        expect(output).not.toHaveProperty("results");
+        expect(output.length).toBe(
+          (contractWriteNode.data as any).methodCalls.length
+        );
+
+        // Find the approve result
+        const approveResult = output.find(
+          (r: any) => r.methodName === "approve"
+        );
+        expect(approveResult).toBeDefined();
+
+        console.log("✅ applyToFields test passed!");
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

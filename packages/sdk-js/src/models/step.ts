@@ -118,7 +118,10 @@ class Step implements StepProps {
             try {
               return convertProtobufValueToJs(eventTrigger.getData());
             } catch (error) {
-              console.warn('Failed to convert event trigger data from protobuf Value:', error);
+              console.warn(
+                "Failed to convert event trigger data from protobuf Value:",
+                error
+              );
               return eventTrigger.getData();
             }
           } else if (eventTrigger.data) {
@@ -127,7 +130,7 @@ class Step implements StepProps {
               ? convertProtobufValueToJs(eventTrigger.data)
               : eventTrigger.data;
           }
-          
+
           // Fallback to old structure for backward compatibility
           if (
             typeof eventTrigger.hasEvmLog === "function" &&
@@ -269,8 +272,10 @@ class Step implements StepProps {
           ) {
             try {
               // Convert protobuf Value to JavaScript object
-              const data = convertProtobufValueToJs(contractReadOutput.getData());
-              
+              const data = convertProtobufValueToJs(
+                contractReadOutput.getData()
+              );
+
               // Always return the array directly for contract read outputs
               if (Array.isArray(data)) {
                 return data;
@@ -279,16 +284,20 @@ class Step implements StepProps {
                 return [data];
               }
             } catch (error) {
-              console.warn('Failed to convert contract read data from protobuf Value:', error);
+              console.warn(
+                "Failed to convert contract read data from protobuf Value:",
+                error
+              );
               // Fallback to raw data
               return contractReadOutput.getData();
             }
           } else if (contractReadOutput.data) {
             // For plain objects, try to convert or use directly
-            const data = typeof contractReadOutput.data.getKindCase === "function"
-              ? convertProtobufValueToJs(contractReadOutput.data)
-              : contractReadOutput.data;
-              
+            const data =
+              typeof contractReadOutput.data.getKindCase === "function"
+                ? convertProtobufValueToJs(contractReadOutput.data)
+                : contractReadOutput.data;
+
             // Always return the array directly for contract read outputs
             if (Array.isArray(data)) {
               return data;
@@ -297,7 +306,7 @@ class Step implements StepProps {
               return [data];
             }
           }
-          
+
           // Fallback to old structure for backward compatibility
           const outputObj =
             typeof contractReadOutput.toObject === "function"
@@ -324,7 +333,49 @@ class Step implements StepProps {
             ? step.getContractWrite()
             : (step as any).contractWrite;
         if (contractWriteOutput) {
-          // Get the raw output object
+          // Check if the output has a data field that's a protobuf Value
+          if (
+            typeof contractWriteOutput.hasData === "function" &&
+            contractWriteOutput.hasData()
+          ) {
+            try {
+              // Convert protobuf Value to JavaScript object
+              const data = convertProtobufValueToJs(
+                contractWriteOutput.getData()
+              );
+
+              // Always return the array directly for contract write outputs
+              if (Array.isArray(data)) {
+                return data;
+              } else {
+                // If it's a single object, wrap it in an array for consistency
+                return [data];
+              }
+            } catch (error) {
+              console.warn(
+                "Failed to convert contract write data from protobuf Value:",
+                error
+              );
+              // Fallback to raw data
+              return contractWriteOutput.getData();
+            }
+          } else if (contractWriteOutput.data) {
+            // For plain objects, try to convert or use directly
+            const data =
+              typeof contractWriteOutput.data.getKindCase === "function"
+                ? convertProtobufValueToJs(contractWriteOutput.data)
+                : contractWriteOutput.data;
+
+            // Always return the array directly for contract write outputs
+            if (Array.isArray(data)) {
+              return data;
+            } else {
+              // If it's a single object, wrap it in an array for consistency
+              return [data];
+            }
+          }
+
+          // Fallback to old structure for backward compatibility
           const outputObj =
             typeof contractWriteOutput.toObject === "function"
               ? contractWriteOutput.toObject()
@@ -332,67 +383,16 @@ class Step implements StepProps {
 
           // Convert resultsList to results for consistency with ContractWriteNode.fromOutputData
           if (outputObj && outputObj.resultsList) {
-            const transformedResults = outputObj.resultsList.map(
-              (result: any) => ({
-                methodName: result.methodName,
-                success: result.success,
-                transaction: result.transaction
-                  ? {
-                      hash: result.transaction.hash,
-                      status: result.transaction.status,
-                      blockNumber: result.transaction.blockNumber,
-                      blockHash: result.transaction.blockHash,
-                      gasUsed: result.transaction.gasUsed,
-                      gasLimit: result.transaction.gasLimit,
-                      gasPrice: result.transaction.gasPrice,
-                      effectiveGasPrice: result.transaction.effectiveGasPrice,
-                      from: result.transaction.from,
-                      to: result.transaction.to,
-                      value: result.transaction.value,
-                      nonce: result.transaction.nonce,
-                      transactionIndex: result.transaction.transactionIndex,
-                      confirmations: result.transaction.confirmations,
-                      timestamp: result.transaction.timestamp,
-                    }
-                  : null,
-                events:
-                  result.eventsList?.map((event: any) => ({
-                    eventName: event.eventName,
-                    address: event.address,
-                    topics: event.topicsList || [],
-                    data: event.data,
-                    decoded: event.decodedMap || {},
-                  })) || [],
-                error: result.error
-                  ? {
-                      code: result.error.code,
-                      message: result.error.message,
-                      revertReason: result.error.revertReason,
-                    }
-                  : null,
-                returnData: result.returnData
-                  ? {
-                      name: result.returnData.name,
-                      type: result.returnData.type,
-                      value: result.returnData.value,
-                    }
-                  : null,
-                inputData: result.inputData,
-              })
-            );
-
-            // Exclude resultsList from the spread to avoid duplication
-            const { resultsList, ...cleanOutputObj } = outputObj;
-            return {
-              ...cleanOutputObj,
-              results: transformedResults,
-              // For backward compatibility, provide legacy fields from first result
-              ...(transformedResults.length > 0 && {
-                transaction: transformedResults[0].transaction,
-                success: transformedResults[0].success,
-                hash: transformedResults[0].transaction?.hash,
-              }),
-            };
+            // Return the results array directly
+            return outputObj.resultsList.map((result: any) => ({
+              methodName: result.methodName,
+              success: result.success,
+              error: result.error,
+              transaction: result.transaction,
+              events: result.eventsList || [],
+              returnData: result.returnData,
+              inputData: result.inputData,
+            }));
           }
           return outputObj;
         }
