@@ -183,7 +183,7 @@ describe("ContractWrite Node Tests", () => {
         },
       };
 
-      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+      console.log("Test params:", util.inspect(params, { depth: null, colors: true }));
 
       const result = await client.runNodeWithInputs(params);
 
