@@ -1,3 +1,4 @@
+import util from util;
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -214,7 +215,7 @@ describe("FilterNode Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -339,7 +340,7 @@ describe("FilterNode Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -359,7 +360,7 @@ describe("FilterNode Tests", () => {
         expect(filterStep.success).toBe(true);
         console.log(
           "Deploy + trigger filter step output:",
-          JSON.stringify(filterStep.output, null, 2)
+          util.inspect(filterStep.output, { depth: null, colors: true })
         );
       } finally {
         if (workflowId) {
@@ -474,15 +475,15 @@ describe("FilterNode Tests", () => {
         console.log("=== FILTER EXPRESSION COMPARISON ===");
         console.log(
           "1. runNodeWithInputs response:",
-          JSON.stringify(directResponse.data, null, 2)
+          util.inspect(directResponse.data, { depth: null, colors: true })
         );
         console.log(
           "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
         );
         console.log(
           "3. deploy+trigger step output:",
-          JSON.stringify(executedStep?.output, null, 2)
+          util.inspect(executedStep?.output, { depth: null, colors: true })
         );
 
         // All should be successful

@@ -1,5 +1,6 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
+import util from "util";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import { TriggerType } from "@avaprotocol/types";
 import {
@@ -185,7 +186,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "runTrigger small interval response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -209,7 +210,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "runTrigger medium interval response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -233,7 +234,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "runTrigger large interval response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -257,7 +258,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "runTrigger single block response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -294,7 +295,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -378,7 +379,10 @@ describe("BlockTrigger Tests", () => {
         });
 
         console.log("=== BLOCK TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log(
+          "Trigger result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         expect(triggerResult).toBeDefined();
         // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
@@ -538,7 +542,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "runTrigger minimum interval response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -557,7 +561,7 @@ describe("BlockTrigger Tests", () => {
 
       console.log(
         "runTrigger large interval response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();

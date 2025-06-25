@@ -1,3 +1,4 @@
+import util from util;
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -56,7 +57,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("NULL result:", JSON.stringify(result, null, 2));
+      console.log("NULL result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toBeNull();
     });
@@ -71,7 +72,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("EMPTY OBJECT result:", JSON.stringify(result, null, 2));
+      console.log("EMPTY OBJECT result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toEqual({});
     });
@@ -86,7 +87,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("UNDEFINED result:", JSON.stringify(result, null, 2));
+      console.log("UNDEFINED result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       // Note: JavaScript `undefined` becomes `null` in protobuf conversion since protobuf
       // only supports JSON-compatible types and has no representation for `undefined`
@@ -103,7 +104,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("EMPTY ARRAY result:", JSON.stringify(result, null, 2));
+      console.log("EMPTY ARRAY result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toEqual([]);
     });
@@ -118,7 +119,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("NUMBER result:", JSON.stringify(result, null, 2));
+      console.log("NUMBER result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toBe(42);
     });
@@ -133,7 +134,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("STRING result:", JSON.stringify(result, null, 2));
+      console.log("STRING result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toBe("hello");
     });
@@ -165,7 +166,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "runNodeWithInputs simple JS response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -206,7 +207,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "runNodeWithInputs lodash response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -251,7 +252,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "runNodeWithInputs dayjs response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -291,7 +292,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "runNodeWithInputs error response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -335,7 +336,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -415,7 +416,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "Complex simulation result:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -486,7 +487,7 @@ describe("CustomCode Node Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -495,7 +496,7 @@ describe("CustomCode Node Tests", () => {
         expect(executions.items.length).toBe(1);
         console.log(
           "Deploy+trigger execution:",
-          JSON.stringify(executions.items[0], null, 2)
+          util.inspect(executions.items[0], { depth: null, colors: true })
         );
 
         const customCodeStep = _.find(
@@ -509,12 +510,12 @@ describe("CustomCode Node Tests", () => {
 
         console.log(
           "CustomCode step details:",
-          JSON.stringify(customCodeStep, null, 2)
+          util.inspect(customCodeStep, { depth: null, colors: true })
         );
         expect(customCodeStep.success).toBe(true);
         console.log(
           "Deploy + trigger custom code step output:",
-          JSON.stringify(customCodeStep.output, null, 2)
+          util.inspect(customCodeStep.output, { depth: null, colors: true })
         );
 
         const output = customCodeStep.output as any;
@@ -667,15 +668,15 @@ describe("CustomCode Node Tests", () => {
         console.log("=== CUSTOM CODE RESPONSE FORMAT COMPARISON ===");
         console.log(
           "1. runNodeWithInputs response:",
-          JSON.stringify(directResponse.data, null, 2)
+          util.inspect(directResponse.data, { depth: null, colors: true })
         );
         console.log(
           "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
         );
         console.log(
           "3. deploy+trigger step output:",
-          JSON.stringify(executedStep?.output, null, 2)
+          util.inspect(executedStep?.output, { depth: null, colors: true })
         );
 
         // All should be successful
@@ -841,7 +842,7 @@ describe("CustomCode Node Tests", () => {
 
       console.log(
         "Empty data simulation result:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       // Verify overall workflow success
@@ -951,7 +952,7 @@ describe("CustomCode Node Tests", () => {
           isBlocking: true,
         });
 
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
         // Get execution results
         const executions = await client.getExecutions([workflowId], {
@@ -963,7 +964,7 @@ describe("CustomCode Node Tests", () => {
 
         console.log(
           "Empty data workflow execution:",
-          JSON.stringify(execution, null, 2)
+          util.inspect(execution, { depth: null, colors: true })
         );
 
         // Verify overall workflow success

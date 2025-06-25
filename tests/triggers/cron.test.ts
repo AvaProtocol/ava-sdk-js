@@ -1,3 +1,4 @@
+import util from util;
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
@@ -192,7 +193,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger daily schedule response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -223,7 +224,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger hourly schedule response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -254,7 +255,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger every 15 minutes response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -285,7 +286,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger complex schedule response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -316,7 +317,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger minute-based schedule response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -347,7 +348,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger weekly schedule response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -378,7 +379,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger standard cron response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -404,7 +405,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger invalid cron response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -434,7 +435,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger complex cron response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -465,7 +466,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "runTrigger step values cron response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -520,7 +521,7 @@ describe("CronTrigger Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -602,7 +603,7 @@ describe("CronTrigger Tests", () => {
       });
 
       console.log("=== CRON TRIGGER WORKFLOW TEST ===");
-      console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+      console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
       expect(triggerResult).toBeDefined();
       // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
@@ -615,7 +616,7 @@ describe("CronTrigger Tests", () => {
       expect(executions.items.length).toBe(1);
       console.log(
         "Cron trigger executions:",
-        JSON.stringify(executions, null, 2)
+        util.inspect(executions, { depth: null, colors: true })
       );
     });
   });
@@ -686,15 +687,15 @@ describe("CronTrigger Tests", () => {
       console.log("=== CRON TRIGGER RESPONSE FORMAT COMPARISON ===");
       console.log(
         "1. runTrigger response:",
-        JSON.stringify(directResponse.data, null, 2)
+        util.inspect(directResponse.data, { depth: null, colors: true })
       );
       console.log(
         "2. simulateWorkflow step output:",
-        JSON.stringify(simulatedStep?.output, null, 2)
+        util.inspect(simulatedStep?.output, { depth: null, colors: true })
       );
       console.log(
         "3. deploy+trigger step output:",
-        JSON.stringify(executedStep?.output, null, 2)
+        util.inspect(executedStep?.output, { depth: null, colors: true })
       );
 
       // All should be successful

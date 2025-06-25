@@ -428,6 +428,10 @@ describe("ContractRead Node Tests", () => {
 
       const data = result.data as any;
 
+      // Check that rawStructuredFields is NOT present in the data field for direct execution
+      // This ensures the backend fix is working correctly for all execution types
+      expect(data.rawStructuredFields).toBeUndefined();
+
       // For our new implementation, we expect direct field access (no results array)
       expect(data.answer).toBeDefined();
       expect(data.roundId).toBeDefined();
@@ -519,9 +523,33 @@ describe("ContractRead Node Tests", () => {
       expect(output.results).toBeDefined();
       expect(Array.isArray(output.results)).toBe(true);
       expect(output.results.length).toBe(2);
+
+      // Check that rawStructuredFields is NOT present in the data field for simulation
+      // This ensures the backend fix is working correctly
+      for (const result of output.results) {
+        expect(result.data).toBeDefined();
+        expect(result.data.rawStructuredFields).toBeUndefined();
+        
+        // Also check that rawStructuredFields is not present at the top level of the result
+        expect(result.rawStructuredFields).toBeUndefined();
+      }
+
+      // Verify that the actual data fields are present
+      const latestRoundResult = output.results.find(
+        (r: any) => r.methodName === "latestRoundData"
+      );
+      const decimalsResult = output.results.find(
+        (r: any) => r.methodName === "decimals"
+      );
+
+      expect(latestRoundResult).toBeDefined();
+      expect(decimalsResult).toBeDefined();
+      expect(latestRoundResult.data).toHaveProperty("answer");
+      expect(latestRoundResult.data).toHaveProperty("roundId");
+      expect(decimalsResult.data).toHaveProperty("decimals");
     });
 
-    test("should simulate workflow with single method call", async () => {
+    test("should simulate workflow with decimal formatting using applyToFields", async () => {
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -531,12 +559,22 @@ describe("ContractRead Node Tests", () => {
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
-        name: "simulate_single_method",
+        name: "simulate_decimal_formatting",
         type: NodeType.ContractRead,
         data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
-          methodCalls: [{ callData: "0x313ce567", methodName: "decimals" }],
+          methodCalls: [
+            {
+              callData: "0x313ce567", // decimals()
+              methodName: "decimals",
+              applyToFields: ["answer"], // Apply decimal formatting to answer field
+            },
+            {
+              callData: "0xfeaf968c", // latestRoundData()
+              methodName: "latestRoundData",
+            },
+          ],
         },
       });
 
@@ -545,7 +583,7 @@ describe("ContractRead Node Tests", () => {
       ]);
 
       console.log(
-        "🚀 ~ simulateWorkflow with single method call ~ workflowProps:",
+        "🚀 ~ simulateWorkflow with decimal formatting ~ workflowProps:",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -554,7 +592,7 @@ describe("ContractRead Node Tests", () => {
       );
 
       console.log(
-        "🚀 ~ simulateWorkflow with single method call ~ result:",
+        "🚀 ~ simulateWorkflow with decimal formatting ~ result:",
         util.inspect(simulation, { depth: null, colors: true })
       );
 
@@ -567,8 +605,42 @@ describe("ContractRead Node Tests", () => {
 
       const output = contractReadStep!.output as any;
       expect(output.results).toBeDefined();
-      expect(output.results.length).toBe(1);
-      expect(output.results[0].methodName).toBe("decimals");
+      expect(output.results.length).toBe(2);
+
+      // Check that rawStructuredFields is NOT present in the data field for simulation
+      // This ensures the backend fix is working correctly
+      for (const result of output.results) {
+        expect(result.data).toBeDefined();
+        expect(result.data.rawStructuredFields).toBeUndefined();
+        
+        // Also check that rawStructuredFields is not present at the top level of the result
+        expect(result.rawStructuredFields).toBeUndefined();
+      }
+
+      // Verify that the actual data fields are present
+      const latestRoundResult = output.results.find(
+        (r: any) => r.methodName === "latestRoundData"
+      );
+      const decimalsResult = output.results.find(
+        (r: any) => r.methodName === "decimals"
+      );
+
+      expect(latestRoundResult).toBeDefined();
+      expect(decimalsResult).toBeDefined();
+      expect(latestRoundResult.data).toHaveProperty("answer");
+      expect(latestRoundResult.data).toHaveProperty("roundId");
+      expect(decimalsResult.data).toHaveProperty("decimals");
+
+      // Check that decimal formatting was applied
+      if (latestRoundResult.data.answer) {
+        expect(latestRoundResult.data.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+      }
+
+      // Check that answerRaw field is present
+      if (latestRoundResult.data.answerRaw) {
+        expect(typeof latestRoundResult.data.answerRaw).toBe("string");
+        expect(latestRoundResult.data.answerRaw).toMatch(/^\d+$/); // Should be raw integer
+      }
     });
   });
 
@@ -659,7 +731,7 @@ describe("ContractRead Node Tests", () => {
         expect(contractReadStep.success).toBe(true);
         console.log(
           "Deploy + trigger contract read step output:",
-          JSON.stringify(contractReadStep.output, null, 2)
+          util.inspect(contractReadStep.output, { depth: null, colors: true })
         );
 
         const output = contractReadStep.output as any;
@@ -756,6 +828,7 @@ describe("ContractRead Node Tests", () => {
         const contractReadNode = NodeFactory.create({
           id: getNextId(),
           name: "consistency_test",
+          type: NodeType.ContractRead,
           data: contractReadConfig,
         });
 
@@ -827,15 +900,15 @@ describe("ContractRead Node Tests", () => {
         console.log("=== CONTRACT READ RESPONSE FORMAT COMPARISON ===");
         console.log(
           "1. runNodeWithInputs response:",
-          JSON.stringify(directResponse.data, null, 2)
+          util.inspect(directResponse.data, { depth: null, colors: true })
         );
         console.log(
           "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
         );
         console.log(
           "3. deploy+trigger step output:",
-          JSON.stringify(executedStep?.output, null, 2)
+          util.inspect(executedStep?.output, { depth: null, colors: true })
         );
 
         // All should be successful

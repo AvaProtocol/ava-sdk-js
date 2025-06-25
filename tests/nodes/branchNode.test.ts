@@ -1,3 +1,4 @@
+import util from util;
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -188,7 +189,7 @@ describe("BranchNode Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      console.log("simulateWorkflow response:", JSON.stringify(simulation, null, 2));
+      console.log("simulateWorkflow response:", util.inspect(simulation, { depth: null, colors: true }));
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(2); // trigger + branch node
@@ -272,7 +273,7 @@ describe("BranchNode Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", JSON.stringify(triggerResult, null, 2));
+        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -290,7 +291,7 @@ describe("BranchNode Tests", () => {
         }
 
         expect(branchStep.success).toBe(true);
-        console.log("Deploy + trigger branch step output:", JSON.stringify(branchStep.output, null, 2));
+        console.log("Deploy + trigger branch step output:", util.inspect(branchStep.output, { depth: null, colors: true }));
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -377,9 +378,9 @@ describe("BranchNode Tests", () => {
 
         // Compare response formats
         console.log("=== CONDITION EVALUATION COMPARISON ===");
-        console.log("1. runNodeWithInputs response:", JSON.stringify(directResponse.data, null, 2));
-        console.log("2. simulateWorkflow step output:", JSON.stringify(simulatedStep?.output, null, 2));
-        console.log("3. deploy+trigger step output:", JSON.stringify(executedStep?.output, null, 2));
+        console.log("1. runNodeWithInputs response:", util.inspect(directResponse.data, { depth: null, colors: true }));
+        console.log("2. simulateWorkflow step output:", util.inspect(simulatedStep?.output, { depth: null, colors: true }));
+        console.log("3. deploy+trigger step output:", util.inspect(executedStep?.output, { depth: null, colors: true }));
 
         // All should be successful
         expect(directResponse.success).toBe(true);

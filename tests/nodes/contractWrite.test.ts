@@ -1,3 +1,4 @@
+import util from util;
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -186,7 +187,7 @@ describe("ContractWrite Node Tests", () => {
 
       console.log(
         "runNodeWithInputs approve response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -251,7 +252,7 @@ describe("ContractWrite Node Tests", () => {
 
       console.log(
         "runNodeWithInputs multiple calls response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -303,7 +304,7 @@ describe("ContractWrite Node Tests", () => {
 
       console.log(
         "runNodeWithInputs invalid address response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -341,7 +342,7 @@ describe("ContractWrite Node Tests", () => {
 
       console.log(
         "runNodeWithInputs malformed data response:",
-        JSON.stringify(result, null, 2)
+        util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
@@ -395,7 +396,7 @@ describe("ContractWrite Node Tests", () => {
 
       console.log(
         "simulateWorkflow response:",
-        JSON.stringify(simulation, null, 2)
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -550,7 +551,7 @@ describe("ContractWrite Node Tests", () => {
 
         console.log(
           "Deploy + trigger contract write step output:",
-          JSON.stringify(contractWriteStep.output, null, 2)
+          util.inspect(contractWriteStep.output, { depth: null, colors: true })
         );
 
         // Note: The step might succeed or fail depending on wallet funding and gas
@@ -661,15 +662,15 @@ describe("ContractWrite Node Tests", () => {
         console.log("=== CONTRACT WRITE RESPONSE FORMAT COMPARISON ===");
         console.log(
           "1. runNodeWithInputs response:",
-          JSON.stringify(directResponse.data, null, 2)
+          util.inspect(directResponse.data, { depth: null, colors: true })
         );
         console.log(
           "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
         );
         console.log(
           "3. deploy+trigger step output:",
-          JSON.stringify(executedStep?.output, null, 2)
+          util.inspect(executedStep?.output, { depth: null, colors: true })
         );
 
         // Verify consistent structure
