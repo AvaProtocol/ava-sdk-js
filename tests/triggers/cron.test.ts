@@ -1,5 +1,4 @@
 import util from "util";
-import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import { TriggerType } from "@avaprotocol/types";
@@ -13,7 +12,6 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-import util from "util";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
