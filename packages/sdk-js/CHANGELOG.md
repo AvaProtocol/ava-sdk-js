@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.4.1
+
+### Patch Changes
+
+- 264c1c8: Renovated ContractRead and ContractWrite
+- Updated dependencies [264c1c8]
+  - @avaprotocol/types@2.2.14
+
 ## 2.4.0
 
 ### Minor Changes

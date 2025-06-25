@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.14
+
+### Patch Changes
+
+- 264c1c8: Renovated ContractRead and ContractWrite
+
 ## 2.2.13
 
 ### Patch Changes
