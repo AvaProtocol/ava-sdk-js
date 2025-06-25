@@ -1,4 +1,4 @@
-import util from util;
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -207,7 +207,7 @@ describe("FilterNode Tests", () => {
         filterNode,
       ]);
 
-      console.log("🚀 Testing simulateWorkflow with filter node...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -264,7 +264,7 @@ describe("FilterNode Tests", () => {
         filterNode,
       ]);
 
-      console.log("🚀 Testing simulateWorkflow with complex filter...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -321,7 +321,7 @@ describe("FilterNode Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with filter node...");
+      
 
       let workflowId: string | undefined;
       try {

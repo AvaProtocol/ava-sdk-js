@@ -1,4 +1,4 @@
-import util from util;
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
@@ -175,7 +175,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with daily schedule", async () => {
-      console.log("🚀 Testing runTrigger with daily cron schedule...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -206,7 +206,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with hourly schedule", async () => {
-      console.log("🚀 Testing runTrigger with hourly cron schedule...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -237,7 +237,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with every 15 minutes schedule", async () => {
-      console.log("🚀 Testing runTrigger with every 15 minutes cron schedule...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -268,7 +268,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with complex schedule", async () => {
-      console.log("🚀 Testing runTrigger with complex cron schedule...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -299,7 +299,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with minute-based schedule", async () => {
-      console.log("🚀 Testing runTrigger with minute-based cron schedule...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -330,7 +330,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with weekly schedule", async () => {
-      console.log("🚀 Testing runTrigger with weekly cron schedule...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -361,7 +361,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle standard cron expressions", async () => {
-      console.log("🚀 Testing cron trigger with standard expressions...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -387,7 +387,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle invalid cron expressions gracefully", async () => {
-      console.log("🚀 Testing cron trigger with invalid expression...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -417,7 +417,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle complex time specifications", async () => {
-      console.log("🚀 Testing cron trigger with complex time specs...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -448,7 +448,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle step values in cron expressions", async () => {
-      console.log("🚀 Testing cron trigger with step values...");
+      
       
       const params = {
         triggerType: "cronTrigger",
@@ -513,7 +513,7 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with cron trigger...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -552,7 +552,7 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with complex cron schedule...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -584,7 +584,7 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      console.log("🚀 Testing deploy + trigger workflow with cron trigger...");
+      
 
       const workflowId = await client.submitWorkflow(
         client.createWorkflow(workflowProps)

@@ -262,7 +262,43 @@ class Step implements StepProps {
             ? step.getContractRead()
             : (step as any).contractRead;
         if (contractReadOutput) {
-          // Get the raw output object
+          // Check if the output has a data field that's a protobuf Value
+          if (
+            typeof contractReadOutput.hasData === "function" &&
+            contractReadOutput.hasData()
+          ) {
+            try {
+              // Convert protobuf Value to JavaScript object
+              const data = convertProtobufValueToJs(contractReadOutput.getData());
+              
+              // Always return the array directly for contract read outputs
+              if (Array.isArray(data)) {
+                return data;
+              } else {
+                // If it's a single object, wrap it in an array for consistency
+                return [data];
+              }
+            } catch (error) {
+              console.warn('Failed to convert contract read data from protobuf Value:', error);
+              // Fallback to raw data
+              return contractReadOutput.getData();
+            }
+          } else if (contractReadOutput.data) {
+            // For plain objects, try to convert or use directly
+            const data = typeof contractReadOutput.data.getKindCase === "function"
+              ? convertProtobufValueToJs(contractReadOutput.data)
+              : contractReadOutput.data;
+              
+            // Always return the array directly for contract read outputs
+            if (Array.isArray(data)) {
+              return data;
+            } else {
+              // If it's a single object, wrap it in an array for consistency
+              return [data];
+            }
+          }
+          
+          // Fallback to old structure for backward compatibility
           const outputObj =
             typeof contractReadOutput.toObject === "function"
               ? contractReadOutput.toObject()
@@ -270,17 +306,13 @@ class Step implements StepProps {
 
           // Convert resultsList to results for consistency with ContractReadNode.fromOutputData
           if (outputObj && outputObj.resultsList) {
-            // Exclude resultsList from the spread to avoid duplication
-            const { resultsList, ...cleanOutputObj } = outputObj;
-            return {
-              ...cleanOutputObj,
-              results: resultsList.map((result: any) => ({
-                methodName: result.methodName,
-                success: result.success,
-                error: result.error,
-                data: result.dataList || [],
-              })),
-            };
+            // Return the results array directly
+            return outputObj.resultsList.map((result: any) => ({
+              methodName: result.methodName,
+              success: result.success,
+              error: result.error,
+              data: result.dataList || [],
+            }));
           }
           return outputObj;
         }

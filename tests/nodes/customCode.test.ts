@@ -1,4 +1,4 @@
-import util from util;
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -142,7 +142,7 @@ describe("CustomCode Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should execute simple JavaScript code with input variables", async () => {
-      console.log("🚀 Testing runNodeWithInputs with simple JavaScript...");
+      
 
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
@@ -180,7 +180,7 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("should execute JavaScript with lodash module", async () => {
-      console.log("🚀 Testing runNodeWithInputs with lodash module...");
+      
 
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
@@ -224,7 +224,7 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("should execute JavaScript with date manipulation", async () => {
-      console.log("🚀 Testing runNodeWithInputs with dayjs module...");
+      
 
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
@@ -269,7 +269,7 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("should handle error in custom code execution", async () => {
-      console.log("🚀 Testing runNodeWithInputs with error handling...");
+      
 
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
@@ -328,7 +328,7 @@ describe("CustomCode Node Tests", () => {
         customCodeNode,
       ]);
 
-      console.log("🚀 Testing simulateWorkflow with custom code...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -468,7 +468,7 @@ describe("CustomCode Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with custom code...");
+      
 
       let workflowId: string | undefined;
       try {
@@ -834,7 +834,7 @@ describe("CustomCode Node Tests", () => {
         stringNode,
       ]);
 
-      console.log("🚀 Testing empty data handling in simulateWorkflow...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -932,7 +932,7 @@ describe("CustomCode Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing empty data handling in deployed workflow...");
+      
 
       let workflowId: string | undefined;
       try {

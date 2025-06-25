@@ -1,4 +1,4 @@
-import util from util;
+import util from "util";
 import _ from "lodash";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import { Client, TriggerFactory, Step, NodeFactory } from "@avaprotocol/sdk-js";
@@ -81,7 +81,7 @@ describe("RestAPI Node Tests", () => {
     test("should handle REST API POST call", async () => {
       const postData = { test: "data", timestamp: Date.now() };
 
-      console.log("🚀 Testing runNodeWithInputs with POST request...");
+      
 
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
@@ -110,7 +110,7 @@ describe("RestAPI Node Tests", () => {
     });
 
     test("should handle REST API error responses", async () => {
-      console.log("🚀 Testing runNodeWithInputs with error response...");
+      
 
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
@@ -196,7 +196,7 @@ describe("RestAPI Node Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
 
-      console.log("🚀 Testing simulateWorkflow with REST API error...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -245,7 +245,7 @@ describe("RestAPI Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with REST API call...");
+      
 
       let workflowId: string | undefined;
       try {

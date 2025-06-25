@@ -1,4 +1,4 @@
-import util from util;
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -147,8 +147,6 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runNodeWithInputs with ERC20 approve...");
-
       const spenderAddress = "0x0000000000000000000000000000000000000001"; // Dummy address
       const approveCallData = createApproveCallData(spenderAddress, "100");
 
@@ -225,8 +223,6 @@ describe("ContractWrite Node Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      console.log("🚀 Testing runNodeWithInputs with multiple method calls...");
 
       const spender1 = "0x0000000000000000000000000000000000000001";
       const spender2 = "0x0000000000000000000000000000000000000002";
@@ -323,8 +319,6 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runNodeWithInputs with malformed call data...");
-
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
@@ -387,8 +381,6 @@ describe("ContractWrite Node Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, [
         contractWriteNode,
       ]);
-
-      console.log("🚀 Testing simulateWorkflow with contract write...");
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)

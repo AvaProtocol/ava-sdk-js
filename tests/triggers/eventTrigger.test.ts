@@ -420,7 +420,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with Transfer TO events...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -477,7 +477,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with multiple Transfer queries...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -522,7 +522,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with Chainlink price condition...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -570,7 +570,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing runTrigger with price range conditions...");
+      
 
       const conditions: EventConditionType[] = [
         {
@@ -975,7 +975,7 @@ describe("EventTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with single event query...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -1041,10 +1041,6 @@ describe("EventTrigger Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
-
-      console.log(
-        "🚀 Testing simulateWorkflow with event trigger and method calls..."
-      );
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -1117,7 +1113,7 @@ describe("EventTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
 
-      console.log("🚀 Testing deploy + trigger workflow with event trigger...");
+      
 
       let workflowId: string | undefined;
 
@@ -1414,7 +1410,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing event trigger with empty address array...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1455,7 +1451,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing event trigger with complex topic filtering...");
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1562,7 +1558,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing empty address array handling...");
+      
 
       // Use a more targeted approach - empty addresses with specific topic filter
       // This should be faster than monitoring all contracts
@@ -1604,7 +1600,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing empty topics array handling...");
+      
 
       // Use a known contract but with empty topics - this should be faster
       const params = {
@@ -1735,7 +1731,7 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      console.log("🚀 Testing malformed query configurations...");
+      
 
       // Test with invalid topic format
       const params = {
@@ -1780,7 +1776,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should correctly parse null vs empty object responses (client-side test)", () => {
-      console.log("🚀 Testing client-side null vs empty object parsing...");
+      
 
       // Test the EventTrigger.fromOutputData method directly
       // This simulates what happens when the server returns different response types
@@ -1834,7 +1830,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should validate event trigger configuration without network calls", () => {
-      console.log("🚀 Testing event trigger configuration validation...");
+      
 
       // Test valid configurations
       const validConfig = {
@@ -1881,7 +1877,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty data scenarios consistently (offline test)", () => {
-      console.log("🚀 Testing empty data scenarios offline...");
+      
 
       // Test different empty data scenarios
       const scenarios = [
@@ -1942,7 +1938,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle basic event trigger functionality (offline test)", () => {
-      console.log("🚀 Testing basic event trigger functionality offline...");
+      
 
       // Test basic trigger creation and validation
       const basicConfig = {

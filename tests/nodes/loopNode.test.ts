@@ -1,4 +1,4 @@
-import util from util;
+import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, Edge, Workflow, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
@@ -56,7 +56,7 @@ describe("LoopNode Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
-      console.log("🚀 Testing runNodeWithInputs with Loop node (CustomCode runner)...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -106,7 +106,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should process loop with REST API runner using runNodeWithInputs", async () => {
-      console.log("🚀 Testing runNodeWithInputs with Loop node (REST API runner)...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -148,7 +148,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle empty array input", async () => {
-      console.log("🚀 Testing runNodeWithInputs with empty array...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -181,7 +181,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle complex object array", async () => {
-      console.log("🚀 Testing runNodeWithInputs with complex object array...");
+      
       
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
@@ -283,7 +283,7 @@ describe("LoopNode Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
 
-      console.log("🚀 Testing simulateWorkflow with Loop node...");
+      
       
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -343,7 +343,7 @@ describe("LoopNode Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
 
-      console.log("🚀 Testing simulateWorkflow with Loop node (REST API)...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -424,7 +424,7 @@ describe("LoopNode Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with Loop node...");
+      
 
       let workflowId: string | undefined;
       try {
@@ -523,7 +523,7 @@ describe("LoopNode Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      console.log("🚀 Testing deploy + trigger workflow with multiple Loop types...");
+      
 
       let workflowId: string | undefined;
       try {

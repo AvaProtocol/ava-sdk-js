@@ -175,7 +175,7 @@ describe("BlockTrigger Tests", () => {
 
   describe("runTrigger Tests", () => {
     test("should run trigger with small interval", async () => {
-      console.log("🚀 Testing runTrigger with 5 block interval...");
+      
 
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
@@ -199,7 +199,7 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should run trigger with medium interval", async () => {
-      console.log("🚀 Testing runTrigger with 25 block interval...");
+      
 
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
@@ -223,7 +223,7 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should run trigger with large interval", async () => {
-      console.log("🚀 Testing runTrigger with 100 block interval...");
+      
 
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
@@ -247,7 +247,7 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should run trigger with single block interval", async () => {
-      console.log("🚀 Testing runTrigger with 1 block interval...");
+      
 
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
@@ -287,7 +287,7 @@ describe("BlockTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = blockTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with block trigger...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -326,7 +326,7 @@ describe("BlockTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = blockTrigger;
 
-      console.log("🚀 Testing simulateWorkflow with 50 block interval...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -358,7 +358,7 @@ describe("BlockTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = blockTrigger;
 
-      console.log("🚀 Testing deploy + trigger workflow with block trigger...");
+      
 
       let workflowId: string | null = null;
 
@@ -531,7 +531,7 @@ describe("BlockTrigger Tests", () => {
 
   describe("Block Configuration Tests", () => {
     test("should handle minimum interval value", async () => {
-      console.log("🚀 Testing block trigger with minimum interval (1)...");
+      
 
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
@@ -550,7 +550,7 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should handle very large interval value", async () => {
-      console.log("🚀 Testing block trigger with large interval (10000)...");
+      
 
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
