@@ -7,6 +7,17 @@ var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrapp
 var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
+function serialize_aggregator_CancelTaskResp(arg) {
+  if (!(arg instanceof avs_pb.CancelTaskResp)) {
+    throw new Error('Expected argument of type aggregator.CancelTaskResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_CancelTaskResp(buffer_arg) {
+  return avs_pb.CancelTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_CreateOrUpdateSecretReq(arg) {
   if (!(arg instanceof avs_pb.CreateOrUpdateSecretReq)) {
     throw new Error('Expected argument of type aggregator.CreateOrUpdateSecretReq');
@@ -16,6 +27,17 @@ function serialize_aggregator_CreateOrUpdateSecretReq(arg) {
 
 function deserialize_aggregator_CreateOrUpdateSecretReq(buffer_arg) {
   return avs_pb.CreateOrUpdateSecretReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_CreateSecretResp(arg) {
+  if (!(arg instanceof avs_pb.CreateSecretResp)) {
+    throw new Error('Expected argument of type aggregator.CreateSecretResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_CreateSecretResp(buffer_arg) {
+  return avs_pb.CreateSecretResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_CreateTaskReq(arg) {
@@ -49,6 +71,28 @@ function serialize_aggregator_DeleteSecretReq(arg) {
 
 function deserialize_aggregator_DeleteSecretReq(buffer_arg) {
   return avs_pb.DeleteSecretReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_DeleteSecretResp(arg) {
+  if (!(arg instanceof avs_pb.DeleteSecretResp)) {
+    throw new Error('Expected argument of type aggregator.DeleteSecretResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_DeleteSecretResp(buffer_arg) {
+  return avs_pb.DeleteSecretResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_DeleteTaskResp(arg) {
+  if (!(arg instanceof avs_pb.DeleteTaskResp)) {
+    throw new Error('Expected argument of type aggregator.DeleteTaskResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_DeleteTaskResp(buffer_arg) {
+  return avs_pb.DeleteTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_Execution(arg) {
@@ -458,15 +502,15 @@ function deserialize_aggregator_TriggerTaskResp(buffer_arg) {
   return avs_pb.TriggerTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_google_protobuf_BoolValue(arg) {
-  if (!(arg instanceof google_protobuf_wrappers_pb.BoolValue)) {
-    throw new Error('Expected argument of type google.protobuf.BoolValue');
+function serialize_aggregator_UpdateSecretResp(arg) {
+  if (!(arg instanceof avs_pb.UpdateSecretResp)) {
+    throw new Error('Expected argument of type aggregator.UpdateSecretResp');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_google_protobuf_BoolValue(buffer_arg) {
-  return google_protobuf_wrappers_pb.BoolValue.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_UpdateSecretResp(buffer_arg) {
+  return avs_pb.UpdateSecretResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 
@@ -612,22 +656,22 @@ createTask: {
     requestStream: false,
     responseStream: false,
     requestType: avs_pb.IdReq,
-    responseType: google_protobuf_wrappers_pb.BoolValue,
+    responseType: avs_pb.CancelTaskResp,
     requestSerialize: serialize_aggregator_IdReq,
     requestDeserialize: deserialize_aggregator_IdReq,
-    responseSerialize: serialize_google_protobuf_BoolValue,
-    responseDeserialize: deserialize_google_protobuf_BoolValue,
+    responseSerialize: serialize_aggregator_CancelTaskResp,
+    responseDeserialize: deserialize_aggregator_CancelTaskResp,
   },
   deleteTask: {
     path: '/aggregator.Aggregator/DeleteTask',
     requestStream: false,
     responseStream: false,
     requestType: avs_pb.IdReq,
-    responseType: google_protobuf_wrappers_pb.BoolValue,
+    responseType: avs_pb.DeleteTaskResp,
     requestSerialize: serialize_aggregator_IdReq,
     requestDeserialize: deserialize_aggregator_IdReq,
-    responseSerialize: serialize_google_protobuf_BoolValue,
-    responseDeserialize: deserialize_google_protobuf_BoolValue,
+    responseSerialize: serialize_aggregator_DeleteTaskResp,
+    responseDeserialize: deserialize_aggregator_DeleteTaskResp,
   },
   triggerTask: {
     path: '/aggregator.Aggregator/TriggerTask',
@@ -648,22 +692,22 @@ createSecret: {
     requestStream: false,
     responseStream: false,
     requestType: avs_pb.CreateOrUpdateSecretReq,
-    responseType: google_protobuf_wrappers_pb.BoolValue,
+    responseType: avs_pb.CreateSecretResp,
     requestSerialize: serialize_aggregator_CreateOrUpdateSecretReq,
     requestDeserialize: deserialize_aggregator_CreateOrUpdateSecretReq,
-    responseSerialize: serialize_google_protobuf_BoolValue,
-    responseDeserialize: deserialize_google_protobuf_BoolValue,
+    responseSerialize: serialize_aggregator_CreateSecretResp,
+    responseDeserialize: deserialize_aggregator_CreateSecretResp,
   },
   deleteSecret: {
     path: '/aggregator.Aggregator/DeleteSecret',
     requestStream: false,
     responseStream: false,
     requestType: avs_pb.DeleteSecretReq,
-    responseType: google_protobuf_wrappers_pb.BoolValue,
+    responseType: avs_pb.DeleteSecretResp,
     requestSerialize: serialize_aggregator_DeleteSecretReq,
     requestDeserialize: deserialize_aggregator_DeleteSecretReq,
-    responseSerialize: serialize_google_protobuf_BoolValue,
-    responseDeserialize: deserialize_google_protobuf_BoolValue,
+    responseSerialize: serialize_aggregator_DeleteSecretResp,
+    responseDeserialize: deserialize_aggregator_DeleteSecretResp,
   },
   // Return all secrets belong to this user. Currently we don't support any fine tune or filter yet.
 // Only secret names and config data are returned. The secret value aren't returned.
@@ -685,11 +729,11 @@ updateSecret: {
     requestStream: false,
     responseStream: false,
     requestType: avs_pb.CreateOrUpdateSecretReq,
-    responseType: google_protobuf_wrappers_pb.BoolValue,
+    responseType: avs_pb.UpdateSecretResp,
     requestSerialize: serialize_aggregator_CreateOrUpdateSecretReq,
     requestDeserialize: deserialize_aggregator_CreateOrUpdateSecretReq,
-    responseSerialize: serialize_google_protobuf_BoolValue,
-    responseDeserialize: deserialize_google_protobuf_BoolValue,
+    responseSerialize: serialize_aggregator_UpdateSecretResp,
+    responseDeserialize: deserialize_aggregator_UpdateSecretResp,
   },
   // The spec of these 2 RPCs are based on the following issue:
 // Reference: https://github.com/AvaProtocol/EigenLayer-AVS/issues/150
