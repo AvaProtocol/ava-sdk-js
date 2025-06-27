@@ -913,7 +913,7 @@ class Client extends BaseClient {
       status: result.getStatus(),
       message: result.getMessage(),
       cancelledAt: result.getCancelledAt() || undefined,
-      taskId: result.getTaskId(),
+      id: result.getId(),
       previousStatus: result.getPreviousStatus(),
     };
   }
@@ -941,7 +941,7 @@ class Client extends BaseClient {
       status: result.getStatus(),
       message: result.getMessage(),
       deletedAt: result.getDeletedAt() || undefined,
-      taskId: result.getTaskId(),
+      id: result.getId(),
       previousStatus: result.getPreviousStatus(),
     };
   }

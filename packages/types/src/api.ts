@@ -116,7 +116,7 @@ export interface CancelTaskResponse {
   status: string; // "cancelled", "not_found", "already_cancelled", "cannot_cancel"
   message: string;
   cancelledAt?: number; // Unix timestamp when task was cancelled
-  taskId: string;
+  id: string;
   previousStatus: string; // Previous status before cancellation
 }
 
@@ -125,7 +125,7 @@ export interface DeleteTaskResponse {
   status: string; // "deleted", "not_found", "cannot_delete"
   message: string;
   deletedAt?: number; // Unix timestamp when task was deleted
-  taskId: string;
+  id: string;
   previousStatus: string; // Previous status before deletion
 }
 
