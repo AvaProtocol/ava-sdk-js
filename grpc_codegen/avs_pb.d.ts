@@ -3087,8 +3087,8 @@ export class DeleteTaskResp extends jspb.Message {
     setMessage(value: string): DeleteTaskResp;
     getDeletedAt(): number;
     setDeletedAt(value: number): DeleteTaskResp;
-    getTaskId(): string;
-    setTaskId(value: string): DeleteTaskResp;
+    getId(): string;
+    setId(value: string): DeleteTaskResp;
     getPreviousStatus(): string;
     setPreviousStatus(value: string): DeleteTaskResp;
 
@@ -3108,7 +3108,7 @@ export namespace DeleteTaskResp {
         status: string,
         message: string,
         deletedAt: number,
-        taskId: string,
+        id: string,
         previousStatus: string,
     }
 }
@@ -3122,8 +3122,8 @@ export class CancelTaskResp extends jspb.Message {
     setMessage(value: string): CancelTaskResp;
     getCancelledAt(): number;
     setCancelledAt(value: number): CancelTaskResp;
-    getTaskId(): string;
-    setTaskId(value: string): CancelTaskResp;
+    getId(): string;
+    setId(value: string): CancelTaskResp;
     getPreviousStatus(): string;
     setPreviousStatus(value: string): CancelTaskResp;
 
@@ -3143,7 +3143,7 @@ export namespace CancelTaskResp {
         status: string,
         message: string,
         cancelledAt: number,
-        taskId: string,
+        id: string,
         previousStatus: string,
     }
 }

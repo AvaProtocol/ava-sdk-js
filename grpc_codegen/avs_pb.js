@@ -24933,7 +24933,7 @@ proto.aggregator.DeleteTaskResp.toObject = function(includeInstance, msg) {
     status: jspb.Message.getFieldWithDefault(msg, 2, ""),
     message: jspb.Message.getFieldWithDefault(msg, 3, ""),
     deletedAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    taskId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    id: jspb.Message.getFieldWithDefault(msg, 5, ""),
     previousStatus: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
@@ -24989,7 +24989,7 @@ proto.aggregator.DeleteTaskResp.deserializeBinaryFromReader = function(msg, read
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setTaskId(value);
+      msg.setId(value);
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
@@ -25052,7 +25052,7 @@ proto.aggregator.DeleteTaskResp.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getTaskId();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       5,
@@ -25142,10 +25142,10 @@ proto.aggregator.DeleteTaskResp.prototype.setDeletedAt = function(value) {
 
 
 /**
- * optional string task_id = 5;
+ * optional string id = 5;
  * @return {string}
  */
-proto.aggregator.DeleteTaskResp.prototype.getTaskId = function() {
+proto.aggregator.DeleteTaskResp.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -25154,7 +25154,7 @@ proto.aggregator.DeleteTaskResp.prototype.getTaskId = function() {
  * @param {string} value
  * @return {!proto.aggregator.DeleteTaskResp} returns this
  */
-proto.aggregator.DeleteTaskResp.prototype.setTaskId = function(value) {
+proto.aggregator.DeleteTaskResp.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
@@ -25213,7 +25213,7 @@ proto.aggregator.CancelTaskResp.toObject = function(includeInstance, msg) {
     status: jspb.Message.getFieldWithDefault(msg, 2, ""),
     message: jspb.Message.getFieldWithDefault(msg, 3, ""),
     cancelledAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
-    taskId: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    id: jspb.Message.getFieldWithDefault(msg, 5, ""),
     previousStatus: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
@@ -25269,7 +25269,7 @@ proto.aggregator.CancelTaskResp.deserializeBinaryFromReader = function(msg, read
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setTaskId(value);
+      msg.setId(value);
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
@@ -25332,7 +25332,7 @@ proto.aggregator.CancelTaskResp.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = message.getTaskId();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       5,
@@ -25422,10 +25422,10 @@ proto.aggregator.CancelTaskResp.prototype.setCancelledAt = function(value) {
 
 
 /**
- * optional string task_id = 5;
+ * optional string id = 5;
  * @return {string}
  */
-proto.aggregator.CancelTaskResp.prototype.getTaskId = function() {
+proto.aggregator.CancelTaskResp.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -25434,7 +25434,7 @@ proto.aggregator.CancelTaskResp.prototype.getTaskId = function() {
  * @param {string} value
  * @return {!proto.aggregator.CancelTaskResp} returns this
  */
-proto.aggregator.CancelTaskResp.prototype.setTaskId = function(value) {
+proto.aggregator.CancelTaskResp.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
