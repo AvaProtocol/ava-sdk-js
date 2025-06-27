@@ -6,3 +6,14 @@ export * from "./trigger";
 export * from "./workflow";
 export * from "./api";
 export * from "./shared";
+
+// Export the new structured response types
+export type {
+  CreateSecretResponse,
+  UpdateSecretResponse,
+  DeleteSecretResponse,
+  CancelTaskResponse,
+  DeleteTaskResponse,
+  GetExecutionStatsResponse,
+  GetExecutionStatsOptions
+} from "./api";

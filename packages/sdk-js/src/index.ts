@@ -1,8 +1,6 @@
-import _ from "lodash";
 import { credentials, Metadata, status } from "@grpc/grpc-js";
 import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { BoolValue } from "google-protobuf/google/protobuf/wrappers_pb";
 import Workflow from "./models/workflow";
 import Edge from "./models/edge";
 import Execution from "./models/execution";
@@ -39,17 +37,28 @@ import {
   type ExecutionProps,
   type GetTokenMetadataRequest,
   type GetTokenMetadataResponse,
-  type TokenMetadata,
   type TokenSource,
   type TimeoutConfig,
   type TimeoutError,
   TimeoutPresets,
+  // Import the new structured response types
+  type CreateSecretResponse,
+  type UpdateSecretResponse,
+  type DeleteSecretResponse,
+  type CancelTaskResponse,
+  type DeleteTaskResponse,
+  type GetExecutionStatsResponse,
+  type GetExecutionStatsOptions,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 // Import the consolidated conversion utilities
-import { convertProtobufValueToJs, convertJSValueToProtobuf, cleanGrpcErrorMessage } from "./utils";
+import {
+  convertProtobufValueToJs,
+  convertJSValueToProtobuf,
+  cleanGrpcErrorMessage,
+} from "./utils";
 
 class BaseClient {
   readonly endpoint: string;
@@ -384,12 +393,12 @@ class BaseClient {
                 (error as TimeoutError).attemptsMade = attempt;
                 (error as TimeoutError).methodName = method;
               }
-              
+
               // Clean up gRPC error messages before rejecting
               if (error.message) {
                 error.message = cleanGrpcErrorMessage(error.message);
               }
-              
+
               reject(error);
             }
           });
@@ -710,6 +719,40 @@ class Client extends BaseClient {
   }
 
   /**
+   * Get execution statistics for a specified time period
+   * @param {GetExecutionStatsOptions} options - Request options
+   * @param {string[]} [options.workflowIds] - Optional array of workflow IDs
+   * @param {number} [options.days] - Number of days to look back (default: 7)
+   * @param {string} [options.authKey] - The auth key for the request
+   * @returns {Promise<GetExecutionStatsResponse>} - Execution statistics
+   */
+  async getExecutionStats(
+    options?: GetExecutionStatsOptions
+  ): Promise<GetExecutionStatsResponse> {
+    const request = new avs_pb.GetExecutionStatsReq();
+
+    if (options?.workflowIds && options.workflowIds.length > 0) {
+      request.setWorkflowIdsList(options.workflowIds);
+    }
+
+    if (options?.days) {
+      request.setDays(options.days);
+    }
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.GetExecutionStatsResp,
+      avs_pb.GetExecutionStatsReq
+    >("getExecutionStats", request, options);
+
+    return {
+      total: result.getTotal(),
+      succeeded: result.getSucceeded(),
+      failed: result.getFailed(),
+      avgExecutionTime: result.getAvgExecutionTime(),
+    };
+  }
+
+  /**
    * Get the status of an execution
    * @param {string} workflowId - The workflow id (taskId)
    * @param {string} executionId - The execution id
@@ -851,38 +894,56 @@ class Client extends BaseClient {
    * Cancel a workflow
    * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<boolean>} - Whether the workflow was successfully canceled
+   * @returns {Promise<CancelTaskResponse>} - The response from canceling the workflow
    */
-  async cancelWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
+  async cancelWorkflow(
+    id: string,
+    options?: RequestOptions
+  ): Promise<CancelTaskResponse> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
-      "cancelTask",
-      request,
-      options
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.CancelTaskResp,
+      avs_pb.IdReq
+    >("cancelTask", request, options);
 
-    return result.getValue();
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      cancelledAt: result.getCancelledAt() || undefined,
+      id: result.getId(),
+      previousStatus: result.getPreviousStatus(),
+    };
   }
 
   /**
    * Delete a workflow
    * @param {string} id - The workflow id
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<boolean>} - Whether the workflow was successfully deleted
+   * @returns {Promise<DeleteTaskResponse>} - The response from deleting the workflow
    */
-  async deleteWorkflow(id: string, options?: RequestOptions): Promise<boolean> {
+  async deleteWorkflow(
+    id: string,
+    options?: RequestOptions
+  ): Promise<DeleteTaskResponse> {
     const request = new avs_pb.IdReq();
     request.setId(id);
 
-    const result = await this.sendGrpcRequest<BoolValue, avs_pb.IdReq>(
-      "deleteTask",
-      request,
-      options
-    );
+    const result = await this.sendGrpcRequest<
+      avs_pb.DeleteTaskResp,
+      avs_pb.IdReq
+    >("deleteTask", request, options);
 
-    return result.getValue();
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      deletedAt: result.getDeletedAt() || undefined,
+      id: result.getId(),
+      previousStatus: result.getPreviousStatus(),
+    };
   }
 
   /**
@@ -893,13 +954,13 @@ class Client extends BaseClient {
    * @param {string} [options.workflowId] - The workflow ID to associate the secret with
    * @param {string} [options.orgId] - The organization ID to associate the secret with
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<boolean>} - True if the secret was created successfully
+   * @returns {Promise<CreateSecretResponse>} - Structured response with creation details
    */
   async createSecret(
     name: string,
     value: string,
     options?: SecretOptions
-  ): Promise<boolean> {
+  ): Promise<CreateSecretResponse> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
     request.setSecret(value);
@@ -913,11 +974,18 @@ class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      BoolValue,
+      avs_pb.CreateSecretResp,
       avs_pb.CreateOrUpdateSecretReq
     >("createSecret", request, options);
 
-    return result.getValue();
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      createdAt: result.getCreatedAt() || undefined,
+      secretName: result.getSecretName(),
+      scope: result.getScope(),
+    };
   }
 
   /**
@@ -928,13 +996,13 @@ class Client extends BaseClient {
    * @param {string} [options.workflowId] - The workflow ID to associate the secret with
    * @param {string} [options.orgId] - The organization ID to associate the secret with
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<boolean>} - True if the secret was updated successfully
+   * @returns {Promise<UpdateSecretResponse>} - Structured response with update details
    */
   async updateSecret(
     name: string,
     value: string,
     options?: SecretOptions
-  ): Promise<boolean> {
+  ): Promise<UpdateSecretResponse> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
     request.setSecret(value);
@@ -948,11 +1016,18 @@ class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      BoolValue,
+      avs_pb.UpdateSecretResp,
       avs_pb.CreateOrUpdateSecretReq
     >("updateSecret", request, options);
 
-    return result.getValue();
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      updatedAt: result.getUpdatedAt() || undefined,
+      secretName: result.getSecretName(),
+      scope: result.getScope(),
+    };
   }
 
   /**
@@ -1039,9 +1114,12 @@ class Client extends BaseClient {
    * @param {string} [options.workflowId] - The workflow ID to associate the secret with
    * @param {string} [options.orgId] - The organization ID to associate the secret with
    * @param {string} [options.authKey] - The auth key for the request
-   * @returns {Promise<boolean>} - True if the secret was deleted successfully
+   * @returns {Promise<DeleteSecretResponse>} - Structured response with deletion details
    */
-  async deleteSecret(name: string, options?: SecretOptions): Promise<boolean> {
+  async deleteSecret(
+    name: string,
+    options?: SecretOptions
+  ): Promise<DeleteSecretResponse> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
 
@@ -1054,11 +1132,18 @@ class Client extends BaseClient {
     }
 
     const result = await this.sendGrpcRequest<
-      BoolValue,
+      avs_pb.DeleteSecretResp,
       avs_pb.DeleteSecretReq
     >("deleteSecret", request, options);
 
-    return result.getValue();
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      deletedAt: result.getDeletedAt() || undefined,
+      secretName: result.getSecretName(),
+      scope: result.getScope(),
+    };
   }
 
   /**
@@ -1122,7 +1207,9 @@ class Client extends BaseClient {
       data: NodeFactory.fromOutputData(result),
       error: result.getError(),
       nodeId: result.getNodeId(),
-      metadata: result.hasMetadata() ? convertProtobufValueToJs(result.getMetadata()!) : undefined,
+      metadata: result.hasMetadata()
+        ? convertProtobufValueToJs(result.getMetadata()!)
+        : undefined,
     };
   }
 

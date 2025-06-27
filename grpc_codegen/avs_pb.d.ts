@@ -2933,6 +2933,41 @@ export namespace DeleteSecretReq {
     }
 }
 
+export class DeleteSecretResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): DeleteSecretResp;
+    getStatus(): string;
+    setStatus(value: string): DeleteSecretResp;
+    getMessage(): string;
+    setMessage(value: string): DeleteSecretResp;
+    getDeletedAt(): number;
+    setDeletedAt(value: number): DeleteSecretResp;
+    getSecretName(): string;
+    setSecretName(value: string): DeleteSecretResp;
+    getScope(): string;
+    setScope(value: string): DeleteSecretResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DeleteSecretResp.AsObject;
+    static toObject(includeInstance: boolean, msg: DeleteSecretResp): DeleteSecretResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: DeleteSecretResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DeleteSecretResp;
+    static deserializeBinaryFromReader(message: DeleteSecretResp, reader: jspb.BinaryReader): DeleteSecretResp;
+}
+
+export namespace DeleteSecretResp {
+    export type AsObject = {
+        success: boolean,
+        status: string,
+        message: string,
+        deletedAt: number,
+        secretName: string,
+        scope: string,
+    }
+}
+
 export class GetSignatureFormatReq extends jspb.Message { 
     getWallet(): string;
     setWallet(value: string): GetSignatureFormatReq;
@@ -2970,6 +3005,146 @@ export class GetSignatureFormatResp extends jspb.Message {
 export namespace GetSignatureFormatResp {
     export type AsObject = {
         message: string,
+    }
+}
+
+export class CreateSecretResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): CreateSecretResp;
+    getStatus(): string;
+    setStatus(value: string): CreateSecretResp;
+    getMessage(): string;
+    setMessage(value: string): CreateSecretResp;
+    getCreatedAt(): number;
+    setCreatedAt(value: number): CreateSecretResp;
+    getSecretName(): string;
+    setSecretName(value: string): CreateSecretResp;
+    getScope(): string;
+    setScope(value: string): CreateSecretResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CreateSecretResp.AsObject;
+    static toObject(includeInstance: boolean, msg: CreateSecretResp): CreateSecretResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CreateSecretResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CreateSecretResp;
+    static deserializeBinaryFromReader(message: CreateSecretResp, reader: jspb.BinaryReader): CreateSecretResp;
+}
+
+export namespace CreateSecretResp {
+    export type AsObject = {
+        success: boolean,
+        status: string,
+        message: string,
+        createdAt: number,
+        secretName: string,
+        scope: string,
+    }
+}
+
+export class UpdateSecretResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): UpdateSecretResp;
+    getStatus(): string;
+    setStatus(value: string): UpdateSecretResp;
+    getMessage(): string;
+    setMessage(value: string): UpdateSecretResp;
+    getUpdatedAt(): number;
+    setUpdatedAt(value: number): UpdateSecretResp;
+    getSecretName(): string;
+    setSecretName(value: string): UpdateSecretResp;
+    getScope(): string;
+    setScope(value: string): UpdateSecretResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): UpdateSecretResp.AsObject;
+    static toObject(includeInstance: boolean, msg: UpdateSecretResp): UpdateSecretResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: UpdateSecretResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): UpdateSecretResp;
+    static deserializeBinaryFromReader(message: UpdateSecretResp, reader: jspb.BinaryReader): UpdateSecretResp;
+}
+
+export namespace UpdateSecretResp {
+    export type AsObject = {
+        success: boolean,
+        status: string,
+        message: string,
+        updatedAt: number,
+        secretName: string,
+        scope: string,
+    }
+}
+
+export class DeleteTaskResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): DeleteTaskResp;
+    getStatus(): string;
+    setStatus(value: string): DeleteTaskResp;
+    getMessage(): string;
+    setMessage(value: string): DeleteTaskResp;
+    getDeletedAt(): number;
+    setDeletedAt(value: number): DeleteTaskResp;
+    getId(): string;
+    setId(value: string): DeleteTaskResp;
+    getPreviousStatus(): string;
+    setPreviousStatus(value: string): DeleteTaskResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): DeleteTaskResp.AsObject;
+    static toObject(includeInstance: boolean, msg: DeleteTaskResp): DeleteTaskResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: DeleteTaskResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): DeleteTaskResp;
+    static deserializeBinaryFromReader(message: DeleteTaskResp, reader: jspb.BinaryReader): DeleteTaskResp;
+}
+
+export namespace DeleteTaskResp {
+    export type AsObject = {
+        success: boolean,
+        status: string,
+        message: string,
+        deletedAt: number,
+        id: string,
+        previousStatus: string,
+    }
+}
+
+export class CancelTaskResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): CancelTaskResp;
+    getStatus(): string;
+    setStatus(value: string): CancelTaskResp;
+    getMessage(): string;
+    setMessage(value: string): CancelTaskResp;
+    getCancelledAt(): number;
+    setCancelledAt(value: number): CancelTaskResp;
+    getId(): string;
+    setId(value: string): CancelTaskResp;
+    getPreviousStatus(): string;
+    setPreviousStatus(value: string): CancelTaskResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): CancelTaskResp.AsObject;
+    static toObject(includeInstance: boolean, msg: CancelTaskResp): CancelTaskResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: CancelTaskResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): CancelTaskResp;
+    static deserializeBinaryFromReader(message: CancelTaskResp, reader: jspb.BinaryReader): CancelTaskResp;
+}
+
+export namespace CancelTaskResp {
+    export type AsObject = {
+        success: boolean,
+        status: string,
+        message: string,
+        cancelledAt: number,
+        id: string,
+        previousStatus: string,
     }
 }
 

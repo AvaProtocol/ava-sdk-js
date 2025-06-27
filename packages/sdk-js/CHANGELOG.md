@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.4.2
+
+### Patch Changes
+
+- 6650be6: Update Cancel and Delete operation response
+- Updated dependencies [6650be6]
+  - @avaprotocol/types@2.2.15
+
 ## 2.4.1
 
 ### Patch Changes

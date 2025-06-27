@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.15
+
+### Patch Changes
+
+- 6650be6: Update Cancel and Delete operation response
+
 ## 2.2.14
 
 ### Patch Changes
