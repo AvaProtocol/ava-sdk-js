@@ -3143,7 +3143,11 @@ export namespace CancelTaskResp {
         status: string,
         message: string,
         cancelledAt: number,
+<<<<<<< HEAD
         id: string,
+=======
+        taskId: string,
+>>>>>>> 6946eba (Updated avs.proto for the rpc interface change)
         previousStatus: string,
     }
 }
