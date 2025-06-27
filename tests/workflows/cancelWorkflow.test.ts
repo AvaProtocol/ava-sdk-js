@@ -43,7 +43,7 @@ describe("cancelWorkflow Tests", () => {
       workflowId = await client.submitWorkflow(workflow);
 
       const result = await client.cancelWorkflow(workflowId);
-      expect(result).toBe(true);
+      expect(result.success).toBe(true);
 
       const cancelResult = await client.getWorkflow(workflowId);
       expect(cancelResult.id).toEqual(workflowId);
@@ -55,9 +55,11 @@ describe("cancelWorkflow Tests", () => {
     }
   });
 
-  test("should throw error when canceling an non-existent task", async () => {
-    await expect(
-      client.cancelWorkflow("non-existent-task-id")
-    ).rejects.toThrowError(/task not found|NOT_FOUND/i);
+  test("should return error response when canceling a non-existent task", async () => {
+    const result = await client.cancelWorkflow("non-existent-task-id");
+    expect(result.success).toBe(false);
+    expect(result.status).toBe("not_found");
+    expect(result.message).toMatch(/task not found/i);
+    expect(result.id).toBe("non-existent-task-id");
   });
 });
