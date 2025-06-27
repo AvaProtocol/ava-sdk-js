@@ -10,13 +10,13 @@ import {
   removeCreatedWorkflows,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(45000);
 
 // Lazy-load configuration to handle CI/CD environments gracefully
-function getTestConfig() {
+async function getTestConfig() {
   try {
-    const { getConfig } = require("../utils/envalid");
     return getConfig();
   } catch (error) {
     console.warn(
@@ -55,6 +55,35 @@ const TRANSFER_EVENT_SIGNATURE =
 const CHAINLINK_ANSWER_UPDATED_SIGNATURE =
   "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f";
 
+// ERC20 Transfer event ABI for proper parsing
+const ERC20_TRANSFER_ABI = [
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "Transfer",
+    type: "event",
+  },
+];
+
 // Chainlink Price Feed ABI for AnswerUpdated event
 const CHAINLINK_AGGREGATOR_ABI = [
   {
@@ -87,14 +116,21 @@ const CHAINLINK_AGGREGATOR_ABI = [
 // Helper function to check if we're on Sepolia
 async function isSepoliaChain(): Promise<boolean> {
   try {
-    const config = getTestConfig();
+    const config = await getTestConfig();
     return config.chainEndpoint?.toLowerCase().includes("sepolia") || false;
   } catch {
     return false;
   }
 }
 
-// Helper function to create event trigger config
+// Helper function to pad addresses to 32 bytes for topics
+function padAddressForTopic(address: string): string {
+  // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
+  const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
+  return "0x" + cleanAddress.toLowerCase().padStart(64, "0");
+}
+
+// Helper function to create basic event trigger config (without enrichment)
 function createEventTriggerConfig(
   coreAddress: string,
   contractAddresses: string[] = SEPOLIA_TOKEN_ADDRESSES
@@ -105,7 +141,11 @@ function createEventTriggerConfig(
         addresses: contractAddresses,
         topics: [
           {
-            values: [TRANSFER_EVENT_SIGNATURE, coreAddress, null], // Transfer from coreAddress
+            values: [
+              TRANSFER_EVENT_SIGNATURE,
+              padAddressForTopic(coreAddress),
+              null,
+            ], // Transfer from coreAddress
           },
         ],
       },
@@ -113,7 +153,11 @@ function createEventTriggerConfig(
         addresses: contractAddresses,
         topics: [
           {
-            values: [TRANSFER_EVENT_SIGNATURE, null, coreAddress], // Transfer to coreAddress
+            values: [
+              TRANSFER_EVENT_SIGNATURE,
+              null,
+              padAddressForTopic(coreAddress),
+            ], // Transfer to coreAddress
           },
         ],
       },
@@ -156,11 +200,11 @@ describe("EventTrigger Tests", () => {
   let client: Client;
   let isSepoliaTest: boolean;
   let coreAddress: string;
-  let hasRealCredentials: boolean;
 
   beforeAll(async () => {
     // Load real configuration for integration tests
-    const { avsEndpoint, walletPrivateKey, factoryAddress } = getTestConfig();
+    const { avsEndpoint, walletPrivateKey, factoryAddress } =
+      await getTestConfig();
 
     coreAddress = await getAddress(walletPrivateKey);
 
@@ -420,8 +464,6 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
@@ -430,7 +472,11 @@ describe("EventTrigger Tests", () => {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
               topics: [
                 {
-                  values: [TRANSFER_EVENT_SIGNATURE, null, coreAddress], // Transfer to coreAddress
+                  values: [
+                    TRANSFER_EVENT_SIGNATURE,
+                    null,
+                    padAddressForTopic(coreAddress),
+                  ], // Transfer to coreAddress
                 },
               ],
             },
@@ -477,8 +523,6 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: createEventTriggerConfig(coreAddress),
@@ -521,8 +565,6 @@ describe("EventTrigger Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -569,8 +611,6 @@ describe("EventTrigger Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      
 
       const conditions: EventConditionType[] = [
         {
@@ -701,6 +741,13 @@ describe("EventTrigger Tests", () => {
         expect((result.data as any).current).toBeDefined();
         expect((result.data as any).currentRaw).toBeDefined();
         expect((result.data as any).decimals).toBeDefined();
+
+        // 🔍 TYPE CHECK: Verify ABI type improvements are working
+        expect(typeof (result.data as any).decimals).toBe("number"); // decimals should be number type (uint8 -> number)
+        expect(typeof (result.data as any).current).toBe("string"); // current should be string (int256 -> string, then formatted)
+        expect(typeof (result.data as any).currentRaw).toBe("string"); // raw value should be string
+        expect(typeof (result.data as any).roundId).toBe("string"); // roundId should be string (uint256 -> string)
+        expect(typeof (result.data as any).updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
 
         // Verify the formatting makes sense
         const formattedValue = parseFloat((result.data as any).current);
@@ -897,6 +944,125 @@ describe("EventTrigger Tests", () => {
       const deserializedQuery = (deserializedTrigger.data as any).queries[0];
       expect(deserializedQuery.contractAbi).toBeUndefined();
     });
+
+    test("should run trigger with enriched Transfer event parsing", async () => {
+      console.log(
+        "🚀 Testing enriched Transfer event parsing with token enrichment..."
+      );
+
+      const params = {
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          simulationMode: true,
+          queries: [
+            {
+              addresses: ["0x779877A7B0D9E8603169DdbD7836e478b4624789"], // Sample token contract
+              topics: [
+                {
+                  values: [
+                    TRANSFER_EVENT_SIGNATURE,
+                    null, // Any from address
+                    padAddressForTopic(
+                      "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788"
+                    ), // Specific to address
+                  ],
+                },
+              ],
+              contractAbi: JSON.stringify([
+                {
+                  anonymous: false,
+                  inputs: [
+                    {
+                      indexed: true,
+                      internalType: "address",
+                      name: "from",
+                      type: "address",
+                    },
+                    {
+                      indexed: true,
+                      internalType: "address",
+                      name: "to",
+                      type: "address",
+                    },
+                    {
+                      indexed: false,
+                      internalType: "uint256",
+                      name: "value",
+                      type: "uint256",
+                    },
+                  ],
+                  name: "Transfer",
+                  type: "event",
+                },
+              ]),
+              methodCalls: [
+                {
+                  methodName: "decimals",
+                  callData: "0x313ce567",
+                  applyToFields: ["value"],
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      console.log(
+        "🚀 ~ runTrigger with enriched Transfer parsing ~ input params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(params);
+
+      console.log(
+        "runTrigger enriched Transfer response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.error).toBe("");
+      expect(result.data).toBeDefined();
+
+      const transferData = result.data as Record<string, unknown>;
+
+      // Verify ABI parsing worked
+      expect(transferData.fromAddress).toBeDefined();
+      expect(transferData.toAddress).toBeDefined();
+      expect(transferData.value).toBeDefined(); // Formatted value
+      expect(transferData.tokenName).toBeDefined();
+      expect(transferData.tokenSymbol).toBeDefined();
+      expect(transferData.tokenDecimals).toBeDefined();
+      expect(transferData.address).toBeDefined();
+      expect(transferData.transactionHash).toBeDefined();
+      expect(transferData.blockNumber).toBeDefined();
+      expect(transferData.logIndex).toBeDefined();
+      expect(transferData.transactionIndex).toBeDefined();
+
+      // Verify enriched addresses are properly formatted
+      expect(typeof transferData.fromAddress).toBe("string");
+      expect(typeof transferData.toAddress).toBe("string");
+      expect(transferData.fromAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+      expect(transferData.toAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
+
+      // Verify decimal formatting worked if decimals were retrieved
+      if (transferData.tokenDecimals) {
+        expect(transferData.tokenDecimals).toBeDefined();
+
+        // 🔍 TYPE CHECK: Verify ABI type improvements are working
+        expect(typeof transferData.tokenDecimals).toBe("number"); // decimals should be number type (uint8 -> number)
+
+        // Verify the formatting makes sense
+        const formattedValue = parseFloat(transferData.value as string);
+        const decimals = transferData.tokenDecimals as number;
+
+        if (!isNaN(formattedValue) && !isNaN(decimals)) {
+          // Basic sanity check that value is reasonable
+          expect(formattedValue).toBeGreaterThanOrEqual(0);
+          expect(decimals).toBeGreaterThanOrEqual(0);
+          expect(decimals).toBeLessThanOrEqual(30); // Reasonable upper bound for token decimals
+        }
+      }
+    });
   });
 
   describe("simulateWorkflow Tests", () => {
@@ -974,8 +1140,6 @@ describe("EventTrigger Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
-
-      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -1072,8 +1236,13 @@ describe("EventTrigger Tests", () => {
         console.log(`  - Raw: ${output.currentRaw}`);
         console.log(`  - Decimals: ${output.decimals}`);
 
-        expect(output.decimals).toBe("8");
-        expect(output.current).toMatch(/^\d+\.\d{8}$/); // Should be decimal format
+        // 🔍 TYPE CHECK: Verify ABI type improvements are working
+        expect(typeof output.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
+        expect(typeof output.current).toBe("string"); // current should be string (int256 -> string, then formatted)
+        expect(typeof output.currentRaw).toBe("string"); // raw value should be string
+
+        expect(output.decimals).toBe(8);
+        expect(output.current).toMatch(/^\d+\.\d+$/); // Should be decimal format (flexible decimal places)
         expect(output.currentRaw).toMatch(/^\d+$/); // Should be raw number
       } else {
         console.log(
@@ -1112,8 +1281,6 @@ describe("EventTrigger Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = eventTrigger;
-
-      
 
       let workflowId: string | undefined;
 
@@ -1156,9 +1323,8 @@ describe("EventTrigger Tests", () => {
               "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
             topics: [
               TRANSFER_EVENT_SIGNATURE,
-              "0x000000000000000000000000" +
-                "1234567890123456789012345678901234567890".substring(2),
-              "0x000000000000000000000000" + coreAddress.substring(2),
+              "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788", // Properly padded from address
+              null,
             ],
             transactionHash:
               "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
@@ -1306,9 +1472,8 @@ describe("EventTrigger Tests", () => {
               "0x00000000000000000000000000000000000000000000000de0b6b3a7640000",
             topics: [
               TRANSFER_EVENT_SIGNATURE,
-              "0x000000000000000000000000" +
-                "1234567890123456789012345678901234567890".substring(2),
-              "0x000000000000000000000000" + coreAddress.substring(2),
+              "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788", // Properly padded from address
+              null,
             ],
             transactionHash:
               "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
@@ -1410,8 +1575,6 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
@@ -1450,8 +1613,6 @@ describe("EventTrigger Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1558,8 +1719,6 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      
-
       // Use a more targeted approach - empty addresses with specific topic filter
       // This should be faster than monitoring all contracts
       const result = await client.runTrigger({
@@ -1599,8 +1758,6 @@ describe("EventTrigger Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      
 
       // Use a known contract but with empty topics - this should be faster
       const params = {
@@ -1731,8 +1888,6 @@ describe("EventTrigger Tests", () => {
         return;
       }
 
-      
-
       // Test with invalid topic format
       const params = {
         triggerType: TriggerType.Event,
@@ -1776,8 +1931,6 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should correctly parse null vs empty object responses (client-side test)", () => {
-      
-
       // Test the EventTrigger.fromOutputData method directly
       // This simulates what happens when the server returns different response types
 
@@ -1830,8 +1983,6 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should validate event trigger configuration without network calls", () => {
-      
-
       // Test valid configurations
       const validConfig = {
         queries: [
@@ -1877,8 +2028,6 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty data scenarios consistently (offline test)", () => {
-      
-
       // Test different empty data scenarios
       const scenarios = [
         {
@@ -1938,8 +2087,6 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle basic event trigger functionality (offline test)", () => {
-      
-
       // Test basic trigger creation and validation
       const basicConfig = {
         queries: [

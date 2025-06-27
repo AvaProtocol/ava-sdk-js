@@ -196,6 +196,20 @@ describe("ContractRead Node Tests", () => {
       expect(latestRoundResult.success).toBe(true);
       expect(latestRoundResult.data).toBeDefined();
 
+      // 🔍 TYPE CHECK: Verify ABI type improvements are working
+      if (
+        latestRoundResult.data &&
+        typeof latestRoundResult.data === "object"
+      ) {
+        const data = latestRoundResult.data as any;
+        if (data.roundId) expect(typeof data.roundId).toBe("string"); // uint80 -> string (large number)
+        if (data.answer) expect(typeof data.answer).toBe("string"); // int256 -> string (large number)
+        if (data.startedAt) expect(typeof data.startedAt).toBe("string"); // uint256 -> string (large number)
+        if (data.updatedAt) expect(typeof data.updatedAt).toBe("string"); // uint256 -> string (large number)
+        if (data.answeredInRound)
+          expect(typeof data.answeredInRound).toBe("string"); // uint80 -> string (large number)
+      }
+
       expect(result.nodeId).toBeDefined();
     });
 
@@ -231,7 +245,9 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data)).toBe(true);
-      expect((result.data as any[]).length).toBe(params.nodeConfig.methodCalls.length);
+      expect((result.data as any[]).length).toBe(
+        params.nodeConfig.methodCalls.length
+      );
       expect(result.nodeId).toBeDefined();
 
       // Check that we got results for both methods
@@ -244,6 +260,29 @@ describe("ContractRead Node Tests", () => {
 
       expect(latestRoundResult).toBeDefined();
       expect(decimalsResult).toBeDefined();
+
+      // 🔍 TYPE CHECK: Verify ABI type improvements are working
+      if (
+        latestRoundResult &&
+        latestRoundResult.data &&
+        typeof latestRoundResult.data === "object"
+      ) {
+        const data = latestRoundResult.data as any;
+        if (data.roundId) expect(typeof data.roundId).toBe("string"); // uint80 -> string (large number)
+        if (data.answer) expect(typeof data.answer).toBe("string"); // int256 -> string (large number)
+        if (data.startedAt) expect(typeof data.startedAt).toBe("string"); // uint256 -> string (large number)
+        if (data.updatedAt) expect(typeof data.updatedAt).toBe("string"); // uint256 -> string (large number)
+        if (data.answeredInRound)
+          expect(typeof data.answeredInRound).toBe("string"); // uint80 -> string (large number)
+      }
+
+      if (decimalsResult && decimalsResult.data) {
+        expect(typeof decimalsResult.data).toBe("object"); // decimals result should be object containing the decimals field
+        const decimalsData = decimalsResult.data as any;
+        if (decimalsData.decimals) {
+          expect(typeof decimalsData.decimals).toBe("string"); // decimals field should be string type (uint8 -> string)
+        }
+      }
     });
 
     test("should handle invalid contract address", async () => {
@@ -350,7 +389,9 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data)).toBe(true);
-      expect((result.data as any[]).length).toBe(params.nodeConfig.methodCalls.length);
+      expect((result.data as any[]).length).toBe(
+        params.nodeConfig.methodCalls.length
+      );
       expect(result.nodeId).toBeDefined();
 
       // Check that we got results for the description method
@@ -359,6 +400,15 @@ describe("ContractRead Node Tests", () => {
       );
       expect(descriptionResult).toBeDefined();
       expect(descriptionResult.success).toBe(true);
+
+      // 🔍 TYPE CHECK: Verify ABI type improvements are working
+      if (descriptionResult && descriptionResult.data) {
+        expect(typeof descriptionResult.data).toBe("object"); // description result should be object containing the description field
+        const descriptionData = descriptionResult.data as any;
+        if (descriptionData.description) {
+          expect(typeof descriptionData.description).toBe("string"); // description field should be string type (string -> string)
+        }
+      }
     });
 
     test("should apply decimal formatting using applyToFields", async () => {
@@ -435,6 +485,17 @@ describe("ContractRead Node Tests", () => {
 
       const answerValue = latestRoundResult.data.answer;
       expect(answerValue).toBeTruthy();
+
+      // 🔍 TYPE CHECK: Verify ABI type improvements are working
+      expect(typeof answerValue).toBe("string"); // answer should be string type (formatted decimal)
+      expect(typeof decimalsResult.data).toBe("object"); // decimals result should be object containing the decimals field
+      if (decimalsResult.data && typeof decimalsResult.data === "object") {
+        const decimalsData = decimalsResult.data as any;
+        if (decimalsData.decimals) {
+          expect(typeof decimalsData.decimals).toBe("string"); // decimals field should be string type
+        }
+      }
+
       expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
 
       expect(result.nodeId).toBeDefined();
@@ -541,6 +602,17 @@ describe("ContractRead Node Tests", () => {
       expect(latestRoundResult.data).toHaveProperty("answer");
       expect(latestRoundResult.data).toHaveProperty("roundId");
       expect(decimalsResult.data).toHaveProperty("decimals");
+
+      // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
+      if (latestRoundResult.data.answer) {
+        expect(typeof latestRoundResult.data.answer).toBe("string"); // int256 -> string (large number)
+      }
+      if (latestRoundResult.data.roundId) {
+        expect(typeof latestRoundResult.data.roundId).toBe("string"); // uint80 -> string (large number)
+      }
+      if (decimalsResult.data.decimals) {
+        expect(typeof decimalsResult.data.decimals).toBe("string"); // uint8 -> string (ABI parsing)
+      }
     });
 
     test("should simulate workflow with decimal formatting using applyToFields", async () => {
@@ -625,6 +697,8 @@ describe("ContractRead Node Tests", () => {
 
       // Check that decimal formatting was applied
       if (latestRoundResult.data.answer) {
+        // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
+        expect(typeof latestRoundResult.data.answer).toBe("string");
         expect(latestRoundResult.data.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
       }
 
@@ -632,6 +706,11 @@ describe("ContractRead Node Tests", () => {
       if (latestRoundResult.data.answerRaw) {
         expect(typeof latestRoundResult.data.answerRaw).toBe("string");
         expect(latestRoundResult.data.answerRaw).toMatch(/^\d+$/); // Should be raw integer
+      }
+
+      // 🔍 TYPE CHECK: Verify other fields have correct types
+      if (decimalsResult.data.decimals) {
+        expect(typeof decimalsResult.data.decimals).toBe("string"); // decimals field should be string type
       }
     });
   });
