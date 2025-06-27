@@ -83,6 +83,65 @@ export interface SecretOptions extends RequestOptions {
   orgId?: string;
 }
 
+// New structured response types based on updated proto definitions
+export interface CreateSecretResponse {
+  success: boolean;
+  status: string; // "created", "already_exists", "error"
+  message: string;
+  createdAt?: number; // Unix timestamp when secret was created
+  secretName: string;
+  scope: string; // "user", "workflow", "org"
+}
+
+export interface UpdateSecretResponse {
+  success: boolean;
+  status: string; // "updated", "not_found", "error"
+  message: string;
+  updatedAt?: number; // Unix timestamp when secret was updated
+  secretName: string;
+  scope: string; // "user", "workflow", "org"
+}
+
+export interface DeleteSecretResponse {
+  success: boolean;
+  status: string; // "deleted", "not_found", "already_deleted"
+  message: string;
+  deletedAt?: number; // Unix timestamp when secret was deleted
+  secretName: string;
+  scope: string; // "user", "workflow", "org"
+}
+
+export interface CancelTaskResponse {
+  success: boolean;
+  status: string; // "cancelled", "not_found", "already_cancelled", "cannot_cancel"
+  message: string;
+  cancelledAt?: number; // Unix timestamp when task was cancelled
+  taskId: string;
+  previousStatus: string; // Previous status before cancellation
+}
+
+export interface DeleteTaskResponse {
+  success: boolean;
+  status: string; // "deleted", "not_found", "cannot_delete"
+  message: string;
+  deletedAt?: number; // Unix timestamp when task was deleted
+  taskId: string;
+  previousStatus: string; // Previous status before deletion
+}
+
+// New execution statistics response
+export interface GetExecutionStatsResponse {
+  total: number; // Total number of executions
+  succeeded: number; // Number of successful executions
+  failed: number; // Number of failed executions
+  avgExecutionTime: number; // Average execution time in milliseconds
+}
+
+export interface GetExecutionStatsOptions extends RequestOptions {
+  workflowIds?: string[]; // Optional array of workflow IDs
+  days?: number; // Number of days to look back (default: 7)
+}
+
 export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
