@@ -1,5 +1,4 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { Value as ProtobufValue } from "google-protobuf/google/protobuf/struct_pb";
 import _ from "lodash";
 import ContractWriteNode from "./contractWrite";
 import CustomCodeNode from "./customCode";
@@ -33,7 +32,6 @@ import {
   FilterNodeProps,
   LoopNodeProps
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
 
 class NodeFactory {
   static create(props: NodeProps): Node {
