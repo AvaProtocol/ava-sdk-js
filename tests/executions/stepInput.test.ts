@@ -589,13 +589,13 @@ describe("Input Field Tests", () => {
               valueFormatted,
               fromAddress,
               toAddress,
-              blockTimestamp
+              blockNumber
             } = event_trigger_with_input.data;
             
-            // Format the timestamp into a readable string (e.g. "2025-07-09 14:30")
-            const formattedTime = dayjs(blockTimestamp).format('YYYY-MM-DD HH:mm');
+            // Use current time since blockTimestamp is no longer available
+            const formattedTime = dayjs().format('YYYY-MM-DD HH:mm');
             
-            const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at \${formattedTime}\`;
+            const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at block \${blockNumber} (\${formattedTime})\`;
             
             return {
               success: true,

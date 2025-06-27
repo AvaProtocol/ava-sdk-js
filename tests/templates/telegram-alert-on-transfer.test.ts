@@ -146,13 +146,13 @@ const {
   valueFormatted,
   fromAddress,
   toAddress,
-  blockTimestamp
+  blockNumber
 } = eventTrigger.data;
 
-// Format the timestamp into a readable string (e.g. "2025-07-09 14:30")
-const formattedTime = dayjs(blockTimestamp).format('YYYY-MM-DD HH:mm');
+// Use current time since blockTimestamp is no longer available
+const formattedTime = dayjs().format('YYYY-MM-DD HH:mm');
 
-const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at \${formattedTime}\`;
+const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at block \${blockNumber} (\${formattedTime})\`;
 
 return message;`,
       },
@@ -247,7 +247,7 @@ return message;`,
             valueFormatted: 100.5,
             fromAddress: "0x1234567890123456789012345678901234567890",
             toAddress: testWalletAddress,
-            blockTimestamp: new Date("2025-01-15T14:30:00Z").getTime(),
+            blockNumber: 12345678,
           },
           input: {
             address: testWalletAddress,
@@ -284,7 +284,7 @@ return message;`,
       // Mock the code0 output and apContext
       const inputVariables = {
         code0: {
-          data: "Received 100.5 USDC from 0x1234567890123456789012345678901234567890 at 2025-01-15 14:30",
+          data: "Received 100.5 USDC from 0x1234567890123456789012345678901234567890 at block 12345678 (2025-01-15 14:30)",
         },
         apContext: {
           configVars: {
