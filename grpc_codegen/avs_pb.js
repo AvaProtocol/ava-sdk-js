@@ -24934,10 +24934,14 @@ proto.aggregator.DeleteTaskResp.toObject = function(includeInstance, msg) {
     message: jspb.Message.getFieldWithDefault(msg, 3, ""),
     deletedAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
 <<<<<<< HEAD
+<<<<<<< HEAD
     id: jspb.Message.getFieldWithDefault(msg, 5, ""),
 =======
     taskId: jspb.Message.getFieldWithDefault(msg, 5, ""),
 >>>>>>> 6946eba (Updated avs.proto for the rpc interface change)
+=======
+    id: jspb.Message.getFieldWithDefault(msg, 5, ""),
+>>>>>>> 6bf9d83 (Updated task_id to id in protobuf)
     previousStatus: jspb.Message.getFieldWithDefault(msg, 6, "")
   };
 
@@ -24994,10 +24998,14 @@ proto.aggregator.DeleteTaskResp.deserializeBinaryFromReader = function(msg, read
     case 5:
       var value = /** @type {string} */ (reader.readString());
 <<<<<<< HEAD
+<<<<<<< HEAD
       msg.setId(value);
 =======
       msg.setTaskId(value);
 >>>>>>> 6946eba (Updated avs.proto for the rpc interface change)
+=======
+      msg.setId(value);
+>>>>>>> 6bf9d83 (Updated task_id to id in protobuf)
       break;
     case 6:
       var value = /** @type {string} */ (reader.readString());
@@ -25061,10 +25069,14 @@ proto.aggregator.DeleteTaskResp.serializeBinaryToWriter = function(message, writ
     );
   }
 <<<<<<< HEAD
+<<<<<<< HEAD
   f = message.getId();
 =======
   f = message.getTaskId();
 >>>>>>> 6946eba (Updated avs.proto for the rpc interface change)
+=======
+  f = message.getId();
+>>>>>>> 6bf9d83 (Updated task_id to id in protobuf)
   if (f.length > 0) {
     writer.writeString(
       5,
@@ -25155,6 +25167,7 @@ proto.aggregator.DeleteTaskResp.prototype.setDeletedAt = function(value) {
 
 /**
 <<<<<<< HEAD
+<<<<<<< HEAD
  * optional string id = 5;
  * @return {string}
  */
@@ -25165,6 +25178,12 @@ proto.aggregator.DeleteTaskResp.prototype.getId = function() {
  */
 proto.aggregator.DeleteTaskResp.prototype.getTaskId = function() {
 >>>>>>> 6946eba (Updated avs.proto for the rpc interface change)
+=======
+ * optional string id = 5;
+ * @return {string}
+ */
+proto.aggregator.DeleteTaskResp.prototype.getId = function() {
+>>>>>>> 6bf9d83 (Updated task_id to id in protobuf)
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
@@ -25174,10 +25193,14 @@ proto.aggregator.DeleteTaskResp.prototype.getTaskId = function() {
  * @return {!proto.aggregator.DeleteTaskResp} returns this
  */
 <<<<<<< HEAD
+<<<<<<< HEAD
 proto.aggregator.DeleteTaskResp.prototype.setId = function(value) {
 =======
 proto.aggregator.DeleteTaskResp.prototype.setTaskId = function(value) {
 >>>>>>> 6946eba (Updated avs.proto for the rpc interface change)
+=======
+proto.aggregator.DeleteTaskResp.prototype.setId = function(value) {
+>>>>>>> 6bf9d83 (Updated task_id to id in protobuf)
   return jspb.Message.setProto3StringField(this, 5, value);
 };
 
