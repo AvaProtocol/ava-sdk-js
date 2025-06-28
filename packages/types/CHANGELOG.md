@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.16
+
+### Patch Changes
+
+- 52b44d6: Update Secret and Cancel, Delete Workflow responses
+
 ## 2.2.15
 
 ### Patch Changes

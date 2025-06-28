@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.4.3
+
+### Patch Changes
+
+- 52b44d6: Update Secret and Cancel, Delete Workflow responses
+- Updated dependencies [52b44d6]
+  - @avaprotocol/types@2.2.16
+
 ## 2.4.2
 
 ### Patch Changes
