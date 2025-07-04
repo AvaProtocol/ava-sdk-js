@@ -114,18 +114,18 @@ class LoopNode extends Node {
     }
 
     switch (runner.type) {
-              case "ethTransfer": {
-          const ethTransferData = runner.data as Record<string, unknown>;
-          if (ethTransferData.config) {
-            const ethConfig = ethTransferData.config as Record<string, string>;
-            const ethTransfer = ETHTransferNode.createProtobufNode({
-              destination: ethConfig.destination,
-              amount: ethConfig.amount,
-            });
-            loopNode.setEthTransfer(ethTransfer);
-          }
-          break;
+      case "ethTransfer": {
+        const ethTransferData = runner.data as Record<string, unknown>;
+        if (ethTransferData.config) {
+          const ethConfig = ethTransferData.config as Record<string, string>;
+          const ethTransfer = ETHTransferNode.createProtobufNode({
+            destination: ethConfig.destination,
+            amount: ethConfig.amount,
+          });
+          loopNode.setEthTransfer(ethTransfer);
         }
+        break;
+      }
 
       case "contractWrite": {
         const contractWriteData = runner.data as Record<string, unknown>;
@@ -138,10 +138,11 @@ class LoopNode extends Node {
             contractAddress: writeConfig.contractAddress as string,
             callData: writeConfig.callData as string,
             contractAbi: writeConfig.contractAbi as string,
-            methodCalls: (writeConfig.methodCallsList as Array<{
-              callData: string;
-              methodName?: string;
-            }>) || [],
+            methodCalls:
+              (writeConfig.methodCallsList as Array<{
+                callData: string;
+                methodName?: string;
+              }>) || [],
           });
           loopNode.setContractWrite(contractWrite);
         }
@@ -155,45 +156,46 @@ class LoopNode extends Node {
           const contractRead = ContractReadNode.createProtobufNode({
             contractAddress: readConfig.contractAddress as string,
             contractAbi: readConfig.contractAbi as string,
-            methodCalls: (readConfig.methodCallsList as Array<{
-              callData: string;
-              methodName?: string;
-              applyToFields?: string[];
-            }>) || [],
+            methodCalls:
+              (readConfig.methodCallsList as Array<{
+                callData: string;
+                methodName?: string;
+                applyToFields?: string[];
+              }>) || [],
           });
           loopNode.setContractRead(contractRead);
         }
         break;
       }
 
-              case "graphqlDataQuery": {
-          const graphqlData = runner.data as Record<string, unknown>;
-          if (graphqlData.config) {
-            const gqlConfig = graphqlData.config as Record<string, unknown>;
-            const graphqlQuery = GraphQLQueryNode.createProtobufNode({
-              url: gqlConfig.url as string,
-              query: gqlConfig.query as string,
-              variablesMap: gqlConfig.variablesMap as Array<[string, string]>,
-            });
-            loopNode.setGraphqlDataQuery(graphqlQuery);
-          }
-          break;
+      case "graphqlDataQuery": {
+        const graphqlData = runner.data as Record<string, unknown>;
+        if (graphqlData.config) {
+          const gqlConfig = graphqlData.config as Record<string, unknown>;
+          const graphqlQuery = GraphQLQueryNode.createProtobufNode({
+            url: gqlConfig.url as string,
+            query: gqlConfig.query as string,
+            variablesMap: gqlConfig.variablesMap as Array<[string, string]>,
+          });
+          loopNode.setGraphqlDataQuery(graphqlQuery);
         }
+        break;
+      }
 
-              case "restApi": {
-          const restApiData = runner.data as Record<string, unknown>;
-          if (restApiData.config) {
-            const apiConfig = restApiData.config as Record<string, unknown>;
-            const restApi = RestAPINode.createProtobufNode({
-              url: apiConfig.url as string,
-              method: apiConfig.method as string,
-              body: (apiConfig.body as string) || "",
-              headersMap: apiConfig.headersMap as Array<[string, string]>,
-            });
-            loopNode.setRestApi(restApi);
-          }
-          break;
+      case "restApi": {
+        const restApiData = runner.data as Record<string, unknown>;
+        if (restApiData.config) {
+          const apiConfig = restApiData.config as Record<string, unknown>;
+          const restApi = RestAPINode.createProtobufNode({
+            url: apiConfig.url as string,
+            method: apiConfig.method as string,
+            body: (apiConfig.body as string) || "",
+            headersMap: apiConfig.headersMap as Array<[string, string]>,
+          });
+          loopNode.setRestApi(restApi);
         }
+        break;
+      }
 
       case "customCode": {
         const customCodeData = runner.data as Record<string, unknown>;
