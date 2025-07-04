@@ -1,5 +1,11 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Node from "./interface";
+import CustomCodeNode from "./customCode";
+import ETHTransferNode from "./ethTransfer";
+import RestAPINode from "./restApi";
+import GraphQLQueryNode from "./graphqlQuery";
+import ContractReadNode from "./contractRead";
+import ContractWriteNode from "./contractWrite";
 import {
   NodeType,
   LoopNodeData,
@@ -7,7 +13,6 @@ import {
   NodeProps,
 } from "@avaprotocol/types";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
-import _ from "lodash";
 
 class LoopNode extends Node {
   constructor(props: LoopNodeProps) {
@@ -23,24 +28,19 @@ class LoopNode extends Node {
 
     // Get the config data directly as flat structure
     const configData = loopNode.getConfig()?.toObject();
-    const loopNodeData = loopNode.toObject() as any;
+    const loopNodeData = loopNode.toObject();
 
     // Since LoopNodeData is now Config.AsObject, we need to merge the config properties
-    // with the nested node data from the full object
+    // with the runner data from the protobuf structure
     const data: LoopNodeData = {
       ...configData,
-      // Keep the nested node structures from the full object
-      restApi: loopNodeData.restApi,
-      customCode: loopNodeData.customCode,
-      ethTransfer: loopNodeData.ethTransfer,
-      contractRead: loopNodeData.contractRead,
-      contractWrite: loopNodeData.contractWrite,
-      graphqlDataQuery: loopNodeData.graphqlDataQuery,
+      // Extract runner data from the oneof runner field
+      runner: this.extractRunnerFromProtobuf(loopNodeData),
     } as LoopNodeData;
 
     // Extract input data from top-level TaskNode.input field (not nested LoopNode.input)
     // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, any> | undefined = undefined;
+    let input: Record<string, unknown> | undefined = undefined;
     if (raw.hasInput()) {
       input = extractInputFromProtobuf(raw.getInput());
     }
@@ -51,6 +51,26 @@ class LoopNode extends Node {
       data: data,
       input: input,
     });
+  }
+
+  private static extractRunnerFromProtobuf(
+    loopNodeData: Record<string, unknown>
+  ): { type: string; data: unknown } | null {
+    // Check which runner type is present in the oneof runner field
+    if (loopNodeData.restApi) {
+      return { type: "restApi", data: loopNodeData.restApi };
+    } else if (loopNodeData.customCode) {
+      return { type: "customCode", data: loopNodeData.customCode };
+    } else if (loopNodeData.ethTransfer) {
+      return { type: "ethTransfer", data: loopNodeData.ethTransfer };
+    } else if (loopNodeData.contractRead) {
+      return { type: "contractRead", data: loopNodeData.contractRead };
+    } else if (loopNodeData.contractWrite) {
+      return { type: "contractWrite", data: loopNodeData.contractWrite };
+    } else if (loopNodeData.graphqlDataQuery) {
+      return { type: "graphqlDataQuery", data: loopNodeData.graphqlDataQuery };
+    }
+    return null;
   }
 
   toRequest(): avs_pb.TaskNode {
@@ -76,129 +96,121 @@ class LoopNode extends Node {
       node.setInput(inputValue);
     }
 
-    // Handle nested nodes - these still use the nested structure within LoopNodeData
-    if ((data as any).ethTransfer) {
-      const ethTransfer = new avs_pb.ETHTransferNode();
-      if ((data as any).ethTransfer.config) {
-        const config = new avs_pb.ETHTransferNode.Config();
-        config.setDestination((data as any).ethTransfer.config.destination);
-        config.setAmount((data as any).ethTransfer.config.amount);
-        ethTransfer.setConfig(config);
-      }
-      loopNode.setEthTransfer(ethTransfer);
-    } else if ((data as any).contractWrite) {
-      const contractWrite = new avs_pb.ContractWriteNode();
-      if ((data as any).contractWrite.config) {
-        const config = new avs_pb.ContractWriteNode.Config();
-        config.setContractAddress(
-          (data as any).contractWrite.config.contractAddress
-        );
-        config.setCallData((data as any).contractWrite.config.callData);
-        config.setContractAbi((data as any).contractWrite.config.contractAbi);
-
-        // Handle method calls array for ContractWrite
-        const methodCalls =
-          (data as any).contractWrite.config.methodCallsList || [];
-        methodCalls.forEach(
-          (methodCall: { callData: string; methodName?: string }) => {
-            const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
-            methodCallMsg.setCallData(methodCall.callData);
-            if (methodCall.methodName) {
-              methodCallMsg.setMethodName(methodCall.methodName);
-            }
-            config.addMethodCalls(methodCallMsg);
-          }
-        );
-
-        contractWrite.setConfig(config);
-      }
-      loopNode.setContractWrite(contractWrite);
-    } else if ((data as any).contractRead) {
-      const contractRead = new avs_pb.ContractReadNode();
-      if ((data as any).contractRead.config) {
-        const config = new avs_pb.ContractReadNode.Config();
-        config.setContractAddress(
-          (data as any).contractRead.config.contractAddress
-        );
-        config.setContractAbi((data as any).contractRead.config.contractAbi);
-
-        // Handle method calls array
-        const methodCalls =
-          (data as any).contractRead.config.methodCallsList || [];
-        methodCalls.forEach(
-          (methodCall: { callData: string; methodName?: string; applyToFields?: string[] }) => {
-            const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
-            methodCallMsg.setCallData(methodCall.callData);
-            if (methodCall.methodName) {
-              methodCallMsg.setMethodName(methodCall.methodName);
-            }
-            if (methodCall.applyToFields) {
-              methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
-            }
-            config.addMethodCalls(methodCallMsg);
-          }
-        );
-
-        contractRead.setConfig(config);
-      }
-      loopNode.setContractRead(contractRead);
-    } else if ((data as any).graphqlDataQuery) {
-      const graphqlQuery = new avs_pb.GraphQLQueryNode();
-      if ((data as any).graphqlDataQuery.config) {
-        const config = new avs_pb.GraphQLQueryNode.Config();
-        config.setUrl((data as any).graphqlDataQuery.config.url);
-        config.setQuery((data as any).graphqlDataQuery.config.query);
-
-        if (
-          (data as any).graphqlDataQuery.config.variablesMap &&
-          (data as any).graphqlDataQuery.config.variablesMap.length > 0
-        ) {
-          (data as any).graphqlDataQuery.config.variablesMap.forEach(
-            ([key, value]: [string, string]) => {
-              config.getVariablesMap().set(key, value);
-            }
-          );
-        }
-        graphqlQuery.setConfig(config);
-      }
-      loopNode.setGraphqlDataQuery(graphqlQuery);
-    } else if ((data as any).restApi) {
-      const restApi = new avs_pb.RestAPINode();
-      if ((data as any).restApi.config) {
-        const config = new avs_pb.RestAPINode.Config();
-        config.setUrl((data as any).restApi.config.url);
-        config.setMethod((data as any).restApi.config.method);
-        config.setBody((data as any).restApi.config.body || "");
-
-        if (
-          (data as any).restApi.config.headersMap &&
-          (data as any).restApi.config.headersMap.length > 0
-        ) {
-          (data as any).restApi.config.headersMap.forEach(
-            ([key, value]: [string, string]) => {
-              config.getHeadersMap().set(key, value);
-            }
-          );
-        }
-        restApi.setConfig(config);
-      }
-      loopNode.setRestApi(restApi);
-    } else if ((data as any).customCode) {
-      const customCode = new avs_pb.CustomCodeNode();
-      if ((data as any).customCode.config) {
-        const config = new avs_pb.CustomCodeNode.Config();
-        config.setLang((data as any).customCode.config.lang);
-        config.setSource((data as any).customCode.config.source);
-        customCode.setConfig(config);
-      }
-      loopNode.setCustomCode(customCode);
+    // Handle runner - check the runner field and set the appropriate oneof field
+    if (data.runner) {
+      this.setRunnerOnProtobuf(loopNode, data.runner);
     }
 
     node.setLoop(loopNode);
     return node;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+  private setRunnerOnProtobuf(
+    loopNode: avs_pb.LoopNode,
+    runner: { type: string; data: Record<string, unknown> }
+  ): void {
+    if (!runner || !runner.type || !runner.data) {
+      return;
+    }
+
+    switch (runner.type) {
+              case "ethTransfer": {
+          const ethTransferData = runner.data as Record<string, unknown>;
+          if (ethTransferData.config) {
+            const ethConfig = ethTransferData.config as Record<string, string>;
+            const ethTransfer = ETHTransferNode.createProtobufNode({
+              destination: ethConfig.destination,
+              amount: ethConfig.amount,
+            });
+            loopNode.setEthTransfer(ethTransfer);
+          }
+          break;
+        }
+
+      case "contractWrite": {
+        const contractWriteData = runner.data as Record<string, unknown>;
+        if (contractWriteData.config) {
+          const writeConfig = contractWriteData.config as Record<
+            string,
+            unknown
+          >;
+          const contractWrite = ContractWriteNode.createProtobufNode({
+            contractAddress: writeConfig.contractAddress as string,
+            callData: writeConfig.callData as string,
+            contractAbi: writeConfig.contractAbi as string,
+            methodCalls: (writeConfig.methodCallsList as Array<{
+              callData: string;
+              methodName?: string;
+            }>) || [],
+          });
+          loopNode.setContractWrite(contractWrite);
+        }
+        break;
+      }
+
+      case "contractRead": {
+        const contractReadData = runner.data as Record<string, unknown>;
+        if (contractReadData.config) {
+          const readConfig = contractReadData.config as Record<string, unknown>;
+          const contractRead = ContractReadNode.createProtobufNode({
+            contractAddress: readConfig.contractAddress as string,
+            contractAbi: readConfig.contractAbi as string,
+            methodCalls: (readConfig.methodCallsList as Array<{
+              callData: string;
+              methodName?: string;
+              applyToFields?: string[];
+            }>) || [],
+          });
+          loopNode.setContractRead(contractRead);
+        }
+        break;
+      }
+
+              case "graphqlDataQuery": {
+          const graphqlData = runner.data as Record<string, unknown>;
+          if (graphqlData.config) {
+            const gqlConfig = graphqlData.config as Record<string, unknown>;
+            const graphqlQuery = GraphQLQueryNode.createProtobufNode({
+              url: gqlConfig.url as string,
+              query: gqlConfig.query as string,
+              variablesMap: gqlConfig.variablesMap as Array<[string, string]>,
+            });
+            loopNode.setGraphqlDataQuery(graphqlQuery);
+          }
+          break;
+        }
+
+              case "restApi": {
+          const restApiData = runner.data as Record<string, unknown>;
+          if (restApiData.config) {
+            const apiConfig = restApiData.config as Record<string, unknown>;
+            const restApi = RestAPINode.createProtobufNode({
+              url: apiConfig.url as string,
+              method: apiConfig.method as string,
+              body: (apiConfig.body as string) || "",
+              headersMap: apiConfig.headersMap as Array<[string, string]>,
+            });
+            loopNode.setRestApi(restApi);
+          }
+          break;
+        }
+
+      case "customCode": {
+        const customCodeData = runner.data as Record<string, unknown>;
+        if (customCodeData.config) {
+          const codeConfig = customCodeData.config as Record<string, string>;
+          const customCode = CustomCodeNode.createProtobufNode({
+            lang: codeConfig.lang,
+            source: codeConfig.source,
+          });
+          loopNode.setCustomCode(customCode);
+        }
+        break;
+      }
+    }
+  }
+
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown {
     // For immediate execution, data comes as CustomCode format
     const customCodeOutput = outputData.getCustomCode();
     if (customCodeOutput) {
@@ -226,7 +238,7 @@ class LoopNode extends Node {
       if (loopObj.data && typeof loopObj.data === "string") {
         try {
           return JSON.parse(loopObj.data);
-        } catch (e) {
+        } catch {
           // If JSON parsing fails, return the raw data
           return loopObj.data;
         }

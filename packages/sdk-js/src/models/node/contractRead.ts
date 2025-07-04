@@ -19,6 +19,44 @@ class ContractReadNode extends Node {
     super({ ...props, type: NodeType.ContractRead, data: props.data });
   }
 
+  /**
+   * Create a protobuf ContractReadNode from config data
+   * @param configData - The configuration data for the contract read node
+   * @returns Configured avs_pb.ContractReadNode
+   */
+  static createProtobufNode(configData: {
+    contractAddress: string;
+    contractAbi: string;
+    methodCalls?: Array<{
+      callData: string;
+      methodName?: string;
+      applyToFields?: string[];
+    }>;
+  }): avs_pb.ContractReadNode {
+    const node = new avs_pb.ContractReadNode();
+    const config = new avs_pb.ContractReadNode.Config();
+    
+    config.setContractAddress(configData.contractAddress);
+    config.setContractAbi(configData.contractAbi);
+
+    // Handle method calls array
+    const methodCalls = configData.methodCalls || [];
+    methodCalls.forEach((methodCall) => {
+      const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
+      methodCallMsg.setCallData(methodCall.callData);
+      if (methodCall.methodName) {
+        methodCallMsg.setMethodName(methodCall.methodName);
+      }
+      if (methodCall.applyToFields) {
+        methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
+      }
+      config.addMethodCalls(methodCallMsg);
+    });
+
+    node.setConfig(config);
+    return node;
+  }
+
   static fromResponse(raw: avs_pb.TaskNode): ContractReadNode {
     // Convert the raw object to ContractReadNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
@@ -57,35 +95,9 @@ class ContractReadNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const node = new avs_pb.ContractReadNode();
-
-    const config = new avs_pb.ContractReadNode.Config();
-    config.setContractAddress(
-      (this.data as ContractReadNodeData).contractAddress
+    const node = ContractReadNode.createProtobufNode(
+      this.data as ContractReadNodeData
     );
-    config.setContractAbi((this.data as ContractReadNodeData).contractAbi);
-
-    // Handle method calls array
-    const methodCalls = (this.data as ContractReadNodeData).methodCalls || [];
-    methodCalls.forEach(
-      (methodCall: {
-        callData: string;
-        methodName?: string;
-        applyToFields?: string[];
-      }) => {
-        const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
-        methodCallMsg.setCallData(methodCall.callData);
-        if (methodCall.methodName) {
-          methodCallMsg.setMethodName(methodCall.methodName);
-        }
-        if (methodCall.applyToFields) {
-          methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
-        }
-        config.addMethodCalls(methodCallMsg);
-      }
-    );
-
-    node.setConfig(config);
 
     // Set input data on the top-level TaskNode, not the nested ContractReadNode
     // This matches where the Go backend's ExtractNodeInputData() looks for it

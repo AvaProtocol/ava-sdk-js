@@ -1,8 +1,19 @@
 import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
-import { Client, Edge, Workflow, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
-import { LoopNodeData, NodeType, CustomCodeLang, TriggerType } from "@avaprotocol/types";
+import {
+  Client,
+  Edge,
+  Workflow,
+  NodeFactory,
+  TriggerFactory,
+} from "@avaprotocol/sdk-js";
+import {
+  LoopNodeData,
+  NodeType,
+  CustomCodeLang,
+  TriggerType,
+} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -56,9 +67,7 @@ describe("LoopNode Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
-      
-      
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.Loop,
         nodeConfig: {
           sourceId: "testArray",
@@ -82,9 +91,16 @@ describe("LoopNode Tests", () => {
         inputVariables: {
           testArray: [1, 2, 3, 4, 5],
         },
-      });
+      };
 
-      console.log("runNodeWithInputs loop response:", util.inspect(result, { depth: null, colors: true }));
+      console.log("🚀 ~ should process loop with CustomCode ~ params:", params);
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "runNodeWithInputs loop response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -94,7 +110,7 @@ describe("LoopNode Tests", () => {
         expect(Array.isArray(result.data.data)).toBe(true);
         expect(result.data.data.length).toBe(5);
         expect(result.nodeId).toBeDefined();
-        
+
         // Check first processed item
         const firstItem = result.data.data[0];
         expect(firstItem.processedItem).toBe(1);
@@ -106,8 +122,6 @@ describe("LoopNode Tests", () => {
     });
 
     test("should process loop with REST API runner using runNodeWithInputs", async () => {
-      
-      
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -131,7 +145,10 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs loop REST API response:", util.inspect(result, { depth: null, colors: true }));
+      console.log(
+        "runNodeWithInputs loop REST API response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -148,8 +165,6 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle empty array input", async () => {
-      
-      
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -168,7 +183,10 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs empty array response:", util.inspect(result, { depth: null, colors: true }));
+      console.log(
+        "runNodeWithInputs empty array response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -181,8 +199,6 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle complex object array", async () => {
-      
-      
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -214,7 +230,10 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      console.log("runNodeWithInputs complex array response:", util.inspect(result, { depth: null, colors: true }));
+      console.log(
+        "runNodeWithInputs complex array response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -245,7 +264,7 @@ describe("LoopNode Tests", () => {
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,
-            source: `
+          source: `
               const testArray = [
                 { name: "item1", value: 10 },
                 { name: "item2", value: 20 },
@@ -281,20 +300,24 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        loopNode,
+      ]);
 
-      
-      
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      console.log("simulateWorkflow loop response:", util.inspect(simulation, { depth: null, colors: true }));
+      console.log(
+        "simulateWorkflow loop response:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
-      const loopStep = simulation.steps.find(step => step.id === loopNode.id);
+      const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
       expect(loopStep).toBeDefined();
       expect(loopStep!.success).toBe(true);
 
@@ -308,7 +331,7 @@ describe("LoopNode Tests", () => {
 
       // Create a data generation node for URLs (reduced to just 1 URL to avoid timeouts)
       const dataNode = NodeFactory.create({
-          id: getNextId(),
+        id: getNextId(),
         name: "generate_url_data",
         type: NodeType.CustomCode,
         data: {
@@ -323,7 +346,7 @@ describe("LoopNode Tests", () => {
       });
 
       const loopNode = NodeFactory.create({
-          id: getNextId(),
+        id: getNextId(),
         name: "simulate_loop_rest_api",
         type: NodeType.Loop,
         data: {
@@ -341,19 +364,20 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
-
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        loopNode,
+      ]);
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
       expect(simulation.success).toBe(true);
-      const loopStep = simulation.steps.find(step => step.id === loopNode.id);
+      const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
       expect(loopStep).toBeDefined();
       expect(loopStep!.success).toBe(true);
-      
+
       // Verify we got the expected single result
       const output = loopStep!.output as any;
       expect(Array.isArray(output)).toBe(true);
@@ -363,7 +387,7 @@ describe("LoopNode Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with Loop node", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -386,7 +410,7 @@ describe("LoopNode Tests", () => {
       });
 
       const loopNode = NodeFactory.create({
-          id: getNextId(),
+        id: getNextId(),
         name: "deploy_loop_test",
         type: NodeType.Loop,
         data: {
@@ -415,16 +439,17 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        loopNode,
+      ]);
+
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
         data: { interval: triggerInterval },
       });
-
-      
 
       let workflowId: string | undefined;
       try {
@@ -443,7 +468,10 @@ describe("LoopNode Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
+        console.log(
+          "Trigger result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -461,23 +489,26 @@ describe("LoopNode Tests", () => {
         }
 
         expect(loopStep.success).toBe(true);
-        console.log("Deploy + trigger loop step output:", util.inspect(loopStep.output, { depth: null, colors: true }));
+        console.log(
+          "Deploy + trigger loop step output:",
+          util.inspect(loopStep.output, { depth: null, colors: true })
+        );
 
         const output = loopStep.output as any;
         expect(Array.isArray(output)).toBe(true);
         expect(output.length).toBe(3);
         expect(output[0].studentName).toBe("Alice");
         expect(output[0].letterGrade).toBe("B");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
+        }
       }
-    }
-  });
+    });
 
     test("should deploy and trigger workflow with multiple Loop node types", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -498,7 +529,7 @@ describe("LoopNode Tests", () => {
 
       // Create CustomCode loop
       const customCodeLoop = NodeFactory.create({
-          id: getNextId(),
+        id: getNextId(),
         name: "custom_code_loop",
         type: NodeType.Loop,
         data: {
@@ -514,16 +545,17 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, customCodeLoop]);
-      
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        customCodeLoop,
+      ]);
+
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
         type: TriggerType.Block,
         data: { interval: triggerInterval },
       });
-
-      
 
       let workflowId: string | undefined;
       try {
@@ -541,7 +573,9 @@ describe("LoopNode Tests", () => {
           isBlocking: true,
         });
 
-        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
         const customCodeLoopStep = _.find(
           _.first(executions.items)?.steps,
           (step) => step.id === customCodeLoop.id
@@ -553,9 +587,9 @@ describe("LoopNode Tests", () => {
         const output = customCodeLoopStep!.output as any;
         expect(Array.isArray(output)).toBe(true);
         expect(output.length).toBe(3);
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
         }
       }
@@ -564,7 +598,7 @@ describe("LoopNode Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -593,7 +627,9 @@ describe("LoopNode Tests", () => {
         testData: [5, 10, 15],
       };
 
-      console.log("🔍 Testing response format consistency across all methods...");
+      console.log(
+        "🔍 Testing response format consistency across all methods..."
+      );
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -623,8 +659,8 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           customCode: {
             config: {
-          lang: CustomCodeLang.JavaScript,
-          source: `
+              lang: CustomCodeLang.JavaScript,
+              source: `
                 const _ = require('lodash');
                 return {
                   originalValue: item,
@@ -639,12 +675,17 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        loopNode,
+      ]);
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      const simulatedStep = simulation.steps.find(step => step.id === loopNode.id);
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === loopNode.id
+      );
 
       // Test 3: Deploy + Trigger
       workflowProps.trigger = TriggerFactory.create({
@@ -670,7 +711,9 @@ describe("LoopNode Tests", () => {
           isBlocking: true,
         });
 
-        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
         const executedStep = _.find(
           _.first(executions.items)?.steps,
           (step) => step.id === loopNode.id
@@ -678,9 +721,18 @@ describe("LoopNode Tests", () => {
 
         // Compare response formats
         console.log("=== LOOP NODE RESPONSE FORMAT COMPARISON ===");
-        console.log("1. runNodeWithInputs response:", util.inspect(directResponse.data, { depth: null, colors: true }));
-        console.log("2. simulateWorkflow step output:", util.inspect(simulatedStep?.output, { depth: null, colors: true }));
-        console.log("3. deploy+trigger step output:", util.inspect(executedStep?.output, { depth: null, colors: true }));
+        console.log(
+          "1. runNodeWithInputs response:",
+          util.inspect(directResponse.data, { depth: null, colors: true })
+        );
+        console.log(
+          "2. simulateWorkflow step output:",
+          util.inspect(simulatedStep?.output, { depth: null, colors: true })
+        );
+        console.log(
+          "3. deploy+trigger step output:",
+          util.inspect(executedStep?.output, { depth: null, colors: true })
+        );
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -697,40 +749,42 @@ describe("LoopNode Tests", () => {
         if (directOutput && Array.isArray(directOutput)) {
           expect(Array.isArray(simulatedOutput)).toBe(true);
           expect(Array.isArray(executedOutput)).toBe(true);
-          
+
           expect(directOutput.length).toBe(3);
           expect(simulatedOutput.length).toBe(3);
           expect(executedOutput.length).toBe(3);
-          
+
           // Check structure of first element
           expect(directOutput[0].originalValue).toBe(5);
           expect(simulatedOutput[0].originalValue).toBe(5);
           expect(executedOutput[0].originalValue).toBe(5);
-          
+
           expect(directOutput[0].doubled).toBe(10);
           expect(simulatedOutput[0].doubled).toBe(10);
           expect(executedOutput[0].doubled).toBe(10);
-          
+
           expect(directOutput[0].index).toBe(0);
           expect(simulatedOutput[0].index).toBe(0);
           expect(executedOutput[0].index).toBe(0);
-          
+
           expect(directOutput[0].computed).toBe(15); // 5 + 0 + 10
           expect(simulatedOutput[0].computed).toBe(15);
           expect(executedOutput[0].computed).toBe(15);
         }
 
-        console.log("✅ All three methods return consistent loop execution results!");
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
+        console.log(
+          "✅ All three methods return consistent loop execution results!"
+        );
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
+        }
       }
-    }
-  });
+    });
 
     test("should handle edge cases consistently across all methods", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -772,7 +826,7 @@ describe("LoopNode Tests", () => {
       });
 
       const loopNode = NodeFactory.create({
-          id: getNextId(),
+        id: getNextId(),
         name: "edge_case_test",
         type: NodeType.Loop,
         data: {
@@ -788,12 +842,17 @@ describe("LoopNode Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, loopNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        loopNode,
+      ]);
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
-      const simulatedStep = simulation.steps.find(step => step.id === loopNode.id);
+      const simulatedStep = simulation.steps.find(
+        (step) => step.id === loopNode.id
+      );
 
       // All should handle single-item arrays consistently
       expect(directResponse.success).toBe(true);

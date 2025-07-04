@@ -44,27 +44,18 @@ export type RestAPINodeData = avs_pb.RestAPINode.Config.AsObject;
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
 export type LoopNodeData = avs_pb.LoopNode.Config.AsObject & {
-  // Optional runner nodes - only one should be present
-  restApi?: {
-    config: avs_pb.RestAPINode.Config.AsObject;
-  };
-  customCode?: {
-    config: {
-      lang: CustomCodeLang;
-      source: string;
+  // The runner field matches the protobuf oneof runner structure
+  runner?: {
+    type: 'restApi' | 'customCode' | 'ethTransfer' | 'contractRead' | 'contractWrite' | 'graphqlDataQuery';
+    data: {
+      config: 
+        | avs_pb.RestAPINode.Config.AsObject
+        | { lang: CustomCodeLang; source: string }
+        | avs_pb.ETHTransferNode.Config.AsObject
+        | avs_pb.ContractReadNode.Config.AsObject
+        | avs_pb.ContractWriteNode.Config.AsObject
+        | avs_pb.GraphQLQueryNode.Config.AsObject;
     };
-  };
-  ethTransfer?: {
-    config: avs_pb.ETHTransferNode.Config.AsObject;
-  };
-  contractRead?: {
-    config: avs_pb.ContractReadNode.Config.AsObject;
-  };
-  contractWrite?: {
-    config: avs_pb.ContractWriteNode.Config.AsObject;
-  };
-  graphqlDataQuery?: {
-    config: avs_pb.GraphQLQueryNode.Config.AsObject;
   };
 };
 
