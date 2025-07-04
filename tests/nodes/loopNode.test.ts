@@ -73,18 +73,21 @@ describe("LoopNode Tests", () => {
           sourceId: "testArray",
           iterVal: "item",
           iterKey: "index",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `
-                const _ = require('lodash');
-                return {
-                  processedItem: item,
-                  position: index,
-                  squared: item * item,
-                  timestamp: new Date().toISOString()
-                };
-              `,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `
+                  const _ = require('lodash');
+                  return {
+                    processedItem: item,
+                    position: index,
+                    squared: item * item,
+                    timestamp: new Date().toISOString()
+                  };
+                `,
+              },
             },
           },
         },
@@ -128,12 +131,15 @@ describe("LoopNode Tests", () => {
           sourceId: "urlArray",
           iterVal: "url",
           iterKey: "index",
-          restApi: {
-            config: {
-              url: "{{url}}",
-              method: "GET",
-              body: "",
-              headersMap: [["User-Agent", "AvaProtocol-Loop-Test"]],
+          runner: {
+            type: "restApi",
+            data: {
+              config: {
+                url: "{{url}}",
+                method: "GET",
+                body: "",
+                headersMap: [["User-Agent", "AvaProtocol-Loop-Test"]],
+              },
             },
           },
         },
@@ -171,10 +177,13 @@ describe("LoopNode Tests", () => {
           sourceId: "emptyArray",
           iterVal: "item",
           iterKey: "index",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `return { processed: item };`,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `return { processed: item };`,
+              },
             },
           },
         },
@@ -205,19 +214,22 @@ describe("LoopNode Tests", () => {
           sourceId: "complexArray",
           iterVal: "obj",
           iterKey: "idx",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `
-                const _ = require('lodash');
-                return {
-                  id: obj.id,
-                  upperName: obj.name.toUpperCase(),
-                  doubledValue: obj.value * 2,
-                  index: idx,
-                  isEven: obj.value % 2 === 0
-                };
-              `,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `
+                  const _ = require('lodash');
+                  return {
+                    id: obj.id,
+                    upperName: obj.name.toUpperCase(),
+                    doubledValue: obj.value * 2,
+                    index: idx,
+                    isEven: obj.value % 2 === 0
+                  };
+                `,
+              },
             },
           },
         },
@@ -283,18 +295,21 @@ describe("LoopNode Tests", () => {
           sourceId: dataNode.id,
           iterVal: "item",
           iterKey: "index",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `
-                const _ = require('lodash');
-                return {
-                  processedItem: item,
-                  position: index,
-                  calculatedValue: item.value * 2 + index,
-                  itemName: item.name
-                };
-              `,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `
+                  const _ = require('lodash');
+                  return {
+                    processedItem: item,
+                    position: index,
+                    calculatedValue: item.value * 2 + index,
+                    itemName: item.name
+                  };
+                `,
+              },
             },
           },
         },
@@ -353,12 +368,15 @@ describe("LoopNode Tests", () => {
           sourceId: dataNode.id,
           iterVal: "url",
           iterKey: "index",
-          restApi: {
-            config: {
-              url: "{{url}}",
-              method: "GET",
-              body: "",
-              headersMap: [["User-Agent", "AvaProtocol-Loop-Simulation"]],
+          runner: {
+            type: "restApi",
+            data: {
+              config: {
+                url: "{{url}}",
+                method: "GET",
+                body: "",
+                headersMap: [["User-Agent", "AvaProtocol-Loop-Simulation"]],
+              },
             },
           },
         },
@@ -417,23 +435,26 @@ describe("LoopNode Tests", () => {
           sourceId: dataNode.id,
           iterVal: "student",
           iterKey: "position",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `
-                const _ = require('lodash');
-                const grade = student.score >= 90 ? 'A' : 
-                             student.score >= 80 ? 'B' : 
-                             student.score >= 70 ? 'C' : 'D';
-                
-                return {
-                  studentName: student.name,
-                  originalScore: student.score,
-                  letterGrade: grade,
-                  position: position + 1,
-                  timestamp: new Date().toISOString()
-                };
-              `,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `
+                  const _ = require('lodash');
+                  const grade = student.score >= 90 ? 'A' : 
+                               student.score >= 80 ? 'B' : 
+                               student.score >= 70 ? 'C' : 'D';
+                  
+                  return {
+                    studentName: student.name,
+                    originalScore: student.score,
+                    letterGrade: grade,
+                    position: position + 1,
+                    timestamp: new Date().toISOString()
+                  };
+                `,
+              },
             },
           },
         },
@@ -536,10 +557,13 @@ describe("LoopNode Tests", () => {
           sourceId: dataNode.id,
           iterVal: "num",
           iterKey: "idx",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `return { number: num, squared: num * num, index: idx };`,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `return { number: num, squared: num * num, index: idx };`,
+              },
             },
           },
         },
@@ -606,19 +630,22 @@ describe("LoopNode Tests", () => {
         sourceId: "testData",
         iterVal: "item",
         iterKey: "index",
-        customCode: {
-          config: {
-            lang: CustomCodeLang.JavaScript,
-            source: `
-              const _ = require('lodash');
-              return {
-                originalValue: item,
-                doubled: item * 2,
-                index: index,
-                timestamp: new Date().toISOString(),
-                computed: _.sum([item, index, 10])
-              };
-            `,
+        runner: {
+          type: "customCode",
+          data: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `
+                const _ = require('lodash');
+                return {
+                  originalValue: item,
+                  doubled: item * 2,
+                  index: index,
+                  timestamp: new Date().toISOString(),
+                  computed: _.sum([item, index, 10])
+                };
+              `,
+            },
           },
         },
       };
@@ -657,19 +684,22 @@ describe("LoopNode Tests", () => {
           sourceId: dataNode.id,
           iterVal: "item",
           iterKey: "index",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `
-                const _ = require('lodash');
-                return {
-                  originalValue: item,
-                  doubled: item * 2,
-                  index: index,
-                  timestamp: new Date().toISOString(),
-                  computed: _.sum([item, index, 10])
-                };
-              `,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `
+                  const _ = require('lodash');
+                  return {
+                    originalValue: item,
+                    doubled: item * 2,
+                    index: index,
+                    timestamp: new Date().toISOString(),
+                    computed: _.sum([item, index, 10])
+                  };
+                `,
+              },
             },
           },
         },
@@ -793,10 +823,13 @@ describe("LoopNode Tests", () => {
         sourceId: "singleItem",
         iterVal: "value",
         iterKey: "pos",
-        customCode: {
-          config: {
-            lang: CustomCodeLang.JavaScript,
-            source: `return { value: value, position: pos, processed: true };`,
+        runner: {
+          type: "customCode",
+          data: {
+            config: {
+              lang: CustomCodeLang.JavaScript,
+              source: `return { value: value, position: pos, processed: true };`,
+            },
           },
         },
       };
@@ -833,10 +866,13 @@ describe("LoopNode Tests", () => {
           sourceId: dataNode.id,
           iterVal: "value",
           iterKey: "pos",
-          customCode: {
-            config: {
-              lang: CustomCodeLang.JavaScript,
-              source: `return { value: value, position: pos, processed: true };`,
+          runner: {
+            type: "customCode",
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `return { value: value, position: pos, processed: true };`,
+              },
             },
           },
         },
@@ -854,7 +890,7 @@ describe("LoopNode Tests", () => {
         (step) => step.id === loopNode.id
       );
 
-      // All should handle single-item arrays consistently
+      // All should be successful
       expect(directResponse.success).toBe(true);
       expect(simulatedStep).toBeDefined();
       expect(simulatedStep!.success).toBe(true);
@@ -874,7 +910,7 @@ describe("LoopNode Tests", () => {
         expect(simulatedOutput[0].processed).toBe(true);
       }
 
-      console.log("✅ Edge case handling is consistent across methods!");
+      console.log("✅ Edge case handling is consistent!");
     });
   });
 });
