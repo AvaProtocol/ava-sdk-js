@@ -77,6 +77,7 @@ goog.exportSymbol('proto.aggregator.EventTrigger.Topics', null, global);
 goog.exportSymbol('proto.aggregator.Execution', null, global);
 goog.exportSymbol('proto.aggregator.Execution.Step', null, global);
 goog.exportSymbol('proto.aggregator.Execution.Step.OutputDataCase', null, global);
+goog.exportSymbol('proto.aggregator.ExecutionMode', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionReq', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionStatus', null, global);
 goog.exportSymbol('proto.aggregator.ExecutionStatusResp', null, global);
@@ -14356,7 +14357,8 @@ proto.aggregator.LoopNode.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     sourceId: jspb.Message.getFieldWithDefault(msg, 1, ""),
     iterVal: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    iterKey: jspb.Message.getFieldWithDefault(msg, 3, "")
+    iterKey: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    executionMode: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -14405,6 +14407,10 @@ proto.aggregator.LoopNode.Config.deserializeBinaryFromReader = function(msg, rea
       var value = /** @type {string} */ (reader.readString());
       msg.setIterKey(value);
       break;
+    case 4:
+      var value = /** @type {!proto.aggregator.ExecutionMode} */ (reader.readEnum());
+      msg.setExecutionMode(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -14452,6 +14458,13 @@ proto.aggregator.LoopNode.Config.serializeBinaryToWriter = function(message, wri
   if (f.length > 0) {
     writer.writeString(
       3,
+      f
+    );
+  }
+  f = message.getExecutionMode();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
       f
     );
   }
@@ -14509,6 +14522,24 @@ proto.aggregator.LoopNode.Config.prototype.getIterKey = function() {
  */
 proto.aggregator.LoopNode.Config.prototype.setIterKey = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional ExecutionMode execution_mode = 4;
+ * @return {!proto.aggregator.ExecutionMode}
+ */
+proto.aggregator.LoopNode.Config.prototype.getExecutionMode = function() {
+  return /** @type {!proto.aggregator.ExecutionMode} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.ExecutionMode} value
+ * @return {!proto.aggregator.LoopNode.Config} returns this
+ */
+proto.aggregator.LoopNode.Config.prototype.setExecutionMode = function(value) {
+  return jspb.Message.setProto3EnumField(this, 4, value);
 };
 
 
@@ -28628,6 +28659,14 @@ proto.aggregator.NodeType = {
   NODE_TYPE_BRANCH: 7,
   NODE_TYPE_FILTER: 8,
   NODE_TYPE_LOOP: 9
+};
+
+/**
+ * @enum {number}
+ */
+proto.aggregator.ExecutionMode = {
+  EXECUTION_MODE_SEQUENTIAL: 0,
+  EXECUTION_MODE_PARALLEL: 1
 };
 
 /**

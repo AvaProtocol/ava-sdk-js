@@ -11,6 +11,7 @@ import {
   LoopNodeData,
   LoopNodeProps,
   NodeProps,
+  ExecutionMode,
 } from "@avaprotocol/types";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
@@ -36,6 +37,10 @@ class LoopNode extends Node {
       ...configData,
       // Extract runner data from the oneof runner field
       runner: this.extractRunnerFromProtobuf(loopNodeData),
+      // Map execution mode from protobuf enum to ExecutionMode enum
+      executionMode: this.mapExecutionModeFromProtobuf(
+        configData?.executionMode
+      ),
     } as LoopNodeData;
 
     // Extract input data from top-level TaskNode.input field (not nested LoopNode.input)
@@ -73,6 +78,49 @@ class LoopNode extends Node {
     return null;
   }
 
+  private static mapExecutionModeFromProtobuf(
+    executionMode?: number
+  ): ExecutionMode {
+    // Map protobuf ExecutionMode enum to ExecutionMode enum
+    // EXECUTION_MODE_SEQUENTIAL = 0, EXECUTION_MODE_PARALLEL = 1
+    switch (executionMode) {
+      case 0:
+        return ExecutionMode.Sequential;
+      case 1:
+        return ExecutionMode.Parallel;
+      default:
+        return ExecutionMode.Sequential; // Default to sequential for safety
+    }
+  }
+
+  private mapExecutionModeToProtobuf(
+    executionMode?: ExecutionMode | string
+  ): number {
+    // Map ExecutionMode enum or string to protobuf ExecutionMode enum
+    // EXECUTION_MODE_SEQUENTIAL = 0, EXECUTION_MODE_PARALLEL = 1
+    if (!executionMode) {
+      return 0; // Default to sequential for safety
+    }
+    
+    if (typeof executionMode === "string") {
+      switch (executionMode.toLowerCase()) {
+        case "parallel":
+          return 1;
+        case "sequential":
+        default:
+          return 0; // Default to sequential for safety
+      }
+    } else {
+      switch (executionMode) {
+        case ExecutionMode.Parallel:
+          return 1;
+        case ExecutionMode.Sequential:
+        default:
+          return 0; // Default to sequential for safety
+      }
+    }
+  }
+
   toRequest(): avs_pb.TaskNode {
     const node = new avs_pb.TaskNode();
     const loopNode = new avs_pb.LoopNode();
@@ -87,6 +135,11 @@ class LoopNode extends Node {
     config.setSourceId(data.sourceId || "");
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
+
+    // Set execution mode - map ExecutionMode enum to protobuf enum
+    const executionMode = this.mapExecutionModeToProtobuf(data.executionMode);
+    config.setExecutionMode(executionMode);
+
     loopNode.setConfig(config);
 
     // Set input data on the top-level TaskNode, not the nested LoopNode

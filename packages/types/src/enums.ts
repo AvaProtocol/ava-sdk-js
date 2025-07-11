@@ -26,4 +26,9 @@ export enum NodeType {
   Branch = "branch",
   Filter = "filter",
   Loop = "loop",
+}
+
+export enum ExecutionMode {
+  Sequential = "sequential",
+  Parallel = "parallel",
 } 
