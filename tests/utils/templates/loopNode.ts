@@ -8,13 +8,13 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
   type: NodeType.Loop,
   data: {
     sourceId: "testArray",
-    iterVal: "item",
+    iterVal: "value",
     iterKey: "index",
     restApi: {
       config: {
         url: "https://httpbin.org/post",
         method: "POST",
-        body: JSON.stringify({ data: "{{item}}", index: "{{index}}" }),
+        body: JSON.stringify({ data: "{{value}}", index: "{{index}}" }),
         headersMap: [["Content-Type", "application/json"]],
       },
     },
@@ -27,12 +27,12 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
   type: NodeType.Loop,
   data: {
     sourceId: "testArray",
-    iterVal: "item",
+    iterVal: "value",
     iterKey: "index",
     customCode: {
       config: {
         lang: CustomCodeLang.JavaScript,
-        source: `const result = { processedItem: item, position: index }; return result;`,
+        source: `const result = { processedValue: value, position: index }; return result;`,
       },
     },
   },
@@ -48,7 +48,7 @@ export const loopNodeWithETHTransferProps: LoopNodeProps = {
     iterKey: "index",
     ethTransfer: {
       config: {
-        destination: "{{address}}",
+        destination: "{{value}}",
         amount: "1000000000000000000", // 1 ETH in wei (decimal string)
       },
     },
