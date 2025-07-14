@@ -61,19 +61,21 @@ class LoopNode extends Node {
   private static extractRunnerFromProtobuf(
     loopNodeData: Record<string, unknown>
   ): { type: string; data: unknown } | null {
-    // Check which runner type is present in the oneof runner field
-    if (loopNodeData.restApi) {
-      return { type: "restApi", data: loopNodeData.restApi };
-    } else if (loopNodeData.customCode) {
-      return { type: "customCode", data: loopNodeData.customCode };
-    } else if (loopNodeData.ethTransfer) {
-      return { type: "ethTransfer", data: loopNodeData.ethTransfer };
-    } else if (loopNodeData.contractRead) {
-      return { type: "contractRead", data: loopNodeData.contractRead };
-    } else if (loopNodeData.contractWrite) {
-      return { type: "contractWrite", data: loopNodeData.contractWrite };
-    } else if (loopNodeData.graphqlDataQuery) {
-      return { type: "graphqlDataQuery", data: loopNodeData.graphqlDataQuery };
+    // Define a mapping of runner types to their corresponding data keys
+    const runnerMapping: Record<string, string> = {
+      restApi: "restApi",
+      customCode: "customCode",
+      ethTransfer: "ethTransfer",
+      contractRead: "contractRead",
+      contractWrite: "contractWrite",
+      graphqlDataQuery: "graphqlDataQuery",
+    };
+
+    // Iterate over the mapping to find the matching runner type
+    for (const [type, key] of Object.entries(runnerMapping)) {
+      if (loopNodeData[key]) {
+        return { type, data: loopNodeData[key] };
+      }
     }
     return null;
   }
