@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.4.4
+
+### Patch Changes
+
+- fa81072: Renovated LoopNode Input parameters
+- Updated dependencies [fa81072]
+  - @avaprotocol/types@2.2.17
+
 ## 2.4.3
 
 ### Patch Changes

@@ -15,6 +15,33 @@ class GraphQLQueryNode extends Node {
     });
   }
 
+  /**
+   * Create a protobuf GraphQLQueryNode from config data
+   * @param configData - The configuration data for the GraphQL query node
+   * @returns Configured avs_pb.GraphQLQueryNode
+   */
+  static createProtobufNode(configData: {
+    url: string;
+    query: string;
+    variablesMap?: Array<[string, string]>;
+  }): avs_pb.GraphQLQueryNode {
+    const node = new avs_pb.GraphQLQueryNode();
+    const config = new avs_pb.GraphQLQueryNode.Config();
+    
+    config.setUrl(configData.url);
+    config.setQuery(configData.query);
+    
+    if (configData.variablesMap && configData.variablesMap.length > 0) {
+      const variablesMap = config.getVariablesMap();
+      configData.variablesMap.forEach(([key, value]: [string, string]) => {
+        variablesMap.set(key, value);
+      });
+    }
+    
+    node.setConfig(config);
+    return node;
+  }
+
   static fromResponse(raw: avs_pb.TaskNode): GraphQLQueryNode {
     // Convert the raw object to GraphQLQueryNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
@@ -36,21 +63,9 @@ class GraphQLQueryNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const node = new avs_pb.GraphQLQueryNode();
-    
-    const config = new avs_pb.GraphQLQueryNode.Config();
-    config.setUrl((this.data as GraphQLQueryNodeData).url);
-    config.setQuery((this.data as GraphQLQueryNodeData).query);
-    
-    if ((this.data as GraphQLQueryNodeData).variablesMap && 
-        (this.data as GraphQLQueryNodeData).variablesMap.length > 0) {
-      const variablesMap = config.getVariablesMap();
-      (this.data as GraphQLQueryNodeData).variablesMap.forEach(([key, value]: [string, string]) => {
-        variablesMap.set(key, value);
-      });
-    }
-    
-    node.setConfig(config);
+    const node = GraphQLQueryNode.createProtobufNode(
+      this.data as GraphQLQueryNodeData
+    );
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);

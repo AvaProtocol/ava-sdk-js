@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.2.17
+
+### Patch Changes
+
+- fa81072: Renovated LoopNode Input parameters
+
 ## 2.2.16
 
 ### Patch Changes

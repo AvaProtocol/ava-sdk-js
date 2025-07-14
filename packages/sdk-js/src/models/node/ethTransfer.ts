@@ -11,6 +11,25 @@ class ETHTransferNode extends Node {
     super({ ...props, type: NodeType.ETHTransfer, data: props.data });
   }
 
+  /**
+   * Create a protobuf ETHTransferNode from config data
+   * @param configData - The configuration data for the ETH transfer node
+   * @returns Configured avs_pb.ETHTransferNode
+   */
+  static createProtobufNode(configData: {
+    destination: string;
+    amount: string;
+  }): avs_pb.ETHTransferNode {
+    const node = new avs_pb.ETHTransferNode();
+    const config = new avs_pb.ETHTransferNode.Config();
+    
+    config.setDestination(configData.destination);
+    config.setAmount(configData.amount);
+    node.setConfig(config);
+    
+    return node;
+  }
+
   static fromResponse(raw: avs_pb.TaskNode): ETHTransferNode {
     // Convert the raw object to ETHTransferNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
@@ -32,12 +51,9 @@ class ETHTransferNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const node = new avs_pb.ETHTransferNode();
-    
-    const config = new avs_pb.ETHTransferNode.Config();
-    config.setDestination((this.data as ETHTransferNodeData).destination);
-    config.setAmount((this.data as ETHTransferNodeData).amount);
-    node.setConfig(config);
+    const node = ETHTransferNode.createProtobufNode(
+      this.data as ETHTransferNodeData
+    );
 
     // Set input data if provided
     const inputValue = convertInputToProtobuf(this.input);

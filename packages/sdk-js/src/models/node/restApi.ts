@@ -19,6 +19,35 @@ class RestAPINode extends Node {
     super({ ...props, type: NodeType.RestAPI, data: props.data });
   }
 
+  /**
+   * Create a protobuf RestAPINode from config data
+   * @param configData - The configuration data for the REST API node
+   * @returns Configured avs_pb.RestAPINode
+   */
+  static createProtobufNode(configData: {
+    url: string;
+    method: string;
+    body?: string;
+    headersMap?: Array<[string, string]>;
+  }): avs_pb.RestAPINode {
+    const node = new avs_pb.RestAPINode();
+    const config = new avs_pb.RestAPINode.Config();
+    
+    config.setUrl(configData.url);
+    config.setMethod(configData.method);
+    config.setBody(configData.body || "");
+
+    if (configData.headersMap && configData.headersMap.length > 0) {
+      const headersMap = config.getHeadersMap();
+      configData.headersMap.forEach(([key, value]: [string, string]) => {
+        headersMap.set(key, value);
+      });
+    }
+
+    node.setConfig(config);
+    return node;
+  }
+
   static fromResponse(raw: avs_pb.TaskNode): RestAPINode {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
@@ -44,26 +73,9 @@ class RestAPINode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const nodeData = new avs_pb.RestAPINode();
-
-    const config = new avs_pb.RestAPINode.Config();
-    config.setUrl((this.data as RestAPINodeData).url);
-    config.setMethod((this.data as RestAPINodeData).method);
-    config.setBody((this.data as RestAPINodeData).body || "");
-
-    if (
-      (this.data as RestAPINodeData).headersMap &&
-      (this.data as RestAPINodeData).headersMap.length > 0
-    ) {
-      const headersMap = config.getHeadersMap();
-      (this.data as RestAPINodeData).headersMap.forEach(
-        ([key, value]: [string, string]) => {
-          headersMap.set(key, value);
-        }
-      );
-    }
-
-    nodeData.setConfig(config);
+    const nodeData = RestAPINode.createProtobufNode(
+      this.data as RestAPINodeData
+    );
 
     // Use the standard utility function to convert input field to protobuf format
     const inputValue = convertInputToProtobuf(this.input);

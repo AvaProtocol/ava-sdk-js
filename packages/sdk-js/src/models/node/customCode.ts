@@ -7,7 +7,11 @@ import {
   CustomCodeNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs, convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import {
+  convertProtobufValueToJs,
+  convertInputToProtobuf,
+  extractInputFromProtobuf,
+} from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
 
@@ -16,10 +20,30 @@ class CustomCodeNode extends Node {
     super({ ...props, type: NodeType.CustomCode, data: props.data });
   }
 
+  /**
+   * Create a protobuf CustomCodeNode from config data
+   * @param configData - The configuration data for the custom code node
+   * @returns Configured avs_pb.CustomCodeNode
+   */
+  static createProtobufNode(configData: {
+    lang: CustomCodeLang | string | number;
+    source: string;
+  }): avs_pb.CustomCodeNode {
+    const node = new avs_pb.CustomCodeNode();
+    const config = new avs_pb.CustomCodeNode.Config();
+
+    // Set lang using enum value (cast to protobuf Lang type)
+    config.setLang(configData.lang as any);
+    config.setSource(configData.source);
+
+    node.setConfig(config);
+    return node;
+  }
+
   static fromResponse(raw: avs_pb.TaskNode): CustomCodeNode {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
-    
+
     // Get the raw protobuf config and convert to our custom interface
     const rawConfig = raw.getCustomCode()!.getConfig()!.toObject();
 
@@ -30,11 +54,11 @@ class CustomCodeNode extends Node {
 
     // Extract input data from top-level TaskNode.input field (not nested CustomCodeNode.input)
     // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, any> | undefined = undefined;
+    let input: Record<string, unknown> | undefined = undefined;
     if (raw.hasInput()) {
       input = extractInputFromProtobuf(raw.getInput());
     }
-    
+
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
@@ -49,15 +73,9 @@ class CustomCodeNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const node = new avs_pb.CustomCodeNode();
-
-    const config = new avs_pb.CustomCodeNode.Config();
-
-    // Set lang using enum value (cast to protobuf Lang type)
-    config.setLang((this.data as CustomCodeNodeData).lang as any);
-    config.setSource((this.data as CustomCodeNodeData).source);
-
-    node.setConfig(config);
+    const node = CustomCodeNode.createProtobufNode(
+      this.data as CustomCodeNodeData
+    );
 
     // Set input data on the top-level TaskNode, not the nested CustomCodeNode
     // This matches where the Go backend's ExtractNodeInputData() looks for it
@@ -76,15 +94,18 @@ class CustomCodeNode extends Node {
     if (customCodeOutput?.getData()) {
       // Use the modern protobuf conversion function
       const result = convertProtobufValueToJs(customCodeOutput.getData());
-      
+
       // SPECIAL FIX: Check if the result is incorrectly wrapped with a single "data" property
       // This handles the case where primitive values get wrapped as {"data": value}
-      if (result && typeof result === 'object' && 
-          Object.keys(result).length === 1 && 
-          'data' in result) {
+      if (
+        result &&
+        typeof result === "object" &&
+        Object.keys(result).length === 1 &&
+        "data" in result
+      ) {
         return result.data;
       }
-      
+
       return result;
     }
     return null;

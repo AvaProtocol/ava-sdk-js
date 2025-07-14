@@ -1,9 +1,4 @@
-import _ from "lodash";
-import {
-  Edge,
-  NodeFactory,
-  TriggerFactory,
-} from "@avaprotocol/sdk-js";
+import { Edge, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
 import {
   NodeProps,
   ContractWriteNodeProps,
@@ -22,12 +17,15 @@ import { ethers } from "ethers";
 import { factoryProxyAbi } from "./abis";
 
 // Lazy-load configuration to handle CI/CD environments gracefully
-function getTestConfig() {
+async function getTestConfig() {
   try {
-    const { getConfig } = require("./envalid");
+    const { getConfig } = await import("./envalid");
     return getConfig();
   } catch (error) {
-    console.warn("⚠️ Environment validation failed in templates, using mock config:", error);
+    console.warn(
+      "⚠️ Environment validation failed in templates, using mock config:",
+      error
+    );
     // Return mock config for CI/CD or when real credentials aren't available
     return {
       factoryAddress: "0x0000000000000000000000000000000000000000",
@@ -57,11 +55,11 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
 //   "nonce": "0x8",
 //   "to": "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834"
 // }
-export const createContractWriteNodeProps = (
+export const createContractWriteNodeProps = async (
   owner: string,
   salt: string
-): ContractWriteNodeProps => {
-  const config = getTestConfig();
+): Promise<ContractWriteNodeProps> => {
+  const config = await getTestConfig();
   // Encode the createAccount function call
   const contract = new ethers.Contract(config.factoryAddress, factoryProxyAbi);
   const callData = contract.interface.encodeFunctionData("createAccount", [
@@ -81,11 +79,11 @@ export const createContractWriteNodeProps = (
   };
 };
 
-export const createContractReadNodeProps = (
+export const createContractReadNodeProps = async (
   owner: string,
   salt: string
-): ContractReadNodeProps => {
-  const config = getTestConfig();
+): Promise<ContractReadNodeProps> => {
+  const config = await getTestConfig();
   // Encode the getAddress function call
   const contract = new ethers.Contract(config.factoryAddress, factoryProxyAbi);
   const callData = contract.interface.encodeFunctionData("getAddress", [
@@ -104,7 +102,7 @@ export const createContractReadNodeProps = (
         {
           callData,
           methodName: "getAddress",
-        }
+        },
       ],
     },
   };
@@ -115,10 +113,10 @@ export const restApiNodeProps: RestAPINodeProps = {
   name: "rest_api_call",
   type: NodeType.RestAPI,
   data: {
-      url: "http://localhost:3000/api/test",
-      method: "post",
-      body: `{"test": true}`,
-      headersMap: [["Content-Type", "application/json"]],
+    url: "http://localhost:3000/api/test",
+    method: "post",
+    body: `{"test": true}`,
+    headersMap: [["Content-Type", "application/json"]],
   },
 };
 
@@ -127,7 +125,7 @@ export const filterNodeProps: FilterNodeProps = {
   name: "filterNode",
   type: NodeType.Filter,
   data: {
-      sourceId: "rest_api_call",
+    sourceId: "rest_api_call",
     expression: "current >= 1",
   },
 };
@@ -137,14 +135,14 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql call",
   type: NodeType.GraphQLQuery,
   data: {
-      url: "http://localhost:3000/graphql",
-      query: `query TestQuery {
+    url: "http://localhost:3000/graphql",
+    query: `query TestQuery {
         test {
           id
           value
         }
       }`,
-      variablesMap: [["test", "true"]],
+    variablesMap: [["test", "true"]],
   },
 };
 
@@ -201,27 +199,29 @@ export const createFromTemplate = (
   nodes?: NodeProps[]
 ): WorkflowProps => {
   let nodesList: NodeProps[];
-  
+
   if (nodes === undefined) {
     // Use default template when nodes is not provided
     nodesList = NodesTemplate;
   } else if (nodes.length === 0) {
     // When empty array is explicitly passed, use a minimal no-op node
     // This handles cases where tests want to test triggers in isolation
-    nodesList = [{
-      id: getNextId(),
-      name: "minimal_node",
-      type: NodeType.CustomCode,
-      data: {
-        lang: CustomCodeLang.JavaScript,
-        source: "return {};", // Minimal no-op code
-      },
-    } as CustomCodeNodeProps];
+    nodesList = [
+      {
+        id: getNextId(),
+        name: "minimal_node",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return {};", // Minimal no-op code
+        },
+      } as CustomCodeNodeProps,
+    ];
   } else {
     // Use provided nodes
     nodesList = nodes;
   }
-  
+
   const now = Date.now(); // Get current time in milliseconds
 
   return {

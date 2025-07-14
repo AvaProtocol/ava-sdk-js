@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType } from "./enums";
+import { NodeType, ExecutionMode } from "./enums";
 
 // Node DataTypes
 export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
@@ -43,29 +43,22 @@ export interface BranchNodeData {
 export type RestAPINodeData = avs_pb.RestAPINode.Config.AsObject;
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
-export type LoopNodeData = avs_pb.LoopNode.Config.AsObject & {
-  // Optional runner nodes - only one should be present
-  restApi?: {
-    config: avs_pb.RestAPINode.Config.AsObject;
-  };
-  customCode?: {
-    config: {
-      lang: CustomCodeLang;
-      source: string;
+export type LoopNodeData = Omit<avs_pb.LoopNode.Config.AsObject, 'executionMode'> & {
+  // The runner field matches the protobuf oneof runner structure
+  runner?: {
+    type: 'restApi' | 'customCode' | 'ethTransfer' | 'contractRead' | 'contractWrite' | 'graphqlDataQuery';
+    data: {
+      config: 
+        | avs_pb.RestAPINode.Config.AsObject
+        | { lang: CustomCodeLang; source: string }
+        | avs_pb.ETHTransferNode.Config.AsObject
+        | avs_pb.ContractReadNode.Config.AsObject
+        | avs_pb.ContractWriteNode.Config.AsObject
+        | avs_pb.GraphQLQueryNode.Config.AsObject;
     };
   };
-  ethTransfer?: {
-    config: avs_pb.ETHTransferNode.Config.AsObject;
-  };
-  contractRead?: {
-    config: avs_pb.ContractReadNode.Config.AsObject;
-  };
-  contractWrite?: {
-    config: avs_pb.ContractWriteNode.Config.AsObject;
-  };
-  graphqlDataQuery?: {
-    config: avs_pb.GraphQLQueryNode.Config.AsObject;
-  };
+  // Execution mode for loop iterations - override the protobuf executionMode field
+  executionMode?: ExecutionMode;
 };
 
 // Node Output Types
@@ -103,7 +96,7 @@ export type NodeProps = Omit<
 > & {
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
-  input?: Record<string, any>; // Simplified to plain JS object - transformation handled in SDK
+  input?: Record<string, unknown>; // Simplified to plain JS object - transformation handled in SDK
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };

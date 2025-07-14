@@ -189,7 +189,7 @@ describe("createWorkflow Tests", () => {
         id: getNextId(),
         data: {
           config: {
-            url: "https://api.telegram.org/bot{{notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
+            url: "https://api.telegram.org/bot{{ap_notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
             method: "POST",
             headersMap: [["content-type", "application/json"]],
             body: `JSON.stringify({

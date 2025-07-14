@@ -16,6 +16,42 @@ class ContractWriteNode extends Node {
     super({ ...props, type: NodeType.ContractWrite, data: props.data });
   }
 
+  /**
+   * Create a protobuf ContractWriteNode from config data
+   * @param configData - The configuration data for the contract write node
+   * @returns Configured avs_pb.ContractWriteNode
+   */
+  static createProtobufNode(configData: {
+    contractAddress: string;
+    callData: string;
+    contractAbi: string;
+    methodCalls?: Array<{
+      callData: string;
+      methodName?: string;
+    }>;
+  }): avs_pb.ContractWriteNode {
+    const node = new avs_pb.ContractWriteNode();
+    const config = new avs_pb.ContractWriteNode.Config();
+
+    config.setContractAddress(configData.contractAddress);
+    config.setCallData(configData.callData);
+    config.setContractAbi(configData.contractAbi);
+
+    // Handle method calls array
+    const methodCalls = configData.methodCalls || [];
+    methodCalls.forEach((methodCall) => {
+      const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
+      methodCallMsg.setCallData(methodCall.callData);
+      if (methodCall.methodName) {
+        methodCallMsg.setMethodName(methodCall.methodName);
+      }
+      config.addMethodCalls(methodCallMsg);
+    });
+
+    node.setConfig(config);
+    return node;
+  }
+
   static fromResponse(raw: avs_pb.TaskNode): ContractWriteNode {
     // Convert the raw object to ContractWriteNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
@@ -54,29 +90,9 @@ class ContractWriteNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const node = new avs_pb.ContractWriteNode();
-
-    const config = new avs_pb.ContractWriteNode.Config();
-    config.setContractAddress(
-      (this.data as ContractWriteNodeData).contractAddress
+    const node = ContractWriteNode.createProtobufNode(
+      this.data as ContractWriteNodeData
     );
-    config.setCallData((this.data as ContractWriteNodeData).callData);
-    config.setContractAbi((this.data as ContractWriteNodeData).contractAbi);
-
-    // Handle method calls array
-    const methodCalls = (this.data as ContractWriteNodeData).methodCalls || [];
-    methodCalls.forEach(
-      (methodCall: { callData: string; methodName?: string }) => {
-        const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
-        methodCallMsg.setCallData(methodCall.callData);
-        if (methodCall.methodName) {
-          methodCallMsg.setMethodName(methodCall.methodName);
-        }
-        config.addMethodCalls(methodCallMsg);
-      }
-    );
-
-    node.setConfig(config);
 
     // Set input data on the top-level TaskNode, not the nested ContractWriteNode
     // This matches where the Go backend's ExtractNodeInputData() looks for it

@@ -1715,6 +1715,8 @@ export namespace LoopNode {
         setIterVal(value: string): Config;
         getIterKey(): string;
         setIterKey(value: string): Config;
+        getExecutionMode(): ExecutionMode;
+        setExecutionMode(value: ExecutionMode): Config;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -1731,6 +1733,7 @@ export namespace LoopNode {
             sourceId: string,
             iterVal: string,
             iterKey: string,
+            executionMode: ExecutionMode,
         }
     }
 
@@ -3609,6 +3612,11 @@ export enum NodeType {
     NODE_TYPE_BRANCH = 7,
     NODE_TYPE_FILTER = 8,
     NODE_TYPE_LOOP = 9,
+}
+
+export enum ExecutionMode {
+    EXECUTION_MODE_SEQUENTIAL = 0,
+    EXECUTION_MODE_PARALLEL = 1,
 }
 
 export enum Lang {
