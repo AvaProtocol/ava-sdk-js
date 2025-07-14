@@ -1600,8 +1600,7 @@ describe("LoopNode Tests", () => {
                 lang: CustomCodeLang.JavaScript,
                 source: `
                   // Simulate processing time to test sequential execution
-                  const startTime = Date.now();
-                  while (Date.now() - startTime < 100) {} // 100ms delay per item
+                  await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay per item
                   return {
                     item: item,
                     index: index,
