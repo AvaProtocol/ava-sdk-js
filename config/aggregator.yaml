@@ -34,4 +34,4 @@ smart_wallet:
 
 macros:
   secrets:
-    ap_notify_bot_token: "7771086042:AAG7UvbAyN8_8OrS-MjRfwz8WpWDKf4Yw8U"
+    ap_notify_bot_token: "<telegram-bot-token-if-using-telebot>"
