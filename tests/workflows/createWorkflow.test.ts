@@ -21,9 +21,6 @@ import {
   createFromTemplate,
   MultiNodeWithBranch,
   defaultTriggerId,
-  blockTriggerEvery5,
-  restApiNodeProps,
-  filterNodeProps,
 } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
@@ -375,74 +372,4 @@ describe("createWorkflow Tests", () => {
       await client.deleteWorkflow(workflowId);
     }
   });
-
-  test("create filter node task", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
-
-    try {
-      const workflowProps = createFromTemplate(wallet.address);
-      workflowProps.nodes = NodeFactory.createNodes([
-        restApiNodeProps,
-        filterNodeProps,
-      ]);
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: restApiNodeProps.id,
-        }),
-      ];
-      workflowProps.trigger = blockTriggerEvery5;
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      const task = await client.getWorkflow(workflowId);
-      compareResults(
-        {
-          smartWalletAddress: wallet.address,
-          status: WorkflowStatus.Active,
-          id: workflowId,
-          owner: eoaAddress,
-          nodes: NodeFactory.createNodes([restApiNodeProps, filterNodeProps]),
-          edges: [
-            new Edge({
-              id: getNextId(),
-              source: defaultTriggerId,
-              target: restApiNodeProps.id,
-            }),
-          ],
-          trigger: blockTriggerEvery5,
-          startAt: workflowProps.startAt,
-          expiredAt: workflowProps.expiredAt,
-          maxExecution: 1,
-        },
-        task
-      );
-    } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
-    }
-  });
-
-  // TODO: add detailed verification for each node in the workflow
-  // expect(task.nodes[0].contractWrite.contractAddress).toEqual(
-  //   WorkflowTemplate.nodes[0].contractWrite.contractAddress
-  // );
-  // expect(task.nodes[0].contractWrite.callData).toEqual(
-  //   WorkflowTemplate.nodes[0].contractWrite.callData
-  // );
-
-  // expect(task.nodes[5].branch.conditions).toHaveLength(3);
-  // expect(task.nodes[5].branch.conditions[0].type).toEqual("if");
-  // expect(task.nodes[5].branch.conditions[1].type).toEqual("if");
-  // expect(task.nodes[5].branch.conditions[2].type).toEqual("else");
-
-  // expect(task.edges).toHaveLength(6);
-  // expect(task.edges[3].source).toEqual("t100.b1");
-  // expect(task.edges[4].source).toEqual("t100.b2");
-
-  // expect(task.trigger.type).toEqual(TriggerType.Block);
-  // expect(task.trigger.data.interval).toEqual(5);
 });

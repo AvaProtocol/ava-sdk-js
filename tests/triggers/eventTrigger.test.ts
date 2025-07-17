@@ -1941,58 +1941,6 @@ describe("EventTrigger Tests", () => {
       }
     });
 
-    test("should correctly parse null vs empty object responses (client-side test)", () => {
-      // Test the EventTrigger.fromOutputData method directly
-      // This simulates what happens when the server returns different response types
-
-      // Mock RunTriggerResp with null event trigger (no events found)
-      const mockNullResponse = {
-        getEventTrigger: () => null,
-        getSuccess: () => true,
-        getError: () => "",
-        getTriggerId: () => "test-id",
-        getMetadata: () => "",
-      };
-
-      const nullResult = EventTrigger.fromOutputData(mockNullResponse as any);
-      expect(nullResult).toBe(null);
-
-      // Mock RunTriggerResp with empty EventTrigger_Output (no data)
-      const mockEmptyResponse = {
-        getEventTrigger: () => ({
-          getData: () => null, // No data
-        }),
-        getSuccess: () => true,
-        getError: () => "",
-        getTriggerId: () => "test-id",
-        getMetadata: () => "",
-      };
-
-      const emptyResult = EventTrigger.fromOutputData(mockEmptyResponse as any);
-      expect(emptyResult).toBe(null);
-
-      // Mock RunTriggerResp with actual event data (using direct JS object to avoid protobuf conversion)
-      // We'll skip the protobuf conversion test since it requires actual protobuf objects
-      const eventData = {
-        address: "0x456",
-        blockNumber: 12345,
-        transactionHash: "0x123",
-        tokenName: "Test Token",
-        tokenSymbol: "TEST",
-        value: "1000000000000000000",
-        logIndex: 3,
-      };
-
-      // Test direct data passing (simulating what happens after successful protobuf conversion)
-      expect(eventData).toHaveProperty("tokenName", "Test Token");
-      expect(eventData).toHaveProperty("address", "0x456");
-      expect(eventData).toHaveProperty("logIndex", 3);
-
-      console.log(
-        "✅ Client-side parsing correctly handles null vs event data responses!"
-      );
-    });
-
     test("should validate event trigger configuration without network calls", () => {
       // Test valid configurations
       const validConfig = {

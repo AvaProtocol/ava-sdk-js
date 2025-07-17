@@ -8,7 +8,6 @@ import {
   CustomCodeNodeProps,
   GraphQLQueryNodeProps,
   BranchNodeProps,
-  FilterNodeProps,
   WorkflowProps,
 } from "@avaprotocol/types";
 import { getNextId } from "./utils";
@@ -106,28 +105,6 @@ export const createContractReadNodeProps = async (
       ],
     },
   };
-};
-
-export const restApiNodeProps: RestAPINodeProps = {
-  id: getNextId(),
-  name: "rest_api_call",
-  type: NodeType.RestAPI,
-  data: {
-    url: "http://localhost:3000/api/test",
-    method: "post",
-    body: `{"test": true}`,
-    headersMap: [["Content-Type", "application/json"]],
-  },
-};
-
-export const filterNodeProps: FilterNodeProps = {
-  id: getNextId(),
-  name: "filterNode",
-  type: NodeType.Filter,
-  data: {
-    sourceId: "rest_api_call",
-    expression: "current >= 1",
-  },
 };
 
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
@@ -242,7 +219,6 @@ export const createFromTemplate = (
 
 const nodes = [
   ethTransferNodeProps,
-  restApiNodeProps,
   graphqlQueryNodeProps,
   branchNodeProps,
   customCodeNodeProps,
@@ -262,13 +238,6 @@ export const MultiNodeWithBranch = {
   name: `Test task`,
   maxExecution: 1,
 };
-
-export const blockTriggerEvery5 = TriggerFactory.create({
-  id: defaultTriggerId,
-  name: "blockTrigger",
-  type: TriggerType.Block,
-  data: { interval: 5 },
-});
 
 // Import Loop node templates
 import {
