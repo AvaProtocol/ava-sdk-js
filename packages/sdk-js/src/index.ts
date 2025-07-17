@@ -869,7 +869,13 @@ class Client extends BaseClient {
       case TriggerType.Manual: {
         const manualData = triggerData as any;
         const manualOutput = new avs_pb.ManualTrigger.Output();
-        if (manualData.runAt) manualOutput.setRunAt(manualData.runAt);
+        
+        // Convert JavaScript data to protobuf Value
+        if (manualData.data) {
+          const protobufValue = convertJSValueToProtobuf(manualData.data);
+          manualOutput.setData(protobufValue);
+        }
+        
         request.setManualTrigger(manualOutput);
         break;
       }

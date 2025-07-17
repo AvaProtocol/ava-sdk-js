@@ -93,17 +93,23 @@ class Step implements StepProps {
 
       // Trigger outputs
       case avs_pb.Execution.Step.OutputDataCase.BLOCK_TRIGGER:
-        return typeof step.getBlockTrigger === "function"
-          ? step.getBlockTrigger()?.toObject()
-          : (step as any).blockTrigger;
+        const blockTrigger =
+          typeof step.getBlockTrigger === "function"
+            ? step.getBlockTrigger()?.toObject()
+            : (step as any).blockTrigger;
+        return { data: blockTrigger }; // ✅ Use standard structure
       case avs_pb.Execution.Step.OutputDataCase.FIXED_TIME_TRIGGER:
-        return typeof step.getFixedTimeTrigger === "function"
-          ? step.getFixedTimeTrigger()?.toObject()
-          : (step as any).fixedTimeTrigger;
+        const fixedTimeTrigger =
+          typeof step.getFixedTimeTrigger === "function"
+            ? step.getFixedTimeTrigger()?.toObject()
+            : (step as any).fixedTimeTrigger;
+        return { data: fixedTimeTrigger }; // ✅ Use standard structure
       case avs_pb.Execution.Step.OutputDataCase.CRON_TRIGGER:
-        return typeof step.getCronTrigger === "function"
-          ? step.getCronTrigger()?.toObject()
-          : (step as any).cronTrigger;
+        const cronTrigger =
+          typeof step.getCronTrigger === "function"
+            ? step.getCronTrigger()?.toObject()
+            : (step as any).cronTrigger;
+        return { data: cronTrigger }; // ✅ Use standard structure
       case avs_pb.Execution.Step.OutputDataCase.EVENT_TRIGGER:
         const eventTrigger =
           typeof step.getEventTrigger === "function"
@@ -116,19 +122,24 @@ class Step implements StepProps {
             eventTrigger.hasData()
           ) {
             try {
-              return convertProtobufValueToJs(eventTrigger.getData());
+              const eventData = convertProtobufValueToJs(
+                eventTrigger.getData()
+              );
+              return { data: eventData }; // ✅ Use standard structure
             } catch (error) {
               console.warn(
                 "Failed to convert event trigger data from protobuf Value:",
                 error
               );
-              return eventTrigger.getData();
+              return { data: eventTrigger.getData() }; // ✅ Use standard structure
             }
           } else if (eventTrigger.data) {
             // For plain objects, try to convert or use directly
-            return typeof eventTrigger.data.getKindCase === "function"
-              ? convertProtobufValueToJs(eventTrigger.data)
-              : eventTrigger.data;
+            const eventData =
+              typeof eventTrigger.data.getKindCase === "function"
+                ? convertProtobufValueToJs(eventTrigger.data)
+                : eventTrigger.data;
+            return { data: eventData }; // ✅ Use standard structure
           }
 
           // Fallback to old structure for backward compatibility
@@ -136,23 +147,63 @@ class Step implements StepProps {
             typeof eventTrigger.hasEvmLog === "function" &&
             eventTrigger.hasEvmLog()
           ) {
-            return eventTrigger.getEvmLog()?.toObject();
+            return { data: eventTrigger.getEvmLog()?.toObject() }; // ✅ Use standard structure
           } else if (
             typeof eventTrigger.hasTransferLog === "function" &&
             eventTrigger.hasTransferLog()
           ) {
-            return eventTrigger.getTransferLog()?.toObject();
+            return { data: eventTrigger.getTransferLog()?.toObject() }; // ✅ Use standard structure
           } else if (eventTrigger.evmLog) {
-            return eventTrigger.evmLog;
+            return { data: eventTrigger.evmLog }; // ✅ Use standard structure
           } else if (eventTrigger.transferLog) {
-            return eventTrigger.transferLog;
+            return { data: eventTrigger.transferLog }; // ✅ Use standard structure
           }
         }
-        return undefined;
-      case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER:
-        return typeof step.getManualTrigger === "function"
-          ? step.getManualTrigger()?.toObject() || undefined
-          : (step as any).manualTrigger;
+        return { data: null }; // ✅ Use standard structure
+      case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER: {
+        const manualTrigger =
+          typeof step.getManualTrigger === "function"
+            ? step.getManualTrigger()
+            : (step as any).manualTrigger;
+        if (manualTrigger) {
+          // Check for the new data field structure
+          if (
+            typeof manualTrigger.hasData === "function" &&
+            manualTrigger.hasData()
+          ) {
+            try {
+              const userData = convertProtobufValueToJs(
+                manualTrigger.getData()
+              );
+              return { data: userData }; // ✅ Use standard structure
+            } catch (error) {
+              console.warn(
+                "Failed to convert manual trigger data from protobuf Value:",
+                error
+              );
+              return { data: manualTrigger.getData() }; // ✅ Use standard structure
+            }
+          } else if (manualTrigger.data) {
+            // For plain objects, try to convert or use directly
+            const userData =
+              typeof manualTrigger.data.getKindCase === "function"
+                ? convertProtobufValueToJs(manualTrigger.data)
+                : manualTrigger.data;
+            return { data: userData }; // ✅ Use standard structure
+          }
+
+          // Check if this is the new format with no data field or null data
+          const objData = manualTrigger.toObject?.() || manualTrigger;
+          if (objData && objData.data === undefined) {
+            // No data was provided, return null
+            return { data: null }; // ✅ Use standard structure
+          }
+
+          // Fallback to old structure for backward compatibility
+          return { data: objData }; // ✅ Use standard structure
+        }
+        return { data: null }; // ✅ Use standard structure
+      }
 
       // Node outputs - RESTORE MISSING CASES
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
@@ -160,7 +211,7 @@ class Step implements StepProps {
           ? step.getEthTransfer()?.toObject()
           : (step as any).ethTransfer;
 
-      case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
+      case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE: {
         const customCodeOutput =
           typeof step.getCustomCode === "function"
             ? step.getCustomCode()
@@ -184,8 +235,9 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.REST_API:
+      case avs_pb.Execution.Step.OutputDataCase.REST_API: {
         const restApiOutput =
           typeof step.getRestApi === "function"
             ? step.getRestApi()
@@ -209,13 +261,14 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
       case avs_pb.Execution.Step.OutputDataCase.BRANCH:
         return typeof step.getBranch === "function"
           ? step.getBranch()?.toObject()
           : (step as any).branch;
 
-      case avs_pb.Execution.Step.OutputDataCase.LOOP:
+      case avs_pb.Execution.Step.OutputDataCase.LOOP: {
         const loopOutput =
           typeof step.getLoop === "function"
             ? step.getLoop()
@@ -242,8 +295,9 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
+      case avs_pb.Execution.Step.OutputDataCase.GRAPHQL: {
         const graphqlOutput =
           typeof step.getGraphql === "function"
             ? step.getGraphql()
@@ -258,8 +312,9 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
+      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ: {
         const contractReadOutput =
           typeof step.getContractRead === "function"
             ? step.getContractRead()
@@ -326,8 +381,9 @@ class Step implements StepProps {
           return outputObj;
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
+      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE: {
         const contractWriteOutput =
           typeof step.getContractWrite === "function"
             ? step.getContractWrite()
@@ -397,8 +453,9 @@ class Step implements StepProps {
           return outputObj;
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.FILTER:
+      case avs_pb.Execution.Step.OutputDataCase.FILTER: {
         const filterOutput =
           typeof step.getFilter === "function"
             ? step.getFilter()
@@ -413,6 +470,7 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
       default:
         console.warn(

@@ -551,6 +551,11 @@ export namespace ManualTrigger {
 
     export class Config extends jspb.Message { 
 
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Config;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
         static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
@@ -563,12 +568,16 @@ export namespace ManualTrigger {
 
     export namespace Config {
         export type AsObject = {
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
     export class Output extends jspb.Message { 
-        getRunAt(): number;
-        setRunAt(value: number): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -582,7 +591,7 @@ export namespace ManualTrigger {
 
     export namespace Output {
         export type AsObject = {
-            runAt: number,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 

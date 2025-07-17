@@ -8,7 +8,7 @@ describe("Step Class Tests", () => {
       const mockProtobufStep = {
         getId: () => "step-1",
         getType: () => "CUSTOM_CODE",
-        getName: () => "Test Custom Code",
+        getName: () => "TestCustomCode",
         getSuccess: () => true,
         getError: () => "",
         getLog: () => "Execution completed",
@@ -47,7 +47,7 @@ describe("Step Class Tests", () => {
       expect(() => {
         const step = Step.fromResponse(mockProtobufStep as any);
         expect(step.id).toBe("step-1");
-        expect(step.name).toBe("Test Custom Code");
+        expect(step.name).toBe("TestCustomCode");
         expect(step.success).toBe(true);
         expect(step.input).toBeDefined();
         console.log("✅ Protobuf instance handled successfully");
@@ -59,7 +59,7 @@ describe("Step Class Tests", () => {
       const mockPlainObjectStep = {
         id: "step-2",
         type: "REST_API",
-        name: "Test REST API",
+        name: "TestRestAPI",
         success: true,
         error: "",
         log: "API call completed",
@@ -93,7 +93,7 @@ describe("Step Class Tests", () => {
       expect(() => {
         const step = Step.fromResponse(mockPlainObjectStep as any);
         expect(step.id).toBe("step-2");
-        expect(step.name).toBe("Test REST API");
+        expect(step.name).toBe("TestRestAPI");
         expect(step.success).toBe(true);
         expect(step.input).toBeDefined();
         expect(step.input.url).toBe("https://api.example.com/data");
@@ -108,7 +108,7 @@ describe("Step Class Tests", () => {
       const mockStepNoInput = {
         getId: () => "step-3",
         getType: () => "BLOCK_TRIGGER",
-        getName: () => "Block Trigger",
+        getName: () => "BlockTrigger",
         getSuccess: () => true,
         getError: () => "",
         getLog: () => "Block detected",
@@ -129,7 +129,7 @@ describe("Step Class Tests", () => {
       expect(() => {
         const step = Step.fromResponse(mockStepNoInput as any);
         expect(step.id).toBe("step-3");
-        expect(step.name).toBe("Block Trigger");
+        expect(step.name).toBe("BlockTrigger");
         expect(step.success).toBe(true);
         expect(step.input).toBeUndefined();
         console.log("✅ Step without input handled successfully");
@@ -145,7 +145,7 @@ describe("Step Class Tests", () => {
         {
           id: "event-trigger-step",
           type: "EVENT_TRIGGER",
-          name: "Transfer Event",
+          name: "TransferEvent",
           success: true,
           error: "",
           log: "Event detected successfully",
@@ -172,7 +172,7 @@ describe("Step Class Tests", () => {
         {
           id: "custom-code-step",
           type: "CUSTOM_CODE",
-          name: "Process Transfer",
+          name: "ProcessTransfer",
           success: true,
           error: "",
           log: "Custom code executed successfully",
@@ -227,7 +227,7 @@ describe("Step Class Tests", () => {
       const mockStepWithNullInput = {
         getId: () => "step-null",
         getType: () => "ETH_TRANSFER",
-        getName: () => "ETH Transfer",
+        getName: () => "ETHTransfer",
         getSuccess: () => true,
         getError: () => "",
         getLog: () => "Transfer completed",

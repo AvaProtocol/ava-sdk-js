@@ -8,17 +8,17 @@ export interface CronTriggerDataType {
 
 // EventCondition interface for condition-based filtering
 export interface EventConditionType {
-  fieldName: string;        // Event field name (e.g., "answer", "roundId")
-  operator: string;         // Comparison operator: "gt", "gte", "lt", "lte", "eq", "ne"
-  value: string;            // Value to compare against (as string, parsed based on type)
-  fieldType: string;        // Field type: "uint256", "int256", "address", "bool", "bytes32", etc.
+  fieldName: string; // Event field name (e.g., "answer", "roundId")
+  operator: string; // Comparison operator: "gt", "gte", "lt", "lte", "eq", "ne"
+  value: string; // Value to compare against (as string, parsed based on type)
+  fieldType: string; // Field type: "uint256", "int256", "address", "bool", "bytes32", etc.
 }
 
 // MethodCall interface for enhanced event data formatting
 export interface MethodCallType {
-  methodName: string;       // Method name (e.g., "decimals")
-  callData: string;         // Hex-encoded calldata for the method
-  applyToFields: string[];  // Fields to apply formatting to (e.g., ["current", "answer"])
+  methodName: string; // Method name (e.g., "decimals")
+  callData: string; // Hex-encoded calldata for the method
+  applyToFields: string[]; // Fields to apply formatting to (e.g., ["current", "answer"])
 }
 
 // Custom EventTrigger data type with cleaner field names
@@ -29,9 +29,9 @@ export interface EventTriggerDataType {
       values?: string[];
     }>;
     maxEventsPerBlock?: number;
-    contractAbi?: string;               // Contract ABI as string
-    conditions?: EventConditionType[];  // Event conditions to evaluate on decoded event data
-    methodCalls?: MethodCallType[];     // Method calls for enhanced formatting (e.g., decimals)
+    contractAbi?: string; // Contract ABI as string
+    conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
+    methodCalls?: MethodCallType[]; // Method calls for enhanced formatting (e.g., decimals)
   }>;
 }
 export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
@@ -71,10 +71,13 @@ export type TriggerProps = Omit<
 
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
-export type ManualTriggerProps = TriggerProps & { data?: Record<string, any> | null };
+export type ManualTriggerProps = TriggerProps & {
+  data?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+};
 export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
-export type FixedTimeTriggerProps = TriggerProps & { data: FixedTimeTriggerDataType };
-
+export type FixedTimeTriggerProps = TriggerProps & {
+  data: FixedTimeTriggerDataType;
+};
 
 export const TriggerTypeConverter = {
   toProtobuf: (type: TriggerType): avs_pb.TriggerType => {

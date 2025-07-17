@@ -222,16 +222,13 @@ return message;`,
       expect(result.triggerId).toBeDefined();
 
       // For event triggers, no matching events is a valid outcome
-      if (result.success && result.data !== null) {
-        expect(result.data).toBeDefined();
-        console.log("✅ Found Transfer events for address:", testWalletAddress);
-      } else {
-        console.log(
-          "ℹ️  No Transfer events found for address (expected):",
-          testWalletAddress
-        );
-        expect(result.success).toBe(true);
-      }
+      expect(result.success).toBe(true);
+      // We expect no transfer events for this test wallet address
+      expect(result.data).toBeNull();
+      console.log(
+        "ℹ️  No Transfer events found for address (expected):",
+        testWalletAddress
+      );
     });
 
     test("should test CustomCode node with runNodeWithInputs", async () => {
@@ -268,12 +265,11 @@ return message;`,
       );
 
       expect(result).toBeDefined();
-      if (result.success) {
-        expect(typeof result.data).toBe("string");
-        expect(result.data).toContain("Received");
-        expect(result.data).toContain("USDC");
-        expect(result.data).toContain("100.5");
-      }
+      expect(result.success).toBe(true);
+      expect(typeof result.data).toBe("string");
+      expect(result.data).toContain("Received");
+      expect(result.data).toContain("USDC");
+      expect(result.data).toContain("100.5");
     });
 
     test("should test Telegram node with runNodeWithInputs", async () => {
@@ -312,8 +308,6 @@ return message;`,
 
   describe("2. Workflow Simulation Testing", () => {
     test("should simulate complete workflow", async () => {
-      
-
       const eventTrigger = createEventTrigger();
       const customCodeNode = createCustomCodeNode();
       const telegramNode = createTelegramNode();
@@ -358,8 +352,6 @@ return message;`,
 
   describe("3. Full Deployment and Execution Testing", () => {
     test("should deploy and trigger workflow", async () => {
-      
-
       const eventTrigger = createEventTrigger();
       const customCodeNode = createCustomCodeNode();
       const telegramNode = createTelegramNode();
@@ -405,8 +397,6 @@ return message;`,
     });
 
     test("should verify workflow nodes are properly saved (regression test)", async () => {
-      console.log("🔍 Testing workflow serialization regression...");
-
       const eventTrigger = createEventTrigger();
       const customCodeNode = createCustomCodeNode();
       const telegramNode = createTelegramNode();
@@ -458,8 +448,6 @@ return message;`,
       expect(savedTelegramNode).toBeDefined();
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
       expect(savedTelegramNode!.data.url).toContain("telegram.org");
-
-      console.log("✅ Workflow serialization regression test passed!");
     });
   });
 });

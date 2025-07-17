@@ -102,7 +102,7 @@ describe("secret Tests", () => {
 
       const customCodeNodeProps: CustomCodeNodeProps = {
         id: getNextId(),
-        name: "custom code",
+        name: "customCode",
         type: NodeType.CustomCode,
         data: {
           lang: CustomCodeLang.JavaScript,

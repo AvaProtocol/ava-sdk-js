@@ -87,15 +87,14 @@ describe("Execution Management Tests", () => {
         // The second step should be the ETH transfer node
         const ethTransferStep = execution.steps[1];
         expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-        expect(ethTransferStep.name).toEqual("send eth");
+        expect(ethTransferStep.name).toEqual("sendETH");
         expect(ethTransferStep.success).toBe(true);
         
         // Verify the trigger data is available in the inputs
         expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -123,9 +122,8 @@ describe("Execution Management Tests", () => {
           client.getExecution(workflowId, nonExistentExecutionId)
         ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -174,7 +172,7 @@ describe("Execution Management Tests", () => {
         // The second step should be the ETH transfer node
         const ethTransferStep = execution.steps[1];
         expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-        expect(ethTransferStep.name).toEqual("send eth");
+        expect(ethTransferStep.name).toEqual("sendETH");
         expect(ethTransferStep.success).toBe(true);
         
         // Verify the trigger data is available in the inputs
@@ -183,9 +181,8 @@ describe("Execution Management Tests", () => {
         const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
         expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -245,7 +242,7 @@ describe("Execution Management Tests", () => {
         // The second step should be the ETH transfer node
         const ethTransferStep = execution.steps[1];
         expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-        expect(ethTransferStep.name).toEqual("send eth");
+        expect(ethTransferStep.name).toEqual("sendETH");
         expect(ethTransferStep.success).toBe(true);
         
         // Verify the trigger data is available in the inputs
@@ -254,9 +251,8 @@ describe("Execution Management Tests", () => {
         const executionStatus = await client.getExecutionStatus(workflowId, execution.id);
         expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
   });
@@ -346,9 +342,8 @@ describe("Execution Management Tests", () => {
         // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
         expect(typeof resultWithExtraLimit.pageInfo.endCursor).toBe("string");
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -385,9 +380,8 @@ describe("Execution Management Tests", () => {
           })
         ).rejects.toThrowError(/item per page is not valid/);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -450,14 +444,12 @@ describe("Execution Management Tests", () => {
 
         // Verify all returned executions are in our created list
         [...firstPageIds, ...secondPageIds].forEach((id) => {
-          if (id) {
-            expect(executionIds.includes(id)).toBe(true);
-          }
+          expect(id).toBeDefined();
+          expect(executionIds.includes(id)).toBe(true);
         });
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -521,14 +513,12 @@ describe("Execution Management Tests", () => {
         const firstPageIds = firstPage.items.map((item: any) => item.id);
         
         [...previousPageIds, ...firstPageIds].forEach((id) => {
-          if (id) {
-            expect(executionIds.includes(id)).toBe(true);
-          }
+          expect(id).toBeDefined();
+          expect(executionIds.includes(id)).toBe(true);
         });
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -559,9 +549,8 @@ describe("Execution Management Tests", () => {
           client.getExecutions([workflowId], { after: "invalid-cursor" })
         ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
   });
@@ -600,9 +589,8 @@ describe("Execution Management Tests", () => {
         const count = await client.getExecutionCount([workflowId]);
         expect(count).toBeGreaterThanOrEqual(3);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
 
@@ -688,9 +676,8 @@ describe("Execution Management Tests", () => {
         const count = await client.getExecutionCount([workflowId]);
         expect(count).toBe(0);
       } finally {
-        if (workflowId) {
-          await client.deleteWorkflow(workflowId);
-        }
+        expect(workflowId).toBeDefined();
+        await client.deleteWorkflow(workflowId);
       }
     });
   });

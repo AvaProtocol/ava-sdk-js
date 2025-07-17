@@ -189,11 +189,9 @@ describe("BlockTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Small interval block trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with medium interval", async () => {
@@ -211,11 +209,9 @@ describe("BlockTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Medium interval block trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with large interval", async () => {
@@ -233,11 +229,9 @@ describe("BlockTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Large interval block trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with single block interval", async () => {
@@ -255,11 +249,9 @@ describe("BlockTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Single block interval trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
   });
 
@@ -385,16 +377,15 @@ describe("BlockTrigger Tests", () => {
         );
       } finally {
         // Ensure cleanup happens regardless of test success/failure
-        if (workflowId) {
-          try {
-            await client.deleteWorkflow(workflowId);
-            createdIdMap.delete(workflowId);
-          } catch (cleanupError) {
-            console.warn(
-              `Failed to cleanup workflow ${workflowId}:`,
-              cleanupError
-            );
-          }
+        expect(workflowId).toBeDefined();
+        try {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        } catch (cleanupError) {
+          console.warn(
+            `Failed to cleanup workflow ${workflowId}:`,
+            cleanupError
+          );
         }
       }
     });
@@ -516,35 +507,20 @@ describe("BlockTrigger Tests", () => {
         expectedFields.forEach((field) => {
           console.log(`🔍 Checking field: ${field}`);
 
-          if (directOutput && typeof directOutput === "object") {
-            if (field in directOutput) {
-              console.log(
-                `  ✅ runTrigger has ${field}: ${directOutput[field]}`
-              );
-            } else {
-              console.log(`  ⚠️  runTrigger missing ${field}`);
-            }
-          }
+          expect(directOutput).toBeDefined();
+          expect(typeof directOutput).toBe("object");
+          expect(directOutput).toHaveProperty(field);
+          console.log(`  ✅ runTrigger has ${field}: ${directOutput[field]}`);
 
-          if (simulatedOutput && typeof simulatedOutput === "object") {
-            if (field in simulatedOutput) {
-              console.log(
-                `  ✅ simulateWorkflow has ${field}: ${simulatedOutput[field]}`
-              );
-            } else {
-              console.log(`  ⚠️  simulateWorkflow missing ${field}`);
-            }
-          }
+          expect(simulatedOutput).toBeDefined();
+          expect(typeof simulatedOutput).toBe("object");
+          expect(simulatedOutput).toHaveProperty(field);
+          console.log(`  ✅ simulateWorkflow has ${field}: ${simulatedOutput[field]}`);
 
-          if (executedOutput && typeof executedOutput === "object") {
-            if (field in executedOutput) {
-              console.log(
-                `  ✅ deploy+trigger has ${field}: ${executedOutput[field]}`
-              );
-            } else {
-              console.log(`  ⚠️  deploy+trigger missing ${field}`);
-            }
-          }
+          expect(executedOutput).toBeDefined();
+          expect(typeof executedOutput).toBe("object");
+          expect(executedOutput).toHaveProperty(field);
+          console.log(`  ✅ deploy+trigger has ${field}: ${executedOutput[field]}`);
         });
 
         // Verify the most critical field - blockNumber (camelCase standard)
@@ -553,15 +529,13 @@ describe("BlockTrigger Tests", () => {
         expect(executedOutput.blockNumber).toBeGreaterThan(0);
 
         // Verify other essential fields use camelCase
-        if (executedOutput.blockHash) {
-          expect(typeof executedOutput.blockHash).toBe("string");
-          expect(executedOutput.blockHash).toMatch(/^0x[a-fA-F0-9]+$/);
-        }
+        expect(executedOutput.blockHash).toBeDefined();
+        expect(typeof executedOutput.blockHash).toBe("string");
+        expect(executedOutput.blockHash).toMatch(/^0x[a-fA-F0-9]+$/);
 
-        if (executedOutput.timestamp) {
-          expect(typeof executedOutput.timestamp).toBe("number");
-          expect(executedOutput.timestamp).toBeGreaterThan(0);
-        }
+        expect(executedOutput.timestamp).toBeDefined();
+        expect(typeof executedOutput.timestamp).toBe("number");
+        expect(executedOutput.timestamp).toBeGreaterThan(0);
 
         console.log("🎉 BLOCK TRIGGER FIELD NAMING CONSISTENCY VERIFIED!");
         console.log(
@@ -576,16 +550,15 @@ describe("BlockTrigger Tests", () => {
         console.log("   ✅ gasUsed (camelCase) - consistent with eventTrigger");
       } finally {
         // Ensure cleanup happens regardless of test success/failure
-        if (workflowId) {
-          try {
-            await client.deleteWorkflow(workflowId);
-            createdIdMap.delete(workflowId);
-          } catch (cleanupError) {
-            console.warn(
-              `Failed to cleanup workflow ${workflowId}:`,
-              cleanupError
-            );
-          }
+        expect(workflowId).toBeDefined();
+        try {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        } catch (cleanupError) {
+          console.warn(
+            `Failed to cleanup workflow ${workflowId}:`,
+            cleanupError
+          );
         }
       }
     });
@@ -710,16 +683,15 @@ describe("BlockTrigger Tests", () => {
         console.log(`   Timestamp: ${customCodeOutput.timestamp || "N/A"}`);
         console.log(`   Message: ${customCodeOutput.message}`);
       } finally {
-        if (workflowId) {
-          try {
-            await client.deleteWorkflow(workflowId);
-            createdIdMap.delete(workflowId);
-          } catch (cleanupError) {
-            console.warn(
-              `Failed to cleanup workflow ${workflowId}:`,
-              cleanupError
-            );
-          }
+        expect(workflowId).toBeDefined();
+        try {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        } catch (cleanupError) {
+          console.warn(
+            `Failed to cleanup workflow ${workflowId}:`,
+            cleanupError
+          );
         }
       }
     });
@@ -795,11 +767,13 @@ describe("BlockTrigger Tests", () => {
           expect(value).toBeDefined();
           expect(validator(value)).toBe(true);
           console.log(`✅ Required field ${name}: ${value} (${typeof value})`);
-        } else if (value !== undefined) {
-          expect(validator(value)).toBe(true);
-          console.log(`✅ Optional field ${name}: ${value} (${typeof value})`);
         } else {
-          console.log(`ℹ️  Optional field ${name}: not present`);
+          if (value !== undefined) {
+            expect(validator(value)).toBe(true);
+            console.log(`✅ Optional field ${name}: ${value} (${typeof value})`);
+          } else {
+            console.log(`ℹ️  Optional field ${name}: not present`);
+          }
         }
       });
 
@@ -857,11 +831,9 @@ describe("BlockTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Large interval block trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should validate interval boundaries", () => {

@@ -92,15 +92,14 @@ describe("getExecution Tests", () => {
       // The second step should be the ETH transfer node
       const ethTransferStep = execution.steps[1];
       expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-      expect(ethTransferStep.name).toEqual("send eth");
+      expect(ethTransferStep.name).toEqual("sendETH");
       expect(ethTransferStep.success).toBe(true);
 
       // Verify the trigger data is available in the inputs
       expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -132,9 +131,8 @@ describe("getExecution Tests", () => {
         client.getExecution(workflowId, nonExistentExecutionId)
       ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -188,7 +186,7 @@ describe("getExecution Tests", () => {
       // The second step should be the ETH transfer node
       const ethTransferStep = execution.steps[1];
       expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-      expect(ethTransferStep.name).toEqual("send eth");
+      expect(ethTransferStep.name).toEqual("sendETH");
       expect(ethTransferStep.success).toBe(true);
 
       // Verify the trigger data is available in the inputs
@@ -202,9 +200,8 @@ describe("getExecution Tests", () => {
         ExecutionStatus.EXECUTION_STATUS_COMPLETED
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -269,7 +266,7 @@ describe("getExecution Tests", () => {
       // The second step should be the ETH transfer node
       const ethTransferStep = execution.steps[1];
       expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-      expect(ethTransferStep.name).toEqual("send eth");
+      expect(ethTransferStep.name).toEqual("sendETH");
       expect(ethTransferStep.success).toBe(true);
 
       // Verify the trigger data is available in the inputs
@@ -285,9 +282,8 @@ describe("getExecution Tests", () => {
         ExecutionStatus.EXECUTION_STATUS_COMPLETED
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -440,35 +436,29 @@ describe("getExecution Tests", () => {
       console.log("✅ Input Field Feature Success: Both data and input are available:", triggerInputs);
       
       // 🎯 CRITICAL TEST: Verify actual input values were accessed successfully
-      if (customCodeStep.output && typeof customCodeStep.output === 'object') {
-        const nodeOutput = customCodeStep.output as any;
-        console.log("🔍 CustomCode Output:", nodeOutput);
-        
-        if (nodeOutput.success) {
-          console.log("✅ CustomCode executed successfully");
-          
-          // Verify the trigger input values were correctly accessed
-          if (nodeOutput.inputValues) {
-            console.log("✅ Input values successfully accessed:", nodeOutput.inputValues);
-            expect(nodeOutput.inputValues.environment).toBe("test");
-            expect(nodeOutput.inputValues.priority).toBe("high"); 
-            expect(nodeOutput.inputValues.description).toContain("getExecution");
-          }
-          
-          // Verify validation results
-          if (nodeOutput.validation) {
-            console.log("✅ Validation results:", nodeOutput.validation);
-            expect(nodeOutput.validation.allTestsPassed).toBe(true);
-          }
-        } else {
-          console.log("❌ CustomCode failed:", nodeOutput.error);
-          // Don't fail the test immediately - let's see what the error is
-        }
-      }
+      expect(customCodeStep.output).toBeDefined();
+      expect(typeof customCodeStep.output).toBe('object');
+      
+      const nodeOutput = customCodeStep.output as any;
+      console.log("🔍 CustomCode Output:", nodeOutput);
+      
+      expect(nodeOutput.success).toBe(true);
+      console.log("✅ CustomCode executed successfully");
+      
+      // Verify the trigger input values were correctly accessed
+      expect(nodeOutput.inputValues).toBeDefined();
+      console.log("✅ Input values successfully accessed:", nodeOutput.inputValues);
+      expect(nodeOutput.inputValues.environment).toBe("test");
+      expect(nodeOutput.inputValues.priority).toBe("high"); 
+      expect(nodeOutput.inputValues.description).toContain("getExecution");
+      
+      // Verify validation results
+      expect(nodeOutput.validation).toBeDefined();
+      console.log("✅ Validation results:", nodeOutput.validation);
+      expect(nodeOutput.validation.allTestsPassed).toBe(true);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 });

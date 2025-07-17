@@ -78,9 +78,8 @@ describe("createWorkflow Tests", () => {
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -114,9 +113,8 @@ describe("createWorkflow Tests", () => {
         getResult
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -142,9 +140,8 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -195,11 +192,12 @@ describe("createWorkflow Tests", () => {
             body: `JSON.stringify({
                 chat_id: -4609037622,
                 text: \`
-                  Congrat, your wallet 
-                  [\${trigger1.data.to_address}](https://sepolia.etherscan.io/address/\${trigger1.data.to_address}) 
-                  received \\\`\${trigger1.data.value_formatted}\\\` 
-                  [\${trigger1.data.token_symbol}](https://sepolia.etherscan.io/token/\${trigger1.data.address}) 
-                  at [\${trigger1.data.transaction_hash}](https://sepolia.etherscan.io/tx/\${trigger1.data.transaction_hash})
+                  Test Event Trigger: 
+                  Address: \${trigger1.data.to_address || "Unknown"} 
+                  Amount: \${trigger1.data.value_formatted || "0"} 
+                  Token: \${trigger1.data.token_symbol || "UNKNOWN"}
+                  Block: \${trigger1.data.block_number || "Unknown"}
+                  Hash: \${trigger1.data.transaction_hash || "Unknown"}
                 \`
               })`,
           },
@@ -248,9 +246,8 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -312,9 +309,8 @@ describe("createWorkflow Tests", () => {
         getResult
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -344,9 +340,8 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -376,9 +371,8 @@ describe("createWorkflow Tests", () => {
         getResponse
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -427,9 +421,8 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 

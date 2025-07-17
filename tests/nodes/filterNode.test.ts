@@ -66,15 +66,11 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(2);
-        }
-      } else {
-        console.log("Filter adults test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(2);
     });
 
     test("should filter minors with preprocessing", async () => {
@@ -95,15 +91,11 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(1);
-        }
-      } else {
-        console.log("Filter minors test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(1);
     });
 
     test("should filter by name starting with A", async () => {
@@ -124,15 +116,11 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(2);
-        }
-      } else {
-        console.log("Filter by name test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(2);
     });
 
     test("should filter with trigger data reference", async () => {
@@ -158,15 +146,11 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(2);
-        }
-      } else {
-        console.log("Filter with trigger data test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(2);
     });
   });
 

@@ -37,7 +37,7 @@ export const defaultTriggerId = getNextId();
 
 export const ethTransferNodeProps: ETHTransferNodeProps = {
   id: getNextId(),
-  name: "send eth",
+  name: "sendETH",
   type: NodeType.ETHTransfer,
   data: {
     destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
@@ -161,7 +161,7 @@ const branchNodeProps: BranchNodeProps = {
 
 const customCodeNodeProps: CustomCodeNodeProps = {
   id: getNextId(),
-  name: "custom code",
+  name: "customCode",
   type: NodeType.CustomCode,
   data: {
     lang: CustomCodeLang.JavaScript,

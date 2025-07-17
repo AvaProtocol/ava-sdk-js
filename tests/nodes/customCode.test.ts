@@ -1027,6 +1027,69 @@ describe("CustomCode Node Tests", () => {
     });
   });
 
+  describe("Trigger Data Reference Tests", () => {
+    test("should return direct data when referencing manual trigger data", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const triggerName = "manual_trigger_data_test";
+
+      const userData = {
+        items: [
+          { name: "test1", value: 100 },
+          { name: "test2", value: 200 },
+        ],
+      };
+
+      // Create a ManualTrigger with test data
+      const manualTrigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: triggerName,
+        type: TriggerType.Manual,
+        data: userData,
+      });
+
+      // Create a CustomCode node that references the manual trigger data
+      const customCodeNode = NodeFactory.create({
+        id: getNextId(),
+        name: "manual_trigger_ref_test",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: `return ${triggerName}.data;`,
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [customCodeNode]);
+      workflowProps.trigger = manualTrigger;
+
+      console.log("🚀 Testing CustomCode referencing manual trigger data...");
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "Manual trigger reference result:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
+
+      expect(simulation.success).toBe(true);
+      expect(simulation.steps).toHaveLength(2); // trigger + custom code node
+
+      const customCodeStep = simulation.steps.find(
+        (step) => step.id === customCodeNode.id
+      );
+      expect(customCodeStep).toBeDefined();
+      expect(customCodeStep!.success).toBe(true);
+
+      // With standard structure, CustomCode accesses trigger.data which contains {data: userData}
+      expect(customCodeStep!.output).toEqual({data: userData});
+
+      console.log(
+        "✅ CustomCode correctly returned direct manual trigger data!"
+      );
+    });
+  });
+
   describe("Module Import Tests", () => {
     test("should support uuid module import", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });

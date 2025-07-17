@@ -187,9 +187,6 @@ class Workflow implements WorkflowProps {
       request.setName(this.name);
     }
 
-    // Log final summary for debugging (only errors and counts)
-    console.log(`📤 Workflow serialization: ${this.nodes.length} nodes, ${this.edges.length} edges -> protobuf: ${request.getNodesList().length} nodes, ${request.getEdgesList().length} edges`);
-
     return request;
   }
 
