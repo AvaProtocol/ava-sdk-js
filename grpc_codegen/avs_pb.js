@@ -6270,7 +6270,9 @@ proto.aggregator.ManualTrigger.Config.prototype.toObject = function(opt_includeI
  */
 proto.aggregator.ManualTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    headers: (f = msg.getHeaders()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    pathparams: (f = msg.getPathparams()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6312,6 +6314,16 @@ proto.aggregator.ManualTrigger.Config.deserializeBinaryFromReader = function(msg
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
+    case 2:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setHeaders(value);
+      break;
+    case 3:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setPathparams(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -6345,6 +6357,22 @@ proto.aggregator.ManualTrigger.Config.serializeBinaryToWriter = function(message
   if (f != null) {
     writer.writeMessage(
       1,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getHeaders();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getPathparams();
+  if (f != null) {
+    writer.writeMessage(
+      3,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -6389,6 +6417,80 @@ proto.aggregator.ManualTrigger.Config.prototype.hasData = function() {
 };
 
 
+/**
+ * optional google.protobuf.Value headers = 2;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.getHeaders = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+*/
+proto.aggregator.ManualTrigger.Config.prototype.setHeaders = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+ */
+proto.aggregator.ManualTrigger.Config.prototype.clearHeaders = function() {
+  return this.setHeaders(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.hasHeaders = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value pathParams = 3;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.getPathparams = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 3));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+*/
+proto.aggregator.ManualTrigger.Config.prototype.setPathparams = function(value) {
+  return jspb.Message.setWrapperField(this, 3, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+ */
+proto.aggregator.ManualTrigger.Config.prototype.clearPathparams = function() {
+  return this.setPathparams(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.hasPathparams = function() {
+  return jspb.Message.getField(this, 3) != null;
+};
+
+
 
 
 
@@ -6421,7 +6523,9 @@ proto.aggregator.ManualTrigger.Output.prototype.toObject = function(opt_includeI
  */
 proto.aggregator.ManualTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    headers: (f = msg.getHeaders()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    pathparams: (f = msg.getPathparams()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -6463,6 +6567,16 @@ proto.aggregator.ManualTrigger.Output.deserializeBinaryFromReader = function(msg
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
+    case 2:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setHeaders(value);
+      break;
+    case 3:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setPathparams(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -6496,6 +6610,22 @@ proto.aggregator.ManualTrigger.Output.serializeBinaryToWriter = function(message
   if (f != null) {
     writer.writeMessage(
       1,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getHeaders();
+  if (f != null) {
+    writer.writeMessage(
+      2,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getPathparams();
+  if (f != null) {
+    writer.writeMessage(
+      3,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -6537,6 +6667,80 @@ proto.aggregator.ManualTrigger.Output.prototype.clearData = function() {
  */
 proto.aggregator.ManualTrigger.Output.prototype.hasData = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value headers = 2;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.getHeaders = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+*/
+proto.aggregator.ManualTrigger.Output.prototype.setHeaders = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+ */
+proto.aggregator.ManualTrigger.Output.prototype.clearHeaders = function() {
+  return this.setHeaders(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.hasHeaders = function() {
+  return jspb.Message.getField(this, 2) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value pathParams = 3;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.getPathparams = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 3));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+*/
+proto.aggregator.ManualTrigger.Output.prototype.setPathparams = function(value) {
+  return jspb.Message.setWrapperField(this, 3, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+ */
+proto.aggregator.ManualTrigger.Output.prototype.clearPathparams = function() {
+  return this.setPathparams(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.hasPathparams = function() {
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
@@ -6677,7 +6881,7 @@ proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     type: jspb.Message.getFieldWithDefault(msg, 8, 0),
-    manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+    manual: (f = msg.getManual()) && proto.aggregator.ManualTrigger.toObject(includeInstance, f),
     fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedTimeTrigger.toObject(includeInstance, f),
     cron: (f = msg.getCron()) && proto.aggregator.CronTrigger.toObject(includeInstance, f),
     block: (f = msg.getBlock()) && proto.aggregator.BlockTrigger.toObject(includeInstance, f),
@@ -6729,7 +6933,8 @@ proto.aggregator.TaskTrigger.deserializeBinaryFromReader = function(msg, reader)
       msg.setType(value);
       break;
     case 2:
-      var value = /** @type {boolean} */ (reader.readBool());
+      var value = new proto.aggregator.ManualTrigger;
+      reader.readMessage(value,proto.aggregator.ManualTrigger.deserializeBinaryFromReader);
       msg.setManual(value);
       break;
     case 3:
@@ -6804,11 +7009,12 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
       f
     );
   }
-  f = /** @type {boolean} */ (jspb.Message.getField(message, 2));
+  f = message.getManual();
   if (f != null) {
-    writer.writeBool(
+    writer.writeMessage(
       2,
-      f
+      f,
+      proto.aggregator.ManualTrigger.serializeBinaryToWriter
     );
   }
   f = message.getFixedTime();
@@ -6898,29 +7104,30 @@ proto.aggregator.TaskTrigger.prototype.setType = function(value) {
 
 
 /**
- * optional bool manual = 2;
- * @return {boolean}
+ * optional ManualTrigger manual = 2;
+ * @return {?proto.aggregator.ManualTrigger}
  */
 proto.aggregator.TaskTrigger.prototype.getManual = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 2, false));
+  return /** @type{?proto.aggregator.ManualTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ManualTrigger, 2));
 };
 
 
 /**
- * @param {boolean} value
+ * @param {?proto.aggregator.ManualTrigger|undefined} value
  * @return {!proto.aggregator.TaskTrigger} returns this
- */
+*/
 proto.aggregator.TaskTrigger.prototype.setManual = function(value) {
-  return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
 };
 
 
 /**
- * Clears the field making it undefined.
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.TaskTrigger} returns this
  */
 proto.aggregator.TaskTrigger.prototype.clearManual = function() {
-  return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], undefined);
+  return this.setManual(undefined);
 };
 
 

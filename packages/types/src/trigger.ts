@@ -73,6 +73,8 @@ export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
 export type ManualTriggerProps = TriggerProps & {
   data?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+  headers?: Array<Record<string, string>>;
+  pathParams?: Array<Record<string, string>>;
 };
 export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
 export type FixedTimeTriggerProps = TriggerProps & {

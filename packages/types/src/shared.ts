@@ -33,4 +33,6 @@ export type TriggerDataProps = {
   blockNumber?: number;
   timestamp?: number;
   data?: string | number | boolean | Record<string, unknown> | unknown[] | null;
+  headers?: Array<Record<string, string>>;
+  pathParams?: Array<Record<string, string>>;
 };

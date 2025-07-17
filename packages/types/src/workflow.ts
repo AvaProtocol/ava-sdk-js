@@ -29,6 +29,8 @@ export type WorkflowTriggerDataProps =
         | Record<string, unknown>
         | unknown[]
         | null;
+      headers?: Array<Record<string, string>>;
+      pathParams?: Array<Record<string, string>>;
     }
   | { type: TriggerType.Unspecified };
 

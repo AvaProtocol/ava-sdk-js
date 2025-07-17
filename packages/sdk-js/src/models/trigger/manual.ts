@@ -13,6 +13,9 @@ import {
 } from "@avaprotocol/types";
 
 class ManualTrigger extends Trigger {
+  public headers?: Array<Record<string, string>>;
+  public pathParams?: Array<Record<string, string>>;
+
   constructor(props: ManualTriggerProps) {
     super({
       ...props,
@@ -20,6 +23,8 @@ class ManualTrigger extends Trigger {
       data: props.data,
       input: props.input,
     });
+    this.headers = props.headers;
+    this.pathParams = props.pathParams;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -28,18 +33,37 @@ class ManualTrigger extends Trigger {
     trigger.setName(this.name);
     trigger.setType(avs_pb.TriggerType.TRIGGER_TYPE_MANUAL);
 
-    // TODO: Use proper ManualTrigger structure once protobuf bindings are regenerated
-    // For now, use boolean approach until TaskTrigger.setManual() accepts ManualTrigger object
-    trigger.setManual(true);
+    // Create ManualTrigger with proper config structure
+    const manualTrigger = new avs_pb.ManualTrigger();
+    const config = new avs_pb.ManualTrigger.Config();
 
-    // Set the data in the top-level input field (temporary approach)
+    // Set the data
     const dataToSend = this.data !== null ? this.data : this.input;
     if (dataToSend !== null && dataToSend !== undefined) {
       const inputValue = convertInputToProtobuf(dataToSend);
       if (inputValue) {
-        trigger.setInput(inputValue);
+        config.setData(inputValue);
       }
     }
+
+    // Set headers if provided
+    if (this.headers && this.headers.length > 0) {
+      const headersValue = convertInputToProtobuf(this.headers);
+      if (headersValue) {
+        config.setHeaders(headersValue);
+      }
+    }
+
+    // Set pathParams if provided
+    if (this.pathParams && this.pathParams.length > 0) {
+      const pathParamsValue = convertInputToProtobuf(this.pathParams);
+      if (pathParamsValue) {
+        config.setPathparams(pathParamsValue); // Note: protobuf uses "pathparams"
+      }
+    }
+
+    manualTrigger.setConfig(config);
+    trigger.setManual(manualTrigger);
 
     return trigger;
   }
@@ -47,15 +71,32 @@ class ManualTrigger extends Trigger {
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    // TODO: Extract data from ManualTrigger structure once protobuf bindings are regenerated
-    // For now, extract data from top-level input field (temporary approach)
     let data: unknown = null;
-    let input: Record<string, unknown> | undefined = undefined;
+    const input: Record<string, unknown> | undefined = undefined;
+    let headers: Array<Record<string, string>> | undefined = undefined;
+    let pathParams: Array<Record<string, string>> | undefined = undefined;
 
-    if (raw.hasInput()) {
-      const inputData = extractInputFromProtobuf(raw.getInput());
-      // For manual triggers, treat the input as the data
-      data = inputData;
+    const manualTrigger = raw.getManual();
+    if (manualTrigger) {
+      const config = manualTrigger.getConfig();
+      if (config) {
+        // Extract data
+        if (config.hasData()) {
+          data = extractInputFromProtobuf(config.getData());
+        }
+
+        // Extract headers
+        if (config.hasHeaders()) {
+          const headersData = extractInputFromProtobuf(config.getHeaders());
+          headers = headersData as Array<Record<string, string>>;
+        }
+
+        // Extract pathParams
+        if (config.hasPathparams()) { // Note: protobuf uses "pathparams"
+          const pathParamsData = extractInputFromProtobuf(config.getPathparams());
+          pathParams = pathParamsData as Array<Record<string, string>>;
+        }
+      }
     }
 
     return new ManualTrigger({
@@ -63,6 +104,8 @@ class ManualTrigger extends Trigger {
       type: TriggerType.Manual,
       data: data as any,
       input: input,
+      headers: headers,
+      pathParams: pathParams,
     });
   }
 
@@ -93,24 +136,53 @@ class ManualTrigger extends Trigger {
       return null;
     }
 
+    const result: Record<string, unknown> = {};
+
+    // Extract data
     const dataValue = manualOutput.getData();
     if (dataValue) {
       try {
-        // Convert protobuf Value to JavaScript object and wrap in standard structure
-        const userData = convertProtobufValueToJs(dataValue);
-        return { data: userData };
+        result.data = convertProtobufValueToJs(dataValue);
       } catch (error) {
         console.warn(
           "Failed to convert manual trigger data from protobuf Value:",
           error
         );
+        result.data = dataValue as unknown as Record<string, unknown>;
+      }
+    } else {
+      result.data = null;
+    }
 
-        // Return the raw protobuf Value object as fallback, wrapped in standard structure
-        return { data: dataValue as unknown as Record<string, unknown> };
+    // Extract headers
+    const headersValue = manualOutput.getHeaders();
+    if (headersValue) {
+      try {
+        result.headers = convertProtobufValueToJs(headersValue);
+      } catch (error) {
+        console.warn(
+          "Failed to convert manual trigger headers from protobuf Value:",
+          error
+        );
+        result.headers = headersValue as unknown as Array<Record<string, string>>;
       }
     }
 
-    return { data: null };
+    // Extract pathParams
+    const pathParamsValue = manualOutput.getPathparams(); // Note: protobuf uses "pathparams"
+    if (pathParamsValue) {
+      try {
+        result.pathParams = convertProtobufValueToJs(pathParamsValue); // Note: SDK uses "pathParams"
+      } catch (error) {
+        console.warn(
+          "Failed to convert manual trigger pathParams from protobuf Value:",
+          error
+        );
+        result.pathParams = pathParamsValue as unknown as Array<Record<string, string>>;
+      }
+    }
+
+    return result;
   }
 }
 

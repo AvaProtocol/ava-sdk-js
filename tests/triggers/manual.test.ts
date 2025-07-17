@@ -105,6 +105,29 @@ describe("ManualTrigger Tests", () => {
       expect(() => trigger.toRequest()).not.toThrow();
     });
 
+    test("should succeed with headers and pathParams", () => {
+      const userData = { message: "Hello World" };
+      const headers = [
+        { "Content-Type": "application/json" },
+        { Authorization: "Bearer token123" },
+      ];
+      const pathParams = [{ userId: "123" }, { apiVersion: "v1" }];
+
+      const trigger = TriggerFactory.create({
+        id: "test-trigger-id",
+        name: "manualTrigger",
+        type: TriggerType.Manual,
+        data: userData,
+        headers: headers,
+        pathParams: pathParams,
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      expect(trigger.toRequest().getType()).toBe(
+        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
+      );
+    });
+
     test("should handle runTrigger with no data", async () => {
       const params = {
         triggerType: TriggerType.Manual,
@@ -126,8 +149,8 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      // With no data, the manual trigger should return wrapped null: {data: null}
-      expect(result.data).toEqual({data: null});
+      // With no data, the manual trigger should return data: null
+      expect(result.data).toEqual(expect.objectContaining({ data: null }));
     });
 
     test("should handle runTrigger with simple data", async () => {
@@ -155,7 +178,129 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: testData});
+      expect(result.data).toEqual(expect.objectContaining({ data: testData }));
+    });
+
+    test("should handle runTrigger with headers", async () => {
+      const testData = { message: "Hello with headers!" };
+      const headers = [
+        { "Content-Type": "application/json" },
+        { Authorization: "Bearer token123" },
+      ];
+      
+      // Backend merges array of objects into single object
+      const expectedHeaders = { "Content-Type": "application/json", Authorization: "Bearer token123" };
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: testData,
+          headers: headers,
+        },
+      };
+
+      console.log(
+        "🚀 ~ runTrigger with headers ~ input params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(params);
+
+      console.log(
+        "runTrigger headers response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          data: testData,
+          headers: expectedHeaders,
+        })
+      );
+    });
+
+    test("should handle runTrigger with pathParams", async () => {
+      const testData = { message: "Hello with pathParams!" };
+      const pathParams = [{ userId: "123" }, { apiVersion: "v1" }];
+      // Backend merges array of objects into single object
+      const expectedPathParams = { userId: "123", apiVersion: "v1" };
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: testData,
+          pathParams: pathParams,
+        },
+      };
+
+      console.log(
+        "🚀 ~ runTrigger with pathParams ~ input params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(params);
+
+      console.log(
+        "runTrigger pathParams response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          data: testData,
+          pathParams: expectedPathParams,
+        })
+      );
+    });
+
+    test("should handle runTrigger with headers and pathParams", async () => {
+      const testData = { message: "Hello with both!" };
+      const headers = [
+        { "Content-Type": "application/json" },
+        { "X-Custom": "header-value" },
+      ];
+      const pathParams = [{ userId: "456" }, { action: "update" }];
+      // Backend merges array of objects into single object
+      const expectedHeaders = { "Content-Type": "application/json", "X-Custom": "header-value" };
+      const expectedPathParams = { userId: "456", action: "update" };
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: testData,
+          headers: headers,
+          pathParams: pathParams,
+        },
+      };
+
+      console.log(
+        "🚀 ~ runTrigger with headers and pathParams ~ input params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(params);
+
+      console.log(
+        "runTrigger headers and pathParams response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          data: testData,
+          headers: expectedHeaders,
+          pathParams: expectedPathParams,
+        })
+      );
     });
 
     test("should handle runTrigger with complex data", async () => {
@@ -192,7 +337,9 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: complexData});
+      expect(result.data).toEqual(
+        expect.objectContaining({ data: complexData })
+      );
     });
 
     test("should handle runTrigger with array data", async () => {
@@ -224,7 +371,7 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: arrayData});
+      expect(result.data).toEqual(expect.objectContaining({ data: arrayData }));
     });
 
     test("should handle runTrigger with string data", async () => {
@@ -255,7 +402,9 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: stringData});
+      expect(result.data).toEqual(
+        expect.objectContaining({ data: stringData })
+      );
     });
   });
 
@@ -299,8 +448,10 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // When data is null, the output should be null (backend returns null for null data in simulation)
-      expect(triggerStep!.output).toEqual({ data: null }); // ✅ Now uses standard structure
+      // When data is null, the output should contain data: null
+      expect(triggerStep!.output).toEqual(
+        expect.objectContaining({ data: null })
+      );
     });
 
     test("should simulate workflow with manual trigger and user data", async () => {
@@ -326,7 +477,8 @@ describe("ManualTrigger Tests", () => {
 
       // Update the CustomCode node to reference the manual trigger's data
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
-      customCodeNode.data.source = `return ${triggerName}.data;`;
+      // Fix the TypeScript error by casting to any first
+      (customCodeNode.data as any).source = `return ${triggerName}.data;`;
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and user data:",
@@ -354,12 +506,11 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // The trigger step should have the user data available (backend returns direct data in simulation)
+      // The trigger step should have the user data available
       expect(triggerStep!.output).toBeDefined();
       const outputData = triggerStep!.output;
       expect(outputData).toBeDefined();
-      // In simulation, the backend returns data wrapped in standard structure
-      expect(outputData).toEqual({ data: userData });
+      expect(outputData).toEqual(expect.objectContaining({ data: { data: userData } }));
 
       // Check that the CustomCode node successfully referenced the manual trigger data
       const customCodeStep = simulation.steps.find(
@@ -368,11 +519,105 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
 
-      // Manual triggers now return user data directly without wrapper
-      expect(customCodeStep!.output).toEqual({data: userData});
+      // Manual triggers now return user data directly
+      expect(customCodeStep!.output).toEqual(
+        expect.objectContaining({ data: userData })
+      );
 
       // Verify the reference was properly made by checking inputsList
       expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`);
+    });
+
+    test("should simulate workflow with manual trigger including headers and pathParams", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const triggerName = "simulate_manual_trigger_with_webhook_data";
+
+      const userData = { message: "Hello webhook!" };
+      const headers = [
+        { "Content-Type": "application/json" },
+        { "X-API-Key": "secret123" },
+      ];
+      const pathParams = [{ userId: "789" }, { action: "test" }];
+
+      const manualTrigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: triggerName,
+        type: TriggerType.Manual,
+        data: userData,
+        headers: headers,
+        pathParams: pathParams,
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, []);
+      workflowProps.trigger = manualTrigger;
+
+      // Update the CustomCode node to reference the manual trigger's webhook data
+      const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
+      (customCodeNode.data as any).source = `return { 
+        data: ${triggerName}.data,
+        headers: ${triggerName}.headers,
+        pathParams: ${triggerName}.pathParams
+      };`;
+
+      console.log(
+        "🚀 simulateWorkflow with manual trigger and webhook data:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "simulateWorkflow with webhook data response:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
+
+      expect(simulation).toBeDefined();
+      expect(simulation.success).toBe(true);
+      expect(simulation.steps).toBeDefined();
+      expect(Array.isArray(simulation.steps)).toBe(true);
+
+      // Check that the trigger step ran with the expected data
+      const triggerStep = simulation.steps.find(
+        (step) => step.id === defaultTriggerId
+      );
+      expect(triggerStep).toBeDefined();
+      expect(triggerStep!.success).toBe(true);
+
+      // The trigger step should have all the webhook data
+      expect(triggerStep!.output).toEqual(
+        expect.objectContaining({
+          data: {
+            data: userData,
+            headers: headers,
+            pathParams: pathParams,
+          },
+        })
+      );
+
+      // Check that the CustomCode node successfully referenced the manual trigger webhook data
+      const customCodeStep = simulation.steps.find(
+        (step) => step.name === "minimal_node"
+      );
+      expect(customCodeStep).toBeDefined();
+      expect(customCodeStep!.success).toBe(true);
+
+      // Verify the webhook data was properly accessed
+      expect(customCodeStep!.output).toEqual(
+        expect.objectContaining({
+          data: {
+            data: userData,
+            headers: headers,
+            pathParams: pathParams,
+          },
+        })
+      );
+
+      // Verify the references were properly made by checking inputsList
+      expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`);
+      // Note: headers and pathParams are not exposed as separate variables in the VM
+      // They are accessible through the trigger's input/output data structure
     });
   });
 
@@ -444,8 +689,9 @@ describe("ManualTrigger Tests", () => {
         createdIdMap.set(workflowId!, true);
       } catch (error) {
         console.error("Deploy and trigger test failed:", error);
-        expect(workflowId).toBeDefined();
-        createdIdMap.set(workflowId, true);
+        if (workflowId) {
+          createdIdMap.set(workflowId, true);
+        }
         throw error;
       }
     });
@@ -510,8 +756,87 @@ describe("ManualTrigger Tests", () => {
         createdIdMap.set(workflowId!, true);
       } catch (error) {
         console.error("Deploy and trigger test (no data) failed:", error);
-        expect(workflowId).toBeDefined();
-        createdIdMap.set(workflowId, true);
+        if (workflowId) {
+          createdIdMap.set(workflowId, true);
+        }
+        throw error;
+      }
+    });
+
+    test("should deploy and trigger workflow with webhook headers and pathParams", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const userData = { message: "Deploy webhook test" };
+      const headers = [
+        { "Content-Type": "application/json" },
+        { "X-Test": "webhook" },
+      ];
+      const pathParams = [{ userId: "deploy123" }, { env: "test" }];
+
+      const manualTrigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "deploy_webhook_trigger_test",
+        type: TriggerType.Manual,
+        data: userData,
+        headers: headers,
+        pathParams: pathParams,
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, []);
+      workflowProps.trigger = manualTrigger;
+
+      let workflowId: string | undefined;
+
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+
+        // Verify deployment was successful
+        const workflowsResult = await client.getWorkflows([wallet.address]);
+        const deployedWorkflow = workflowsResult.items.find(
+          (w) => w.id === workflowId
+        );
+
+        expect(deployedWorkflow).toBeDefined();
+        expect(deployedWorkflow!.trigger).toBeDefined();
+        expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Manual);
+
+        console.log("=== WEBHOOK TRIGGER DEPLOYMENT TEST ===");
+        console.log(
+          "Deployed workflow:",
+          util.inspect(deployedWorkflow, { depth: null, colors: true })
+        );
+
+        // Now actually TRIGGER the deployed workflow with webhook data
+        console.log("🔥 Triggering the deployed webhook workflow...");
+
+        const triggerResponse = await client.triggerWorkflow({
+          id: workflowId!,
+          triggerData: {
+            type: TriggerType.Manual,
+            data: userData,
+            headers: headers,
+            pathParams: pathParams,
+          },
+        });
+
+        console.log(
+          "Webhook trigger response:",
+          util.inspect(triggerResponse, { depth: null, colors: true })
+        );
+
+        expect(triggerResponse).toBeDefined();
+        expect(triggerResponse.executionId).toBeDefined();
+        expect(triggerResponse.status).toBeDefined();
+
+        // Mark as created for cleanup
+        createdIdMap.set(workflowId!, true);
+      } catch (error) {
+        console.error("Deploy and trigger webhook test failed:", error);
+        if (workflowId) {
+          createdIdMap.set(workflowId, true);
+        }
         throw error;
       }
     });
@@ -575,8 +900,10 @@ describe("ManualTrigger Tests", () => {
       expect(directResponse.success).toBe(true);
       expect(simulation.success).toBe(true);
 
-      // Both should have the same data structure with standard wrapper
-      expect(directResponse.data).toEqual({data: testData});
+      // Both should have the same data structure
+      expect(directResponse.data).toEqual(
+        expect.objectContaining({ data: testData })
+      );
 
       // Note: simulateWorkflow tests need different handling due to stepOutputs structure
       // These integration tests need backend-frontend protobuf sync
@@ -611,7 +938,7 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: null});
+      expect(result.data).toEqual(expect.objectContaining({ data: null }));
     });
 
     test("should handle undefined data gracefully", async () => {
@@ -637,7 +964,7 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: null});
+      expect(result.data).toEqual(expect.objectContaining({ data: null }));
     });
 
     test("should handle empty object data", async () => {
@@ -665,7 +992,7 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: emptyData});
+      expect(result.data).toEqual(expect.objectContaining({ data: emptyData }));
     });
 
     test("should handle empty array data", async () => {
@@ -693,31 +1020,45 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual({data: emptyArray});
+      expect(result.data).toEqual(
+        expect.objectContaining({ data: emptyArray })
+      );
     });
   });
 
   describe("Mock Output Data Tests", () => {
+    interface MockRunTriggerResp {
+      getManualTrigger: () => MockManualTriggerOutput | null;
+    }
+
+    interface MockManualTriggerOutput {
+      getData: () => unknown;
+      getHeaders: () => Array<Record<string, string>> | undefined;
+      getPathparams: () => Array<Record<string, string>> | undefined; // Note: protobuf uses "pathparams"
+    }
+
     test("should handle mock RunTriggerResp with null manual trigger", () => {
       // Mock RunTriggerResp with null manual trigger (no data)
-      const mockResponse = {
+      const mockResponse: MockRunTriggerResp = {
         getManualTrigger: () => null,
-      } as any;
+      };
 
-      const result = ManualTrigger.fromOutputData(mockResponse);
+      const result = ManualTrigger.fromOutputData(mockResponse as any);
       expect(result).toBeNull();
     });
 
     test("should handle mock RunTriggerResp with empty ManualTrigger_Output", () => {
       // Mock RunTriggerResp with empty ManualTrigger_Output (no data)
-      const mockResponse = {
+      const mockResponse: MockRunTriggerResp = {
         getManualTrigger: () => ({
           getData: () => null,
+          getHeaders: () => undefined,
+          getPathparams: () => undefined,
         }),
-      } as any;
+      };
 
-      const result = ManualTrigger.fromOutputData(mockResponse);
-      expect(result).toEqual({data: null});
+      const result = ManualTrigger.fromOutputData(mockResponse as any);
+      expect(result).toEqual(expect.objectContaining({ data: null }));
     });
 
     test("should handle mock RunTriggerResp with actual data", () => {
@@ -729,14 +1070,40 @@ describe("ManualTrigger Tests", () => {
       };
 
       // Mock RunTriggerResp with actual data
-      const mockResponse = {
+      const mockResponse: MockRunTriggerResp = {
         getManualTrigger: () => ({
           getData: () => testData,
+          getHeaders: () => undefined,
+          getPathparams: () => undefined,
         }),
-      } as any;
+      };
 
-      const result = ManualTrigger.fromOutputData(mockResponse);
-      expect(result).toEqual({data: testData});
+      const result = ManualTrigger.fromOutputData(mockResponse as any);
+      expect(result).toEqual(expect.objectContaining({ data: testData }));
+    });
+
+    test("should handle mock RunTriggerResp with headers and pathParams", () => {
+      const testData = { message: "Mock with webhook data" };
+      const headers = { "Content-Type": "application/json" };
+      const pathParams = { userId: "mock123" };
+
+      // Mock RunTriggerResp with webhook data
+      const mockResponse: MockRunTriggerResp = {
+        getManualTrigger: () => ({
+          getData: () => testData,
+          getHeaders: () => headers,
+          getPathparams: () => pathParams, // Note: protobuf uses "pathparams"
+        }),
+      };
+
+      const result = ManualTrigger.fromOutputData(mockResponse as any);
+      expect(result).toEqual(
+        expect.objectContaining({
+          data: testData,
+          headers: headers,
+          pathParams: pathParams, // Note: SDK exposes as "pathParams"
+        })
+      );
     });
   });
 });

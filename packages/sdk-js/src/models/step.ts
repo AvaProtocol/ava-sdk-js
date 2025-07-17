@@ -166,6 +166,8 @@ class Step implements StepProps {
             ? step.getManualTrigger()
             : (step as any).manualTrigger;
         if (manualTrigger) {
+          const result: Record<string, any> = {};
+
           // Check for the new data field structure
           if (
             typeof manualTrigger.hasData === "function" &&
@@ -175,13 +177,13 @@ class Step implements StepProps {
               const userData = convertProtobufValueToJs(
                 manualTrigger.getData()
               );
-              return { data: userData }; // ✅ Use standard structure
+              result.data = userData;
             } catch (error) {
               console.warn(
                 "Failed to convert manual trigger data from protobuf Value:",
                 error
               );
-              return { data: manualTrigger.getData() }; // ✅ Use standard structure
+              result.data = manualTrigger.getData();
             }
           } else if (manualTrigger.data) {
             // For plain objects, try to convert or use directly
@@ -189,20 +191,76 @@ class Step implements StepProps {
               typeof manualTrigger.data.getKindCase === "function"
                 ? convertProtobufValueToJs(manualTrigger.data)
                 : manualTrigger.data;
-            return { data: userData }; // ✅ Use standard structure
+            result.data = userData;
+          }
+
+          // Include headers for webhook testing
+          if (
+            typeof manualTrigger.hasHeaders === "function" &&
+            manualTrigger.hasHeaders()
+          ) {
+            try {
+              const headersData = convertProtobufValueToJs(
+                manualTrigger.getHeaders()
+              );
+              result.headers = headersData;
+            } catch (error) {
+              console.warn(
+                "Failed to convert manual trigger headers from protobuf Value:",
+                error
+              );
+              result.headers = manualTrigger.getHeaders();
+            }
+          } else if (manualTrigger.headers) {
+            // For plain objects, try to convert or use directly
+            const headersData =
+              typeof manualTrigger.headers.getKindCase === "function"
+                ? convertProtobufValueToJs(manualTrigger.headers)
+                : manualTrigger.headers;
+            result.headers = headersData;
+          }
+
+          // Include pathParams for webhook testing
+          if (
+            typeof manualTrigger.hasPathparams === "function" &&
+            manualTrigger.hasPathparams()
+          ) {
+            try {
+              const pathParamsData = convertProtobufValueToJs(
+                manualTrigger.getPathparams() // Note: protobuf uses "pathparams"
+              );
+              result.pathParams = pathParamsData; // Note: SDK uses "pathParams"
+            } catch (error) {
+              console.warn(
+                "Failed to convert manual trigger pathParams from protobuf Value:",
+                error
+              );
+              result.pathParams = manualTrigger.getPathparams();
+            }
+          } else if (manualTrigger.pathparams) {
+            // For plain objects, try to convert or use directly
+            const pathParamsData =
+              typeof manualTrigger.pathparams.getKindCase === "function"
+                ? convertProtobufValueToJs(manualTrigger.pathparams)
+                : manualTrigger.pathparams;
+            result.pathParams = pathParamsData; // Note: SDK uses "pathParams"
           }
 
           // Check if this is the new format with no data field or null data
-          const objData = manualTrigger.toObject?.() || manualTrigger;
-          if (objData && objData.data === undefined) {
-            // No data was provided, return null
-            return { data: null }; // ✅ Use standard structure
+          if (Object.keys(result).length === 0) {
+            const objData = manualTrigger.toObject?.() || manualTrigger;
+            if (objData && objData.data === undefined) {
+              // No data was provided, return null
+              result.data = null;
+            } else {
+              // Fallback to old structure for backward compatibility
+              return { data: objData };
+            }
           }
 
-          // Fallback to old structure for backward compatibility
-          return { data: objData }; // ✅ Use standard structure
+          return result;
         }
-        return { data: null }; // ✅ Use standard structure
+        return { data: null };
       }
 
       // Node outputs - RESTORE MISSING CASES

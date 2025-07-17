@@ -556,6 +556,16 @@ export namespace ManualTrigger {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Config;
 
+        hasHeaders(): boolean;
+        clearHeaders(): void;
+        getHeaders(): google_protobuf_struct_pb.Value | undefined;
+        setHeaders(value?: google_protobuf_struct_pb.Value): Config;
+
+        hasPathparams(): boolean;
+        clearPathparams(): void;
+        getPathparams(): google_protobuf_struct_pb.Value | undefined;
+        setPathparams(value?: google_protobuf_struct_pb.Value): Config;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
         static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
@@ -569,6 +579,8 @@ export namespace ManualTrigger {
     export namespace Config {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
+            headers?: google_protobuf_struct_pb.Value.AsObject,
+            pathparams?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -578,6 +590,16 @@ export namespace ManualTrigger {
         clearData(): void;
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
+
+        hasHeaders(): boolean;
+        clearHeaders(): void;
+        getHeaders(): google_protobuf_struct_pb.Value | undefined;
+        setHeaders(value?: google_protobuf_struct_pb.Value): Output;
+
+        hasPathparams(): boolean;
+        clearPathparams(): void;
+        getPathparams(): google_protobuf_struct_pb.Value | undefined;
+        setPathparams(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -592,6 +614,8 @@ export namespace ManualTrigger {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
+            headers?: google_protobuf_struct_pb.Value.AsObject,
+            pathparams?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -605,8 +629,8 @@ export class TaskTrigger extends jspb.Message {
 
     hasManual(): boolean;
     clearManual(): void;
-    getManual(): boolean;
-    setManual(value: boolean): TaskTrigger;
+    getManual(): ManualTrigger | undefined;
+    setManual(value?: ManualTrigger): TaskTrigger;
 
     hasFixedTime(): boolean;
     clearFixedTime(): void;
@@ -651,7 +675,7 @@ export namespace TaskTrigger {
     export type AsObject = {
         name: string,
         type: TriggerType,
-        manual: boolean,
+        manual?: ManualTrigger.AsObject,
         fixedTime?: FixedTimeTrigger.AsObject,
         cron?: CronTrigger.AsObject,
         block?: BlockTrigger.AsObject,

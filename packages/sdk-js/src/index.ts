@@ -876,6 +876,18 @@ class Client extends BaseClient {
           manualOutput.setData(protobufValue);
         }
         
+        // Include headers for webhook testing
+        if (manualData.headers) {
+          const headersValue = convertJSValueToProtobuf(manualData.headers);
+          manualOutput.setHeaders(headersValue);
+        }
+        
+        // Include pathParams for webhook testing
+        if (manualData.pathParams) {
+          const pathParamsValue = convertJSValueToProtobuf(manualData.pathParams);
+          manualOutput.setPathparams(pathParamsValue); // Note: protobuf uses "pathparams"
+        }
+        
         request.setManualTrigger(manualOutput);
         break;
       }

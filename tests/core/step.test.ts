@@ -1,5 +1,6 @@
 import { describe, test, expect } from "@jest/globals";
 import Step from "../../packages/sdk-js/src/models/step";
+import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
 describe("Step Class Tests", () => {
   describe("fromResponse method - Input Field Handling", () => {
@@ -24,10 +25,10 @@ describe("Step Class Tests", () => {
             structValue: {
               fields: {
                 result: { kind: "stringValue", stringValue: "success" },
-                count: { kind: "numberValue", numberValue: 42 }
-              }
-            }
-          })
+                count: { kind: "numberValue", numberValue: 42 },
+              },
+            },
+          }),
         }),
         // This is the key part - input field exists as property (not a method!)
         input: {
@@ -37,10 +38,10 @@ describe("Step Class Tests", () => {
             fields: {
               testParam: { kind: "stringValue", stringValue: "test-value" },
               numParam: { kind: "numberValue", numberValue: 123 },
-              boolParam: { kind: "boolValue", boolValue: true }
-            }
-          }
-        }
+              boolParam: { kind: "boolValue", boolValue: true },
+            },
+          },
+        },
       };
 
       // This should NOT throw "hasInput is not a function" error
@@ -68,24 +69,24 @@ describe("Step Class Tests", () => {
         endAt: 1640995205000,
         // Plain object input (already converted from protobuf)
         input: {
-          url: "https://api.example.com/data",
+          url: MOCKED_API_ENDPOINT_AGGREGATOR,
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": "Bearer token123"
+            Authorization: "Bearer token123",
           },
           body: {
             query: "test query",
-            limit: 10
-          }
+            limit: 10,
+          },
         },
         // Mock output data
         restApi: {
           data: {
             status: "success",
-            results: [1, 2, 3]
-          }
-        }
+            results: [1, 2, 3],
+          },
+        },
         // Note: No getId, getType methods - this is a plain object
       };
 
@@ -96,7 +97,7 @@ describe("Step Class Tests", () => {
         expect(step.name).toBe("TestRestAPI");
         expect(step.success).toBe(true);
         expect(step.input).toBeDefined();
-        expect(step.input.url).toBe("https://api.example.com/data");
+        expect(step.input.url).toBe(`${MOCKED_API_ENDPOINT_AGGREGATOR}/data`);
         expect(step.input.method).toBe("POST");
         expect(step.input.body.query).toBe("test query");
         console.log("✅ Plain object handled successfully");
@@ -120,9 +121,9 @@ describe("Step Class Tests", () => {
           toObject: () => ({
             blockNumber: 12345678,
             blockHash: "0xabc123...",
-            timestamp: 1640995200
-          })
-        })
+            timestamp: 1640995200,
+          }),
+        }),
         // No input field - this is common for triggers
       };
 
@@ -139,7 +140,7 @@ describe("Step Class Tests", () => {
     test("should reproduce the original simulateWorkflow error scenario", () => {
       // This reproduces the exact scenario that was failing:
       // simulateWorkflow -> getExecution -> Step.fromResponse -> "hasInput is not a function"
-      
+
       const mockExecutionStepsFromSimulate = [
         // Event trigger step (as plain object from .toObject())
         {
@@ -157,16 +158,18 @@ describe("Step Class Tests", () => {
             eventSignature: "Transfer(address,address,uint256)",
             filterParams: {
               from: "0xabcdef...",
-              to: "0x123456..."
-            }
+              to: "0x123456...",
+            },
           },
           eventTrigger: {
             evmLog: {
               address: "0x1234567890123456789012345678901234567890",
-              topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
-              data: "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000"
-            }
-          }
+              topics: [
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              ],
+              data: "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+            },
+          },
         },
         // Custom code node step (as plain object from .toObject())
         {
@@ -181,10 +184,11 @@ describe("Step Class Tests", () => {
           endAt: 1640995205000,
           input: {
             codeLanguage: "javascript",
-            sourceCode: "console.log('Processing transfer...'); return { processed: true };",
+            sourceCode:
+              "console.log('Processing transfer...'); return { processed: true };",
             environment: "node18",
             timeout: 30000,
-            libraries: ["lodash", "moment"]
+            libraries: ["lodash", "moment"],
           },
           customCode: {
             data: {
@@ -192,33 +196,40 @@ describe("Step Class Tests", () => {
               structValue: {
                 fields: {
                   processed: { kind: "boolValue", boolValue: true },
-                  timestamp: { kind: "numberValue", numberValue: 1640995205000 }
-                }
-              }
-            }
-          }
-        }
+                  timestamp: {
+                    kind: "numberValue",
+                    numberValue: 1640995205000,
+                  },
+                },
+              },
+            },
+          },
+        },
       ];
 
       // This was throwing "TypeError: step.hasInput is not a function"
       expect(() => {
-        const processedSteps = mockExecutionStepsFromSimulate.map(stepData => {
-          // This is the exact call that was failing
-          const step = Step.fromResponse(stepData as any);
-          return step;
-        });
+        const processedSteps = mockExecutionStepsFromSimulate.map(
+          (stepData) => {
+            // This is the exact call that was failing
+            const step = Step.fromResponse(stepData as any);
+            return step;
+          }
+        );
 
         expect(processedSteps).toHaveLength(2);
-        
+
         // Verify both steps processed correctly
         expect(processedSteps[0].type).toBe("EVENT_TRIGGER");
         expect(processedSteps[0].input).toBeDefined();
-        expect(processedSteps[0].input.contractAddress).toBe("0x1234567890123456789012345678901234567890");
-        
+        expect(processedSteps[0].input.contractAddress).toBe(
+          "0x1234567890123456789012345678901234567890"
+        );
+
         expect(processedSteps[1].type).toBe("CUSTOM_CODE");
         expect(processedSteps[1].input).toBeDefined();
         expect(processedSteps[1].input.codeLanguage).toBe("javascript");
-        
+
         console.log("✅ Original error scenario now works!");
       }).not.toThrow();
     });
@@ -239,10 +250,10 @@ describe("Step Class Tests", () => {
           toObject: () => ({
             transactionHash: "0xdef456...",
             gasUsed: 21000,
-            status: "success"
-          })
+            status: "success",
+          }),
         }),
-        input: null // Explicitly null
+        input: null, // Explicitly null
       };
 
       expect(() => {
@@ -252,4 +263,4 @@ describe("Step Class Tests", () => {
       }).not.toThrow();
     });
   });
-}); 
+});

@@ -223,11 +223,19 @@ message ManualTrigger {
   message Config {
     // User-defined data that will be returned in the Output
     google.protobuf.Value data = 1;
+    // Headers for webhook testing - array of objects like [{"headerKeyA":"headerValueA"}]
+    google.protobuf.Value headers = 2;
+    // Path parameters for webhook testing - array of objects like [{"pathKeyA":"pathValueA"}]
+    google.protobuf.Value pathParams = 3;
   }
   
   message Output {
     // User-defined data from trigger config - this is the main payload for manual triggers
     google.protobuf.Value data = 1;
+    // Headers from trigger config for webhook testing
+    google.protobuf.Value headers = 2;
+    // Path parameters from trigger config for webhook testing
+    google.protobuf.Value pathParams = 3;
   }
 
   // Include Config as field so it is generated in Go
@@ -243,8 +251,8 @@ message TaskTrigger {
   TriggerType type = 8;
   
   oneof trigger_type {
-    // manual task will not be check to be trigger, instead it can be trigger adhoc
-    bool               manual = 2;
+    // manual task with proper ManualTrigger structure for webhook testing
+    ManualTrigger      manual = 2;
     // run at a specific epoch, name inspired by unix `at` utility
     FixedTimeTrigger fixed_time   = 3;
 
