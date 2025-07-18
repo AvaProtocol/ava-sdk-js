@@ -382,10 +382,24 @@ return message;`,
       expect(triggerStep.type).toBe(TriggerType.Event);
       expect(triggerStep.success).toBe(true);
 
-      // The trigger should have our complex input data
+      // The trigger step's input field contains configuration (queries), not custom input data
       expect(triggerStep.input).toBeDefined();
-      expect(triggerStep.input.tokens).toHaveLength(1);
-      expect(triggerStep.input.tokens[0].symbol).toBe("USDC");
+      expect(triggerStep.input.queries).toBeDefined();
+      expect(triggerStep.input.queries).toHaveLength(2);
+      
+      // Custom input data should be accessible via VM variables (checked in subsequent node's inputsList)
+      // The CustomCode node should have access to eventTrigger.input which contains the custom input data
+      const customCodeStep = simulationResult.steps[1];
+      expect(customCodeStep.inputsList).toContain("eventTrigger.input");
+      expect(customCodeStep.inputsList).toContain("eventTrigger.data");
+
+      // CRITICAL: Validate that the CustomCode execution succeeds with proper event trigger data
+      // The test should fail if eventTrigger.data.topics is not available
+      expect(customCodeStep.success).toBe(true);
+      expect(customCodeStep.output).toBeDefined();
+      expect(typeof customCodeStep.output).toBe("string");
+      expect(customCodeStep.output).not.toContain("Error: eventTrigger.data.topics not available");
+      expect(customCodeStep.output).not.toContain("Error: eventTrigger.data not available");
 
       console.log("✅ Event trigger simulation completed successfully");
     });
