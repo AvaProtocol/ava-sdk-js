@@ -17,14 +17,26 @@ class ManualTrigger extends Trigger {
   public pathParams?: Array<Record<string, string>>;
 
   constructor(props: ManualTriggerProps) {
+    // Extract headers and pathParams from data if they exist there
+    const data = props.data as any;
+    const headers = props.headers || data?.headers;
+    const pathParams = props.pathParams || data?.pathParams;
+    
+    // If data is an object with headers/pathParams, extract the actual data
+    let actualData = props.data;
+    if (data && typeof data === 'object' && (data.headers || data.pathParams)) {
+      const { headers: _, pathParams: __, ...rest } = data;
+      actualData = rest.data !== undefined ? rest.data : rest;
+    }
+
     super({
       ...props,
       type: TriggerType.Manual,
-      data: props.data,
+      data: actualData,
       input: props.input,
     });
-    this.headers = props.headers;
-    this.pathParams = props.pathParams;
+    this.headers = headers;
+    this.pathParams = pathParams;
   }
 
   toRequest(): avs_pb.TaskTrigger {

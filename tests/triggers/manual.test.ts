@@ -1,13 +1,8 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
-import {
-  Client,
-  TriggerFactory,
-  ManualTrigger,
-  CustomCodeNode,
-} from "@avaprotocol/sdk-js";
-import { TriggerType } from "@avaprotocol/types";
+import { Client, TriggerFactory, CustomCodeNode } from "@avaprotocol/sdk-js";
+import { TriggerType, ManualTriggerProps } from "@avaprotocol/types";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   getAddress,
@@ -117,9 +112,11 @@ describe("ManualTrigger Tests", () => {
         id: "test-trigger-id",
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: userData,
-        headers: headers,
-        pathParams: pathParams,
+        data: {
+          data: userData,
+          headers: headers,
+          pathParams: pathParams,
+        },
       });
 
       expect(() => trigger.toRequest()).not.toThrow();
@@ -187,9 +184,12 @@ describe("ManualTrigger Tests", () => {
         { "Content-Type": "application/json" },
         { Authorization: "Bearer token123" },
       ];
-      
+
       // Backend merges array of objects into single object
-      const expectedHeaders = { "Content-Type": "application/json", Authorization: "Bearer token123" };
+      const expectedHeaders = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer token123",
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
@@ -267,7 +267,10 @@ describe("ManualTrigger Tests", () => {
       ];
       const pathParams = [{ userId: "456" }, { action: "update" }];
       // Backend merges array of objects into single object
-      const expectedHeaders = { "Content-Type": "application/json", "X-Custom": "header-value" };
+      const expectedHeaders = {
+        "Content-Type": "application/json",
+        "X-Custom": "header-value",
+      };
       const expectedPathParams = { userId: "456", action: "update" };
 
       const params = {
@@ -477,8 +480,8 @@ describe("ManualTrigger Tests", () => {
 
       // Update the CustomCode node to reference the manual trigger's data
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
-      // Fix the TypeScript error by casting to any first
-      (customCodeNode.data as any).source = `return ${triggerName}.data;`;
+      // Update the CustomCode source to reference the manual trigger's data
+      (customCodeNode.data as { source: string }).source = `return ${triggerName}.data;`;
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and user data:",
@@ -510,7 +513,7 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep!.output).toBeDefined();
       const outputData = triggerStep!.output;
       expect(outputData).toBeDefined();
-      expect(outputData).toEqual(expect.objectContaining({ data: { data: userData } }));
+      expect(outputData).toEqual(expect.objectContaining({ data: userData }));
 
       // Check that the CustomCode node successfully referenced the manual trigger data
       const customCodeStep = simulation.steps.find(
@@ -520,9 +523,7 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep!.success).toBe(true);
 
       // Manual triggers now return user data directly
-      expect(customCodeStep!.output).toEqual(
-        expect.objectContaining({ data: userData })
-      );
+      expect(customCodeStep!.output).toEqual(expect.objectContaining(userData));
 
       // Verify the reference was properly made by checking inputsList
       expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`);
@@ -543,9 +544,11 @@ describe("ManualTrigger Tests", () => {
         id: defaultTriggerId,
         name: triggerName,
         type: TriggerType.Manual,
-        data: userData,
-        headers: headers,
-        pathParams: pathParams,
+        data: {
+          data: userData,
+          headers: headers,
+          pathParams: pathParams,
+        },
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
@@ -553,7 +556,7 @@ describe("ManualTrigger Tests", () => {
 
       // Update the CustomCode node to reference the manual trigger's webhook data
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
-      (customCodeNode.data as any).source = `return { 
+      (customCodeNode.data as { source: string }).source = `return { 
         data: ${triggerName}.data,
         headers: ${triggerName}.headers,
         pathParams: ${triggerName}.pathParams
@@ -586,13 +589,21 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep!.success).toBe(true);
 
       // The trigger step should have all the webhook data
+      // Headers and pathParams are flattened from arrays of objects to single objects
+      const expectedHeaders = {
+        "Content-Type": "application/json",
+        "X-API-Key": "secret123",
+      };
+      const expectedPathParams = {
+        userId: "789",
+        action: "test",
+      };
+
       expect(triggerStep!.output).toEqual(
         expect.objectContaining({
-          data: {
-            data: userData,
-            headers: headers,
-            pathParams: pathParams,
-          },
+          data: userData,
+          headers: expectedHeaders,
+          pathParams: expectedPathParams,
         })
       );
 
@@ -604,12 +615,13 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep!.success).toBe(true);
 
       // Verify the webhook data was properly accessed
+      // The CustomCode merges all the data into a single object
       expect(customCodeStep!.output).toEqual(
         expect.objectContaining({
           data: {
-            data: userData,
-            headers: headers,
-            pathParams: pathParams,
+            message: "Hello webhook!",
+            headers: expectedHeaders,
+            pathParams: expectedPathParams,
           },
         })
       );
@@ -777,9 +789,11 @@ describe("ManualTrigger Tests", () => {
         id: defaultTriggerId,
         name: "deploy_webhook_trigger_test",
         type: TriggerType.Manual,
-        data: userData,
-        headers: headers,
-        pathParams: pathParams,
+        data: {
+          data: userData,
+          headers: headers,
+          pathParams: pathParams,
+        },
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
