@@ -43,7 +43,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "manual trigger",
+        name: "manualTrigger",
         type: TriggerType.Manual,
         data: {},
       };
@@ -51,7 +51,7 @@ describe("SimulateWorkflow", () => {
       const nodes = [
         {
           id: nodeId,
-          name: "custom code",
+          name: "customCode",
           type: NodeType.CustomCode,
           data: {
             lang: CustomCodeLang.JavaScript,
@@ -84,12 +84,12 @@ describe("SimulateWorkflow", () => {
       const triggerStep = result.steps[0];
       expect(triggerStep.id).toBe(triggerId);
       expect(triggerStep.type).toBe(TriggerType.Manual);
-      expect(triggerStep.name).toBe("manual trigger");
+      expect(triggerStep.name).toBe("manualTrigger");
 
       const nodeStep = result.steps[1];
       expect(nodeStep.id).toBe(nodeId);
       expect(nodeStep.type).toBe(NodeType.CustomCode);
-      expect(nodeStep.name).toBe("custom code");
+      expect(nodeStep.name).toBe("customCode");
     });
 
     test("should handle simulation with input variables", async () => {
@@ -98,7 +98,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "manual trigger",
+        name: "manualTrigger",
         type: TriggerType.Manual,
         data: {},
       };
@@ -106,7 +106,7 @@ describe("SimulateWorkflow", () => {
       const nodes = [
         {
           id: nodeId,
-          name: "custom code",
+          name: "customCode",
           type: NodeType.CustomCode,
           data: {
             lang: CustomCodeLang.JavaScript,
@@ -157,7 +157,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "fixed time trigger",
+        name: "fixedTimeTrigger",
         type: TriggerType.FixedTime,
         data: {
           config: {
@@ -169,7 +169,7 @@ describe("SimulateWorkflow", () => {
       const nodes = [
         {
           id: nodeId,
-          name: "rest api call",
+          name: "restAPICall",
           type: NodeType.RestAPI,
           data: {
             url: "https://jsonplaceholder.typicode.com/posts/1",
@@ -202,12 +202,12 @@ describe("SimulateWorkflow", () => {
       const triggerStep = result.steps[0];
       expect(triggerStep.id).toBe(triggerId);
       expect(triggerStep.type).toBe(TriggerType.FixedTime);
-      expect(triggerStep.name).toBe("fixed time trigger");
+      expect(triggerStep.name).toBe("fixedTimeTrigger");
 
       const nodeStep = result.steps[1];
       expect(nodeStep.id).toBe(nodeId);
       expect(nodeStep.type).toBe(NodeType.RestAPI);
-      expect(nodeStep.name).toBe("rest api call");
+      expect(nodeStep.name).toBe("restAPICall");
     });
   });
 
@@ -219,7 +219,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "manual trigger",
+        name: "manualTrigger",
         type: TriggerType.Manual,
         data: {},
       };
@@ -227,7 +227,7 @@ describe("SimulateWorkflow", () => {
       const nodes = [
         {
           id: node1Id,
-          name: "custom code 1",
+          name: "customCode1",
           type: NodeType.CustomCode,
           data: {
             lang: CustomCodeLang.JavaScript,
@@ -236,12 +236,12 @@ describe("SimulateWorkflow", () => {
         },
         {
           id: node2Id,
-          name: "custom code 2",
+          name: "customCode2",
           type: NodeType.CustomCode,
           data: {
             lang: CustomCodeLang.JavaScript,
             source:
-              "return { step2: 'completed', previousData: manual_trigger.data };",
+              "return { step2: 'completed', previousData: manualTrigger.data };",
           },
         },
       ];
@@ -274,18 +274,18 @@ describe("SimulateWorkflow", () => {
       const triggerStep = result.steps[0];
       expect(triggerStep.id).toBe(triggerId);
       expect(triggerStep.type).toBe(TriggerType.Manual);
-      expect(triggerStep.name).toBe("manual trigger");
+      expect(triggerStep.name).toBe("manualTrigger");
 
       const node1Step = result.steps[1];
       expect(node1Step.id).toBe(node1Id);
       expect(node1Step.type).toBe(NodeType.CustomCode);
-      expect(node1Step.name).toBe("custom code 1");
+      expect(node1Step.name).toBe("customCode1");
       expect(node1Step.success).toBe(true);
 
       const node2Step = result.steps[2];
       expect(node2Step.id).toBe(node2Id);
       expect(node2Step.type).toBe(NodeType.CustomCode);
-      expect(node2Step.name).toBe("custom code 2");
+      expect(node2Step.name).toBe("customCode2");
       expect(node2Step.success).toBe(true);
     });
   });
@@ -297,7 +297,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "manual trigger",
+        name: "manualTrigger",
         type: TriggerType.Manual,
         data: {},
       };
@@ -305,7 +305,7 @@ describe("SimulateWorkflow", () => {
       const nodes = [
         {
           id: nodeId,
-          name: "custom code",
+          name: "customCode",
           type: NodeType.CustomCode,
           data: {
             lang: CustomCodeLang.JavaScript,
@@ -361,7 +361,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "manual trigger",
+        name: "manualTrigger",
         type: TriggerType.Manual,
         data: {},
         input: {
@@ -399,13 +399,13 @@ describe("SimulateWorkflow", () => {
             lang: CustomCodeLang.JavaScript,
             source: `
               // TODO: Input field feature needs backend support to expose:
-              // - manual_trigger.input (trigger input data)
+              // - manualTrigger.input (trigger input data)
               // - rest_api_node.input (previous node input data)
-              // Currently only manual_trigger.data and rest_api_node.data are available
+              // Currently only manualTrigger.data and rest_api_node.data are available
               
               // For now, test that we can set input fields without errors
               // and access regular data from trigger and previous node
-              const triggerData = manual_trigger.data;
+              const triggerData = manualTrigger.data;
               const restApiOutput = rest_api_node.data;
               
               return {
@@ -455,7 +455,7 @@ describe("SimulateWorkflow", () => {
       const triggerStep = result.steps[0];
       expect(triggerStep.id).toBe(triggerId);
       expect(triggerStep.type).toBe(TriggerType.Manual);
-      expect(triggerStep.name).toBe("manual trigger");
+      expect(triggerStep.name).toBe("manualTrigger");
 
       // Verify REST API step
       const restApiStep = result.steps[1];
@@ -482,7 +482,7 @@ describe("SimulateWorkflow", () => {
 
       const trigger = {
         id: triggerId,
-        name: "manual trigger",
+        name: "manualTrigger",
         type: TriggerType.Manual,
         data: {},
         input: {
@@ -500,13 +500,13 @@ describe("SimulateWorkflow", () => {
             lang: CustomCodeLang.JavaScript,
             source: `
               // TODO: Input field feature needs backend support to expose:
-              // - manual_trigger.input (trigger input data)
+              // - manualTrigger.input (trigger input data)
               // - data_processor.input (current node input data)
-              // Currently only manual_trigger.data is available
+              // Currently only manualTrigger.data is available
               
               // For now, test that we can set input fields on nodes and triggers
               // without causing errors, and access regular trigger data
-              const triggerData = manual_trigger.data;
+              const triggerData = manualTrigger.data;
               
               return {
                 inputFieldFeatureTest: {

@@ -18,9 +18,20 @@ export type WorkflowTriggerDataProps =
     }
   | {
       type: TriggerType.Event;
-      data?: string | Record<string, any>; // JSON string or object containing event data
+      data?: string | Record<string, unknown>; // JSON string or object containing event data
     }
-  | { type: TriggerType.Manual; runAt?: number }
+  | {
+      type: TriggerType.Manual;
+      data?:
+        | string
+        | number
+        | boolean
+        | Record<string, unknown>
+        | unknown[]
+        | null;
+      headersMap?: Array<[string, string]>;
+      pathParamsMap?: Array<[string, string]>;
+    }
   | { type: TriggerType.Unspecified };
 
 // Edge Props

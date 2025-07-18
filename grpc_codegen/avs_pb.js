@@ -6270,7 +6270,9 @@ proto.aggregator.ManualTrigger.Config.prototype.toObject = function(opt_includeI
  */
 proto.aggregator.ManualTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
+    pathparamsMap: (f = msg.getPathparamsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -6307,6 +6309,23 @@ proto.aggregator.ManualTrigger.Config.deserializeBinaryFromReader = function(msg
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
+      break;
+    case 2:
+      var value = msg.getHeadersMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 3:
+      var value = msg.getPathparamsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
     default:
       reader.skipField();
       break;
@@ -6336,7 +6355,104 @@ proto.aggregator.ManualTrigger.Config.prototype.serializeBinary = function() {
  */
 proto.aggregator.ManualTrigger.Config.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getHeadersMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getPathparamsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
 };
+
+
+/**
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+*/
+proto.aggregator.ManualTrigger.Config.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+ */
+proto.aggregator.ManualTrigger.Config.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * map<string, string> headers = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.getHeadersMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+ */
+proto.aggregator.ManualTrigger.Config.prototype.clearHeadersMap = function() {
+  this.getHeadersMap().clear();
+  return this;};
+
+
+/**
+ * map<string, string> pathParams = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.getPathparamsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+ */
+proto.aggregator.ManualTrigger.Config.prototype.clearPathparamsMap = function() {
+  this.getPathparamsMap().clear();
+  return this;};
 
 
 
@@ -6371,7 +6487,9 @@ proto.aggregator.ManualTrigger.Output.prototype.toObject = function(opt_includeI
  */
 proto.aggregator.ManualTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    runAt: jspb.Message.getFieldWithDefault(msg, 1, 0)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
+    pathparamsMap: (f = msg.getPathparamsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -6409,8 +6527,21 @@ proto.aggregator.ManualTrigger.Output.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setRunAt(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
+      break;
+    case 2:
+      var value = msg.getHeadersMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
+      break;
+    case 3:
+      var value = msg.getPathparamsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -6441,32 +6572,104 @@ proto.aggregator.ManualTrigger.Output.prototype.serializeBinary = function() {
  */
 proto.aggregator.ManualTrigger.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getRunAt();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
+  }
+  f = message.getHeadersMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getPathparamsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
 
 /**
- * optional uint64 run_at = 1;
- * @return {number}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.ManualTrigger.Output.prototype.getRunAt = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.ManualTrigger.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {number} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+*/
+proto.aggregator.ManualTrigger.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ManualTrigger.Output} returns this
  */
-proto.aggregator.ManualTrigger.Output.prototype.setRunAt = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
+proto.aggregator.ManualTrigger.Output.prototype.clearData = function() {
+  return this.setData(undefined);
 };
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * map<string, string> headers = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.getHeadersMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+ */
+proto.aggregator.ManualTrigger.Output.prototype.clearHeadersMap = function() {
+  this.getHeadersMap().clear();
+  return this;};
+
+
+/**
+ * map<string, string> pathParams = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
+ */
+proto.aggregator.ManualTrigger.Output.prototype.getPathparamsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.ManualTrigger.Output} returns this
+ */
+proto.aggregator.ManualTrigger.Output.prototype.clearPathparamsMap = function() {
+  this.getPathparamsMap().clear();
+  return this;};
 
 
 /**
@@ -6606,7 +6809,7 @@ proto.aggregator.TaskTrigger.toObject = function(includeInstance, msg) {
   var f, obj = {
     name: jspb.Message.getFieldWithDefault(msg, 1, ""),
     type: jspb.Message.getFieldWithDefault(msg, 8, 0),
-    manual: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
+    manual: (f = msg.getManual()) && proto.aggregator.ManualTrigger.toObject(includeInstance, f),
     fixedTime: (f = msg.getFixedTime()) && proto.aggregator.FixedTimeTrigger.toObject(includeInstance, f),
     cron: (f = msg.getCron()) && proto.aggregator.CronTrigger.toObject(includeInstance, f),
     block: (f = msg.getBlock()) && proto.aggregator.BlockTrigger.toObject(includeInstance, f),
@@ -6658,7 +6861,8 @@ proto.aggregator.TaskTrigger.deserializeBinaryFromReader = function(msg, reader)
       msg.setType(value);
       break;
     case 2:
-      var value = /** @type {boolean} */ (reader.readBool());
+      var value = new proto.aggregator.ManualTrigger;
+      reader.readMessage(value,proto.aggregator.ManualTrigger.deserializeBinaryFromReader);
       msg.setManual(value);
       break;
     case 3:
@@ -6733,11 +6937,12 @@ proto.aggregator.TaskTrigger.serializeBinaryToWriter = function(message, writer)
       f
     );
   }
-  f = /** @type {boolean} */ (jspb.Message.getField(message, 2));
+  f = message.getManual();
   if (f != null) {
-    writer.writeBool(
+    writer.writeMessage(
       2,
-      f
+      f,
+      proto.aggregator.ManualTrigger.serializeBinaryToWriter
     );
   }
   f = message.getFixedTime();
@@ -6827,29 +7032,30 @@ proto.aggregator.TaskTrigger.prototype.setType = function(value) {
 
 
 /**
- * optional bool manual = 2;
- * @return {boolean}
+ * optional ManualTrigger manual = 2;
+ * @return {?proto.aggregator.ManualTrigger}
  */
 proto.aggregator.TaskTrigger.prototype.getManual = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 2, false));
+  return /** @type{?proto.aggregator.ManualTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.ManualTrigger, 2));
 };
 
 
 /**
- * @param {boolean} value
+ * @param {?proto.aggregator.ManualTrigger|undefined} value
  * @return {!proto.aggregator.TaskTrigger} returns this
- */
+*/
 proto.aggregator.TaskTrigger.prototype.setManual = function(value) {
-  return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], value);
 };
 
 
 /**
- * Clears the field making it undefined.
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.TaskTrigger} returns this
  */
 proto.aggregator.TaskTrigger.prototype.clearManual = function() {
-  return jspb.Message.setOneofField(this, 2, proto.aggregator.TaskTrigger.oneofGroups_[0], undefined);
+  return this.setManual(undefined);
 };
 
 

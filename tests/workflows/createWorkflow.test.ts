@@ -21,9 +21,6 @@ import {
   createFromTemplate,
   MultiNodeWithBranch,
   defaultTriggerId,
-  blockTriggerEvery5,
-  restApiNodeProps,
-  filterNodeProps,
 } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
@@ -78,9 +75,8 @@ describe("createWorkflow Tests", () => {
       expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -114,9 +110,8 @@ describe("createWorkflow Tests", () => {
         getResult
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -142,9 +137,8 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -195,11 +189,12 @@ describe("createWorkflow Tests", () => {
             body: `JSON.stringify({
                 chat_id: -4609037622,
                 text: \`
-                  Congrat, your wallet 
-                  [\${trigger1.data.to_address}](https://sepolia.etherscan.io/address/\${trigger1.data.to_address}) 
-                  received \\\`\${trigger1.data.value_formatted}\\\` 
-                  [\${trigger1.data.token_symbol}](https://sepolia.etherscan.io/token/\${trigger1.data.address}) 
-                  at [\${trigger1.data.transaction_hash}](https://sepolia.etherscan.io/tx/\${trigger1.data.transaction_hash})
+                  Test Event Trigger: 
+                  Address: \${trigger1.data.to_address || "Unknown"} 
+                  Amount: \${trigger1.data.value_formatted || "0"} 
+                  Token: \${trigger1.data.token_symbol || "UNKNOWN"}
+                  Block: \${trigger1.data.block_number || "Unknown"}
+                  Hash: \${trigger1.data.transaction_hash || "Unknown"}
                 \`
               })`,
           },
@@ -248,9 +243,8 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -312,9 +306,8 @@ describe("createWorkflow Tests", () => {
         getResult
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -344,112 +337,40 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
   test("create complex task with multi nodes and edge", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
 
-    try {
-      const workflowData = {
+    const workflowData = {
+      ...MultiNodeWithBranch,
+      smartWalletAddress: wallet.address,
+    };
+
+    console.log("🚀 Creating complex workflow with multi nodes and edge...");
+    const workflow = await client.createWorkflow(workflowData);
+    
+    console.log("🚀 Submitting workflow...");
+    const workflowId = await client.submitWorkflow(workflow);
+    console.log("✅ Workflow submitted successfully, ID:", workflowId);
+
+    const getResponse = await client.getWorkflow(workflowId);
+
+    compareResults(
+      {
         ...MultiNodeWithBranch,
         smartWalletAddress: wallet.address,
-      };
+        status: WorkflowStatus.Active,
+        id: workflowId,
+        owner: eoaAddress,
+      },
+      getResponse
+    );
 
-      const workflow = await client.createWorkflow(workflowData);
-      workflowId = await client.submitWorkflow(workflow);
-
-      const getResponse = await client.getWorkflow(workflowId);
-
-      compareResults(
-        {
-          ...MultiNodeWithBranch,
-          smartWalletAddress: wallet.address,
-          status: WorkflowStatus.Active,
-          id: workflowId,
-          owner: eoaAddress,
-        },
-        getResponse
-      );
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
+    // Clean up
+    await client.deleteWorkflow(workflowId);
   });
-
-  test("create filter node task", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
-
-    try {
-      const workflowProps = createFromTemplate(wallet.address);
-      workflowProps.nodes = NodeFactory.createNodes([
-        restApiNodeProps,
-        filterNodeProps,
-      ]);
-      workflowProps.edges = [
-        new Edge({
-          id: getNextId(),
-          source: defaultTriggerId,
-          target: restApiNodeProps.id,
-        }),
-      ];
-      workflowProps.trigger = blockTriggerEvery5;
-
-      const workflow = client.createWorkflow(workflowProps);
-      workflowId = await client.submitWorkflow(workflow);
-
-      const task = await client.getWorkflow(workflowId);
-      compareResults(
-        {
-          smartWalletAddress: wallet.address,
-          status: WorkflowStatus.Active,
-          id: workflowId,
-          owner: eoaAddress,
-          nodes: NodeFactory.createNodes([restApiNodeProps, filterNodeProps]),
-          edges: [
-            new Edge({
-              id: getNextId(),
-              source: defaultTriggerId,
-              target: restApiNodeProps.id,
-            }),
-          ],
-          trigger: blockTriggerEvery5,
-          startAt: workflowProps.startAt,
-          expiredAt: workflowProps.expiredAt,
-          maxExecution: 1,
-        },
-        task
-      );
-    } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
-    }
-  });
-
-  // TODO: add detailed verification for each node in the workflow
-  // expect(task.nodes[0].contractWrite.contractAddress).toEqual(
-  //   WorkflowTemplate.nodes[0].contractWrite.contractAddress
-  // );
-  // expect(task.nodes[0].contractWrite.callData).toEqual(
-  //   WorkflowTemplate.nodes[0].contractWrite.callData
-  // );
-
-  // expect(task.nodes[5].branch.conditions).toHaveLength(3);
-  // expect(task.nodes[5].branch.conditions[0].type).toEqual("if");
-  // expect(task.nodes[5].branch.conditions[1].type).toEqual("if");
-  // expect(task.nodes[5].branch.conditions[2].type).toEqual("else");
-
-  // expect(task.edges).toHaveLength(6);
-  // expect(task.edges[3].source).toEqual("t100.b1");
-  // expect(task.edges[4].source).toEqual("t100.b2");
-
-  // expect(task.trigger.type).toEqual(TriggerType.Block);
-  // expect(task.trigger.data.interval).toEqual(5);
 });

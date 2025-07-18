@@ -49,9 +49,8 @@ describe("cancelWorkflow Tests", () => {
       expect(cancelResult.id).toEqual(workflowId);
       expect(cancelResult.status).toEqual(WorkflowStatus.Canceled);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 

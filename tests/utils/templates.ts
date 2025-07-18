@@ -8,7 +8,6 @@ import {
   CustomCodeNodeProps,
   GraphQLQueryNodeProps,
   BranchNodeProps,
-  FilterNodeProps,
   WorkflowProps,
 } from "@avaprotocol/types";
 import { getNextId } from "./utils";
@@ -37,7 +36,7 @@ export const defaultTriggerId = getNextId();
 
 export const ethTransferNodeProps: ETHTransferNodeProps = {
   id: getNextId(),
-  name: "send eth",
+  name: "sendETH",
   type: NodeType.ETHTransfer,
   data: {
     destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
@@ -108,31 +107,9 @@ export const createContractReadNodeProps = async (
   };
 };
 
-export const restApiNodeProps: RestAPINodeProps = {
-  id: getNextId(),
-  name: "rest_api_call",
-  type: NodeType.RestAPI,
-  data: {
-    url: "http://localhost:3000/api/test",
-    method: "post",
-    body: `{"test": true}`,
-    headersMap: [["Content-Type", "application/json"]],
-  },
-};
-
-export const filterNodeProps: FilterNodeProps = {
-  id: getNextId(),
-  name: "filterNode",
-  type: NodeType.Filter,
-  data: {
-    sourceId: "rest_api_call",
-    expression: "current >= 1",
-  },
-};
-
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   id: getNextId(),
-  name: "graphql call",
+  name: "graphql_call",
   type: NodeType.GraphQLQuery,
   data: {
     url: "http://localhost:3000/graphql",
@@ -161,7 +138,7 @@ const branchNodeProps: BranchNodeProps = {
 
 const customCodeNodeProps: CustomCodeNodeProps = {
   id: getNextId(),
-  name: "custom code",
+  name: "customCode",
   type: NodeType.CustomCode,
   data: {
     lang: CustomCodeLang.JavaScript,
@@ -242,7 +219,6 @@ export const createFromTemplate = (
 
 const nodes = [
   ethTransferNodeProps,
-  restApiNodeProps,
   graphqlQueryNodeProps,
   branchNodeProps,
   customCodeNodeProps,
@@ -262,13 +238,6 @@ export const MultiNodeWithBranch = {
   name: `Test task`,
   maxExecution: 1,
 };
-
-export const blockTriggerEvery5 = TriggerFactory.create({
-  id: defaultTriggerId,
-  name: "blockTrigger",
-  type: TriggerType.Block,
-  data: { interval: 5 },
-});
 
 // Import Loop node templates
 import {

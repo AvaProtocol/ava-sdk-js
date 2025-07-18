@@ -426,7 +426,7 @@ describe("ContractRead Node Tests", () => {
             {
               callData: "0x313ce567", // decimals()
               methodName: "decimals",
-              applyToFields: ["answer"], // Apply decimal formatting to answer field
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
               callData: "0xfeaf968c", // latestRoundData()
@@ -634,7 +634,7 @@ describe("ContractRead Node Tests", () => {
             {
               callData: "0x313ce567", // decimals()
               methodName: "decimals",
-              applyToFields: ["answer"], // Apply decimal formatting to answer field
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
               callData: "0xfeaf968c", // latestRoundData()
@@ -853,7 +853,7 @@ describe("ContractRead Node Tests", () => {
               {
                 callData: "0x313ce567", // decimals()
                 methodName: "decimals",
-                applyToFields: ["answer"], // Apply decimal formatting to answer field
+                applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
               },
               {
                 callData: "0xfeaf968c", // latestRoundData()
@@ -1273,7 +1273,7 @@ describe("ContractRead Node Tests", () => {
             {
               callData: "0x313ce567", // decimals()
               methodName: "decimals",
-              applyToFields: ["answer"], // Apply decimal formatting to answer field
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
               callData: "0xfeaf968c", // latestRoundData()
@@ -1298,7 +1298,9 @@ describe("ContractRead Node Tests", () => {
       const decimalsCall = methodCalls[0];
       expect(decimalsCall.getMethodName()).toBe("decimals");
       expect(decimalsCall.getCallData()).toBe("0x313ce567");
-      expect(decimalsCall.getApplyToFieldsList()).toEqual(["answer"]);
+      expect(decimalsCall.getApplyToFieldsList()).toEqual([
+        "latestRoundData.answer",
+      ]);
 
       // Check second method call (no applyToFields)
       const latestRoundCall = methodCalls[1];
@@ -1328,7 +1330,7 @@ describe("ContractRead Node Tests", () => {
             {
               callData: "0x313ce567", // decimals()
               methodName: "decimals",
-              applyToFields: ["answer"], // Apply decimal formatting to answer field
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
               callData: "0xfeaf968c", // latestRoundData()
@@ -1450,7 +1452,7 @@ describe("ContractRead Node Tests", () => {
             {
               callData: "0x313ce567", // decimals()
               methodName: "decimals",
-              applyToFields: ["answer"], // Apply decimal formatting to answer field
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
               callData: "0xfeaf968c", // latestRoundData()

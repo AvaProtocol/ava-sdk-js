@@ -1,5 +1,9 @@
 import axios from "axios";
 
+// A mocked URL set up on the aggregator to return a mock response for testing purpose
+export const MOCKED_API_ENDPOINT_AGGREGATOR =
+  "https://mock-api.ap-aggregator.local";
+
 // Mock responses
 export const mockRestApiResponse = {
   status: 200,

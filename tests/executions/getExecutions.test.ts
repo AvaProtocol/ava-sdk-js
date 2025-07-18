@@ -126,9 +126,8 @@ describe("getExecutions Tests", () => {
       // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
       expect(typeof resultWithExtraLimit.pageInfo.endCursor).toBe("string");
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -165,9 +164,8 @@ describe("getExecutions Tests", () => {
         })
       ).rejects.toThrowError(/item per page is not valid/);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -204,9 +202,8 @@ describe("getExecutions Tests", () => {
       const count = await client.getExecutionCount([workflowId]);
       expect(count).toBeGreaterThanOrEqual(3);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -292,9 +289,8 @@ describe("getExecutions Tests", () => {
       const count = await client.getExecutionCount([workflowId]);
       expect(count).toBe(0);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -357,14 +353,12 @@ describe("getExecutions Tests", () => {
 
       // Verify all returned executions are in our created list
       [...firstPageIds, ...secondPageIds].forEach((id) => {
-        if (id) {
-          expect(executionIds.includes(id)).toBe(true);
-        }
+        expect(id).toBeDefined();
+        expect(executionIds.includes(id)).toBe(true);
       });
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -428,14 +422,12 @@ describe("getExecutions Tests", () => {
       const firstPageIds = firstPage.items.map((item: any) => item.id);
       
       [...previousPageIds, ...firstPageIds].forEach((id) => {
-        if (id) {
-          expect(executionIds.includes(id)).toBe(true);
-        }
+        expect(id).toBeDefined();
+        expect(executionIds.includes(id)).toBe(true);
       });
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 
@@ -466,9 +458,8 @@ describe("getExecutions Tests", () => {
         client.getExecutions([workflowId], { after: "invalid-cursor" })
       ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
     } finally {
-      if (workflowId) {
-        await client.deleteWorkflow(workflowId);
-      }
+      expect(workflowId).toBeDefined();
+      await client.deleteWorkflow(workflowId);
     }
   });
 });

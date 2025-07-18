@@ -1,10 +1,15 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, FilterNodeData, FilterNodeProps, NodeProps } from "@avaprotocol/types";
+import {
+  NodeType,
+  FilterNodeData,
+  FilterNodeProps,
+  NodeProps,
+} from "@avaprotocol/types";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { Value } from "google-protobuf/google/protobuf/struct_pb";
 
 // Required props for constructor: id, name, type and data: { expression, sourceId }
-
 
 class FilterNode extends Node {
   constructor(props: FilterNodeProps) {
@@ -14,10 +19,10 @@ class FilterNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): FilterNode {
     // Convert the raw object to FilterNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
-    
+
     // Extract input data if present
     const input = extractInputFromProtobuf(raw.getFilter()?.getInput());
-    
+
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
@@ -33,10 +38,10 @@ class FilterNode extends Node {
     request.setName(this.name);
 
     const node = new avs_pb.FilterNode();
-    
+
     const config = new avs_pb.FilterNode.Config();
     config.setExpression((this.data as FilterNodeData).expression);
-    config.setSourceId((this.data as FilterNodeData).sourceId || '');
+    config.setSourceId((this.data as FilterNodeData).sourceId || "");
     node.setConfig(config);
 
     // Set input data if provided
@@ -51,7 +56,35 @@ class FilterNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const filterOutput = outputData.getFilter();
-    return filterOutput?.toObject() || null;
+
+    if (!filterOutput) {
+      throw new Error("FilterNode output data is missing");
+    }
+
+    const anyData = filterOutput.getData();
+    if (!anyData) {
+      throw new Error("FilterNode output data.getData() is missing");
+    }
+
+    // Unpack the Any to get the Value
+    const value = Value.deserializeBinary(anyData.getValue_asU8());
+
+    // Convert the Value to JavaScript
+    const result = value.toJavaScript();
+
+    // The result contains the entire response object, extract the data array
+    if (
+      result &&
+      typeof result === "object" &&
+      !Array.isArray(result) &&
+      (result as any).data
+    ) {
+      return (result as any).data;
+    }
+
+    throw new Error(
+      "FilterNode output data does not contain expected data structure"
+    );
   }
 }
 

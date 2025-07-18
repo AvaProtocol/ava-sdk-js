@@ -1,7 +1,7 @@
 import util from "util";
 import _ from "lodash";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
-import { Client, TriggerFactory, Step, NodeFactory } from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
@@ -14,6 +14,8 @@ import {
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
+// Using real httpbin.org endpoints for testing
+const HTTPBIN_BASE_URL = "https://httpbin.org";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -54,7 +56,7 @@ describe("RestAPI Node Tests", () => {
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: "https://httpbin.org/get",
+          url: HTTPBIN_BASE_URL + "/get",
           method: "GET",
           headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
         },
@@ -74,19 +76,20 @@ describe("RestAPI Node Tests", () => {
         expect(response.data.statusCode).toBe(200);
         expect(response.data.headers).toBeDefined();
         expect(response.data.body).toBeDefined();
-        expect(response.data.body.url).toBe("https://httpbin.org/get");
+        // httpbin.org/get returns JSON with url field
+        expect(response.data.body.url).toBe(
+          HTTPBIN_BASE_URL + "/get"
+        );
       }
     });
 
     test("should handle REST API POST call", async () => {
       const postData = { test: "data", timestamp: Date.now() };
 
-      
-
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: "https://httpbin.org/post",
+          url: HTTPBIN_BASE_URL + "/post",
           method: "POST",
           body: JSON.stringify(postData),
           headersMap: [
@@ -105,17 +108,16 @@ describe("RestAPI Node Tests", () => {
       expect(response.success).toBe(true);
       if (response.data) {
         expect(response.data.statusCode).toBe(200);
+        // httpbin.org/post returns JSON with json field containing the posted data
         expect(response.data.body.json).toEqual(postData);
       }
     });
 
     test("should handle REST API error responses", async () => {
-      
-
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: "https://httpbin.org/status/404",
+          url: HTTPBIN_BASE_URL + "/status/404",
           method: "GET",
           headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
         },
@@ -187,7 +189,7 @@ describe("RestAPI Node Tests", () => {
         name: "simulate_error_test",
         type: NodeType.RestAPI,
         data: {
-          url: "https://httpbin.org/status/500",
+          url: HTTPBIN_BASE_URL + "/status/500",
           method: "GET",
           body: "",
           headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
@@ -195,8 +197,6 @@ describe("RestAPI Node Tests", () => {
       });
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
-
-      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -229,7 +229,7 @@ describe("RestAPI Node Tests", () => {
         name: "deploy_get_test",
         type: NodeType.RestAPI,
         data: {
-          url: "https://httpbin.org/get?deployed=true",
+          url: HTTPBIN_BASE_URL + "/get?deployed=true",
           method: "GET",
           body: "",
           headersMap: [["User-Agent", "AvaProtocol-SDK-Test-Deployed"]],
@@ -244,8 +244,6 @@ describe("RestAPI Node Tests", () => {
         type: TriggerType.Block,
         data: { interval: triggerInterval },
       });
-
-      
 
       let workflowId: string | undefined;
       try {
@@ -286,6 +284,7 @@ describe("RestAPI Node Tests", () => {
         expect(restApiStep.success).toBe(true);
         const output = restApiStep.output as any;
         expect(output.statusCode).toBe(200);
+        // httpbin.org/get returns JSON with args field containing query parameters
         expect(output.body.args.deployed).toBe("true");
       } finally {
         if (workflowId) {
@@ -408,6 +407,7 @@ describe("RestAPI Node Tests", () => {
           expect(simulatedOutput.headers).toBeDefined();
           expect(executedOutput.headers).toBeDefined();
 
+          // jsonplaceholder.typicode.com/posts/42 returns JSON with id field
           expect(directOutput.body.id).toBe(42);
           expect(simulatedOutput.body.id).toBe(42);
           expect(executedOutput.body.id).toBe(42);
@@ -425,39 +425,42 @@ describe("RestAPI Node Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle 204 No Content responses", async () => {
-      console.log('🚀 Testing REST API with 204 No Content response...');
-      
+      console.log("🚀 Testing REST API with 204 No Content response...");
+
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: 'https://httpbin.org/status/204', // Returns empty response with 204 status
-          method: 'GET',
-          headersMap: [['User-Agent', 'AvaProtocol-SDK-Test']],
+          url: HTTPBIN_BASE_URL + "/status/204", // Returns empty response with 204 status
+          method: "GET",
+          headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
         },
         inputVariables: {},
       });
 
-      console.log('REST API 204 response:', util.inspect(result, { depth: null, colors: true }));
-      
+      console.log(
+        "REST API 204 response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
       expect(result.success).toBe(true);
-      expect(result.error).toBe('');
+      expect(result.error).toBe("");
       expect(result.data).toBeDefined();
-      if (result.data && typeof result.data === 'object') {
+      if (result.data && typeof result.data === "object") {
         expect(result.data.statusCode).toBe(204);
-        expect(result.data.body).toBe('');
+        expect(result.data.body).toBe("");
       }
     });
 
     test("should distinguish between empty data and server errors", async () => {
-      console.log('🚀 Testing empty data vs server error distinction...');
-      
+      console.log("🚀 Testing empty data vs server error distinction...");
+
       // Test 204 No Content (empty but successful)
       const emptyResponse = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: 'https://httpbin.org/status/204',
-          method: 'GET',
-          headersMap: [['User-Agent', 'AvaProtocol-SDK-Test']],
+          url: HTTPBIN_BASE_URL + "/status/204",
+          method: "GET",
+          headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
         },
         inputVariables: {},
       });
@@ -466,26 +469,32 @@ describe("RestAPI Node Tests", () => {
       const errorResponse = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: 'https://httpbin.org/status/500',
-          method: 'GET',
-          headersMap: [['User-Agent', 'AvaProtocol-SDK-Test']],
+          url: HTTPBIN_BASE_URL + "/status/500",
+          method: "GET",
+          headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
         },
         inputVariables: {},
       });
 
-      console.log('Empty data result:', util.inspect(emptyResponse, { depth: null, colors: true }));
-      console.log('Error result:', util.inspect(errorResponse, { depth: null, colors: true }));
+      console.log(
+        "Empty data result:",
+        util.inspect(emptyResponse, { depth: null, colors: true })
+      );
+      console.log(
+        "Error result:",
+        util.inspect(errorResponse, { depth: null, colors: true })
+      );
 
       // Both should succeed at HTTP level but have different status codes
       expect(emptyResponse.success).toBe(true);
       expect(errorResponse.success).toBe(true);
-      
-      if (emptyResponse.data && typeof emptyResponse.data === 'object') {
+
+      if (emptyResponse.data && typeof emptyResponse.data === "object") {
         expect(emptyResponse.data.statusCode).toBe(204);
-        expect(emptyResponse.data.body).toBe('');
+        expect(emptyResponse.data.body).toBe("");
       }
-      
-      if (errorResponse.data && typeof errorResponse.data === 'object') {
+
+      if (errorResponse.data && typeof errorResponse.data === "object") {
         expect(errorResponse.data.statusCode).toBe(500);
       }
     });

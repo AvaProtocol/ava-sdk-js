@@ -51,7 +51,7 @@ describe("FilterNode Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Filter,
         nodeConfig: {
-          expression: "{{ current.age >= 18 }}",
+          expression: "value.age >= 18",
           sourceId: "testArray",
         },
         inputVariables: {
@@ -60,28 +60,28 @@ describe("FilterNode Tests", () => {
             { name: "Bob", age: 17 },
             { name: "Carol", age: 25 },
           ],
-          current: { age: 21 },
         },
       });
 
+      console.log(
+        "runNodeWithInputs response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(2);
-        }
-      } else {
-        console.log("Filter adults test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(2);
     });
 
     test("should filter minors with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Filter,
         nodeConfig: {
-          expression: "{{ current.age < 18 }}",
+          expression: "value.age < 18",
           sourceId: "testArray",
         },
         inputVariables: {
@@ -95,22 +95,18 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(1);
-        }
-      } else {
-        console.log("Filter minors test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(1);
     });
 
     test("should filter by name starting with A", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Filter,
         nodeConfig: {
-          expression: '{{ current.name.startsWith("A") }}',
+          expression: 'value.name.startsWith("A")',
           sourceId: "testArray",
         },
         inputVariables: {
@@ -124,22 +120,18 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(2);
-        }
-      } else {
-        console.log("Filter by name test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(2);
     });
 
     test("should filter with trigger data reference", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.Filter,
         nodeConfig: {
-          expression: "{{ current.age >= trigger.data.minAge }}",
+          expression: "value.age >= trigger.data.minAge",
           sourceId: "testArray",
         },
         inputVariables: {
@@ -158,15 +150,11 @@ describe("FilterNode Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-        if (Array.isArray(result.data)) {
-          expect(result.data.length).toBe(2);
-        }
-      } else {
-        console.log("Filter with trigger data test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(2);
     });
   });
 
@@ -197,7 +185,7 @@ describe("FilterNode Tests", () => {
         name: "simulate_filter_test",
         type: NodeType.Filter,
         data: {
-          expression: "{{ current.age >= 18 }}",
+          expression: "value.age >= 18",
           sourceId: dataNode.id, // Reference the data generation node
         },
       });
@@ -206,8 +194,6 @@ describe("FilterNode Tests", () => {
         dataNode,
         filterNode,
       ]);
-
-      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -254,7 +240,7 @@ describe("FilterNode Tests", () => {
         name: "simulate_complex_filter",
         type: NodeType.Filter,
         data: {
-          expression: '{{ current.age >= 20 && current.name.startsWith("A") }}',
+          expression: 'value.age >= 20 && value.name.startsWith("A")',
           sourceId: dataNode.id, // Reference the data generation node
         },
       });
@@ -263,8 +249,6 @@ describe("FilterNode Tests", () => {
         dataNode,
         filterNode,
       ]);
-
-      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -307,12 +291,15 @@ describe("FilterNode Tests", () => {
         name: "deploy_filter_test",
         type: NodeType.Filter,
         data: {
-          expression: "{{ current.age >= 18 }}",
+          expression: "value.age >= 18",
           sourceId: dataNode.id, // Reference the data generation node
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, filterNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        filterNode,
+      ]);
 
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -320,8 +307,6 @@ describe("FilterNode Tests", () => {
         type: TriggerType.Block,
         data: { interval: triggerInterval },
       });
-
-      
 
       let workflowId: string | undefined;
       try {
@@ -340,7 +325,10 @@ describe("FilterNode Tests", () => {
         });
 
         console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
+        console.log(
+          "Trigger result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -378,7 +366,7 @@ describe("FilterNode Tests", () => {
       const triggerInterval = 5;
 
       const filterConfig = {
-        expression: "{{ current.age >= 21 }}",
+        expression: "value.age >= 21",
         sourceId: "testArray",
       };
 
@@ -425,12 +413,15 @@ describe("FilterNode Tests", () => {
         name: "consistency_test",
         type: NodeType.Filter,
         data: {
-          expression: "{{ current.age >= 21 }}",
+          expression: "value.age >= 21",
           sourceId: dataNode.id, // Reference the data generation node
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [dataNode, filterNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        dataNode,
+        filterNode,
+      ]);
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );

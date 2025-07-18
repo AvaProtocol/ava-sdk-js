@@ -869,7 +869,29 @@ class Client extends BaseClient {
       case TriggerType.Manual: {
         const manualData = triggerData as any;
         const manualOutput = new avs_pb.ManualTrigger.Output();
-        if (manualData.runAt) manualOutput.setRunAt(manualData.runAt);
+        
+        // Convert JavaScript data to protobuf Value
+        if (manualData.data) {
+          const protobufValue = convertJSValueToProtobuf(manualData.data);
+          manualOutput.setData(protobufValue);
+        }
+        
+        // Include headers for webhook testing - now using map format
+        if (manualData.headersMap) {
+          const headersMap = manualOutput.getHeadersMap();
+          manualData.headersMap.forEach(([key, value]: [string, string]) => {
+            headersMap.set(key, value);
+          });
+        }
+        
+        // Include pathParams for webhook testing - now using map format
+        if (manualData.pathParamsMap) {
+          const pathParamsMap = manualOutput.getPathparamsMap();
+          manualData.pathParamsMap.forEach(([key, value]: [string, string]) => {
+            pathParamsMap.set(key, value);
+          });
+        }
+        
         request.setManualTrigger(manualOutput);
         break;
       }

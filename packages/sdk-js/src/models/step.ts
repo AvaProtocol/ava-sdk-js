@@ -93,17 +93,23 @@ class Step implements StepProps {
 
       // Trigger outputs
       case avs_pb.Execution.Step.OutputDataCase.BLOCK_TRIGGER:
-        return typeof step.getBlockTrigger === "function"
-          ? step.getBlockTrigger()?.toObject()
-          : (step as any).blockTrigger;
+        const blockTrigger =
+          typeof step.getBlockTrigger === "function"
+            ? step.getBlockTrigger()?.toObject()
+            : (step as any).blockTrigger;
+        return { data: blockTrigger }; // ✅ Use standard structure
       case avs_pb.Execution.Step.OutputDataCase.FIXED_TIME_TRIGGER:
-        return typeof step.getFixedTimeTrigger === "function"
-          ? step.getFixedTimeTrigger()?.toObject()
-          : (step as any).fixedTimeTrigger;
+        const fixedTimeTrigger =
+          typeof step.getFixedTimeTrigger === "function"
+            ? step.getFixedTimeTrigger()?.toObject()
+            : (step as any).fixedTimeTrigger;
+        return { data: fixedTimeTrigger }; // ✅ Use standard structure
       case avs_pb.Execution.Step.OutputDataCase.CRON_TRIGGER:
-        return typeof step.getCronTrigger === "function"
-          ? step.getCronTrigger()?.toObject()
-          : (step as any).cronTrigger;
+        const cronTrigger =
+          typeof step.getCronTrigger === "function"
+            ? step.getCronTrigger()?.toObject()
+            : (step as any).cronTrigger;
+        return { data: cronTrigger }; // ✅ Use standard structure
       case avs_pb.Execution.Step.OutputDataCase.EVENT_TRIGGER:
         const eventTrigger =
           typeof step.getEventTrigger === "function"
@@ -116,19 +122,24 @@ class Step implements StepProps {
             eventTrigger.hasData()
           ) {
             try {
-              return convertProtobufValueToJs(eventTrigger.getData());
+              const eventData = convertProtobufValueToJs(
+                eventTrigger.getData()
+              );
+              return { data: eventData }; // ✅ Use standard structure
             } catch (error) {
               console.warn(
                 "Failed to convert event trigger data from protobuf Value:",
                 error
               );
-              return eventTrigger.getData();
+              return { data: eventTrigger.getData() }; // ✅ Use standard structure
             }
           } else if (eventTrigger.data) {
             // For plain objects, try to convert or use directly
-            return typeof eventTrigger.data.getKindCase === "function"
-              ? convertProtobufValueToJs(eventTrigger.data)
-              : eventTrigger.data;
+            const eventData =
+              typeof eventTrigger.data.getKindCase === "function"
+                ? convertProtobufValueToJs(eventTrigger.data)
+                : eventTrigger.data;
+            return { data: eventData }; // ✅ Use standard structure
           }
 
           // Fallback to old structure for backward compatibility
@@ -136,23 +147,234 @@ class Step implements StepProps {
             typeof eventTrigger.hasEvmLog === "function" &&
             eventTrigger.hasEvmLog()
           ) {
-            return eventTrigger.getEvmLog()?.toObject();
+            return { data: eventTrigger.getEvmLog()?.toObject() }; // ✅ Use standard structure
           } else if (
             typeof eventTrigger.hasTransferLog === "function" &&
             eventTrigger.hasTransferLog()
           ) {
-            return eventTrigger.getTransferLog()?.toObject();
+            return { data: eventTrigger.getTransferLog()?.toObject() }; // ✅ Use standard structure
           } else if (eventTrigger.evmLog) {
-            return eventTrigger.evmLog;
+            return { data: eventTrigger.evmLog }; // ✅ Use standard structure
           } else if (eventTrigger.transferLog) {
-            return eventTrigger.transferLog;
+            return { data: eventTrigger.transferLog }; // ✅ Use standard structure
           }
         }
-        return undefined;
-      case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER:
-        return typeof step.getManualTrigger === "function"
-          ? step.getManualTrigger()?.toObject() || undefined
-          : (step as any).manualTrigger;
+        return { data: null }; // ✅ Use standard structure
+      case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER: {
+        const manualTrigger =
+          typeof step.getManualTrigger === "function"
+            ? step.getManualTrigger()
+            : (step as any).manualTrigger;
+        if (manualTrigger) {
+          const result: Record<string, any> = {};
+
+          // Check for the new data field structure
+          if (
+            typeof manualTrigger.hasData === "function" &&
+            manualTrigger.hasData()
+          ) {
+            try {
+              const userData = convertProtobufValueToJs(
+                manualTrigger.getData()
+              );
+              
+              // Check if the userData is the new format with nested structure
+              if (userData && typeof userData === 'object' && 
+                  userData.data !== undefined && 
+                  (userData.headers !== undefined || userData.pathParams !== undefined)) {
+                // This is the new format where the entire structure is in the data field
+                // Flatten it by extracting the nested data
+                result.data = userData.data;
+                if (userData.headers) {
+                  // Convert headers to consistent Array<[string, string]> format
+                  if (Array.isArray(userData.headers)) {
+                    // Check if it's already in Array<[string, string]> format
+                    if (userData.headers.length > 0 && Array.isArray(userData.headers[0])) {
+                      result.headers = userData.headers;
+                    } else {
+                      // Convert from Array<{key: value}> to Array<[string, string]>
+                      const headersArray: Array<[string, string]> = [];
+                      for (const header of userData.headers) {
+                        for (const [key, value] of Object.entries(header)) {
+                          headersArray.push([key, value as string]);
+                        }
+                      }
+                      result.headers = headersArray;
+                    }
+                  } else {
+                    // Convert object to Array<[string, string]> format
+                    const headersArray: Array<[string, string]> = [];
+                    for (const [key, value] of Object.entries(userData.headers)) {
+                      headersArray.push([key, value as string]);
+                    }
+                    result.headers = headersArray;
+                  }
+                }
+                if (userData.pathParams) {
+                  // Convert pathParams to consistent Array<[string, string]> format
+                  if (Array.isArray(userData.pathParams)) {
+                    // Check if it's already in Array<[string, string]> format
+                    if (userData.pathParams.length > 0 && Array.isArray(userData.pathParams[0])) {
+                      result.pathParams = userData.pathParams;
+                    } else {
+                      // Convert from Array<{key: value}> to Array<[string, string]>
+                      const pathParamsArray: Array<[string, string]> = [];
+                      for (const pathParam of userData.pathParams) {
+                        for (const [key, value] of Object.entries(pathParam)) {
+                          pathParamsArray.push([key, value as string]);
+                        }
+                      }
+                      result.pathParams = pathParamsArray;
+                    }
+                  } else {
+                    // Convert object to Array<[string, string]> format
+                    const pathParamsArray: Array<[string, string]> = [];
+                    for (const [key, value] of Object.entries(userData.pathParams)) {
+                      pathParamsArray.push([key, value as string]);
+                    }
+                    result.pathParams = pathParamsArray;
+                  }
+                }
+              } else {
+                // This is the old format with just user data
+                result.data = userData;
+              }
+            } catch (error) {
+              console.warn(
+                "Failed to convert manual trigger data from protobuf Value:",
+                error
+              );
+              result.data = manualTrigger.getData();
+            }
+          } else if (manualTrigger.data) {
+            // For plain objects, try to convert or use directly
+            const userData =
+              typeof manualTrigger.data.getKindCase === "function"
+                ? convertProtobufValueToJs(manualTrigger.data)
+                : manualTrigger.data;
+            
+            // Check if the userData is the new format with nested structure
+            if (userData && typeof userData === 'object' && 
+                userData.data !== undefined && 
+                (userData.headers !== undefined || userData.pathParams !== undefined)) {
+              // This is the new format where the entire structure is in the data field
+              // Flatten it by extracting the nested data
+              result.data = userData.data;
+              if (userData.headers) {
+                // Convert headers to consistent Array<[string, string]> format
+                if (Array.isArray(userData.headers)) {
+                  // Check if it's already in Array<[string, string]> format
+                  if (userData.headers.length > 0 && Array.isArray(userData.headers[0])) {
+                    result.headers = userData.headers;
+                  } else {
+                    // Convert from Array<{key: value}> to Array<[string, string]>
+                    const headersArray: Array<[string, string]> = [];
+                    for (const header of userData.headers) {
+                      for (const [key, value] of Object.entries(header)) {
+                        headersArray.push([key, value as string]);
+                      }
+                    }
+                    result.headers = headersArray;
+                  }
+                } else {
+                  // Convert object to Array<[string, string]> format
+                  const headersArray: Array<[string, string]> = [];
+                  for (const [key, value] of Object.entries(userData.headers)) {
+                    headersArray.push([key, value as string]);
+                  }
+                  result.headers = headersArray;
+                }
+              }
+              if (userData.pathParams) {
+                // Convert pathParams to consistent Array<[string, string]> format
+                if (Array.isArray(userData.pathParams)) {
+                  // Check if it's already in Array<[string, string]> format
+                  if (userData.pathParams.length > 0 && Array.isArray(userData.pathParams[0])) {
+                    result.pathParams = userData.pathParams;
+                  } else {
+                    // Convert from Array<{key: value}> to Array<[string, string]>
+                    const pathParamsArray: Array<[string, string]> = [];
+                    for (const pathParam of userData.pathParams) {
+                      for (const [key, value] of Object.entries(pathParam)) {
+                        pathParamsArray.push([key, value as string]);
+                      }
+                    }
+                    result.pathParams = pathParamsArray;
+                  }
+                } else {
+                  // Convert object to Array<[string, string]> format
+                  const pathParamsArray: Array<[string, string]> = [];
+                  for (const [key, value] of Object.entries(userData.pathParams)) {
+                    pathParamsArray.push([key, value as string]);
+                  }
+                  result.pathParams = pathParamsArray;
+                }
+              }
+            } else {
+              // This is the old format with just user data
+              result.data = userData;
+            }
+          }
+
+          // Include headers for webhook testing - use consistent Array<[string, string]> format
+          if (
+            typeof manualTrigger.getHeadersMap === "function"
+          ) {
+            const headersMap = manualTrigger.getHeadersMap();
+            if (headersMap && headersMap.getLength() > 0) {
+              const headersArray: Array<[string, string]> = [];
+              headersMap.forEach((value: string, key: string) => {
+                headersArray.push([key, value]);
+              });
+              result.headers = headersArray;
+            }
+          } else if (manualTrigger.headers) {
+            // For plain objects, convert to consistent Array<[string, string]> format
+            const headersArray: Array<[string, string]> = [];
+            for (const [key, value] of Object.entries(manualTrigger.headers)) {
+              headersArray.push([key, value as string]);
+            }
+            result.headers = headersArray;
+          }
+
+          // Include pathParams for webhook testing - use consistent Array<[string, string]> format
+          if (
+            typeof manualTrigger.getPathparamsMap === "function"
+          ) {
+            const pathParamsMap = manualTrigger.getPathparamsMap();
+            if (pathParamsMap && pathParamsMap.getLength() > 0) {
+              const pathParamsArray: Array<[string, string]> = [];
+              pathParamsMap.forEach((value: string, key: string) => {
+                pathParamsArray.push([key, value]);
+              });
+              result.pathParams = pathParamsArray;
+            }
+          } else if (manualTrigger.pathparams) {
+            // For plain objects, convert to consistent Array<[string, string]> format
+            const pathParamsArray: Array<[string, string]> = [];
+            for (const [key, value] of Object.entries(manualTrigger.pathparams)) {
+              pathParamsArray.push([key, value as string]);
+            }
+            result.pathParams = pathParamsArray;
+          }
+
+          // Check if this is the new format with no data field or null data
+          if (Object.keys(result).length === 0) {
+            const objData = manualTrigger.toObject?.() || manualTrigger;
+            if (objData && objData.data === undefined) {
+              // No data was provided, return null
+              result.data = null;
+            } else {
+              // Fallback to old structure for backward compatibility
+              return { data: objData };
+            }
+          }
+
+          // For manual triggers, return the flat structure
+          return result;
+        }
+        return { data: null };
+      }
 
       // Node outputs - RESTORE MISSING CASES
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
@@ -160,7 +382,7 @@ class Step implements StepProps {
           ? step.getEthTransfer()?.toObject()
           : (step as any).ethTransfer;
 
-      case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
+      case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE: {
         const customCodeOutput =
           typeof step.getCustomCode === "function"
             ? step.getCustomCode()
@@ -184,8 +406,9 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.REST_API:
+      case avs_pb.Execution.Step.OutputDataCase.REST_API: {
         const restApiOutput =
           typeof step.getRestApi === "function"
             ? step.getRestApi()
@@ -209,13 +432,14 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
       case avs_pb.Execution.Step.OutputDataCase.BRANCH:
         return typeof step.getBranch === "function"
           ? step.getBranch()?.toObject()
           : (step as any).branch;
 
-      case avs_pb.Execution.Step.OutputDataCase.LOOP:
+      case avs_pb.Execution.Step.OutputDataCase.LOOP: {
         const loopOutput =
           typeof step.getLoop === "function"
             ? step.getLoop()
@@ -242,8 +466,9 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
+      case avs_pb.Execution.Step.OutputDataCase.GRAPHQL: {
         const graphqlOutput =
           typeof step.getGraphql === "function"
             ? step.getGraphql()
@@ -258,8 +483,9 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
+      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ: {
         const contractReadOutput =
           typeof step.getContractRead === "function"
             ? step.getContractRead()
@@ -326,8 +552,9 @@ class Step implements StepProps {
           return outputObj;
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
+      case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE: {
         const contractWriteOutput =
           typeof step.getContractWrite === "function"
             ? step.getContractWrite()
@@ -397,8 +624,9 @@ class Step implements StepProps {
           return outputObj;
         }
         return undefined;
+      }
 
-      case avs_pb.Execution.Step.OutputDataCase.FILTER:
+      case avs_pb.Execution.Step.OutputDataCase.FILTER: {
         const filterOutput =
           typeof step.getFilter === "function"
             ? step.getFilter()
@@ -413,6 +641,7 @@ class Step implements StepProps {
           }
         }
         return undefined;
+      }
 
       default:
         console.warn(
