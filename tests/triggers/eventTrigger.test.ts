@@ -1538,8 +1538,8 @@ describe("EventTrigger Tests", () => {
 
         // Verify consistent structure across all three methods
         const directOutput = directResponse.data;
-        const simulatedOutput = simulatedStep!.output as any;
-        const triggeredOutput = triggeredStep!.output as any;
+        const simulatedOutput = (simulatedStep!.output as any)?.data;
+        const triggeredOutput = (triggeredStep!.output as any).data;
 
         // Check that all outputs have consistent structure
         expect(directOutput).toBeDefined();

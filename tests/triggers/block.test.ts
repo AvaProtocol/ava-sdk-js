@@ -2,7 +2,7 @@ import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType } from "@avaprotocol/types";
+import { TriggerType, NodeType, CustomCodeLang } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -17,8 +17,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress, chainEndpoint } =
-  getConfig();
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 8000;
@@ -443,6 +442,14 @@ describe("BlockTrigger Tests", () => {
           triggerData: {
             type: TriggerType.Block,
             blockNumber: currentBlockNumber + triggerInterval,
+            blockHash:
+              "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+            timestamp: Math.floor(Date.now() / 1000),
+            parentHash:
+              "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+            difficulty: "0",
+            gasLimit: 30000000,
+            gasUsed: 15000000,
           },
           isBlocking: true,
         });
@@ -478,8 +485,8 @@ describe("BlockTrigger Tests", () => {
 
         // Verify consistent structure
         const directOutput = directResponse.data;
-        const simulatedOutput = simulatedStep!.output as any;
-        const executedOutput = executedStep!.output as any;
+        const simulatedOutput = (simulatedStep!.output as any).data;
+        const executedOutput = (executedStep!.output as any).data;
 
         // Check that all outputs have consistent structure
         expect(directOutput).toBeDefined();
@@ -515,12 +522,16 @@ describe("BlockTrigger Tests", () => {
           expect(simulatedOutput).toBeDefined();
           expect(typeof simulatedOutput).toBe("object");
           expect(simulatedOutput).toHaveProperty(field);
-          console.log(`  ✅ simulateWorkflow has ${field}: ${simulatedOutput[field]}`);
+          console.log(
+            `  ✅ simulateWorkflow has ${field}: ${simulatedOutput[field]}`
+          );
 
           expect(executedOutput).toBeDefined();
           expect(typeof executedOutput).toBe("object");
           expect(executedOutput).toHaveProperty(field);
-          console.log(`  ✅ deploy+trigger has ${field}: ${executedOutput[field]}`);
+          console.log(
+            `  ✅ deploy+trigger has ${field}: ${executedOutput[field]}`
+          );
         });
 
         // Verify the most critical field - blockNumber (camelCase standard)
@@ -608,6 +619,7 @@ describe("BlockTrigger Tests", () => {
               message: 'Block trigger fired for block ' + blockNumber
             };
           `,
+          lang: CustomCodeLang.JavaScript,
         },
       });
 
@@ -770,7 +782,9 @@ describe("BlockTrigger Tests", () => {
         } else {
           if (value !== undefined) {
             expect(validator(value)).toBe(true);
-            console.log(`✅ Optional field ${name}: ${value} (${typeof value})`);
+            console.log(
+              `✅ Optional field ${name}: ${value} (${typeof value})`
+            );
           } else {
             console.log(`ℹ️  Optional field ${name}: not present`);
           }
