@@ -481,7 +481,9 @@ describe("ManualTrigger Tests", () => {
       // Update the CustomCode node to reference the manual trigger's data
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
       // Update the CustomCode source to reference the manual trigger's data
-      (customCodeNode.data as { source: string }).source = `return ${triggerName}.data;`;
+      (
+        customCodeNode.data as { source: string }
+      ).source = `return ${triggerName}.data;`;
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and user data:",
@@ -531,9 +533,9 @@ describe("ManualTrigger Tests", () => {
 
     test("should simulate workflow with manual trigger including headers and pathParams", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-      const triggerName = "simulate_manual_trigger_with_webhook_data";
+      const triggerName = "simulate_manual_trigger";
 
-      const userData = { message: "Hello webhook!" };
+      const data = { message: "Hello webhook!" };
       const headers = [
         { "Content-Type": "application/json" },
         { "X-API-Key": "secret123" },
@@ -545,7 +547,7 @@ describe("ManualTrigger Tests", () => {
         name: triggerName,
         type: TriggerType.Manual,
         data: {
-          data: userData,
+          data: data,
           headers: headers,
           pathParams: pathParams,
         },
@@ -557,9 +559,9 @@ describe("ManualTrigger Tests", () => {
       // Update the CustomCode node to reference the manual trigger's webhook data
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
       (customCodeNode.data as { source: string }).source = `return { 
-        data: ${triggerName}.data,
-        headers: ${triggerName}.headers,
-        pathParams: ${triggerName}.pathParams
+        data: ${triggerName}.data.data,
+        headers: ${triggerName}.data.headers,
+        pathParams: ${triggerName}.data.pathParams
       };`;
 
       console.log(
@@ -589,23 +591,11 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep!.success).toBe(true);
 
       // The trigger step should have all the webhook data
-      // Headers and pathParams are flattened from arrays of objects to single objects
-      const expectedHeaders = {
-        "Content-Type": "application/json",
-        "X-API-Key": "secret123",
-      };
-      const expectedPathParams = {
-        userId: "789",
-        action: "test",
-      };
-
-      expect(triggerStep!.output).toEqual(
-        expect.objectContaining({
-          data: userData,
-          headers: expectedHeaders,
-          pathParams: expectedPathParams,
-        })
-      );
+      expect(triggerStep!.output).toEqual({
+        data: data,
+        headers: headers,
+        pathParams: pathParams,
+      });
 
       // Check that the CustomCode node successfully referenced the manual trigger webhook data
       const customCodeStep = simulation.steps.find(
@@ -614,22 +604,13 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
 
-      // Verify the webhook data was properly accessed
-      // The CustomCode merges all the data into a single object
-      expect(customCodeStep!.output).toEqual(
-        expect.objectContaining({
-          data: {
-            message: "Hello webhook!",
-            headers: expectedHeaders,
-            pathParams: expectedPathParams,
-          },
-        })
-      );
+      expect(customCodeStep!.output).toEqual({
+        data: data,
+        headers: headers,
+        pathParams: pathParams,
+      });
 
-      // Verify the references were properly made by checking inputsList
       expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`);
-      // Note: headers and pathParams are not exposed as separate variables in the VM
-      // They are accessible through the trigger's input/output data structure
     });
   });
 
