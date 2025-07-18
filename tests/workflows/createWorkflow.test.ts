@@ -344,32 +344,33 @@ describe("createWorkflow Tests", () => {
 
   test("create complex task with multi nodes and edge", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-    let workflowId: string | undefined;
 
-    try {
-      const workflowData = {
+    const workflowData = {
+      ...MultiNodeWithBranch,
+      smartWalletAddress: wallet.address,
+    };
+
+    console.log("🚀 Creating complex workflow with multi nodes and edge...");
+    const workflow = await client.createWorkflow(workflowData);
+    
+    console.log("🚀 Submitting workflow...");
+    const workflowId = await client.submitWorkflow(workflow);
+    console.log("✅ Workflow submitted successfully, ID:", workflowId);
+
+    const getResponse = await client.getWorkflow(workflowId);
+
+    compareResults(
+      {
         ...MultiNodeWithBranch,
         smartWalletAddress: wallet.address,
-      };
+        status: WorkflowStatus.Active,
+        id: workflowId,
+        owner: eoaAddress,
+      },
+      getResponse
+    );
 
-      const workflow = await client.createWorkflow(workflowData);
-      workflowId = await client.submitWorkflow(workflow);
-
-      const getResponse = await client.getWorkflow(workflowId);
-
-      compareResults(
-        {
-          ...MultiNodeWithBranch,
-          smartWalletAddress: wallet.address,
-          status: WorkflowStatus.Active,
-          id: workflowId,
-          owner: eoaAddress,
-        },
-        getResponse
-      );
-    } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
-    }
+    // Clean up
+    await client.deleteWorkflow(workflowId);
   });
 });

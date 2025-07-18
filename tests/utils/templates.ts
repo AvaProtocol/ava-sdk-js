@@ -109,7 +109,7 @@ export const createContractReadNodeProps = async (
 
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   id: getNextId(),
-  name: "graphql call",
+  name: "graphql_call",
   type: NodeType.GraphQLQuery,
   data: {
     url: "http://localhost:3000/graphql",

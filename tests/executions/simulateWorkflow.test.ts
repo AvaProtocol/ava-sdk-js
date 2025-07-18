@@ -241,7 +241,7 @@ describe("SimulateWorkflow", () => {
           data: {
             lang: CustomCodeLang.JavaScript,
             source:
-              "return { step2: 'completed', previousData: manual_trigger.data };",
+              "return { step2: 'completed', previousData: manualTrigger.data };",
           },
         },
       ];
@@ -399,13 +399,13 @@ describe("SimulateWorkflow", () => {
             lang: CustomCodeLang.JavaScript,
             source: `
               // TODO: Input field feature needs backend support to expose:
-              // - manual_trigger.input (trigger input data)
+              // - manualTrigger.input (trigger input data)
               // - rest_api_node.input (previous node input data)
-              // Currently only manual_trigger.data and rest_api_node.data are available
+              // Currently only manualTrigger.data and rest_api_node.data are available
               
               // For now, test that we can set input fields without errors
               // and access regular data from trigger and previous node
-              const triggerData = manual_trigger.data;
+              const triggerData = manualTrigger.data;
               const restApiOutput = rest_api_node.data;
               
               return {
@@ -500,13 +500,13 @@ describe("SimulateWorkflow", () => {
             lang: CustomCodeLang.JavaScript,
             source: `
               // TODO: Input field feature needs backend support to expose:
-              // - manual_trigger.input (trigger input data)
+              // - manualTrigger.input (trigger input data)
               // - data_processor.input (current node input data)
-              // Currently only manual_trigger.data is available
+              // Currently only manualTrigger.data is available
               
               // For now, test that we can set input fields on nodes and triggers
               // without causing errors, and access regular trigger data
-              const triggerData = manual_trigger.data;
+              const triggerData = manualTrigger.data;
               
               return {
                 inputFieldFeatureTest: {
