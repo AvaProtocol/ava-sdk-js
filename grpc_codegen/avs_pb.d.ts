@@ -556,15 +556,11 @@ export namespace ManualTrigger {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Config;
 
-        hasHeaders(): boolean;
-        clearHeaders(): void;
-        getHeaders(): google_protobuf_struct_pb.Value | undefined;
-        setHeaders(value?: google_protobuf_struct_pb.Value): Config;
+        getHeadersMap(): jspb.Map<string, string>;
+        clearHeadersMap(): void;
 
-        hasPathparams(): boolean;
-        clearPathparams(): void;
-        getPathparams(): google_protobuf_struct_pb.Value | undefined;
-        setPathparams(value?: google_protobuf_struct_pb.Value): Config;
+        getPathparamsMap(): jspb.Map<string, string>;
+        clearPathparamsMap(): void;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -579,8 +575,10 @@ export namespace ManualTrigger {
     export namespace Config {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
-            headers?: google_protobuf_struct_pb.Value.AsObject,
-            pathparams?: google_protobuf_struct_pb.Value.AsObject,
+
+            headersMap: Array<[string, string]>,
+
+            pathparamsMap: Array<[string, string]>,
         }
     }
 
@@ -591,15 +589,11 @@ export namespace ManualTrigger {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
 
-        hasHeaders(): boolean;
-        clearHeaders(): void;
-        getHeaders(): google_protobuf_struct_pb.Value | undefined;
-        setHeaders(value?: google_protobuf_struct_pb.Value): Output;
+        getHeadersMap(): jspb.Map<string, string>;
+        clearHeadersMap(): void;
 
-        hasPathparams(): boolean;
-        clearPathparams(): void;
-        getPathparams(): google_protobuf_struct_pb.Value | undefined;
-        setPathparams(value?: google_protobuf_struct_pb.Value): Output;
+        getPathparamsMap(): jspb.Map<string, string>;
+        clearPathparamsMap(): void;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -614,8 +608,10 @@ export namespace ManualTrigger {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
-            headers?: google_protobuf_struct_pb.Value.AsObject,
-            pathparams?: google_protobuf_struct_pb.Value.AsObject,
+
+            headersMap: Array<[string, string]>,
+
+            pathparamsMap: Array<[string, string]>,
         }
     }
 

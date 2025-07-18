@@ -6271,8 +6271,8 @@ proto.aggregator.ManualTrigger.Config.prototype.toObject = function(opt_includeI
 proto.aggregator.ManualTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
-    headers: (f = msg.getHeaders()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
-    pathparams: (f = msg.getPathparams()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
+    pathparamsMap: (f = msg.getPathparamsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -6315,14 +6315,16 @@ proto.aggregator.ManualTrigger.Config.deserializeBinaryFromReader = function(msg
       msg.setData(value);
       break;
     case 2:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setHeaders(value);
+      var value = msg.getHeadersMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     case 3:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setPathparams(value);
+      var value = msg.getPathparamsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -6361,21 +6363,13 @@ proto.aggregator.ManualTrigger.Config.serializeBinaryToWriter = function(message
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
-  f = message.getHeaders();
-  if (f != null) {
-    writer.writeMessage(
-      2,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
+  f = message.getHeadersMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
-  f = message.getPathparams();
-  if (f != null) {
-    writer.writeMessage(
-      3,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
+  f = message.getPathparamsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -6418,77 +6412,47 @@ proto.aggregator.ManualTrigger.Config.prototype.hasData = function() {
 
 
 /**
- * optional google.protobuf.Value headers = 2;
- * @return {?proto.google.protobuf.Value}
+ * map<string, string> headers = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
  */
-proto.aggregator.ManualTrigger.Config.prototype.getHeaders = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
+proto.aggregator.ManualTrigger.Config.prototype.getHeadersMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      null));
 };
 
 
 /**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.ManualTrigger.Config} returns this
-*/
-proto.aggregator.ManualTrigger.Config.prototype.setHeaders = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.aggregator.ManualTrigger.Config} returns this
  */
-proto.aggregator.ManualTrigger.Config.prototype.clearHeaders = function() {
-  return this.setHeaders(undefined);
-};
+proto.aggregator.ManualTrigger.Config.prototype.clearHeadersMap = function() {
+  this.getHeadersMap().clear();
+  return this;};
 
 
 /**
- * Returns whether this field is set.
- * @return {boolean}
+ * map<string, string> pathParams = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
  */
-proto.aggregator.ManualTrigger.Config.prototype.hasHeaders = function() {
-  return jspb.Message.getField(this, 2) != null;
+proto.aggregator.ManualTrigger.Config.prototype.getPathparamsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
 };
 
 
 /**
- * optional google.protobuf.Value pathParams = 3;
- * @return {?proto.google.protobuf.Value}
- */
-proto.aggregator.ManualTrigger.Config.prototype.getPathparams = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 3));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.ManualTrigger.Config} returns this
-*/
-proto.aggregator.ManualTrigger.Config.prototype.setPathparams = function(value) {
-  return jspb.Message.setWrapperField(this, 3, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.aggregator.ManualTrigger.Config} returns this
  */
-proto.aggregator.ManualTrigger.Config.prototype.clearPathparams = function() {
-  return this.setPathparams(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.ManualTrigger.Config.prototype.hasPathparams = function() {
-  return jspb.Message.getField(this, 3) != null;
-};
+proto.aggregator.ManualTrigger.Config.prototype.clearPathparamsMap = function() {
+  this.getPathparamsMap().clear();
+  return this;};
 
 
 
@@ -6524,8 +6488,8 @@ proto.aggregator.ManualTrigger.Output.prototype.toObject = function(opt_includeI
 proto.aggregator.ManualTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
     data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
-    headers: (f = msg.getHeaders()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
-    pathparams: (f = msg.getPathparams()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
+    pathparamsMap: (f = msg.getPathparamsMap()) ? f.toObject(includeInstance, undefined) : []
   };
 
   if (includeInstance) {
@@ -6568,14 +6532,16 @@ proto.aggregator.ManualTrigger.Output.deserializeBinaryFromReader = function(msg
       msg.setData(value);
       break;
     case 2:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setHeaders(value);
+      var value = msg.getHeadersMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     case 3:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setPathparams(value);
+      var value = msg.getPathparamsMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
+         });
       break;
     default:
       reader.skipField();
@@ -6614,21 +6580,13 @@ proto.aggregator.ManualTrigger.Output.serializeBinaryToWriter = function(message
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
-  f = message.getHeaders();
-  if (f != null) {
-    writer.writeMessage(
-      2,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
+  f = message.getHeadersMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
-  f = message.getPathparams();
-  if (f != null) {
-    writer.writeMessage(
-      3,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
+  f = message.getPathparamsMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
   }
 };
 
@@ -6671,77 +6629,47 @@ proto.aggregator.ManualTrigger.Output.prototype.hasData = function() {
 
 
 /**
- * optional google.protobuf.Value headers = 2;
- * @return {?proto.google.protobuf.Value}
+ * map<string, string> headers = 2;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
  */
-proto.aggregator.ManualTrigger.Output.prototype.getHeaders = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
+proto.aggregator.ManualTrigger.Output.prototype.getHeadersMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
+      null));
 };
 
 
 /**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.ManualTrigger.Output} returns this
-*/
-proto.aggregator.ManualTrigger.Output.prototype.setHeaders = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.aggregator.ManualTrigger.Output} returns this
  */
-proto.aggregator.ManualTrigger.Output.prototype.clearHeaders = function() {
-  return this.setHeaders(undefined);
-};
+proto.aggregator.ManualTrigger.Output.prototype.clearHeadersMap = function() {
+  this.getHeadersMap().clear();
+  return this;};
 
 
 /**
- * Returns whether this field is set.
- * @return {boolean}
+ * map<string, string> pathParams = 3;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,string>}
  */
-proto.aggregator.ManualTrigger.Output.prototype.hasHeaders = function() {
-  return jspb.Message.getField(this, 2) != null;
+proto.aggregator.ManualTrigger.Output.prototype.getPathparamsMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,string>} */ (
+      jspb.Message.getMapField(this, 3, opt_noLazyCreate,
+      null));
 };
 
 
 /**
- * optional google.protobuf.Value pathParams = 3;
- * @return {?proto.google.protobuf.Value}
- */
-proto.aggregator.ManualTrigger.Output.prototype.getPathparams = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 3));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.ManualTrigger.Output} returns this
-*/
-proto.aggregator.ManualTrigger.Output.prototype.setPathparams = function(value) {
-  return jspb.Message.setWrapperField(this, 3, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
+ * Clears values from the map. The map will be non-null.
  * @return {!proto.aggregator.ManualTrigger.Output} returns this
  */
-proto.aggregator.ManualTrigger.Output.prototype.clearPathparams = function() {
-  return this.setPathparams(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.ManualTrigger.Output.prototype.hasPathparams = function() {
-  return jspb.Message.getField(this, 3) != null;
-};
+proto.aggregator.ManualTrigger.Output.prototype.clearPathparamsMap = function() {
+  this.getPathparamsMap().clear();
+  return this;};
 
 
 /**

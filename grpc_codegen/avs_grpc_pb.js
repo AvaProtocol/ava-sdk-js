@@ -831,4 +831,4 @@ getTokenMetadata: {
   },
 };
 
-exports.AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService);
+exports.AggregatorClient = grpc.makeGenericClientConstructor(AggregatorService, 'Aggregator');

@@ -177,7 +177,46 @@ class Step implements StepProps {
               const userData = convertProtobufValueToJs(
                 manualTrigger.getData()
               );
-              result.data = userData;
+              
+              // Check if the userData is the new format with nested structure
+              if (userData && typeof userData === 'object' && 
+                  userData.data !== undefined && 
+                  (userData.headers !== undefined || userData.pathParams !== undefined)) {
+                // This is the new format where the entire structure is in the data field
+                // Flatten it by extracting the nested data
+                result.data = userData.data;
+                if (userData.headers) {
+                  // Convert headers to array format for consistency
+                  const headersArray: Array<Record<string, string>> = [];
+                  if (Array.isArray(userData.headers)) {
+                    // Already in array format
+                    result.headers = userData.headers;
+                  } else {
+                    // Convert object to array format
+                    for (const [key, value] of Object.entries(userData.headers)) {
+                      headersArray.push({ [key]: value as string });
+                    }
+                    result.headers = headersArray;
+                  }
+                }
+                if (userData.pathParams) {
+                  // Convert pathParams to array format for consistency
+                  const pathParamsArray: Array<Record<string, string>> = [];
+                  if (Array.isArray(userData.pathParams)) {
+                    // Already in array format
+                    result.pathParams = userData.pathParams;
+                  } else {
+                    // Convert object to array format
+                    for (const [key, value] of Object.entries(userData.pathParams)) {
+                      pathParamsArray.push({ [key]: value as string });
+                    }
+                    result.pathParams = pathParamsArray;
+                  }
+                }
+              } else {
+                // This is the old format with just user data
+                result.data = userData;
+              }
             } catch (error) {
               console.warn(
                 "Failed to convert manual trigger data from protobuf Value:",
@@ -191,59 +230,88 @@ class Step implements StepProps {
               typeof manualTrigger.data.getKindCase === "function"
                 ? convertProtobufValueToJs(manualTrigger.data)
                 : manualTrigger.data;
-            result.data = userData;
+            
+            // Check if the userData is the new format with nested structure
+            if (userData && typeof userData === 'object' && 
+                userData.data !== undefined && 
+                (userData.headers !== undefined || userData.pathParams !== undefined)) {
+              // This is the new format where the entire structure is in the data field
+              // Flatten it by extracting the nested data
+              result.data = userData.data;
+                             if (userData.headers) {
+                 // Convert headers to array format for consistency
+                 const headersArray: Array<Record<string, string>> = [];
+                 if (Array.isArray(userData.headers)) {
+                   // Already in array format
+                   result.headers = userData.headers;
+                 } else {
+                   // Convert object to array format
+                   for (const [key, value] of Object.entries(userData.headers)) {
+                     headersArray.push({ [key]: value as string });
+                   }
+                   result.headers = headersArray;
+                 }
+               }
+               if (userData.pathParams) {
+                 // Convert pathParams to array format for consistency
+                 const pathParamsArray: Array<Record<string, string>> = [];
+                 if (Array.isArray(userData.pathParams)) {
+                   // Already in array format
+                   result.pathParams = userData.pathParams;
+                 } else {
+                   // Convert object to array format
+                   for (const [key, value] of Object.entries(userData.pathParams)) {
+                     pathParamsArray.push({ [key]: value as string });
+                   }
+                   result.pathParams = pathParamsArray;
+                 }
+               }
+            } else {
+              // This is the old format with just user data
+              result.data = userData;
+            }
           }
 
-          // Include headers for webhook testing
+          // Include headers for webhook testing - convert to array format for consistency with test expectations
           if (
-            typeof manualTrigger.hasHeaders === "function" &&
-            manualTrigger.hasHeaders()
+            typeof manualTrigger.getHeadersMap === "function"
           ) {
-            try {
-              const headersData = convertProtobufValueToJs(
-                manualTrigger.getHeaders()
-              );
-              result.headers = headersData;
-            } catch (error) {
-              console.warn(
-                "Failed to convert manual trigger headers from protobuf Value:",
-                error
-              );
-              result.headers = manualTrigger.getHeaders();
+            const headersMap = manualTrigger.getHeadersMap();
+            if (headersMap && headersMap.getLength() > 0) {
+              const headersArray: Array<Record<string, string>> = [];
+              headersMap.forEach((value: string, key: string) => {
+                headersArray.push({ [key]: value });
+              });
+              result.headers = headersArray;
             }
           } else if (manualTrigger.headers) {
-            // For plain objects, try to convert or use directly
-            const headersData =
-              typeof manualTrigger.headers.getKindCase === "function"
-                ? convertProtobufValueToJs(manualTrigger.headers)
-                : manualTrigger.headers;
-            result.headers = headersData;
+            // For plain objects, convert to array format
+            const headersArray: Array<Record<string, string>> = [];
+            for (const [key, value] of Object.entries(manualTrigger.headers)) {
+              headersArray.push({ [key]: value as string });
+            }
+            result.headers = headersArray;
           }
 
-          // Include pathParams for webhook testing
+          // Include pathParams for webhook testing - convert to array format for consistency with test expectations
           if (
-            typeof manualTrigger.hasPathparams === "function" &&
-            manualTrigger.hasPathparams()
+            typeof manualTrigger.getPathparamsMap === "function"
           ) {
-            try {
-              const pathParamsData = convertProtobufValueToJs(
-                manualTrigger.getPathparams() // Note: protobuf uses "pathparams"
-              );
-              result.pathParams = pathParamsData; // Note: SDK uses "pathParams"
-            } catch (error) {
-              console.warn(
-                "Failed to convert manual trigger pathParams from protobuf Value:",
-                error
-              );
-              result.pathParams = manualTrigger.getPathparams();
+            const pathParamsMap = manualTrigger.getPathparamsMap();
+            if (pathParamsMap && pathParamsMap.getLength() > 0) {
+              const pathParamsArray: Array<Record<string, string>> = [];
+              pathParamsMap.forEach((value: string, key: string) => {
+                pathParamsArray.push({ [key]: value });
+              });
+              result.pathParams = pathParamsArray;
             }
           } else if (manualTrigger.pathparams) {
-            // For plain objects, try to convert or use directly
-            const pathParamsData =
-              typeof manualTrigger.pathparams.getKindCase === "function"
-                ? convertProtobufValueToJs(manualTrigger.pathparams)
-                : manualTrigger.pathparams;
-            result.pathParams = pathParamsData; // Note: SDK uses "pathParams"
+            // For plain objects, convert to array format
+            const pathParamsArray: Array<Record<string, string>> = [];
+            for (const [key, value] of Object.entries(manualTrigger.pathparams)) {
+              pathParamsArray.push({ [key]: value as string });
+            }
+            result.pathParams = pathParamsArray;
           }
 
           // Check if this is the new format with no data field or null data
@@ -258,6 +326,7 @@ class Step implements StepProps {
             }
           }
 
+          // For manual triggers, return the flat structure
           return result;
         }
         return { data: null };

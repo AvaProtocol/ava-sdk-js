@@ -7,25 +7,24 @@ import {
 } from "../../utils";
 import {
   TriggerType,
-  ManualTriggerOutput,
   ManualTriggerProps,
   TriggerProps,
 } from "@avaprotocol/types";
 
 class ManualTrigger extends Trigger {
-  public headers?: Array<Record<string, string>>;
-  public pathParams?: Array<Record<string, string>>;
+  public headersMap?: Array<[string, string]>;
+  public pathParamsMap?: Array<[string, string]>;
 
   constructor(props: ManualTriggerProps) {
-    // Extract headers and pathParams from data if they exist there
+    // Extract headersMap and pathParamsMap from data if they exist there
     const data = props.data as any;
-    const headers = props.headers || data?.headers;
-    const pathParams = props.pathParams || data?.pathParams;
+    const headersMap = props.headersMap || data?.headersMap;
+    const pathParamsMap = props.pathParamsMap || data?.pathParamsMap;
     
-    // If data is an object with headers/pathParams, extract the actual data
+    // If data is an object with headersMap/pathParamsMap, extract the actual data
     let actualData = props.data;
-    if (data && typeof data === 'object' && (data.headers || data.pathParams)) {
-      const { headers: _, pathParams: __, ...rest } = data;
+    if (data && typeof data === 'object' && (data.headersMap || data.pathParamsMap)) {
+      const { headersMap: _, pathParamsMap: __, ...rest } = data;
       actualData = rest.data !== undefined ? rest.data : rest;
     }
 
@@ -35,8 +34,8 @@ class ManualTrigger extends Trigger {
       data: actualData,
       input: props.input,
     });
-    this.headers = headers;
-    this.pathParams = pathParams;
+    this.headersMap = headersMap;
+    this.pathParamsMap = pathParamsMap;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -58,20 +57,20 @@ class ManualTrigger extends Trigger {
       }
     }
 
-    // Set headers if provided
-    if (this.headers && this.headers.length > 0) {
-      const headersValue = convertInputToProtobuf(this.headers);
-      if (headersValue) {
-        config.setHeaders(headersValue);
-      }
+    // Set headers if provided - use map format consistent with REST API nodes
+    if (this.headersMap && this.headersMap.length > 0) {
+      const headersMap = config.getHeadersMap();
+      this.headersMap.forEach(([key, value]: [string, string]) => {
+        headersMap.set(key, value);
+      });
     }
 
-    // Set pathParams if provided
-    if (this.pathParams && this.pathParams.length > 0) {
-      const pathParamsValue = convertInputToProtobuf(this.pathParams);
-      if (pathParamsValue) {
-        config.setPathparams(pathParamsValue); // Note: protobuf uses "pathparams"
-      }
+    // Set pathParams if provided - use map format consistent with REST API nodes
+    if (this.pathParamsMap && this.pathParamsMap.length > 0) {
+      const pathParamsMap = config.getPathparamsMap();
+      this.pathParamsMap.forEach(([key, value]: [string, string]) => {
+        pathParamsMap.set(key, value);
+      });
     }
 
     manualTrigger.setConfig(config);
@@ -85,8 +84,8 @@ class ManualTrigger extends Trigger {
 
     let data: unknown = null;
     const input: Record<string, unknown> | undefined = undefined;
-    let headers: Array<Record<string, string>> | undefined = undefined;
-    let pathParams: Array<Record<string, string>> | undefined = undefined;
+    let headersMap: Array<[string, string]> | undefined = undefined;
+    let pathParamsMap: Array<[string, string]> | undefined = undefined;
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
@@ -97,16 +96,22 @@ class ManualTrigger extends Trigger {
           data = extractInputFromProtobuf(config.getData());
         }
 
-        // Extract headers
-        if (config.hasHeaders()) {
-          const headersData = extractInputFromProtobuf(config.getHeaders());
-          headers = headersData as Array<Record<string, string>>;
+        // Extract headers - convert map to array format
+        const headersMapProto = config.getHeadersMap();
+        if (headersMapProto && headersMapProto.getLength() > 0) {
+          headersMap = [];
+          headersMapProto.forEach((value: string, key: string) => {
+            headersMap!.push([key, value]);
+          });
         }
 
-        // Extract pathParams
-        if (config.hasPathparams()) { // Note: protobuf uses "pathparams"
-          const pathParamsData = extractInputFromProtobuf(config.getPathparams());
-          pathParams = pathParamsData as Array<Record<string, string>>;
+        // Extract pathParams - convert map to array format
+        const pathParamsMapProto = config.getPathparamsMap();
+        if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
+          pathParamsMap = [];
+          pathParamsMapProto.forEach((value: string, key: string) => {
+            pathParamsMap!.push([key, value]);
+          });
         }
       }
     }
@@ -116,23 +121,14 @@ class ManualTrigger extends Trigger {
       type: TriggerType.Manual,
       data: data as any,
       input: input,
-      headers: headers,
-      pathParams: pathParams,
+      headersMap: headersMap,
+      pathParamsMap: pathParamsMap,
     });
   }
 
   getInputVariables(): Record<string, unknown> | null {
     // Return input variables that can be referenced by other nodes
     return this.input as Record<string, unknown> | null;
-  }
-
-  /**
-   * Convert raw data from runTrigger response to ManualOutput format
-   * @param rawData - The raw data from the gRPC response
-   * @returns {ManualTriggerOutput | undefined} - The converted data
-   */
-  getOutput(): ManualTriggerOutput | undefined {
-    return this.output as ManualTriggerOutput;
   }
 
   /**
@@ -147,7 +143,6 @@ class ManualTrigger extends Trigger {
     if (!manualOutput) {
       return null;
     }
-
     const result: Record<string, unknown> = {};
 
     // Extract data
@@ -166,32 +161,24 @@ class ManualTrigger extends Trigger {
       result.data = null;
     }
 
-    // Extract headers
-    const headersValue = manualOutput.getHeaders();
-    if (headersValue) {
-      try {
-        result.headers = convertProtobufValueToJs(headersValue);
-      } catch (error) {
-        console.warn(
-          "Failed to convert manual trigger headers from protobuf Value:",
-          error
-        );
-        result.headers = headersValue as unknown as Array<Record<string, string>>;
-      }
+    // Extract headers - convert map to object format for test compatibility
+    const headersMapProto = manualOutput.getHeadersMap();
+    if (headersMapProto && headersMapProto.getLength() > 0) {
+      const headers: Record<string, string> = {};
+      headersMapProto.forEach((value: string, key: string) => {
+        headers[key] = value;
+      });
+      result.headers = headers;
     }
 
-    // Extract pathParams
-    const pathParamsValue = manualOutput.getPathparams(); // Note: protobuf uses "pathparams"
-    if (pathParamsValue) {
-      try {
-        result.pathParams = convertProtobufValueToJs(pathParamsValue); // Note: SDK uses "pathParams"
-      } catch (error) {
-        console.warn(
-          "Failed to convert manual trigger pathParams from protobuf Value:",
-          error
-        );
-        result.pathParams = pathParamsValue as unknown as Array<Record<string, string>>;
-      }
+    // Extract pathParams - convert map to object format for test compatibility
+    const pathParamsMapProto = manualOutput.getPathparamsMap();
+    if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
+      const pathParams: Record<string, string> = {};
+      pathParamsMapProto.forEach((value: string, key: string) => {
+        pathParams[key] = value;
+      });
+      result.pathParams = pathParams;
     }
 
     return result;

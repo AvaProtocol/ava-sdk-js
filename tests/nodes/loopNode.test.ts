@@ -486,6 +486,22 @@ describe("LoopNode Tests", () => {
       expect(loopStep).toBeDefined();
       expect(loopStep!.success).toBe(true);
 
+      // Verify the step input contains all expected configuration
+      expect(loopStep!.input).toBeDefined();
+      const inputConfig = loopStep!.input as any;
+      
+      // Verify basic configuration
+      expect(inputConfig.sourceId).toBe(dataNode.id);
+      expect(inputConfig.iterVal).toBe("value");
+      expect(inputConfig.iterKey).toBe("index");
+      expect(inputConfig.executionMode).toBeDefined();
+      
+      // Verify runner configuration
+      expect(inputConfig.runner).toBeDefined();
+      expect(inputConfig.runner.type).toBe("customCode");
+      expect(inputConfig.runner.source).toBeDefined();
+      expect(inputConfig.runner.lang).toBeDefined();
+
       const output = loopStep!.output as ProcessedLoopItem[];
       expect(Array.isArray(output)).toBe(true);
       expect(output.length).toBe(3);
@@ -565,6 +581,23 @@ describe("LoopNode Tests", () => {
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
       expect(loopStep).toBeDefined();
       expect(loopStep!.success).toBe(true);
+
+      // Verify the step input contains all expected configuration
+      expect(loopStep!.input).toBeDefined();
+      const inputConfig = loopStep!.input as any;
+      
+      // Verify basic configuration
+      expect(inputConfig.sourceId).toBe(dataNode.id);
+      expect(inputConfig.iterVal).toBe("value");
+      expect(inputConfig.iterKey).toBe("index");
+      expect(inputConfig.executionMode).toBeDefined();
+      
+      // Verify runner configuration
+      expect(inputConfig.runner).toBeDefined();
+      expect(inputConfig.runner.type).toBe("restApi");
+      expect(inputConfig.runner.url).toBe("{{value}}");
+      expect(inputConfig.runner.method).toBe("GET");
+      expect(inputConfig.runner.body).toBe("");
 
       const output = loopStep!.output as Record<string, unknown>[];
       expect(Array.isArray(output)).toBe(true);
@@ -654,6 +687,22 @@ describe("LoopNode Tests", () => {
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
       expect(loopStep).toBeDefined();
+
+      // Verify the step input contains all expected configuration
+      expect(loopStep!.input).toBeDefined();
+      const inputConfig = loopStep!.input as any;
+      
+      // Verify basic configuration
+      expect(inputConfig.sourceId).toBe(dataNode.id);
+      expect(inputConfig.iterVal).toBe("value");
+      expect(inputConfig.iterKey).toBe("index");
+      expect(inputConfig.executionMode).toBeDefined();
+      
+      // Verify runner configuration
+      expect(inputConfig.runner).toBeDefined();
+      expect(inputConfig.runner.type).toBe("contractRead");
+      expect(inputConfig.runner.contractAddress).toBe("{{value}}");
+      expect(inputConfig.runner.contractAbi).toBeDefined();
 
       // Note: The test may fail due to contract validation or network issues,
       // but the important part is that the backend now supports contractRead as a loop runner
@@ -1995,6 +2044,24 @@ describe("LoopNode Tests", () => {
       expect(loopStep).toBeDefined();
       expect(loopStep!.success).toBe(true);
 
+      // Verify the step input contains all expected configuration
+      expect(loopStep!.input).toBeDefined();
+      const inputConfig = loopStep!.input as any;
+      
+      // Verify basic configuration
+      expect(inputConfig.sourceId).toBe(dataNode.id);
+      expect(inputConfig.iterVal).toBe("value");
+      expect(inputConfig.iterKey).toBe("index");
+      expect(inputConfig.executionMode).toBeDefined();
+      // Verify that sequential execution mode is properly set
+      expect(inputConfig.executionMode).toBe("sequential");
+      
+      // Verify runner configuration
+      expect(inputConfig.runner).toBeDefined();
+      expect(inputConfig.runner.type).toBe("customCode");
+      expect(inputConfig.runner.source).toBeDefined();
+      expect(inputConfig.runner.lang).toBeDefined();
+
       const output = loopStep!.output as ProcessedLoopItem[];
       expect(Array.isArray(output)).toBe(true);
       expect(output.length).toBe(3);
@@ -2072,6 +2139,24 @@ describe("LoopNode Tests", () => {
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
       expect(loopStep).toBeDefined();
       expect(loopStep!.success).toBe(true);
+
+      // Verify the step input contains all expected configuration
+      expect(loopStep!.input).toBeDefined();
+      const inputConfig = loopStep!.input as any;
+      
+      // Verify basic configuration
+      expect(inputConfig.sourceId).toBe(dataNode.id);
+      expect(inputConfig.iterVal).toBe("value");
+      expect(inputConfig.iterKey).toBe("index");
+      expect(inputConfig.executionMode).toBeDefined();
+      // Verify that parallel execution mode is properly set
+      expect(inputConfig.executionMode).toBe("EXECUTION_MODE_PARALLEL");
+      
+      // Verify runner configuration
+      expect(inputConfig.runner).toBeDefined();
+      expect(inputConfig.runner.type).toBe("customCode");
+      expect(inputConfig.runner.source).toBeDefined();
+      expect(inputConfig.runner.lang).toBeDefined();
 
       const output = loopStep!.output as ProcessedLoopItem[];
       expect(Array.isArray(output)).toBe(true);
