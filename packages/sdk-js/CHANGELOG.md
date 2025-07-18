@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.5.0
+
+### Minor Changes
+
+- 1c491ad: Added Manual Trigger; update LoopNode and other nodes
+
+### Patch Changes
+
+- Updated dependencies [1c491ad]
+  - @avaprotocol/types@2.3.0
+
 ## 2.4.4
 
 ### Patch Changes

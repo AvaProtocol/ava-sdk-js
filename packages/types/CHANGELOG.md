@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.3.0
+
+### Minor Changes
+
+- 1c491ad: Added Manual Trigger; update LoopNode and other nodes
+
 ## 2.2.17
 
 ### Patch Changes
