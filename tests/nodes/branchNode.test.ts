@@ -70,13 +70,9 @@ describe("BranchNode Tests", () => {
       });
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Timestamp comparison test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
     });
 
     test("should evaluate status string comparison with preprocessing", async () => {
@@ -102,13 +98,9 @@ describe("BranchNode Tests", () => {
       });
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Status comparison test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
     });
 
     test("should evaluate nested object property access with preprocessing", async () => {
@@ -136,13 +128,9 @@ describe("BranchNode Tests", () => {
       });
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Nested object access test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
     });
 
     test("should evaluate complex logical expression with preprocessing", async () => {
@@ -172,13 +160,9 @@ describe("BranchNode Tests", () => {
       });
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Complex logical expression test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.nodeId).toBeDefined();
     });
   });
 
@@ -208,10 +192,7 @@ describe("BranchNode Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      console.log(
-        "simulateWorkflow response:",
-        util.inspect(simulation, { depth: null, colors: true })
-      );
+
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(2); // trigger + branch node
@@ -302,11 +283,7 @@ describe("BranchNode Tests", () => {
           isBlocking: true,
         });
 
-        console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log(
-          "Trigger result:",
-          util.inspect(triggerResult, { depth: null, colors: true })
-        );
+
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -324,10 +301,7 @@ describe("BranchNode Tests", () => {
         }
 
         expect(branchStep.success).toBe(true);
-        console.log(
-          "Deploy + trigger branch step output:",
-          util.inspect(branchStep.output, { depth: null, colors: true })
-        );
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -362,9 +336,7 @@ describe("BranchNode Tests", () => {
         },
       };
 
-      console.log(
-        "🔍 Testing condition evaluation consistency across all methods..."
-      );
+
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -423,19 +395,6 @@ describe("BranchNode Tests", () => {
         );
 
         // Compare response formats
-        console.log("=== CONDITION EVALUATION COMPARISON ===");
-        console.log(
-          "1. runNodeWithInputs response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          util.inspect(executedStep?.output, { depth: null, colors: true })
-        );
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -443,9 +402,7 @@ describe("BranchNode Tests", () => {
         expect(executedStep).toBeDefined();
         expect(executedStep!.success).toBe(true);
 
-        console.log(
-          "✅ All three methods return consistent condition evaluation results!"
-        );
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

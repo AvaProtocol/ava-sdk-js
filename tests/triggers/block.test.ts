@@ -47,7 +47,6 @@ describe("BlockTrigger Tests", () => {
 
     // Get current block number for testing
     currentBlockNumber = await getBlockNumber();
-    console.log(`🧱 Current block number: ${currentBlockNumber}`);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -355,12 +354,6 @@ describe("BlockTrigger Tests", () => {
           isBlocking: true,
         });
 
-        console.log("=== BLOCK TRIGGER WORKFLOW TEST ===");
-        console.log(
-          "Trigger result:",
-          util.inspect(triggerResult, { depth: null, colors: true })
-        );
-
         expect(triggerResult).toBeDefined();
         // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
 
@@ -463,19 +456,6 @@ describe("BlockTrigger Tests", () => {
         );
 
         // Compare response formats
-        console.log("=== BLOCK TRIGGER RESPONSE FORMAT COMPARISON ===");
-        console.log(
-          "1. runTrigger response:",
-          JSON.stringify(directResponse.data, null, 2)
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          JSON.stringify(simulatedStep?.output, null, 2)
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          JSON.stringify(executedStep?.output, null, 2)
-        );
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -493,12 +473,7 @@ describe("BlockTrigger Tests", () => {
         expect(simulatedOutput).toBeDefined();
         expect(executedOutput).toBeDefined();
 
-        console.log(
-          "✅ All trigger methods return consistent block trigger results!"
-        );
-
         // 🔍 CRITICAL TEST: Verify field naming consistency
-        console.log("=== FIELD NAMING CONSISTENCY CHECK ===");
 
         // Check for snake_case field names (the standard we established)
         const expectedFields = [
@@ -517,21 +492,14 @@ describe("BlockTrigger Tests", () => {
           expect(directOutput).toBeDefined();
           expect(typeof directOutput).toBe("object");
           expect(directOutput).toHaveProperty(field);
-          console.log(`  ✅ runTrigger has ${field}: ${directOutput[field]}`);
 
           expect(simulatedOutput).toBeDefined();
           expect(typeof simulatedOutput).toBe("object");
           expect(simulatedOutput).toHaveProperty(field);
-          console.log(
-            `  ✅ simulateWorkflow has ${field}: ${simulatedOutput[field]}`
-          );
 
           expect(executedOutput).toBeDefined();
           expect(typeof executedOutput).toBe("object");
           expect(executedOutput).toHaveProperty(field);
-          console.log(
-            `  ✅ deploy+trigger has ${field}: ${executedOutput[field]}`
-          );
         });
 
         // Verify the most critical field - blockNumber (camelCase standard)
@@ -547,24 +515,14 @@ describe("BlockTrigger Tests", () => {
         expect(executedOutput.timestamp).toBeDefined();
         expect(typeof executedOutput.timestamp).toBe("number");
         expect(executedOutput.timestamp).toBeGreaterThan(0);
-
-        console.log("🎉 BLOCK TRIGGER FIELD NAMING CONSISTENCY VERIFIED!");
-        console.log(
-          "   ✅ blockNumber (camelCase) - consistent with eventTrigger"
-        );
-        console.log(
-          "   ✅ blockHash (camelCase) - consistent with eventTrigger"
-        );
-        console.log(
-          "   ✅ gasLimit (camelCase) - consistent with eventTrigger"
-        );
-        console.log("   ✅ gasUsed (camelCase) - consistent with eventTrigger");
       } finally {
         // Ensure cleanup happens regardless of test success/failure
         expect(workflowId).toBeDefined();
         try {
-          await client.deleteWorkflow(workflowId);
-          createdIdMap.delete(workflowId);
+          if (workflowId) {
+            await client.deleteWorkflow(workflowId);
+            createdIdMap.delete(workflowId);
+          }
         } catch (cleanupError) {
           console.warn(
             `Failed to cleanup workflow ${workflowId}:`,
@@ -635,8 +593,6 @@ describe("BlockTrigger Tests", () => {
       let workflowId: string | null = null;
 
       try {
-        console.log("🚀 Testing block trigger template variable resolution...");
-
         // Deploy the workflow
         workflowId = await client.submitWorkflow(
           client.createWorkflow(workflowProps)
@@ -656,8 +612,6 @@ describe("BlockTrigger Tests", () => {
           isBlocking: true,
         });
 
-        console.log("Trigger response:", triggerResponse);
-
         // Get the execution results
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -665,12 +619,6 @@ describe("BlockTrigger Tests", () => {
 
         expect(executions.items).toHaveLength(1);
         const execution = executions.items[0];
-
-        console.log("=== TEMPLATE VARIABLE RESOLUTION TEST ===");
-        console.log(
-          "Execution steps:",
-          JSON.stringify(execution.steps, null, 2)
-        );
 
         // Find the custom code step
         const customCodeStep = execution.steps.find(
@@ -686,19 +634,13 @@ describe("BlockTrigger Tests", () => {
         expect(customCodeOutput.blockNumber).toBeDefined();
         expect(typeof customCodeOutput.blockNumber).toBe("number");
         expect(customCodeOutput.blockNumber).toBeGreaterThan(0);
-
-        console.log(
-          "✅ Block trigger template variables resolved successfully!"
-        );
-        console.log(`   Block Number: ${customCodeOutput.blockNumber}`);
-        console.log(`   Block Hash: ${customCodeOutput.blockHash || "N/A"}`);
-        console.log(`   Timestamp: ${customCodeOutput.timestamp || "N/A"}`);
-        console.log(`   Message: ${customCodeOutput.message}`);
       } finally {
         expect(workflowId).toBeDefined();
         try {
-          await client.deleteWorkflow(workflowId);
-          createdIdMap.delete(workflowId);
+          if (workflowId) {
+            await client.deleteWorkflow(workflowId);
+            createdIdMap.delete(workflowId);
+          }
         } catch (cleanupError) {
           console.warn(
             `Failed to cleanup workflow ${workflowId}:`,
@@ -709,8 +651,6 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should verify block trigger output field types and values", async () => {
-      console.log("🔍 Testing block trigger output field types and values...");
-
       const result = await client.runTrigger({
         triggerType: "blockTrigger",
         triggerConfig: {
@@ -770,23 +710,15 @@ describe("BlockTrigger Tests", () => {
         },
       ];
 
-      console.log("=== BLOCK TRIGGER FIELD VALIDATION ===");
-
       fieldValidations.forEach(({ name, type, validator, required }) => {
         const value = blockData[name];
 
         if (required) {
           expect(value).toBeDefined();
           expect(validator(value)).toBe(true);
-          console.log(`✅ Required field ${name}: ${value} (${typeof value})`);
         } else {
           if (value !== undefined) {
             expect(validator(value)).toBe(true);
-            console.log(
-              `✅ Optional field ${name}: ${value} (${typeof value})`
-            );
-          } else {
-            console.log(`ℹ️  Optional field ${name}: not present`);
           }
         }
       });
@@ -802,13 +734,7 @@ describe("BlockTrigger Tests", () => {
 
       snakeCaseFields.forEach((field) => {
         expect(blockData[field]).toBeUndefined();
-        console.log(`✅ Confirmed ${field} (snake_case) is NOT present`);
       });
-
-      console.log("🎉 BLOCK TRIGGER FIELD VALIDATION COMPLETE!");
-      console.log("   ✅ All fields use camelCase naming convention");
-      console.log("   ✅ No snake_case field names found");
-      console.log("   ✅ Required fields have correct types and values");
     });
   });
 

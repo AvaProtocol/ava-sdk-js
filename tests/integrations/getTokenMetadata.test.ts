@@ -1,11 +1,16 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import type { GetTokenMetadataRequest, GetTokenMetadataResponse, TokenMetadata } from "@avaprotocol/types";
+import type {
+  GetTokenMetadataRequest,
+  GetTokenMetadataResponse,
+  TokenMetadata,
+} from "@avaprotocol/types";
 import { getAddress, generateSignature } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress, chainId, environment } = getConfig();
+const { avsEndpoint, walletPrivateKey, factoryAddress, chainId, environment } =
+  getConfig();
 
 // Chain-specific test tokens - only populate for chains where we have known tokens
 const SEPOLIA_CHAIN_ID = "11155111";
@@ -20,28 +25,28 @@ const CHAIN_TOKENS: Record<string, Record<string, any>> = {
     USDC: {
       address: "0xa0b86a33e6bd4e5ea99b2dbcb5e6fe41b82b5e7a",
       expectedName: "USD Coin",
-      expectedSymbol: "USDC", 
-      expectedDecimals: 6
+      expectedSymbol: "USDC",
+      expectedDecimals: 6,
     },
     WETH: {
       address: "0x7b79995e5f793a07bc00c21412e50ecae098e7f9",
       expectedName: "Wrapped Ether",
       expectedSymbol: "WETH",
-      expectedDecimals: 18
+      expectedDecimals: 18,
     },
     USDT: {
-      address: "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", 
+      address: "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0",
       expectedName: "Tether USD",
       expectedSymbol: "USDT",
-      expectedDecimals: 6
+      expectedDecimals: 6,
     },
     LINK: {
       address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
-      expectedName: "ChainLink Token", 
+      expectedName: "ChainLink Token",
       expectedSymbol: "LINK",
-      expectedDecimals: 18
-    }
-  }
+      expectedDecimals: 18,
+    },
+  },
   // Add more chains here:
   // "1": { // Ethereum mainnet
   //   USDC: { address: "0xa0b86a33e...", expectedName: "USD Coin", ... }
@@ -56,21 +61,13 @@ const SUPPORTED_CHAIN = Object.keys(REAL_TOKENS).length > 0;
 const describeOrSkip = SUPPORTED_CHAIN ? describe : describe.skip;
 const testOrSkip = SUPPORTED_CHAIN ? test : test.skip;
 
-console.log(`🔗 Running tests on chain ID: ${chainId} (${environment})`);
-if (SUPPORTED_CHAIN) {
-  console.log(`✅ Chain supported with ${Object.keys(REAL_TOKENS).length} test tokens`);
-} else {
-  console.log(`⚠️  Chain not supported for token metadata tests - tests will be skipped`);
-  console.log(`   To add support, add chain ID "${chainId}" to CHAIN_TOKENS in the test file`);
-}
-
 /**
  * Helper function to perform flexible assertions on token metadata
  * Handles both placeholder data and actual whitelist data
  */
 function assertTokenMetadata(
-  response: GetTokenMetadataResponse, 
-  expectedToken: typeof REAL_TOKENS[keyof typeof REAL_TOKENS],
+  response: GetTokenMetadataResponse,
+  expectedToken: (typeof REAL_TOKENS)[keyof typeof REAL_TOKENS],
   tokenName: string
 ) {
   expect(response).toBeDefined();
@@ -79,7 +76,7 @@ function assertTokenMetadata(
 
   if (response.token) {
     expect(response.token.address).toBe(expectedToken.address.toLowerCase());
-    
+
     // Flexible assertions - check if server returns expected data or placeholder
     if (response.token.name === "Unknown Token") {
       console.log(`⚠️  Server returning placeholder data for ${tokenName}`);
@@ -89,7 +86,11 @@ function assertTokenMetadata(
     } else {
       // If server is working correctly, expect actual whitelist data
       // Handle flexible name matching for tokens that may return symbol instead of full name
-      const isFlexibleNameMatch = isTokenNameMatch(response.token.name, expectedToken.expectedName, expectedToken.expectedSymbol);
+      const isFlexibleNameMatch = isTokenNameMatch(
+        response.token.name,
+        expectedToken.expectedName,
+        expectedToken.expectedSymbol
+      );
       if (!isFlexibleNameMatch) {
         expect(response.token.name).toBe(expectedToken.expectedName);
       }
@@ -103,42 +104,52 @@ function assertTokenMetadata(
  * Helper function to check if a token name matches expected patterns
  * Handles cases where server might return symbol instead of full name (e.g., "USDT" vs "Tether USD")
  */
-function isTokenNameMatch(actualName: string, expectedName: string, expectedSymbol: string): boolean {
+function isTokenNameMatch(
+  actualName: string,
+  expectedName: string,
+  expectedSymbol: string
+): boolean {
   // Direct match with expected name
   if (actualName === expectedName) {
     return true;
   }
-  
+
   // For USDT/Tether USD, accept both variants
-  if ((expectedName === "Tether USD" && actualName === "USDT") ||
-      (expectedSymbol === "USDT" && actualName === "USDT")) {
-    console.log(`✅ Flexible name match: "${actualName}" accepted as variant of "${expectedName}"`);
+  if (
+    (expectedName === "Tether USD" && actualName === "USDT") ||
+    (expectedSymbol === "USDT" && actualName === "USDT")
+  ) {
     return true;
   }
-  
+
   // Add more flexible matching patterns here as needed
   // For example: "WETH" vs "Wrapped Ether", "LINK" vs "ChainLink Token", etc.
-  if ((expectedName === "Wrapped Ether" && actualName === "WETH") ||
-      (expectedSymbol === "WETH" && actualName === "WETH")) {
-    console.log(`✅ Flexible name match: "${actualName}" accepted as variant of "${expectedName}"`);
+  if (
+    (expectedName === "Wrapped Ether" && actualName === "WETH") ||
+    (expectedSymbol === "WETH" && actualName === "WETH")
+  ) {
     return true;
   }
-  
-  if ((expectedName === "ChainLink Token" && actualName === "LINK") ||
-      (expectedSymbol === "LINK" && actualName === "LINK")) {
-    console.log(`✅ Flexible name match: "${actualName}" accepted as variant of "${expectedName}"`);
+
+  if (
+    (expectedName === "ChainLink Token" && actualName === "LINK") ||
+    (expectedSymbol === "LINK" && actualName === "LINK")
+  ) {
     return true;
   }
-  
+
   return false;
 }
 
 /**
  * Helper function for flexible found/not-found assertions
  */
-function assertFlexibleFoundResponse(response: GetTokenMetadataResponse, context: string) {
+function assertFlexibleFoundResponse(
+  response: GetTokenMetadataResponse,
+  context: string
+) {
   expect(response).toBeDefined();
-  
+
   if (response.found === false) {
     expect(response.token).toBeNull();
   } else {
@@ -172,49 +183,55 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
   testOrSkip("DEBUG: Check what server returns for USDC", async () => {
     const response = await client.getTokenMetadata({
-      address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', // Sepolia USDC
+      address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // Sepolia USDC
     });
-    
-    console.log('DEBUG USDC Response:', JSON.stringify(response, null, 2));
-    
+
     // Just verify we get a response
     expect(response).toBeDefined();
     expect(response.found).toBeDefined();
     expect(response.source).toBeDefined();
   });
 
-  testOrSkip("DEBUG: Check what server returns for invalid address", async () => {
-    const response = await client.getTokenMetadata({
-      address: '0x0000000000000000000000000000000000000000',
-    });
-    
-    console.log('DEBUG Invalid Address Response:', JSON.stringify(response, null, 2));
-    
-    // Just verify we get a response
-    expect(response).toBeDefined();
-    expect(response.found).toBeDefined();
-    expect(response.source).toBeDefined();
-  });
+  testOrSkip(
+    "DEBUG: Check what server returns for invalid address",
+    async () => {
+      const response = await client.getTokenMetadata({
+        address: "0x0000000000000000000000000000000000000000",
+      });
+
+      // Just verify we get a response
+      expect(response).toBeDefined();
+      expect(response.found).toBeDefined();
+      expect(response.source).toBeDefined();
+    }
+  );
 
   // Test each token with flexible assertions
   testOrSkip.each(
     Object.entries(REAL_TOKENS).map(([name, data]) => [name, data])
-  )("should get token metadata for %s (flexible)", async (tokenName, tokenData) => {
-    const request: GetTokenMetadataRequest = {
-      address: tokenData.address,
-    };
+  )(
+    "should get token metadata for %s (flexible)",
+    async (tokenName, tokenData) => {
+      const request: GetTokenMetadataRequest = {
+        address: tokenData.address,
+      };
 
-    const response: GetTokenMetadataResponse = await client.getTokenMetadata(request);
-    assertTokenMetadata(response, tokenData, tokenName);
-  });
+      const response: GetTokenMetadataResponse = await client.getTokenMetadata(
+        request
+      );
+      assertTokenMetadata(response, tokenData, tokenName);
+    }
+  );
 
   // Test different types of invalid/problematic addresses
   testOrSkip.each([
     ["invalid addresses", "0x0000000000000000000000000000000000000000"],
-    ["non-existent addresses", "0x1234567890123456789012345678901234567890"]
+    ["non-existent addresses", "0x1234567890123456789012345678901234567890"],
   ])("should handle %s (flexible)", async (context, address) => {
     const request: GetTokenMetadataRequest = { address };
-    const response: GetTokenMetadataResponse = await client.getTokenMetadata(request);
+    const response: GetTokenMetadataResponse = await client.getTokenMetadata(
+      request
+    );
     assertFlexibleFoundResponse(response, context);
   });
 
@@ -224,11 +241,14 @@ describeOrSkip("getTokenMetadata Tests", () => {
     ["too long", "0x12345678901234567890123456789012345678901"],
     ["not hex", "invalid-address"],
     ["empty string", ""],
-    ["invalid hex characters", "0xZZZ"]
-  ])("should handle malformed addresses gracefully: %s", async (description, address) => {
-    const request: GetTokenMetadataRequest = { address };
-    await expect(client.getTokenMetadata(request)).rejects.toThrow();
-  });
+    ["invalid hex characters", "0xZZZ"],
+  ])(
+    "should handle malformed addresses gracefully: %s",
+    async (description, address) => {
+      const request: GetTokenMetadataRequest = { address };
+      await expect(client.getTokenMetadata(request)).rejects.toThrow();
+    }
+  );
 
   // Universal tests that work on any chain
   test("should handle malformed addresses gracefully (universal)", async () => {
@@ -237,7 +257,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
       ["too long", "0x12345678901234567890123456789012345678901"],
       ["not hex", "invalid-address"],
       ["empty string", ""],
-      ["invalid hex characters", "0xZZZ"]
+      ["invalid hex characters", "0xZZZ"],
     ];
 
     for (const [description, address] of malformedAddresses) {
@@ -249,7 +269,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
   test("should handle invalid addresses consistently (universal)", async () => {
     const invalidAddresses = [
       "0x0000000000000000000000000000000000000000",
-      "0x1234567890123456789012345678901234567890"
+      "0x1234567890123456789012345678901234567890",
     ];
 
     for (const address of invalidAddresses) {
@@ -257,7 +277,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
       expect(response).toBeDefined();
       expect(typeof response.found).toBe("boolean");
       expect(typeof response.source).toBe("string");
-      
+
       if (response.found) {
         expect(response.token).toBeDefined();
       } else {
@@ -273,11 +293,11 @@ describeOrSkip("getTokenMetadata Tests", () => {
     };
 
     const startTime = Date.now();
-    
+
     const response = await client.getTokenMetadata(request, {
       authKey: client.getAuthKey(),
     });
-    
+
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(10000); // Reasonable time limit
     expect(response).toBeDefined();
@@ -287,51 +307,62 @@ describeOrSkip("getTokenMetadata Tests", () => {
   // Skip the chain-specific tests if no tokens are available
   if (!SUPPORTED_CHAIN) {
     test("should skip chain-specific tests - no test tokens available", () => {
-      console.log(`ℹ️  Skipping chain-specific token tests for chain ID ${chainId} (${environment})`);
-      console.log("   To add support for this chain, add test tokens to CHAIN_TOKENS in the test file");
+      console.log(
+        `ℹ️  Skipping chain-specific token tests for chain ID ${chainId} (${environment})`
+      );
+      console.log(
+        "   To add support for this chain, add test tokens to CHAIN_TOKENS in the test file"
+      );
       expect(true).toBe(true); // Always pass
     });
   }
 
-  testOrSkip("should handle lowercase and uppercase addresses consistently", async () => {
-    if (!REAL_TOKENS.USDC) {
-      console.log("Skipping address case test - no USDC token defined for this chain");
-      return;
-    }
-
-    const originalAddress = REAL_TOKENS.USDC.address;
-    const lowercaseAddress = originalAddress.toLowerCase();
-    const uppercaseAddress = originalAddress.toUpperCase();
-    const mixedCaseAddress = originalAddress.slice(0, 20).toLowerCase() + originalAddress.slice(20).toUpperCase();
-
-    const requests = [
-      { address: lowercaseAddress },
-      { address: uppercaseAddress },
-      { address: mixedCaseAddress },
-    ];
-
-    const responses = await Promise.all(
-      requests.map(request => client.getTokenMetadata(request))
-    );
-
-    // All responses should be consistent
-    responses.forEach(response => {
-      expect(response.found).toBe(true);
-      expect(response.token).toBeDefined();
-      if (response.token) {
-        expect(response.token.address).toBe(lowercaseAddress); // Should always return lowercase
-        // All responses should have the same data
-        expect(response.token.name).toBe(responses[0].token?.name);
-        expect(response.token.symbol).toBe(responses[0].token?.symbol);
-        expect(response.token.decimals).toBe(responses[0].token?.decimals);
+  testOrSkip(
+    "should handle lowercase and uppercase addresses consistently",
+    async () => {
+      if (!REAL_TOKENS.USDC) {
+        console.log(
+          "Skipping address case test - no USDC token defined for this chain"
+        );
+        return;
       }
-    });
-  });
+
+      const originalAddress = REAL_TOKENS.USDC.address;
+      const lowercaseAddress = originalAddress.toLowerCase();
+      const uppercaseAddress = originalAddress.toUpperCase();
+      const mixedCaseAddress =
+        originalAddress.slice(0, 20).toLowerCase() +
+        originalAddress.slice(20).toUpperCase();
+
+      const requests = [
+        { address: lowercaseAddress },
+        { address: uppercaseAddress },
+        { address: mixedCaseAddress },
+      ];
+
+      const responses = await Promise.all(
+        requests.map((request) => client.getTokenMetadata(request))
+      );
+
+      // All responses should be consistent
+      responses.forEach((response) => {
+        expect(response.found).toBe(true);
+        expect(response.token).toBeDefined();
+        if (response.token) {
+          expect(response.token.address).toBe(lowercaseAddress); // Should always return lowercase
+          // All responses should have the same data
+          expect(response.token.name).toBe(responses[0].token?.name);
+          expect(response.token.symbol).toBe(responses[0].token?.symbol);
+          expect(response.token.decimals).toBe(responses[0].token?.decimals);
+        }
+      });
+    }
+  );
 
   // Test structure validation for multiple tokens using test.each
   testOrSkip.each(
     Object.values(REAL_TOKENS)
-      .map(token => token.address)
+      .map((token) => token.address)
       .filter(Boolean)
   )("should validate token metadata structure for %s", async (address) => {
     const response = await client.getTokenMetadata({ address });
@@ -365,15 +396,17 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
   testOrSkip("should handle concurrent requests properly", async () => {
     const addresses = Object.values(REAL_TOKENS)
-      .map(token => token.address)
+      .map((token) => token.address)
       .filter(Boolean);
 
     if (addresses.length === 0) {
-      console.log("Skipping concurrent test - no tokens defined for this chain");
+      console.log(
+        "Skipping concurrent test - no tokens defined for this chain"
+      );
       return;
     }
 
-    const promises = addresses.map(address =>
+    const promises = addresses.map((address) =>
       client.getTokenMetadata({ address })
     );
 
@@ -384,7 +417,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
       expect(response).toBeDefined();
       expect(response.found).toBe(true);
       expect(response.token).toBeDefined();
-      
+
       if (response.token) {
         expect(response.token.address).toBe(addresses[index].toLowerCase());
       }
@@ -393,7 +426,9 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
   testOrSkip("should respect request options", async () => {
     if (!REAL_TOKENS.USDC) {
-      console.log("Skipping request options test - no USDC token defined for this chain");
+      console.log(
+        "Skipping request options test - no USDC token defined for this chain"
+      );
       return;
     }
 
@@ -403,11 +438,11 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
     // Test with available request options
     const startTime = Date.now();
-    
+
     const response = await client.getTokenMetadata(request, {
       authKey: client.getAuthKey(), // Use available option
     });
-    
+
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(10000); // Reasonable time limit
     expect(response).toBeDefined();
@@ -420,53 +455,67 @@ describeOrSkip("getTokenMetadata Tests", () => {
     Object.entries(REAL_TOKENS)
       .map(([name, token]) => [name, token, token.expectedDecimals])
       .filter(([name, token]) => token)
-  )("should handle %s with %d decimals (flexible)", async (tokenName, token, expectedDecimals) => {
-    const response = await client.getTokenMetadata({ address: token.address });
-    
-    expect(response.found).toBe(true);
-    expect(response.token).toBeDefined();
-    
-    if (response.token) {
-      // Flexible assertion - if server returns correct data, check it
-      if (response.token.name !== "Unknown Token") {
-        expect(response.token.decimals).toBe(expectedDecimals);
-        expect(response.token.symbol).toBe(token.expectedSymbol);
-        // Use flexible name matching for consistency
-        const isFlexibleNameMatch = isTokenNameMatch(response.token.name, token.expectedName, token.expectedSymbol);
-        if (!isFlexibleNameMatch) {
-          expect(response.token.name).toBe(token.expectedName);
-        }
-      } else {
-        console.log(`ℹ️  Server returning placeholder data for ${tokenName}`);
-        expect(response.token.decimals).toBeGreaterThanOrEqual(0);
-      }
-    }
-  });
+  )(
+    "should handle %s with %d decimals (flexible)",
+    async (tokenName, token, expectedDecimals) => {
+      const response = await client.getTokenMetadata({
+        address: token.address,
+      });
 
-  testOrSkip("should return consistent data across multiple calls", async () => {
-    if (!REAL_TOKENS.USDC) {
-      console.log("Skipping consistency test - no USDC token defined for this chain");
-      return;
-    }
-
-    const address = REAL_TOKENS.USDC.address;
-    
-    // Make multiple calls to the same token
-    const responses = await Promise.all([
-      client.getTokenMetadata({ address }),
-      client.getTokenMetadata({ address }),
-      client.getTokenMetadata({ address }),
-    ]);
-
-    // All responses should be identical
-    const [first, second, third] = responses;
-    
-    expect(first).toEqual(second);
-    expect(second).toEqual(third);
-    
-    responses.forEach(response => {
       expect(response.found).toBe(true);
       expect(response.token).toBeDefined();
-    });
-  });
-}); 
+
+      if (response.token) {
+        // Flexible assertion - if server returns correct data, check it
+        if (response.token.name !== "Unknown Token") {
+          expect(response.token.decimals).toBe(expectedDecimals);
+          expect(response.token.symbol).toBe(token.expectedSymbol);
+          // Use flexible name matching for consistency
+          const isFlexibleNameMatch = isTokenNameMatch(
+            response.token.name,
+            token.expectedName,
+            token.expectedSymbol
+          );
+          if (!isFlexibleNameMatch) {
+            expect(response.token.name).toBe(token.expectedName);
+          }
+        } else {
+          console.log(`ℹ️  Server returning placeholder data for ${tokenName}`);
+          expect(response.token.decimals).toBeGreaterThanOrEqual(0);
+        }
+      }
+    }
+  );
+
+  testOrSkip(
+    "should return consistent data across multiple calls",
+    async () => {
+      if (!REAL_TOKENS.USDC) {
+        console.log(
+          "Skipping consistency test - no USDC token defined for this chain"
+        );
+        return;
+      }
+
+      const address = REAL_TOKENS.USDC.address;
+
+      // Make multiple calls to the same token
+      const responses = await Promise.all([
+        client.getTokenMetadata({ address }),
+        client.getTokenMetadata({ address }),
+        client.getTokenMetadata({ address }),
+      ]);
+
+      // All responses should be identical
+      const [first, second, third] = responses;
+
+      expect(first).toEqual(second);
+      expect(second).toEqual(third);
+
+      responses.forEach((response) => {
+        expect(response.found).toBe(true);
+        expect(response.token).toBeDefined();
+      });
+    }
+  );
+});

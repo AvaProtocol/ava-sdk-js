@@ -106,9 +106,9 @@ class LoopNode extends Node {
     
     if (typeof executionMode === "string") {
       switch (executionMode.toLowerCase()) {
-        case "parallel":
+        case ExecutionMode.Parallel:
           return 1;
-        case "sequential":
+        case ExecutionMode.Sequential:
         default:
           return 0; // Default to sequential for safety
       }
@@ -245,7 +245,7 @@ class LoopNode extends Node {
             url: apiConfig.url as string,
             method: apiConfig.method as string,
             body: (apiConfig.body as string) || "",
-            headersMap: apiConfig.headersMap as Array<[string, string]>,
+            headers: apiConfig.headers as Record<string, string>,
           });
           loopNode.setRestApi(restApi);
         }

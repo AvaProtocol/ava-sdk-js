@@ -170,13 +170,9 @@ describe("CustomCode Node Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBe(30);
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Simple JavaScript test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(30);
+      expect(result.nodeId).toBeDefined();
     });
 
     test("should execute JavaScript with lodash module", async () => {
@@ -205,22 +201,16 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      console.log(
-        "runNodeWithInputs lodash response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        const data = result.data as any;
-        expect(data).toBeDefined();
-        expect(data.sum).toBe(21);
-        expect(data.max).toBe(6);
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Lodash module test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      const data = result.data as any;
+      expect(data).toBeDefined();
+      expect(data.sum).toBe(21);
+      expect(data.max).toBe(6);
+      expect(result.nodeId).toBeDefined();
     });
 
     test("should execute JavaScript with date manipulation", async () => {
@@ -250,22 +240,16 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      console.log(
-        "runNodeWithInputs dayjs response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        const data = result.data as any;
-        expect(data).toBeDefined();
-        expect(data.formatted).toBe("2023-12-25");
-        expect(data.addDays).toBe("2024-01-01");
-        expect(result.nodeId).toBeDefined();
-      } else {
-        console.log("Date manipulation test failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      const data = result.data as any;
+      expect(data).toBeDefined();
+      expect(data.formatted).toBe("2023-12-25");
+      expect(data.addDays).toBe("2024-01-01");
+      expect(result.nodeId).toBeDefined();
     });
 
     test("should handle error in custom code execution", async () => {
@@ -290,10 +274,7 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      console.log(
-        "runNodeWithInputs error response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -334,10 +315,7 @@ describe("CustomCode Node Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      console.log(
-        "simulateWorkflow response:",
-        util.inspect(simulation, { depth: null, colors: true })
-      );
+
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node

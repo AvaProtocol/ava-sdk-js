@@ -543,11 +543,6 @@ describe("SimulateWorkflow", () => {
         inputVariables: {},
       });
 
-      console.log(
-        "🚀 ~ simulateWorkflow result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
-
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.steps).toHaveLength(2); // trigger + node

@@ -180,10 +180,10 @@ describe("ManualTrigger Tests", () => {
 
     test("should handle runTrigger with headers", async () => {
       const testData = { message: "Hello with headers!" };
-      const headers = [
-        ["Content-Type", "application/json"],
-        ["Authorization", "Bearer token123"],
-      ];
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer token123",
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
@@ -217,10 +217,10 @@ describe("ManualTrigger Tests", () => {
 
     test("should handle runTrigger with pathParams", async () => {
       const testData = { message: "Hello with pathParams!" };
-      const pathParams = [
-        ["userId", "123"],
-        ["apiVersion", "v1"],
-      ];
+      const pathParams = {
+        "userId": "123",
+        "apiVersion": "v1",
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
@@ -254,14 +254,14 @@ describe("ManualTrigger Tests", () => {
 
     test("should handle runTrigger with headers and pathParams", async () => {
       const testData = { message: "Hello with both!" };
-      const headers = [
-        ["Content-Type", "application/json"],
-        ["X-Custom", "header-value"],
-      ];
-      const pathParams = [
-        ["userId", "456"],
-        ["action", "update"],
-      ];
+      const headers = {
+        "Content-Type": "application/json",
+        "X-Custom": "header-value",
+      };
+      const pathParams = {
+        "userId": "456",
+        "action": "update",
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
@@ -524,14 +524,14 @@ describe("ManualTrigger Tests", () => {
       const triggerName = "simulate_manual_trigger";
 
       const data = { message: "Hello webhook!" };
-      const headers = [
-        ["Content-Type", "application/json"],
-        ["X-API-Key", "secret123"],
-      ];
-      const pathParams = [
-        ["userId", "789"],
-        ["action", "test"],
-      ];
+      const headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": "secret123",
+      };
+      const pathParams = {
+        "userId": "789",
+        "action": "test",
+      };
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -751,14 +751,14 @@ describe("ManualTrigger Tests", () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const userData = { message: "Deploy webhook test" };
-      const headers: Array<[string, string]> = [
-        ["Content-Type", "application/json"],
-        ["X-Test", "webhook"],
-      ];
-      const pathParams: Array<[string, string]> = [
-        ["userId", "deploy123"],
-        ["env", "test"],
-      ];
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-Test": "webhook",
+      };
+      const pathParams: Record<string, string> = {
+        "userId": "deploy123",
+        "env": "test",
+      };
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -805,8 +805,8 @@ describe("ManualTrigger Tests", () => {
           triggerData: {
             type: TriggerType.Manual,
             data: userData,
-            headersMap: headers,
-            pathParamsMap: pathParams,
+            headers: headers,
+            pathParams: pathParams,
           },
         });
 

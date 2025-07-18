@@ -49,16 +49,12 @@ describe("RestAPI Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should handle successful REST API GET call", async () => {
-      console.log(
-        "🚀 Testing runNodeWithInputs with successful GET request..."
-      );
-
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
           url: HTTPBIN_BASE_URL + "/get",
           method: "GET",
-          headersMap: [["User-Agent", "AvaProtocol-SDK-Test"]],
+          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
         },
         inputVariables: {},
       });
@@ -92,18 +88,15 @@ describe("RestAPI Node Tests", () => {
           url: HTTPBIN_BASE_URL + "/post",
           method: "POST",
           body: JSON.stringify(postData),
-          headersMap: [
-            ["Content-Type", "application/json"],
-            ["User-Agent", "AvaProtocol-SDK-Test"],
-          ],
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "AvaProtocol-SDK-Test",
+          },
         },
         inputVariables: {},
       });
 
-      console.log(
-        "runNodeWithInputs POST response:",
-        util.inspect(response, { depth: null, colors: true })
-      );
+
 
       expect(response.success).toBe(true);
       if (response.data) {
@@ -124,10 +117,7 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log(
-        "runNodeWithInputs error response:",
-        util.inspect(response, { depth: null, colors: true })
-      );
+
 
       expect(response.success).toBe(true); // HTTP call succeeds even with 404
       if (response.data) {
@@ -154,17 +144,8 @@ describe("RestAPI Node Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
 
-      console.log(
-        "🚀 Testing simulateWorkflow with successful REST API call..."
-      );
-
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
-      );
-
-      console.log(
-        "simulateWorkflow response:",
-        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -202,10 +183,7 @@ describe("RestAPI Node Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      console.log(
-        "simulateWorkflow error response:",
-        util.inspect(simulation, { depth: null, colors: true })
-      );
+
 
       const restApiStep = simulation.steps.find(
         (step) => step.id === restApiNode.id
@@ -276,10 +254,7 @@ describe("RestAPI Node Tests", () => {
           throw new Error("No corresponding REST API step found.");
         }
 
-        console.log(
-          "Deploy + trigger REST API step output:",
-          util.inspect(restApiStep.output, { depth: null, colors: true })
-        );
+
 
         expect(restApiStep.success).toBe(true);
         const output = restApiStep.output as any;
@@ -312,9 +287,7 @@ describe("RestAPI Node Tests", () => {
         ][],
       };
 
-      console.log(
-        "🔍 Testing response format consistency across all methods..."
-      );
+
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -373,19 +346,6 @@ describe("RestAPI Node Tests", () => {
         );
 
         // Compare response formats
-        console.log("=== RESPONSE FORMAT COMPARISON ===");
-        console.log(
-          "1. runNodeWithInputs response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          util.inspect(executedStep?.output, { depth: null, colors: true })
-        );
 
         // All should have the same structure
         if (directResponse.data) {
@@ -413,7 +373,7 @@ describe("RestAPI Node Tests", () => {
           expect(executedOutput.body.id).toBe(42);
         }
 
-        console.log("✅ All three methods return consistent response formats!");
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -425,8 +385,6 @@ describe("RestAPI Node Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle 204 No Content responses", async () => {
-      console.log("🚀 Testing REST API with 204 No Content response...");
-
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
@@ -452,8 +410,6 @@ describe("RestAPI Node Tests", () => {
     });
 
     test("should distinguish between empty data and server errors", async () => {
-      console.log("🚀 Testing empty data vs server error distinction...");
-
       // Test 204 No Content (empty but successful)
       const emptyResponse = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
@@ -475,15 +431,6 @@ describe("RestAPI Node Tests", () => {
         },
         inputVariables: {},
       });
-
-      console.log(
-        "Empty data result:",
-        util.inspect(emptyResponse, { depth: null, colors: true })
-      );
-      console.log(
-        "Error result:",
-        util.inspect(errorResponse, { depth: null, colors: true })
-      );
 
       // Both should succeed at HTTP level but have different status codes
       expect(emptyResponse.success).toBe(true);

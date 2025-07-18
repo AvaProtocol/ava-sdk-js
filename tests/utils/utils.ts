@@ -1,12 +1,5 @@
-import {
-  Client,
-  Workflow,
-  Step,
-} from "@avaprotocol/sdk-js";
-import {
-  WorkflowProps,
-  StepProps,
-} from "@avaprotocol/types";
+import { Client, Workflow, Step } from "@avaprotocol/sdk-js";
+import { WorkflowProps, StepProps } from "@avaprotocol/types";
 import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 
 import { ethers } from "ethers";
@@ -20,7 +13,10 @@ function getTestConfig() {
     const { getConfig } = require("./envalid");
     return getConfig();
   } catch (error) {
-    console.warn("⚠️ Environment validation failed in utils, using mock config:", error);
+    console.warn(
+      "⚠️ Environment validation failed in utils, using mock config:",
+      error
+    );
     // Return mock config for CI/CD or when real credentials aren't available
     return {
       avsEndpoint: "localhost:2206",
@@ -330,7 +326,6 @@ export const cleanupSecrets = async (client: Client) => {
     );
 
     if (testSecrets.length > 0) {
-      console.log(`Cleaning up ${testSecrets.length} test secrets...`);
       const secretNames = new Map(
         testSecrets.map((item) => [item.name, false])
       );
@@ -339,16 +334,4 @@ export const cleanupSecrets = async (client: Client) => {
   } catch (error) {
     console.warn("Failed to cleanup secrets:", (error as Error).message);
   }
-};
-
-export const consoleLogNestedObject = (name: string, obj: any): void => {
-  console.log(
-    `${name}:`,
-    inspect(obj, {
-      depth: 10,
-      colors: true,
-      showHidden: false,
-      compact: false,
-    })
-  );
 };

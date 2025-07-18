@@ -395,10 +395,6 @@ describe("getExecution Tests", () => {
         workflowId,
         triggerResult.executionId
       );
-      console.log(
-        "🚀 ~ test ~ execution:",
-        util.inspect(execution, { depth: null, colors: true })
-      );
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
@@ -433,28 +429,22 @@ describe("getExecution Tests", () => {
       expect(triggerInputs).toContain("blockTriggerWithInput.data");
       expect(triggerInputs).toContain("blockTriggerWithInput.input");
       
-      console.log("✅ Input Field Feature Success: Both data and input are available:", triggerInputs);
-      
       // 🎯 CRITICAL TEST: Verify actual input values were accessed successfully
       expect(customCodeStep.output).toBeDefined();
       expect(typeof customCodeStep.output).toBe('object');
       
       const nodeOutput = customCodeStep.output as any;
-      console.log("🔍 CustomCode Output:", nodeOutput);
       
       expect(nodeOutput.success).toBe(true);
-      console.log("✅ CustomCode executed successfully");
       
       // Verify the trigger input values were correctly accessed
       expect(nodeOutput.inputValues).toBeDefined();
-      console.log("✅ Input values successfully accessed:", nodeOutput.inputValues);
       expect(nodeOutput.inputValues.environment).toBe("test");
       expect(nodeOutput.inputValues.priority).toBe("high"); 
       expect(nodeOutput.inputValues.description).toContain("getExecution");
       
       // Verify validation results
       expect(nodeOutput.validation).toBeDefined();
-      console.log("✅ Validation results:", nodeOutput.validation);
       expect(nodeOutput.validation.allTestsPassed).toBe(true);
     } finally {
       expect(workflowId).toBeDefined();

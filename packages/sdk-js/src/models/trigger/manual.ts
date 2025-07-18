@@ -12,8 +12,8 @@ import {
 } from "@avaprotocol/types";
 
 class ManualTrigger extends Trigger {
-  public headersMap?: Array<[string, string]>;
-  public pathParamsMap?: Array<[string, string]>;
+  public headers?: Record<string, string>;
+  public pathParams?: Record<string, string>;
 
   constructor(props: ManualTriggerProps) {
     super({
@@ -22,8 +22,8 @@ class ManualTrigger extends Trigger {
       data: props.data,
       input: props.input,
     });
-    this.headersMap = props.headersMap;
-    this.pathParamsMap = props.pathParamsMap;
+    this.headers = props.headers;
+    this.pathParams = props.pathParams;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -45,18 +45,18 @@ class ManualTrigger extends Trigger {
       }
     }
 
-    // Set headers if provided - use map format consistent with REST API nodes
-    if (this.headersMap && this.headersMap.length > 0) {
+    // Set headers if provided - direct object to protobuf map mapping
+    if (this.headers && Object.keys(this.headers).length > 0) {
       const headersMap = config.getHeadersMap();
-      this.headersMap.forEach(([key, value]: [string, string]) => {
+      Object.entries(this.headers).forEach(([key, value]) => {
         headersMap.set(key, value);
       });
     }
 
-    // Set pathParams if provided - use map format consistent with REST API nodes
-    if (this.pathParamsMap && this.pathParamsMap.length > 0) {
+    // Set pathParams if provided - direct object to protobuf map mapping
+    if (this.pathParams && Object.keys(this.pathParams).length > 0) {
       const pathParamsMap = config.getPathparamsMap();
-      this.pathParamsMap.forEach(([key, value]: [string, string]) => {
+      Object.entries(this.pathParams).forEach(([key, value]) => {
         pathParamsMap.set(key, value);
       });
     }
@@ -72,8 +72,8 @@ class ManualTrigger extends Trigger {
 
     let data: unknown = null;
     const input: Record<string, unknown> | undefined = undefined;
-    let headersMap: Array<[string, string]> | undefined = undefined;
-    let pathParamsMap: Array<[string, string]> | undefined = undefined;
+    let headers: Record<string, string> | undefined = undefined;
+    let pathParams: Record<string, string> | undefined = undefined;
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
@@ -84,21 +84,21 @@ class ManualTrigger extends Trigger {
           data = extractInputFromProtobuf(config.getData());
         }
 
-        // Extract headers - convert map to array format
+        // Extract headers - direct protobuf map to object mapping
         const headersMapProto = config.getHeadersMap();
         if (headersMapProto && headersMapProto.getLength() > 0) {
-          headersMap = [];
+          headers = {};
           headersMapProto.forEach((value: string, key: string) => {
-            headersMap!.push([key, value]);
+            headers![key] = value;
           });
         }
 
-        // Extract pathParams - convert map to array format
+        // Extract pathParams - direct protobuf map to object mapping
         const pathParamsMapProto = config.getPathparamsMap();
         if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
-          pathParamsMap = [];
+          pathParams = {};
           pathParamsMapProto.forEach((value: string, key: string) => {
-            pathParamsMap!.push([key, value]);
+            pathParams![key] = value;
           });
         }
       }
@@ -109,8 +109,8 @@ class ManualTrigger extends Trigger {
       type: TriggerType.Manual,
       data: data as Record<string, unknown>,
       input: input,
-      headersMap: headersMap,
-      pathParamsMap: pathParamsMap,
+      headers: headers,
+      pathParams: pathParams,
     });
   }
 
@@ -149,24 +149,24 @@ class ManualTrigger extends Trigger {
       result.data = null;
     }
 
-    // Extract headers - convert map to array format for consistency
+    // Extract headers - always as object
     const headersMapProto = manualOutput.getHeadersMap();
     if (headersMapProto && headersMapProto.getLength() > 0) {
-      const headersArray: Array<[string, string]> = [];
+      const headersObject: Record<string, string> = {};
       headersMapProto.forEach((value: string, key: string) => {
-        headersArray.push([key, value]);
+        headersObject[key] = value;
       });
-      result.headers = headersArray;
+      result.headers = headersObject;
     }
 
-    // Extract pathParams - convert map to array format for consistency
+    // Extract pathParams - always as object
     const pathParamsMapProto = manualOutput.getPathparamsMap();
     if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
-      const pathParamsArray: Array<[string, string]> = [];
+      const pathParamsObject: Record<string, string> = {};
       pathParamsMapProto.forEach((value: string, key: string) => {
-        pathParamsArray.push([key, value]);
+        pathParamsObject[key] = value;
       });
-      result.pathParams = pathParamsArray;
+      result.pathParams = pathParamsObject;
     }
 
     return result;

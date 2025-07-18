@@ -173,8 +173,6 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with daily schedule", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -195,17 +193,12 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Daily cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with hourly schedule", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -226,17 +219,12 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Hourly cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with every 15 minutes schedule", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -257,17 +245,12 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Every 15 minutes cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with complex schedule", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -289,16 +272,11 @@ describe("CronTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Complex cron trigger failed:", result.error);
-      }
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with minute-based schedule", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -319,17 +297,12 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Minute-based cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should run trigger with weekly schedule", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -350,17 +323,12 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Weekly cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should handle standard cron expressions", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -385,8 +353,6 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle invalid cron expressions gracefully", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -407,16 +373,11 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      // Should handle invalid expressions gracefully
-      if (!result.success) {
-        expect(result.error).toBeDefined();
-      }
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
     test("should handle complex time specifications", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -437,17 +398,12 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Complex cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should handle step values in cron expressions", async () => {
-      
-      
       const params = {
         triggerType: "cronTrigger",
         triggerConfig: {
@@ -468,12 +424,9 @@ describe("CronTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      if (result.success && result.data) {
-        expect(result.triggerId).toBeDefined();
-      } else {
-        console.log("Step values cron trigger failed:", result.error);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.triggerId).toBeDefined();
     });
 
     test("should validate cron expression format in TriggerFactory", () => {
@@ -510,8 +463,6 @@ describe("CronTrigger Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
-
-      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -550,8 +501,6 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      
-
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
@@ -582,8 +531,6 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      
-
       const workflowId = await client.submitWorkflow(
         client.createWorkflow(workflowProps)
       );
@@ -599,9 +546,6 @@ describe("CronTrigger Tests", () => {
         } as any,
         isBlocking: true,
       });
-
-      console.log("=== CRON TRIGGER WORKFLOW TEST ===");
-      console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
       expect(triggerResult).toBeDefined();
       // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
@@ -627,10 +571,6 @@ describe("CronTrigger Tests", () => {
       const cronTriggerConfig = {
         expression: "0 * * * *", // Every hour
       };
-
-      console.log(
-        "🔍 Testing response format consistency across trigger methods..."
-      );
 
       // Test 1: runTrigger
       const directResponse = await client.runTrigger({
@@ -682,19 +622,6 @@ describe("CronTrigger Tests", () => {
       );
 
       // Compare response formats
-      console.log("=== CRON TRIGGER RESPONSE FORMAT COMPARISON ===");
-      console.log(
-        "1. runTrigger response:",
-        util.inspect(directResponse.data, { depth: null, colors: true })
-      );
-      console.log(
-        "2. simulateWorkflow step output:",
-        util.inspect(simulatedStep?.output, { depth: null, colors: true })
-      );
-      console.log(
-        "3. deploy+trigger step output:",
-        util.inspect(executedStep?.output, { depth: null, colors: true })
-      );
 
       // All should be successful
       expect(directResponse.success).toBe(true);
@@ -711,10 +638,6 @@ describe("CronTrigger Tests", () => {
       expect(directOutput).toBeDefined();
       expect(simulatedOutput).toBeDefined();
       expect(executedOutput).toBeDefined();
-
-      console.log(
-        "✅ All trigger methods return consistent cron trigger results!"
-      );
     });
   });
 });

@@ -186,53 +186,55 @@ class Step implements StepProps {
                 // Flatten it by extracting the nested data
                 result.data = userData.data;
                 if (userData.headers) {
-                  // Convert headers to consistent Array<[string, string]> format
+                  // Keep headers as object format for consistency
                   if (Array.isArray(userData.headers)) {
                     // Check if it's already in Array<[string, string]> format
                     if (userData.headers.length > 0 && Array.isArray(userData.headers[0])) {
-                      result.headers = userData.headers;
+                      // Convert from Array<[string, string]> to object format
+                      const headersObject: Record<string, string> = {};
+                      for (const [key, value] of userData.headers) {
+                        headersObject[key] = value;
+                      }
+                      result.headers = headersObject;
                     } else {
-                      // Convert from Array<{key: value}> to Array<[string, string]>
-                      const headersArray: Array<[string, string]> = [];
+                      // Convert from Array<{key: value}> to object format
+                      const headersObject: Record<string, string> = {};
                       for (const header of userData.headers) {
                         for (const [key, value] of Object.entries(header)) {
-                          headersArray.push([key, value as string]);
+                          headersObject[key] = value as string;
                         }
                       }
-                      result.headers = headersArray;
+                      result.headers = headersObject;
                     }
                   } else {
-                    // Convert object to Array<[string, string]> format
-                    const headersArray: Array<[string, string]> = [];
-                    for (const [key, value] of Object.entries(userData.headers)) {
-                      headersArray.push([key, value as string]);
-                    }
-                    result.headers = headersArray;
+                    // Already in object format
+                    result.headers = userData.headers;
                   }
                 }
                 if (userData.pathParams) {
-                  // Convert pathParams to consistent Array<[string, string]> format
+                  // Keep pathParams as object format for consistency
                   if (Array.isArray(userData.pathParams)) {
                     // Check if it's already in Array<[string, string]> format
                     if (userData.pathParams.length > 0 && Array.isArray(userData.pathParams[0])) {
-                      result.pathParams = userData.pathParams;
+                      // Convert from Array<[string, string]> to object format
+                      const pathParamsObject: Record<string, string> = {};
+                      for (const [key, value] of userData.pathParams) {
+                        pathParamsObject[key] = value;
+                      }
+                      result.pathParams = pathParamsObject;
                     } else {
-                      // Convert from Array<{key: value}> to Array<[string, string]>
-                      const pathParamsArray: Array<[string, string]> = [];
+                      // Convert from Array<{key: value}> to object format
+                      const pathParamsObject: Record<string, string> = {};
                       for (const pathParam of userData.pathParams) {
                         for (const [key, value] of Object.entries(pathParam)) {
-                          pathParamsArray.push([key, value as string]);
+                          pathParamsObject[key] = value as string;
                         }
                       }
-                      result.pathParams = pathParamsArray;
+                      result.pathParams = pathParamsObject;
                     }
                   } else {
-                    // Convert object to Array<[string, string]> format
-                    const pathParamsArray: Array<[string, string]> = [];
-                    for (const [key, value] of Object.entries(userData.pathParams)) {
-                      pathParamsArray.push([key, value as string]);
-                    }
-                    result.pathParams = pathParamsArray;
+                    // Already in object format
+                    result.pathParams = userData.pathParams;
                   }
                 }
               } else {
@@ -261,53 +263,55 @@ class Step implements StepProps {
               // Flatten it by extracting the nested data
               result.data = userData.data;
               if (userData.headers) {
-                // Convert headers to consistent Array<[string, string]> format
+                // Keep headers as object format for consistency
                 if (Array.isArray(userData.headers)) {
                   // Check if it's already in Array<[string, string]> format
                   if (userData.headers.length > 0 && Array.isArray(userData.headers[0])) {
-                    result.headers = userData.headers;
+                    // Convert from Array<[string, string]> to object format
+                    const headersObject: Record<string, string> = {};
+                    for (const [key, value] of userData.headers) {
+                      headersObject[key] = value;
+                    }
+                    result.headers = headersObject;
                   } else {
-                    // Convert from Array<{key: value}> to Array<[string, string]>
-                    const headersArray: Array<[string, string]> = [];
+                    // Convert from Array<{key: value}> to object format
+                    const headersObject: Record<string, string> = {};
                     for (const header of userData.headers) {
                       for (const [key, value] of Object.entries(header)) {
-                        headersArray.push([key, value as string]);
+                        headersObject[key] = value as string;
                       }
                     }
-                    result.headers = headersArray;
+                    result.headers = headersObject;
                   }
                 } else {
-                  // Convert object to Array<[string, string]> format
-                  const headersArray: Array<[string, string]> = [];
-                  for (const [key, value] of Object.entries(userData.headers)) {
-                    headersArray.push([key, value as string]);
-                  }
-                  result.headers = headersArray;
+                  // Already in object format
+                  result.headers = userData.headers;
                 }
               }
               if (userData.pathParams) {
-                // Convert pathParams to consistent Array<[string, string]> format
+                // Keep pathParams as object format for consistency
                 if (Array.isArray(userData.pathParams)) {
                   // Check if it's already in Array<[string, string]> format
                   if (userData.pathParams.length > 0 && Array.isArray(userData.pathParams[0])) {
-                    result.pathParams = userData.pathParams;
+                    // Convert from Array<[string, string]> to object format
+                    const pathParamsObject: Record<string, string> = {};
+                    for (const [key, value] of userData.pathParams) {
+                      pathParamsObject[key] = value;
+                    }
+                    result.pathParams = pathParamsObject;
                   } else {
-                    // Convert from Array<{key: value}> to Array<[string, string]>
-                    const pathParamsArray: Array<[string, string]> = [];
+                    // Convert from Array<{key: value}> to object format
+                    const pathParamsObject: Record<string, string> = {};
                     for (const pathParam of userData.pathParams) {
                       for (const [key, value] of Object.entries(pathParam)) {
-                        pathParamsArray.push([key, value as string]);
+                        pathParamsObject[key] = value as string;
                       }
                     }
-                    result.pathParams = pathParamsArray;
+                    result.pathParams = pathParamsObject;
                   }
                 } else {
-                  // Convert object to Array<[string, string]> format
-                  const pathParamsArray: Array<[string, string]> = [];
-                  for (const [key, value] of Object.entries(userData.pathParams)) {
-                    pathParamsArray.push([key, value as string]);
-                  }
-                  result.pathParams = pathParamsArray;
+                  // Already in object format
+                  result.pathParams = userData.pathParams;
                 }
               }
             } else {
@@ -316,46 +320,54 @@ class Step implements StepProps {
             }
           }
 
-          // Include headers for webhook testing - use consistent Array<[string, string]> format
+          // Include headers for webhook testing - use object format for consistency
           if (
             typeof manualTrigger.getHeadersMap === "function"
           ) {
             const headersMap = manualTrigger.getHeadersMap();
             if (headersMap && headersMap.getLength() > 0) {
-              const headersArray: Array<[string, string]> = [];
+              const headersObject: Record<string, string> = {};
               headersMap.forEach((value: string, key: string) => {
-                headersArray.push([key, value]);
+                headersObject[key] = value;
               });
-              result.headers = headersArray;
+              result.headers = headersObject;
             }
           } else if (manualTrigger.headers) {
-            // For plain objects, convert to consistent Array<[string, string]> format
-            const headersArray: Array<[string, string]> = [];
-            for (const [key, value] of Object.entries(manualTrigger.headers)) {
-              headersArray.push([key, value as string]);
+            // For plain objects, convert to object format
+            if (Array.isArray(manualTrigger.headers)) {
+              const headersObject: Record<string, string> = {};
+              for (const [key, value] of Object.entries(manualTrigger.headers)) {
+                headersObject[key] = value as string;
+              }
+              result.headers = headersObject;
+            } else {
+              result.headers = manualTrigger.headers;
             }
-            result.headers = headersArray;
           }
 
-          // Include pathParams for webhook testing - use consistent Array<[string, string]> format
+          // Include pathParams for webhook testing - use object format for consistency
           if (
             typeof manualTrigger.getPathparamsMap === "function"
           ) {
             const pathParamsMap = manualTrigger.getPathparamsMap();
             if (pathParamsMap && pathParamsMap.getLength() > 0) {
-              const pathParamsArray: Array<[string, string]> = [];
+              const pathParamsObject: Record<string, string> = {};
               pathParamsMap.forEach((value: string, key: string) => {
-                pathParamsArray.push([key, value]);
+                pathParamsObject[key] = value;
               });
-              result.pathParams = pathParamsArray;
+              result.pathParams = pathParamsObject;
             }
           } else if (manualTrigger.pathparams) {
-            // For plain objects, convert to consistent Array<[string, string]> format
-            const pathParamsArray: Array<[string, string]> = [];
-            for (const [key, value] of Object.entries(manualTrigger.pathparams)) {
-              pathParamsArray.push([key, value as string]);
+            // For plain objects, convert to object format
+            if (Array.isArray(manualTrigger.pathparams)) {
+              const pathParamsObject: Record<string, string> = {};
+              for (const [key, value] of Object.entries(manualTrigger.pathparams)) {
+                pathParamsObject[key] = value as string;
+              }
+              result.pathParams = pathParamsObject;
+            } else {
+              result.pathParams = manualTrigger.pathparams;
             }
-            result.pathParams = pathParamsArray;
           }
 
           // Check if this is the new format with no data field or null data

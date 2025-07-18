@@ -112,16 +112,16 @@ describe("Input Field Tests", () => {
           priority: "high",
         },
         // Note: Type assertion needed for extended trigger properties
-        headersMap: [
-          ["X-Webhook-Source", "manual-trigger"],
-          ["X-Trigger-Version", "1.0"],
-          ["Authorization", "Bearer trigger-token-123"],
-        ],
-        pathParamsMap: [
-          ["version", "v1"],
-          ["endpoint", "data"],
-          ["format", "json"],
-        ],
+        headers: {
+          "X-Webhook-Source": "manual-trigger",
+          "X-Trigger-Version": "1.0",
+          Authorization: "Bearer trigger-token-123",
+        },
+        pathParams: {
+          version: "v1",
+          endpoint: "data",
+          format: "json",
+        },
       } as TriggerProps);
 
       // Create a REST API node that uses the trigger data, headers, and pathParams
@@ -130,28 +130,21 @@ describe("Input Field Tests", () => {
         name: "APICallUsingTriggerInput",
         type: NodeType.RestAPI,
         data: {
-          url: "{{ManualTriggerWithInput.data.apiBaseUrl}}/{{ManualTriggerWithInput.pathParams.0.endpoint}}",
+          url: "{{ManualTriggerWithInput.data.apiBaseUrl}}/{{ManualTriggerWithInput.pathParams.endpoint}}",
           method: "POST",
-          // Use headersMap format (array of key-value pairs) instead of headers object
-          headersMap: [
-            ["Content-Type", "application/json"],
-            ["X-API-Key", "{{ManualTriggerWithInput.data.apiKey}}"],
-            ["X-Environment", "{{ManualTriggerWithInput.data.environment}}"],
-            ["X-Priority", "{{ManualTriggerWithInput.data.priority}}"],
+          // Use headers object format
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-Key": "{{ManualTriggerWithInput.data.apiKey}}",
+            "X-Environment": "{{ManualTriggerWithInput.data.environment}}",
+            "X-Priority": "{{ManualTriggerWithInput.data.priority}}",
             // Use headers from manual trigger configuration
-            [
-              "X-Webhook-Source",
-              "{{ManualTriggerWithInput.headers.0.X-Webhook-Source}}",
-            ],
-            [
-              "X-Trigger-Version",
-              "{{ManualTriggerWithInput.headers.0.X-Trigger-Version}}",
-            ],
-            [
-              "Authorization",
-              "{{ManualTriggerWithInput.headers.0.Authorization}}",
-            ],
-          ],
+            "X-Webhook-Source":
+              "{{ManualTriggerWithInput.headers.X-Webhook-Source}}",
+            "X-Trigger-Version":
+              "{{ManualTriggerWithInput.headers.X-Trigger-Version}}",
+            Authorization: "{{ManualTriggerWithInput.headers.Authorization}}",
+          },
           body: JSON.stringify({
             message: "Test API call using comprehensive trigger config",
             apiBaseUrl: "{{ManualTriggerWithInput.data.apiBaseUrl}}",
@@ -196,20 +189,16 @@ describe("Input Field Tests", () => {
             environment: "testing",
             priority: "high",
           },
-          headers: [
-            {
-              "X-Webhook-Source": "manual-trigger",
-              "X-Trigger-Version": "1.0",
-              Authorization: "Bearer trigger-token-123",
-            },
-          ],
-          pathParams: [
-            {
-              version: "v1",
-              endpoint: "data",
-              format: "json",
-            },
-          ],
+          headers: {
+            "X-Webhook-Source": "manual-trigger",
+            "X-Trigger-Version": "1.0",
+            Authorization: "Bearer trigger-token-123",
+          },
+          pathParams: {
+            version: "v1",
+            endpoint: "data",
+            format: "json",
+          },
         },
         isBlocking: true,
       });
@@ -221,18 +210,6 @@ describe("Input Field Tests", () => {
       console.log(
         "🔍 Execution result:",
         util.inspect(execution, { depth: null, colors: true })
-      );
-
-      console.log(
-        "🔍 Trigger step output:",
-        util.inspect(execution.steps[0].output, { depth: null, colors: true })
-      );
-
-      console.log("🔍 REST API step log:", execution.steps[1].log);
-
-      console.log(
-        "🔍 REST API step input list:",
-        execution.steps[1].inputsList
       );
 
       // Verify execution was successful (or at least both steps ran)
@@ -282,14 +259,14 @@ describe("Input Field Tests", () => {
 
       const nodeConfig = nodeStep.input as Record<string, unknown>;
       expect(nodeConfig.url).toBe(
-        "{{ManualTriggerWithInput.data.apiBaseUrl}}/{{ManualTriggerWithInput.pathParams.0.endpoint}}"
+        "{{ManualTriggerWithInput.data.apiBaseUrl}}/{{ManualTriggerWithInput.pathParams.endpoint}}"
       );
       expect(nodeConfig.method).toBe("POST");
       expect(nodeConfig.headers).toBeDefined();
       const nodeHeadersConfig = nodeConfig.headers as Record<string, string>;
       expect(Object.keys(nodeHeadersConfig)).toHaveLength(7); // 7 headers from manualTrigger + 1 from node
       expect(nodeHeadersConfig["Authorization"]).toBe(
-        "{{ManualTriggerWithInput.headers.0.Authorization}}"
+        "{{ManualTriggerWithInput.headers.Authorization}}"
       );
       expect(nodeHeadersConfig["Content-Type"]).toBe("application/json");
       expect(nodeHeadersConfig["X-API-Key"]).toBe(
@@ -302,10 +279,10 @@ describe("Input Field Tests", () => {
         "{{ManualTriggerWithInput.data.priority}}"
       );
       expect(nodeHeadersConfig["X-Trigger-Version"]).toBe(
-        "{{ManualTriggerWithInput.headers.0.X-Trigger-Version}}"
+        "{{ManualTriggerWithInput.headers.X-Trigger-Version}}"
       );
       expect(nodeHeadersConfig["X-Webhook-Source"]).toBe(
-        "{{ManualTriggerWithInput.headers.0.X-Webhook-Source}}"
+        "{{ManualTriggerWithInput.headers.X-Webhook-Source}}"
       );
 
       // Check execution result - This should now succeed with the mock response
@@ -343,28 +320,11 @@ describe("Input Field Tests", () => {
   });
 
   test("should reproduce original client error: TypeError step.hasInput is not a function", async () => {
-    console.log(
-      "🔍 Reproducing original client error scenario with END-TO-END simulateWorkflow test..."
-    );
-    console.log(
-      "📋 Context: User reported error when using simulateWorkflow with @avaprotocol/sdk-js@2.3.13-dev.0"
-    );
-    console.log(
-      "⚠️  Original error: TypeError: step.hasInput is not a function"
-    );
-    console.log(
-      "🎯 Location: Step.fromResponse() method when processing execution steps from simulateWorkflow"
-    );
-
     // Create the EXACT scenario that was failing for the original client
     // This needs to be a real end-to-end simulateWorkflow call, not just Step.fromResponse testing
 
     const triggerId = getNextId();
     const customCodeNodeId = getNextId();
-
-    console.log(
-      "🚀 Creating real workflow with input data (this used to cause hasInput error)..."
-    );
 
     // Create a manual trigger with input data (common pattern that was failing)
     const trigger = {
@@ -429,13 +389,6 @@ describe("Input Field Tests", () => {
       },
     ];
 
-    console.log(
-      "🧪 Running simulateWorkflow (this call used to throw hasInput error)..."
-    );
-    console.log(
-      "📝 This is the EXACT type of call the original client was making..."
-    );
-
     // This is the EXACT call that was failing for the original client
     // The error would occur when simulateWorkflow processes the execution steps
     let result;
@@ -451,7 +404,6 @@ describe("Input Field Tests", () => {
           debugMode: true,
         },
       });
-      console.log("✅ simulateWorkflow completed without hasInput error!");
     }).not.toThrow();
 
     // Execute the simulateWorkflow call
@@ -485,27 +437,12 @@ describe("Input Field Tests", () => {
     expect(triggerStep.name).toBe("original_error_trigger");
     expect(triggerStep.success).toBe(true);
 
-    console.log("🔍 Trigger step details (processed by Step.fromResponse):");
-    console.log("  - ID:", triggerStep.id);
-    console.log("  - Type:", triggerStep.type);
-    console.log("  - Success:", triggerStep.success);
-    console.log("  - InputsList:", triggerStep.inputsList);
-
     // Verify custom code step (this was the step that Step.fromResponse was failing on)
     const customCodeStep = result.steps[1];
     expect(customCodeStep.id).toBe(customCodeNodeId);
     expect(customCodeStep.type).toBe(NodeType.CustomCode);
     expect(customCodeStep.name).toBe("process_user_data");
     // Note: success may be false due to simulation environment, but the key is no hasInput error
-
-    console.log(
-      "🔍 Custom code step details (processed by Step.fromResponse):"
-    );
-    console.log("  - ID:", customCodeStep.id);
-    console.log("  - Type:", customCodeStep.type);
-    console.log("  - Success:", customCodeStep.success);
-    console.log("  - InputsList:", customCodeStep.inputsList);
-    console.log("  - Output:", customCodeStep.output);
 
     // Verify the custom code step was processed and has output
     expect(customCodeStep.output).toBeDefined();
@@ -524,9 +461,6 @@ describe("Input Field Tests", () => {
     // This was the main goal - ensuring original_error_trigger.input is accessible
     // Note: The backend currently exposes trigger data as .data, not .input
     expect(customCodeStep.inputsList).toContain("original_error_trigger.data");
-    console.log(
-      "🎉 SUCCESS: original_error_trigger.data is now available in inputsList!"
-    );
 
     // 🎯 CRITICAL TEST: Verify the trigger step itself has the input field populated
     // Current status:
@@ -536,8 +470,6 @@ describe("Input Field Tests", () => {
 
     expect(triggerStep.input).toBeDefined();
     expect(typeof triggerStep.input).toBe("object");
-
-    console.log("✅ SUCCESS: Trigger step input field is populated!");
 
     const triggerInput = triggerStep.input as Record<string, unknown>;
     // The trigger input contains a nested data structure
@@ -549,115 +481,67 @@ describe("Input Field Tests", () => {
     const triggerConfig = inputData.config as Record<string, unknown>;
     expect(triggerConfig.retries).toBe(3);
     expect(triggerConfig.timeout).toBe(30000);
-
-    // 🎯 PRIMARY SUCCESS: The original hasInput error is COMPLETELY FIXED!
-    console.log(
-      "🎉 PRIMARY SUCCESS: The original hasInput error has been completely fixed!"
-    );
-    console.log(
-      "✅ simulateWorkflow now works without throwing 'TypeError: step.hasInput is not a function'"
-    );
-    console.log(
-      "✅ Step.fromResponse() now properly handles execution steps from simulateWorkflow!"
-    );
-
-    // 📋 NOTE: Trigger input data works correctly in real workflows (see getExecution test)
-    // and in simulateWorkflow with proper trigger setup (see simulateWorkflow test)
-    // The specific case of manually setting input data on plain JS objects for simulateWorkflow
-    // needs additional work, but this doesn't affect the main success.
-    console.log(
-      "📋 NOTE: Real workflows correctly show trigger.input (see getExecution test)"
-    );
-    console.log(
-      "📋 NOTE: simulateWorkflow with proper trigger setup also works (see simulateWorkflow test)"
-    );
-    console.log(
-      "🔧 Manual input data setup for simulateWorkflow needs refinement"
-    );
-
-    console.log("🎉 END-TO-END simulateWorkflow test completed successfully!");
-    console.log(
-      "🔧 The original hasInput error during simulateWorkflow execution has been fixed"
-    );
-    console.log(
-      "✅ Step.fromResponse() now properly handles execution steps from real simulateWorkflow calls"
-    );
-    console.log(
-      "📋 Summary: The original client's simulateWorkflow use case now works perfectly"
-    );
   });
 
   test("should handle EventTrigger input field correctly (reproducing server-side input nil issue)", async () => {
-    console.log("🔍 Testing EventTrigger input field functionality...");
-    console.log(
-      "📋 Context: EventTrigger was missing input field serialization in toRequest()"
-    );
-    console.log(
-      "⚠️  Original issue: server logs showed 'trigger.GetInput() = <nil>' for EventTriggers"
-    );
-    console.log(
-      "🎯 Expected: EventTrigger input data should be properly transmitted to server"
-    );
+    const eventTrigger = TriggerFactory.create({
+      id: getNextId(),
+      name: "event_trigger_with_input",
+      type: TriggerType.Event,
+      data: {
+        queries: [
+          {
+            type: "event",
+            addresses: ["0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
+            topics: [
+              {
+                values: [
+                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
+                  "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // from address
+                  null, // to address (any)
+                ],
+              },
+            ],
+          },
+          {
+            type: "event",
+            addresses: ["0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
+            topics: [
+              {
+                values: [
+                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
+                  null, // from address (any)
+                  "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // to address
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      // Include input data directly in the factory creation
+      input: {
+        subType: "transfer",
+        chainId: 11155111,
+        address: "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788",
+        tokens: [
+          {
+            name: "USD Coin",
+            symbol: "USDC",
+            address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+            decimals: 6,
+          },
+        ],
+      },
+    });
 
-    try {
-      const eventTrigger = TriggerFactory.create({
-        id: getNextId(),
-        name: "event_trigger_with_input",
-        type: TriggerType.Event,
-        data: {
-          queries: [
-            {
-              type: "event",
-              addresses: ["0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
-              topics: [
-                {
-                  values: [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-                    "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // from address
-                    null, // to address (any)
-                  ],
-                },
-              ],
-            },
-            {
-              type: "event",
-              addresses: ["0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
-              topics: [
-                {
-                  values: [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-                    null, // from address (any)
-                    "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // to address
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        // Include input data directly in the factory creation
-        input: {
-          subType: "transfer",
-          chainId: 11155111,
-          address: "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788",
-          tokens: [
-            {
-              name: "USD Coin",
-              symbol: "USDC",
-              address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-              decimals: 6,
-            },
-          ],
-        },
-      });
-
-      // Create a CustomCode node that uses the EventTrigger input data
-      const customCodeNode = NodeFactory.create({
-        id: getNextId(),
-        name: "code0",
-        type: NodeType.CustomCode,
-        data: {
-          lang: CustomCodeLang.JavaScript,
-          source: `
+    // Create a CustomCode node that uses the EventTrigger input data
+    const customCodeNode = NodeFactory.create({
+      id: getNextId(),
+      name: "code0",
+      type: NodeType.CustomCode,
+      data: {
+        lang: CustomCodeLang.JavaScript,
+        source: `
             const _ = require("lodash");
             const dayjs = require("dayjs");
             
@@ -687,125 +571,67 @@ describe("Input Field Tests", () => {
               inputTokensCount: inputData?.tokens?.length || 0
             };
           `,
-        },
-      });
+      },
+    });
+    // Test simulateWorkflow first (this was where the issue was discovered)
+    const simulationResult = await client.simulateWorkflow({
+      trigger: eventTrigger,
+      nodes: [customCodeNode], // Only include CustomCode node
+      edges: [
+        new Edge({
+          id: getNextId(),
+          source: eventTrigger.id,
+          target: customCodeNode.id,
+        }),
+      ],
+      inputVariables: {},
+    });
 
-      console.log(
-        "🧪 Testing simulateWorkflow with EventTrigger input data..."
-      );
-      console.log(
-        "📝 This reproduces the exact scenario from the original server logs"
-      );
+    // Verify the simulation has the expected structure
+    expect(simulationResult.steps).toHaveLength(2); // trigger + 1 node (CustomCode only)
 
-      // Test simulateWorkflow first (this was where the issue was discovered)
-      const simulationResult = await client.simulateWorkflow({
-        trigger: eventTrigger,
-        nodes: [customCodeNode], // Only include CustomCode node
-        edges: [
-          new Edge({
-            id: getNextId(),
-            source: eventTrigger.id,
-            target: customCodeNode.id,
-          }),
-        ],
-        inputVariables: {},
-      });
+    // Check the trigger step
+    const triggerStep = simulationResult.steps[0];
+    expect(triggerStep.type).toBe(TriggerType.Event);
+    expect(triggerStep.name).toBe("event_trigger_with_input");
 
-      console.log("📊 simulateWorkflow Result (EventTrigger input test):");
-      console.log("  - Success:", simulationResult.success);
-      console.log("  - Steps count:", simulationResult.steps.length);
+    // 🎯 KEY TEST: Verify EventTrigger input field contains configuration (not custom input data)
+    expect(triggerStep.input).toBeDefined();
+    expect(typeof triggerStep.input).toBe("object");
 
-      // Verify the simulation has the expected structure
-      expect(simulationResult.steps).toHaveLength(2); // trigger + 1 node (CustomCode only)
+    const triggerInput = triggerStep.input as Record<string, unknown>;
 
-      // Check the trigger step
-      const triggerStep = simulationResult.steps[0];
-      expect(triggerStep.type).toBe(TriggerType.Event);
-      expect(triggerStep.name).toBe("event_trigger_with_input");
+    // The trigger step's input field should contain the trigger configuration (for debugging)
+    // Custom input data should be accessible via VM variables (event_trigger_with_input.input)
+    expect(triggerInput.queries).toBeDefined();
+    expect(Array.isArray(triggerInput.queries)).toBe(true);
+    expect(triggerInput.queries as Array<any>).toHaveLength(2);
 
-      console.log("🔍 EventTrigger step input field:", triggerStep.input);
+    // Check the custom code step
+    const codeStep = simulationResult.steps[1];
+    expect(codeStep.type).toBe(NodeType.CustomCode);
+    expect(codeStep.name).toBe("code0");
 
-      // 🎯 KEY TEST: Verify EventTrigger input field contains configuration (not custom input data)
-      expect(triggerStep.input).toBeDefined();
-      expect(typeof triggerStep.input).toBe("object");
+    // 🎯 CRITICAL: Verify EventTrigger input is available in inputsList
+    expect(codeStep.inputsList).toContain("event_trigger_with_input.input");
 
-      console.log("✅ SUCCESS: EventTrigger step input field is populated!");
+    // 🎯 MAIN TEST: Verify CustomCode node execution and output
+    expect(codeStep.success).toBe(true);
+    expect(codeStep.output).toBeDefined();
 
-      const triggerInput = triggerStep.input as Record<string, unknown>;
+    // Access the output directly since we've already asserted it's defined
+    const output = codeStep.output as Record<string, unknown>;
 
-      // The trigger step's input field should contain the trigger configuration (for debugging)
-      // Custom input data should be accessible via VM variables (event_trigger_with_input.input)
-      expect(triggerInput.queries).toBeDefined();
-      expect(Array.isArray(triggerInput.queries)).toBe(true);
-      expect(triggerInput.queries as Array<any>).toHaveLength(2);
-
-      console.log("✅ EventTrigger configuration verified:", triggerInput);
-
-      // Check the custom code step
-      const codeStep = simulationResult.steps[1];
-      expect(codeStep.type).toBe(NodeType.CustomCode);
-      expect(codeStep.name).toBe("code0");
-
-      console.log("🔍 CustomCode step details:");
-      console.log("  - Success:", codeStep.success);
-      console.log("  - Error:", codeStep.error || "none");
-      console.log("  - InputsList:", codeStep.inputsList);
-      console.log("  - Output:", codeStep.output);
-
-      // 🎯 CRITICAL: Verify EventTrigger input is available in inputsList
-      expect(codeStep.inputsList).toContain("event_trigger_with_input.input");
-      console.log(
-        "✅ SUCCESS: event_trigger_with_input.input is available in node inputsList!"
-      );
-
-      // 🎯 MAIN TEST: Verify CustomCode node execution and output
-      expect(codeStep.success).toBe(true);
-      expect(codeStep.output).toBeDefined();
-
-      // Access the output directly since we've already asserted it's defined
-      const output = codeStep.output as Record<string, unknown>;
-      console.log("📊 CustomCode output structure:", output);
-
-      // Verify the CustomCode processed the EventTrigger input correctly
-      // Note: CustomCode node returns direct output, not wrapped in {data: ...}
-      expect(output.success).toBe(true);
-      expect(output.inputDataAccessed).toBe(true);
-      expect(output.inputAddress).toBe(
-        "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788"
-      );
-      expect(output.inputChainId).toBe(11155111);
-      expect(output.inputTokensCount).toBe(1);
-      expect(output.message).toBeDefined();
-      expect(typeof output.message).toBe("string");
-
-      console.log(
-        "✅ SUCCESS: CustomCode successfully accessed EventTrigger input data!"
-      );
-      console.log("📊 Processed message:", output.message);
-      console.log("📊 Input data accessed:", output.inputDataAccessed);
-      console.log("📊 Input address:", output.inputAddress);
-      console.log("📊 Input chain ID:", output.inputChainId);
-      console.log("📊 Input tokens count:", output.inputTokensCount);
-
-      // 🎯 MAIN SUCCESS CRITERIA:
-      console.log("🎯 MAIN SUCCESS CRITERIA CHECK:");
-      console.log("1. ✅ simulateWorkflow completed without throwing errors");
-      console.log("2. ✅ EventTrigger input is available in node inputsList");
-      console.log(
-        "3. ",
-        triggerStep.input ? "✅" : "⚠️ ",
-        "EventTrigger step input field populated"
-      );
-      console.log(
-        "4. ✅ CustomCode node executed successfully and processed EventTrigger input"
-      );
-
-      console.log("🎉 EventTrigger input field test completed!");
-      console.log(
-        "📋 Summary: EventTrigger input data transmission and CustomCode processing verified"
-      );
-    } finally {
-      // Note: No workflow cleanup needed since this was only a simulation
-    }
+    // Verify the CustomCode processed the EventTrigger input correctly
+    // Note: CustomCode node returns direct output, not wrapped in {data: ...}
+    expect(output.success).toBe(true);
+    expect(output.inputDataAccessed).toBe(true);
+    expect(output.inputAddress).toBe(
+      "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788"
+    );
+    expect(output.inputChainId).toBe(11155111);
+    expect(output.inputTokensCount).toBe(1);
+    expect(output.message).toBeDefined();
+    expect(typeof output.message).toBe("string");
   });
 });

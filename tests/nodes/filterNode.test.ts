@@ -63,10 +63,7 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      console.log(
-        "runNodeWithInputs response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -199,10 +196,7 @@ describe("FilterNode Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      console.log(
-        "simulateWorkflow response:",
-        util.inspect(simulation, { depth: null, colors: true })
-      );
+
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + filter node
@@ -324,11 +318,7 @@ describe("FilterNode Tests", () => {
           isBlocking: true,
         });
 
-        console.log("=== TRIGGER WORKFLOW TEST ===");
-        console.log(
-          "Trigger result:",
-          util.inspect(triggerResult, { depth: null, colors: true })
-        );
+
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -346,10 +336,7 @@ describe("FilterNode Tests", () => {
         }
 
         expect(filterStep.success).toBe(true);
-        console.log(
-          "Deploy + trigger filter step output:",
-          util.inspect(filterStep.output, { depth: null, colors: true })
-        );
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -378,9 +365,7 @@ describe("FilterNode Tests", () => {
         ],
       };
 
-      console.log(
-        "🔍 Testing filter expression consistency across all methods..."
-      );
+
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -463,19 +448,6 @@ describe("FilterNode Tests", () => {
         );
 
         // Compare response formats
-        console.log("=== FILTER EXPRESSION COMPARISON ===");
-        console.log(
-          "1. runNodeWithInputs response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          util.inspect(executedStep?.output, { depth: null, colors: true })
-        );
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -488,7 +460,7 @@ describe("FilterNode Tests", () => {
           expect(directResponse.data.length).toBe(2); // Alice(21) and Carol(25)
         }
 
-        console.log("✅ All three methods return consistent filter results!");
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

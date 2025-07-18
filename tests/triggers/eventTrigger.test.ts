@@ -443,19 +443,9 @@ describe("EventTrigger Tests", () => {
       expect(result.metadata).toBeDefined();
 
       // For specific address filters, no matching events is a valid outcome
-      if (result.success && result.data !== null) {
-        // If we found events, validate the structure
-        expect(result.data).toBeDefined();
-        console.log("✅ Found Transfer FROM events for address:", coreAddress);
-      } else {
-        // No events found is expected for most test addresses
-        console.log(
-          "ℹ️  No Transfer FROM events found for address (expected):",
-          coreAddress
-        );
-        expect(result.success).toBe(true);
-        expect(result.data).toBe(null);
-      }
+      expect(result.success).toBe(true);
+      // Data can be null (no events found) or an object (events found)
+      expect(result.data === null || typeof result.data === 'object').toBe(true);
     });
 
     test("should run trigger for Transfer events to core address", async () => {
@@ -502,19 +492,9 @@ describe("EventTrigger Tests", () => {
       expect(result.metadata).toBeDefined();
 
       // For specific address filters, no matching events is a valid outcome
-      if (result.success && result.data !== null) {
-        // If we found events, validate the structure
-        expect(result.data).toBeDefined();
-        console.log("✅ Found Transfer TO events for address:", coreAddress);
-      } else {
-        // No events found is expected for most test addresses
-        console.log(
-          "ℹ️  No Transfer TO events found for address (expected):",
-          coreAddress
-        );
-        expect(result.success).toBe(true);
-        expect(result.data).toBe(null);
-      }
+      expect(result.success).toBe(true);
+      // Data can be null (no events found) or an object (events found)
+      expect(result.data === null || typeof result.data === 'object').toBe(true);
     });
 
     test("should run trigger with multiple Transfer event queries", async () => {
@@ -545,19 +525,9 @@ describe("EventTrigger Tests", () => {
       expect(result.triggerId).toBeDefined();
 
       // For specific address filters, no matching events is a valid outcome
-      if (result.success && result.data !== null) {
-        // If we found events, validate the structure
-        expect(result.data).toBeDefined();
-        console.log("✅ Found Transfer events for address:", coreAddress);
-      } else {
-        // No events found is expected for most test addresses
-        console.log(
-          "ℹ️  No Transfer events found for address (expected):",
-          coreAddress
-        );
-        expect(result.success).toBe(true);
-        expect(result.data).toBe(null);
-      }
+      expect(result.success).toBe(true);
+      // Data can be null (no events found) or an object (events found)
+      expect(result.data === null || typeof result.data === 'object').toBe(true);
     });
 
     test("should run trigger with Chainlink price condition", async () => {
@@ -592,18 +562,9 @@ describe("EventTrigger Tests", () => {
       expect(result.metadata).toBeDefined();
 
       // Conditions filter events, so no matching events is expected when condition is not met
-      if (result.success && result.data !== null) {
-        expect(result.data).toBeDefined();
-        console.log(
-          "✅ Found Chainlink events matching price condition > $2000"
-        );
-      } else {
-        console.log(
-          "ℹ️  No events matching price condition (expected behavior)"
-        );
-        expect(result.success).toBe(true);
-        expect(result.data).toBe(null);
-      }
+      expect(result.success).toBe(true);
+      // Data can be null (no events found) or an object (events found)
+      expect(result.data === null || typeof result.data === 'object').toBe(true);
     });
 
     test("should run trigger with multiple price range conditions", async () => {
@@ -662,16 +623,9 @@ describe("EventTrigger Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.triggerId).toBeDefined();
 
-      if (result.success && result.data !== null) {
-        expect(result.data).toBeDefined();
-        console.log("✅ Found Chainlink events in price range $1500-$4000");
-      } else {
-        console.log(
-          "ℹ️  No events in price range (expected if price is outside range)"
-        );
-        expect(result.success).toBe(true);
-        expect(result.data).toBe(null);
-      }
+      expect(result.success).toBe(true);
+      // Data can be null (no events found) or an object (events found)
+      expect(result.data === null || typeof result.data === 'object').toBe(true);
     });
 
     test("should run trigger with Chainlink price condition with decimal formatting", async () => {
@@ -734,20 +688,20 @@ describe("EventTrigger Tests", () => {
       expect(result.error).toBe("");
       expect(result.triggerId).toBeDefined();
 
-      if (result.success && result.data) {
-        console.log("✅ Found Chainlink events with decimal formatting");
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
 
-        // Check that we have both formatted and raw values
-        expect((result.data as any).current).toBeDefined();
-        expect((result.data as any).currentRaw).toBeDefined();
-        expect((result.data as any).decimals).toBeDefined();
+      // Check that we have both formatted and raw values
+      expect((result.data as any).current).toBeDefined();
+      expect((result.data as any).currentRaw).toBeDefined();
+      expect((result.data as any).decimals).toBeDefined();
 
-        // 🔍 TYPE CHECK: Verify ABI type improvements are working
-        expect(typeof (result.data as any).decimals).toBe("number"); // decimals should be number type (uint8 -> number)
-        expect(typeof (result.data as any).current).toBe("string"); // current should be string (int256 -> string, then formatted)
-        expect(typeof (result.data as any).currentRaw).toBe("string"); // raw value should be string
-        expect(typeof (result.data as any).roundId).toBe("string"); // roundId should be string (uint256 -> string)
-        expect(typeof (result.data as any).updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
+      // 🔍 TYPE CHECK: Verify ABI type improvements are working
+      expect(typeof (result.data as any).decimals).toBe("number"); // decimals should be number type (uint8 -> number)
+      expect(typeof (result.data as any).current).toBe("string"); // current should be string (int256 -> string, then formatted)
+      expect(typeof (result.data as any).currentRaw).toBe("string"); // raw value should be string
+      expect(typeof (result.data as any).roundId).toBe("string"); // roundId should be string (uint256 -> string)
+      expect(typeof (result.data as any).updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
 
         // Verify the formatting makes sense
         const formattedValue = parseFloat((result.data as any).current);
@@ -1039,26 +993,6 @@ describe("EventTrigger Tests", () => {
       expect(transferData.logIndex).toBeDefined();
       expect(transferData.transactionIndex).toBeDefined();
 
-      // Check for enriched transfer_log fields (new enhanced structure)
-      console.log("🔍 === CHECKING FOR ENHANCED TRANSFER_LOG FIELDS ===");
-      console.log(`📋 Token Name: ${transferData.tokenName || "N/A"}`);
-      console.log(`📋 Token Symbol: ${transferData.tokenSymbol || "N/A"}`);
-      console.log(
-        `📋 Token Decimals: ${transferData.tokenDecimals || "N/A"}`
-      );
-      console.log(
-        `📋 From Address (enriched): ${transferData.fromAddress || "N/A"}`
-      );
-      console.log(
-        `📋 To Address (enriched): ${transferData.toAddress || "N/A"}`
-      );
-      console.log(`📋 Value (formatted): ${transferData.value || "N/A"}`);
-      console.log(`📋 Value Raw: ${transferData.valueRaw || "N/A"}`);
-      console.log(`📋 Block Number: ${transferData.blockNumber || "N/A"}`);
-      console.log(
-        `📋 Transaction Hash: ${transferData.transactionHash || "N/A"}`
-      );
-
       // Type checks for enhanced Transfer enrichment
       expect(typeof transferData.tokenName).toBe("string");
       expect(typeof transferData.tokenSymbol).toBe("string");
@@ -1070,9 +1004,6 @@ describe("EventTrigger Tests", () => {
       expect(typeof transferData.blockNumber).toBe("number");
       expect(typeof transferData.transactionHash).toBe("string");
 
-      console.log(
-        `✅ Transfer enrichment structure verified (values need server fix)`
-      );
     });
   });
 
@@ -1662,16 +1593,9 @@ describe("EventTrigger Tests", () => {
       expect(result.triggerId).toBeDefined();
 
       // For specific filters like minting events, no matching events is expected
-      if (result.success && result.data !== null) {
-        // If we found minting events, validate the structure
-        expect(result.data).toBeDefined();
-        console.log("✅ Found minting events (Transfer from zero address)");
-      } else {
-        // No minting events found is expected for most token contracts
-        console.log("ℹ️  No minting events found (expected behavior)");
-        expect(result.success).toBe(true);
-        expect(result.data).toBe(null);
-      }
+      expect(result.success).toBe(true);
+      // Data can be null (no events found) or an object (events found)
+      expect(result.data === null || typeof result.data === 'object').toBe(true);
     });
   });
 
@@ -1758,10 +1682,8 @@ describe("EventTrigger Tests", () => {
       expect(result.triggerId).toBeDefined();
 
       // Should either succeed with broad monitoring or handle gracefully
-      if (result.success) {
-        // If successful, data can be null (no events) or contain events
-        expect(result.error).toBe("");
-      }
+      expect(result.success).toBe(true);
+      expect(result.error).toBe("");
     });
 
     test("should handle empty topics array consistently", async () => {
@@ -1800,9 +1722,8 @@ describe("EventTrigger Tests", () => {
       expect(result.triggerId).toBeDefined();
 
       // Should handle empty topics gracefully
-      if (result.success) {
-        expect(result.error).toBe("");
-      }
+      expect(result.success).toBe(true);
+      expect(result.error).toBe("");
     });
 
     test("should maintain empty data consistency across execution methods", async () => {
@@ -1933,12 +1854,8 @@ describe("EventTrigger Tests", () => {
       expect(result.triggerId).toBeDefined();
 
       // Should handle gracefully - either succeed with null data or fail with error
-      if (result.success) {
-        expect(result.error).toBe("");
-        // Data can be null or contain events depending on how the system handles invalid topics
-      } else {
-        expect(result.error).toBeTruthy();
-      }
+      expect(result.success).toBe(true);
+      expect(result.error).toBe("");
     });
 
     test("should validate event trigger configuration without network calls", () => {

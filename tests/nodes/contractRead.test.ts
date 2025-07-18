@@ -979,13 +979,6 @@ describe("ContractRead Node Tests", () => {
 
         // Check that rawStructuredFields is present for deployed workflow execution
         expect(latestRoundResult.data.rawStructuredFields).toBeUndefined();
-
-        console.log(
-          "✅ applyToFields test passed - answerRaw field is properly included!"
-        );
-        console.log(`   - Formatted answer: ${answer}`);
-        console.log(`   - Raw answer: ${answerRaw}`);
-        console.log(`   - Decimals used: ${decimalsResult.data.decimals}`);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1132,21 +1125,6 @@ describe("ContractRead Node Tests", () => {
           (step) => step.id === contractReadNode.id
         );
 
-        // Compare response formats
-        console.log("=== CONTRACT READ RESPONSE FORMAT COMPARISON ===");
-        console.log(
-          "1. runNodeWithInputs response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          util.inspect(executedStep?.output, { depth: null, colors: true })
-        );
-
         // All should be successful
         expect(directResponse.success).toBe(true);
         expect(simulatedStep).toBeDefined();
@@ -1179,10 +1157,6 @@ describe("ContractRead Node Tests", () => {
 
         expect(simulatedMethods).toEqual(executedMethods);
         expect(simulatedMethods).toEqual(directMethods);
-
-        console.log(
-          "✅ All three methods return consistent contract read results!"
-        );
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1239,24 +1213,21 @@ describe("ContractRead Node Tests", () => {
 
       const result = await client.runNodeWithInputs(params);
 
-      console.log(
-        "🚀 ~ runNodeWithInputs error handling ~ result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+
 
       expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      
       // Should either fail the node execution or return error results
-      if (result.success && result.data && (result.data as any).results) {
-        const errorResult = (result.data as any).results.find(
-          (r: any) => r.methodName === "nonExistentMethod"
-        );
-        if (errorResult) {
-          expect(errorResult.success).toBe(false);
-          expect(errorResult.error).toBeDefined();
-        }
-      }
+      const data = result.data as any;
+      expect(data.results).toBeDefined();
+      const errorResult = data.results.find(
+        (r: any) => r.methodName === "nonExistentMethod"
+      );
+      expect(errorResult).toBeDefined();
+      expect(errorResult.success).toBe(false);
+      expect(errorResult.error).toBeDefined();
     });
   });
 
@@ -1308,9 +1279,7 @@ describe("ContractRead Node Tests", () => {
       expect(latestRoundCall.getCallData()).toBe("0xfeaf968c");
       expect(latestRoundCall.getApplyToFieldsList()).toEqual([]);
 
-      console.log(
-        "✅ Protobuf serialization test passed - applyToFields is properly serialized"
-      );
+
     });
   });
 
@@ -1359,17 +1328,7 @@ describe("ContractRead Node Tests", () => {
         },
       };
 
-      console.log(
-        "🚀 ~ runNodeWithInputs applyToFields test ~ params:",
-        util.inspect(params, { depth: null, colors: true })
-      );
-
       const result = await client.runNodeWithInputs(params);
-
-      console.log(
-        "🚀 ~ runNodeWithInputs applyToFields test ~ result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -1425,12 +1384,7 @@ describe("ContractRead Node Tests", () => {
       // Check that rawStructuredFields is present for direct execution
       expect(latestRoundResult.data.rawStructuredFields).toBeUndefined();
 
-      console.log(
-        "✅ runNodeWithInputs applyToFields test passed - answerRaw field is properly included!"
-      );
-      console.log(`   - Formatted answer: ${answer}`);
-      console.log(`   - Raw answer: ${answerRaw}`);
-      console.log(`   - Decimals used: ${decimalsResult.data.decimals}`);
+
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
@@ -1539,14 +1493,7 @@ describe("ContractRead Node Tests", () => {
 
       // Verify that answerRaw is the original value before formatting
       expect(parseInt(answerRaw)).toBeGreaterThan(0);
-      expect(parseFloat(answer)).toBeGreaterThan(0);
-
-      console.log(
-        "✅ simulateWorkflow applyToFields test passed - answerRaw field is properly included!"
-      );
-      console.log(`   - Formatted answer: ${answer}`);
-      console.log(`   - Raw answer: ${answerRaw}`);
-      console.log(`   - Decimals used: ${decimalsResult.data.decimals}`);
+      expect(parseFloat(answer)).toBeGreaterThan(0)
     });
   });
 });

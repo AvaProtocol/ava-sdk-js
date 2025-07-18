@@ -40,7 +40,13 @@ export interface BranchNodeData {
   }>;
 }
 
-export type RestAPINodeData = avs_pb.RestAPINode.Config.AsObject;
+// Custom RestAPINode data type with object format for headers
+export interface RestAPINodeData {
+  url: string;
+  headers: Record<string, string>;
+  body: string;
+  method: string;
+}
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
 export type LoopNodeData = Omit<avs_pb.LoopNode.Config.AsObject, 'executionMode'> & {

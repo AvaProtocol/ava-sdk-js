@@ -183,7 +183,10 @@ describe("ContractWrite Node Tests", () => {
         },
       };
 
-      console.log("Test params:", util.inspect(params, { depth: null, colors: true }));
+      console.log(
+        "Test params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
@@ -201,21 +204,15 @@ describe("ContractWrite Node Tests", () => {
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
-      if (result.success && data.length > 0) {
-        // Should have transaction hash for successful write
-        const approveResult = data.find((r: any) => r.methodName === "approve");
-        expect(approveResult).toBeDefined();
-        expect(approveResult.methodName).toBe("approve");
+      expect(result.success).toBe(true);
+      expect(data.length).toBeGreaterThan(0);
 
-        if (approveResult.transaction) {
-          expect(approveResult.transaction.hash).toBeDefined();
-          console.log("✅ Transaction hash:", approveResult.transaction.hash);
-        }
-      } else {
-        console.log("ContractWrite failed:", result.error);
-        // Failure is acceptable for testing (might be insufficient gas, etc.)
-        expect(result.error).toBeDefined();
-      }
+      // Should have transaction hash for successful write
+      const approveResult = data.find((r: any) => r.methodName === "approve");
+      expect(approveResult).toBeDefined();
+      expect(approveResult.methodName).toBe("approve");
+      expect(approveResult.transaction).toBeDefined();
+      expect(approveResult.transaction.hash).toBeDefined();
     });
 
     test("should handle multiple method calls", async () => {
@@ -246,7 +243,10 @@ describe("ContractWrite Node Tests", () => {
         inputVariables: {},
       };
 
-      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+      console.log(
+        "~ test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
@@ -263,14 +263,12 @@ describe("ContractWrite Node Tests", () => {
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
-      if (result.success && data.length > 0) {
-        data.forEach((methodResult: any, index: number) => {
-          expect(methodResult.methodName).toBe("approve");
-        });
-      } else {
-        console.log("Multiple method calls failed:", result.error);
-        expect(result.error).toBeDefined();
-      }
+      expect(result.success).toBe(true);
+      expect(data.length).toBeGreaterThan(0);
+
+      data.forEach((methodResult: any, index: number) => {
+        expect(methodResult.methodName).toBe("approve");
+      });
     });
 
     test("should handle invalid contract address gracefully", async () => {
@@ -300,7 +298,10 @@ describe("ContractWrite Node Tests", () => {
         inputVariables: {},
       };
 
-      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+      console.log(
+        "~ test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
@@ -318,10 +319,8 @@ describe("ContractWrite Node Tests", () => {
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Should fail gracefully
-      if (!result.success) {
-        expect(result.error).toBeDefined();
-        console.log("Expected failure for zero address:", result.error);
-      }
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
     test("should handle malformed call data gracefully", async () => {
@@ -345,7 +344,10 @@ describe("ContractWrite Node Tests", () => {
         inputVariables: {},
       };
 
-      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+      console.log(
+        "~ test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
@@ -363,10 +365,8 @@ describe("ContractWrite Node Tests", () => {
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Should fail gracefully
-      if (!result.success) {
-        expect(result.error).toBeDefined();
-        console.log("Expected failure for malformed data:", result.error);
-      }
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
   });
 
@@ -427,12 +427,7 @@ describe("ContractWrite Node Tests", () => {
         (contractWriteNode.data as any).methodCalls.length
       );
 
-      // Note: Simulation might succeed even if actual execution would fail
-      // This depends on the simulation implementation
-      console.log("Contract write step success:", contractWriteStep!.success);
-      if (!contractWriteStep!.success) {
-        console.log("Simulation error (expected):", contractWriteStep!.error);
-      }
+      expect(contractWriteStep!.success).toBe(true);
     });
 
     test("should simulate workflow with multiple contract writes", async () => {
@@ -583,13 +578,7 @@ describe("ContractWrite Node Tests", () => {
         );
 
         // Note: The step might succeed or fail depending on wallet funding and gas
-        console.log("Contract write step success:", contractWriteStep.success);
-        if (!contractWriteStep.success) {
-          console.log(
-            "Execution error (may be expected):",
-            contractWriteStep.error
-          );
-        }
+        expect(contractWriteStep.success).toBe(true);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -624,10 +613,6 @@ describe("ContractWrite Node Tests", () => {
         ],
       };
 
-      console.log(
-        "🔍 Testing response format consistency across all methods..."
-      );
-
       // Test 1: runNodeWithInputs
       const directParams = {
         nodeType: NodeType.ContractWrite,
@@ -635,7 +620,10 @@ describe("ContractWrite Node Tests", () => {
         inputVariables: {},
       };
 
-      console.log("🚀 ~ direct test ~ params:", util.inspect(directParams, { depth: null, colors: true }));
+      console.log(
+        "🚀 ~ direct test ~ params:",
+        util.inspect(directParams, { depth: null, colors: true })
+      );
 
       const directResponse = await client.runNodeWithInputs(directParams);
 
@@ -703,7 +691,10 @@ describe("ContractWrite Node Tests", () => {
           isBlocking: true,
         };
 
-        console.log("🚀 ~ trigger test ~ params:", util.inspect(triggerParams, { depth: null, colors: true }));
+        console.log(
+          "🚀 ~ trigger test ~ params:",
+          util.inspect(triggerParams, { depth: null, colors: true })
+        );
 
         const triggerResult = await client.triggerWorkflow(triggerParams);
 
@@ -720,20 +711,14 @@ describe("ContractWrite Node Tests", () => {
           (step) => step.id === contractWriteNode.id
         );
 
-        // Compare response formats
-        console.log("=== CONTRACT WRITE RESPONSE FORMAT COMPARISON ===");
-        console.log(
-          "1. runNodeWithInputs response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          util.inspect(executedStep?.output, { depth: null, colors: true })
-        );
+        // Compare response formats - verify all three methods return consistent data
+        expect(directResponse.data).toBeDefined();
+        expect(simulatedStep?.output).toBeDefined();
+        expect(executedStep?.output).toBeDefined();
+        
+        // All outputs should have the same structure
+        expect(directResponse.data).toEqual(simulatedStep?.output);
+        expect(simulatedStep?.output).toEqual(executedStep?.output);
 
         // Verify consistent structure
         expect(directResponse).toBeDefined();
@@ -762,14 +747,6 @@ describe("ContractWrite Node Tests", () => {
         expect(simulatedMethods).toEqual(executedMethods);
         expect(simulatedMethods).toEqual(directMethods);
 
-        // All should have similar response structure (success/failure is less important)
-        console.log("Direct response success:", directResponse.success);
-        console.log("Simulated step success:", simulatedStep?.success);
-        console.log("Executed step success:", executedStep?.success);
-
-        console.log(
-          "✅ All three methods return consistent contract write response formats!"
-        );
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -959,7 +936,10 @@ describe("ContractWrite Node Tests", () => {
         },
       };
 
-      console.log("�� ~ test ~ params:", util.inspect(params, { depth: null, colors: true }));
+      console.log(
+        "�� ~ test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
@@ -979,7 +959,7 @@ describe("ContractWrite Node Tests", () => {
       const approveResult = data.find((r: any) => r.methodName === "approve");
       expect(approveResult).toBeDefined();
 
-      console.log("✅ runNodeWithInputs applyToFields test completed!");
+      
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
@@ -1046,7 +1026,7 @@ describe("ContractWrite Node Tests", () => {
       const approveResult = output.find((r: any) => r.methodName === "approve");
       expect(approveResult).toBeDefined();
 
-      console.log("✅ simulateWorkflow applyToFields test completed!");
+      
     });
 
     test("should deploy and trigger workflow with applyToFields", async () => {
@@ -1104,7 +1084,10 @@ describe("ContractWrite Node Tests", () => {
           isBlocking: true,
         };
 
-        console.log("�� ~ test ~ params:", util.inspect(triggerParams, { depth: null, colors: true }));
+        console.log(
+          "�� ~ test ~ params:",
+          util.inspect(triggerParams, { depth: null, colors: true })
+        );
 
         const triggerResult = await client.triggerWorkflow(triggerParams);
 
@@ -1147,7 +1130,7 @@ describe("ContractWrite Node Tests", () => {
         );
         expect(approveResult).toBeDefined();
 
-        console.log("✅ applyToFields test passed!");
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
