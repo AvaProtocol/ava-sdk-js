@@ -6,7 +6,6 @@ import {
   WorkflowStatus,
 } from "@avaprotocol/types";
 import {
-  getNextId,
   getAddress,
   generateSignature,
   TIMEOUT_DURATION,
@@ -19,6 +18,10 @@ jest.setTimeout(TIMEOUT_DURATION);
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+
+const EVENT_TRIGGER_DATA_ERROR = "Error: eventTrigger.data not available";
+const EVENT_TRIGGER_TOPICS_ERROR =
+  "Error: eventTrigger.data.topics not available - keys: ";
 
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
@@ -140,13 +143,12 @@ describe("Template: Telegram Alert on Transfer", () => {
         source: `const _ = require("lodash");
 const dayjs = require("dayjs");
 
-// Check if eventTrigger.data exists and has the expected structure
 if (!eventTrigger || !eventTrigger.data) {
-  return "Error: eventTrigger.data not available";
+  return "${EVENT_TRIGGER_DATA_ERROR}";
 }
 
 if (!eventTrigger.data.topics) {
-  return "Error: eventTrigger.data.topics not available - keys: " + Object.keys(eventTrigger.data).join(", ");
+  return "${EVENT_TRIGGER_TOPICS_ERROR}" + Object.keys(eventTrigger.data).join(", ");
 }
 
 // Extract addresses from topics (ERC20 Transfer event structure)
@@ -242,7 +244,7 @@ return message;`,
 
       // For event triggers, no matching events is a valid outcome
       expect(result.success).toBe(true);
-      
+
       // In test environment, we might get mock event data or null
       // Both are valid outcomes for this test
       if (result.data === null) {
@@ -251,14 +253,11 @@ return message;`,
           testWalletAddress
         );
       } else {
-        console.log(
-          "ℹ️  Mock event data returned for testing:",
-          result.data
-        );
+        console.log("ℹ️  Mock event data returned for testing:", result.data);
         // If we get mock data, verify it has the expected structure
-        expect(result.data).toHaveProperty('blockNumber');
-        expect(result.data).toHaveProperty('eventType');
-        expect(result.data).toHaveProperty('topics');
+        expect(result.data).toHaveProperty("blockNumber");
+        expect(result.data).toHaveProperty("eventType");
+        expect(result.data).toHaveProperty("topics");
       }
     });
 
@@ -276,16 +275,19 @@ return message;`,
             contractAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
             eventDescription: "ERC20 Transfer event",
             eventFound: true,
-            eventSignature: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            eventSignature:
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
             eventType: "Transfer",
             logIndex: 0,
-            rawData: "0x00000000000000000000000000000000000000000000000572b7b98736c20000", // ~100.5 tokens with 18 decimals
+            rawData:
+              "0x00000000000000000000000000000000000000000000000572b7b98736c20000", // ~100.5 tokens with 18 decimals
             topics: [
               "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
               "0x0000000000000000000000001234567890123456789012345678901234567890", // from address (padded)
               `0x000000000000000000000000${testWalletAddress.slice(2)}`, // to address (padded)
             ],
-            transactionHash: "0x000000000000000000000000000000000000000000000000185331f3d274a668",
+            transactionHash:
+              "0x000000000000000000000000000000000000000000000000185331f3d274a668",
           },
           input: {
             address: testWalletAddress,
@@ -386,7 +388,7 @@ return message;`,
       expect(triggerStep.input).toBeDefined();
       expect(triggerStep.input.queries).toBeDefined();
       expect(triggerStep.input.queries).toHaveLength(2);
-      
+
       // Custom input data should be accessible via VM variables (checked in subsequent node's inputsList)
       // The CustomCode node should have access to eventTrigger.input which contains the custom input data
       const customCodeStep = simulationResult.steps[1];
@@ -398,8 +400,8 @@ return message;`,
       expect(customCodeStep.success).toBe(true);
       expect(customCodeStep.output).toBeDefined();
       expect(typeof customCodeStep.output).toBe("string");
-      expect(customCodeStep.output).not.toContain("Error: eventTrigger.data.topics not available");
-      expect(customCodeStep.output).not.toContain("Error: eventTrigger.data not available");
+      expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_TOPICS_ERROR);
+      expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_DATA_ERROR);
 
       console.log("✅ Event trigger simulation completed successfully");
     });
