@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.3.1
+
+### Patch Changes
+
+- 6a3d621: Standardize input format of Manual Trigger headers
+
 ## 2.3.0
 
 ### Minor Changes

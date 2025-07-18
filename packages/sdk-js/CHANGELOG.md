@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.5.1
+
+### Patch Changes
+
+- 6a3d621: Standardize input format of Manual Trigger headers
+- Updated dependencies [6a3d621]
+  - @avaprotocol/types@2.3.1
+
 ## 2.5.0
 
 ### Minor Changes
