@@ -1081,8 +1081,8 @@ describe("CustomCode Node Tests", () => {
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
 
-      // With standard structure, CustomCode accesses trigger.data which contains {data: userData}
-      expect(customCodeStep!.output).toEqual({data: userData});
+      // CustomCode returns the trigger data directly, not wrapped in additional data field
+      expect(customCodeStep!.output).toEqual(userData);
 
       console.log(
         "✅ CustomCode correctly returned direct manual trigger data!"
