@@ -2150,7 +2150,7 @@ describe("LoopNode Tests", () => {
       expect(inputConfig.iterKey).toBe("index");
       expect(inputConfig.executionMode).toBeDefined();
       // Verify that parallel execution mode is properly set
-      expect(inputConfig.executionMode).toBe("EXECUTION_MODE_PARALLEL");
+      expect(inputConfig.executionMode).toBe("parallel");
       
       // Verify runner configuration
       expect(inputConfig.runner).toBeDefined();

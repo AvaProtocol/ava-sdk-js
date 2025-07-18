@@ -1,11 +1,11 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
+import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {
-  Client,
-  TriggerFactory,
-  NodeFactory,
-  Edge,
-} from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, CustomCodeLang, TriggerProps } from "@avaprotocol/types";
+  TriggerType,
+  NodeType,
+  CustomCodeLang,
+  TriggerProps,
+} from "@avaprotocol/types";
 import util from "util";
 import _ from "lodash";
 import {
@@ -89,7 +89,9 @@ describe("Input Field Tests", () => {
     const workflow = client.createWorkflow(workflowProps);
 
     // This should fail due to invalid node name - expect the server to reject it
-    await expect(client.submitWorkflow(workflow)).rejects.toThrow(/node name validation failed|invalid.*node.*name|validation.*failed/i);
+    await expect(client.submitWorkflow(workflow)).rejects.toThrow(
+      /node name validation failed|invalid.*node.*name|validation.*failed/i
+    );
   });
 
   test("should show input data for both trigger and node in execution steps using comprehensive manual trigger config", async () => {
@@ -110,19 +112,15 @@ describe("Input Field Tests", () => {
           priority: "high",
         },
         // Note: Type assertion needed for extended trigger properties
-        headers: [
-          {
-            "X-Webhook-Source": "manual-trigger",
-            "X-Trigger-Version": "1.0",
-            "Authorization": "Bearer trigger-token-123",
-          },
+        headersMap: [
+          ["X-Webhook-Source", "manual-trigger"],
+          ["X-Trigger-Version", "1.0"],
+          ["Authorization", "Bearer trigger-token-123"],
         ],
-        pathParams: [
-          {
-            version: "v1",
-            endpoint: "data",
-            format: "json",
-          },
+        pathParamsMap: [
+          ["version", "v1"],
+          ["endpoint", "data"],
+          ["format", "json"],
         ],
       } as TriggerProps);
 
@@ -141,9 +139,18 @@ describe("Input Field Tests", () => {
             ["X-Environment", "{{ManualTriggerWithInput.data.environment}}"],
             ["X-Priority", "{{ManualTriggerWithInput.data.priority}}"],
             // Use headers from manual trigger configuration
-            ["X-Webhook-Source", "{{ManualTriggerWithInput.headers.0.X-Webhook-Source}}"],
-            ["X-Trigger-Version", "{{ManualTriggerWithInput.headers.0.X-Trigger-Version}}"],
-            ["Authorization", "{{ManualTriggerWithInput.headers.0.Authorization}}"],
+            [
+              "X-Webhook-Source",
+              "{{ManualTriggerWithInput.headers.0.X-Webhook-Source}}",
+            ],
+            [
+              "X-Trigger-Version",
+              "{{ManualTriggerWithInput.headers.0.X-Trigger-Version}}",
+            ],
+            [
+              "Authorization",
+              "{{ManualTriggerWithInput.headers.0.Authorization}}",
+            ],
           ],
           body: JSON.stringify({
             message: "Test API call using comprehensive trigger config",
@@ -193,7 +200,7 @@ describe("Input Field Tests", () => {
             {
               "X-Webhook-Source": "manual-trigger",
               "X-Trigger-Version": "1.0",
-              "Authorization": "Bearer trigger-token-123",
+              Authorization: "Bearer trigger-token-123",
             },
           ],
           pathParams: [
@@ -249,19 +256,22 @@ describe("Input Field Tests", () => {
       expect(dataConfig.environment).toBe("testing");
       expect(dataConfig.priority).toBe("high");
 
-      // Check headers configuration (should be an array)
-      const headersConfig = triggerConfig.headers as Array<Record<string, string>>;
-      expect(Array.isArray(headersConfig)).toBe(true);
-      expect(headersConfig[0]["X-Webhook-Source"]).toBe("manual-trigger");
-      expect(headersConfig[0]["X-Trigger-Version"]).toBe("1.0");
-      expect(headersConfig[0]["Authorization"]).toBe("Bearer trigger-token-123");
+      // Check headers configuration (should be an object)
+      const headersConfig = triggerConfig.headers as Record<string, string>;
+      expect(typeof headersConfig).toBe("object");
+      expect(headersConfig["X-Webhook-Source"]).toBe("manual-trigger");
+      expect(headersConfig["X-Trigger-Version"]).toBe("1.0");
+      expect(headersConfig["Authorization"]).toBe("Bearer trigger-token-123");
 
-      // Check pathParams configuration (should be an array)
-      const pathParamsConfig = triggerConfig.pathParams as Array<Record<string, string>>;
-      expect(Array.isArray(pathParamsConfig)).toBe(true);
-      expect(pathParamsConfig[0].version).toBe("v1");
-      expect(pathParamsConfig[0].endpoint).toBe("data");
-      expect(pathParamsConfig[0].format).toBe("json");
+      // Check pathParams configuration (should be an object)
+      const pathParamsConfig = triggerConfig.pathParams as Record<
+        string,
+        string
+      >;
+      expect(typeof pathParamsConfig).toBe("object");
+      expect(pathParamsConfig.version).toBe("v1");
+      expect(pathParamsConfig.endpoint).toBe("data");
+      expect(pathParamsConfig.format).toBe("json");
 
       // Check node step receives comprehensive configuration from the trigger
       const nodeStep = execution.steps[1];
@@ -270,52 +280,50 @@ describe("Input Field Tests", () => {
 
       // Check that the REST API node's input configuration includes the templates using trigger data, headers, and pathParams
 
-        const nodeConfig = nodeStep.input as Record<string, unknown>;
-        expect(nodeConfig.url).toBe("{{ManualTriggerWithInput.data.apiBaseUrl}}/{{ManualTriggerWithInput.pathParams.0.endpoint}}");
-        expect(nodeConfig.method).toBe("POST");
-        expect(nodeConfig.headersMap).toBeDefined();
-        const headersMapConfig = nodeConfig.headersMap as Array<Array<string>>;
-        expect(headersMapConfig).toHaveLength(7); // 7 headers from manualTrigger + 1 from node
-        expect(headersMapConfig[0]).toEqual(["Authorization", "{{ManualTriggerWithInput.headers.0.Authorization}}"]);
-        expect(headersMapConfig[1]).toEqual(["Content-Type", "application/json"]);
-        expect(headersMapConfig[2]).toEqual(["X-API-Key", "{{ManualTriggerWithInput.data.apiKey}}"]);
-        expect(headersMapConfig[3]).toEqual(["X-Environment", "{{ManualTriggerWithInput.data.environment}}"]);
-        expect(headersMapConfig[4]).toEqual(["X-Priority", "{{ManualTriggerWithInput.data.priority}}"]);
-        expect(headersMapConfig[5]).toEqual(["X-Trigger-Version", "{{ManualTriggerWithInput.headers.0.X-Trigger-Version}}"]);
-        expect(headersMapConfig[6]).toEqual(["X-Webhook-Source", "{{ManualTriggerWithInput.headers.0.X-Webhook-Source}}"]);
-   
+      const nodeConfig = nodeStep.input as Record<string, unknown>;
+      expect(nodeConfig.url).toBe(
+        "{{ManualTriggerWithInput.data.apiBaseUrl}}/{{ManualTriggerWithInput.pathParams.0.endpoint}}"
+      );
+      expect(nodeConfig.method).toBe("POST");
+      expect(nodeConfig.headers).toBeDefined();
+      const nodeHeadersConfig = nodeConfig.headers as Record<string, string>;
+      expect(Object.keys(nodeHeadersConfig)).toHaveLength(7); // 7 headers from manualTrigger + 1 from node
+      expect(nodeHeadersConfig["Authorization"]).toBe(
+        "{{ManualTriggerWithInput.headers.0.Authorization}}"
+      );
+      expect(nodeHeadersConfig["Content-Type"]).toBe("application/json");
+      expect(nodeHeadersConfig["X-API-Key"]).toBe(
+        "{{ManualTriggerWithInput.data.apiKey}}"
+      );
+      expect(nodeHeadersConfig["X-Environment"]).toBe(
+        "{{ManualTriggerWithInput.data.environment}}"
+      );
+      expect(nodeHeadersConfig["X-Priority"]).toBe(
+        "{{ManualTriggerWithInput.data.priority}}"
+      );
+      expect(nodeHeadersConfig["X-Trigger-Version"]).toBe(
+        "{{ManualTriggerWithInput.headers.0.X-Trigger-Version}}"
+      );
+      expect(nodeHeadersConfig["X-Webhook-Source"]).toBe(
+        "{{ManualTriggerWithInput.headers.0.X-Webhook-Source}}"
+      );
+
       // Check execution result - This should now succeed with the mock response
       expect(execution.success).toBe(true);
       expect(execution.error).toBe("");
 
       // Verify that template resolution is working correctly
       expect(triggerStep.output).toBeDefined();
-      
-      // The trigger output should now match the input for pass-through behavior
+
+      // The trigger output only contains data, not headers/pathParams
       const triggerOutput = triggerStep.output as Record<string, unknown>;
       expect(triggerOutput.data).toBeDefined();
-      expect(triggerOutput.headers).toBeDefined();
-      expect(triggerOutput.pathParams).toBeDefined();
-      
+
       // Check that the trigger output data matches the input data
       const outputData = triggerOutput.data as Record<string, unknown>;
       expect(outputData.apiKey).toBe("test-api-key-123");
       expect(outputData.environment).toBe("testing");
       expect(outputData.priority).toBe("high");
-      
-      // Check that the trigger output headers match the input headers
-      const outputHeaders = triggerOutput.headers as Array<Record<string, string>>;
-      expect(Array.isArray(outputHeaders)).toBe(true);
-      expect(outputHeaders[0]["X-Webhook-Source"]).toBe("manual-trigger");
-      expect(outputHeaders[0]["X-Trigger-Version"]).toBe("1.0");
-      expect(outputHeaders[0]["Authorization"]).toBe("Bearer trigger-token-123");
-      
-      // Check that the trigger output pathParams match the input pathParams
-      const outputPathParams = triggerOutput.pathParams as Array<Record<string, string>>;
-      expect(Array.isArray(outputPathParams)).toBe(true);
-      expect(outputPathParams[0].version).toBe("v1");
-      expect(outputPathParams[0].endpoint).toBe("data");
-      expect(outputPathParams[0].format).toBe("json");
 
       // Verify that the REST API node succeeded and got the mock response
       expect(nodeStep.success).toBe(true);
@@ -724,12 +732,12 @@ describe("Input Field Tests", () => {
       console.log("✅ SUCCESS: EventTrigger step input field is populated!");
 
       const triggerInput = triggerStep.input as Record<string, unknown>;
-      
+
       // The trigger step's input field should contain the trigger configuration (for debugging)
       // Custom input data should be accessible via VM variables (event_trigger_with_input.input)
       expect(triggerInput.queries).toBeDefined();
       expect(Array.isArray(triggerInput.queries)).toBe(true);
-      expect((triggerInput.queries as Array<any>)).toHaveLength(2);
+      expect(triggerInput.queries as Array<any>).toHaveLength(2);
 
       console.log("✅ EventTrigger configuration verified:", triggerInput);
 

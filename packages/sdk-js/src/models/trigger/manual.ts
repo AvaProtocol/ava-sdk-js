@@ -16,26 +16,14 @@ class ManualTrigger extends Trigger {
   public pathParamsMap?: Array<[string, string]>;
 
   constructor(props: ManualTriggerProps) {
-    // Extract headersMap and pathParamsMap from data if they exist there
-    const data = props.data as any;
-    const headersMap = props.headersMap || data?.headersMap;
-    const pathParamsMap = props.pathParamsMap || data?.pathParamsMap;
-    
-    // If data is an object with headersMap/pathParamsMap, extract the actual data
-    let actualData = props.data;
-    if (data && typeof data === 'object' && (data.headersMap || data.pathParamsMap)) {
-      const { headersMap: _, pathParamsMap: __, ...rest } = data;
-      actualData = rest.data !== undefined ? rest.data : rest;
-    }
-
     super({
       ...props,
       type: TriggerType.Manual,
-      data: actualData,
+      data: props.data,
       input: props.input,
     });
-    this.headersMap = headersMap;
-    this.pathParamsMap = pathParamsMap;
+    this.headersMap = props.headersMap;
+    this.pathParamsMap = props.pathParamsMap;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -119,7 +107,7 @@ class ManualTrigger extends Trigger {
     return new ManualTrigger({
       ...obj,
       type: TriggerType.Manual,
-      data: data as any,
+      data: data as Record<string, unknown>,
       input: input,
       headersMap: headersMap,
       pathParamsMap: pathParamsMap,
@@ -161,24 +149,24 @@ class ManualTrigger extends Trigger {
       result.data = null;
     }
 
-    // Extract headers - convert map to object format for test compatibility
+    // Extract headers - convert map to array format for consistency
     const headersMapProto = manualOutput.getHeadersMap();
     if (headersMapProto && headersMapProto.getLength() > 0) {
-      const headers: Record<string, string> = {};
+      const headersArray: Array<[string, string]> = [];
       headersMapProto.forEach((value: string, key: string) => {
-        headers[key] = value;
+        headersArray.push([key, value]);
       });
-      result.headers = headers;
+      result.headers = headersArray;
     }
 
-    // Extract pathParams - convert map to object format for test compatibility
+    // Extract pathParams - convert map to array format for consistency
     const pathParamsMapProto = manualOutput.getPathparamsMap();
     if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
-      const pathParams: Record<string, string> = {};
+      const pathParamsArray: Array<[string, string]> = [];
       pathParamsMapProto.forEach((value: string, key: string) => {
-        pathParams[key] = value;
+        pathParamsArray.push([key, value]);
       });
-      result.pathParams = pathParams;
+      result.pathParams = pathParamsArray;
     }
 
     return result;
