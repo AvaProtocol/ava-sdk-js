@@ -37,7 +37,7 @@ class ManualTrigger extends Trigger {
     const config = new avs_pb.ManualTrigger.Config();
 
     // Set the data
-    const dataToSend = this.data !== null ? this.data : this.input;
+    const dataToSend = this.data ?? this.input;
     if (dataToSend !== null && dataToSend !== undefined) {
       const inputValue = convertInputToProtobuf(dataToSend);
       if (inputValue) {
