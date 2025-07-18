@@ -643,14 +643,10 @@ describe("ManualTrigger Tests", () => {
         expect(deployedWorkflow!.trigger).toBeDefined();
         expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Manual);
 
-        console.log("=== MANUAL TRIGGER DEPLOYMENT TEST ===");
         console.log(
           "Deployed workflow:",
           util.inspect(deployedWorkflow, { depth: null, colors: true })
         );
-
-        // Now actually TRIGGER the deployed workflow
-        console.log("🔥 Triggering the deployed manual workflow...");
 
         const triggerResponse = await client.triggerWorkflow({
           id: workflowId!,
@@ -672,7 +668,6 @@ describe("ManualTrigger Tests", () => {
         // Mark as created for cleanup
         createdIdMap.set(workflowId!, true);
       } catch (error) {
-        console.error("Deploy and trigger test failed:", error);
         if (workflowId) {
           createdIdMap.set(workflowId, true);
         }
@@ -710,14 +705,10 @@ describe("ManualTrigger Tests", () => {
         expect(deployedWorkflow!.trigger).toBeDefined();
         expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Manual);
 
-        console.log("=== MANUAL TRIGGER DEPLOYMENT TEST (NO DATA) ===");
         console.log(
           "Deployed workflow:",
           util.inspect(deployedWorkflow, { depth: null, colors: true })
         );
-
-        // Now actually TRIGGER the deployed workflow without data
-        console.log("🔥 Triggering the deployed manual workflow (no data)...");
 
         const triggerResponse = await client.triggerWorkflow({
           id: workflowId!,
@@ -791,14 +782,10 @@ describe("ManualTrigger Tests", () => {
         expect(deployedWorkflow!.trigger).toBeDefined();
         expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Manual);
 
-        console.log("=== WEBHOOK TRIGGER DEPLOYMENT TEST ===");
         console.log(
           "Deployed workflow:",
           util.inspect(deployedWorkflow, { depth: null, colors: true })
         );
-
-        // Now actually TRIGGER the deployed workflow with webhook data
-        console.log("🔥 Triggering the deployed webhook workflow...");
 
         const triggerResponse = await client.triggerWorkflow({
           id: workflowId!,
@@ -893,13 +880,6 @@ describe("ManualTrigger Tests", () => {
       expect(directResponse.data).toEqual(
         expect.objectContaining({ data: testData })
       );
-
-      // Note: simulateWorkflow tests need different handling due to stepOutputs structure
-      // These integration tests need backend-frontend protobuf sync
-
-      console.log("✅ Manual trigger response consistency verified:");
-      console.log("   - runTrigger returns expected data structure");
-      console.log("   - simulateWorkflow returns compatible step output");
     });
   });
 

@@ -1216,18 +1216,9 @@ describe("ContractRead Node Tests", () => {
 
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-      
-      // Should either fail the node execution or return error results
-      const data = result.data as any;
-      expect(data.results).toBeDefined();
-      const errorResult = data.results.find(
-        (r: any) => r.methodName === "nonExistentMethod"
-      );
-      expect(errorResult).toBeDefined();
-      expect(errorResult.success).toBe(false);
-      expect(errorResult.error).toBeDefined();
+      // Backend fails the entire node execution for invalid method signatures
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
   });
 

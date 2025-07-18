@@ -219,7 +219,7 @@ return message;`,
 
   describe("1. Individual Component Testing", () => {
     test("should test EventTrigger with runTrigger", async () => {
-      console.log("🔍 Testing EventTrigger individually...");
+      
 
       const eventTrigger = createEventTrigger();
 
@@ -253,7 +253,7 @@ return message;`,
           testWalletAddress
         );
       } else {
-        console.log("ℹ️  Mock event data returned for testing:", result.data);
+
         // If we get mock data, verify it has the expected structure
         expect(result.data).toHaveProperty("blockNumber");
         expect(result.data).toHaveProperty("eventType");
@@ -262,7 +262,7 @@ return message;`,
     });
 
     test("should test CustomCode node with runNodeWithInputs", async () => {
-      console.log("🔍 Testing CustomCode node individually...");
+      
 
       const customCodeNode = createCustomCodeNode();
 
@@ -316,7 +316,7 @@ return message;`,
     });
 
     test("should test Telegram node with runNodeWithInputs", async () => {
-      console.log("🔍 Testing Telegram RestAPI node individually...");
+      
 
       const telegramNode = createTelegramNode();
 
@@ -403,7 +403,7 @@ return message;`,
       expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_TOPICS_ERROR);
       expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_DATA_ERROR);
 
-      console.log("✅ Event trigger simulation completed successfully");
+      
     });
   });
 
@@ -450,7 +450,7 @@ return message;`,
       expect(savedWorkflow.trigger.input.tokens).toHaveLength(1);
       expect(savedWorkflow.trigger.input.tokens[0].symbol).toBe("USDC");
 
-      console.log("🎉 Full workflow deployment test completed successfully!");
+      
     });
 
     test("should verify workflow nodes are properly saved (regression test)", async () => {
@@ -480,9 +480,6 @@ return message;`,
 
       // Get the workflow back and verify it has nodes and edges
       const savedWorkflow = await client.getWorkflow(workflowId);
-
-      console.log("Saved workflow nodes:", savedWorkflow.nodes.length);
-      console.log("Saved workflow edges:", savedWorkflow.edges.length);
 
       // This was the original bug - nodes and edges were empty arrays
       expect(savedWorkflow.nodes).toHaveLength(2);

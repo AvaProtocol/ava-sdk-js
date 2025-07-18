@@ -30,10 +30,8 @@ export const mockRestApiError = {
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 mockedAxios.post.mockImplementation((url: string) => {
-  console.log(`[Mock] REST API called: ${url}`);
 
   if (url === "http://localhost:3000/api/test") {
-    console.log("[Mock] Returning success response");
     return Promise.resolve(mockRestApiResponse);
   }
 

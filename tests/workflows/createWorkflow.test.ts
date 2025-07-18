@@ -350,12 +350,9 @@ describe("createWorkflow Tests", () => {
       smartWalletAddress: wallet.address,
     };
 
-    console.log("🚀 Creating complex workflow with multi nodes and edge...");
     const workflow = await client.createWorkflow(workflowData);
-    
-    console.log("🚀 Submitting workflow...");
+
     const workflowId = await client.submitWorkflow(workflow);
-    console.log("✅ Workflow submitted successfully, ID:", workflowId);
 
     const getResponse = await client.getWorkflow(workflowId);
 

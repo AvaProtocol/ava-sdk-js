@@ -57,7 +57,6 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("NULL result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toBeNull();
     });
@@ -72,7 +71,6 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("EMPTY OBJECT result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toEqual({});
     });
@@ -104,7 +102,6 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("EMPTY ARRAY result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toEqual([]);
     });
@@ -119,7 +116,6 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("NUMBER result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toBe(42);
     });
@@ -134,7 +130,6 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log("STRING result:", util.inspect(result, { depth: null, colors: true }));
       expect(result.success).toBe(true);
       expect(result.data).toBe("hello");
     });
@@ -464,7 +459,7 @@ describe("CustomCode Node Tests", () => {
           isBlocking: true,
         });
 
-        console.log("=== TRIGGER WORKFLOW TEST ===");
+
         console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
 
         const executions = await client.getExecutions([workflowId], {
@@ -642,20 +637,30 @@ describe("CustomCode Node Tests", () => {
           (step) => step.id === customCodeNode.id
         );
 
-        // Compare response formats
-        console.log("=== CUSTOM CODE RESPONSE FORMAT COMPARISON ===");
-        console.log(
-          "1. runNodeWithInputs response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. deploy+trigger step output:",
-          util.inspect(executedStep?.output, { depth: null, colors: true })
-        );
+        // Compare response formats - verify all three methods return consistent data
+        expect(directResponse.data).toBeDefined();
+        expect(simulatedStep?.output).toBeDefined();
+        expect(executedStep?.output).toBeDefined();
+        
+        // All outputs should have consistent structure (excluding dynamic fields)
+        const directData = directResponse.data;
+        const simulatedData = simulatedStep?.output;
+        const executedData = executedStep?.output;
+        
+        // Verify structure and static content match
+        expect(directData.computedValue).toBe(simulatedData.computedValue);
+        expect(directData.status).toBe(simulatedData.status);
+        expect(directData.inputReceived).toEqual(simulatedData.inputReceived);
+        
+        expect(simulatedData.computedValue).toBe(executedData.computedValue);
+        expect(simulatedData.status).toBe(executedData.status);
+        expect(simulatedData.inputReceived).toEqual(executedData.inputReceived);
+        
+        // Verify dynamic fields exist but don't compare values
+        expect(directData.executionTime).toBeDefined();
+        expect(directData.processingId).toBeDefined();
+        expect(simulatedData.executionTime).toBeDefined();
+        expect(simulatedData.processingId).toBeDefined();
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -1039,7 +1044,7 @@ describe("CustomCode Node Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, [customCodeNode]);
       workflowProps.trigger = manualTrigger;
 
-      console.log("🚀 Testing CustomCode referencing manual trigger data...");
+      
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)

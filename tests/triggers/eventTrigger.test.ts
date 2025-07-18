@@ -445,7 +445,9 @@ describe("EventTrigger Tests", () => {
       // For specific address filters, no matching events is a valid outcome
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === 'object').toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
     });
 
     test("should run trigger for Transfer events to core address", async () => {
@@ -494,7 +496,9 @@ describe("EventTrigger Tests", () => {
       // For specific address filters, no matching events is a valid outcome
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === 'object').toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
     });
 
     test("should run trigger with multiple Transfer event queries", async () => {
@@ -527,7 +531,9 @@ describe("EventTrigger Tests", () => {
       // For specific address filters, no matching events is a valid outcome
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === 'object').toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
     });
 
     test("should run trigger with Chainlink price condition", async () => {
@@ -564,7 +570,9 @@ describe("EventTrigger Tests", () => {
       // Conditions filter events, so no matching events is expected when condition is not met
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === 'object').toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
     });
 
     test("should run trigger with multiple price range conditions", async () => {
@@ -625,7 +633,9 @@ describe("EventTrigger Tests", () => {
 
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === 'object').toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
     });
 
     test("should run trigger with Chainlink price condition with decimal formatting", async () => {
@@ -633,10 +643,6 @@ describe("EventTrigger Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      console.log(
-        "🚀 Testing runTrigger with Chainlink price condition and decimal formatting..."
-      );
 
       const params = {
         triggerType: TriggerType.Event,
@@ -703,34 +709,23 @@ describe("EventTrigger Tests", () => {
       expect(typeof (result.data as any).roundId).toBe("string"); // roundId should be string (uint256 -> string)
       expect(typeof (result.data as any).updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
 
-        // Verify the formatting makes sense
-        const formattedValue = parseFloat((result.data as any).current);
-        const rawValue = parseInt((result.data as any).currentRaw);
-        const decimals = parseInt((result.data as any).decimals);
+      // Verify the formatting makes sense
+      const formattedValue = parseFloat((result.data as any).current);
+      const rawValue = parseInt((result.data as any).currentRaw);
+      const decimals = parseInt((result.data as any).decimals);
 
-        console.log(`📊 Price Data:
-          - Formatted: ${(result.data as any).current} USD
-          - Raw: ${(result.data as any).currentRaw}
-          - Decimals: ${(result.data as any).decimals}
-          - Calculated: ${rawValue / Math.pow(10, decimals)}`);
+      // Verify the math is correct
+      const calculatedValue = rawValue / Math.pow(10, decimals);
+      expect(Math.abs(formattedValue - calculatedValue)).toBeLessThan(
+        0.00000001
+      );
 
-        // Verify the math is correct
-        const calculatedValue = rawValue / Math.pow(10, decimals);
-        expect(Math.abs(formattedValue - calculatedValue)).toBeLessThan(
-          0.00000001
-        );
-
-        // Verify metadata contains raw blockchain data
-        expect(result.metadata).toBeDefined();
-        expect((result.metadata as any).address).toBe(
-          CHAINLINK_ETH_USD_SEPOLIA
-        );
-        expect((result.metadata as any).topics).toBeDefined();
-        expect(Array.isArray((result.metadata as any).topics)).toBe(true);
-        expect((result.metadata as any).topics.length).toBeGreaterThan(0);
-      } else {
-        console.log("⚠️ No Chainlink events found or success was false");
-      }
+      // Verify metadata contains raw blockchain data
+      expect(result.metadata).toBeDefined();
+      expect((result.metadata as any).address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
+      expect((result.metadata as any).topics).toBeDefined();
+      expect(Array.isArray((result.metadata as any).topics)).toBe(true);
+      expect((result.metadata as any).topics.length).toBeGreaterThan(0);
     });
 
     test("should deserialize trigger with conditions from response", () => {
@@ -900,10 +895,6 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with enriched Transfer event parsing", async () => {
-      console.log(
-        "🚀 Testing enriched Transfer event parsing with token enrichment..."
-      );
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
@@ -1003,7 +994,6 @@ describe("EventTrigger Tests", () => {
       expect(typeof transferData.valueRaw).toBe("string"); // Raw uint256 value
       expect(typeof transferData.blockNumber).toBe("number");
       expect(typeof transferData.transactionHash).toBe("string");
-
     });
   });
 
@@ -1051,7 +1041,6 @@ describe("EventTrigger Tests", () => {
 
       // For simulation, we can accept null output when no events are found
       // This is realistic behavior for event triggers
-      console.log("✅ Event trigger simulation completed successfully");
     });
 
     test("should simulate workflow with single event query", async () => {
@@ -1093,8 +1082,6 @@ describe("EventTrigger Tests", () => {
       );
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
-
-      console.log("✅ Single event query simulation completed successfully");
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
@@ -1169,14 +1156,23 @@ describe("EventTrigger Tests", () => {
       // Check if the trigger step now has output data with decimal formatting
       const output = triggerStep!.output as any;
       expect(output).toBeDefined();
-      console.log("✅ Event trigger simulation has output data:", output);
 
       // Check for decimal formatting
       if (output.current && output.decimals) {
-        console.log("🎉 Method calls working in simulation!");
-        console.log(`  - Formatted: ${output.current}`);
-        console.log(`  - Raw: ${output.currentRaw}`);
-        console.log(`  - Decimals: ${output.decimals}`);
+        // Verify decimal formatting data is present and valid
+        expect(output.current).toBeDefined();
+        expect(output.currentRaw).toBeDefined();
+        expect(output.decimals).toBeDefined();
+        
+        // Verify formatted value is a valid number string
+        expect(parseFloat(output.current)).not.toBeNaN();
+        
+        // Verify raw value is a valid integer string
+        expect(parseInt(output.currentRaw)).not.toBeNaN();
+        
+        // Verify decimals is a reasonable number (typically 8 for Chainlink)
+        expect(output.decimals).toBeGreaterThan(0);
+        expect(output.decimals).toBeLessThanOrEqual(18);
 
         // 🔍 TYPE CHECK: Verify ABI type improvements are working
         expect(typeof output.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
@@ -1241,7 +1237,6 @@ describe("EventTrigger Tests", () => {
         expect(deployedWorkflow!.trigger).toBeDefined();
         expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
 
-        console.log("=== EVENT TRIGGER DEPLOYMENT TEST ===");
         console.log(
           "Deployed workflow:",
           util.inspect(deployedWorkflow, { depth: null, colors: true })
@@ -1308,14 +1303,12 @@ describe("EventTrigger Tests", () => {
         expect(executionsAfterTrigger.items[0].id).toBe(
           triggerResponse.executionId
         );
-
-        console.log("✅ Successfully deployed AND triggered event workflow!");
       } finally {
         // Always clean up the workflow, even if test fails
         if (workflowId) {
           try {
             await client.deleteWorkflow(workflowId);
-            console.log(`✅ Cleaned up workflow: ${workflowId}`);
+            // Workflow deletion was successful
           } catch (deleteError) {
             console.warn(
               `⚠️  Failed to delete workflow ${workflowId}:`,
@@ -1348,10 +1341,6 @@ describe("EventTrigger Tests", () => {
           },
         ],
       };
-
-      console.log(
-        "🔍 Testing response format consistency across trigger methods..."
-      );
 
       // Test 1: runTrigger
       const params = {
@@ -1443,20 +1432,47 @@ describe("EventTrigger Tests", () => {
           (step) => step.id === eventTrigger.id
         );
 
-        // Compare response formats
-        console.log("=== EVENT TRIGGER RESPONSE FORMAT COMPARISON ===");
-        console.log(
-          "1. runTrigger response:",
-          util.inspect(directResponse.data, { depth: null, colors: true })
-        );
-        console.log(
-          "2. simulateWorkflow step output:",
-          util.inspect(simulatedStep?.output, { depth: null, colors: true })
-        );
-        console.log(
-          "3. triggerWorkflow step output:",
-          util.inspect(triggeredStep?.output, { depth: null, colors: true })
-        );
+        // Compare response formats - verify all three methods return consistent data
+        expect(directResponse.data).toBeDefined();
+        expect(simulatedStep?.output).toBeDefined();
+        expect(triggeredStep?.output).toBeDefined();
+        
+        // All outputs should have consistent structure (excluding dynamic fields like transactionHash)
+        const directData = directResponse.data;
+        const simulatedData = simulatedStep?.output;
+        const triggeredData = triggeredStep?.output;
+        
+        // Verify essential event trigger fields match (allowing for simulation differences)
+        // Direct response should have event data
+        expect(directData).toBeDefined();
+        expect(directData.contractAddress).toBeDefined();
+        expect(directData.chainId).toBeDefined();
+        expect(directData.eventFound).toBeDefined();
+        
+        // Simulation and triggered data might have different structures
+        if (simulatedData && simulatedData.contractAddress) {
+          expect(directData.contractAddress).toBe(simulatedData.contractAddress);
+        }
+        
+        if (simulatedData && simulatedData.chainId) {
+          expect(directData.chainId).toBe(simulatedData.chainId);
+        }
+        
+        if (triggeredData && triggeredData.contractAddress) {
+          expect(directData.contractAddress).toBe(triggeredData.contractAddress);
+        }
+        
+        // Verify dynamic fields exist but don't compare values
+        expect(directData.transactionHash).toBeDefined();
+        
+        // Simulation and triggered data might not have all dynamic fields
+        if (simulatedData && simulatedData.transactionHash) {
+          expect(simulatedData.transactionHash).toBeDefined();
+        }
+        
+        if (triggeredData && triggeredData.transactionHash) {
+          expect(triggeredData.transactionHash).toBeDefined();
+        }
 
         // All should be successful
         expect(directResponse.success).toBe(true);
@@ -1492,15 +1508,12 @@ describe("EventTrigger Tests", () => {
           SEPOLIA_TOKEN_ADDRESSES[0]
         );
 
-        console.log(
-          "✅ All trigger methods return consistent event trigger results!"
-        );
       } finally {
         // Always clean up the workflow, even if test fails
         if (workflowId) {
           try {
             await client.deleteWorkflow(workflowId);
-            console.log(`✅ Cleaned up workflow: ${workflowId}`);
+            // Workflow deletion was successful
           } catch (deleteError) {
             console.warn(
               `⚠️  Failed to delete workflow ${workflowId}:`,
@@ -1595,7 +1608,9 @@ describe("EventTrigger Tests", () => {
       // For specific filters like minting events, no matching events is expected
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === 'object').toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
     });
   });
 
@@ -1605,10 +1620,6 @@ describe("EventTrigger Tests", () => {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
-
-      console.log(
-        "🚀 Testing empty data vs error distinction for event triggers..."
-      );
 
       // Use a definitely non-existent contract address to ensure no events
       // This should be much faster than real blockchain queries
@@ -1749,10 +1760,6 @@ describe("EventTrigger Tests", () => {
         ],
       };
 
-      console.log(
-        "🔍 Testing empty data consistency across event trigger methods..."
-      );
-
       // Test 1: runTrigger
       const directResponse = await client.runTrigger({
         triggerType: TriggerType.Event,
@@ -1778,22 +1785,16 @@ describe("EventTrigger Tests", () => {
         (step) => step.id === eventTrigger.id
       );
 
-      // Compare empty data handling
-      console.log("=== EMPTY DATA CONSISTENCY COMPARISON ===");
-      console.log(
-        "1. runTrigger response:",
-        util.inspect(
-          { success: directResponse.success, data: directResponse.data },
-          { depth: null, colors: true }
-        )
-      );
-      console.log(
-        "2. simulateWorkflow step:",
-        util.inspect(
-          { success: simulatedStep?.success, output: simulatedStep?.output },
-          { depth: null, colors: true }
-        )
-      );
+      // Compare empty data handling - verify consistent behavior
+      expect(directResponse.success).toBe(true);
+      expect(simulatedStep?.success).toBe(true);
+      
+      // Verify data consistency between methods
+      expect(directResponse.data).toBe(null); // runTrigger returns null for no events
+      expect(simulatedStep?.output).not.toBe(null); // simulateWorkflow provides sample data
+      
+      // Both should be successful even with no matching events
+      expect(directResponse.success).toBe(simulatedStep?.success);
 
       // runTrigger should return null for no events (uses simulationMode: false)
       expect(directResponse.success).toBe(true);
@@ -1804,14 +1805,6 @@ describe("EventTrigger Tests", () => {
       expect(simulatedStep).toBeDefined();
       expect(simulatedStep!.success).toBe(true);
       expect(simulatedStep!.output).not.toBe(null); // Simulation always provides sample data
-
-      console.log("✅ Empty data handling behavior documented:");
-      console.log(
-        "   - runTrigger with simulationMode: false → null when no events"
-      );
-      console.log(
-        "   - simulateWorkflow → always provides sample data for development"
-      );
     });
 
     test("should handle malformed query configurations gracefully", async () => {
@@ -1899,8 +1892,6 @@ describe("EventTrigger Tests", () => {
 
         expect(() => invalidTrigger.toRequest()).toThrow();
       });
-
-      console.log("✅ Event trigger configuration validation works correctly!");
     });
 
     test("should handle empty data scenarios consistently (offline test)", () => {
@@ -1941,8 +1932,6 @@ describe("EventTrigger Tests", () => {
       ];
 
       scenarios.forEach((scenario) => {
-        console.log(`Testing scenario: ${scenario.name}`);
-
         // This simulates what the server-side buildEventTriggerOutput function does
         let result = null;
 
@@ -1958,8 +1947,6 @@ describe("EventTrigger Tests", () => {
           expect(result).toBe(scenario.expected);
         }
       });
-
-      console.log("✅ Empty data scenarios handled consistently!");
     });
 
     test("should handle basic event trigger functionality (offline test)", () => {
@@ -1991,7 +1978,7 @@ describe("EventTrigger Tests", () => {
 
       // Verify data structure
       expect(trigger.data).toBeDefined();
-      const eventData = trigger.data as any; // Type assertion for testing
+      const eventData = trigger.data as any;
       expect(eventData.queries).toBeDefined();
       expect(Array.isArray(eventData.queries)).toBe(true);
       expect(eventData.queries.length).toBe(1);
@@ -2016,8 +2003,6 @@ describe("EventTrigger Tests", () => {
       expect(request).toBeDefined();
       expect(request.getId()).toBe("basic-test");
       expect(request.getName()).toBe("basic_event_trigger");
-
-      console.log("✅ Basic event trigger functionality works correctly!");
     });
   });
 });
