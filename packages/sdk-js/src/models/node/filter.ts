@@ -9,7 +9,7 @@ import {
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import { Value } from "google-protobuf/google/protobuf/struct_pb";
 
-// Required props for constructor: id, name, type and data: { expression, sourceId }
+// Required props for constructor: id, name, type and data: { expression, inputNodeName }
 
 class FilterNode extends Node {
   constructor(props: FilterNodeProps) {
@@ -41,7 +41,7 @@ class FilterNode extends Node {
 
     const config = new avs_pb.FilterNode.Config();
     config.setExpression((this.data as FilterNodeData).expression);
-    config.setSourceId((this.data as FilterNodeData).sourceId || "");
+    config.setInputNodeName((this.data as FilterNodeData).inputNodeName || "");
     node.setConfig(config);
 
     // Set input data if provided

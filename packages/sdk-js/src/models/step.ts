@@ -448,6 +448,46 @@ class Step implements StepProps {
             ? step.getFilter()
             : (step as any).filter;
         if (filterOutput) {
+          // Check if the output has a data field that's a protobuf Value
+          if (
+            typeof filterOutput.hasData === "function" &&
+            filterOutput.hasData()
+          ) {
+            try {
+              // FilterNode output uses protobuf Any type, need to unpack it first
+              const anyData = filterOutput.getData();
+              if (!anyData) {
+                throw new Error("FilterNode output data.getData() is missing");
+              }
+
+              // Unpack the Any to get the Value
+              const value = ProtobufValue.deserializeBinary(anyData.getValue_asU8());
+
+              // Convert the Value to JavaScript
+              const result = value.toJavaScript();
+
+              // The result should be the filtered array directly
+              return Array.isArray(result) ? result : [result];
+            } catch (error) {
+              console.warn(
+                "Failed to convert filter data from protobuf Any:",
+                error
+              );
+              // Fallback to raw data
+              return filterOutput.getData();
+            }
+          } else if (filterOutput.data) {
+            // For plain objects, try to convert or use directly
+            const data =
+              typeof filterOutput.data.getKindCase === "function"
+                ? convertProtobufValueToJs(filterOutput.data)
+                : filterOutput.data;
+            
+            // Return the filtered results directly (should be an array)
+            return Array.isArray(data) ? data : [data];
+          }
+
+          // Fallback to old structure for backward compatibility
           try {
             return typeof filterOutput.toObject === "function"
               ? filterOutput.toObject()

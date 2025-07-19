@@ -103,7 +103,7 @@ class LoopNode extends Node {
     if (!executionMode) {
       return 0; // Default to sequential for safety
     }
-    
+
     if (typeof executionMode === "string") {
       switch (executionMode.toLowerCase()) {
         case ExecutionMode.Parallel:
@@ -134,7 +134,7 @@ class LoopNode extends Node {
 
     // Set the loop config from the flat data structure
     const config = new avs_pb.LoopNode.Config();
-    config.setSourceId(data.sourceId || "");
+    config.setInputNodeName(data.inputNodeName || "");
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
 

@@ -85,7 +85,7 @@ describe("ManualTrigger Tests", () => {
         id: "test-trigger-id",
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: null,
+        data: { test: "minimal data" }, // ManualTrigger now requires data
       });
 
       expect(() => trigger.toRequest()).not.toThrow();
@@ -156,10 +156,9 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-
-      // With no data, the manual trigger should return null directly
-      expect(result.data).toEqual(null);
+      // ManualTrigger now requires data, so this should fail
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("ManualTrigger data is required");
     });
 
     test("should handle runTrigger with simple data", async () => {
@@ -400,21 +399,21 @@ describe("ManualTrigger Tests", () => {
   });
 
   describe("simulateWorkflow Tests", () => {
-    test("should simulate workflow with manual trigger and no data", async () => {
+    test("should simulate workflow with manual trigger and minimal data", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "simulate_manual_trigger_no_data",
         type: TriggerType.Manual,
-        data: null,
+        data: { message: "test simulation" }, // ManualTrigger now requires data
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = manualTrigger;
 
       console.log(
-        "🚀 simulateWorkflow with manual trigger (no data):",
+        "🚀 simulateWorkflow with manual trigger (minimal data):",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -669,14 +668,14 @@ describe("ManualTrigger Tests", () => {
       }
     });
 
-    test("should deploy and trigger workflow with manual trigger (no data)", async () => {
+    test("should deploy and trigger workflow with manual trigger (minimal data)", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "deploy_manual_trigger_no_data",
         type: TriggerType.Manual,
-        data: null,
+        data: { message: "test deploy" }, // ManualTrigger now requires data
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
