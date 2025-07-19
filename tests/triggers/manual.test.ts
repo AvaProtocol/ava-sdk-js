@@ -1,14 +1,26 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
-import { Client, TriggerFactory, CustomCodeNode } from "@avaprotocol/sdk-js";
-import { TriggerType } from "@avaprotocol/types";
+import {
+  Client,
+  TriggerFactory,
+  CustomCodeNode,
+  NodeFactory,
+  Edge,
+} from "@avaprotocol/sdk-js";
+import {
+  TriggerType,
+  NodeType,
+  CustomCodeLang,
+  ExecutionMode,
+} from "@avaprotocol/types";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   getAddress,
   generateSignature,
   SaltGlobal,
   removeCreatedWorkflows,
+  getNextId,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -146,8 +158,8 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      // With no data, the manual trigger should return data: null
-      expect(result.data).toEqual(expect.objectContaining({ data: null }));
+      // With no data, the manual trigger should return null directly
+      expect(result.data).toEqual(null);
     });
 
     test("should handle runTrigger with simple data", async () => {
@@ -175,14 +187,14 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(expect.objectContaining({ data: testData }));
+      expect(result.data).toEqual(testData);
     });
 
     test("should handle runTrigger with headers", async () => {
       const testData = { message: "Hello with headers!" };
       const headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer token123",
+        Authorization: "Bearer token123",
       };
 
       const params = {
@@ -208,18 +220,14 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(
-        expect.objectContaining({
-          data: testData,
-        })
-      );
+      expect(result.data).toEqual(testData);
     });
 
     test("should handle runTrigger with pathParams", async () => {
       const testData = { message: "Hello with pathParams!" };
       const pathParams = {
-        "userId": "123",
-        "apiVersion": "v1",
+        userId: "123",
+        apiVersion: "v1",
       };
 
       const params = {
@@ -245,11 +253,7 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(
-        expect.objectContaining({
-          data: testData,
-        })
-      );
+      expect(result.data).toEqual(testData);
     });
 
     test("should handle runTrigger with headers and pathParams", async () => {
@@ -259,8 +263,8 @@ describe("ManualTrigger Tests", () => {
         "X-Custom": "header-value",
       };
       const pathParams = {
-        "userId": "456",
-        "action": "update",
+        userId: "456",
+        action: "update",
       };
 
       const params = {
@@ -287,11 +291,7 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(
-        expect.objectContaining({
-          data: testData,
-        })
-      );
+      expect(result.data).toEqual(testData);
     });
 
     test("should handle runTrigger with complex data", async () => {
@@ -328,17 +328,17 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(
-        expect.objectContaining({ data: complexData })
-      );
+      expect(result.data).toEqual(complexData);
     });
 
-    test("should handle runTrigger with array data", async () => {
-      const arrayData = [
-        { name: "item1", address: "0xaaaa" },
-        { name: "item2", address: "0xbbbb" },
-        { name: "item3", address: "0xcccc" },
-      ];
+    test("should handle runTrigger with array data wrapped in JSON object", async () => {
+      const arrayData = {
+        items: [
+          { name: "item1", address: "0xaaaa" },
+          { name: "item2", address: "0xbbbb" },
+          { name: "item3", address: "0xcccc" },
+        ],
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
@@ -362,14 +362,16 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(expect.objectContaining({ data: arrayData }));
+      expect(result.data).toEqual(arrayData);
     });
 
-    test("should handle runTrigger with string data", async () => {
-      const stringData = JSON.stringify([
-        { name: "item1", address: "0xaaaa" },
-        { name: "item2", address: "0xbbbb" },
-      ]);
+    test("should handle runTrigger with JSON object containing JSON string field", async () => {
+      const stringData = {
+        jsonString: JSON.stringify([
+          { name: "item1", address: "0xaaaa" },
+          { name: "item2", address: "0xbbbb" },
+        ]),
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
@@ -379,23 +381,21 @@ describe("ManualTrigger Tests", () => {
       };
 
       console.log(
-        "🚀 ~ runTrigger with string data ~ input params:",
+        "🚀 ~ runTrigger with JSON object containing JSON string field ~ input params:",
         util.inspect(params, { depth: null, colors: true })
       );
 
       const result = await client.runTrigger(params);
 
       console.log(
-        "runTrigger string data response:",
+        "runTrigger JSON object containing JSON string field response:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(
-        expect.objectContaining({ data: stringData })
-      );
+      expect(result.data).toEqual(stringData);
     });
   });
 
@@ -439,10 +439,8 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // When data is null, the output should contain data: null
-      expect(triggerStep!.output).toEqual(
-        expect.objectContaining({ data: null })
-      );
+      // When data is null, the output should be null directly
+      expect(triggerStep!.output).toEqual(null);
     });
 
     test("should simulate workflow with manual trigger and user data", async () => {
@@ -468,10 +466,10 @@ describe("ManualTrigger Tests", () => {
 
       // Update the CustomCode node to reference the manual trigger's data
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
-      // Update the CustomCode source to reference the manual trigger's data
+      // Update the CustomCode source to reference the manual trigger's data directly
       (
         customCodeNode.data as { source: string }
-      ).source = `return ${triggerName}.data;`;
+      ).source = `return ${triggerName};`;
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and user data:",
@@ -503,7 +501,7 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep!.output).toBeDefined();
       const outputData = triggerStep!.output;
       expect(outputData).toBeDefined();
-      expect(outputData).toEqual(expect.objectContaining({ data: userData }));
+      expect(outputData).toEqual(userData);
 
       // Check that the CustomCode node successfully referenced the manual trigger data
       const customCodeStep = simulation.steps.find(
@@ -516,7 +514,7 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep!.output).toEqual(expect.objectContaining(userData));
 
       // Verify the reference was properly made by checking inputsList
-      expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`);
+      expect(customCodeStep!.inputsList).toContain(triggerName);
     });
 
     test("should simulate workflow with manual trigger including headers and pathParams", async () => {
@@ -529,8 +527,8 @@ describe("ManualTrigger Tests", () => {
         "X-API-Key": "secret123",
       };
       const pathParams = {
-        "userId": "789",
-        "action": "test",
+        userId: "789",
+        action: "test",
       };
 
       const manualTrigger = TriggerFactory.create({
@@ -547,13 +545,12 @@ describe("ManualTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = manualTrigger;
 
-      // Update the CustomCode node to reference the manual trigger's webhook data
+      // Update the CustomCode node to reference the manual trigger's data directly
+      // Note: headers and pathParams are config-only and not included in output
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
-      (customCodeNode.data as { source: string }).source = `return { 
-        data: ${triggerName}.data.data,
-        headers: ${triggerName}.data.headers,
-        pathParams: ${triggerName}.data.pathParams
-      };`;
+      (
+        customCodeNode.data as { source: string }
+      ).source = `return ${triggerName};`;
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and webhook data:",
@@ -595,13 +592,10 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
 
-      expect(customCodeStep!.output).toEqual({
-        data: data,
-        headers: headers,
-        pathParams: pathParams,
-      });
+      // With the new design, only the data content is returned (headers and pathParams are config-only)
+      expect(customCodeStep!.output).toEqual(data);
 
-      expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`);
+      expect(customCodeStep!.inputsList).toContain(triggerName);
     });
   });
 
@@ -747,8 +741,8 @@ describe("ManualTrigger Tests", () => {
         "X-Test": "webhook",
       };
       const pathParams: Record<string, string> = {
-        "userId": "deploy123",
-        "env": "test",
+        userId: "deploy123",
+        env: "test",
       };
 
       const manualTrigger = TriggerFactory.create({
@@ -822,19 +816,51 @@ describe("ManualTrigger Tests", () => {
     test("should maintain consistent response format across runTrigger and simulateWorkflow", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
-      const testData = {
-        items: [
-          { name: "consistency_item1", address: "0xaaaa" },
-          { name: "consistency_item2", address: "0xbbbb" },
-        ],
-      };
+      const testData = [
+        { name: "consistency_item1", address: "0xaaaa" },
+        { name: "consistency_item2", address: "0xbbbb" },
+      ];
 
+      const triggerName = "consistency_test_manual_trigger";
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "consistency_test_manual_trigger",
+        name: triggerName,
         type: TriggerType.Manual,
         data: testData,
       });
+
+      // Create a LoopNode to process the array data
+      const loopNodeId = getNextId();
+      const iteratorValueVar = "value";
+      const iteratorKeyVar = "index";
+      const runnerType = "customCode";
+      const loopNode = NodeFactory.create({
+        id: loopNodeId,
+        name: "process_array_loop",
+        type: NodeType.Loop,
+        data: {
+          sourceId: triggerName,
+          iterVal: iteratorValueVar,
+          iterKey: iteratorKeyVar,
+          executionMode: ExecutionMode.Sequential,
+          runner: {
+            type: runnerType,
+            data: {
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: `return ${iteratorValueVar}.name + ${iteratorValueVar}.address;`,
+              },
+            },
+          },
+        },
+      });
+
+      // Create edge from trigger to loop node
+      const edge: Edge = {
+        id: getNextId(),
+        source: defaultTriggerId,
+        target: loopNodeId,
+      };
 
       // Test 1: runTrigger
       const params = {
@@ -850,41 +876,63 @@ describe("ManualTrigger Tests", () => {
       );
 
       const directResponse = await client.runTrigger(params);
+      console.log(
+        "runTrigger response:",
+        util.inspect(directResponse, { depth: null, colors: true })
+      );
 
-      // Test 2: simulateWorkflow
+      // Test 2: simulateWorkflow with LoopNode
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = manualTrigger;
+      workflowProps.nodes = [loopNode];
+      workflowProps.edges = [edge];
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
       );
 
       console.log(
-        "1. runTrigger response:",
-        util.inspect(directResponse, { depth: null, colors: true })
-      );
-
-      console.log(
-        "2. simulateWorkflow step output:",
-        util.inspect(
-          simulation.steps.find((step) => step.id === defaultTriggerId),
-          { depth: null, colors: true }
-        )
+        "simulateWorkflow response:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       // Both should be successful
       expect(directResponse.success).toBe(true);
       expect(simulation.success).toBe(true);
 
-      // Both should have the same data structure
-      expect(directResponse.data).toEqual(
-        expect.objectContaining({ data: testData })
+      // Validate trigger data consistency
+      expect(directResponse.data).toEqual(testData);
+
+      // Find the trigger step in simulation
+      const triggerStep = simulation.steps.find(
+        (step) => step.id === defaultTriggerId
       );
+      expect(triggerStep).toBeDefined();
+      expect(triggerStep!.success).toBe(true);
+
+      // Validate consistency_test_manual_trigger.input and .output
+      expect(triggerStep!.input).toBeDefined();
+      expect(triggerStep!.output).toEqual(testData);
+
+      // Find the loop step in simulation
+      const loopStep = simulation.steps.find((step) => step.id === loopNodeId);
+      expect(loopStep).toBeDefined();
+      expect(loopStep!.success).toBe(true);
+
+      // Validate LoopNode output - should contain processed results
+      expect(loopStep!.output).toBeDefined();
+      expect(Array.isArray(loopStep!.output)).toBe(true);
+
+      // Expected results: ["consistency_item10xaaaa", "consistency_item20xbbbb"]
+      const expectedResults = testData.map(
+        (item) => `${item.name}${item.address}`
+      );
+      expect(loopStep!.output).toEqual(expectedResults);
     });
   });
 
-  describe("Empty Data Handling Tests", () => {
-    test("should handle null data gracefully", async () => {
+  describe("Required Data Validation Tests", () => {
+    test("should reject null data (data is required)", async () => {
       const params = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
@@ -905,12 +953,11 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(expect.objectContaining({ data: null }));
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("ManualTrigger data is required");
     });
 
-    test("should handle undefined data gracefully", async () => {
+    test("should reject undefined data (data is required)", async () => {
       const params = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
@@ -931,9 +978,8 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(expect.objectContaining({ data: null }));
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("ManualTrigger data is required");
     });
 
     test("should handle empty object data", async () => {
@@ -961,21 +1007,23 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(expect.objectContaining({ data: emptyData }));
+      expect(result.data).toEqual(emptyData);
     });
 
-    test("should handle empty array data", async () => {
-      const emptyArray: unknown[] = [];
+    test("should handle empty array data wrapped in JSON object", async () => {
+      const emptyArrayData = {
+        items: [] as unknown[],
+      };
 
       const params = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: emptyArray,
+          data: emptyArrayData,
         },
       };
 
       console.log(
-        "🚀 ~ runTrigger with empty array ~ input params:",
+        "🚀 ~ runTrigger with empty array wrapped in JSON object ~ input params:",
         util.inspect(params, { depth: null, colors: true })
       );
 
@@ -989,9 +1037,95 @@ describe("ManualTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
 
-      expect(result.data).toEqual(
-        expect.objectContaining({ data: emptyArray })
-      );
+      expect(result.data).toEqual(emptyArrayData);
+    });
+  });
+
+  describe("JSON Data Acceptance Tests", () => {
+    test("should accept raw array data (valid JSON)", async () => {
+      const arrayData = [
+        { name: "item1", address: "0xaaaa" },
+        { name: "item2", address: "0xbbbb" },
+      ];
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: arrayData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+      console.log("🚀 ~ test ~ result:", result);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(arrayData);
+    });
+
+    test("should accept string data (valid JSON primitive)", async () => {
+      const stringData = "Hello World";
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: stringData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(stringData);
+    });
+
+    test("should accept number data (valid JSON primitive)", async () => {
+      const numberData = 42;
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: numberData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(numberData);
+    });
+
+    test("should accept boolean data (valid JSON primitive)", async () => {
+      const booleanData = true;
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: booleanData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(booleanData);
+    });
+
+    test("should accept array of objects data (valid JSON)", async () => {
+      const arrayData = [{ key1: "value1" }, { key2: "value2" }];
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: arrayData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      console.log("🚀 ~ test ~ result:", result);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(arrayData);
     });
   });
 });

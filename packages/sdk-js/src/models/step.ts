@@ -166,227 +166,31 @@ class Step implements StepProps {
             ? step.getManualTrigger()
             : (step as any).manualTrigger;
         if (manualTrigger) {
-          const result: Record<string, any> = {};
-
-          // Check for the new data field structure
+          // For manual triggers, return the data content directly (similar to CustomCode)
+          // Headers and pathParams are config-only fields, not output fields
           if (
             typeof manualTrigger.hasData === "function" &&
             manualTrigger.hasData()
           ) {
             try {
-              const userData = convertProtobufValueToJs(
-                manualTrigger.getData()
-              );
-              
-              // Check if the userData is the new format with nested structure
-              if (userData && typeof userData === 'object' && 
-                  userData.data !== undefined && 
-                  (userData.headers !== undefined || userData.pathParams !== undefined)) {
-                // This is the new format where the entire structure is in the data field
-                // Flatten it by extracting the nested data
-                result.data = userData.data;
-                if (userData.headers) {
-                  // Keep headers as object format for consistency
-                  if (Array.isArray(userData.headers)) {
-                    // Check if it's already in Array<[string, string]> format
-                    if (userData.headers.length > 0 && Array.isArray(userData.headers[0])) {
-                      // Convert from Array<[string, string]> to object format
-                      const headersObject: Record<string, string> = {};
-                      for (const [key, value] of userData.headers) {
-                        headersObject[key] = value;
-                      }
-                      result.headers = headersObject;
-                    } else {
-                      // Convert from Array<{key: value}> to object format
-                      const headersObject: Record<string, string> = {};
-                      for (const header of userData.headers) {
-                        for (const [key, value] of Object.entries(header)) {
-                          headersObject[key] = value as string;
-                        }
-                      }
-                      result.headers = headersObject;
-                    }
-                  } else {
-                    // Already in object format
-                    result.headers = userData.headers;
-                  }
-                }
-                if (userData.pathParams) {
-                  // Keep pathParams as object format for consistency
-                  if (Array.isArray(userData.pathParams)) {
-                    // Check if it's already in Array<[string, string]> format
-                    if (userData.pathParams.length > 0 && Array.isArray(userData.pathParams[0])) {
-                      // Convert from Array<[string, string]> to object format
-                      const pathParamsObject: Record<string, string> = {};
-                      for (const [key, value] of userData.pathParams) {
-                        pathParamsObject[key] = value;
-                      }
-                      result.pathParams = pathParamsObject;
-                    } else {
-                      // Convert from Array<{key: value}> to object format
-                      const pathParamsObject: Record<string, string> = {};
-                      for (const pathParam of userData.pathParams) {
-                        for (const [key, value] of Object.entries(pathParam)) {
-                          pathParamsObject[key] = value as string;
-                        }
-                      }
-                      result.pathParams = pathParamsObject;
-                    }
-                  } else {
-                    // Already in object format
-                    result.pathParams = userData.pathParams;
-                  }
-                }
-              } else {
-                // This is the old format with just user data
-                result.data = userData;
-              }
+              return convertProtobufValueToJs(manualTrigger.getData());
             } catch (error) {
               console.warn(
                 "Failed to convert manual trigger data from protobuf Value:",
                 error
               );
-              result.data = manualTrigger.getData();
+              return manualTrigger.getData();
             }
           } else if (manualTrigger.data) {
             // For plain objects, try to convert or use directly
-            const userData =
-              typeof manualTrigger.data.getKindCase === "function"
-                ? convertProtobufValueToJs(manualTrigger.data)
-                : manualTrigger.data;
-            
-            // Check if the userData is the new format with nested structure
-            if (userData && typeof userData === 'object' && 
-                userData.data !== undefined && 
-                (userData.headers !== undefined || userData.pathParams !== undefined)) {
-              // This is the new format where the entire structure is in the data field
-              // Flatten it by extracting the nested data
-              result.data = userData.data;
-              if (userData.headers) {
-                // Keep headers as object format for consistency
-                if (Array.isArray(userData.headers)) {
-                  // Check if it's already in Array<[string, string]> format
-                  if (userData.headers.length > 0 && Array.isArray(userData.headers[0])) {
-                    // Convert from Array<[string, string]> to object format
-                    const headersObject: Record<string, string> = {};
-                    for (const [key, value] of userData.headers) {
-                      headersObject[key] = value;
-                    }
-                    result.headers = headersObject;
-                  } else {
-                    // Convert from Array<{key: value}> to object format
-                    const headersObject: Record<string, string> = {};
-                    for (const header of userData.headers) {
-                      for (const [key, value] of Object.entries(header)) {
-                        headersObject[key] = value as string;
-                      }
-                    }
-                    result.headers = headersObject;
-                  }
-                } else {
-                  // Already in object format
-                  result.headers = userData.headers;
-                }
-              }
-              if (userData.pathParams) {
-                // Keep pathParams as object format for consistency
-                if (Array.isArray(userData.pathParams)) {
-                  // Check if it's already in Array<[string, string]> format
-                  if (userData.pathParams.length > 0 && Array.isArray(userData.pathParams[0])) {
-                    // Convert from Array<[string, string]> to object format
-                    const pathParamsObject: Record<string, string> = {};
-                    for (const [key, value] of userData.pathParams) {
-                      pathParamsObject[key] = value;
-                    }
-                    result.pathParams = pathParamsObject;
-                  } else {
-                    // Convert from Array<{key: value}> to object format
-                    const pathParamsObject: Record<string, string> = {};
-                    for (const pathParam of userData.pathParams) {
-                      for (const [key, value] of Object.entries(pathParam)) {
-                        pathParamsObject[key] = value as string;
-                      }
-                    }
-                    result.pathParams = pathParamsObject;
-                  }
-                } else {
-                  // Already in object format
-                  result.pathParams = userData.pathParams;
-                }
-              }
-            } else {
-              // This is the old format with just user data
-              result.data = userData;
-            }
+            return typeof manualTrigger.data.getKindCase === "function"
+              ? convertProtobufValueToJs(manualTrigger.data)
+              : manualTrigger.data;
           }
-
-          // Include headers for webhook testing - use object format for consistency
-          if (
-            typeof manualTrigger.getHeadersMap === "function"
-          ) {
-            const headersMap = manualTrigger.getHeadersMap();
-            if (headersMap && headersMap.getLength() > 0) {
-              const headersObject: Record<string, string> = {};
-              headersMap.forEach((value: string, key: string) => {
-                headersObject[key] = value;
-              });
-              result.headers = headersObject;
-            }
-          } else if (manualTrigger.headers) {
-            // For plain objects, convert to object format
-            if (Array.isArray(manualTrigger.headers)) {
-              const headersObject: Record<string, string> = {};
-              for (const [key, value] of Object.entries(manualTrigger.headers)) {
-                headersObject[key] = value as string;
-              }
-              result.headers = headersObject;
-            } else {
-              result.headers = manualTrigger.headers;
-            }
-          }
-
-          // Include pathParams for webhook testing - use object format for consistency
-          if (
-            typeof manualTrigger.getPathparamsMap === "function"
-          ) {
-            const pathParamsMap = manualTrigger.getPathparamsMap();
-            if (pathParamsMap && pathParamsMap.getLength() > 0) {
-              const pathParamsObject: Record<string, string> = {};
-              pathParamsMap.forEach((value: string, key: string) => {
-                pathParamsObject[key] = value;
-              });
-              result.pathParams = pathParamsObject;
-            }
-          } else if (manualTrigger.pathparams) {
-            // For plain objects, convert to object format
-            if (Array.isArray(manualTrigger.pathparams)) {
-              const pathParamsObject: Record<string, string> = {};
-              for (const [key, value] of Object.entries(manualTrigger.pathparams)) {
-                pathParamsObject[key] = value as string;
-              }
-              result.pathParams = pathParamsObject;
-            } else {
-              result.pathParams = manualTrigger.pathparams;
-            }
-          }
-
-          // Check if this is the new format with no data field or null data
-          if (Object.keys(result).length === 0) {
-            const objData = manualTrigger.toObject?.() || manualTrigger;
-            if (objData && objData.data === undefined) {
-              // No data was provided, return null
-              result.data = null;
-            } else {
-              // Fallback to old structure for backward compatibility
-              return { data: objData };
-            }
-          }
-
-          // For manual triggers, return the flat structure
-          return result;
         }
-        return { data: null };
+        return null;
       }
+
 
       // Node outputs - RESTORE MISSING CASES
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
