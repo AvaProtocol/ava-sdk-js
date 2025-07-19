@@ -41,19 +41,25 @@ class ManualTrigger extends Trigger {
     let headers: Record<string, string> | undefined;
     let pathParams: Record<string, string> | undefined;
 
-    // Expect ManualTriggerDataType structure: { data, headers?, pathParams? }
+    // Handle both new simplified format (direct data) and legacy format ({ data, headers?, pathParams? })
     if (typeof this.data === 'object' && this.data !== null && !Array.isArray(this.data)) {
       const manualData = this.data as ManualTriggerDataType;
       if ('data' in manualData) {
-        // This is the expected ManualTriggerDataType structure
+        // ManualTriggerDataType structure with nested data, headers, pathParams
         actualData = manualData.data;
         headers = manualData.headers;
         pathParams = manualData.pathParams;
       } else {
-        throw new Error("ManualTrigger data must follow ManualTriggerDataType structure with 'data' field");
+        // New simplified format - treat the entire object as data
+        actualData = this.data as Record<string, unknown>;
+        headers = undefined;
+        pathParams = undefined;
       }
     } else {
-      throw new Error("ManualTrigger data must be an object with ManualTriggerDataType structure");
+      // Direct primitive data (string, number, boolean, array, null)
+      actualData = this.data as string | number | boolean | unknown[] | null;
+      headers = undefined;
+      pathParams = undefined;
     }
     
     const dataValue = convertInputToProtobuf(actualData as any);
@@ -62,26 +68,31 @@ class ManualTrigger extends Trigger {
     }
     config.setData(dataValue);
 
-    // Set headers if provided - from nested structure
-    if (headers && Object.keys(headers).length > 0) {
-      const headersMap = config.getHeadersMap();
-      Object.entries(headers).forEach(([key, value]) => {
-        headersMap.set(key, value);
-      });
-    }
-
-    // Set pathParams if provided - from nested structure
-    if (pathParams && Object.keys(pathParams).length > 0) {
-      const pathParamsMap = config.getPathparamsMap();
-      Object.entries(pathParams).forEach(([key, value]) => {
-        pathParamsMap.set(key, value);
-      });
-    }
+    // Note: headers and pathParams were removed from protobuf structure
+    // They are now handled at the configuration level only, not in execution output
 
     manualTrigger.setConfig(config);
     
-    // Convert input field to protobuf format and set on ManualTrigger
-    const inputValue = convertInputToProtobuf(this.input);
+    // Create comprehensive input field that includes all trigger configuration
+    // This will be extracted by the backend and included in execution step input
+    const comprehensiveInput: Record<string, unknown> = {
+      data: actualData,
+    };
+    
+    // Include headers and pathParams as part of trigger configuration
+    if (headers && Object.keys(headers).length > 0) {
+      comprehensiveInput.headers = headers;
+    }
+    if (pathParams && Object.keys(pathParams).length > 0) {
+      comprehensiveInput.pathParams = pathParams;
+    }
+    
+    // Merge any additional input data provided by user
+    if (this.input) {
+      Object.assign(comprehensiveInput, this.input);
+    }
+    
+    const inputValue = convertInputToProtobuf(comprehensiveInput);
     if (inputValue) {
       manualTrigger.setInput(inputValue);
     }
@@ -95,56 +106,32 @@ class ManualTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let actualData: string | number | boolean | Record<string, unknown> | unknown[] | null = null;
-    let input: Record<string, unknown> | undefined = undefined;
-    let headers: Record<string, string> | undefined = undefined;
-    let pathParams: Record<string, string> | undefined = undefined;
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
-      // Extract input data if present
-      if (manualTrigger.hasInput()) {
-        input = extractInputFromProtobuf(manualTrigger.getInput());
-      }
-      
       const config = manualTrigger.getConfig();
       if (config) {
-        // Extract data
+        // Extract data only - headers and pathParams are handled by base class
         if (config.hasData()) {
           actualData = extractInputFromProtobuf(config.getData()) as string | number | boolean | Record<string, unknown> | unknown[] | null;
-        }
-
-        // Extract headers - direct protobuf map to object mapping
-        const headersMapProto = config.getHeadersMap();
-        if (headersMapProto && headersMapProto.getLength() > 0) {
-          headers = {};
-          headersMapProto.forEach((value: string, key: string) => {
-            headers![key] = value;
-          });
-        }
-
-        // Extract pathParams - direct protobuf map to object mapping
-        const pathParamsMapProto = config.getPathparamsMap();
-        if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
-          pathParams = {};
-          pathParamsMapProto.forEach((value: string, key: string) => {
-            pathParams![key] = value;
-          });
         }
       }
     }
 
-    // Create ManualTriggerDataType structure
+    // Extract input data using base class method (general pattern for all triggers)
+    const baseInput = super.fromResponse(raw).input;
+
+    // Create ManualTriggerDataType structure with just the data
+    // Headers and pathParams are available in baseInput for execution step display
     const manualTriggerData: ManualTriggerDataType = {
       data: actualData,
-      ...(headers && { headers }),
-      ...(pathParams && { pathParams })
     };
 
     return new ManualTrigger({
       ...obj,
       type: TriggerType.Manual,
       data: manualTriggerData,
-      input: input,
+      input: baseInput, // Use the general input extraction pattern
     });
   }
 

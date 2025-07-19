@@ -193,7 +193,7 @@ return message;`,
         url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage",
         method: "POST",
         body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}"}',
-        headersMap: [["Content-Type", "application/json"]],
+        headers: { "Content-Type": "application/json" },
       },
       input: undefined,
     });
@@ -225,7 +225,7 @@ return message;`,
 
       const result = await client.runTrigger({
         triggerType: TriggerType.Event,
-        triggerConfig: eventTrigger.data,
+        triggerConfig: eventTrigger.data as any,
         inputVariables: {
           eventTrigger: {
             input: eventTrigger.input,
@@ -384,10 +384,14 @@ return message;`,
       expect(triggerStep.type).toBe(TriggerType.Event);
       expect(triggerStep.success).toBe(true);
 
-      // The trigger step's input field contains configuration (queries), not custom input data
+      // The trigger step's input field contains custom input data provided by the user
       expect(triggerStep.input).toBeDefined();
-      expect(triggerStep.input.queries).toBeDefined();
-      expect(triggerStep.input.queries).toHaveLength(2);
+      const triggerInput = triggerStep.input as any; // Type assertion after toBeDefined check
+      expect(triggerInput.address).toBeDefined();
+      expect(triggerInput.chainId).toBe(11155111);
+      expect(triggerInput.subType).toBe("transfer");
+      expect(triggerInput.tokens).toBeDefined();
+      expect(triggerInput.tokens).toHaveLength(1);
 
       // Custom input data should be accessible via VM variables (checked in subsequent node's inputsList)
       // The CustomCode node should have access to eventTrigger.input which contains the custom input data
@@ -447,8 +451,9 @@ return message;`,
 
       // Verify trigger has input data
       expect(savedWorkflow.trigger.input).toBeDefined();
-      expect(savedWorkflow.trigger.input.tokens).toHaveLength(1);
-      expect(savedWorkflow.trigger.input.tokens[0].symbol).toBe("USDC");
+      const triggerInput = savedWorkflow.trigger.input as any; // Type assertion after toBeDefined check
+      expect(triggerInput.tokens).toHaveLength(1);
+      expect(triggerInput.tokens[0].symbol).toBe("USDC");
 
       
     });
@@ -495,13 +500,13 @@ return message;`,
 
       expect(savedCustomCodeNode).toBeDefined();
       expect(savedCustomCodeNode!.type).toBe(NodeType.CustomCode);
-      expect(savedCustomCodeNode!.data.source).toContain(
+      expect((savedCustomCodeNode!.data as any).source).toContain(
         "eventTrigger.data.topics"
       );
 
       expect(savedTelegramNode).toBeDefined();
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
-      expect(savedTelegramNode!.data.url).toContain("telegram.org");
+      expect((savedTelegramNode!.data as any).url).toContain("telegram.org");
     });
   });
 });

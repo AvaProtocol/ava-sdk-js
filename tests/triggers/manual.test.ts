@@ -438,10 +438,8 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // The output should be the provided data wrapped in standard structure
-      expect(triggerStep!.output).toEqual({
-        data: { message: "test simulation" },
-      });
+      // The output should be the raw data directly (new simplified format)
+      expect(triggerStep!.output).toEqual({ message: "test simulation" });
     });
 
     test("should simulate workflow with manual trigger and user data", async () => {
@@ -502,7 +500,7 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep!.output).toBeDefined();
       const outputData = triggerStep!.output;
       expect(outputData).toBeDefined();
-      expect(outputData).toEqual({ data: userData }); // Use standard structure
+      expect(outputData).toEqual(userData); // ManualTrigger now returns raw data directly
 
       // Check that the CustomCode node successfully referenced the manual trigger data
       const customCodeStep = simulation.steps.find(
@@ -551,7 +549,7 @@ describe("ManualTrigger Tests", () => {
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
       (
         customCodeNode.data as { source: string }
-      ).source = `return ${triggerName}.data.data;`; // Access nested data field only
+      ).source = `return ${triggerName}.data;`; // Access data directly (new simplified format)
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and webhook data:",
@@ -579,14 +577,8 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // The trigger step should have all the webhook data wrapped in standard structure
-      expect(triggerStep!.output).toEqual({
-        data: {
-          data: data,
-          headers: headers,
-          pathParams: pathParams,
-        },
-      });
+      // With the new simplified format, only the data content is returned (headers and pathParams are config-only)
+      expect(triggerStep!.output).toEqual(data);
 
       // Check that the CustomCode node successfully referenced the manual trigger webhook data
       const customCodeStep = simulation.steps.find(
@@ -915,7 +907,7 @@ describe("ManualTrigger Tests", () => {
 
       // Validate consistency_test_manual_trigger.input and .output
       expect(triggerStep!.input).toBeDefined();
-      expect(triggerStep!.output).toEqual({ data: testData }); // ManualTrigger uses standard { data: ... } structure
+      expect(triggerStep!.output).toEqual(testData); // ManualTrigger now returns raw data directly
 
       // Find the loop step in simulation
       const loopStep = simulation.steps.find((step) => step.id === loopNodeId);

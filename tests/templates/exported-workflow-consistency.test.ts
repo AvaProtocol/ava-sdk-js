@@ -294,7 +294,7 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
       
-      // Validate trigger input
+      // Validate trigger input - Should include data, headers, and pathParams for debugging
       expect(triggerStep!.input).toBeDefined();
       expect(triggerStep!.input).toEqual({
         data: [{ key: "value1" }, { key: "value2" }],

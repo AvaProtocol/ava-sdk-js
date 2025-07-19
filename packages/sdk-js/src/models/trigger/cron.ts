@@ -66,20 +66,14 @@ class CronTrigger extends Trigger {
       }
     }
 
-    // ✨ NEW: Extract input data if present
-    let input: google_protobuf_struct_pb.Value.AsObject | undefined;
-    if (raw.getCron() && raw.getCron()!.hasInput()) {
-      const inputValue = raw.getCron()!.getInput();
-      if (inputValue) {
-        input = inputValue.toObject();
-      }
-    }
+    // Extract input data using base class method (general pattern for all triggers)
+    const baseInput = super.fromResponse(raw).input;
     
     return new CronTrigger({
       ...obj,
       type: TriggerType.Cron,
       data: data,
-      input: input, // ✨ NEW: Include input data
+      input: baseInput, // Use the general input extraction pattern
     });
   }
 

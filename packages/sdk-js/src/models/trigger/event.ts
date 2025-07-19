@@ -173,7 +173,6 @@ class EventTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: EventTriggerDataType = { queries: [] };
-    let input: Record<string, any> | undefined = undefined;
 
     if (raw.getEvent() && raw.getEvent()!.hasConfig()) {
       const config = raw.getEvent()!.getConfig();
@@ -242,17 +241,16 @@ class EventTrigger extends Trigger {
         data = { queries: queries };
       }
 
-      // Extract input data if present
-      if (raw.getEvent()!.hasInput()) {
-        input = extractInputFromProtobuf(raw.getEvent()!.getInput());
-      }
     }
+
+    // Extract input data using base class method (general pattern for all triggers)
+    const baseInput = super.fromResponse(raw).input;
 
     return new EventTrigger({
       ...obj,
       type: TriggerType.Event,
       data: data,
-      input: input,
+      input: baseInput, // Use the general input extraction pattern
     });
   }
 

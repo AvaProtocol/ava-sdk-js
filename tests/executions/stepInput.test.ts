@@ -106,23 +106,24 @@ describe("Input Field Tests", () => {
         name: triggerName,
         type: TriggerType.Manual,
         data: {
-          apiBaseUrl: MOCKED_API_ENDPOINT_AGGREGATOR,
-          apiKey: "test-api-key-123",
-          environment: "testing",
-          priority: "high",
+          data: {
+            apiBaseUrl: MOCKED_API_ENDPOINT_AGGREGATOR,
+            apiKey: "test-api-key-123",
+            environment: "testing",
+            priority: "high",
+          },
+          headers: {
+            "X-Webhook-Source": "manual-trigger",
+            "X-Trigger-Version": "1.0",
+            Authorization: "Bearer trigger-token-123",
+          },
+          pathParams: {
+            version: "v1",
+            endpoint: "data",
+            format: "json",
+          },
         },
-        // Note: Type assertion needed for extended trigger properties
-        headers: {
-          "X-Webhook-Source": "manual-trigger",
-          "X-Trigger-Version": "1.0",
-          Authorization: "Bearer trigger-token-123",
-        },
-        pathParams: {
-          version: "v1",
-          endpoint: "data",
-          format: "json",
-        },
-      } as TriggerProps);
+      });
 
       // Create a REST API node that uses the trigger data, headers, and pathParams
       const restApiNode = NodeFactory.create({
@@ -292,15 +293,11 @@ describe("Input Field Tests", () => {
       // Verify that template resolution is working correctly
       expect(triggerStep.output).toBeDefined();
 
-      // The trigger output only contains data, not headers/pathParams
+      // With the new simplified format, the trigger output IS the data directly (no wrapper)
       const triggerOutput = triggerStep.output as Record<string, unknown>;
-      expect(triggerOutput.data).toBeDefined();
-
-      // Check that the trigger output data matches the input data
-      const outputData = triggerOutput.data as Record<string, unknown>;
-      expect(outputData.apiKey).toBe("test-api-key-123");
-      expect(outputData.environment).toBe("testing");
-      expect(outputData.priority).toBe("high");
+      expect(triggerOutput.apiKey).toBe("test-api-key-123");
+      expect(triggerOutput.environment).toBe("testing");
+      expect(triggerOutput.priority).toBe("high");
 
       // Verify that the REST API node succeeded and got the mock response
       expect(nodeStep.success).toBe(true);

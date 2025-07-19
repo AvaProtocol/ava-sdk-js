@@ -54,7 +54,6 @@ class BlockTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: BlockTriggerDataType = { interval: 0 };
-    let input: Record<string, any> | undefined = undefined;
     
     if (raw.getBlock() && raw.getBlock()!.hasConfig()) {
       const config = raw.getBlock()!.getConfig();
@@ -64,19 +63,16 @@ class BlockTrigger extends Trigger {
           interval: config.getInterval() || 0
         };
       }
-      
-      // Use utility function to extract input field from protobuf format
-      const blockTrigger = raw.getBlock()!;
-      if (blockTrigger.hasInput()) {
-        input = extractInputFromProtobuf(blockTrigger.getInput());
-      }
     }
+
+    // Extract input data using base class method (general pattern for all triggers)
+    const baseInput = super.fromResponse(raw).input;
     
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
       data: data,
-      input: input,
+      input: baseInput, // Use the general input extraction pattern
     });
   }
 

@@ -42,7 +42,6 @@ class FixedTimeTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: FixedTimeTriggerDataType = { epochsList: [] };
-    let input: Record<string, any> | undefined = undefined;
     
     if (raw.getFixedTime() && raw.getFixedTime()!.hasConfig()) {
       const config = raw.getFixedTime()!.getConfig();
@@ -53,17 +52,16 @@ class FixedTimeTrigger extends Trigger {
         };
       }
       
-      // Extract input data if present
-      if (raw.getFixedTime()!.hasInput()) {
-        input = extractInputFromProtobuf(raw.getFixedTime()!.getInput());
-      }
     }
+
+    // Extract input data using base class method (general pattern for all triggers)
+    const baseInput = super.fromResponse(raw).input;
     
     return new FixedTimeTrigger({
       ...obj,
       type: TriggerType.FixedTime,
       data: data,
-      input: input,
+      input: baseInput, // Use the general input extraction pattern
     });
   }
 
