@@ -9,7 +9,7 @@ import {
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import { Value } from "google-protobuf/google/protobuf/struct_pb";
 
-// Required props for constructor: id, name, type and data: { expression, sourceId }
+// Required props for constructor: id, name, type and data: { expression, inputNodeName }
 
 class FilterNode extends Node {
   constructor(props: FilterNodeProps) {
@@ -20,14 +20,14 @@ class FilterNode extends Node {
     // Convert the raw object to FilterNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Extract input data if present
-    const input = extractInputFromProtobuf(raw.getFilter()?.getInput());
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
 
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
       data: raw.getFilter()!.getConfig()!.toObject() as FilterNodeData,
-      input: input,
+      input: baseInput,
     });
   }
 
@@ -41,13 +41,14 @@ class FilterNode extends Node {
 
     const config = new avs_pb.FilterNode.Config();
     config.setExpression((this.data as FilterNodeData).expression);
-    config.setSourceId((this.data as FilterNodeData).sourceId || "");
+    config.setInputNodeName((this.data as FilterNodeData).inputNodeName || "");
     node.setConfig(config);
 
-    // Set input data if provided
+    // Set input data on the top-level TaskNode, not the nested FilterNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      node.setInput(inputValue);
+      request.setInput(inputValue);
     }
 
     request.setFilter(node);

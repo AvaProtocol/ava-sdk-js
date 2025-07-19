@@ -89,9 +89,9 @@ export default abstract class Node implements NodeProps {
     const obj = raw.toObject() as unknown as NodeProps;
 
     // Extract input data using the utility function
-    let input: google_protobuf_struct_pb.Value.AsObject | undefined = undefined;
+    let input: Record<string, unknown> | undefined = undefined;
     if (raw.hasInput()) {
-      input = raw.getInput()!.toObject();
+      input = extractInputFromProtobuf(raw.getInput());
     }
 
     return new (this as any)({

@@ -7,7 +7,7 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
   name: "loop_with_rest_api",
   type: NodeType.Loop,
   data: {
-    sourceId: "testArray",
+    inputNodeName: "testArray",
     iterVal: "value",
     iterKey: "index",
     runner: {
@@ -29,7 +29,7 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
   name: "loop_with_custom_code",
   type: NodeType.Loop,
   data: {
-    sourceId: "testArray",
+    inputNodeName: "testArray",
     iterVal: "value",
     iterKey: "index",
     runner: {
@@ -49,7 +49,7 @@ export const loopNodeWithETHTransferProps: LoopNodeProps = {
   name: "loop_with_eth_transfer",
   type: NodeType.Loop,
   data: {
-    sourceId: "addressArray",
+    inputNodeName: "addressArray",
     iterVal: "address",
     iterKey: "index",
     runner: {
@@ -69,7 +69,7 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
   name: "loop_with_contract_read",
   type: NodeType.Loop,
   data: {
-    sourceId: "contractArray",
+    inputNodeName: "contractArray",
     iterVal: "contract",
     iterKey: "index",
     runner: {
@@ -95,7 +95,7 @@ export const loopNodeWithContractWriteProps: LoopNodeProps = {
   name: "loop_with_contract_write",
   type: NodeType.Loop,
   data: {
-    sourceId: "contractArray",
+    inputNodeName: "contractArray",
     iterVal: "contract",
     iterKey: "index",
     runner: {
@@ -121,7 +121,7 @@ export const loopNodeWithGraphQLQueryProps: LoopNodeProps = {
   name: "loop_with_graphql_query",
   type: NodeType.Loop,
   data: {
-    sourceId: "queryArray",
+    inputNodeName: "queryArray",
     iterVal: "query",
     iterKey: "index",
     runner: {

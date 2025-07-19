@@ -52,7 +52,7 @@ describe("FilterNode Tests", () => {
         nodeType: NodeType.Filter,
         nodeConfig: {
           expression: "value.age >= 18",
-          sourceId: "testArray",
+          inputNodeName: "testArray",
         },
         inputVariables: {
           testArray: [
@@ -79,7 +79,7 @@ describe("FilterNode Tests", () => {
         nodeType: NodeType.Filter,
         nodeConfig: {
           expression: "value.age < 18",
-          sourceId: "testArray",
+          inputNodeName: "testArray",
         },
         inputVariables: {
           testArray: [
@@ -104,7 +104,7 @@ describe("FilterNode Tests", () => {
         nodeType: NodeType.Filter,
         nodeConfig: {
           expression: 'value.name.startsWith("A")',
-          sourceId: "testArray",
+          inputNodeName: "testArray",
         },
         inputVariables: {
           testArray: [
@@ -129,7 +129,7 @@ describe("FilterNode Tests", () => {
         nodeType: NodeType.Filter,
         nodeConfig: {
           expression: "value.age >= trigger.data.minAge",
-          sourceId: "testArray",
+          inputNodeName: "testArray",
         },
         inputVariables: {
           testArray: [
@@ -183,7 +183,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: "value.age >= 18",
-          sourceId: dataNode.id, // Reference the data generation node
+          inputNodeName: dataNode.id, // Reference the data generation node
         },
       });
 
@@ -235,7 +235,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: 'value.age >= 20 && value.name.startsWith("A")',
-          sourceId: dataNode.id, // Reference the data generation node
+          inputNodeName: dataNode.id, // Reference the data generation node
         },
       });
 
@@ -286,7 +286,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: "value.age >= 18",
-          sourceId: dataNode.id, // Reference the data generation node
+          inputNodeName: dataNode.id, // Reference the data generation node
         },
       });
 
@@ -354,7 +354,7 @@ describe("FilterNode Tests", () => {
 
       const filterConfig = {
         expression: "value.age >= 21",
-        sourceId: "testArray",
+        inputNodeName: "testArray",
       };
 
       const inputVariables = {
@@ -399,7 +399,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: "value.age >= 21",
-          sourceId: dataNode.id, // Reference the data generation node
+          inputNodeName: dataNode.id, // Reference the data generation node
         },
       });
 

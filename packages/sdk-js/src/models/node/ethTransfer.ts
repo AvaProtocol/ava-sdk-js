@@ -34,14 +34,14 @@ class ETHTransferNode extends Node {
     // Convert the raw object to ETHTransferNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
     
-    // Extract input data if present
-    const input = extractInputFromProtobuf(raw.getEthTransfer()?.getInput());
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
     
     return new ETHTransferNode({
       ...obj,
       type: NodeType.ETHTransfer,
       data: raw.getEthTransfer()!.getConfig()!.toObject() as ETHTransferNodeData,
-      input: input,
+      input: baseInput,
     });
   }
 
@@ -55,10 +55,11 @@ class ETHTransferNode extends Node {
       this.data as ETHTransferNodeData
     );
 
-    // Set input data if provided
+    // Set input data on the top-level TaskNode, not the nested ETHTransferNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      node.setInput(inputValue);
+      request.setInput(inputValue);
     }
 
     request.setEthTransfer(node);

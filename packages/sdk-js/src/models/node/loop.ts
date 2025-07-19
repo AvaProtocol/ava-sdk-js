@@ -43,18 +43,14 @@ class LoopNode extends Node {
       ),
     } as LoopNodeData;
 
-    // Extract input data from top-level TaskNode.input field (not nested LoopNode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, unknown> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
 
     return new LoopNode({
       ...obj,
       type: NodeType.Loop,
       data: data,
-      input: input,
+      input: baseInput,
     });
   }
 
@@ -103,7 +99,7 @@ class LoopNode extends Node {
     if (!executionMode) {
       return 0; // Default to sequential for safety
     }
-    
+
     if (typeof executionMode === "string") {
       switch (executionMode.toLowerCase()) {
         case ExecutionMode.Parallel:
@@ -134,7 +130,7 @@ class LoopNode extends Node {
 
     // Set the loop config from the flat data structure
     const config = new avs_pb.LoopNode.Config();
-    config.setSourceId(data.sourceId || "");
+    config.setInputNodeName(data.inputNodeName || "");
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
 

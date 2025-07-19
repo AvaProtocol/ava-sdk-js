@@ -21,6 +21,12 @@ export interface MethodCallType {
   applyToFields: string[]; // Fields to apply formatting to (e.g., ["current", "answer"])
 }
 
+export interface ManualTriggerDataType {
+  data: string | number | boolean | Record<string, unknown> | unknown[] | null;
+  headers?: Record<string, string>;
+  pathParams?: Record<string, string>;
+}
+
 // Custom EventTrigger data type with cleaner field names
 export interface EventTriggerDataType {
   queries: Array<{
@@ -71,11 +77,7 @@ export type TriggerProps = Omit<
 
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };
 export type EventTriggerProps = TriggerProps & { data: EventTriggerDataType };
-export type ManualTriggerProps = TriggerProps & {
-  data?: string | number | boolean | Record<string, unknown> | unknown[] | null;
-  headers?: Record<string, string>;
-  pathParams?: Record<string, string>;
-};
+export type ManualTriggerProps = TriggerProps & { data: ManualTriggerDataType };
 export type BlockTriggerProps = TriggerProps & { data: BlockTriggerDataType };
 export type FixedTimeTriggerProps = TriggerProps & {
   data: FixedTimeTriggerDataType;
