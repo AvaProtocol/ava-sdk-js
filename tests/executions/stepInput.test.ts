@@ -598,11 +598,14 @@ describe("Input Field Tests", () => {
 
     const triggerInput = triggerStep.input as Record<string, unknown>;
 
-    // The trigger step's input field should contain the trigger configuration (for debugging)
-    // Custom input data should be accessible via VM variables (event_trigger_with_input.input)
-    expect(triggerInput.queries).toBeDefined();
-    expect(Array.isArray(triggerInput.queries)).toBe(true);
-    expect(triggerInput.queries as Array<any>).toHaveLength(2);
+    // The trigger step's input field contains the custom input data (from the input field)
+    // Trigger configuration is accessible via VM variables (event_trigger_with_input.data)
+    expect(triggerInput.address).toBeDefined();
+    expect(triggerInput.chainId).toBe(11155111);
+    expect(triggerInput.subType).toBe("transfer");
+    expect(triggerInput.tokens).toBeDefined();
+    expect(Array.isArray(triggerInput.tokens)).toBe(true);
+    expect(triggerInput.tokens as Array<any>).toHaveLength(1);
 
     // Check the custom code step
     const codeStep = simulationResult.steps[1];

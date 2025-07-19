@@ -225,12 +225,7 @@ return message;`,
 
       const result = await client.runTrigger({
         triggerType: TriggerType.Event,
-        triggerConfig: eventTrigger.data as any,
-        inputVariables: {
-          eventTrigger: {
-            input: eventTrigger.input,
-          },
-        },
+        triggerConfig: eventTrigger.data as Record<string, unknown>,
       });
 
       console.log(
@@ -386,6 +381,7 @@ return message;`,
 
       // The trigger step's input field contains custom input data provided by the user
       expect(triggerStep.input).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const triggerInput = triggerStep.input as any; // Type assertion after toBeDefined check
       expect(triggerInput.address).toBeDefined();
       expect(triggerInput.chainId).toBe(11155111);
@@ -451,6 +447,7 @@ return message;`,
 
       // Verify trigger has input data
       expect(savedWorkflow.trigger.input).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const triggerInput = savedWorkflow.trigger.input as any; // Type assertion after toBeDefined check
       expect(triggerInput.tokens).toHaveLength(1);
       expect(triggerInput.tokens[0].symbol).toBe("USDC");
@@ -500,12 +497,14 @@ return message;`,
 
       expect(savedCustomCodeNode).toBeDefined();
       expect(savedCustomCodeNode!.type).toBe(NodeType.CustomCode);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((savedCustomCodeNode!.data as any).source).toContain(
         "eventTrigger.data.topics"
       );
 
       expect(savedTelegramNode).toBeDefined();
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((savedTelegramNode!.data as any).url).toContain("telegram.org");
     });
   });
