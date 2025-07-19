@@ -166,31 +166,29 @@ class Step implements StepProps {
             ? step.getManualTrigger()
             : (step as any).manualTrigger;
         if (manualTrigger) {
-          // For manual triggers, wrap the data in a standard structure like other triggers
-          // This ensures consistent access pattern: triggerOutput.data
+          // For manual triggers, return the raw data directly (not wrapped in data field)
+          // This makes ManualTrigger execution step output: [...] instead of {"data": [...]}
           if (
             typeof manualTrigger.hasData === "function" &&
             manualTrigger.hasData()
           ) {
             try {
-              const data = convertProtobufValueToJs(manualTrigger.getData());
-              return { data: data }; // ✅ Use standard structure
+              return convertProtobufValueToJs(manualTrigger.getData());
             } catch (error) {
               console.warn(
                 "Failed to convert manual trigger data from protobuf Value:",
                 error
               );
-              return { data: manualTrigger.getData() }; // ✅ Use standard structure
+              return manualTrigger.getData();
             }
           } else if (manualTrigger.data) {
             // For plain objects, try to convert or use directly
-            const data = typeof manualTrigger.data.getKindCase === "function"
+            return typeof manualTrigger.data.getKindCase === "function"
               ? convertProtobufValueToJs(manualTrigger.data)
               : manualTrigger.data;
-            return { data: data }; // ✅ Use standard structure
           }
         }
-        return { data: null }; // ✅ Use standard structure
+        return null;
       }
 
 

@@ -302,10 +302,8 @@ describe("Exported Workflow Consistency Tests", () => {
         pathParams: { pathKey: "pathValue" },
       });
       
-      // Validate trigger output
-      expect(triggerStep!.output).toEqual({
-        data: [{ key: "value1" }, { key: "value2" }]
-      });
+      // Validate trigger output - ManualTrigger now returns raw data directly (no wrapper)
+      expect(triggerStep!.output).toEqual([{ key: "value1" }, { key: "value2" }]);
 
       // Validate filter step
       const filterStep = simulation.steps.find((s) => s.type === "filter");
