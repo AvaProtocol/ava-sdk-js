@@ -1335,16 +1335,11 @@ describe("LoopNode Tests", () => {
         id: defaultTriggerId,
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: {
-          data: [{ key: "value1" }, { key: "value2" }],
-          headers: { headerKey: "headerValue" },
-          pathParams: { pathKey: "pathValue" },
-        },
+        data: [{ key: "value1" }, { key: "value2" }], // Use direct array structure like execution
       });
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps),
-        inputVariables
+        client.createWorkflow(workflowProps)
       );
 
       const simulatedStep = simulation.steps.find(
@@ -1411,7 +1406,9 @@ describe("LoopNode Tests", () => {
 
         // Check that all have the same structure for first item
         // Since we're using "return value;", each item should be the original object
-        const directFirstItem = (directResponse.data as any[])[0] as { key: string };
+        const directFirstItem = (directResponse.data as any[])[0] as {
+          key: string;
+        };
         const simulatedFirstItem = simulatedStep?.output[0] as { key: string };
         const executedFirstItem = executedStep?.output[0] as { key: string };
 
@@ -1420,7 +1417,9 @@ describe("LoopNode Tests", () => {
         expect(executedFirstItem.key).toBe("value1");
 
         // Check second item for completeness
-        const directSecondItem = (directResponse.data as any[])[1] as { key: string };
+        const directSecondItem = (directResponse.data as any[])[1] as {
+          key: string;
+        };
         const simulatedSecondItem = simulatedStep?.output[1] as { key: string };
         const executedSecondItem = executedStep?.output[1] as { key: string };
 

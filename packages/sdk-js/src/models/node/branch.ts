@@ -25,14 +25,14 @@ class BranchNode extends Node {
       })) || [],
     };
 
-    // Extract input data if present
-    const input = extractInputFromProtobuf(raw.getBranch()?.getInput());
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
     
     return new BranchNode({
       ...obj,
       type: NodeType.Branch,
       data: data,
-      input: input,
+      input: baseInput,
     });
   }
 
@@ -63,10 +63,11 @@ class BranchNode extends Node {
     
     node.setConfig(config);
 
-    // Set input data if provided
+    // Set input data on the top-level TaskNode, not the nested BranchNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      node.setInput(inputValue);
+      request.setInput(inputValue);
     }
 
     request.setBranch(node);

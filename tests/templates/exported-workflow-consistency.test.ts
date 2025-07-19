@@ -56,9 +56,11 @@ describe("Exported Workflow Consistency Tests", () => {
       const result = await client.runTrigger({
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: testData,
-          headers: [{ key: "headerKey", value: "headerValue" }],
-          pathParams: [{ key: "pathKey", value: "pathValue" }],
+          data: {
+            data: testData,
+            headers: { headerKey: "headerValue" },
+            pathParams: { pathKey: "pathValue" },
+          },
         },
       });
 
@@ -69,7 +71,11 @@ describe("Exported Workflow Consistency Tests", () => {
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(testData);
+      expect(result.data).toEqual({
+        data: testData,
+        headers: { headerKey: "headerValue" },
+        pathParams: { pathKey: "pathValue" },
+      });
       expect(result.triggerId).toBeDefined();
     });
 
@@ -172,9 +178,11 @@ describe("Exported Workflow Consistency Tests", () => {
         id: "manualTrigger",
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: [{ key: "value1" }, { key: "value2" }],
-        headers: [{ key: "headerKey", value: "headerValue" }],
-        pathParams: [{ key: "pathKey", value: "pathValue" }],
+        data: {
+          data: [{ key: "value1" }, { key: "value2" }],
+          headers: { headerKey: "headerValue" },
+          pathParams: { pathKey: "pathValue" },
+        },
       });
 
       // Create LoopNode with updated inputNodeName
@@ -273,29 +281,45 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(4); // Trigger + 3 nodes
 
+      // Comprehensive validation of input and output fields for each step
+      // This ensures consistency across all node types and validates that:
+      // 1. All steps have proper input field populated with their configuration
+      // 2. All steps produce expected output based on their logic
+      // 3. FilterNode input issue is resolved (no longer undefined)
+
       // Validate trigger step
       const triggerStep = simulation.steps.find(
         (s) => s.type === "manualTrigger"
       );
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
-      expect(triggerStep!.output).toEqual([
-        { key: "value1" },
-        { key: "value2" },
-      ]);
-
-      // Validate loop step
-      const loopStep = simulation.steps.find((s) => s.type === "loop");
-      expect(loopStep).toBeDefined();
-      expect(loopStep!.success).toBe(true);
-      expect(Array.isArray(loopStep!.output)).toBe(true);
-      expect(loopStep!.output).toEqual([{ key: "value1" }, { key: "value2" }]);
-      expect(loopStep!.inputsList).toContain("manualTrigger.data");
+      
+      // Validate trigger input
+      expect(triggerStep!.input).toBeDefined();
+      expect(triggerStep!.input).toEqual({
+        data: [{ key: "value1" }, { key: "value2" }],
+        headers: { headerKey: "headerValue" },
+        pathParams: { pathKey: "pathValue" },
+      });
+      
+      // Validate trigger output
+      expect(triggerStep!.output).toEqual({
+        data: [{ key: "value1" }, { key: "value2" }]
+      });
 
       // Validate filter step
       const filterStep = simulation.steps.find((s) => s.type === "filter");
       expect(filterStep).toBeDefined();
       expect(filterStep!.success).toBe(true);
+      
+      // Validate filter input
+      expect(filterStep!.input).toBeDefined();
+      expect(filterStep!.input).toEqual({
+        expression: 'value.key === "value1"',
+        inputNodeName: "manualTrigger",
+      });
+      
+      // Validate filter output
       expect(filterStep!.output).toEqual([{ key: "value1" }]);
       expect(filterStep!.inputsList).toContain("manualTrigger.data");
 
@@ -303,8 +327,41 @@ describe("Exported Workflow Consistency Tests", () => {
       const codeStep = simulation.steps.find((s) => s.type === "customCode");
       expect(codeStep).toBeDefined();
       expect(codeStep!.success).toBe(true);
+      
+      // Validate custom code input
+      expect(codeStep!.input).toBeDefined();
+      expect(codeStep!.input).toEqual({
+        lang: "JavaScript",
+        source: "return manualTrigger.data;",
+      });
+      
+      // Validate custom code output
       expect(codeStep!.output).toEqual([{ key: "value1" }, { key: "value2" }]);
       expect(codeStep!.inputsList).toContain("manualTrigger.data");
+
+      // Validate loop step
+      const loopStep = simulation.steps.find((s) => s.type === "loop");
+      expect(loopStep).toBeDefined();
+      expect(loopStep!.success).toBe(true);
+      
+      // Validate loop input
+      expect(loopStep!.input).toBeDefined();
+      expect(loopStep!.input).toEqual({
+        inputNodeName: "manualTrigger",
+        iterVal: "value",
+        iterKey: "index",
+        executionMode: "sequential",
+        runner: {
+          type: "customCode",
+          lang: "JavaScript",
+          source: "return value;",
+        },
+      });
+      
+      // Validate loop output
+      expect(Array.isArray(loopStep!.output)).toBe(true);
+      expect(loopStep!.output).toEqual([{ key: "value1" }, { key: "value2" }]);
+      expect(loopStep!.inputsList).toContain("manualTrigger.data");
     });
   });
 
@@ -317,9 +374,11 @@ describe("Exported Workflow Consistency Tests", () => {
         id: "manualTrigger",
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: [{ key: "value1" }, { key: "value2" }],
-        headers: [{ key: "headerKey", value: "headerValue" }],
-        pathParams: [{ key: "pathKey", value: "pathValue" }],
+        data: {
+          data: [{ key: "value1" }, { key: "value2" }],
+          headers: { headerKey: "headerValue" },
+          pathParams: { pathKey: "pathValue" },
+        },
       });
 
       const loopNode = NodeFactory.create({
@@ -886,9 +945,11 @@ describe("Exported Workflow Consistency Tests", () => {
         id: "manualTrigger",
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: testData,
-        headers: [{ key: "testHeader", value: "testValue" }],
-        pathParams: [{ key: "testParam", value: "testParamValue" }],
+        data: {
+          data: testData,
+          headers: { testHeader: "testValue" },
+          pathParams: { testParam: "testParamValue" },
+        },
       });
 
       const loopNode = NodeFactory.create({

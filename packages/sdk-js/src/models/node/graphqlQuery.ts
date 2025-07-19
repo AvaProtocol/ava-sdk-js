@@ -46,14 +46,14 @@ class GraphQLQueryNode extends Node {
     // Convert the raw object to GraphQLQueryNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
     
-    // Extract input data if present
-    const input = extractInputFromProtobuf(raw.getGraphqlQuery()?.getInput());
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
     
     return new GraphQLQueryNode({
       ...obj,
       type: NodeType.GraphQLQuery,
       data: raw.getGraphqlQuery()!.getConfig()!.toObject() as GraphQLQueryNodeData,
-      input: input,
+      input: baseInput,
     });
   }
 
@@ -67,10 +67,11 @@ class GraphQLQueryNode extends Node {
       this.data as GraphQLQueryNodeData
     );
 
-    // Set input data if provided
+    // Set input data on the top-level TaskNode, not the nested GraphQLQueryNode
+    // This matches where the Go backend's ExtractNodeInputData() looks for it
     const inputValue = convertInputToProtobuf(this.input);
     if (inputValue) {
-      node.setInput(inputValue);
+      request.setInput(inputValue);
     }
 
     request.setGraphqlQuery(node);

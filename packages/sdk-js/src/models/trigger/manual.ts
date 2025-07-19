@@ -8,13 +8,11 @@ import {
 import {
   TriggerType,
   ManualTriggerProps,
+  ManualTriggerDataType,
   TriggerProps,
 } from "@avaprotocol/types";
 
 class ManualTrigger extends Trigger {
-  public headers?: Record<string, string>;
-  public pathParams?: Record<string, string>;
-
   constructor(props: ManualTriggerProps) {
     super({
       ...props,
@@ -22,8 +20,6 @@ class ManualTrigger extends Trigger {
       data: props.data,
       input: props.input,
     });
-    this.headers = props.headers;
-    this.pathParams = props.pathParams;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -36,35 +32,60 @@ class ManualTrigger extends Trigger {
     const manualTrigger = new avs_pb.ManualTrigger();
     const config = new avs_pb.ManualTrigger.Config();
 
-    // Set the data - required for ManualTrigger
-    const dataToSend = this.data ?? this.input;
-    if (dataToSend === null || dataToSend === undefined) {
+    // Handle ManualTriggerDataType structure: { data: actualData, headers?: {}, pathParams?: {} }
+    if (this.data === null || this.data === undefined) {
       throw new Error("ManualTrigger data is required");
     }
+
+    let actualData: string | number | boolean | Record<string, unknown> | unknown[] | null;
+    let headers: Record<string, string> | undefined;
+    let pathParams: Record<string, string> | undefined;
+
+    // Expect ManualTriggerDataType structure: { data, headers?, pathParams? }
+    if (typeof this.data === 'object' && this.data !== null && !Array.isArray(this.data)) {
+      const manualData = this.data as ManualTriggerDataType;
+      if ('data' in manualData) {
+        // This is the expected ManualTriggerDataType structure
+        actualData = manualData.data;
+        headers = manualData.headers;
+        pathParams = manualData.pathParams;
+      } else {
+        throw new Error("ManualTrigger data must follow ManualTriggerDataType structure with 'data' field");
+      }
+    } else {
+      throw new Error("ManualTrigger data must be an object with ManualTriggerDataType structure");
+    }
     
-    const inputValue = convertInputToProtobuf(dataToSend);
-    if (!inputValue) {
+    const dataValue = convertInputToProtobuf(actualData as any);
+    if (!dataValue) {
       throw new Error("Failed to convert ManualTrigger data to protobuf format");
     }
-    config.setData(inputValue);
+    config.setData(dataValue);
 
-    // Set headers if provided - direct object to protobuf map mapping
-    if (this.headers && Object.keys(this.headers).length > 0) {
+    // Set headers if provided - from nested structure
+    if (headers && Object.keys(headers).length > 0) {
       const headersMap = config.getHeadersMap();
-      Object.entries(this.headers).forEach(([key, value]) => {
+      Object.entries(headers).forEach(([key, value]) => {
         headersMap.set(key, value);
       });
     }
 
-    // Set pathParams if provided - direct object to protobuf map mapping
-    if (this.pathParams && Object.keys(this.pathParams).length > 0) {
+    // Set pathParams if provided - from nested structure
+    if (pathParams && Object.keys(pathParams).length > 0) {
       const pathParamsMap = config.getPathparamsMap();
-      Object.entries(this.pathParams).forEach(([key, value]) => {
+      Object.entries(pathParams).forEach(([key, value]) => {
         pathParamsMap.set(key, value);
       });
     }
 
     manualTrigger.setConfig(config);
+    
+    // Convert input field to protobuf format and set on ManualTrigger
+    const inputValue = convertInputToProtobuf(this.input);
+    if (inputValue) {
+      manualTrigger.setInput(inputValue);
+    }
+    
     trigger.setManual(manualTrigger);
 
     return trigger;
@@ -73,18 +94,23 @@ class ManualTrigger extends Trigger {
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: unknown = null;
-    const input: Record<string, unknown> | undefined = undefined;
+    let actualData: string | number | boolean | Record<string, unknown> | unknown[] | null = null;
+    let input: Record<string, unknown> | undefined = undefined;
     let headers: Record<string, string> | undefined = undefined;
     let pathParams: Record<string, string> | undefined = undefined;
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
+      // Extract input data if present
+      if (manualTrigger.hasInput()) {
+        input = extractInputFromProtobuf(manualTrigger.getInput());
+      }
+      
       const config = manualTrigger.getConfig();
       if (config) {
         // Extract data
         if (config.hasData()) {
-          data = extractInputFromProtobuf(config.getData());
+          actualData = extractInputFromProtobuf(config.getData()) as string | number | boolean | Record<string, unknown> | unknown[] | null;
         }
 
         // Extract headers - direct protobuf map to object mapping
@@ -107,19 +133,19 @@ class ManualTrigger extends Trigger {
       }
     }
 
+    // Create ManualTriggerDataType structure
+    const manualTriggerData: ManualTriggerDataType = {
+      data: actualData,
+      ...(headers && { headers }),
+      ...(pathParams && { pathParams })
+    };
+
     return new ManualTrigger({
       ...obj,
       type: TriggerType.Manual,
-      data: data as Record<string, unknown>,
+      data: manualTriggerData,
       input: input,
-      headers: headers,
-      pathParams: pathParams,
     });
-  }
-
-  getInputVariables(): Record<string, unknown> | null {
-    // Return input variables that can be referenced by other nodes
-    return this.input as Record<string, unknown> | null;
   }
 
   /**

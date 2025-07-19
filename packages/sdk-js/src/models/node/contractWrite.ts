@@ -69,18 +69,14 @@ class ContractWriteNode extends Node {
         })) || [],
     };
 
-    // Extract input data from top-level TaskNode.input field (not nested ContractWriteNode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, any> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
 
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,
       data: data,
-      input: input,
+      input: baseInput,
     });
   }
 

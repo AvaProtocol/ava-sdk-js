@@ -52,12 +52,8 @@ class RestAPINode extends Node {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Extract input data from top-level TaskNode.input field (not nested RestAPINode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, unknown> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
+    // Extract input data using base class method
+    const baseInput = super.fromResponse(raw).input;
 
     return new RestAPINode({
       ...obj,
@@ -75,7 +71,7 @@ class RestAPINode extends Node {
           return headers;
         })(),
       } as RestAPINodeData,
-      input: input, // Include input data from top-level TaskNode
+      input: baseInput, // Include input data from base class
     });
   }
 
