@@ -37,52 +37,20 @@ async function getTestConfig() {
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 7000;
 
-// Sepolia ERC-20 token addresses for testing
 const SEPOLIA_TOKEN_ADDRESSES = [
-  "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK token on Sepolia
-  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // UNI token on Sepolia (if exists)
+  "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Sepolia
+  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // UNI on Sepolia
   "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", // WETH on Sepolia
 ];
 
 // Chainlink Price Feed Aggregator address on Sepolia (ETH/USD)
 const CHAINLINK_ETH_USD_SEPOLIA = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
 
-// ERC-20 Transfer event signature
 const TRANSFER_EVENT_SIGNATURE =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
-// Chainlink AnswerUpdated event signature
 const CHAINLINK_ANSWER_UPDATED_SIGNATURE =
   "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f";
-
-// ERC20 Transfer event ABI for proper parsing
-const ERC20_TRANSFER_ABI = [
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-    ],
-    name: "Transfer",
-    type: "event",
-  },
-];
 
 // Chainlink Price Feed ABI for AnswerUpdated event
 const CHAINLINK_AGGREGATOR_ABI = [
@@ -183,11 +151,7 @@ function createChainlinkPriceConditionConfig(
     queries: [
       {
         addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-        topics: [
-          {
-            values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE], // AnswerUpdated events
-          },
-        ],
+        topics: [{ values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE] }],
         contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
         conditions: conditions,
         maxEventsPerBlock: 5,
@@ -198,8 +162,48 @@ function createChainlinkPriceConditionConfig(
 
 describe("EventTrigger Tests", () => {
   let client: Client;
-  let isSepoliaTest: boolean;
   let coreAddress: string;
+
+  // Define trigger props at the beginning
+  const basicEventTriggerProps = {
+    id: "test-trigger-id",
+    name: "eventTrigger",
+    type: TriggerType.Event,
+    data: {
+      queries: [
+        {
+          addresses: SEPOLIA_TOKEN_ADDRESSES,
+          topics: [{ values: [TRANSFER_EVENT_SIGNATURE] }],
+        },
+      ],
+    },
+  };
+
+  const undefinedDataTriggerProps = {
+    id: "test-trigger-id",
+    name: "eventTrigger",
+    type: TriggerType.Event,
+    data: undefined as any,
+  };
+
+  const nullDataTriggerProps = {
+    id: "test-trigger-id",
+    name: "eventTrigger",
+    type: TriggerType.Event,
+    data: null as any,
+  };
+
+  const runTriggerBasicProps = {
+    triggerType: TriggerType.Event,
+    triggerConfig: {
+      queries: [
+        {
+          addresses: SEPOLIA_TOKEN_ADDRESSES,
+          topics: [{ values: [TRANSFER_EVENT_SIGNATURE] }],
+        },
+      ],
+    },
+  };
 
   beforeAll(async () => {
     // Load real configuration for integration tests
@@ -224,7 +228,7 @@ describe("EventTrigger Tests", () => {
     client.setAuthKey(res.authKey);
 
     // Check if we're on Sepolia chain
-    isSepoliaTest = await isSepoliaChain();
+    const isSepoliaTest = await isSepoliaChain();
 
     if (!isSepoliaTest) {
       console.log(
@@ -243,7 +247,7 @@ describe("EventTrigger Tests", () => {
         type: TriggerType.Event,
         data: {
           // Missing queries property
-        } as any,
+        },
       });
 
       expect(() => trigger.toRequest()).toThrowError(
@@ -258,7 +262,7 @@ describe("EventTrigger Tests", () => {
         type: TriggerType.Event,
         data: {
           queries: null,
-        } as any,
+        },
       });
 
       expect(() => trigger.toRequest()).toThrowError(
@@ -378,12 +382,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should throw error when trigger data is completely missing", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: undefined as any,
-      });
+      const trigger = TriggerFactory.create(undefinedDataTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Trigger data is missing for event"
@@ -391,12 +390,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should throw error when trigger data is null", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: null as any,
-      });
+      const trigger = TriggerFactory.create(nullDataTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Trigger data is missing for event"
@@ -404,12 +398,13 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger for Transfer events from core address", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
 
-      const params = {
+      const transferFromProps = {
         triggerType: TriggerType.Event,
         triggerConfig: {
           queries: [
@@ -426,14 +421,14 @@ describe("EventTrigger Tests", () => {
       };
 
       console.log(
-        "🚀 ~ runTrigger with Transfer FROM events... ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger Transfer FROM events input:",
+        util.inspect(transferFromProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(transferFromProps);
 
       console.log(
-        "runTrigger Transfer FROM response:",
+        "🚀 runTrigger Transfer FROM events result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -451,12 +446,13 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger for Transfer events to core address", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
 
-      const params = {
+      const transferToProps = {
         triggerType: TriggerType.Event,
         triggerConfig: {
           queries: [
@@ -477,14 +473,14 @@ describe("EventTrigger Tests", () => {
       };
 
       console.log(
-        "🚀 ~ runTrigger with Transfer TO events ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger Transfer TO events input:",
+        util.inspect(transferToProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(transferToProps);
 
       console.log(
-        "runTrigger Transfer TO response:",
+        "🚀 runTrigger Transfer TO events result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -502,6 +498,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple Transfer event queries", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -537,6 +534,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with Chainlink price condition", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -576,6 +574,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple price range conditions", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -639,6 +638,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with Chainlink price condition with decimal formatting", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -698,21 +698,22 @@ describe("EventTrigger Tests", () => {
       expect(result.data).toBeDefined();
 
       // Check that we have both formatted and raw values
-      expect((result.data as any).current).toBeDefined();
-      expect((result.data as any).currentRaw).toBeDefined();
-      expect((result.data as any).decimals).toBeDefined();
+      const resultData = result.data as Record<string, unknown>;
+      expect(resultData.current).toBeDefined();
+      expect(resultData.currentRaw).toBeDefined();
+      expect(resultData.decimals).toBeDefined();
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      expect(typeof (result.data as any).decimals).toBe("number"); // decimals should be number type (uint8 -> number)
-      expect(typeof (result.data as any).current).toBe("string"); // current should be string (int256 -> string, then formatted)
-      expect(typeof (result.data as any).currentRaw).toBe("string"); // raw value should be string
-      expect(typeof (result.data as any).roundId).toBe("string"); // roundId should be string (uint256 -> string)
-      expect(typeof (result.data as any).updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
+      expect(typeof resultData.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
+      expect(typeof resultData.current).toBe("string"); // current should be string (int256 -> string, then formatted)
+      expect(typeof resultData.currentRaw).toBe("string"); // raw value should be string
+      expect(typeof resultData.roundId).toBe("string"); // roundId should be string (uint256 -> string)
+      expect(typeof resultData.updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
 
       // Verify the formatting makes sense
-      const formattedValue = parseFloat((result.data as any).current);
-      const rawValue = parseInt((result.data as any).currentRaw);
-      const decimals = parseInt((result.data as any).decimals);
+      const formattedValue = parseFloat(resultData.current as string);
+      const rawValue = parseInt(resultData.currentRaw as string);
+      const decimals = parseInt(resultData.decimals as string);
 
       // Verify the math is correct
       const calculatedValue = rawValue / Math.pow(10, decimals);
@@ -722,10 +723,11 @@ describe("EventTrigger Tests", () => {
 
       // Verify metadata contains raw blockchain data
       expect(result.metadata).toBeDefined();
-      expect((result.metadata as any).address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
-      expect((result.metadata as any).topics).toBeDefined();
-      expect(Array.isArray((result.metadata as any).topics)).toBe(true);
-      expect((result.metadata as any).topics.length).toBeGreaterThan(0);
+      const resultMetadata = result.metadata as Record<string, unknown>;
+      expect(resultMetadata.address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
+      expect(resultMetadata.topics).toBeDefined();
+      expect(Array.isArray(resultMetadata.topics)).toBe(true);
+      expect((resultMetadata.topics as unknown[]).length).toBeGreaterThan(0);
     });
 
     test("should deserialize trigger with conditions from response", () => {
@@ -775,7 +777,8 @@ describe("EventTrigger Tests", () => {
       );
       // Verify deserialized trigger has the same data
       expect(deserializedTrigger.data).toBeDefined();
-      const queries = (deserializedTrigger.data as any).queries;
+      const triggerData = deserializedTrigger.data as Record<string, unknown>;
+      const queries = triggerData.queries as unknown[];
       expect(queries).toHaveLength(1);
 
       const query = queries[0];
@@ -853,7 +856,13 @@ describe("EventTrigger Tests", () => {
 
       // Test round-trip: fromResponse should keep it as string
       const deserializedTrigger = EventTrigger.fromResponse(request);
-      const deserializedQuery = (deserializedTrigger.data as any).queries[0];
+      const deserializedTriggerData = deserializedTrigger.data as Record<
+        string,
+        unknown
+      >;
+      const deserializedQuery = (
+        deserializedTriggerData.queries as unknown[]
+      )[0] as Record<string, unknown>;
       expect(deserializedQuery.contractAbi).toBe(JSON.stringify(abiArray));
     });
 
@@ -890,8 +899,14 @@ describe("EventTrigger Tests", () => {
 
       // Test round-trip: fromResponse should handle empty contractAbi
       const deserializedTrigger = EventTrigger.fromResponse(request);
-      const deserializedQuery = (deserializedTrigger.data as any).queries[0];
-      expect(deserializedQuery.contractAbi).toBeUndefined();
+      const deserializedTriggerData2 = deserializedTrigger.data as Record<
+        string,
+        unknown
+      >;
+      const deserializedQuery2 = (
+        deserializedTriggerData2.queries as unknown[]
+      )[0] as Record<string, unknown>;
+      expect(deserializedQuery2.contractAbi).toBeUndefined();
     });
 
     test("should run trigger with enriched Transfer event parsing", async () => {
@@ -999,6 +1014,7 @@ describe("EventTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow without contractAbi or methodCalls", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1044,6 +1060,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with single event query", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1085,6 +1102,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1154,7 +1172,7 @@ describe("EventTrigger Tests", () => {
       expect(triggerStep!.success).toBe(true);
 
       // Check if the trigger step now has output data with decimal formatting
-      const output = triggerStep!.output as any;
+      const output = triggerStep!.output as Record<string, unknown>;
       expect(output).toBeDefined();
 
       // Check for decimal formatting
@@ -1163,13 +1181,13 @@ describe("EventTrigger Tests", () => {
         expect(output.current).toBeDefined();
         expect(output.currentRaw).toBeDefined();
         expect(output.decimals).toBeDefined();
-        
+
         // Verify formatted value is a valid number string
         expect(parseFloat(output.current)).not.toBeNaN();
-        
+
         // Verify raw value is a valid integer string
         expect(parseInt(output.currentRaw)).not.toBeNaN();
-        
+
         // Verify decimals is a reasonable number (typically 8 for Chainlink)
         expect(output.decimals).toBeGreaterThan(0);
         expect(output.decimals).toBeLessThanOrEqual(18);
@@ -1192,6 +1210,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1322,6 +1341,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across trigger methods", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1436,40 +1456,44 @@ describe("EventTrigger Tests", () => {
         expect(directResponse.data).toBeDefined();
         expect(simulatedStep?.output).toBeDefined();
         expect(triggeredStep?.output).toBeDefined();
-        
+
         // All outputs should have consistent structure (excluding dynamic fields like transactionHash)
         const directData = directResponse.data;
         const simulatedData = simulatedStep?.output;
         const triggeredData = triggeredStep?.output;
-        
+
         // Verify essential event trigger fields match (allowing for simulation differences)
         // Direct response should have event data
         expect(directData).toBeDefined();
         expect(directData.contractAddress).toBeDefined();
         expect(directData.chainId).toBeDefined();
         expect(directData.eventFound).toBeDefined();
-        
+
         // Simulation and triggered data might have different structures
         if (simulatedData && simulatedData.contractAddress) {
-          expect(directData.contractAddress).toBe(simulatedData.contractAddress);
+          expect(directData.contractAddress).toBe(
+            simulatedData.contractAddress
+          );
         }
-        
+
         if (simulatedData && simulatedData.chainId) {
           expect(directData.chainId).toBe(simulatedData.chainId);
         }
-        
+
         if (triggeredData && triggeredData.contractAddress) {
-          expect(directData.contractAddress).toBe(triggeredData.contractAddress);
+          expect(directData.contractAddress).toBe(
+            triggeredData.contractAddress
+          );
         }
-        
+
         // Verify dynamic fields exist but don't compare values
         expect(directData.transactionHash).toBeDefined();
-        
+
         // Simulation and triggered data might not have all dynamic fields
         if (simulatedData && simulatedData.transactionHash) {
           expect(simulatedData.transactionHash).toBeDefined();
         }
-        
+
         if (triggeredData && triggeredData.transactionHash) {
           expect(triggeredData.transactionHash).toBeDefined();
         }
@@ -1485,8 +1509,8 @@ describe("EventTrigger Tests", () => {
 
         // Verify consistent structure across all three methods
         const directOutput = directResponse.data;
-        const simulatedOutput = (simulatedStep!.output as any)?.data;
-        const triggeredOutput = (triggeredStep!.output as any).data;
+        const simulatedOutput = simulatedStep!.output;
+        const triggeredOutput = triggeredStep!.output;
 
         // Check that all outputs have consistent structure
         expect(directOutput).toBeDefined();
@@ -1501,13 +1525,105 @@ describe("EventTrigger Tests", () => {
           );
         }
 
-        // The triggered output should have the event data we passed in
+        // 🔍 SPECIFIC VALUE TESTS: Verify actual event data values
+
+        // Test triggered output (most reliable since we control the trigger data)
         expect(triggeredOutput.eventFound).toBe(true);
         expect(triggeredOutput.eventType).toBe("Transfer");
         expect(triggeredOutput.contractAddress).toBe(
           SEPOLIA_TOKEN_ADDRESSES[0]
         );
+        expect(triggeredOutput.chainId).toBe(11155111); // Sepolia chain ID
+        expect(triggeredOutput.eventSignature).toBe(TRANSFER_EVENT_SIGNATURE);
+        expect(typeof triggeredOutput.blockNumber).toBe("number");
+        expect(triggeredOutput.blockNumber).toBeGreaterThan(0);
+        expect(typeof triggeredOutput.logIndex).toBe("number");
+        expect(triggeredOutput.logIndex).toBeGreaterThanOrEqual(0);
 
+        // Test transaction hash format
+        expect(triggeredOutput.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+
+        // Test topics array
+        expect(Array.isArray(triggeredOutput.topics)).toBe(true);
+        expect(triggeredOutput.topics.length).toBeGreaterThan(0);
+        expect(triggeredOutput.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
+
+        // Test rawData format
+        expect(triggeredOutput.rawData).toMatch(/^0x[a-fA-F0-9]*$/);
+
+        // Test Transfer-specific fields
+        expect(triggeredOutput.from).toBeDefined();
+        expect(triggeredOutput.to).toBeDefined();
+        expect(triggeredOutput.value).toBeDefined();
+        expect(typeof triggeredOutput.value).toBe("string");
+
+        // Test direct output if it has event data
+        if (directOutput && directOutput.eventFound) {
+          expect(directOutput.eventType).toBe("Transfer");
+          expect(directOutput.contractAddress).toBe(SEPOLIA_TOKEN_ADDRESSES[0]);
+          expect(directOutput.chainId).toBe(11155111);
+          expect(directOutput.eventSignature).toBe(TRANSFER_EVENT_SIGNATURE);
+          expect(typeof directOutput.blockNumber).toBe("number");
+          expect(directOutput.blockNumber).toBeGreaterThan(0);
+          expect(directOutput.transactionHash).toMatch(/^0x[a-fA-F0-9]{64}$/);
+          expect(Array.isArray(directOutput.topics)).toBe(true);
+          expect(directOutput.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
+        }
+
+        // Test simulated output if it exists
+        if (simulatedOutput && simulatedOutput.eventFound) {
+          expect(simulatedOutput.eventType).toBe("Transfer");
+          expect(simulatedOutput.contractAddress).toBe(
+            SEPOLIA_TOKEN_ADDRESSES[0]
+          );
+          expect(simulatedOutput.chainId).toBe(11155111);
+          expect(simulatedOutput.eventSignature).toBe(TRANSFER_EVENT_SIGNATURE);
+          expect(typeof simulatedOutput.blockNumber).toBe("number");
+          expect(simulatedOutput.blockNumber).toBeGreaterThan(0);
+          expect(Array.isArray(simulatedOutput.topics)).toBe(true);
+          expect(simulatedOutput.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
+        }
+
+        // 🔍 CONFIG TESTS: Verify step configuration consistency
+
+        // Test simulated step config
+        expect(simulatedStep!.config).toBeDefined();
+        expect(simulatedStep!.config).toHaveProperty("queries");
+        expect(Array.isArray(simulatedStep!.config.queries)).toBe(true);
+        expect(simulatedStep!.config.queries.length).toBe(1);
+        expect(simulatedStep!.config.queries[0]).toHaveProperty("addresses");
+        expect(simulatedStep!.config.queries[0]).toHaveProperty("topics");
+        expect(Array.isArray(simulatedStep!.config.queries[0].addresses)).toBe(
+          true
+        );
+        expect(simulatedStep!.config.queries[0].addresses[0]).toBe(
+          SEPOLIA_TOKEN_ADDRESSES[0]
+        );
+
+        // Test triggered step config
+        expect(triggeredStep!.config).toBeDefined();
+        expect(triggeredStep!.config).toHaveProperty("queries");
+        expect(Array.isArray(triggeredStep!.config.queries)).toBe(true);
+        expect(triggeredStep!.config.queries.length).toBe(1);
+        expect(triggeredStep!.config.queries[0]).toHaveProperty("addresses");
+        expect(triggeredStep!.config.queries[0]).toHaveProperty("topics");
+        expect(Array.isArray(triggeredStep!.config.queries[0].addresses)).toBe(
+          true
+        );
+        expect(triggeredStep!.config.queries[0].addresses[0]).toBe(
+          SEPOLIA_TOKEN_ADDRESSES[0]
+        );
+
+        // Test step metadata
+        expect(simulatedStep!.type).toBe("eventTrigger");
+        expect(simulatedStep!.name).toBe("consistency_test");
+        expect(simulatedStep!.success).toBe(true);
+        expect(simulatedStep!.error).toBe("");
+
+        expect(triggeredStep!.type).toBe("eventTrigger");
+        expect(triggeredStep!.name).toBe("consistency_test");
+        expect(triggeredStep!.success).toBe(true);
+        expect(triggeredStep!.error).toBe("");
       } finally {
         // Always clean up the workflow, even if test fails
         if (workflowId) {
@@ -1525,6 +1641,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address array", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1564,6 +1681,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle complex topic filtering", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1616,6 +1734,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle no matching events (empty data) vs query errors", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1660,6 +1779,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address arrays consistently", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1698,6 +1818,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty topics array consistently", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1738,6 +1859,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should maintain empty data consistency across execution methods", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1788,11 +1910,11 @@ describe("EventTrigger Tests", () => {
       // Compare empty data handling - verify consistent behavior
       expect(directResponse.success).toBe(true);
       expect(simulatedStep?.success).toBe(true);
-      
+
       // Verify data consistency between methods
       expect(directResponse.data).toBe(null); // runTrigger returns null for no events
       expect(simulatedStep?.output).not.toBe(null); // simulateWorkflow provides sample data
-      
+
       // Both should be successful even with no matching events
       expect(directResponse.success).toBe(simulatedStep?.success);
 
@@ -1808,6 +1930,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle malformed query configurations gracefully", async () => {
+      const isSepoliaTest = await isSepoliaChain();
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1887,7 +2010,7 @@ describe("EventTrigger Tests", () => {
           id: `invalid-${index}`,
           name: "invalid_test",
           type: TriggerType.Event,
-          data: config as any,
+          data: config,
         });
 
         expect(() => invalidTrigger.toRequest()).toThrow();
@@ -1978,7 +2101,7 @@ describe("EventTrigger Tests", () => {
 
       // Verify data structure
       expect(trigger.data).toBeDefined();
-      const eventData = trigger.data as any;
+      const eventData = trigger.data as Record<string, unknown>;
       expect(eventData.queries).toBeDefined();
       expect(Array.isArray(eventData.queries)).toBe(true);
       expect(eventData.queries.length).toBe(1);

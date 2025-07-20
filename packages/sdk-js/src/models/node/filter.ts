@@ -56,20 +56,35 @@ class FilterNode extends Node {
       throw new Error("FilterNode output data.getData() is missing");
     }
 
-    // Unpack the Any to get the Value
-    const value = Value.deserializeBinary(anyData.getValue_asU8());
+    // The data is now directly a Value, not wrapped in Any
+    const result = anyData.toJavaScript();
 
-    // Convert the Value to JavaScript
-    const result = value.toJavaScript();
-
-    // The result contains the entire response object, extract the data array
+    // The result contains nested data structure, extract the actual array
     if (
       result &&
       typeof result === "object" &&
       !Array.isArray(result) &&
-      (result as any).data
+      (result as any).data &&
+      (result as any).data.data &&
+      Array.isArray((result as any).data.data)
+    ) {
+      return (result as any).data.data;
+    }
+
+    // If result.data is already an array, return it directly
+    if (
+      result &&
+      typeof result === "object" &&
+      !Array.isArray(result) &&
+      (result as any).data &&
+      Array.isArray((result as any).data)
     ) {
       return (result as any).data;
+    }
+
+    // If result is already an array, return it directly
+    if (Array.isArray(result)) {
+      return result;
     }
 
     throw new Error(

@@ -23,15 +23,20 @@ class BlockTrigger extends Trigger {
     }
 
     const blockData = this.data as BlockTriggerDataType;
-
-    // Validate interval is present and not null/undefined
+    
+    // Validate interval exists
     if (blockData.interval === null || blockData.interval === undefined) {
       throw new Error("Interval is required for block trigger");
     }
-
-    // Validate interval is greater than 0
+    
+    // Validate that interval is an integer
+    if (!Number.isInteger(blockData.interval)) {
+      throw new Error(`BlockTrigger interval must be an integer, got: ${blockData.interval}`);
+    }
+    
+    // Validate interval is positive
     if (blockData.interval <= 0) {
-      throw new Error("Interval must be greater than 0");
+      throw new Error(`Interval must be greater than 0`);
     }
 
     const trigger = new avs_pb.BlockTrigger();
@@ -83,7 +88,15 @@ class BlockTrigger extends Trigger {
    */
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const blockOutput = outputData.getBlockTrigger();
-    return blockOutput?.toObject() || null;
+    if (!blockOutput) return null;
+
+    // Extract data from the new data field
+    const dataValue = blockOutput.getData();
+    if (!dataValue) return null;
+
+    // Convert the Value to JavaScript object
+    const result = dataValue.toJavaScript();
+    return result;
   }
 }
 

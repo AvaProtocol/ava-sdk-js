@@ -6,7 +6,6 @@ import {
   ContractWriteNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi, methodCallsList? } }
@@ -91,7 +90,7 @@ class ContractWriteNode extends Node {
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown[] | null {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 

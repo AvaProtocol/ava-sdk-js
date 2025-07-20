@@ -81,12 +81,13 @@ class FixedTimeTrigger extends Trigger {
     const fixedTimeOutput = outputData.getFixedTimeTrigger();
     if (!fixedTimeOutput) return null;
 
-    const outputObj = fixedTimeOutput.toObject();
-    // The output now contains timestamp and timestampIso instead of epoch
-    return {
-      timestamp: outputObj.timestamp,
-      timestampIso: outputObj.timestampIso,
-    };
+    // Extract data from the new data field
+    const dataValue = fixedTimeOutput.getData();
+    if (!dataValue) return null;
+
+    // Convert the Value to JavaScript object
+    const result = dataValue.toJavaScript();
+    return result;
   }
 }
 

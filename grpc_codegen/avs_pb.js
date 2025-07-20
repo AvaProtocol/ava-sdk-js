@@ -3456,8 +3456,7 @@ proto.aggregator.FixedTimeTrigger.Output.prototype.toObject = function(opt_inclu
  */
 proto.aggregator.FixedTimeTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    timestamp: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    timestampIso: jspb.Message.getFieldWithDefault(msg, 2, "")
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3495,12 +3494,9 @@ proto.aggregator.FixedTimeTrigger.Output.deserializeBinaryFromReader = function(
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setTimestamp(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTimestampIso(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -3531,56 +3527,51 @@ proto.aggregator.FixedTimeTrigger.Output.prototype.serializeBinary = function() 
  */
 proto.aggregator.FixedTimeTrigger.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getTimestamp();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
-    );
-  }
-  f = message.getTimestampIso();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional uint64 timestamp = 1;
- * @return {number}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.FixedTimeTrigger.Output.prototype.getTimestamp = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.FixedTimeTrigger.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {number} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.FixedTimeTrigger.Output} returns this
+*/
+proto.aggregator.FixedTimeTrigger.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.FixedTimeTrigger.Output} returns this
  */
-proto.aggregator.FixedTimeTrigger.Output.prototype.setTimestamp = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
+proto.aggregator.FixedTimeTrigger.Output.prototype.clearData = function() {
+  return this.setData(undefined);
 };
 
 
 /**
- * optional string timestamp_iso = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.FixedTimeTrigger.Output.prototype.getTimestampIso = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.FixedTimeTrigger.Output} returns this
- */
-proto.aggregator.FixedTimeTrigger.Output.prototype.setTimestampIso = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+proto.aggregator.FixedTimeTrigger.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -3923,8 +3914,7 @@ proto.aggregator.CronTrigger.Output.prototype.toObject = function(opt_includeIns
  */
 proto.aggregator.CronTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    timestamp: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    timestampIso: jspb.Message.getFieldWithDefault(msg, 2, "")
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -3962,12 +3952,9 @@ proto.aggregator.CronTrigger.Output.deserializeBinaryFromReader = function(msg, 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setTimestamp(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTimestampIso(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -3998,56 +3985,51 @@ proto.aggregator.CronTrigger.Output.prototype.serializeBinary = function() {
  */
 proto.aggregator.CronTrigger.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getTimestamp();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
-    );
-  }
-  f = message.getTimestampIso();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional uint64 timestamp = 1;
- * @return {number}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.CronTrigger.Output.prototype.getTimestamp = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.CronTrigger.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {number} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.CronTrigger.Output} returns this
+*/
+proto.aggregator.CronTrigger.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.CronTrigger.Output} returns this
  */
-proto.aggregator.CronTrigger.Output.prototype.setTimestamp = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
+proto.aggregator.CronTrigger.Output.prototype.clearData = function() {
+  return this.setData(undefined);
 };
 
 
 /**
- * optional string timestamp_iso = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.CronTrigger.Output.prototype.getTimestampIso = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.CronTrigger.Output} returns this
- */
-proto.aggregator.CronTrigger.Output.prototype.setTimestampIso = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+proto.aggregator.CronTrigger.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -4364,13 +4346,7 @@ proto.aggregator.BlockTrigger.Output.prototype.toObject = function(opt_includeIn
  */
 proto.aggregator.BlockTrigger.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    blockNumber: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    blockHash: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    timestamp: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    parentHash: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    difficulty: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    gasLimit: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    gasUsed: jspb.Message.getFieldWithDefault(msg, 7, 0)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -4408,32 +4384,9 @@ proto.aggregator.BlockTrigger.Output.deserializeBinaryFromReader = function(msg,
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setBlockNumber(value);
-      break;
-    case 2:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setBlockHash(value);
-      break;
-    case 3:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setTimestamp(value);
-      break;
-    case 4:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setParentHash(value);
-      break;
-    case 5:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setDifficulty(value);
-      break;
-    case 6:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setGasLimit(value);
-      break;
-    case 7:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setGasUsed(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -4464,181 +4417,51 @@ proto.aggregator.BlockTrigger.Output.prototype.serializeBinary = function() {
  */
 proto.aggregator.BlockTrigger.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getBlockNumber();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
-    );
-  }
-  f = message.getBlockHash();
-  if (f.length > 0) {
-    writer.writeString(
-      2,
-      f
-    );
-  }
-  f = message.getTimestamp();
-  if (f !== 0) {
-    writer.writeUint64(
-      3,
-      f
-    );
-  }
-  f = message.getParentHash();
-  if (f.length > 0) {
-    writer.writeString(
-      4,
-      f
-    );
-  }
-  f = message.getDifficulty();
-  if (f.length > 0) {
-    writer.writeString(
-      5,
-      f
-    );
-  }
-  f = message.getGasLimit();
-  if (f !== 0) {
-    writer.writeUint64(
-      6,
-      f
-    );
-  }
-  f = message.getGasUsed();
-  if (f !== 0) {
-    writer.writeUint64(
-      7,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional uint64 block_number = 1;
- * @return {number}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.BlockTrigger.Output.prototype.getBlockNumber = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.BlockTrigger.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {number} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.BlockTrigger.Output} returns this
+*/
+proto.aggregator.BlockTrigger.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.BlockTrigger.Output} returns this
  */
-proto.aggregator.BlockTrigger.Output.prototype.setBlockNumber = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
+proto.aggregator.BlockTrigger.Output.prototype.clearData = function() {
+  return this.setData(undefined);
 };
 
 
 /**
- * optional string block_hash = 2;
- * @return {string}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.BlockTrigger.Output.prototype.getBlockHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.BlockTrigger.Output} returns this
- */
-proto.aggregator.BlockTrigger.Output.prototype.setBlockHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
-};
-
-
-/**
- * optional uint64 timestamp = 3;
- * @return {number}
- */
-proto.aggregator.BlockTrigger.Output.prototype.getTimestamp = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.BlockTrigger.Output} returns this
- */
-proto.aggregator.BlockTrigger.Output.prototype.setTimestamp = function(value) {
-  return jspb.Message.setProto3IntField(this, 3, value);
-};
-
-
-/**
- * optional string parent_hash = 4;
- * @return {string}
- */
-proto.aggregator.BlockTrigger.Output.prototype.getParentHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.BlockTrigger.Output} returns this
- */
-proto.aggregator.BlockTrigger.Output.prototype.setParentHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 4, value);
-};
-
-
-/**
- * optional string difficulty = 5;
- * @return {string}
- */
-proto.aggregator.BlockTrigger.Output.prototype.getDifficulty = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
-};
-
-
-/**
- * @param {string} value
- * @return {!proto.aggregator.BlockTrigger.Output} returns this
- */
-proto.aggregator.BlockTrigger.Output.prototype.setDifficulty = function(value) {
-  return jspb.Message.setProto3StringField(this, 5, value);
-};
-
-
-/**
- * optional uint64 gas_limit = 6;
- * @return {number}
- */
-proto.aggregator.BlockTrigger.Output.prototype.getGasLimit = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.BlockTrigger.Output} returns this
- */
-proto.aggregator.BlockTrigger.Output.prototype.setGasLimit = function(value) {
-  return jspb.Message.setProto3IntField(this, 6, value);
-};
-
-
-/**
- * optional uint64 gas_used = 7;
- * @return {number}
- */
-proto.aggregator.BlockTrigger.Output.prototype.getGasUsed = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.aggregator.BlockTrigger.Output} returns this
- */
-proto.aggregator.BlockTrigger.Output.prototype.setGasUsed = function(value) {
-  return jspb.Message.setProto3IntField(this, 7, value);
+proto.aggregator.BlockTrigger.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -7205,7 +7028,7 @@ proto.aggregator.ETHTransferNode.Output.prototype.toObject = function(opt_includ
  */
 proto.aggregator.ETHTransferNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    transactionHash: jspb.Message.getFieldWithDefault(msg, 1, "")
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7243,8 +7066,9 @@ proto.aggregator.ETHTransferNode.Output.deserializeBinaryFromReader = function(m
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setTransactionHash(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -7275,31 +7099,51 @@ proto.aggregator.ETHTransferNode.Output.prototype.serializeBinary = function() {
  */
 proto.aggregator.ETHTransferNode.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getTransactionHash();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional string transaction_hash = 1;
- * @return {string}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.ETHTransferNode.Output.prototype.getTransactionHash = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.ETHTransferNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ETHTransferNode.Output} returns this
+*/
+proto.aggregator.ETHTransferNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.ETHTransferNode.Output} returns this
  */
-proto.aggregator.ETHTransferNode.Output.prototype.setTransactionHash = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.ETHTransferNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ETHTransferNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -11271,7 +11115,7 @@ proto.aggregator.GraphQLQueryNode.Output.prototype.toObject = function(opt_inclu
  */
 proto.aggregator.GraphQLQueryNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -11309,8 +11153,8 @@ proto.aggregator.GraphQLQueryNode.Output.deserializeBinaryFromReader = function(
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new google_protobuf_any_pb.Any;
-      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
     default:
@@ -11347,24 +11191,24 @@ proto.aggregator.GraphQLQueryNode.Output.serializeBinaryToWriter = function(mess
     writer.writeMessage(
       1,
       f,
-      google_protobuf_any_pb.Any.serializeBinaryToWriter
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional google.protobuf.Any data = 1;
- * @return {?proto.google.protobuf.Any}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
 proto.aggregator.GraphQLQueryNode.Output.prototype.getData = function() {
-  return /** @type{?proto.google.protobuf.Any} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {?proto.google.protobuf.Any|undefined} value
+ * @param {?proto.google.protobuf.Value|undefined} value
  * @return {!proto.aggregator.GraphQLQueryNode.Output} returns this
 */
 proto.aggregator.GraphQLQueryNode.Output.prototype.setData = function(value) {
@@ -12910,7 +12754,7 @@ proto.aggregator.BranchNode.Output.prototype.toObject = function(opt_includeInst
  */
 proto.aggregator.BranchNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    conditionId: jspb.Message.getFieldWithDefault(msg, 1, "")
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -12948,8 +12792,9 @@ proto.aggregator.BranchNode.Output.deserializeBinaryFromReader = function(msg, r
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setConditionId(value);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setData(value);
       break;
     default:
       reader.skipField();
@@ -12980,31 +12825,51 @@ proto.aggregator.BranchNode.Output.prototype.serializeBinary = function() {
  */
 proto.aggregator.BranchNode.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getConditionId();
-  if (f.length > 0) {
-    writer.writeString(
+  f = message.getData();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional string condition_id = 1;
- * @return {string}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
-proto.aggregator.BranchNode.Output.prototype.getConditionId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.aggregator.BranchNode.Output.prototype.getData = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.BranchNode.Output} returns this
+*/
+proto.aggregator.BranchNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.BranchNode.Output} returns this
  */
-proto.aggregator.BranchNode.Output.prototype.setConditionId = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.BranchNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.BranchNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -13351,7 +13216,7 @@ proto.aggregator.FilterNode.Output.prototype.toObject = function(opt_includeInst
  */
 proto.aggregator.FilterNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_any_pb.Any.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -13389,8 +13254,8 @@ proto.aggregator.FilterNode.Output.deserializeBinaryFromReader = function(msg, r
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new google_protobuf_any_pb.Any;
-      reader.readMessage(value,google_protobuf_any_pb.Any.deserializeBinaryFromReader);
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
     default:
@@ -13427,24 +13292,24 @@ proto.aggregator.FilterNode.Output.serializeBinaryToWriter = function(message, w
     writer.writeMessage(
       1,
       f,
-      google_protobuf_any_pb.Any.serializeBinaryToWriter
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional google.protobuf.Any data = 1;
- * @return {?proto.google.protobuf.Any}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
 proto.aggregator.FilterNode.Output.prototype.getData = function() {
-  return /** @type{?proto.google.protobuf.Any} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_any_pb.Any, 1));
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {?proto.google.protobuf.Any|undefined} value
+ * @param {?proto.google.protobuf.Value|undefined} value
  * @return {!proto.aggregator.FilterNode.Output} returns this
 */
 proto.aggregator.FilterNode.Output.prototype.setData = function(value) {
@@ -13987,7 +13852,7 @@ proto.aggregator.LoopNode.Output.prototype.toObject = function(opt_includeInstan
  */
 proto.aggregator.LoopNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: jspb.Message.getFieldWithDefault(msg, 1, "")
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -14025,7 +13890,8 @@ proto.aggregator.LoopNode.Output.deserializeBinaryFromReader = function(msg, rea
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {string} */ (reader.readString());
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
     default:
@@ -14058,30 +13924,50 @@ proto.aggregator.LoopNode.Output.prototype.serializeBinary = function() {
 proto.aggregator.LoopNode.Output.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getData();
-  if (f.length > 0) {
-    writer.writeString(
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional string data = 1;
- * @return {string}
+ * optional google.protobuf.Value data = 1;
+ * @return {?proto.google.protobuf.Value}
  */
 proto.aggregator.LoopNode.Output.prototype.getData = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 1));
 };
 
 
 /**
- * @param {string} value
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.LoopNode.Output} returns this
+*/
+proto.aggregator.LoopNode.Output.prototype.setData = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.LoopNode.Output} returns this
  */
-proto.aggregator.LoopNode.Output.prototype.setData = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.aggregator.LoopNode.Output.prototype.clearData = function() {
+  return this.setData(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.LoopNode.Output.prototype.hasData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

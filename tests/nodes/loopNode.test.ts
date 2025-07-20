@@ -7,6 +7,7 @@ import {
   CustomCodeLang,
   TriggerType,
   ExecutionMode,
+  LoopNodeData,
 } from "@avaprotocol/types";
 
 // Type definitions for test responses
@@ -23,28 +24,7 @@ interface ProcessedLoopItem {
   [key: string]: unknown;
 }
 
-// Type for loop node input configuration
-interface LoopNodeInputConfig {
-  inputNodeName: string;
-  iterVal: string;
-  iterKey: string;
-  executionMode: string;
-  runner?: {
-    type: string;
-    source?: string;
-    lang?: string;
-    url?: string;
-    method?: string;
-    body?: string;
-    headers?: Record<string, string>;
-    contractAddress?: string;
-    contractAbi?: string;
-    methodCalls?: Array<{
-      methodName: string;
-      callData: string;
-    }>;
-  };
-}
+// Use the proper LoopNodeData type from the types package
 
 // Type for run node response data
 interface RunNodeResponseData {
@@ -520,8 +500,8 @@ describe("LoopNode Tests", () => {
       expect(loopStep!.success).toBe(true);
 
       // Verify the step input contains the loop node configuration
-      expect(loopStep!.input).toBeDefined();
-      const inputConfig = loopStep!.input as LoopNodeInputConfig;
+      expect(loopStep!.config).toBeDefined();
+      const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
       expect(inputConfig.inputNodeName).toBe(dataNode.id);
@@ -532,8 +512,8 @@ describe("LoopNode Tests", () => {
       // Verify runner configuration
       expect(inputConfig.runner).toBeDefined();
       expect(inputConfig.runner!.type).toBe("customCode");
-      expect(inputConfig.runner!.source).toBeDefined();
-      expect(inputConfig.runner!.lang).toBeDefined();
+      expect((inputConfig.runner as any).data.config.source).toBeDefined();
+      expect((inputConfig.runner as any).data.config.lang).toBeDefined();
 
       const output = loopStep!.output as ProcessedLoopItem[];
       expect(Array.isArray(output)).toBe(true);
@@ -618,21 +598,21 @@ describe("LoopNode Tests", () => {
       expect(loopStep!.success).toBe(true);
 
       // Verify the step input contains the loop node configuration
-      expect(loopStep!.input).toBeDefined();
-      const inputConfig = loopStep!.input as LoopNodeInputConfig;
+      expect(loopStep!.config).toBeDefined();
+      const loopStepConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
-      expect(inputConfig.inputNodeName).toBe(dataNode.id);
-      expect(inputConfig.iterVal).toBe("value");
-      expect(inputConfig.iterKey).toBe("index");
-      expect(inputConfig.executionMode).toBeDefined();
+      expect(loopStepConfig.inputNodeName).toBe(dataNode.id);
+      expect(loopStepConfig.iterVal).toBe("value");
+      expect(loopStepConfig.iterKey).toBe("index");
+      expect(loopStepConfig.executionMode).toBeDefined();
 
       // Verify runner configuration
-      expect(inputConfig.runner).toBeDefined();
-      expect(inputConfig.runner!.type).toBe("restApi");
-      expect(inputConfig.runner!.url).toBe("{{value}}");
-      expect(inputConfig.runner!.method).toBe("GET");
-      expect(inputConfig.runner!.body).toBe("");
+      expect(loopStepConfig.runner).toBeDefined();
+      expect(loopStepConfig.runner!.type).toBe("restApi");
+      expect((loopStepConfig.runner as any).data.config.url).toBe("{{value}}");
+      expect((loopStepConfig.runner as any).data.config.method).toBe("GET");
+      expect((loopStepConfig.runner as any).data.config.body).toBe("");
 
       const output = loopStep!.output as Record<string, unknown>[];
       expect(Array.isArray(output)).toBe(true);
@@ -724,8 +704,8 @@ describe("LoopNode Tests", () => {
       expect(loopStep).toBeDefined();
 
       // Verify the step input contains the loop node configuration
-      expect(loopStep!.input).toBeDefined();
-      const inputConfig = loopStep!.input as LoopNodeInputConfig;
+      expect(loopStep!.config).toBeDefined();
+      const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
       expect(inputConfig.inputNodeName).toBe(dataNode.id);
@@ -736,8 +716,8 @@ describe("LoopNode Tests", () => {
       // Verify runner configuration
       expect(inputConfig.runner).toBeDefined();
       expect(inputConfig.runner!.type).toBe("contractRead");
-      expect(inputConfig.runner!.contractAddress).toBe("{{value}}");
-      expect(inputConfig.runner!.contractAbi).toBeDefined();
+      expect((inputConfig.runner as any).data.config.contractAddress).toBe("{{value}}");
+      expect((inputConfig.runner as any).data.config.contractAbi).toBeDefined();
 
       // Note: The test may fail due to contract validation or network issues,
       // but the important part is that the backend now supports contractRead as a loop runner
@@ -1978,8 +1958,8 @@ describe("LoopNode Tests", () => {
       expect(loopStep!.success).toBe(true);
 
       // Verify the step input contains the loop node configuration
-      expect(loopStep!.input).toBeDefined();
-      const inputConfig = loopStep!.input as LoopNodeInputConfig;
+      expect(loopStep!.config).toBeDefined();
+      const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
       expect(inputConfig.inputNodeName).toBe(dataNode.id);
@@ -1992,8 +1972,8 @@ describe("LoopNode Tests", () => {
       // Verify runner configuration
       expect(inputConfig.runner).toBeDefined();
       expect(inputConfig.runner!.type).toBe("customCode");
-      expect(inputConfig.runner!.source).toBeDefined();
-      expect(inputConfig.runner!.lang).toBeDefined();
+      expect((inputConfig.runner as any).data.config.source).toBeDefined();
+      expect((inputConfig.runner as any).data.config.lang).toBeDefined();
 
       const output = loopStep!.output as ProcessedLoopItem[];
       expect(Array.isArray(output)).toBe(true);
@@ -2055,8 +2035,18 @@ describe("LoopNode Tests", () => {
         loopNode,
       ]);
 
+      console.log(
+        "🚀 ~ simulateWorkflow ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ simulateWorkflow ~ simulation:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -2067,8 +2057,8 @@ describe("LoopNode Tests", () => {
       expect(loopStep!.success).toBe(true);
 
       // Verify the step input contains the loop node configuration
-      expect(loopStep!.input).toBeDefined();
-      const inputConfig = loopStep!.input as LoopNodeInputConfig;
+      expect(loopStep!.config).toBeDefined();
+      const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
       expect(inputConfig.inputNodeName).toBe(dataNode.id);
@@ -2081,8 +2071,8 @@ describe("LoopNode Tests", () => {
       // Verify runner configuration
       expect(inputConfig.runner).toBeDefined();
       expect(inputConfig.runner!.type).toBe("customCode");
-      expect(inputConfig.runner!.source).toBeDefined();
-      expect(inputConfig.runner!.lang).toBeDefined();
+      expect((inputConfig.runner as any).data.config.source).toBeDefined();
+      expect((inputConfig.runner as any).data.config.lang).toBeDefined();
 
       const output = loopStep!.output as ProcessedLoopItem[];
       expect(Array.isArray(output)).toBe(true);

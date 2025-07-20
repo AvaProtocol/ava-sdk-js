@@ -271,22 +271,20 @@ class LoopNode extends Node {
       return result;
     }
 
-    // For workflow execution, data comes as Loop format with JSON string
+    // For workflow execution, data comes as Loop format with new protobuf Value
     const loopOutput = outputData.getLoop();
     if (loopOutput) {
-      const loopObj = loopOutput.toObject();
-
-      // If there's a data field that's a JSON string, parse it
-      if (loopObj.data && typeof loopObj.data === "string") {
+      // Extract data from the new data field
+      const dataValue = loopOutput.getData();
+      if (dataValue) {
         try {
-          return JSON.parse(loopObj.data);
-        } catch {
-          // If JSON parsing fails, return the raw data
-          return loopObj.data;
+          // Convert protobuf Value to JavaScript
+          return dataValue.toJavaScript();
+        } catch (error) {
+          console.warn("Failed to convert loop data from protobuf Value:", error);
+          return null;
         }
       }
-
-      return loopObj;
     }
 
     return null;

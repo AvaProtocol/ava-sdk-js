@@ -87,12 +87,13 @@ class CronTrigger extends Trigger {
     const cronOutput = outputData.getCronTrigger();
     if (!cronOutput) return null;
 
-    const outputObj = cronOutput.toObject();
-    // The output now contains timestamp and timestampIso instead of epoch
-    return {
-      timestamp: outputObj.timestamp,
-      timestampIso: outputObj.timestampIso,
-    };
+    // Extract data from the new data field
+    const dataValue = cronOutput.getData();
+    if (!dataValue) return null;
+
+    // Convert the Value to JavaScript object
+    const result = dataValue.toJavaScript();
+    return result;
   }
 }
 

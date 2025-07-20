@@ -153,10 +153,11 @@ export namespace FixedTimeTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getTimestamp(): number;
-        setTimestamp(value: number): Output;
-        getTimestampIso(): string;
-        setTimestampIso(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -170,8 +171,7 @@ export namespace FixedTimeTrigger {
 
     export namespace Output {
         export type AsObject = {
-            timestamp: number,
-            timestampIso: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -223,10 +223,11 @@ export namespace CronTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getTimestamp(): number;
-        setTimestamp(value: number): Output;
-        getTimestampIso(): string;
-        setTimestampIso(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -240,8 +241,7 @@ export namespace CronTrigger {
 
     export namespace Output {
         export type AsObject = {
-            timestamp: number,
-            timestampIso: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -291,20 +291,11 @@ export namespace BlockTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getBlockNumber(): number;
-        setBlockNumber(value: number): Output;
-        getBlockHash(): string;
-        setBlockHash(value: string): Output;
-        getTimestamp(): number;
-        setTimestamp(value: number): Output;
-        getParentHash(): string;
-        setParentHash(value: string): Output;
-        getDifficulty(): string;
-        setDifficulty(value: string): Output;
-        getGasLimit(): number;
-        setGasLimit(value: number): Output;
-        getGasUsed(): number;
-        setGasUsed(value: number): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -318,13 +309,7 @@ export namespace BlockTrigger {
 
     export namespace Output {
         export type AsObject = {
-            blockNumber: number,
-            blockHash: string,
-            timestamp: number,
-            parentHash: string,
-            difficulty: string,
-            gasLimit: number,
-            gasUsed: number,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -692,8 +677,11 @@ export namespace ETHTransferNode {
     }
 
     export class Output extends jspb.Message { 
-        getTransactionHash(): string;
-        setTransactionHash(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -707,7 +695,7 @@ export namespace ETHTransferNode {
 
     export namespace Output {
         export type AsObject = {
-            transactionHash: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1241,8 +1229,8 @@ export namespace GraphQLQueryNode {
 
         hasData(): boolean;
         clearData(): void;
-        getData(): google_protobuf_any_pb.Any | undefined;
-        setData(value?: google_protobuf_any_pb.Any): Output;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1256,7 +1244,7 @@ export namespace GraphQLQueryNode {
 
     export namespace Output {
         export type AsObject = {
-            data?: google_protobuf_any_pb.Any.AsObject,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1484,8 +1472,11 @@ export namespace BranchNode {
     }
 
     export class Output extends jspb.Message { 
-        getConditionId(): string;
-        setConditionId(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1499,7 +1490,7 @@ export namespace BranchNode {
 
     export namespace Output {
         export type AsObject = {
-            conditionId: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1555,8 +1546,8 @@ export namespace FilterNode {
 
         hasData(): boolean;
         clearData(): void;
-        getData(): google_protobuf_any_pb.Any | undefined;
-        setData(value?: google_protobuf_any_pb.Any): Output;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1570,7 +1561,7 @@ export namespace FilterNode {
 
     export namespace Output {
         export type AsObject = {
-            data?: google_protobuf_any_pb.Any.AsObject,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1667,8 +1658,11 @@ export namespace LoopNode {
     }
 
     export class Output extends jspb.Message { 
-        getData(): string;
-        setData(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1682,7 +1676,7 @@ export namespace LoopNode {
 
     export namespace Output {
         export type AsObject = {
-            data: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 

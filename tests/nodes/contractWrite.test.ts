@@ -381,12 +381,12 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI, // ERC20_ABI is already a JSON string
           methodCalls: [
             {
               callData: createApproveCallData(
-                "0x0000000000000000000000000000000000000001",
-                "200"
+                wallet.address, // Use wallet address as spender (self-approval is always valid)
+                "1000000" // 1 USDC (6 decimals)
               ),
               methodName: "approve",
             },
@@ -397,6 +397,11 @@ describe("ContractWrite Node Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, [
         contractWriteNode,
       ]);
+
+      console.log(
+        "🚀 ~ simulateWorkflow ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
@@ -711,27 +716,31 @@ describe("ContractWrite Node Tests", () => {
         expect(directResponse.data).toBeDefined();
         expect(simulatedStep?.output).toBeDefined();
         expect(executedStep?.output).toBeDefined();
-        
+
         // All outputs should have consistent structure (excluding dynamic fields like transaction hash)
         const directData = directResponse.data as any[];
         const simulatedData = simulatedStep?.output as any[];
         const executedData = executedStep?.output as any[];
-        
+
         // Verify array lengths match
         expect(directData.length).toBe(simulatedData.length);
         expect(simulatedData.length).toBe(executedData.length);
-        
+
         // Verify each method call result has consistent structure (excluding dynamic fields)
         for (let i = 0; i < directData.length; i++) {
           expect(directData[i].methodName).toBe(simulatedData[i].methodName);
           expect(directData[i].success).toBe(simulatedData[i].success);
           expect(directData[i].returnData).toBe(simulatedData[i].returnData);
-          
+
           // Verify transaction structure exists but don't compare dynamic fields
           expect(directData[i].transaction).toBeDefined();
           expect(simulatedData[i].transaction).toBeDefined();
-          expect(directData[i].transaction.chainId).toBe(simulatedData[i].transaction.chainId);
-          expect(directData[i].transaction.simulation).toBe(simulatedData[i].transaction.simulation);
+          expect(directData[i].transaction.chainId).toBe(
+            simulatedData[i].transaction.chainId
+          );
+          expect(directData[i].transaction.simulation).toBe(
+            simulatedData[i].transaction.simulation
+          );
         }
 
         // Verify consistent structure
@@ -760,7 +769,6 @@ describe("ContractWrite Node Tests", () => {
 
         expect(simulatedMethods).toEqual(executedMethods);
         expect(simulatedMethods).toEqual(directMethods);
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -972,8 +980,6 @@ describe("ContractWrite Node Tests", () => {
       // Find the approve result
       const approveResult = data.find((r: any) => r.methodName === "approve");
       expect(approveResult).toBeDefined();
-
-      
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
@@ -1039,8 +1045,6 @@ describe("ContractWrite Node Tests", () => {
       // Find the approve result
       const approveResult = output.find((r: any) => r.methodName === "approve");
       expect(approveResult).toBeDefined();
-
-      
     });
 
     test("should deploy and trigger workflow with applyToFields", async () => {
@@ -1143,8 +1147,6 @@ describe("ContractWrite Node Tests", () => {
           (r: any) => r.methodName === "approve"
         );
         expect(approveResult).toBeDefined();
-
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

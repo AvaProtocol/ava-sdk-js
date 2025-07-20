@@ -5,7 +5,6 @@ import { TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
-  getNextId,
   TIMEOUT_DURATION,
   SaltGlobal,
   removeCreatedWorkflows,
@@ -15,8 +14,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress, chainEndpoint } =
-  getConfig();
+const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 9000;
@@ -24,6 +22,113 @@ let saltIndex = SaltGlobal.CreateWorkflow * 9000;
 describe("CronTrigger Tests", () => {
   let client: Client;
   let coreAddress: string;
+
+  // Define trigger props at the beginning
+  const missingSchedulesTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: {} as any,
+  };
+
+  const nullSchedulesTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: { schedules: null } as any,
+  };
+
+  const emptySchedulesTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: { schedules: [] },
+  };
+
+  const validDailyTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: { schedules: ["0 0 * * *"] }, // Daily at midnight
+  };
+
+  const multipleTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: { schedules: ["0 0 * * *", "0 12 * * *"] }, // Daily at midnight and noon
+  };
+
+  const complexTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: { schedules: ["0 0 1 * *", "0 0 * * MON", "*/15 * * * *"] }, // Monthly, weekly, every 15 minutes
+  };
+
+  const undefinedDataTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: undefined as any,
+  };
+
+  const nullDataTriggerProps = {
+    id: "test-trigger-id",
+    name: "cronTrigger",
+    type: TriggerType.Cron,
+    data: null as any,
+  };
+
+  const runTriggerDailyProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "0 0 * * *" }, // Daily at midnight
+  };
+
+  const runTriggerHourlyProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "0 * * * *" }, // Every hour
+  };
+
+  const runTrigger15MinProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "*/15 * * * *" }, // Every 15 minutes
+  };
+
+  const runTriggerComplexProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "0 9 * * 1-5" }, // Weekdays at 9 AM
+  };
+
+  const runTriggerMinuteProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "*/5 * * * *" }, // Every 5 minutes
+  };
+
+  const runTriggerWeeklyProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "0 0 * * MON" }, // Every Monday at midnight
+  };
+
+  const runTriggerStandardProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "0 0 * * *" }, // Daily at midnight
+  };
+
+  const runTriggerInvalidProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "invalid-cron-expression" },
+  };
+
+  const runTriggerComplexTimeProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "0 0,12 1 */2 *" }, // Twice daily on 1st of every other month
+  };
+
+  const runTriggerStepValuesProps = {
+    triggerType: "cronTrigger" as const,
+    triggerConfig: { expression: "*/10 */2 * * *" }, // Every 10 minutes, every 2 hours
+  };
 
   beforeAll(async () => {
     coreAddress = await getAddress(walletPrivateKey);
@@ -48,14 +153,7 @@ describe("CronTrigger Tests", () => {
 
   describe("runTrigger Tests", () => {
     test("should throw error when schedules is missing", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          // Missing schedules property
-        } as any,
-      });
+      const trigger = TriggerFactory.create(missingSchedulesTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Schedules are required for cron trigger"
@@ -63,14 +161,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should throw error when schedules is null", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          schedules: null,
-        } as any,
-      });
+      const trigger = TriggerFactory.create(nullSchedulesTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Schedules are required for cron trigger"
@@ -78,14 +169,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should throw error when schedules is empty", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          schedules: [],
-        },
-      });
+      const trigger = TriggerFactory.create(emptySchedulesTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Schedules are required for cron trigger"
@@ -93,14 +177,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should succeed with valid cron expression", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          schedules: ["0 0 * * *"], // Daily at midnight
-        },
-      });
+      const trigger = TriggerFactory.create(validDailyTriggerProps);
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
@@ -112,14 +189,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should succeed with multiple cron expressions", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          schedules: ["0 0 * * *", "0 12 * * *"], // Daily at midnight and noon
-        },
-      });
+      const trigger = TriggerFactory.create(multipleTriggerProps);
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
@@ -130,14 +200,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should succeed with complex cron expressions", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: {
-          schedules: ["0 0 1 * *", "0 0 * * MON", "*/15 * * * *"], // Monthly, weekly, every 15 minutes
-        },
-      });
+      const trigger = TriggerFactory.create(complexTriggerProps);
 
       expect(() => trigger.toRequest()).not.toThrow();
       const request = trigger.toRequest();
@@ -147,12 +210,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should throw error when trigger data is completely missing", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: undefined as any,
-      });
+      const trigger = TriggerFactory.create(undefinedDataTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Trigger data is missing for cron"
@@ -160,12 +218,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should throw error when trigger data is null", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "cronTrigger",
-        type: TriggerType.Cron,
-        data: null as any,
-      });
+      const trigger = TriggerFactory.create(nullDataTriggerProps);
 
       expect(() => trigger.toRequest()).toThrowError(
         "Trigger data is missing for cron"
@@ -173,22 +226,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with daily schedule", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 0 * * *", // Daily at midnight
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with daily cron schedule ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger daily schedule input:",
+        util.inspect(runTriggerDailyProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerDailyProps);
 
       console.log(
-        "runTrigger daily schedule response:",
+        "🚀 runTrigger daily schedule result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -199,22 +245,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with hourly schedule", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 * * * *", // Every hour
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with hourly cron schedule ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger hourly schedule input:",
+        util.inspect(runTriggerHourlyProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerHourlyProps);
 
       console.log(
-        "runTrigger hourly schedule response:",
+        "🚀 runTrigger hourly schedule result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -225,22 +264,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with every 15 minutes schedule", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "*/15 * * * *", // Every 15 minutes
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with every 15 minutes cron schedule ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger 15 minutes schedule input:",
+        util.inspect(runTrigger15MinProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTrigger15MinProps);
 
       console.log(
-        "runTrigger every 15 minutes response:",
+        "🚀 runTrigger 15 minutes schedule result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -251,22 +283,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with complex schedule", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 9 * * 1-5", // Weekdays at 9 AM
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with complex cron schedule ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger complex schedule input:",
+        util.inspect(runTriggerComplexProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerComplexProps);
 
       console.log(
-        "runTrigger complex schedule response:",
+        "🚀 runTrigger complex schedule result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -277,22 +302,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with minute-based schedule", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "*/5 * * * *", // Every 5 minutes
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with minute-based cron schedule ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger minute-based schedule input:",
+        util.inspect(runTriggerMinuteProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerMinuteProps);
 
       console.log(
-        "runTrigger minute-based schedule response:",
+        "🚀 runTrigger minute-based schedule result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -303,22 +321,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should run trigger with weekly schedule", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 0 * * MON", // Every Monday at midnight
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with weekly cron schedule ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger weekly schedule input:",
+        util.inspect(runTriggerWeeklyProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerWeeklyProps);
 
       console.log(
-        "runTrigger weekly schedule response:",
+        "🚀 runTrigger weekly schedule result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -329,22 +340,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle standard cron expressions", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 0 * * *", // Daily at midnight
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with standard cron expressions ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger standard cron input:",
+        util.inspect(runTriggerStandardProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerStandardProps);
 
       console.log(
-        "runTrigger standard cron response:",
+        "🚀 runTrigger standard cron result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -353,22 +357,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle invalid cron expressions gracefully", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "invalid-cron-expression",
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with invalid cron expression ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger invalid cron input:",
+        util.inspect(runTriggerInvalidProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerInvalidProps);
 
       console.log(
-        "runTrigger invalid cron response:",
+        "🚀 runTrigger invalid cron result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -379,22 +376,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle complex time specifications", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "0 0,12 1 */2 *", // Twice daily on 1st of every other month
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with complex time specifications ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger complex time specifications input:",
+        util.inspect(runTriggerComplexTimeProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerComplexTimeProps);
 
       console.log(
-        "runTrigger complex cron response:",
+        "🚀 runTrigger complex time specifications result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -405,22 +395,15 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should handle step values in cron expressions", async () => {
-      const params = {
-        triggerType: "cronTrigger",
-        triggerConfig: {
-          expression: "*/10 */2 * * *", // Every 10 minutes, every 2 hours
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with step values in cron expressions ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger step values input:",
+        util.inspect(runTriggerStepValuesProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerStepValuesProps);
 
       console.log(
-        "runTrigger step values cron response:",
+        "🚀 runTrigger step values result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
