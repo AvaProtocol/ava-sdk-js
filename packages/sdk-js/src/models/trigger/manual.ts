@@ -37,66 +37,50 @@ class ManualTrigger extends Trigger {
       throw new Error("ManualTrigger data is required");
     }
 
-    let actualData: string | number | boolean | Record<string, unknown> | unknown[] | null;
-    let headers: Record<string, string> | undefined;
-    let pathParams: Record<string, string> | undefined;
+    // Extract data, headers, and pathParams from ManualTriggerDataType
+    let actualData: unknown = this.data;
+    let headers: Record<string, string> = {};
+    let pathParams: Record<string, string> = {};
 
-    // Handle both new simplified format (direct data) and legacy format ({ data, headers?, pathParams? })
     if (typeof this.data === 'object' && this.data !== null && !Array.isArray(this.data)) {
-      const manualData = this.data as ManualTriggerDataType;
-      if ('data' in manualData) {
-        // ManualTriggerDataType structure with nested data, headers, pathParams
-        actualData = manualData.data;
-        headers = manualData.headers;
-        pathParams = manualData.pathParams;
-      } else {
-        // New simplified format - treat the entire object as data
-        actualData = this.data as Record<string, unknown>;
-        headers = undefined;
-        pathParams = undefined;
+      const dataObj = this.data as Record<string, unknown>;
+      
+      // If this.data has the ManualTriggerDataType structure
+      if ('data' in dataObj) {
+        actualData = dataObj.data;
+        headers = (dataObj.headers as Record<string, string>) || {};
+        pathParams = (dataObj.pathParams as Record<string, string>) || {};
       }
-    } else {
-      // Direct primitive data (string, number, boolean, array, null)
-      actualData = this.data as string | number | boolean | unknown[] | null;
-      headers = undefined;
-      pathParams = undefined;
+      // Otherwise, use this.data directly as the data content
     }
-    
-    const dataValue = convertInputToProtobuf(actualData as any);
+
+    const dataValue = convertInputToProtobuf(actualData as Record<string, any> | undefined);
+
     if (!dataValue) {
-      throw new Error("Failed to convert ManualTrigger data to protobuf format");
+      throw new Error(
+        "Failed to convert ManualTrigger data to protobuf format"
+      );
     }
+
     config.setData(dataValue);
 
-    // Note: headers and pathParams were removed from protobuf structure
-    // They are now handled at the configuration level only, not in execution output
+    // Set headers and pathParams in the config for execution step debugging
+    if (Object.keys(headers).length > 0) {
+      const headersMap = config.getHeadersMap();
+      Object.entries(headers).forEach(([key, value]) => {
+        headersMap.set(key, value);
+      });
+    }
+
+    if (Object.keys(pathParams).length > 0) {
+      const pathParamsMap = config.getPathparamsMap();
+      Object.entries(pathParams).forEach(([key, value]) => {
+        pathParamsMap.set(key, value);
+      });
+    }
 
     manualTrigger.setConfig(config);
-    
-    // Create comprehensive input field that includes all trigger configuration
-    // This will be extracted by the backend and included in execution step input
-    const comprehensiveInput: Record<string, unknown> = {
-      data: actualData,
-    };
-    
-    // Include headers and pathParams as part of trigger configuration
-    if (headers && Object.keys(headers).length > 0) {
-      comprehensiveInput.headers = headers;
-    }
-    if (pathParams && Object.keys(pathParams).length > 0) {
-      comprehensiveInput.pathParams = pathParams;
-    }
-    
-    // Merge any additional input data provided by user
-    if (this.input) {
-      Object.assign(comprehensiveInput, this.input);
-    }
-    
-    const inputValue = convertInputToProtobuf(comprehensiveInput);
-    if (inputValue) {
-      manualTrigger.setInput(inputValue);
-    }
-    
+
     trigger.setManual(manualTrigger);
 
     return trigger;
@@ -105,7 +89,13 @@ class ManualTrigger extends Trigger {
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let actualData: string | number | boolean | Record<string, unknown> | unknown[] | null = null;
+    let actualData:
+      | string
+      | number
+      | boolean
+      | Record<string, unknown>
+      | unknown[]
+      | null = null;
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
@@ -113,13 +103,19 @@ class ManualTrigger extends Trigger {
       if (config) {
         // Extract data only - headers and pathParams are handled by base class
         if (config.hasData()) {
-          actualData = extractInputFromProtobuf(config.getData()) as string | number | boolean | Record<string, unknown> | unknown[] | null;
+          actualData = extractInputFromProtobuf(config.getData()) as
+            | string
+            | number
+            | boolean
+            | Record<string, unknown>
+            | unknown[]
+            | null;
         }
       }
     }
 
-    // Extract input data using base class method (general pattern for all triggers)
-    const baseInput = super.fromResponse(raw).input;
+    
+
 
     // Create ManualTriggerDataType structure with just the data
     // Headers and pathParams are available in baseInput for execution step display
@@ -131,7 +127,6 @@ class ManualTrigger extends Trigger {
       ...obj,
       type: TriggerType.Manual,
       data: manualTriggerData,
-      input: baseInput, // Use the general input extraction pattern
     });
   }
 
@@ -140,9 +135,7 @@ class ManualTrigger extends Trigger {
    * @param outputData - The RunTriggerResp containing manual trigger output
    * @returns The parsed JSON data directly (similar to CustomCode output)
    */
-  static fromOutputData(
-    outputData: avs_pb.RunTriggerResp
-  ): unknown {
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): unknown {
     const manualOutput = outputData.getManualTrigger();
     if (!manualOutput) {
       return null;

@@ -5,11 +5,9 @@ import {
   getAddress,
   generateSignature,
   TIMEOUT_DURATION,
-  SaltGlobal,
   getNextId,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-import util from "util";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -71,7 +69,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes: nodes as any,
+        nodes,
         edges,
         inputVariables: {},
       });
@@ -125,7 +123,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes: nodes as any,
+        nodes,
         edges,
         inputVariables: {
           name: "World",
@@ -174,7 +172,8 @@ describe("SimulateWorkflow", () => {
           data: {
             url: "https://jsonplaceholder.typicode.com/posts/1",
             method: "GET",
-            headersMap: [],
+            body: "",
+            headers: {},
           },
         },
       ];
@@ -189,7 +188,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes: nodes as any,
+        nodes,
         edges,
         inputVariables: {},
       });
@@ -261,7 +260,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes: nodes as any,
+        nodes,
         edges,
         inputVariables: {},
       });
@@ -325,7 +324,7 @@ describe("SimulateWorkflow", () => {
       try {
         const result = await client.simulateWorkflow({
           trigger,
-          nodes: nodes as any,
+          nodes,
           edges,
           inputVariables: {},
         });
@@ -345,16 +344,18 @@ describe("SimulateWorkflow", () => {
         expect(nodeStep.id).toBe(nodeId);
         expect(nodeStep.type).toBe(NodeType.CustomCode);
         expect(nodeStep.success).toBe(false);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();
-        expect(error.message).toContain("Intentional error for testing");
+        expect((error as Error).message).toContain(
+          "Intentional error for testing"
+        );
       }
     });
   });
 
-  describe("Input Field Feature", () => {
-    test("should allow setting input data on nodes and accessing it from subsequent nodes", async () => {
+  describe("Data Field Access", () => {
+    test("should allow setting data on triggers and nodes and accessing it from subsequent nodes", async () => {
       const triggerId = getNextId();
       const restApiNodeId = getNextId();
       const customCodeNodeId = getNextId();
@@ -363,8 +364,7 @@ describe("SimulateWorkflow", () => {
         id: triggerId,
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: {},
-        input: {
+        data: {
           timezone: "UTC",
           priority: "high",
           description: "Test workflow with input fields",
@@ -379,12 +379,7 @@ describe("SimulateWorkflow", () => {
           data: {
             url: "https://jsonplaceholder.typicode.com/posts/1",
             method: "GET",
-            headersMap: [],
-          },
-          input: {
-            timeout: 30000,
-            retries: 3,
-            debugMode: true,
+            body: "",
             headers: {
               "User-Agent": "AvaProtocol-SDK-Test",
               Accept: "application/json",
@@ -398,31 +393,26 @@ describe("SimulateWorkflow", () => {
           data: {
             lang: CustomCodeLang.JavaScript,
             source: `
-              // TODO: Input field feature needs backend support to expose:
-              // - manualTrigger.input (trigger input data)
-              // - rest_api_node.input (previous node input data)
-              // Currently only manualTrigger.data and rest_api_node.data are available
-              
-              // For now, test that we can set input fields without errors
-              // and access regular data from trigger and previous node
+              // Access trigger data and previous node output
               const triggerData = manualTrigger.data;
               const restApiOutput = rest_api_node.data;
               
               return {
-                inputFieldFeatureTest: {
-                  message: "Input fields can be set on triggers and nodes",
+                dataAccessTest: {
+                  message: "Can access trigger and node data correctly",
                   triggerDataAccessible: !!triggerData,
+                  triggerTimezone: triggerData?.timezone,
+                  triggerPriority: triggerData?.priority,
                   restApiOutputReceived: !!restApiOutput,
                   currentContext: typeof workflowContext !== 'undefined'
                 },
                 status: "success",
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                // Configuration data can be included in the returned result
+                processingMode: "validation",
+                logLevel: "debug"
               };
             `,
-          },
-          input: {
-            processingMode: "validation",
-            logLevel: "debug",
           },
         },
       ];
@@ -442,7 +432,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes: nodes as any,
+        nodes,
         edges,
         inputVariables: {},
       });
@@ -471,12 +461,12 @@ describe("SimulateWorkflow", () => {
       expect(customCodeStep.name).toBe("input_processor");
       expect(customCodeStep.success).toBe(true);
 
-      // The custom code step should have processed the input data successfully
+      // The custom code step should have processed the trigger data successfully
       // We can verify this by checking if the step completed successfully
       // and examining any logs or output data if available
     });
 
-    test("should handle workflows with both input data and regular data access", async () => {
+    test("should handle workflows with trigger data access", async () => {
       const triggerId = getNextId();
       const processorNodeId = getNextId();
 
@@ -484,10 +474,11 @@ describe("SimulateWorkflow", () => {
         id: triggerId,
         name: "manualTrigger",
         type: TriggerType.Manual,
-        data: {},
-        input: {
-          environment: "test",
-          version: "1.0.0",
+        data: {
+          data: {
+            environment: "test",
+            version: "1.0.0",
+          },
         },
       };
 
@@ -499,31 +490,26 @@ describe("SimulateWorkflow", () => {
           data: {
             lang: CustomCodeLang.JavaScript,
             source: `
-              // TODO: Input field feature needs backend support to expose:
-              // - manualTrigger.input (trigger input data)
-              // - data_processor.input (current node input data)
-              // Currently only manualTrigger.data is available
-              
-              // For now, test that we can set input fields on nodes and triggers
-              // without causing errors, and access regular trigger data
+              // Access trigger data which now contains environment and version
               const triggerData = manualTrigger.data;
               
               return {
-                inputFieldFeatureTest: {
-                  message: "Input fields can be set on triggers and nodes",
+                dataAccessTest: {
+                  message: "Can access trigger data correctly",
                   triggerDataAccessible: !!triggerData,
+                  triggerEnvironment: triggerData?.environment,
+                  triggerVersion: triggerData?.version,
                   currentContext: typeof workflowContext !== 'undefined',
                   availableVariables: Object.keys(this || {})
                 },
                 status: "success",
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                // Configuration data can be included in the returned result
+                maxRetries: 5,
+                timeout: 60000,
+                enableLogging: true
               };
             `,
-          },
-          input: {
-            maxRetries: 5,
-            timeout: 60000,
-            enableLogging: true,
           },
         },
       ];
@@ -538,7 +524,7 @@ describe("SimulateWorkflow", () => {
 
       const result = await client.simulateWorkflow({
         trigger,
-        nodes: nodes as any,
+        nodes,
         edges,
         inputVariables: {},
       });

@@ -113,20 +113,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             ],
           },
         ],
-      },
-      input: {
-        tokens: [
-          {
-            name: "USD Coin",
-            symbol: "USDC",
-            address: USDC_CONTRACT_ADDRESS,
-            decimals: 6,
-          },
-        ],
-        address: testWalletAddress,
-        chainId: 11155111, // Sepolia
-        subType: "transfer",
-      },
+      }
     });
   }
 
@@ -176,8 +163,7 @@ const formattedTime = dayjs().format('YYYY-MM-DD HH:mm');
 const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at block \${blockNumber} (\${formattedTime})\`;
 
 return message;`,
-      },
-      input: undefined,
+      }
     });
   }
 
@@ -194,8 +180,7 @@ return message;`,
         method: "POST",
         body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}"}',
         headers: { "Content-Type": "application/json" },
-      },
-      input: undefined,
+      }
     });
   }
 
@@ -379,20 +364,20 @@ return message;`,
       expect(triggerStep.type).toBe(TriggerType.Event);
       expect(triggerStep.success).toBe(true);
 
-      // The trigger step's input field contains custom input data provided by the user
-      expect(triggerStep.input).toBeDefined();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const triggerInput = triggerStep.input as any; // Type assertion after toBeDefined check
-      expect(triggerInput.address).toBeDefined();
-      expect(triggerInput.chainId).toBe(11155111);
-      expect(triggerInput.subType).toBe("transfer");
-      expect(triggerInput.tokens).toBeDefined();
-      expect(triggerInput.tokens).toHaveLength(1);
+      // The trigger step's config field should contain custom configuration data provided by the user
+      // TODO: The trigger config field is currently not populated - this is a known backend issue
+      // The trigger step's config field contains custom input data provided by the user
+      expect(triggerStep.config).toBeDefined();
+      const triggerConfig = triggerStep.config as Record<string, unknown>;
+      expect(triggerConfig.address).toBeDefined();
+      expect(triggerConfig.chainId).toBe(11155111);
+      expect(triggerConfig.subType).toBe("transfer");
+      expect(triggerConfig.tokens).toBeDefined();
+      expect(triggerConfig.tokens).toHaveLength(1);
 
       // Custom input data should be accessible via VM variables (checked in subsequent node's inputsList)
-      // The CustomCode node should have access to eventTrigger.input which contains the custom input data
+      // The CustomCode node should have access to eventTrigger.data which contains the trigger output data
       const customCodeStep = simulationResult.steps[1];
-      expect(customCodeStep.inputsList).toContain("eventTrigger.input");
       expect(customCodeStep.inputsList).toContain("eventTrigger.data");
 
       // CRITICAL: Validate that the CustomCode execution succeeds with proper event trigger data
@@ -445,12 +430,14 @@ return message;`,
       expect(savedWorkflow.nodes).toHaveLength(2);
       expect(savedWorkflow.edges).toHaveLength(2);
 
-      // Verify trigger has input data
-      expect(savedWorkflow.trigger.input).toBeDefined();
+      // Triggers no longer have input fields - they only have config fields
+      // EventTrigger data contains the query configuration (addresses, topics, etc.)
+      expect(savedWorkflow.trigger.data).toBeDefined();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const triggerInput = savedWorkflow.trigger.input as any; // Type assertion after toBeDefined check
-      expect(triggerInput.tokens).toHaveLength(1);
-      expect(triggerInput.tokens[0].symbol).toBe("USDC");
+      const triggerData = savedWorkflow.trigger.data as any;
+      expect(triggerData.queries).toBeDefined();
+      expect(triggerData.queries).toHaveLength(2); // FROM and TO queries
+      expect(triggerData.queries[0].addresses).toContain("0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238");
 
       
     });

@@ -43,14 +43,10 @@ class LoopNode extends Node {
       ),
     } as LoopNodeData;
 
-    // Extract input data using base class method
-    const baseInput = super.fromResponse(raw).input;
-
     return new LoopNode({
       ...obj,
       type: NodeType.Loop,
       data: data,
-      input: baseInput,
     });
   }
 
@@ -139,13 +135,6 @@ class LoopNode extends Node {
     config.setExecutionMode(executionMode);
 
     loopNode.setConfig(config);
-
-    // Set input data on the top-level TaskNode, not the nested LoopNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      node.setInput(inputValue);
-    }
 
     // Handle runner - check the runner field and set the appropriate oneof field
     if (data.runner) {

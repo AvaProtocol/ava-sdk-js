@@ -1,11 +1,12 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
-import { TriggerType, BlockTriggerDataType, BlockTriggerOutput, BlockTriggerProps, TriggerProps, TriggerOutput } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
-
-// Required props for constructor: id, name, type and data: { interval }
-
-
+import {
+  TriggerType,
+  BlockTriggerDataType,
+  BlockTriggerOutput,
+  BlockTriggerProps,
+  TriggerProps,
+} from "@avaprotocol/types";
 class BlockTrigger extends Trigger {
   constructor(props: BlockTriggerProps) {
     super({ ...props, type: TriggerType.Block, data: props.data });
@@ -22,12 +23,12 @@ class BlockTrigger extends Trigger {
     }
 
     const blockData = this.data as BlockTriggerDataType;
-    
+
     // Validate interval is present and not null/undefined
     if (blockData.interval === null || blockData.interval === undefined) {
       throw new Error("Interval is required for block trigger");
     }
-    
+
     // Validate interval is greater than 0
     if (blockData.interval <= 0) {
       throw new Error("Interval must be greater than 0");
@@ -37,13 +38,7 @@ class BlockTrigger extends Trigger {
     const config = new avs_pb.BlockTrigger.Config();
     config.setInterval(blockData.interval);
     trigger.setConfig(config);
-    
-    // Use utility function to convert input field to protobuf format
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      trigger.setInput(inputValue);
-    }
-    
+
     request.setBlock(trigger);
 
     return request;
@@ -54,25 +49,21 @@ class BlockTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: BlockTriggerDataType = { interval: 0 };
-    
+
     if (raw.getBlock() && raw.getBlock()!.hasConfig()) {
       const config = raw.getBlock()!.getConfig();
-      
+
       if (config) {
         data = {
-          interval: config.getInterval() || 0
+          interval: config.getInterval() || 0,
         };
       }
     }
 
-    // Extract input data using base class method (general pattern for all triggers)
-    const baseInput = super.fromResponse(raw).input;
-    
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
       data: data,
-      input: baseInput, // Use the general input extraction pattern
     });
   }
 

@@ -20,14 +20,10 @@ class FilterNode extends Node {
     // Convert the raw object to FilterNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Extract input data using base class method
-    const baseInput = super.fromResponse(raw).input;
-
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
       data: raw.getFilter()!.getConfig()!.toObject() as FilterNodeData,
-      input: baseInput,
     });
   }
 
@@ -43,13 +39,6 @@ class FilterNode extends Node {
     config.setExpression((this.data as FilterNodeData).expression);
     config.setInputNodeName((this.data as FilterNodeData).inputNodeName || "");
     node.setConfig(config);
-
-    // Set input data on the top-level TaskNode, not the nested FilterNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
 
     request.setFilter(node);
     return request;

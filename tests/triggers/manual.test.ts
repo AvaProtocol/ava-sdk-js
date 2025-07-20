@@ -905,8 +905,8 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // Validate consistency_test_manual_trigger.input and .output
-      expect(triggerStep!.input).toBeDefined();
+      // Validate consistency_test_manual_trigger.config and .output
+      expect(triggerStep!.config).toBeDefined();
       expect(triggerStep!.output).toEqual(testData); // ManualTrigger now returns raw data directly
 
       // Find the loop step in simulation

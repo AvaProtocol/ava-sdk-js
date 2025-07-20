@@ -62,15 +62,13 @@ export default abstract class Node implements NodeProps {
   name: string;
   type: NodeType;
   data: NodeData;
-  input?: Record<string, any>; // Use JavaScript object type for internal storage
+
 
   constructor(props: NodeProps) {
     this.id = props.id;
     this.name = props.name;
     this.type = props.type;
     this.data = props.data;
-    // Direct assignment - no protobuf conversion needed for user input
-    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskNode {
@@ -88,15 +86,8 @@ export default abstract class Node implements NodeProps {
     // Convert the raw object to NodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Extract input data using the utility function
-    let input: Record<string, unknown> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
-
     return new (this as any)({
       ...obj,
-      input: input,
     });
   }
 }

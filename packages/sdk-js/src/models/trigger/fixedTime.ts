@@ -1,10 +1,16 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
-import { TriggerType, FixedTimeTriggerDataType, FixedTimeTriggerOutput, FixedTimeTriggerProps, TriggerProps, TriggerOutput } from "@avaprotocol/types";
+import {
+  TriggerType,
+  FixedTimeTriggerDataType,
+  FixedTimeTriggerOutput,
+  FixedTimeTriggerProps,
+  TriggerProps,
+  TriggerOutput,
+} from "@avaprotocol/types";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { epochsList }
-
 
 class FixedTimeTrigger extends Trigger {
   constructor(props: FixedTimeTriggerProps) {
@@ -23,15 +29,11 @@ class FixedTimeTrigger extends Trigger {
 
     const trigger = new avs_pb.FixedTimeTrigger();
     const config = new avs_pb.FixedTimeTrigger.Config();
-    config.setEpochsList((this.data as FixedTimeTriggerDataType).epochsList || []);
+    config.setEpochsList(
+      (this.data as FixedTimeTriggerDataType).epochsList || []
+    );
     trigger.setConfig(config);
-    
-    // Convert input field to protobuf format and set on FixedTimeTrigger
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      trigger.setInput(inputValue);
-    }
-    
+
     request.setFixedTime(trigger);
 
     return request;
@@ -42,26 +44,21 @@ class FixedTimeTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: FixedTimeTriggerDataType = { epochsList: [] };
-    
+
     if (raw.getFixedTime() && raw.getFixedTime()!.hasConfig()) {
       const config = raw.getFixedTime()!.getConfig();
-      
+
       if (config) {
         data = {
-          epochsList: config.getEpochsList() || []
+          epochsList: config.getEpochsList() || [],
         };
       }
-      
     }
 
-    // Extract input data using base class method (general pattern for all triggers)
-    const baseInput = super.fromResponse(raw).input;
-    
     return new FixedTimeTrigger({
       ...obj,
       type: TriggerType.FixedTime,
       data: data,
-      input: baseInput, // Use the general input extraction pattern
     });
   }
 
@@ -83,12 +80,12 @@ class FixedTimeTrigger extends Trigger {
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const fixedTimeOutput = outputData.getFixedTimeTrigger();
     if (!fixedTimeOutput) return null;
-    
+
     const outputObj = fixedTimeOutput.toObject();
     // The output now contains timestamp and timestampIso instead of epoch
     return {
       timestamp: outputObj.timestamp,
-      timestampIso: outputObj.timestampIso
+      timestampIso: outputObj.timestampIso,
     };
   }
 }

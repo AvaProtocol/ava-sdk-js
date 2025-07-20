@@ -69,14 +69,10 @@ class ContractWriteNode extends Node {
         })) || [],
     };
 
-    // Extract input data using base class method
-    const baseInput = super.fromResponse(raw).input;
-
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,
       data: data,
-      input: baseInput,
     });
   }
 
@@ -89,13 +85,6 @@ class ContractWriteNode extends Node {
     const node = ContractWriteNode.createProtobufNode(
       this.data as ContractWriteNodeData
     );
-
-    // Set input data on the top-level TaskNode, not the nested ContractWriteNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
 
     request.setContractWrite(node);
 

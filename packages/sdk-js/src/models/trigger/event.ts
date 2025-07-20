@@ -157,12 +157,6 @@ class EventTrigger extends Trigger {
     config.setQueriesList(queryMessages);
     trigger.setConfig(config);
 
-    // Convert input field to protobuf format and set on EventTrigger
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      trigger.setInput(inputValue);
-    }
-
     request.setEvent(trigger);
 
     return request;
@@ -243,14 +237,13 @@ class EventTrigger extends Trigger {
 
     }
 
-    // Extract input data using base class method (general pattern for all triggers)
-    const baseInput = super.fromResponse(raw).input;
+    
+
 
     return new EventTrigger({
       ...obj,
       type: TriggerType.Event,
       data: data,
-      input: baseInput, // Use the general input extraction pattern
     });
   }
 

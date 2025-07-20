@@ -14,7 +14,7 @@ class Step implements StepProps {
   error: string;
   log: string;
   inputsList: string[];
-  input?: any;
+  config?: any;
   output: OutputDataProps;
   startAt: number;
   endAt: number;
@@ -27,7 +27,7 @@ class Step implements StepProps {
     this.error = props.error;
     this.log = props.log;
     this.inputsList = props.inputsList;
-    this.input = props.input;
+    this.config = props.config;
     this.output = props.output;
     this.startAt = props.startAt;
     this.endAt = props.endAt;
@@ -46,7 +46,7 @@ class Step implements StepProps {
       error: this.error,
       log: this.log,
       inputsList: this.inputsList,
-      input: this.input,
+      config: this.config,
       output: this.output,
       startAt: this.startAt,
       endAt: this.endAt,
@@ -190,7 +190,6 @@ class Step implements StepProps {
         }
         return null;
       }
-
 
       // Node outputs - RESTORE MISSING CASES
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
@@ -461,7 +460,9 @@ class Step implements StepProps {
               }
 
               // Unpack the Any to get the Value
-              const value = ProtobufValue.deserializeBinary(anyData.getValue_asU8());
+              const value = ProtobufValue.deserializeBinary(
+                anyData.getValue_asU8()
+              );
 
               // Convert the Value to JavaScript
               const result = value.toJavaScript();
@@ -482,7 +483,7 @@ class Step implements StepProps {
               typeof filterOutput.data.getKindCase === "function"
                 ? convertProtobufValueToJs(filterOutput.data)
                 : filterOutput.data;
-            
+
             // Return the filtered results directly (should be an array)
             return Array.isArray(data) ? data : [data];
           }
@@ -509,39 +510,23 @@ class Step implements StepProps {
 
   static fromResponse(step: avs_pb.Execution.Step): Step {
     // Extract input data if present - USE PROPER PROTOBUF GETTER
-    let inputData: any = undefined;
+    let configData: any = undefined;
 
     // Check for input using proper protobuf methods
     if (
-      typeof (step as any).hasInput === "function" &&
-      (step as any).hasInput()
+      typeof (step as any).hasConfig === "function" &&
+      (step as any).hasConfig()
     ) {
-      const inputValue = (step as any).getInput();
+      const configValue = (step as any).getConfig();
 
-      if (inputValue) {
+      if (configValue) {
         // If it's a protobuf Value instance, convert it
         try {
-          inputData = convertProtobufValueToJs(inputValue);
+          configData = convertProtobufValueToJs(configValue);
         } catch (error) {
           console.warn("Failed to convert protobuf input value:", error);
           // Fallback: if conversion fails, use the raw value
-          inputData = inputValue;
-        }
-      }
-    } else if ((step as any).input) {
-      // Fallback for plain objects (from .toObject() calls)
-      const inputValue = (step as any).input;
-
-      // If it's already a plain JavaScript object, use it directly
-      if (typeof inputValue === "object" && !inputValue.getKindCase) {
-        inputData = inputValue;
-      } else {
-        // If it's a protobuf Value instance, convert it
-        try {
-          inputData = convertProtobufValueToJs(inputValue);
-        } catch (error) {
-          // Fallback: if conversion fails, use the raw value
-          inputData = inputValue;
+          configData = configValue;
         }
       }
     }
@@ -584,7 +569,7 @@ class Step implements StepProps {
       error: getError(),
       log: getLog(),
       inputsList: getInputsList(),
-      input: inputData,
+      config: configData,
       output: Step.getOutput(step),
       startAt: getStartAt(),
       endAt: getEndAt(),

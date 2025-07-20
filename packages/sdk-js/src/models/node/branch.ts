@@ -1,10 +1,14 @@
-import { NodeType, BranchNodeData, BranchNodeProps, NodeProps } from "@avaprotocol/types";
+import {
+  NodeType,
+  BranchNodeData,
+  BranchNodeProps,
+  NodeProps,
+} from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { conditions }
-
 
 class BranchNode extends Node {
   constructor(props: BranchNodeProps) {
@@ -15,24 +19,21 @@ class BranchNode extends Node {
     // Convert the raw object to BranchNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
     const protobufData = raw.getBranch()!.toObject().config;
-    
+
     // Convert protobuf data to our custom interface
     const data: BranchNodeData = {
-      conditions: protobufData?.conditionsList?.map(condition => ({
-        id: condition.id,
-        type: condition.type,
-        expression: condition.expression,
-      })) || [],
+      conditions:
+        protobufData?.conditionsList?.map((condition) => ({
+          id: condition.id,
+          type: condition.type,
+          expression: condition.expression,
+        })) || [],
     };
 
-    // Extract input data using base class method
-    const baseInput = super.fromResponse(raw).input;
-    
     return new BranchNode({
       ...obj,
       type: NodeType.Branch,
       data: data,
-      input: baseInput,
     });
   }
 
@@ -44,10 +45,11 @@ class BranchNode extends Node {
 
     const node = new avs_pb.BranchNode();
     const config = new avs_pb.BranchNode.Config();
-    
-    if ((this.data as BranchNodeData).conditions && 
-        (this.data as BranchNodeData).conditions.length > 0) {
-      
+
+    if (
+      (this.data as BranchNodeData).conditions &&
+      (this.data as BranchNodeData).conditions.length > 0
+    ) {
       const conditionsList = (this.data as BranchNodeData).conditions.map(
         (condition: any) => {
           const conditionObj = new avs_pb.BranchNode.Condition();
@@ -57,18 +59,11 @@ class BranchNode extends Node {
           return conditionObj;
         }
       );
-      
+
       config.setConditionsList(conditionsList);
     }
-    
-    node.setConfig(config);
 
-    // Set input data on the top-level TaskNode, not the nested BranchNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
+    node.setConfig(config);
 
     request.setBranch(node);
 

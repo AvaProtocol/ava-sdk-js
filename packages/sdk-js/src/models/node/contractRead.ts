@@ -35,7 +35,7 @@ class ContractReadNode extends Node {
   }): avs_pb.ContractReadNode {
     const node = new avs_pb.ContractReadNode();
     const config = new avs_pb.ContractReadNode.Config();
-    
+
     config.setContractAddress(configData.contractAddress);
     config.setContractAbi(configData.contractAbi);
 
@@ -74,14 +74,10 @@ class ContractReadNode extends Node {
         })) || [],
     };
 
-    // Extract input data using base class method
-    const baseInput = super.fromResponse(raw).input;
-
     return new ContractReadNode({
       ...obj,
       type: NodeType.ContractRead,
       data: data,
-      input: baseInput,
     });
   }
 
@@ -94,13 +90,6 @@ class ContractReadNode extends Node {
     const node = ContractReadNode.createProtobufNode(
       this.data as ContractReadNodeData
     );
-
-    // Set input data on the top-level TaskNode, not the nested ContractReadNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
 
     request.setContractRead(node);
 

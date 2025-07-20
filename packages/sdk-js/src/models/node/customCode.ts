@@ -52,14 +52,10 @@ class CustomCodeNode extends Node {
       source: rawConfig.source,
     };
 
-    // Extract input data using base class method
-    const baseInput = super.fromResponse(raw).input;
-
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
       data: convertedConfig,
-      input: baseInput,
     });
   }
 
@@ -72,13 +68,6 @@ class CustomCodeNode extends Node {
     const node = CustomCodeNode.createProtobufNode(
       this.data as CustomCodeNodeData
     );
-
-    // Set input data on the top-level TaskNode, not the nested CustomCodeNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
 
     request.setCustomCode(node);
 

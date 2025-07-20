@@ -876,21 +876,7 @@ class Client extends BaseClient {
           manualOutput.setData(protobufValue);
         }
         
-        // Include headers for webhook testing - using object format
-        if (manualData.headers) {
-          const headersMap = manualOutput.getHeadersMap();
-          Object.entries(manualData.headers).forEach(([key, value]) => {
-            headersMap.set(key, value as string);
-          });
-        }
-        
-        // Include pathParams for webhook testing - using object format
-        if (manualData.pathParams) {
-          const pathParamsMap = manualOutput.getPathparamsMap();
-          Object.entries(manualData.pathParams).forEach(([key, value]) => {
-            pathParamsMap.set(key, value as string);
-          });
-        }
+
         
         request.setManualTrigger(manualOutput);
         break;
