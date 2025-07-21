@@ -54,6 +54,146 @@ describe("LoopNode Tests", () => {
   let eoaAddress: string;
   let client: Client;
 
+  // Define all node props at the beginning for consistency
+  const customCodeLoopProps = {
+    inputNodeName: "testArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: "customCode" as const,
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: `
+          const _ = require('lodash');
+          return {
+            processedValue: value,
+            index: index,
+            squared: value * value,
+            timestamp: new Date().toISOString()
+          };
+        `,
+      },
+    },
+  };
+
+  const restApiLoopProps = {
+    inputNodeName: "urlArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: "restApi" as const,
+      config: {
+        url: "{{value}}",
+        method: "GET",
+        body: "",
+        headers: {
+          "User-Agent": "AvaProtocol-Loop-Test",
+        },
+      },
+    },
+  };
+
+  const emptyArrayLoopProps = {
+    inputNodeName: "emptyArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: "customCode" as const,
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: "return { processed: value, index: index };",
+      },
+    },
+  };
+
+  const singleItemLoopProps = {
+    inputNodeName: "singleItem",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: "customCode" as const,
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: "return { value: value, index: index, processed: true };",
+      },
+    },
+  };
+
+  const parallelExecutionProps = {
+    inputNodeName: "parallelArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Parallel,
+    runner: {
+      type: "customCode" as const,
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: `
+          return {
+            processedValue: value,
+            index: index,
+            executionMode: 'parallel',
+            timestamp: new Date().toISOString()
+          };
+        `,
+      },
+    },
+  };
+
+  const complexDataLoopProps = {
+    inputNodeName: "complexArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: "customCode" as const,
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: `
+          const _ = require('lodash');
+          return {
+            id: value.id,
+            upperName: value.name.toUpperCase(),
+            doubledValue: value.value * 2,
+            index: index,
+            isEven: value.value % 2 === 0
+          };
+        `,
+      },
+    },
+  };
+
+  const nestedObjectLoopProps = {
+    inputNodeName: "nestedArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: "customCode" as const,
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: `
+          return {
+            extracted: value.data.info,
+            processed: {
+              name: value.data.info.name.toUpperCase(),
+              age: value.data.info.age + 10,
+              category: value.data.info.age > 25 ? 'adult' : 'young'
+            },
+            metadata: {
+              index: index,
+              originalId: value.id
+            }
+          };
+        `,
+      },
+    },
+  };
+
   beforeAll(async () => {
     eoaAddress = await getAddress(walletPrivateKey);
 
@@ -78,42 +218,21 @@ describe("LoopNode Tests", () => {
     test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: {
-          inputNodeName: "testArray",
-          iterVal: "value",
-          iterKey: "index",
-          runner: {
-            type: "customCode",
-            data: {
-              config: {
-                lang: CustomCodeLang.JavaScript,
-                source: `
-                  const _ = require('lodash');
-                  return {
-                    processedValue: value,
-                    index: index,
-                    squared: value * value,
-                    timestamp: new Date().toISOString()
-                  };
-                `,
-              },
-            },
-          },
-        },
+        nodeConfig: customCodeLoopProps,
         inputVariables: {
           testArray: [1, 2, 3, 4, 5],
         },
       };
 
       console.log(
-        "🚀 ~ should process loop with CustomCode ~ params:",
+        "🚀 CustomCode loop input:",
         util.inspect(params, { depth: null, colors: true })
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
-        "runNodeWithInputs loop response:",
+        "🚀 CustomCode loop result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -137,24 +256,7 @@ describe("LoopNode Tests", () => {
     test("should process loop with REST API runner using runNodeWithInputs", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: {
-          inputNodeName: "urlArray",
-          iterVal: "value",
-          iterKey: "index",
-          runner: {
-            type: "restApi",
-            data: {
-              config: {
-                url: "{{value}}",
-                method: "GET",
-                body: "",
-                headers: {
-                  "User-Agent": "AvaProtocol-Loop-Test",
-                },
-              },
-            },
-          },
-        },
+        nodeConfig: restApiLoopProps,
         inputVariables: {
           urlArray: [
             "https://httpbin.org/get?test=1",
@@ -163,12 +265,15 @@ describe("LoopNode Tests", () => {
         },
       };
 
-      console.log("🚀 ~ should process loop with REST API ~ params:", params);
+      console.log(
+        "🚀 REST API loop input:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
-        "runNodeWithInputs loop REST API response:",
+        "🚀 REST API loop result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -190,31 +295,21 @@ describe("LoopNode Tests", () => {
     test("should handle empty array input", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: {
-          inputNodeName: "emptyArray",
-          iterVal: "value",
-          iterKey: "index",
-          runner: {
-            type: "customCode",
-            data: {
-              config: {
-                lang: CustomCodeLang.JavaScript,
-                source: `return { processed: item };`,
-              },
-            },
-          },
-        },
+        nodeConfig: emptyArrayLoopProps,
         inputVariables: {
           emptyArray: [],
         },
       };
 
-      console.log("🚀 ~ should handle empty array input ~ params:", params);
+      console.log(
+        "🚀 Empty array loop input:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
-        "runNodeWithInputs empty array response:",
+        "🚀 Empty array loop result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -231,29 +326,7 @@ describe("LoopNode Tests", () => {
     test("should handle complex object array", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: {
-          inputNodeName: "complexArray",
-          iterVal: "value",
-          iterKey: "index",
-          runner: {
-            type: "customCode",
-            data: {
-              config: {
-                lang: CustomCodeLang.JavaScript,
-                source: `
-                  const _ = require('lodash');
-                  return {
-                    id: value.id,
-                    upperName: value.name.toUpperCase(),
-                    doubledValue: value.value * 2,
-                    index: index,
-                    isEven: value.value % 2 === 0
-                  };
-                `,
-              },
-            },
-          },
-        },
+        nodeConfig: complexDataLoopProps,
         inputVariables: {
           complexArray: [
             { id: "a1", name: "Alice", value: 10 },
@@ -263,12 +336,15 @@ describe("LoopNode Tests", () => {
         },
       };
 
-      console.log("🚀 ~ should handle complex object array ~ params:", params);
+      console.log(
+        "🚀 Complex object array loop input:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
-        "runNodeWithInputs complex array response:",
+        "🚀 Complex object array loop result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
@@ -716,7 +792,9 @@ describe("LoopNode Tests", () => {
       // Verify runner configuration
       expect(inputConfig.runner).toBeDefined();
       expect(inputConfig.runner!.type).toBe("contractRead");
-      expect((inputConfig.runner as any).data.config.contractAddress).toBe("{{value}}");
+      expect((inputConfig.runner as any).data.config.contractAddress).toBe(
+        "{{value}}"
+      );
       expect((inputConfig.runner as any).data.config.contractAbi).toBeDefined();
 
       // Note: The test may fail due to contract validation or network issues,
@@ -1504,22 +1582,7 @@ describe("LoopNode Tests", () => {
   test("should handle edge cases consistently across all methods", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
-    // Test with single item array
-    const loopConfig = {
-      inputNodeName: "singleItem",
-      iterVal: "value",
-      iterKey: "index",
-      runner: {
-        type: "customCode",
-        data: {
-          config: {
-            lang: CustomCodeLang.JavaScript,
-            source: `return { value: value, index: index, processed: true };`,
-          },
-        },
-      },
-    };
-
+    // Test with single item array using predefined props
     const inputVariables = {
       singleItem: [42],
     };
@@ -1527,7 +1590,7 @@ describe("LoopNode Tests", () => {
     // Test 1: runNodeWithInputs
     const directResponse = await client.runNodeWithInputs({
       nodeType: NodeType.Loop,
-      nodeConfig: loopConfig,
+      nodeConfig: singleItemLoopProps,
       inputVariables: inputVariables,
     });
 
@@ -1668,33 +1731,9 @@ describe("LoopNode Tests", () => {
     test("should support parallel execution mode with timing verification", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: {
-          inputNodeName: "testArray",
-          iterVal: "value",
-          iterKey: "index",
-          executionMode: ExecutionMode.Parallel,
-          runner: {
-            type: "customCode",
-            data: {
-              config: {
-                lang: CustomCodeLang.JavaScript,
-                source: `
-                  // Simulate processing time to test parallel execution
-                  const startTime = Date.now();
-                  while (Date.now() - startTime < 100) {} // 100ms delay per item
-                  return {
-                    item: item,
-                    index: index,
-                    timestamp: Date.now(),
-                    executionMode: 'parallel'
-                  };
-                `,
-              },
-            },
-          },
-        },
+        nodeConfig: parallelExecutionProps,
         inputVariables: {
-          testArray: [1, 2, 3, 4],
+          parallelArray: [1, 2, 3, 4],
         },
       };
 
@@ -1714,9 +1753,10 @@ describe("LoopNode Tests", () => {
 
         // Verify all executions completed
         responseData.data.forEach((item: ProcessedLoopItem, index: number) => {
-          expect(item.item).toBe(index + 1);
+          expect(item.processedValue).toBe(index + 1);
           expect(item.index).toBe(index);
           expect(item.executionMode).toBe("parallel");
+          expect(item.timestamp).toBeDefined();
         });
 
         // Verify parallel timing: should take around 100ms (all items processed simultaneously)
@@ -1724,8 +1764,8 @@ describe("LoopNode Tests", () => {
         expect(totalTime).toBeLessThan(250);
 
         // Verify timestamps are close together (parallel execution)
-        const timestamps = responseData.data.map(
-          (item: ProcessedLoopItem) => item.timestamp as number
+        const timestamps = responseData.data.map((item: ProcessedLoopItem) =>
+          new Date(item.timestamp as string).getTime()
         );
         const minTimestamp = Math.min(...timestamps);
         const maxTimestamp = Math.max(...timestamps);
