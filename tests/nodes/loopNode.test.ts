@@ -1331,8 +1331,6 @@ describe("LoopNode Tests", () => {
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-      const currentBlockNumber = await getBlockNumber();
-      const triggerInterval = 5;
 
       const loopConfig = {
         inputNodeName: "manualTrigger",
