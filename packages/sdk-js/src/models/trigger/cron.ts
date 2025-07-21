@@ -1,7 +1,12 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import Trigger from "./interface";
-import { TriggerType, CronTriggerDataType, CronTriggerOutput, CronTriggerProps, TriggerProps } from "@avaprotocol/types";
+import {
+  TriggerType,
+  CronTriggerDataType,
+  CronTriggerOutput,
+  CronTriggerProps,
+  TriggerProps,
+} from "@avaprotocol/types";
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
@@ -19,12 +24,12 @@ class CronTrigger extends Trigger {
     }
 
     const cronData = this.data as CronTriggerDataType;
-    
+
     // Validate schedules is present and not null/undefined
     if (cronData.schedules === null || cronData.schedules === undefined) {
       throw new Error("Schedules are required for cron trigger");
     }
-    
+
     // Validate schedules is not empty
     if (!Array.isArray(cronData.schedules) || cronData.schedules.length === 0) {
       throw new Error("Schedules are required for cron trigger");
@@ -34,17 +39,7 @@ class CronTrigger extends Trigger {
     const config = new avs_pb.CronTrigger.Config();
     config.setSchedulesList(cronData.schedules);
     trigger.setConfig(config);
-    
-    // ✨ NEW: Set input data if provided
-    if (this.input) {
-      try {
-        const inputValue = google_protobuf_struct_pb.Value.fromJavaScript(this.input);
-        trigger.setInput(inputValue);
-      } catch (error) {
-        throw new Error(`Failed to convert input data to protobuf.Value: ${error}`);
-      }
-    }
-    
+
     request.setCron(trigger);
 
     return request;
@@ -55,31 +50,21 @@ class CronTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: CronTriggerDataType = { schedules: [] };
-    
+
     if (raw.getCron() && raw.getCron()!.hasConfig()) {
       const config = raw.getCron()!.getConfig();
-      
+
       if (config) {
         data = {
-          schedules: config.getSchedulesList() || []
+          schedules: config.getSchedulesList() || [],
         };
       }
     }
 
-    // ✨ NEW: Extract input data if present
-    let input: google_protobuf_struct_pb.Value.AsObject | undefined;
-    if (raw.getCron() && raw.getCron()!.hasInput()) {
-      const inputValue = raw.getCron()!.getInput();
-      if (inputValue) {
-        input = inputValue.toObject();
-      }
-    }
-    
     return new CronTrigger({
       ...obj,
       type: TriggerType.Cron,
       data: data,
-      input: input, // ✨ NEW: Include input data
     });
   }
 
@@ -101,13 +86,14 @@ class CronTrigger extends Trigger {
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const cronOutput = outputData.getCronTrigger();
     if (!cronOutput) return null;
-    
-    const outputObj = cronOutput.toObject();
-    // The output now contains timestamp and timestampIso instead of epoch
-    return {
-      timestamp: outputObj.timestamp,
-      timestampIso: outputObj.timestampIso
-    };
+
+    // Extract data from the new data field
+    const dataValue = cronOutput.getData();
+    if (!dataValue) return null;
+
+    // Convert the Value to JavaScript object
+    const result = dataValue.toJavaScript();
+    return result;
   }
 }
 

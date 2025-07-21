@@ -25,6 +25,94 @@ let saltIndex = SaltGlobal.CreateWorkflow * 5000;
 describe("CustomCode Node Tests", () => {
   let client: Client;
 
+  // Define all node props at the beginning for consistency
+  const returnNullProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return null;",
+  };
+
+  const returnEmptyObjectProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return {};",
+  };
+
+  const returnUndefinedProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return undefined;",
+  };
+
+  const returnEmptyArrayProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return [];",
+  };
+
+  const returnStringProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: 'return "hello world";',
+  };
+
+  const returnNumberProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return 42;",
+  };
+
+  const returnBooleanProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return true;",
+  };
+
+  const returnObjectProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: 'return { message: "hello", count: 42 };',
+  };
+
+  const returnArrayProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: "return [1, 2, 3, 4, 5];",
+  };
+
+  const accessInputVariablesProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: `
+      return {
+        inputData: inputData,
+        processedData: inputData.map(item => item * 2),
+        metadata: {
+          count: inputData.length,
+          sum: inputData.reduce((a, b) => a + b, 0)
+        }
+      };
+    `,
+  };
+
+  const complexObjectProps = {
+    lang: CustomCodeLang.JavaScript,
+    source: `
+      return {
+        user: {
+          id: userId,
+          name: userName,
+          email: userEmail,
+          profile: {
+            age: userAge,
+            location: userLocation,
+            preferences: userPreferences
+          }
+        },
+        metadata: {
+          timestamp: new Date().toISOString(),
+          processed: true,
+          version: "1.0.0"
+        },
+        stats: {
+          totalUsers: 1000,
+          activeUsers: 750,
+          conversionRate: 0.75
+        }
+      };
+    `,
+  };
+
   beforeAll(async () => {
     const address = await getAddress(walletPrivateKey);
 
@@ -48,14 +136,23 @@ describe("CustomCode Node Tests", () => {
 
   describe("CustomCode Return Type Tests", () => {
     test("CustomCode should return null when code returns null", async () => {
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.CustomCode,
-        nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
-          source: "return null;",
-        },
+        nodeConfig: returnNullProps,
         inputVariables: {},
-      });
+      };
+
+      console.log(
+        "🚀 CustomCode return null input:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 CustomCode return null result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result.success).toBe(true);
       expect(result.data).toBeNull();
@@ -64,10 +161,7 @@ describe("CustomCode Node Tests", () => {
     test("CustomCode should return empty object when code returns {}", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
-        nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
-          source: "return {};",
-        },
+        nodeConfig: returnEmptyObjectProps,
         inputVariables: {},
       });
 
@@ -76,16 +170,24 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("CustomCode should return null when code returns undefined (protobuf limitation)", async () => {
-      const result = await client.runNodeWithInputs({
+      const params = {
         nodeType: NodeType.CustomCode,
-        nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
-          source: "return undefined;",
-        },
+        nodeConfig: returnUndefinedProps,
         inputVariables: {},
-      });
+      };
 
-      console.log("UNDEFINED result:", util.inspect(result, { depth: null, colors: true }));
+      console.log(
+        "🚀 CustomCode return undefined input:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 CustomCode return undefined result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
       expect(result.success).toBe(true);
       // Note: JavaScript `undefined` becomes `null` in protobuf conversion since protobuf
       // only supports JSON-compatible types and has no representation for `undefined`
@@ -95,10 +197,7 @@ describe("CustomCode Node Tests", () => {
     test("CustomCode should return empty array when code returns []", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
-        nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
-          source: "return [];",
-        },
+        nodeConfig: returnEmptyArrayProps,
         inputVariables: {},
       });
 
@@ -109,10 +208,7 @@ describe("CustomCode Node Tests", () => {
     test("CustomCode should return number when code returns number", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
-        nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
-          source: "return 42;",
-        },
+        nodeConfig: returnNumberProps,
         inputVariables: {},
       });
 
@@ -123,15 +219,104 @@ describe("CustomCode Node Tests", () => {
     test("CustomCode should return string when code returns string", async () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
-        nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
-          source: 'return "hello";',
-        },
+        nodeConfig: returnStringProps,
         inputVariables: {},
       });
 
       expect(result.success).toBe(true);
-      expect(result.data).toBe("hello");
+      expect(result.data).toBe("hello world");
+    });
+
+    test("CustomCode should return boolean when code returns boolean", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: returnBooleanProps,
+        inputVariables: {},
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBe(true);
+    });
+
+    test("CustomCode should return object when code returns object", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: returnObjectProps,
+        inputVariables: {},
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({ message: "hello", count: 42 });
+    });
+
+    test("CustomCode should return array when code returns array", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: returnArrayProps,
+        inputVariables: {},
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    test("CustomCode should access input variables", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: accessInputVariablesProps,
+        inputVariables: {
+          inputData: [1, 2, 3, 4, 5],
+        },
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({
+        inputData: [1, 2, 3, 4, 5],
+        processedData: [2, 4, 6, 8, 10],
+        metadata: {
+          count: 5,
+          sum: 15,
+        },
+      });
+    });
+
+    test("CustomCode should handle complex object with nested data", async () => {
+      const result = await client.runNodeWithInputs({
+        nodeType: NodeType.CustomCode,
+        nodeConfig: complexObjectProps,
+        inputVariables: {
+          userId: 123,
+          userName: "John Doe",
+          userEmail: "john@example.com",
+          userAge: 30,
+          userLocation: "New York",
+          userPreferences: { theme: "dark", notifications: true },
+        },
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({
+        user: {
+          id: 123,
+          name: "John Doe",
+          email: "john@example.com",
+          profile: {
+            age: 30,
+            location: "New York",
+            preferences: { theme: "dark", notifications: true },
+          },
+        },
+        metadata: {
+          timestamp: expect.any(String),
+          processed: true,
+          version: "1.0.0",
+        },
+        stats: {
+          totalUsers: 1000,
+          activeUsers: 750,
+          conversionRate: 0.75,
+        },
+      });
     });
   });
 

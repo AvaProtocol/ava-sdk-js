@@ -43,18 +43,10 @@ class LoopNode extends Node {
       ),
     } as LoopNodeData;
 
-    // Extract input data from top-level TaskNode.input field (not nested LoopNode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, unknown> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
-
     return new LoopNode({
       ...obj,
       type: NodeType.Loop,
       data: data,
-      input: input,
     });
   }
 
@@ -103,7 +95,7 @@ class LoopNode extends Node {
     if (!executionMode) {
       return 0; // Default to sequential for safety
     }
-    
+
     if (typeof executionMode === "string") {
       switch (executionMode.toLowerCase()) {
         case ExecutionMode.Parallel:
@@ -134,7 +126,7 @@ class LoopNode extends Node {
 
     // Set the loop config from the flat data structure
     const config = new avs_pb.LoopNode.Config();
-    config.setSourceId(data.sourceId || "");
+    config.setInputNodeName(data.inputNodeName || "");
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
 
@@ -143,13 +135,6 @@ class LoopNode extends Node {
     config.setExecutionMode(executionMode);
 
     loopNode.setConfig(config);
-
-    // Set input data on the top-level TaskNode, not the nested LoopNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      node.setInput(inputValue);
-    }
 
     // Handle runner - check the runner field and set the appropriate oneof field
     if (data.runner) {
@@ -162,106 +147,91 @@ class LoopNode extends Node {
 
   private setRunnerOnProtobuf(
     loopNode: avs_pb.LoopNode,
-    runner: { type: string; data: Record<string, unknown> }
+    runner: { type: string; data?: Record<string, unknown>; config?: Record<string, unknown> }
   ): void {
-    if (!runner || !runner.type || !runner.data) {
+    if (!runner || !runner.type) {
+      return;
+    }
+
+    // Support both old structure (runner.data.config) and new structure (runner.config)
+    const config = runner.config || (runner.data && (runner.data as any).config);
+    if (!config) {
       return;
     }
 
     switch (runner.type) {
       case "ethTransfer": {
-        const ethTransferData = runner.data as Record<string, unknown>;
-        if (ethTransferData.config) {
-          const ethConfig = ethTransferData.config as Record<string, string>;
-          const ethTransfer = ETHTransferNode.createProtobufNode({
-            destination: ethConfig.destination,
-            amount: ethConfig.amount,
-          });
-          loopNode.setEthTransfer(ethTransfer);
-        }
+        const ethConfig = config as Record<string, string>;
+        const ethTransfer = ETHTransferNode.createProtobufNode({
+          destination: ethConfig.destination,
+          amount: ethConfig.amount,
+        });
+        loopNode.setEthTransfer(ethTransfer);
         break;
       }
 
       case "contractWrite": {
-        const contractWriteData = runner.data as Record<string, unknown>;
-        if (contractWriteData.config) {
-          const writeConfig = contractWriteData.config as Record<
-            string,
-            unknown
-          >;
-          const contractWrite = ContractWriteNode.createProtobufNode({
-            contractAddress: writeConfig.contractAddress as string,
-            callData: writeConfig.callData as string,
-            contractAbi: writeConfig.contractAbi as string,
-            methodCalls:
-              (writeConfig.methodCallsList as Array<{
-                callData: string;
-                methodName?: string;
-              }>) || [],
-          });
-          loopNode.setContractWrite(contractWrite);
-        }
+        const writeConfig = config as Record<string, unknown>;
+        const contractWrite = ContractWriteNode.createProtobufNode({
+          contractAddress: writeConfig.contractAddress as string,
+          callData: writeConfig.callData as string,
+          contractAbi: writeConfig.contractAbi as string,
+          methodCalls:
+            (writeConfig.methodCallsList as Array<{
+              callData: string;
+              methodName?: string;
+            }>) || [],
+        });
+        loopNode.setContractWrite(contractWrite);
         break;
       }
 
       case "contractRead": {
-        const contractReadData = runner.data as Record<string, unknown>;
-        if (contractReadData.config) {
-          const readConfig = contractReadData.config as Record<string, unknown>;
-          const contractRead = ContractReadNode.createProtobufNode({
-            contractAddress: readConfig.contractAddress as string,
-            contractAbi: readConfig.contractAbi as string,
-            methodCalls:
-              (readConfig.methodCallsList as Array<{
-                callData: string;
-                methodName?: string;
-                applyToFields?: string[];
-              }>) || [],
-          });
-          loopNode.setContractRead(contractRead);
-        }
+        const readConfig = config as Record<string, unknown>;
+        const contractRead = ContractReadNode.createProtobufNode({
+          contractAddress: readConfig.contractAddress as string,
+          contractAbi: readConfig.contractAbi as string,
+          methodCalls:
+            (readConfig.methodCallsList as Array<{
+              callData: string;
+              methodName?: string;
+              applyToFields?: string[];
+            }>) || [],
+        });
+        loopNode.setContractRead(contractRead);
         break;
       }
 
       case "graphqlDataQuery": {
-        const graphqlData = runner.data as Record<string, unknown>;
-        if (graphqlData.config) {
-          const gqlConfig = graphqlData.config as Record<string, unknown>;
-          const graphqlQuery = GraphQLQueryNode.createProtobufNode({
-            url: gqlConfig.url as string,
-            query: gqlConfig.query as string,
-            variablesMap: gqlConfig.variablesMap as Array<[string, string]>,
-          });
-          loopNode.setGraphqlDataQuery(graphqlQuery);
-        }
+        const gqlConfig = config as Record<string, unknown>;
+        const graphqlQuery = GraphQLQueryNode.createProtobufNode({
+          url: gqlConfig.url as string,
+          query: gqlConfig.query as string,
+          variablesMap: gqlConfig.variablesMap as Array<[string, string]>,
+        });
+        loopNode.setGraphqlDataQuery(graphqlQuery);
         break;
       }
 
       case "restApi": {
-        const restApiData = runner.data as Record<string, unknown>;
-        if (restApiData.config) {
-          const apiConfig = restApiData.config as Record<string, unknown>;
-          const restApi = RestAPINode.createProtobufNode({
-            url: apiConfig.url as string,
-            method: apiConfig.method as string,
-            body: (apiConfig.body as string) || "",
-            headers: apiConfig.headers as Record<string, string>,
-          });
-          loopNode.setRestApi(restApi);
-        }
+        const apiConfig = config as Record<string, unknown>;
+        const restApi = RestAPINode.createProtobufNode({
+          url: apiConfig.url as string,
+          method: apiConfig.method as string,
+          body: (apiConfig.body as string) || "",
+          headers: apiConfig.headers as Record<string, string>,
+        });
+        loopNode.setRestApi(restApi);
         break;
       }
 
       case "customCode": {
-        const customCodeData = runner.data as Record<string, unknown>;
-        if (customCodeData.config) {
-          const codeConfig = customCodeData.config as Record<string, string>;
-          const customCode = CustomCodeNode.createProtobufNode({
-            lang: codeConfig.lang,
-            source: codeConfig.source,
-          });
-          loopNode.setCustomCode(customCode);
-        }
+        const codeConfig = config as Record<string, string>;
+        const customCode = CustomCodeNode.createProtobufNode({
+          lang: codeConfig.lang,
+          source: codeConfig.source,
+        });
+        loopNode.setCustomCode(customCode);
         break;
       }
     }
@@ -286,22 +256,20 @@ class LoopNode extends Node {
       return result;
     }
 
-    // For workflow execution, data comes as Loop format with JSON string
+    // For workflow execution, data comes as Loop format with new protobuf Value
     const loopOutput = outputData.getLoop();
     if (loopOutput) {
-      const loopObj = loopOutput.toObject();
-
-      // If there's a data field that's a JSON string, parse it
-      if (loopObj.data && typeof loopObj.data === "string") {
+      // Extract data from the new data field
+      const dataValue = loopOutput.getData();
+      if (dataValue) {
         try {
-          return JSON.parse(loopObj.data);
-        } catch {
-          // If JSON parsing fails, return the raw data
-          return loopObj.data;
+          // Convert protobuf Value to JavaScript
+          return dataValue.toJavaScript();
+        } catch (error) {
+          console.warn("Failed to convert loop data from protobuf Value:", error);
+          return null;
         }
       }
-
-      return loopObj;
     }
 
     return null;

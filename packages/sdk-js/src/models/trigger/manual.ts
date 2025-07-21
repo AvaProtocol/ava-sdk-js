@@ -8,13 +8,11 @@ import {
 import {
   TriggerType,
   ManualTriggerProps,
+  ManualTriggerDataType,
   TriggerProps,
 } from "@avaprotocol/types";
 
 class ManualTrigger extends Trigger {
-  public headers?: Record<string, string>;
-  public pathParams?: Record<string, string>;
-
   constructor(props: ManualTriggerProps) {
     super({
       ...props,
@@ -22,8 +20,6 @@ class ManualTrigger extends Trigger {
       data: props.data,
       input: props.input,
     });
-    this.headers = props.headers;
-    this.pathParams = props.pathParams;
   }
 
   toRequest(): avs_pb.TaskTrigger {
@@ -36,35 +32,55 @@ class ManualTrigger extends Trigger {
     const manualTrigger = new avs_pb.ManualTrigger();
     const config = new avs_pb.ManualTrigger.Config();
 
-    // Set the data - required for ManualTrigger
-    const dataToSend = this.data ?? this.input;
-    if (dataToSend === null || dataToSend === undefined) {
+    // Handle ManualTriggerDataType structure: { data: actualData, headers?: {}, pathParams?: {} }
+    if (this.data === null || this.data === undefined) {
       throw new Error("ManualTrigger data is required");
     }
-    
-    const inputValue = convertInputToProtobuf(dataToSend);
-    if (!inputValue) {
-      throw new Error("Failed to convert ManualTrigger data to protobuf format");
-    }
-    config.setData(inputValue);
 
-    // Set headers if provided - direct object to protobuf map mapping
-    if (this.headers && Object.keys(this.headers).length > 0) {
+    // Extract data, headers, and pathParams from ManualTriggerDataType
+    let actualData: unknown = this.data;
+    let headers: Record<string, string> = {};
+    let pathParams: Record<string, string> = {};
+
+    if (typeof this.data === 'object' && this.data !== null && !Array.isArray(this.data)) {
+      const dataObj = this.data as Record<string, unknown>;
+      
+      // If this.data has the ManualTriggerDataType structure
+      if ('data' in dataObj) {
+        actualData = dataObj.data;
+        headers = (dataObj.headers as Record<string, string>) || {};
+        pathParams = (dataObj.pathParams as Record<string, string>) || {};
+      }
+      // Otherwise, use this.data directly as the data content
+    }
+
+    const dataValue = convertInputToProtobuf(actualData as Record<string, any> | undefined);
+
+    if (!dataValue) {
+      throw new Error(
+        "Failed to convert ManualTrigger data to protobuf format"
+      );
+    }
+
+    config.setData(dataValue);
+
+    // Set headers and pathParams in the config for execution step debugging
+    if (Object.keys(headers).length > 0) {
       const headersMap = config.getHeadersMap();
-      Object.entries(this.headers).forEach(([key, value]) => {
+      Object.entries(headers).forEach(([key, value]) => {
         headersMap.set(key, value);
       });
     }
 
-    // Set pathParams if provided - direct object to protobuf map mapping
-    if (this.pathParams && Object.keys(this.pathParams).length > 0) {
+    if (Object.keys(pathParams).length > 0) {
       const pathParamsMap = config.getPathparamsMap();
-      Object.entries(this.pathParams).forEach(([key, value]) => {
+      Object.entries(pathParams).forEach(([key, value]) => {
         pathParamsMap.set(key, value);
       });
     }
 
     manualTrigger.setConfig(config);
+
     trigger.setManual(manualTrigger);
 
     return trigger;
@@ -73,53 +89,45 @@ class ManualTrigger extends Trigger {
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
-    let data: unknown = null;
-    const input: Record<string, unknown> | undefined = undefined;
-    let headers: Record<string, string> | undefined = undefined;
-    let pathParams: Record<string, string> | undefined = undefined;
+    let actualData:
+      | string
+      | number
+      | boolean
+      | Record<string, unknown>
+      | unknown[]
+      | null = null;
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
       const config = manualTrigger.getConfig();
       if (config) {
-        // Extract data
+        // Extract data only - headers and pathParams are handled by base class
         if (config.hasData()) {
-          data = extractInputFromProtobuf(config.getData());
-        }
-
-        // Extract headers - direct protobuf map to object mapping
-        const headersMapProto = config.getHeadersMap();
-        if (headersMapProto && headersMapProto.getLength() > 0) {
-          headers = {};
-          headersMapProto.forEach((value: string, key: string) => {
-            headers![key] = value;
-          });
-        }
-
-        // Extract pathParams - direct protobuf map to object mapping
-        const pathParamsMapProto = config.getPathparamsMap();
-        if (pathParamsMapProto && pathParamsMapProto.getLength() > 0) {
-          pathParams = {};
-          pathParamsMapProto.forEach((value: string, key: string) => {
-            pathParams![key] = value;
-          });
+          actualData = extractInputFromProtobuf(config.getData()) as
+            | string
+            | number
+            | boolean
+            | Record<string, unknown>
+            | unknown[]
+            | null;
         }
       }
     }
 
+    
+
+
+    // Create ManualTriggerDataType structure with just the data
+    // Headers and pathParams are available in baseInput for execution step display
+    const manualTriggerData: ManualTriggerDataType = {
+      data: actualData,
+    };
+
     return new ManualTrigger({
       ...obj,
       type: TriggerType.Manual,
-      data: data as Record<string, unknown>,
-      input: input,
-      headers: headers,
-      pathParams: pathParams,
+      data: manualTriggerData,
     });
-  }
-
-  getInputVariables(): Record<string, unknown> | null {
-    // Return input variables that can be referenced by other nodes
-    return this.input as Record<string, unknown> | null;
   }
 
   /**
@@ -127,9 +135,7 @@ class ManualTrigger extends Trigger {
    * @param outputData - The RunTriggerResp containing manual trigger output
    * @returns The parsed JSON data directly (similar to CustomCode output)
    */
-  static fromOutputData(
-    outputData: avs_pb.RunTriggerResp
-  ): unknown {
+  static fromOutputData(outputData: avs_pb.RunTriggerResp): unknown {
     const manualOutput = outputData.getManualTrigger();
     if (!manualOutput) {
       return null;

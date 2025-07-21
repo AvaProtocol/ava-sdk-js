@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.0
+
+### Minor Changes
+
+- bf23716: Standardize protobuf interface to use node.config and output.data
+
 ## 2.3.1
 
 ### Patch Changes

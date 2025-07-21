@@ -1,11 +1,12 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
-import { TriggerType, BlockTriggerDataType, BlockTriggerOutput, BlockTriggerProps, TriggerProps, TriggerOutput } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
-
-// Required props for constructor: id, name, type and data: { interval }
-
-
+import {
+  TriggerType,
+  BlockTriggerDataType,
+  BlockTriggerOutput,
+  BlockTriggerProps,
+  TriggerProps,
+} from "@avaprotocol/types";
 class BlockTrigger extends Trigger {
   constructor(props: BlockTriggerProps) {
     super({ ...props, type: TriggerType.Block, data: props.data });
@@ -23,27 +24,26 @@ class BlockTrigger extends Trigger {
 
     const blockData = this.data as BlockTriggerDataType;
     
-    // Validate interval is present and not null/undefined
+    // Validate interval exists
     if (blockData.interval === null || blockData.interval === undefined) {
       throw new Error("Interval is required for block trigger");
     }
     
-    // Validate interval is greater than 0
+    // Validate that interval is an integer
+    if (!Number.isInteger(blockData.interval)) {
+      throw new Error(`BlockTrigger interval must be an integer, got: ${blockData.interval}`);
+    }
+    
+    // Validate interval is positive
     if (blockData.interval <= 0) {
-      throw new Error("Interval must be greater than 0");
+      throw new Error(`Interval must be greater than 0`);
     }
 
     const trigger = new avs_pb.BlockTrigger();
     const config = new avs_pb.BlockTrigger.Config();
     config.setInterval(blockData.interval);
     trigger.setConfig(config);
-    
-    // Use utility function to convert input field to protobuf format
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      trigger.setInput(inputValue);
-    }
-    
+
     request.setBlock(trigger);
 
     return request;
@@ -54,29 +54,21 @@ class BlockTrigger extends Trigger {
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: BlockTriggerDataType = { interval: 0 };
-    let input: Record<string, any> | undefined = undefined;
-    
+
     if (raw.getBlock() && raw.getBlock()!.hasConfig()) {
       const config = raw.getBlock()!.getConfig();
-      
+
       if (config) {
         data = {
-          interval: config.getInterval() || 0
+          interval: config.getInterval() || 0,
         };
       }
-      
-      // Use utility function to extract input field from protobuf format
-      const blockTrigger = raw.getBlock()!;
-      if (blockTrigger.hasInput()) {
-        input = extractInputFromProtobuf(blockTrigger.getInput());
-      }
     }
-    
+
     return new BlockTrigger({
       ...obj,
       type: TriggerType.Block,
       data: data,
-      input: input,
     });
   }
 
@@ -96,7 +88,15 @@ class BlockTrigger extends Trigger {
    */
   static fromOutputData(outputData: avs_pb.RunTriggerResp): any {
     const blockOutput = outputData.getBlockTrigger();
-    return blockOutput?.toObject() || null;
+    if (!blockOutput) return null;
+
+    // Extract data from the new data field
+    const dataValue = blockOutput.getData();
+    if (!dataValue) return null;
+
+    // Convert the Value to JavaScript object
+    const result = dataValue.toJavaScript();
+    return result;
   }
 }
 

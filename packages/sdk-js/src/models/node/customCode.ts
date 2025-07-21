@@ -52,18 +52,10 @@ class CustomCodeNode extends Node {
       source: rawConfig.source,
     };
 
-    // Extract input data from top-level TaskNode.input field (not nested CustomCodeNode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, unknown> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
-
     return new CustomCodeNode({
       ...obj,
       type: NodeType.CustomCode,
       data: convertedConfig,
-      input: input,
     });
   }
 
@@ -76,13 +68,6 @@ class CustomCodeNode extends Node {
     const node = CustomCodeNode.createProtobufNode(
       this.data as CustomCodeNodeData
     );
-
-    // Set input data on the top-level TaskNode, not the nested CustomCodeNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
 
     request.setCustomCode(node);
 

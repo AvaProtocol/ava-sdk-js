@@ -1,15 +1,11 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import {
   TriggerType,
-  TriggerTypeGoConverter,
-  TriggerTypeConverter,
   TriggerProps,
   TriggerData,
   TriggerOutput,
 } from "@avaprotocol/types";
-import _ from "lodash";
-import { extractInputFromProtobuf } from "../../utils";
+
 
 export default abstract class Trigger implements TriggerProps {
   id: string;
@@ -17,7 +13,7 @@ export default abstract class Trigger implements TriggerProps {
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
-  input?: Record<string, any>;
+
 
   /**
    * Create an instance of Trigger from user inputs
@@ -29,11 +25,19 @@ export default abstract class Trigger implements TriggerProps {
     this.type = props.type;
     this.data = props.data;
     this.output = props.output;
-    this.input = props.input;
   }
 
   toRequest(): avs_pb.TaskTrigger {
     throw new Error("Method not implemented.");
+  }
+
+  static fromResponse(raw: avs_pb.TaskTrigger): Trigger {
+    // Convert the raw object to TriggerProps
+    const obj = raw.toObject() as unknown as TriggerProps;
+
+    return new (this as any)({ // eslint-disable-line @typescript-eslint/no-explicit-any
+      ...obj,
+    });
   }
 
   getOutput(): TriggerOutput | undefined {
@@ -47,7 +51,6 @@ export default abstract class Trigger implements TriggerProps {
       type: this.type,
       data: this.data,
       output: this.output,
-      input: this.input,
     };
   }
 }

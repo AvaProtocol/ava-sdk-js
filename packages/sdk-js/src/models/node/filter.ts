@@ -9,7 +9,7 @@ import {
 import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import { Value } from "google-protobuf/google/protobuf/struct_pb";
 
-// Required props for constructor: id, name, type and data: { expression, sourceId }
+// Required props for constructor: id, name, type and data: { expression, inputNodeName }
 
 class FilterNode extends Node {
   constructor(props: FilterNodeProps) {
@@ -20,14 +20,10 @@ class FilterNode extends Node {
     // Convert the raw object to FilterNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Extract input data if present
-    const input = extractInputFromProtobuf(raw.getFilter()?.getInput());
-
     return new FilterNode({
       ...obj,
       type: NodeType.Filter,
       data: raw.getFilter()!.getConfig()!.toObject() as FilterNodeData,
-      input: input,
     });
   }
 
@@ -41,14 +37,8 @@ class FilterNode extends Node {
 
     const config = new avs_pb.FilterNode.Config();
     config.setExpression((this.data as FilterNodeData).expression);
-    config.setSourceId((this.data as FilterNodeData).sourceId || "");
+    config.setInputNodeName((this.data as FilterNodeData).inputNodeName || "");
     node.setConfig(config);
-
-    // Set input data if provided
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      node.setInput(inputValue);
-    }
 
     request.setFilter(node);
     return request;
@@ -66,20 +56,35 @@ class FilterNode extends Node {
       throw new Error("FilterNode output data.getData() is missing");
     }
 
-    // Unpack the Any to get the Value
-    const value = Value.deserializeBinary(anyData.getValue_asU8());
+    // The data is now directly a Value, not wrapped in Any
+    const result = anyData.toJavaScript();
 
-    // Convert the Value to JavaScript
-    const result = value.toJavaScript();
-
-    // The result contains the entire response object, extract the data array
+    // The result contains nested data structure, extract the actual array
     if (
       result &&
       typeof result === "object" &&
       !Array.isArray(result) &&
-      (result as any).data
+      (result as any).data &&
+      (result as any).data.data &&
+      Array.isArray((result as any).data.data)
+    ) {
+      return (result as any).data.data;
+    }
+
+    // If result.data is already an array, return it directly
+    if (
+      result &&
+      typeof result === "object" &&
+      !Array.isArray(result) &&
+      (result as any).data &&
+      Array.isArray((result as any).data)
     ) {
       return (result as any).data;
+    }
+
+    // If result is already an array, return it directly
+    if (Array.isArray(result)) {
+      return result;
     }
 
     throw new Error(

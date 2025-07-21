@@ -7,7 +7,7 @@ export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
 export interface ContractWriteNodeData {
   contractAddress: string;
   callData: string;
-  contractAbi: string;  // Contract ABI as string
+  contractAbi: string; // Contract ABI as string
   methodCalls?: Array<{
     callData: string;
     methodName?: string;
@@ -17,11 +17,11 @@ export interface ContractWriteNodeData {
 // Custom ContractRead data type with cleaner field names
 export interface ContractReadNodeData {
   contractAddress: string;
-  contractAbi: string;  // Contract ABI as string
+  contractAbi: string; // Contract ABI as string
   methodCalls: Array<{
     callData: string;
     methodName?: string;
-    applyToFields?: string[];  // Fields to apply decimal formatting to
+    applyToFields?: string[]; // Fields to apply decimal formatting to
   }>;
 }
 
@@ -49,12 +49,21 @@ export interface RestAPINodeData {
 }
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
-export type LoopNodeData = Omit<avs_pb.LoopNode.Config.AsObject, 'executionMode'> & {
+export type LoopNodeData = Omit<
+  avs_pb.LoopNode.Config.AsObject,
+  "executionMode"
+> & {
   // The runner field matches the protobuf oneof runner structure
   runner?: {
-    type: 'restApi' | 'customCode' | 'ethTransfer' | 'contractRead' | 'contractWrite' | 'graphqlDataQuery';
+    type:
+      | "restApi"
+      | "customCode"
+      | "ethTransfer"
+      | "contractRead"
+      | "contractWrite"
+      | "graphqlDataQuery";
     data: {
-      config: 
+      config:
         | avs_pb.RestAPINode.Config.AsObject
         | { lang: CustomCodeLang; source: string }
         | avs_pb.ETHTransferNode.Config.AsObject

@@ -52,6 +52,7 @@ import {
 } from "@avaprotocol/types";
 
 import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 // Import the consolidated conversion utilities
 import {
@@ -826,30 +827,43 @@ class Client extends BaseClient {
     switch (triggerData.type) {
       case TriggerType.FixedTime: {
         const fixedTimeOutput = new avs_pb.FixedTimeTrigger.Output();
-        fixedTimeOutput.setTimestamp((triggerData as any).timestamp);
-        fixedTimeOutput.setTimestampIso((triggerData as any).timestampIso);
+        const triggerOutputData = {
+          timestamp: (triggerData as any).timestamp,
+          timestampIso: (triggerData as any).timestampIso,
+        };
+        const dataValue = new google_protobuf_struct_pb.Value();
+        dataValue.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData));
+        fixedTimeOutput.setData(dataValue);
         request.setFixedTimeTrigger(fixedTimeOutput);
         break;
       }
       case TriggerType.Cron: {
         const cronOutput = new avs_pb.CronTrigger.Output();
-        cronOutput.setTimestamp((triggerData as any).timestamp);
-        cronOutput.setTimestampIso((triggerData as any).timestampIso);
+        const triggerOutputData = {
+          timestamp: (triggerData as any).timestamp,
+          timestampIso: (triggerData as any).timestampIso,
+        };
+        const dataValue = new google_protobuf_struct_pb.Value();
+        dataValue.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData));
+        cronOutput.setData(dataValue);
         request.setCronTrigger(cronOutput);
         break;
       }
       case TriggerType.Block: {
         const blockData = triggerData as any;
         const blockOutput = new avs_pb.BlockTrigger.Output();
-        blockOutput.setBlockNumber(blockData.blockNumber);
-        if (blockData.blockHash) blockOutput.setBlockHash(blockData.blockHash);
-        if (blockData.timestamp) blockOutput.setTimestamp(blockData.timestamp);
-        if (blockData.parentHash)
-          blockOutput.setParentHash(blockData.parentHash);
-        if (blockData.difficulty)
-          blockOutput.setDifficulty(blockData.difficulty);
-        if (blockData.gasLimit) blockOutput.setGasLimit(blockData.gasLimit);
-        if (blockData.gasUsed) blockOutput.setGasUsed(blockData.gasUsed);
+        const triggerOutputData = {
+          blockNumber: blockData.blockNumber,
+          blockHash: blockData.blockHash || "",
+          timestamp: blockData.timestamp || 0,
+          parentHash: blockData.parentHash || "",
+          difficulty: blockData.difficulty || "",
+          gasLimit: blockData.gasLimit || 0,
+          gasUsed: blockData.gasUsed || 0,
+        };
+        const dataValue = new google_protobuf_struct_pb.Value();
+        dataValue.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData));
+        blockOutput.setData(dataValue);
         request.setBlockTrigger(blockOutput);
         break;
       }
@@ -876,21 +890,7 @@ class Client extends BaseClient {
           manualOutput.setData(protobufValue);
         }
         
-        // Include headers for webhook testing - using object format
-        if (manualData.headers) {
-          const headersMap = manualOutput.getHeadersMap();
-          Object.entries(manualData.headers).forEach(([key, value]) => {
-            headersMap.set(key, value as string);
-          });
-        }
-        
-        // Include pathParams for webhook testing - using object format
-        if (manualData.pathParams) {
-          const pathParamsMap = manualOutput.getPathparamsMap();
-          Object.entries(manualData.pathParams).forEach(([key, value]) => {
-            pathParamsMap.set(key, value as string);
-          });
-        }
+
         
         request.setManualTrigger(manualOutput);
         break;

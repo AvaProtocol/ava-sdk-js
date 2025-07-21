@@ -54,6 +54,57 @@ describe("ManualTrigger Tests", () => {
   let client: Client;
   let coreAddress: string;
 
+  // Define trigger props at the beginning
+  const minimalTriggerProps = {
+    id: "test-trigger-id",
+    name: "manualTrigger",
+    type: TriggerType.Manual,
+    data: { test: "minimal data" },
+  };
+
+  const userDataTriggerProps = {
+    id: "test-trigger-id",
+    name: "manualTrigger",
+    type: TriggerType.Manual,
+    data: {
+      items: [
+        { name: "item1", address: "0xaaaa" },
+        { name: "item2", address: "0xbbbb" },
+      ],
+    },
+  };
+
+  const complexTriggerProps = {
+    id: "test-trigger-id",
+    name: "manualTrigger",
+    type: TriggerType.Manual,
+    data: {
+      data: { message: "Hello World" },
+      headers: { "Content-Type": "application/json", Authorization: "Bearer token123" },
+      pathParams: { userId: "123", apiVersion: "v1" },
+    },
+  };
+
+  const runTriggerSimpleProps = {
+    triggerType: TriggerType.Manual,
+    triggerConfig: {
+      data: { message: "Hello, World!" },
+    },
+  };
+
+  const runTriggerWithHeadersProps = {
+    triggerType: TriggerType.Manual,
+    triggerConfig: {
+      data: {
+        data: { message: "Hello with headers!" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer token123",
+        },
+      },
+    },
+  };
+
   beforeAll(async () => {
     // Load real configuration for integration tests
     const { avsEndpoint, walletPrivateKey, factoryAddress } =
@@ -81,12 +132,7 @@ describe("ManualTrigger Tests", () => {
 
   describe("runTrigger Tests", () => {
     test("should succeed with minimal valid config", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "manualTrigger",
-        type: TriggerType.Manual,
-        data: null,
-      });
+      const trigger = TriggerFactory.create(minimalTriggerProps);
 
       expect(() => trigger.toRequest()).not.toThrow();
       expect(trigger.toRequest().getType()).toBe(
@@ -95,41 +141,13 @@ describe("ManualTrigger Tests", () => {
     });
 
     test("should succeed with user-defined data", () => {
-      const userData = {
-        items: [
-          { name: "item1", address: "0xaaaa" },
-          { name: "item2", address: "0xbbbb" },
-        ],
-      };
-
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "manualTrigger",
-        type: TriggerType.Manual,
-        data: userData,
-      });
+      const trigger = TriggerFactory.create(userDataTriggerProps);
 
       expect(() => trigger.toRequest()).not.toThrow();
     });
 
     test("should succeed with headers and pathParams", () => {
-      const userData = { message: "Hello World" };
-      const headers = [
-        { "Content-Type": "application/json" },
-        { Authorization: "Bearer token123" },
-      ];
-      const pathParams = [{ userId: "123" }, { apiVersion: "v1" }];
-
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "manualTrigger",
-        type: TriggerType.Manual,
-        data: {
-          data: userData,
-          headers: headers,
-          pathParams: pathParams,
-        },
-      });
+      const trigger = TriggerFactory.create(complexTriggerProps);
 
       expect(() => trigger.toRequest()).not.toThrow();
       expect(trigger.toRequest().getType()).toBe(
@@ -144,277 +162,233 @@ describe("ManualTrigger Tests", () => {
       };
 
       console.log(
-        "🚀 ~ runTrigger with no data ~ input params:",
+        "🚀 runTrigger with no data input:",
         util.inspect(params, { depth: null, colors: true })
       );
 
       const result = await client.runTrigger(params);
 
       console.log(
-        "runTrigger no data response:",
+        "🚀 runTrigger with no data result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
-
-      // With no data, the manual trigger should return null directly
-      expect(result.data).toEqual(null);
+      // ManualTrigger now requires data, so this should fail
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("ManualTrigger data is required");
     });
 
     test("should handle runTrigger with simple data", async () => {
-      const testData = { message: "Hello, World!" };
-
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: testData,
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with simple data ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with simple data input:",
+        util.inspect(runTriggerSimpleProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerSimpleProps);
 
       console.log(
-        "runTrigger simple data response:",
+        "🚀 runTrigger with simple data result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(testData);
+      expect(result.data).toEqual(runTriggerSimpleProps.triggerConfig.data);
     });
 
     test("should handle runTrigger with headers", async () => {
-      const testData = { message: "Hello with headers!" };
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: "Bearer token123",
-      };
-
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: testData,
-          headers: headers,
-        },
-      };
-
       console.log(
-        "🚀 ~ runTrigger with headers ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with headers input:",
+        util.inspect(runTriggerWithHeadersProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerWithHeadersProps);
 
       console.log(
-        "runTrigger headers response:",
+        "🚀 runTrigger with headers result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(testData);
+      expect(result.data).toEqual(runTriggerWithHeadersProps.triggerConfig.data);
     });
 
     test("should handle runTrigger with pathParams", async () => {
-      const testData = { message: "Hello with pathParams!" };
-      const pathParams = {
-        userId: "123",
-        apiVersion: "v1",
-      };
-
-      const params = {
+      const runTriggerWithPathParamsProps = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: testData,
-          pathParams: pathParams,
+          data: { message: "Hello with pathParams!" },
+          pathParams: {
+            userId: "123",
+            apiVersion: "v1",
+          },
         },
       };
 
       console.log(
-        "🚀 ~ runTrigger with pathParams ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with pathParams input:",
+        util.inspect(runTriggerWithPathParamsProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerWithPathParamsProps);
 
       console.log(
-        "runTrigger pathParams response:",
+        "🚀 runTrigger with pathParams result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(testData);
+      expect(result.data).toEqual(runTriggerWithPathParamsProps.triggerConfig.data);
     });
 
     test("should handle runTrigger with headers and pathParams", async () => {
-      const testData = { message: "Hello with both!" };
-      const headers = {
-        "Content-Type": "application/json",
-        "X-Custom": "header-value",
-      };
-      const pathParams = {
-        userId: "456",
-        action: "update",
-      };
-
-      const params = {
+      const runTriggerWithBothProps = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: testData,
-          headers: headers,
-          pathParams: pathParams,
+          data: { message: "Hello with both!" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Custom": "header-value",
+          },
+          pathParams: {
+            userId: "456",
+            action: "update",
+          },
         },
       };
 
       console.log(
-        "🚀 ~ runTrigger with headers and pathParams ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with headers and pathParams input:",
+        util.inspect(runTriggerWithBothProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerWithBothProps);
 
       console.log(
-        "runTrigger headers and pathParams response:",
+        "🚀 runTrigger with headers and pathParams result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(testData);
+      expect(result.data).toEqual(runTriggerWithBothProps.triggerConfig.data);
     });
 
     test("should handle runTrigger with complex data", async () => {
-      const complexData = {
-        items: [
-          { name: "item1", address: "0xaaaa", value: 100 },
-          { name: "item2", address: "0xbbbb", value: 200 },
-        ],
-        metadata: {
-          timestamp: Date.now(),
-          version: "1.0.0",
-        },
-      };
-
-      const params = {
+      const runTriggerComplexProps = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: complexData,
+          data: {
+            items: [
+              { name: "item1", address: "0xaaaa", value: 100 },
+              { name: "item2", address: "0xbbbb", value: 200 },
+            ],
+            metadata: {
+              timestamp: Date.now(),
+              version: "1.0.0",
+            },
+          },
         },
       };
 
       console.log(
-        "🚀 ~ runTrigger with complex data ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with complex data input:",
+        util.inspect(runTriggerComplexProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerComplexProps);
 
       console.log(
-        "runTrigger complex data response:",
+        "🚀 runTrigger with complex data result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(complexData);
+      expect(result.data).toEqual(runTriggerComplexProps.triggerConfig.data);
     });
 
     test("should handle runTrigger with array data wrapped in JSON object", async () => {
-      const arrayData = {
-        items: [
-          { name: "item1", address: "0xaaaa" },
-          { name: "item2", address: "0xbbbb" },
-          { name: "item3", address: "0xcccc" },
-        ],
-      };
-
-      const params = {
+      const runTriggerArrayProps = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: arrayData,
+          data: {
+            items: [
+              { name: "item1", address: "0xaaaa" },
+              { name: "item2", address: "0xbbbb" },
+              { name: "item3", address: "0xcccc" },
+            ],
+          },
         },
       };
 
       console.log(
-        "🚀 ~ runTrigger with array data ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with array data input:",
+        util.inspect(runTriggerArrayProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerArrayProps);
 
       console.log(
-        "runTrigger array data response:",
+        "🚀 runTrigger with array data result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(arrayData);
+      expect(result.data).toEqual(runTriggerArrayProps.triggerConfig.data);
     });
 
     test("should handle runTrigger with JSON object containing JSON string field", async () => {
-      const stringData = {
-        jsonString: JSON.stringify([
-          { name: "item1", address: "0xaaaa" },
-          { name: "item2", address: "0xbbbb" },
-        ]),
-      };
-
-      const params = {
+      const runTriggerJsonStringProps = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: stringData,
+          data: {
+            jsonString: JSON.stringify([
+              { name: "item1", address: "0xaaaa" },
+              { name: "item2", address: "0xbbbb" },
+            ]),
+          },
         },
       };
 
       console.log(
-        "🚀 ~ runTrigger with JSON object containing JSON string field ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 runTrigger with JSON string field input:",
+        util.inspect(runTriggerJsonStringProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(runTriggerJsonStringProps);
 
       console.log(
-        "runTrigger JSON object containing JSON string field response:",
+        "🚀 runTrigger with JSON string field result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-
-      expect(result.data).toEqual(stringData);
+      expect(result.data).toEqual(runTriggerJsonStringProps.triggerConfig.data);
     });
   });
 
   describe("simulateWorkflow Tests", () => {
-    test("should simulate workflow with manual trigger and no data", async () => {
+    test("should simulate workflow with manual trigger and minimal data", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "simulate_manual_trigger_no_data",
         type: TriggerType.Manual,
-        data: null,
+        data: { message: "test simulation" }, // ManualTrigger now requires data
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = manualTrigger;
 
       console.log(
-        "🚀 simulateWorkflow with manual trigger (no data):",
+        "🚀 simulateWorkflow with manual trigger (minimal data):",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -439,8 +413,8 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // When data is null, the output should be null directly
-      expect(triggerStep!.output).toEqual(null);
+      // The output should be the raw data directly (new simplified format)
+      expect(triggerStep!.output).toEqual({ message: "test simulation" });
     });
 
     test("should simulate workflow with manual trigger and user data", async () => {
@@ -469,7 +443,7 @@ describe("ManualTrigger Tests", () => {
       // Update the CustomCode source to reference the manual trigger's data directly
       (
         customCodeNode.data as { source: string }
-      ).source = `return ${triggerName};`;
+      ).source = `return ${triggerName}.data;`; // Access only the data field
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and user data:",
@@ -501,7 +475,7 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep!.output).toBeDefined();
       const outputData = triggerStep!.output;
       expect(outputData).toBeDefined();
-      expect(outputData).toEqual(userData);
+      expect(outputData).toEqual(userData); // ManualTrigger now returns raw data directly
 
       // Check that the CustomCode node successfully referenced the manual trigger data
       const customCodeStep = simulation.steps.find(
@@ -514,7 +488,7 @@ describe("ManualTrigger Tests", () => {
       expect(customCodeStep!.output).toEqual(expect.objectContaining(userData));
 
       // Verify the reference was properly made by checking inputsList
-      expect(customCodeStep!.inputsList).toContain(triggerName);
+      expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`); // Check for specific field access
     });
 
     test("should simulate workflow with manual trigger including headers and pathParams", async () => {
@@ -550,7 +524,7 @@ describe("ManualTrigger Tests", () => {
       const customCodeNode = workflowProps.nodes[0] as CustomCodeNode;
       (
         customCodeNode.data as { source: string }
-      ).source = `return ${triggerName};`;
+      ).source = `return ${triggerName}.data;`; // Access data directly (new simplified format)
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and webhook data:",
@@ -578,12 +552,8 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // The trigger step should have all the webhook data
-      expect(triggerStep!.output).toEqual({
-        data: data,
-        headers: headers,
-        pathParams: pathParams,
-      });
+      // With the new simplified format, only the data content is returned (headers and pathParams are config-only)
+      expect(triggerStep!.output).toEqual(data);
 
       // Check that the CustomCode node successfully referenced the manual trigger webhook data
       const customCodeStep = simulation.steps.find(
@@ -595,7 +565,7 @@ describe("ManualTrigger Tests", () => {
       // With the new design, only the data content is returned (headers and pathParams are config-only)
       expect(customCodeStep!.output).toEqual(data);
 
-      expect(customCodeStep!.inputsList).toContain(triggerName);
+      expect(customCodeStep!.inputsList).toContain(`${triggerName}.data`); // Check for specific field access
     });
   });
 
@@ -669,14 +639,14 @@ describe("ManualTrigger Tests", () => {
       }
     });
 
-    test("should deploy and trigger workflow with manual trigger (no data)", async () => {
+    test("should deploy and trigger workflow with manual trigger (minimal data)", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "deploy_manual_trigger_no_data",
         type: TriggerType.Manual,
-        data: null,
+        data: { message: "test deploy" }, // ManualTrigger now requires data
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
@@ -839,7 +809,7 @@ describe("ManualTrigger Tests", () => {
         name: "process_array_loop",
         type: NodeType.Loop,
         data: {
-          sourceId: triggerName,
+          inputNodeName: triggerName,  // Use inputNodeName instead of deprecated sourceId
           iterVal: iteratorValueVar,
           iterKey: iteratorKeyVar,
           executionMode: ExecutionMode.Sequential,
@@ -910,9 +880,9 @@ describe("ManualTrigger Tests", () => {
       expect(triggerStep).toBeDefined();
       expect(triggerStep!.success).toBe(true);
 
-      // Validate consistency_test_manual_trigger.input and .output
-      expect(triggerStep!.input).toBeDefined();
-      expect(triggerStep!.output).toEqual(testData);
+      // Validate consistency_test_manual_trigger.config and .output
+      expect(triggerStep!.config).toBeDefined();
+      expect(triggerStep!.output).toEqual(testData); // ManualTrigger now returns raw data directly
 
       // Find the loop step in simulation
       const loopStep = simulation.steps.find((step) => step.id === loopNodeId);

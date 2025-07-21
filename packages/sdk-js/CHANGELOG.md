@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.6.0
+
+### Minor Changes
+
+- bf23716: Standardize protobuf interface to use node.config and output.data
+
+### Patch Changes
+
+- Updated dependencies [bf23716]
+  - @avaprotocol/types@2.4.0
+
 ## 2.5.1
 
 ### Patch Changes

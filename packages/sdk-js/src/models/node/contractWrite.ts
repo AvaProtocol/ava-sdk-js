@@ -6,7 +6,6 @@ import {
   ContractWriteNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { config: { contractAddress, callData, contractAbi, methodCallsList? } }
@@ -69,18 +68,10 @@ class ContractWriteNode extends Node {
         })) || [],
     };
 
-    // Extract input data from top-level TaskNode.input field (not nested ContractWriteNode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, any> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
-
     return new ContractWriteNode({
       ...obj,
       type: NodeType.ContractWrite,
       data: data,
-      input: input,
     });
   }
 
@@ -94,19 +85,12 @@ class ContractWriteNode extends Node {
       this.data as ContractWriteNodeData
     );
 
-    // Set input data on the top-level TaskNode, not the nested ContractWriteNode
-    // This matches where the Go backend's ExtractNodeInputData() looks for it
-    const inputValue = convertInputToProtobuf(this.input);
-    if (inputValue) {
-      request.setInput(inputValue);
-    }
-
     request.setContractWrite(node);
 
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown[] | null {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 

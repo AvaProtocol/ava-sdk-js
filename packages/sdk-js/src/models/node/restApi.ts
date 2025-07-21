@@ -32,7 +32,7 @@ class RestAPINode extends Node {
   }): avs_pb.RestAPINode {
     const node = new avs_pb.RestAPINode();
     const config = new avs_pb.RestAPINode.Config();
-    
+
     config.setUrl(configData.url);
     config.setMethod(configData.method);
     config.setBody(configData.body || "");
@@ -52,13 +52,6 @@ class RestAPINode extends Node {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Extract input data from top-level TaskNode.input field (not nested RestAPINode.input)
-    // This matches where we set it in toRequest() and where the Go backend looks for it
-    let input: Record<string, unknown> | undefined = undefined;
-    if (raw.hasInput()) {
-      input = extractInputFromProtobuf(raw.getInput());
-    }
-
     return new RestAPINode({
       ...obj,
       type: NodeType.RestAPI,
@@ -75,7 +68,6 @@ class RestAPINode extends Node {
           return headers;
         })(),
       } as RestAPINodeData,
-      input: input, // Include input data from top-level TaskNode
     });
   }
 
@@ -89,21 +81,14 @@ class RestAPINode extends Node {
       this.data as RestAPINodeData
     );
 
-    // Use the standard utility function to convert input field to protobuf format
-    const inputValue = convertInputToProtobuf(this.input);
-
-    if (inputValue) {
-      // Set input on the top-level TaskNode, not the nested RestAPINode
-      // This matches where the Go backend's ExtractNodeInputData() looks for it
-      request.setInput(inputValue);
-    }
-
     request.setRestApi(nodeData);
 
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): Record<string, unknown> | null {
+  static fromOutputData(
+    outputData: avs_pb.RunNodeWithInputsResp
+  ): Record<string, unknown> | null {
     const restApiOutput = outputData.getRestApi();
     if (!restApiOutput) {
       console.log("Debug RestAPI: No restApiOutput found");

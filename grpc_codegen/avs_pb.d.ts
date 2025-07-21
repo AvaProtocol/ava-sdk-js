@@ -114,11 +114,6 @@ export class FixedTimeTrigger extends jspb.Message {
     getConfig(): FixedTimeTrigger.Config | undefined;
     setConfig(value?: FixedTimeTrigger.Config): FixedTimeTrigger;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): FixedTimeTrigger;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): FixedTimeTrigger.AsObject;
     static toObject(includeInstance: boolean, msg: FixedTimeTrigger): FixedTimeTrigger.AsObject;
@@ -132,7 +127,6 @@ export class FixedTimeTrigger extends jspb.Message {
 export namespace FixedTimeTrigger {
     export type AsObject = {
         config?: FixedTimeTrigger.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -159,10 +153,11 @@ export namespace FixedTimeTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getTimestamp(): number;
-        setTimestamp(value: number): Output;
-        getTimestampIso(): string;
-        setTimestampIso(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -176,8 +171,7 @@ export namespace FixedTimeTrigger {
 
     export namespace Output {
         export type AsObject = {
-            timestamp: number,
-            timestampIso: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -189,11 +183,6 @@ export class CronTrigger extends jspb.Message {
     clearConfig(): void;
     getConfig(): CronTrigger.Config | undefined;
     setConfig(value?: CronTrigger.Config): CronTrigger;
-
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): CronTrigger;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CronTrigger.AsObject;
@@ -208,7 +197,6 @@ export class CronTrigger extends jspb.Message {
 export namespace CronTrigger {
     export type AsObject = {
         config?: CronTrigger.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -235,10 +223,11 @@ export namespace CronTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getTimestamp(): number;
-        setTimestamp(value: number): Output;
-        getTimestampIso(): string;
-        setTimestampIso(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -252,8 +241,7 @@ export namespace CronTrigger {
 
     export namespace Output {
         export type AsObject = {
-            timestamp: number,
-            timestampIso: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -265,11 +253,6 @@ export class BlockTrigger extends jspb.Message {
     clearConfig(): void;
     getConfig(): BlockTrigger.Config | undefined;
     setConfig(value?: BlockTrigger.Config): BlockTrigger;
-
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): BlockTrigger;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): BlockTrigger.AsObject;
@@ -284,7 +267,6 @@ export class BlockTrigger extends jspb.Message {
 export namespace BlockTrigger {
     export type AsObject = {
         config?: BlockTrigger.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -309,20 +291,11 @@ export namespace BlockTrigger {
     }
 
     export class Output extends jspb.Message { 
-        getBlockNumber(): number;
-        setBlockNumber(value: number): Output;
-        getBlockHash(): string;
-        setBlockHash(value: string): Output;
-        getTimestamp(): number;
-        setTimestamp(value: number): Output;
-        getParentHash(): string;
-        setParentHash(value: string): Output;
-        getDifficulty(): string;
-        setDifficulty(value: string): Output;
-        getGasLimit(): number;
-        setGasLimit(value: number): Output;
-        getGasUsed(): number;
-        setGasUsed(value: number): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -336,13 +309,7 @@ export namespace BlockTrigger {
 
     export namespace Output {
         export type AsObject = {
-            blockNumber: number,
-            blockHash: string,
-            timestamp: number,
-            parentHash: string,
-            difficulty: string,
-            gasLimit: number,
-            gasUsed: number,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -354,11 +321,6 @@ export class EventTrigger extends jspb.Message {
     clearConfig(): void;
     getConfig(): EventTrigger.Config | undefined;
     setConfig(value?: EventTrigger.Config): EventTrigger;
-
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): EventTrigger;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): EventTrigger.AsObject;
@@ -373,7 +335,6 @@ export class EventTrigger extends jspb.Message {
 export namespace EventTrigger {
     export type AsObject = {
         config?: EventTrigger.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -527,11 +488,6 @@ export class ManualTrigger extends jspb.Message {
     getConfig(): ManualTrigger.Config | undefined;
     setConfig(value?: ManualTrigger.Config): ManualTrigger;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): ManualTrigger;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ManualTrigger.AsObject;
     static toObject(includeInstance: boolean, msg: ManualTrigger): ManualTrigger.AsObject;
@@ -545,7 +501,6 @@ export class ManualTrigger extends jspb.Message {
 export namespace ManualTrigger {
     export type AsObject = {
         config?: ManualTrigger.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -589,12 +544,6 @@ export namespace ManualTrigger {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
 
-        getHeadersMap(): jspb.Map<string, string>;
-        clearHeadersMap(): void;
-
-        getPathparamsMap(): jspb.Map<string, string>;
-        clearPathparamsMap(): void;
-
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
         static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
@@ -608,10 +557,6 @@ export namespace ManualTrigger {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
-
-            headersMap: Array<[string, string]>,
-
-            pathparamsMap: Array<[string, string]>,
         }
     }
 
@@ -650,11 +595,6 @@ export class TaskTrigger extends jspb.Message {
     getId(): string;
     setId(value: string): TaskTrigger;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): TaskTrigger;
-
     getTriggerTypeCase(): TaskTrigger.TriggerTypeCase;
 
     serializeBinary(): Uint8Array;
@@ -677,7 +617,6 @@ export namespace TaskTrigger {
         block?: BlockTrigger.AsObject,
         event?: EventTrigger.AsObject,
         id: string,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
     export enum TriggerTypeCase {
@@ -698,11 +637,6 @@ export class ETHTransferNode extends jspb.Message {
     getConfig(): ETHTransferNode.Config | undefined;
     setConfig(value?: ETHTransferNode.Config): ETHTransferNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): ETHTransferNode;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ETHTransferNode.AsObject;
     static toObject(includeInstance: boolean, msg: ETHTransferNode): ETHTransferNode.AsObject;
@@ -716,7 +650,6 @@ export class ETHTransferNode extends jspb.Message {
 export namespace ETHTransferNode {
     export type AsObject = {
         config?: ETHTransferNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -744,8 +677,11 @@ export namespace ETHTransferNode {
     }
 
     export class Output extends jspb.Message { 
-        getTransactionHash(): string;
-        setTransactionHash(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -759,7 +695,7 @@ export namespace ETHTransferNode {
 
     export namespace Output {
         export type AsObject = {
-            transactionHash: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -771,11 +707,6 @@ export class ContractWriteNode extends jspb.Message {
     clearConfig(): void;
     getConfig(): ContractWriteNode.Config | undefined;
     setConfig(value?: ContractWriteNode.Config): ContractWriteNode;
-
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): ContractWriteNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractWriteNode.AsObject;
@@ -790,7 +721,6 @@ export class ContractWriteNode extends jspb.Message {
 export namespace ContractWriteNode {
     export type AsObject = {
         config?: ContractWriteNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -1088,11 +1018,6 @@ export class ContractReadNode extends jspb.Message {
     getConfig(): ContractReadNode.Config | undefined;
     setConfig(value?: ContractReadNode.Config): ContractReadNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): ContractReadNode;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): ContractReadNode.AsObject;
     static toObject(includeInstance: boolean, msg: ContractReadNode): ContractReadNode.AsObject;
@@ -1106,7 +1031,6 @@ export class ContractReadNode extends jspb.Message {
 export namespace ContractReadNode {
     export type AsObject = {
         config?: ContractReadNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -1257,11 +1181,6 @@ export class GraphQLQueryNode extends jspb.Message {
     getConfig(): GraphQLQueryNode.Config | undefined;
     setConfig(value?: GraphQLQueryNode.Config): GraphQLQueryNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): GraphQLQueryNode;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): GraphQLQueryNode.AsObject;
     static toObject(includeInstance: boolean, msg: GraphQLQueryNode): GraphQLQueryNode.AsObject;
@@ -1275,7 +1194,6 @@ export class GraphQLQueryNode extends jspb.Message {
 export namespace GraphQLQueryNode {
     export type AsObject = {
         config?: GraphQLQueryNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -1311,8 +1229,8 @@ export namespace GraphQLQueryNode {
 
         hasData(): boolean;
         clearData(): void;
-        getData(): google_protobuf_any_pb.Any | undefined;
-        setData(value?: google_protobuf_any_pb.Any): Output;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1326,7 +1244,7 @@ export namespace GraphQLQueryNode {
 
     export namespace Output {
         export type AsObject = {
-            data?: google_protobuf_any_pb.Any.AsObject,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1338,11 +1256,6 @@ export class RestAPINode extends jspb.Message {
     clearConfig(): void;
     getConfig(): RestAPINode.Config | undefined;
     setConfig(value?: RestAPINode.Config): RestAPINode;
-
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): RestAPINode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): RestAPINode.AsObject;
@@ -1357,7 +1270,6 @@ export class RestAPINode extends jspb.Message {
 export namespace RestAPINode {
     export type AsObject = {
         config?: RestAPINode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -1424,11 +1336,6 @@ export class CustomCodeNode extends jspb.Message {
     getConfig(): CustomCodeNode.Config | undefined;
     setConfig(value?: CustomCodeNode.Config): CustomCodeNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): CustomCodeNode;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CustomCodeNode.AsObject;
     static toObject(includeInstance: boolean, msg: CustomCodeNode): CustomCodeNode.AsObject;
@@ -1442,7 +1349,6 @@ export class CustomCodeNode extends jspb.Message {
 export namespace CustomCodeNode {
     export type AsObject = {
         config?: CustomCodeNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -1501,11 +1407,6 @@ export class BranchNode extends jspb.Message {
     getConfig(): BranchNode.Config | undefined;
     setConfig(value?: BranchNode.Config): BranchNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): BranchNode;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): BranchNode.AsObject;
     static toObject(includeInstance: boolean, msg: BranchNode): BranchNode.AsObject;
@@ -1519,7 +1420,6 @@ export class BranchNode extends jspb.Message {
 export namespace BranchNode {
     export type AsObject = {
         config?: BranchNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
@@ -1572,8 +1472,11 @@ export namespace BranchNode {
     }
 
     export class Output extends jspb.Message { 
-        getConditionId(): string;
-        setConditionId(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1587,7 +1490,7 @@ export namespace BranchNode {
 
     export namespace Output {
         export type AsObject = {
-            conditionId: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1599,11 +1502,6 @@ export class FilterNode extends jspb.Message {
     clearConfig(): void;
     getConfig(): FilterNode.Config | undefined;
     setConfig(value?: FilterNode.Config): FilterNode;
-
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): FilterNode;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): FilterNode.AsObject;
@@ -1618,15 +1516,14 @@ export class FilterNode extends jspb.Message {
 export namespace FilterNode {
     export type AsObject = {
         config?: FilterNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
     export class Config extends jspb.Message { 
         getExpression(): string;
         setExpression(value: string): Config;
-        getSourceId(): string;
-        setSourceId(value: string): Config;
+        getInputNodeName(): string;
+        setInputNodeName(value: string): Config;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -1641,7 +1538,7 @@ export namespace FilterNode {
     export namespace Config {
         export type AsObject = {
             expression: string,
-            sourceId: string,
+            inputNodeName: string,
         }
     }
 
@@ -1649,8 +1546,8 @@ export namespace FilterNode {
 
         hasData(): boolean;
         clearData(): void;
-        getData(): google_protobuf_any_pb.Any | undefined;
-        setData(value?: google_protobuf_any_pb.Any): Output;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1664,7 +1561,7 @@ export namespace FilterNode {
 
     export namespace Output {
         export type AsObject = {
-            data?: google_protobuf_any_pb.Any.AsObject,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1707,11 +1604,6 @@ export class LoopNode extends jspb.Message {
     getConfig(): LoopNode.Config | undefined;
     setConfig(value?: LoopNode.Config): LoopNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): LoopNode;
-
     getRunnerCase(): LoopNode.RunnerCase;
 
     serializeBinary(): Uint8Array;
@@ -1733,13 +1625,12 @@ export namespace LoopNode {
         restApi?: RestAPINode.AsObject,
         customCode?: CustomCodeNode.AsObject,
         config?: LoopNode.Config.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
 
     export class Config extends jspb.Message { 
-        getSourceId(): string;
-        setSourceId(value: string): Config;
+        getInputNodeName(): string;
+        setInputNodeName(value: string): Config;
         getIterVal(): string;
         setIterVal(value: string): Config;
         getIterKey(): string;
@@ -1759,7 +1650,7 @@ export namespace LoopNode {
 
     export namespace Config {
         export type AsObject = {
-            sourceId: string,
+            inputNodeName: string,
             iterVal: string,
             iterKey: string,
             executionMode: ExecutionMode,
@@ -1767,8 +1658,11 @@ export namespace LoopNode {
     }
 
     export class Output extends jspb.Message { 
-        getData(): string;
-        setData(value: string): Output;
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
@@ -1782,7 +1676,7 @@ export namespace LoopNode {
 
     export namespace Output {
         export type AsObject = {
-            data: string,
+            data?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1878,11 +1772,6 @@ export class TaskNode extends jspb.Message {
     getCustomCode(): CustomCodeNode | undefined;
     setCustomCode(value?: CustomCodeNode): TaskNode;
 
-    hasInput(): boolean;
-    clearInput(): void;
-    getInput(): google_protobuf_struct_pb.Value | undefined;
-    setInput(value?: google_protobuf_struct_pb.Value): TaskNode;
-
     getTaskTypeCase(): TaskNode.TaskTypeCase;
 
     serializeBinary(): Uint8Array;
@@ -1909,7 +1798,6 @@ export namespace TaskNode {
         filter?: FilterNode.AsObject,
         loop?: LoopNode.AsObject,
         customCode?: CustomCodeNode.AsObject,
-        input?: google_protobuf_struct_pb.Value.AsObject,
     }
 
     export enum TaskTypeCase {
@@ -1982,10 +1870,10 @@ export namespace Execution {
         setInputsList(value: Array<string>): Step;
         addInputs(value: string, index?: number): string;
 
-        hasInput(): boolean;
-        clearInput(): void;
-        getInput(): google_protobuf_struct_pb.Value | undefined;
-        setInput(value?: google_protobuf_struct_pb.Value): Step;
+        hasConfig(): boolean;
+        clearConfig(): void;
+        getConfig(): google_protobuf_struct_pb.Value | undefined;
+        setConfig(value?: google_protobuf_struct_pb.Value): Step;
 
         hasBlockTrigger(): boolean;
         clearBlockTrigger(): void;
@@ -2082,7 +1970,7 @@ export namespace Execution {
             error: string,
             log: string,
             inputsList: Array<string>,
-            input?: google_protobuf_struct_pb.Value.AsObject,
+            config?: google_protobuf_struct_pb.Value.AsObject,
             blockTrigger?: BlockTrigger.Output.AsObject,
             fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
             cronTrigger?: CronTrigger.Output.AsObject,
