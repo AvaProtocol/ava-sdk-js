@@ -1271,25 +1271,14 @@ class Client extends BaseClient {
     let metadata: any = undefined;
     const metadataValue = result.getMetadata();
     if (metadataValue) {
-      if (typeof metadataValue === "string") {
-        // Handle string metadata (gRPC gateway case)
-        try {
-          metadata = JSON.parse(metadataValue);
-        } catch (parseError) {
-          console.warn("Failed to parse metadata as JSON:", parseError);
-          metadata = metadataValue; // fallback to raw value
-        }
-      } else {
-        // Handle protobuf Value metadata
-        try {
-          metadata = convertProtobufValueToJs(metadataValue);
-        } catch (error) {
-          console.warn(
-            "Failed to convert metadata from protobuf Value:",
-            error
-          );
-          metadata = metadataValue; // fallback to raw value
-        }
+      try {
+        metadata = convertProtobufValueToJs(metadataValue);
+      } catch (error) {
+        console.warn(
+          "Failed to convert metadata from protobuf Value:",
+          error
+        );
+        metadata = metadataValue; // fallback to raw value
       }
     }
 
