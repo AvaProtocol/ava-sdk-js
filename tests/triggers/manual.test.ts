@@ -80,7 +80,10 @@ describe("ManualTrigger Tests", () => {
     type: TriggerType.Manual,
     data: {
       data: { message: "Hello World" },
-      headers: { "Content-Type": "application/json", Authorization: "Bearer token123" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer token123",
+      },
       pathParams: { userId: "123", apiVersion: "v1" },
     },
   };
@@ -212,7 +215,9 @@ describe("ManualTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerWithHeadersProps.triggerConfig.data);
+      expect(result.data).toEqual(
+        runTriggerWithHeadersProps.triggerConfig.data
+      );
     });
 
     test("should handle runTrigger with pathParams", async () => {
@@ -229,7 +234,10 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with pathParams input:",
-        util.inspect(runTriggerWithPathParamsProps, { depth: null, colors: true })
+        util.inspect(runTriggerWithPathParamsProps, {
+          depth: null,
+          colors: true,
+        })
       );
 
       const result = await client.runTrigger(runTriggerWithPathParamsProps);
@@ -241,7 +249,9 @@ describe("ManualTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerWithPathParamsProps.triggerConfig.data);
+      expect(result.data).toEqual(
+        runTriggerWithPathParamsProps.triggerConfig.data
+      );
     });
 
     test("should handle runTrigger with headers and pathParams", async () => {
@@ -809,7 +819,7 @@ describe("ManualTrigger Tests", () => {
         name: "process_array_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: triggerName,  // Use inputNodeName instead of deprecated sourceId
+          inputNodeName: triggerName, // Use inputNodeName instead of deprecated sourceId
           iterVal: iteratorValueVar,
           iterKey: iteratorKeyVar,
           executionMode: ExecutionMode.Sequential,
@@ -1096,6 +1106,236 @@ describe("ManualTrigger Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(arrayData);
+    });
+  });
+
+  describe("Type Preservation Tests", () => {
+    test("should preserve JSON object types", async () => {
+      const jsonObjectData = {
+        name: "test",
+        age: 25,
+        active: true,
+        tags: ["tag1", "tag2"],
+        metadata: {
+          created: "2023-01-01",
+          version: 1.0,
+        },
+      };
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: jsonObjectData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(jsonObjectData);
+      expect(typeof result.data).toBe("object");
+      expect(Array.isArray(result.data)).toBe(false);
+      expect(result.data.name).toBe("test");
+      expect(result.data.age).toBe(25);
+      expect(result.data.active).toBe(true);
+      expect(Array.isArray(result.data.tags)).toBe(true);
+      expect(typeof result.data.metadata).toBe("object");
+    });
+
+    test("should preserve JSON array types", async () => {
+      const jsonArrayData = [
+        { id: 1, name: "item1" },
+        { id: 2, name: "item2" },
+        { id: 3, name: "item3" },
+      ];
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: jsonArrayData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(jsonArrayData);
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(result.data.length).toBe(3);
+      expect(result.data[0].id).toBe(1);
+      expect(result.data[0].name).toBe("item1");
+    });
+
+    test("should preserve string types", async () => {
+      const stringData = "Hello, this is a test string!";
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: stringData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(stringData);
+      expect(typeof result.data).toBe("string");
+    });
+
+    test("should preserve number types", async () => {
+      const numberData = 42.5;
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: numberData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(numberData);
+      expect(typeof result.data).toBe("number");
+    });
+
+    test("should preserve boolean types", async () => {
+      const booleanData = false;
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: booleanData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(booleanData);
+      expect(typeof result.data).toBe("boolean");
+    });
+
+    test("should preserve null values", async () => {
+      // Note: This test checks if null is handled correctly as a valid JSON value
+      // This is different from the "data is required" validation test
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: { value: null }, // null as a property value, not the entire data
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({ value: null });
+      expect(result.data.value).toBeNull();
+    });
+
+    test("should preserve complex nested JSON structures", async () => {
+      const complexData = {
+        users: [
+          {
+            id: 1,
+            name: "John Doe",
+            email: "john@example.com",
+            settings: {
+              notifications: true,
+              theme: "dark",
+              preferences: ["email", "sms"],
+            },
+          },
+          {
+            id: 2,
+            name: "Jane Smith",
+            email: "jane@example.com",
+            settings: {
+              notifications: false,
+              theme: "light",
+              preferences: ["email"],
+            },
+          },
+        ],
+        metadata: {
+          total: 2,
+          page: 1,
+          hasMore: false,
+        },
+      };
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: complexData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(complexData);
+
+      // Verify nested structure preservation
+      expect(Array.isArray(result.data.users)).toBe(true);
+      expect(result.data.users.length).toBe(2);
+      expect(typeof result.data.users[0].settings).toBe("object");
+      expect(Array.isArray(result.data.users[0].settings.preferences)).toBe(
+        true
+      );
+      expect(typeof result.data.metadata).toBe("object");
+      expect(typeof result.data.metadata.hasMore).toBe("boolean");
+    });
+
+    test("should NOT convert JSON strings to objects (preserve string type)", async () => {
+      // This tests that if user explicitly sends a JSON string, it stays a string
+      const jsonString = '{"this":"should","stay":"as","a":"string"}';
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: jsonString,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(jsonString);
+      expect(typeof result.data).toBe("string");
+      // Verify it's NOT parsed as an object
+      expect(typeof result.data).not.toBe("object");
+    });
+
+    test("should preserve mixed type arrays", async () => {
+      const mixedArrayData = [
+        "string item",
+        42,
+        true,
+        { id: 1, name: "object item" },
+        [1, 2, 3],
+        null,
+      ];
+
+      const params = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: mixedArrayData,
+        },
+      };
+
+      const result = await client.runTrigger(params);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(mixedArrayData);
+      expect(Array.isArray(result.data)).toBe(true);
+      expect(typeof result.data[0]).toBe("string");
+      expect(typeof result.data[1]).toBe("number");
+      expect(typeof result.data[2]).toBe("boolean");
+      expect(typeof result.data[3]).toBe("object");
+      expect(Array.isArray(result.data[4])).toBe(true);
+      expect(result.data[5]).toBeNull();
     });
   });
 });
