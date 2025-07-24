@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.1
+
+### Patch Changes
+
+- 764a47e: Added methodParams to LoopNode ContractRead runner
+- Updated dependencies [764a47e]
+  - @avaprotocol/types@2.4.1
+
 ## 2.6.0
 
 ### Minor Changes
