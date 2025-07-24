@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.1
+
+### Patch Changes
+
+- 764a47e: Added methodParams to LoopNode ContractRead runner
+
 ## 2.4.0
 
 ### Minor Changes
