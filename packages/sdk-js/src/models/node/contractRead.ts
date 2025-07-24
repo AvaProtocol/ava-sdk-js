@@ -31,6 +31,7 @@ class ContractReadNode extends Node {
       callData: string;
       methodName?: string;
       applyToFields?: string[];
+      methodParams?: string[];
     }>;
   }): avs_pb.ContractReadNode {
     const node = new avs_pb.ContractReadNode();
@@ -49,6 +50,9 @@ class ContractReadNode extends Node {
       }
       if (methodCall.applyToFields) {
         methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
+      }
+      if (methodCall.methodParams) {
+        methodCallMsg.setMethodParamsList(methodCall.methodParams);
       }
       config.addMethodCalls(methodCallMsg);
     });
@@ -71,6 +75,7 @@ class ContractReadNode extends Node {
           callData: call.callData,
           methodName: call.methodName,
           applyToFields: call.applyToFieldsList || [],
+          methodParams: call.methodParamsList || [],
         })) || [],
     };
 

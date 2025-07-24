@@ -105,3 +105,127 @@ n dist/example.js schedule-sweep 0x036cbd53842c5426634e7929541ec2318f3dcf7e
 ```
 
 Feel free to reach out with any questions or suggestions for improvement!
+
+## Examples
+
+This directory contains examples of how to use the AVA SDK.
+
+## Basic Usage
+
+Run examples with:
+```bash
+yarn example
+```
+
+## MethodParams Usage (NEW)
+
+The SDK now supports `methodParams` fields in ContractRead and ContractWrite nodes, allowing for dynamic parameter injection using Handlebars templates. Since Solidity uses positional parameters, `methodParams` is an array of strings where each element represents a parameter at that position:
+
+### ContractRead with methodParams
+
+```javascript
+import { NodeFactory, NodeType } from "@avaprotocol/sdk-js";
+
+// Create a contract read node that uses methodParams for dynamic address
+const contractReadNode = NodeFactory.create({
+  id: "balance-check",
+  name: "Check Balance",
+  type: NodeType.ContractRead,
+  data: {
+    contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7", // ERC20 token
+    contractAbi: JSON.stringify([/* ERC20 ABI */]),
+    methodCalls: [
+      {
+        callData: "0x70a08231", // balanceOf(address) signature
+        methodName: "balanceOf",
+        methodParams: ["{{value.userAddress}}"] // Array with single parameter at position 0
+      }
+    ]
+  }
+});
+```
+
+### ContractWrite with methodParams
+
+```javascript
+import { NodeFactory, NodeType } from "@avaprotocol/sdk-js";
+
+// Create a contract write node that uses methodParams for dynamic transfer
+const contractWriteNode = NodeFactory.create({
+  id: "token-transfer",
+  name: "Transfer Tokens",
+  type: NodeType.ContractWrite,
+  data: {
+    contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7", // ERC20 token
+    callData: "0xa9059cbb", // transfer(address,uint256) signature (fallback)
+    contractAbi: JSON.stringify([/* ERC20 ABI */]),
+    methodCalls: [
+      {
+        callData: "0xa9059cbb", // transfer(address,uint256) signature
+        methodName: "transfer", 
+        methodParams: ["{{value.recipient}}", "{{value.amount}}"] // Array: [address, uint256]
+      }
+    ]
+  }
+});
+
+// Example with 3 parameters (transferFrom)
+const transferFromNode = NodeFactory.create({
+  id: "token-transfer-from",
+  name: "Transfer From",
+  type: NodeType.ContractWrite,
+  data: {
+    contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7",
+    callData: "0x23b872dd", // transferFrom(address,address,uint256)
+    contractAbi: JSON.stringify([/* ERC20 ABI */]),
+    methodCalls: [
+      {
+        callData: "0x23b872dd",
+        methodName: "transferFrom",
+        methodParams: ["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"] // Array: [from, to, amount]
+      }
+    ]
+  }
+});
+```
+
+### Using in Loops
+
+MethodParams are especially useful in loop nodes where you iterate over data:
+
+```javascript
+// Assuming a manual trigger provides an array of addresses
+const loopNode = NodeFactory.create({
+  id: "check-balances-loop",
+  name: "Check Multiple Balances",
+  type: NodeType.Loop,
+  data: {
+    inputNodeName: "manual_trigger", // References the trigger data
+    iterVal: "value", // Current iteration value
+    iterKey: "index", // Current iteration index
+    runner: {
+      type: "contractRead",
+      data: {
+        config: {
+          contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7",
+          contractAbi: JSON.stringify([/* ERC20 ABI */]),
+          methodCalls: [
+            {
+              callData: "0x70a08231",
+              methodName: "balanceOf",
+              methodParams: ["{{value.address}}"] // Array with single parameter
+            }
+          ]
+        }
+      }
+    }
+  }
+});
+```
+
+**Important Notes:**
+- `methodParams` is an array of strings, not a single string
+- Each array element represents a parameter at that position (0, 1, 2, etc.)
+- This aligns with Solidity's positional parameter system
+- The backend handles the actual parameter parsing and call data generation
+- The SDK simply stores and transmits the methodParams templates to the backend for processing

@@ -27,6 +27,7 @@ class ContractWriteNode extends Node {
     methodCalls?: Array<{
       callData: string;
       methodName?: string;
+      methodParams?: string[];
     }>;
   }): avs_pb.ContractWriteNode {
     const node = new avs_pb.ContractWriteNode();
@@ -43,6 +44,9 @@ class ContractWriteNode extends Node {
       methodCallMsg.setCallData(methodCall.callData);
       if (methodCall.methodName) {
         methodCallMsg.setMethodName(methodCall.methodName);
+      }
+      if (methodCall.methodParams) {
+        methodCallMsg.setMethodParamsList(methodCall.methodParams);
       }
       config.addMethodCalls(methodCallMsg);
     });
@@ -65,6 +69,7 @@ class ContractWriteNode extends Node {
         protobufData.methodCallsList?.map((call) => ({
           callData: call.callData,
           methodName: call.methodName,
+          methodParams: call.methodParamsList || [],
         })) || [],
     };
 

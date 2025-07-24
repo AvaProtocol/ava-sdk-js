@@ -1155,4 +1155,64 @@ describe("ContractWrite Node Tests", () => {
       }
     });
   });
+
+  // Test methodParams field support
+  test("should properly serialize methodParams in protobuf", () => {
+    const contractWriteNode = NodeFactory.create({
+      id: "test-contract-write-methodparams",
+      name: "Test Contract Write MethodParams",
+      type: NodeType.ContractWrite,
+      data: {
+        contractAddress: "0x1234567890123456789012345678901234567890",
+        callData: "0xa9059cbb", // transfer(address,uint256)
+        contractAbi: "[]",
+        methodCalls: [
+          {
+            callData: "0xa9059cbb", // transfer(address,uint256)
+            methodName: "transfer",
+            methodParams: ["{{value.recipient}}", "{{value.amount}}"], // Array with multiple parameters
+          },
+          {
+            callData: "0x23b872dd", // transferFrom(address,address,uint256)
+            methodName: "transferFrom",
+            methodParams: ["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"], // Array with 3 parameters
+          },
+          {
+            callData: "0x095ea7b3", // approve(address,uint256)
+            methodName: "approve",
+            // No methodParams - should be empty array
+          },
+        ],
+      },
+    });
+
+    // Convert to protobuf request
+    const request = contractWriteNode.toRequest();
+
+    // Verify the structure
+    expect(request.getContractWrite()).toBeDefined();
+    const config = request.getContractWrite()!.getConfig();
+    expect(config).toBeDefined();
+
+    const methodCalls = config!.getMethodCallsList();
+    expect(methodCalls).toHaveLength(3);
+
+    // Check first method call (transfer with 2 parameters)
+    const transferCall = methodCalls[0];
+    expect(transferCall.getMethodName()).toBe("transfer");
+    expect(transferCall.getCallData()).toBe("0xa9059cbb");
+    expect(transferCall.getMethodParamsList()).toEqual(["{{value.recipient}}", "{{value.amount}}"]);
+
+    // Check second method call (transferFrom with 3 parameters)
+    const transferFromCall = methodCalls[1];
+    expect(transferFromCall.getMethodName()).toBe("transferFrom");
+    expect(transferFromCall.getCallData()).toBe("0x23b872dd");
+    expect(transferFromCall.getMethodParamsList()).toEqual(["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"]);
+
+    // Check third method call (approve without methodParams)
+    const approveCall = methodCalls[2];
+    expect(approveCall.getMethodName()).toBe("approve");
+    expect(approveCall.getCallData()).toBe("0x095ea7b3");
+    expect(approveCall.getMethodParamsList()).toEqual([]); // Should be empty array when not set
+  });
 });
