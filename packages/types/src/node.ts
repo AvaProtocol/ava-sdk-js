@@ -11,6 +11,7 @@ export interface ContractWriteNodeData {
   methodCalls?: Array<{
     callData: string;
     methodName?: string;
+    methodParams?: string[]; // Array of Handlebars templates for positional parameters
   }>;
 }
 
@@ -22,6 +23,7 @@ export interface ContractReadNodeData {
     callData: string;
     methodName?: string;
     applyToFields?: string[]; // Fields to apply decimal formatting to
+    methodParams?: string[]; // Array of Handlebars templates for positional parameters
   }>;
 }
 

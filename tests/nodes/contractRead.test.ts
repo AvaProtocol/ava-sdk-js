@@ -1269,8 +1269,64 @@ describe("ContractRead Node Tests", () => {
       expect(latestRoundCall.getMethodName()).toBe("latestRoundData");
       expect(latestRoundCall.getCallData()).toBe("0xfeaf968c");
       expect(latestRoundCall.getApplyToFieldsList()).toEqual([]);
+    });
 
+    test("should properly serialize methodParams in protobuf", () => {
+      const contractReadNode = NodeFactory.create({
+        id: "test-contract-read-methodparams",
+        name: "Test Contract Read MethodParams",
+        type: NodeType.ContractRead,
+        data: {
+          contractAddress: "0x1234567890123456789012345678901234567890",
+          contractAbi: "[]",
+          methodCalls: [
+            {
+              callData: "0x70a08231", // balanceOf(address)
+              methodName: "balanceOf",
+              methodParams: ["{{value.address}}"], // Array with single parameter
+            },
+            {
+              callData: "0xa9059cbb", // transfer(address,uint256)
+              methodName: "transfer",
+              methodParams: ["{{value.recipient}}", "{{value.amount}}"], // Array with multiple parameters
+            },
+            {
+              callData: "0x313ce567", // decimals()
+              methodName: "decimals",
+              // No methodParams - should be empty array
+            },
+          ],
+        },
+      });
 
+      // Convert to protobuf request
+      const request = contractReadNode.toRequest();
+
+      // Verify the structure
+      expect(request.getContractRead()).toBeDefined();
+      const config = request.getContractRead()!.getConfig();
+      expect(config).toBeDefined();
+
+      const methodCalls = config!.getMethodCallsList();
+      expect(methodCalls).toHaveLength(3);
+
+      // Check first method call (balanceOf with single parameter)
+      const balanceOfCall = methodCalls[0];
+      expect(balanceOfCall.getMethodName()).toBe("balanceOf");
+      expect(balanceOfCall.getCallData()).toBe("0x70a08231");
+      expect(balanceOfCall.getMethodParamsList()).toEqual(["{{value.address}}"]);
+
+      // Check second method call (transfer with multiple parameters)
+      const transferCall = methodCalls[1];
+      expect(transferCall.getMethodName()).toBe("transfer");
+      expect(transferCall.getCallData()).toBe("0xa9059cbb");
+      expect(transferCall.getMethodParamsList()).toEqual(["{{value.recipient}}", "{{value.amount}}"]);
+
+      // Check third method call (decimals without methodParams)
+      const decimalsCall = methodCalls[2];
+      expect(decimalsCall.getMethodName()).toBe("decimals");
+      expect(decimalsCall.getCallData()).toBe("0x313ce567");
+      expect(decimalsCall.getMethodParamsList()).toEqual([]); // Should be empty array when not set
     });
   });
 
