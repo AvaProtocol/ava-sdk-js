@@ -352,8 +352,10 @@ export namespace EventTrigger {
         clearMaxEventsPerBlock(): void;
         getMaxEventsPerBlock(): number | undefined;
         setMaxEventsPerBlock(value: number): Query;
-        getContractAbi(): string;
-        setContractAbi(value: string): Query;
+        clearContractAbiList(): void;
+        getContractAbiList(): Array<google_protobuf_struct_pb.Value>;
+        setContractAbiList(value: Array<google_protobuf_struct_pb.Value>): Query;
+        addContractAbi(value?: google_protobuf_struct_pb.Value, index?: number): google_protobuf_struct_pb.Value;
         clearConditionsList(): void;
         getConditionsList(): Array<EventCondition>;
         setConditionsList(value: Array<EventCondition>): Query;
@@ -378,7 +380,7 @@ export namespace EventTrigger {
             addressesList: Array<string>,
             topicsList: Array<EventTrigger.Topics.AsObject>,
             maxEventsPerBlock?: number,
-            contractAbi: string,
+            contractAbiList: Array<google_protobuf_struct_pb.Value.AsObject>,
             conditionsList: Array<EventCondition.AsObject>,
             methodCallsList: Array<EventTrigger.MethodCall.AsObject>,
         }
@@ -729,8 +731,10 @@ export namespace ContractWriteNode {
         setContractAddress(value: string): Config;
         getCallData(): string;
         setCallData(value: string): Config;
-        getContractAbi(): string;
-        setContractAbi(value: string): Config;
+        clearContractAbiList(): void;
+        getContractAbiList(): Array<google_protobuf_struct_pb.Value>;
+        setContractAbiList(value: Array<google_protobuf_struct_pb.Value>): Config;
+        addContractAbi(value?: google_protobuf_struct_pb.Value, index?: number): google_protobuf_struct_pb.Value;
         clearMethodCallsList(): void;
         getMethodCallsList(): Array<ContractWriteNode.MethodCall>;
         setMethodCallsList(value: Array<ContractWriteNode.MethodCall>): Config;
@@ -750,7 +754,7 @@ export namespace ContractWriteNode {
         export type AsObject = {
             contractAddress: string,
             callData: string,
-            contractAbi: string,
+            contractAbiList: Array<google_protobuf_struct_pb.Value.AsObject>,
             methodCallsList: Array<ContractWriteNode.MethodCall.AsObject>,
         }
     }
@@ -917,8 +921,10 @@ export namespace ContractReadNode {
     export class Config extends jspb.Message { 
         getContractAddress(): string;
         setContractAddress(value: string): Config;
-        getContractAbi(): string;
-        setContractAbi(value: string): Config;
+        clearContractAbiList(): void;
+        getContractAbiList(): Array<google_protobuf_struct_pb.Value>;
+        setContractAbiList(value: Array<google_protobuf_struct_pb.Value>): Config;
+        addContractAbi(value?: google_protobuf_struct_pb.Value, index?: number): google_protobuf_struct_pb.Value;
         clearMethodCallsList(): void;
         getMethodCallsList(): Array<ContractReadNode.MethodCall>;
         setMethodCallsList(value: Array<ContractReadNode.MethodCall>): Config;
@@ -937,7 +943,7 @@ export namespace ContractReadNode {
     export namespace Config {
         export type AsObject = {
             contractAddress: string,
-            contractAbi: string,
+            contractAbiList: Array<google_protobuf_struct_pb.Value.AsObject>,
             methodCallsList: Array<ContractReadNode.MethodCall.AsObject>,
         }
     }
@@ -1008,6 +1014,11 @@ export namespace ContractReadNode {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
 
+        hasMetadata(): boolean;
+        clearMetadata(): void;
+        getMetadata(): google_protobuf_struct_pb.Value | undefined;
+        setMetadata(value?: google_protobuf_struct_pb.Value): Output;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
         static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
@@ -1021,6 +1032,7 @@ export namespace ContractReadNode {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
+            metadata?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
