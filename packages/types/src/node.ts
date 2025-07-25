@@ -6,24 +6,24 @@ export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
 // Custom ContractWrite data type with cleaner field names
 export interface ContractWriteNodeData {
   contractAddress: string;
-  callData: string;
-  contractAbi: string; // Contract ABI as string
+  contractAbi: Array<Record<string, unknown>>; // Contract ABI as array
   methodCalls?: Array<{
-    callData: string;
-    methodName?: string;
-    methodParams?: string[]; // Array of Handlebars templates for positional parameters
+    methodName: string;
+    methodParams: string[]; // Array of Handlebars templates for positional parameters
+    applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
+    callData?: string; // Optional: Hex-encoded calldata for the method, which overrides the methodParams if provided
   }>;
 }
 
 // Custom ContractRead data type with cleaner field names
 export interface ContractReadNodeData {
   contractAddress: string;
-  contractAbi: string; // Contract ABI as string
+  contractAbi: Array<Record<string, unknown>>; // Contract ABI as array
   methodCalls: Array<{
-    callData: string;
-    methodName?: string;
-    applyToFields?: string[]; // Fields to apply decimal formatting to
-    methodParams?: string[]; // Array of Handlebars templates for positional parameters
+    methodName: string;
+    methodParams: string[]; // Array of Handlebars templates for positional parameters
+    applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
+    callData?: string; // Optional: Hex-encoded calldata for the method, which overrides the methodParams if provided
   }>;
 }
 

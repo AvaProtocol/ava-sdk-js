@@ -1,5 +1,6 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import {
   NodeType,
   ContractWriteNodeData,
@@ -20,34 +21,38 @@ class ContractWriteNode extends Node {
    * @param configData - The configuration data for the contract write node
    * @returns Configured avs_pb.ContractWriteNode
    */
-  static createProtobufNode(configData: {
-    contractAddress: string;
-    callData: string;
-    contractAbi: string;
-    methodCalls?: Array<{
-      callData: string;
-      methodName?: string;
-      methodParams?: string[];
-    }>;
-  }): avs_pb.ContractWriteNode {
+  static createProtobufNode(configData: ContractWriteNodeData): avs_pb.ContractWriteNode {
     const node = new avs_pb.ContractWriteNode();
     const config = new avs_pb.ContractWriteNode.Config();
 
     config.setContractAddress(configData.contractAddress);
-    config.setCallData(configData.callData);
-    config.setContractAbi(configData.contractAbi);
+    // Remove the top-level callData since it's no longer part of ContractWriteNodeData
+    
+    // Convert array to protobuf Value list
+    const abiValueList = configData.contractAbi.map(item => {
+      const value = new google_protobuf_struct_pb.Value();
+      value.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(item as any));
+      return value;
+    });
+    config.setContractAbiList(abiValueList);
 
     // Handle method calls array
     const methodCalls = configData.methodCalls || [];
     methodCalls.forEach((methodCall) => {
       const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
-      methodCallMsg.setCallData(methodCall.callData);
+      
+      // Set callData only if provided (now optional)
+      if (methodCall.callData) {
+        methodCallMsg.setCallData(methodCall.callData);
+      }
+      
       if (methodCall.methodName) {
         methodCallMsg.setMethodName(methodCall.methodName);
       }
       if (methodCall.methodParams) {
         methodCallMsg.setMethodParamsList(methodCall.methodParams);
       }
+      // Note: applyToFields is not supported for ContractWrite nodes
       config.addMethodCalls(methodCallMsg);
     });
 
@@ -58,18 +63,23 @@ class ContractWriteNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): ContractWriteNode {
     // Convert the raw object to ContractWriteNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
-    const protobufData = raw.getContractWrite()!.getConfig()!.toObject();
+    const contractWriteNode = raw.getContractWrite()!;
+    const config = contractWriteNode.getConfig()!;
+    const protobufData = config.toObject();
 
     // Convert protobuf data to our custom interface
     const data: ContractWriteNodeData = {
       contractAddress: protobufData.contractAddress,
-      callData: protobufData.callData,
-      contractAbi: protobufData.contractAbi,
+      contractAbi: config.getContractAbiList().map(value => 
+        convertProtobufValueToJs(value)
+      ),
       methodCalls:
         protobufData.methodCallsList?.map((call) => ({
-          callData: call.callData,
           methodName: call.methodName,
           methodParams: call.methodParamsList || [],
+          // Note: applyToFields is not supported for ContractWrite nodes in protobuf
+          // callData is optional, only include if present
+          ...(call.callData && { callData: call.callData }),
         })) || [],
     };
 
@@ -106,8 +116,31 @@ class ContractWriteNode extends Node {
     // Convert protobuf Value to JavaScript object
     const jsData = convertProtobufValueToJs(data);
 
-    // Return the array directly, matching ContractRead format
-    return Array.isArray(jsData) ? jsData : [jsData];
+    // Format response for consistency with ContractRead
+    if (Array.isArray(jsData)) {
+      return jsData.map((result: any) => {
+        // ContractWrite already uses the consistent format with method_abi and value
+        const methodName = result.method_name || result.methodName;
+        
+        return {
+          methodName: methodName,
+          methodABI: result.method_abi || null,
+          success: result.success,
+          error: result.error || "",
+          value: result.value,
+        };
+      });
+    } else {
+      // Single result - wrap in array for consistency
+      const methodName = jsData.method_name || jsData.methodName;
+      return [{
+        methodName: methodName,
+        methodABI: jsData.method_abi || null,
+        success: jsData.success,
+        error: jsData.error || "",
+        value: jsData.value,
+      }];
+    }
   }
 }
 

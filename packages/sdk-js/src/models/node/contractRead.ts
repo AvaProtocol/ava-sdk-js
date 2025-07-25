@@ -1,5 +1,6 @@
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import {
   NodeType,
   ContractReadNodeData,
@@ -8,8 +9,6 @@ import {
 } from "@avaprotocol/types";
 import {
   convertProtobufValueToJs,
-  convertInputToProtobuf,
-  extractInputFromProtobuf,
 } from "../../utils";
 
 // Required props for constructor: id, name, type and data
@@ -24,27 +23,29 @@ class ContractReadNode extends Node {
    * @param configData - The configuration data for the contract read node
    * @returns Configured avs_pb.ContractReadNode
    */
-  static createProtobufNode(configData: {
-    contractAddress: string;
-    contractAbi: string;
-    methodCalls?: Array<{
-      callData: string;
-      methodName?: string;
-      applyToFields?: string[];
-      methodParams?: string[];
-    }>;
-  }): avs_pb.ContractReadNode {
+  static createProtobufNode(configData: ContractReadNodeData): avs_pb.ContractReadNode {
     const node = new avs_pb.ContractReadNode();
     const config = new avs_pb.ContractReadNode.Config();
 
     config.setContractAddress(configData.contractAddress);
-    config.setContractAbi(configData.contractAbi);
+    // Convert array to protobuf Value list
+    const abiValueList = configData.contractAbi.map(item => {
+      const value = new google_protobuf_struct_pb.Value();
+      value.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(item as any));
+      return value;
+    });
+    config.setContractAbiList(abiValueList);
 
     // Handle method calls array
     const methodCalls = configData.methodCalls || [];
     methodCalls.forEach((methodCall) => {
       const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
-      methodCallMsg.setCallData(methodCall.callData);
+      
+      // Set callData only if provided (now optional)
+      if (methodCall.callData) {
+        methodCallMsg.setCallData(methodCall.callData);
+      }
+      
       if (methodCall.methodName) {
         methodCallMsg.setMethodName(methodCall.methodName);
       }
@@ -64,12 +65,16 @@ class ContractReadNode extends Node {
   static fromResponse(raw: avs_pb.TaskNode): ContractReadNode {
     // Convert the raw object to ContractReadNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
-    const protobufData = raw.getContractRead()!.getConfig()!.toObject();
+    const contractReadNode = raw.getContractRead()!;
+    const config = contractReadNode.getConfig()!;
+    const protobufData = config.toObject();
 
     // Convert protobuf data to our custom interface
     const data: ContractReadNodeData = {
       contractAddress: protobufData.contractAddress,
-      contractAbi: protobufData.contractAbi,
+      contractAbi: config.getContractAbiList().map(value => 
+        convertProtobufValueToJs(value)
+      ),
       methodCalls:
         protobufData.methodCallsList?.map((call) => ({
           callData: call.callData,
@@ -101,30 +106,15 @@ class ContractReadNode extends Node {
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown | null {
     const contractReadOutput = outputData.getContractRead();
-    if (contractReadOutput && contractReadOutput.getData()) {
-      // The new structure uses getData() which returns a protobuf Value
-      const data = contractReadOutput.getData();
-      if (data) {
-        // Convert protobuf Value to JavaScript object
-        const jsData = convertProtobufValueToJs(data);
+    if (!contractReadOutput) return null;
 
-        // The data should now be directly an array of results
-        if (Array.isArray(jsData)) {
-          return jsData.map((result: any) => ({
-            methodName: result.methodName,
-            success: result.success,
-            error: result.error || "",
-            data: result.data || {},
-          }));
-        } else {
-          // Fallback for old format or unexpected structure
-          return jsData;
-        }
-      }
-    }
-    return null;
+    // Get the clean data from the data field (now a single flattened object)
+    const dataValue = contractReadOutput.getData();
+    const cleanData = dataValue ? convertProtobufValueToJs(dataValue) : {};
+
+    return cleanData;
   }
 }
 

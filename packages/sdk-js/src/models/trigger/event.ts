@@ -1,5 +1,6 @@
 import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
+import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import Trigger from "./interface";
 import {
   TriggerType,
@@ -116,7 +117,13 @@ class EventTrigger extends Trigger {
 
       // Set contractAbi if provided
       if (queryData.contractAbi) {
-        query.setContractAbi(queryData.contractAbi);
+        // Convert array to protobuf Value list
+        const abiValueList = queryData.contractAbi.map(item => {
+          const value = new google_protobuf_struct_pb.Value();
+          value.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(item as any));
+          return value;
+        });
+        query.setContractAbiList(abiValueList);
       }
 
       // Set conditions if provided
@@ -179,6 +186,7 @@ class EventTrigger extends Trigger {
             const queryData: EventTriggerDataType["queries"][0] = {
               addresses: [],
               topics: [],
+              contractAbi: [], // Add the required contractAbi field
             };
 
             // Extract addresses
@@ -203,9 +211,11 @@ class EventTrigger extends Trigger {
             }
 
             // Extract contractAbi
-            const contractAbi = query.getContractAbi();
-            if (contractAbi) {
-              queryData.contractAbi = contractAbi;
+            const contractAbi = query.getContractAbiList();
+            if (contractAbi && contractAbi.length > 0) {
+              queryData.contractAbi = contractAbi.map(value => 
+                convertProtobufValueToJs(value)
+              );
             }
 
             // Extract conditions

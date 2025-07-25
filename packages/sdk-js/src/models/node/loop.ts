@@ -174,13 +174,17 @@ class LoopNode extends Node {
         const writeConfig = config as Record<string, unknown>;
         const contractWrite = ContractWriteNode.createProtobufNode({
           contractAddress: writeConfig.contractAddress as string,
-          callData: writeConfig.callData as string,
-          contractAbi: writeConfig.contractAbi as string,
+          contractAbi: writeConfig.contractAbi as any[],
           methodCalls:
             (writeConfig.methodCallsList as Array<{
-              callData: string;
-              methodName?: string;
-            }>) || [],
+              methodName: string;
+              methodParams: string[];
+              callData?: string;
+            }>)?.map(call => ({
+              methodName: call.methodName || "",
+              methodParams: call.methodParams || [],
+              ...(call.callData && { callData: call.callData }),
+            })) || [],
         });
         loopNode.setContractWrite(contractWrite);
         break;
@@ -190,13 +194,19 @@ class LoopNode extends Node {
         const readConfig = config as Record<string, unknown>;
         const contractRead = ContractReadNode.createProtobufNode({
           contractAddress: readConfig.contractAddress as string,
-          contractAbi: readConfig.contractAbi as string,
+          contractAbi: readConfig.contractAbi as any[],
           methodCalls:
             (readConfig.methodCallsList as Array<{
-              callData: string;
-              methodName?: string;
+              methodName: string;
+              methodParams: string[];
+              callData?: string;
               applyToFields?: string[];
-            }>) || [],
+            }>)?.map(call => ({
+              methodName: call.methodName || "",
+              methodParams: call.methodParams || [],
+              ...(call.callData && { callData: call.callData }),
+              ...(call.applyToFields && { applyToFields: call.applyToFields }),
+            })) || [],
         });
         loopNode.setContractRead(contractRead);
         break;
