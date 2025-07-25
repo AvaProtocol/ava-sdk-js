@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.2
+
+### Patch Changes
+
+- 1cc32a4: Updated applyToField format and return for ContractRead
+
 ## 2.4.1
 
 ### Patch Changes

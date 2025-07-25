@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.2
+
+### Patch Changes
+
+- 1cc32a4: Updated applyToField format and return for ContractRead
+- Updated dependencies [1cc32a4]
+  - @avaprotocol/types@2.4.2
+
 ## 2.6.1
 
 ### Patch Changes
