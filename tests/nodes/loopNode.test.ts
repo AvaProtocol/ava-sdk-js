@@ -432,7 +432,7 @@ describe("LoopNode Tests", () => {
               methodCalls: [
                 {
                   methodName: "approve",
-                  callData: "{{value.callData}}",
+                  methodParams: ["{{value.spender}}", "{{value.amount}}"],
                 },
               ],
             },
@@ -442,13 +442,13 @@ describe("LoopNode Tests", () => {
           writeParams: [
             {
               contractAddress: "0x1111111111111111111111111111111111111111",
-              callData:
-                "0x095ea7b30000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000a",
+              spender: "0x0000000000000000000000000000000000000001",
+              amount: "10",
             },
             {
               contractAddress: "0x2222222222222222222222222222222222222222",
-              callData:
-                "0x095ea7b30000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000a",
+              spender: "0x0000000000000000000000000000000000000002",
+              amount: "10",
             },
           ],
         },
@@ -803,13 +803,13 @@ describe("LoopNode Tests", () => {
             return [
               {
                 contractAddress: "0x1111111111111111111111111111111111111111",
-                methodName: "approve",
-                methodParams: ["0x0000000000000000000000000000000000000001", "10"]
+                spender: "0x0000000000000000000000000000000000000001",
+                amount: "10"
               },
               {
                 contractAddress: "0x2222222222222222222222222222222222222222",
-                methodName: "approve", 
-                methodParams: ["0x0000000000000000000000000000000000000002", "10"]
+                spender: "0x0000000000000000000000000000000000000002", 
+                amount: "10"
               }
             ];
           `,
@@ -845,7 +845,7 @@ describe("LoopNode Tests", () => {
               methodCalls: [
                 {
                   methodName: "approve",
-                  callData: "{{value.callData}}",
+                  methodParams: ["{{value.spender}}", "{{value.amount}}"],
                 },
               ],
             },
@@ -1207,13 +1207,13 @@ describe("LoopNode Tests", () => {
             return [
               {
                 contractAddress: "0x1111111111111111111111111111111111111111",
-                methodName: "approve",
-                methodParams: ["0x0000000000000000000000000000000000000001", "10"]
+                spender: "0x0000000000000000000000000000000000000001",
+                amount: "10"
               },
               {
                 contractAddress: "0x2222222222222222222222222222222222222222",
-                methodName: "approve", 
-                methodParams: ["0x0000000000000000000000000000000000000002", "10"]
+                spender: "0x0000000000000000000000000000000000000002", 
+                amount: "10"
               }
             ];
           `,
@@ -1249,7 +1249,7 @@ describe("LoopNode Tests", () => {
               methodCalls: [
                 {
                   methodName: "approve",
-                  callData: "{{value.callData}}",
+                  methodParams: ["{{value.spender}}", "{{value.amount}}"],
                 },
               ],
             },
@@ -1904,32 +1904,30 @@ describe("LoopNode Tests", () => {
       expect(iterations.length).toBe(2); // Two contract addresses
 
       iterations.forEach((iteration, index) => {
-        console.log(`🔍 Iteration ${index}:`, iteration);
-        
         // Both decimals and totalSupply should exist
-        expect(iteration).toHaveProperty('decimals');
-        expect(iteration).toHaveProperty('totalSupply');
-        
+        expect(iteration).toHaveProperty("decimals");
+        expect(iteration).toHaveProperty("totalSupply");
+
         // decimals should be a string representing the decimal places (e.g., "6")
-        expect(typeof iteration.decimals).toBe('string');
+        expect(typeof iteration.decimals).toBe("string");
         expect(parseInt(iteration.decimals as string)).toBeGreaterThan(0);
-        
+
         // totalSupply should be a formatted decimal string (divided by 10^decimals)
-        expect(typeof iteration.totalSupply).toBe('string');
+        expect(typeof iteration.totalSupply).toBe("string");
         const totalSupplyValue = iteration.totalSupply as string;
-        
+
         // Should contain a decimal point (indicating it's been formatted)
         expect(totalSupplyValue).toMatch(/^\d+\.\d+$/);
-        
+
         // Should be a valid number when parsed
         const parsedValue = parseFloat(totalSupplyValue);
         expect(parsedValue).toBeGreaterThan(0);
         expect(parsedValue).toBeLessThan(Number.MAX_SAFE_INTEGER);
-        
+
         console.log(`✅ Iteration ${index} validation passed:`, {
           decimals: iteration.decimals,
           totalSupply: iteration.totalSupply,
-          parsedTotalSupply: parsedValue
+          parsedTotalSupply: parsedValue,
         });
       });
     });
@@ -2022,7 +2020,9 @@ describe("LoopNode Tests", () => {
             // First contract: Chainlink ETH/USD price feed doesn't have name/symbol methods
             // The entire iteration result is null because both method calls failed
             expect(iteration).toBeNull(); // Chainlink price feed doesn't have ERC-20 methods
-            console.log(`✅ Iteration ${index}: Chainlink contract correctly returns null (no ERC-20 methods)`);
+            console.log(
+              `✅ Iteration ${index}: Chainlink contract correctly returns null (no ERC-20 methods)`
+            );
           } else if (index === 1) {
             // Second contract: USDC contract has name/symbol methods
             // Should be a flattened object, not an array of method results
@@ -2035,12 +2035,17 @@ describe("LoopNode Tests", () => {
             expect(iteration).not.toHaveProperty("success");
             expect(iteration).not.toHaveProperty("error");
 
-            const secondIteration = iteration as { name: unknown; symbol: unknown };
+            const secondIteration = iteration as {
+              name: unknown;
+              symbol: unknown;
+            };
             expect(secondIteration).toHaveProperty("name");
             expect(secondIteration).toHaveProperty("symbol");
             expect(secondIteration.name).toBe("USDC"); // USDC contract name
             expect(secondIteration.symbol).toBe("USDC"); // USDC contract symbol
-            console.log(`✅ Iteration ${index}: USDC contract correctly returns name and symbol`);
+            console.log(
+              `✅ Iteration ${index}: USDC contract correctly returns name and symbol`
+            );
           }
         });
       }
@@ -2284,37 +2289,39 @@ describe("LoopNode Tests", () => {
       // ✅ **VALIDATION**: Verify that inputsList doesn't contain iteration variables
       expect(loopStep!.config).toBeDefined();
       const stepConfig = loopStep!.config as Record<string, unknown>;
-      
+
       if (stepConfig.inputsList && Array.isArray(stepConfig.inputsList)) {
         const inputsList = stepConfig.inputsList as string[];
         console.log("🔍 Actual inputsList:", inputsList);
-        
+
         // ✅ Should NOT contain iteration variables
-        expect(inputsList).not.toContain('value');
-        expect(inputsList).not.toContain('index');
-        
-        // ✅ Should NOT contain iteration-specific node references  
-        const iterationRefs = inputsList.filter((input: string) => 
-          input.includes('_iter_')
+        expect(inputsList).not.toContain("value");
+        expect(inputsList).not.toContain("index");
+
+        // ✅ Should NOT contain iteration-specific node references
+        const iterationRefs = inputsList.filter((input: string) =>
+          input.includes("_iter_")
         );
         expect(iterationRefs.length).toBe(0);
-        
+
         // ✅ Should ONLY contain standard node references
         const expectedInputs = [
-          'apContext.configVars',
-          'workflowContext',
-          'generate_parallel_data.data',
-          'generate_parallel_data.input',
-          'blockTrigger.data',
-          'blockTrigger.input'
+          "apContext.configVars",
+          "workflowContext",
+          "generate_parallel_data.data",
+          "generate_parallel_data.input",
+          "blockTrigger.data",
+          "blockTrigger.input",
         ];
-        
+
         // Verify that all expected inputs are present (order may vary)
-        expectedInputs.forEach(expectedInput => {
+        expectedInputs.forEach((expectedInput) => {
           expect(inputsList).toContain(expectedInput);
         });
-        
-        console.log("✅ inputsList validation passed - no iteration variables found");
+
+        console.log(
+          "✅ inputsList validation passed - no iteration variables found"
+        );
       }
     });
   });

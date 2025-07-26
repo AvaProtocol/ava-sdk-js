@@ -115,8 +115,13 @@ class EventTrigger extends Trigger {
         query.setMaxEventsPerBlock(queryData.maxEventsPerBlock);
       }
 
-      // Set contractAbi if provided
+      // Set contractAbi if provided - must be an array like ContractRead
       if (queryData.contractAbi) {
+        // Strictly require array format (no string support)
+        if (!Array.isArray(queryData.contractAbi)) {
+          throw new Error('contractAbi must be an array of ABI elements');
+        }
+
         // Convert array to protobuf Value list
         const abiValueList = queryData.contractAbi.map(item => {
           const value = new google_protobuf_struct_pb.Value();

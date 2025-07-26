@@ -140,7 +140,7 @@ function createChainlinkPriceConditionConfig(
 ) {
   const conditions: EventConditionType[] = [
     {
-      fieldName: "current",
+      fieldName: "AnswerUpdated.current",
       operator: operator,
       value: priceThreshold, // Price threshold in 8 decimals (e.g., "200000000000" for $2000)
       fieldType: "int256",
@@ -152,7 +152,7 @@ function createChainlinkPriceConditionConfig(
       {
         addresses: [CHAINLINK_ETH_USD_SEPOLIA],
         topics: [{ values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE] }],
-        contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
+        contractAbi: CHAINLINK_AGGREGATOR_ABI,
         conditions: conditions,
         maxEventsPerBlock: 5,
       },
@@ -582,13 +582,13 @@ describe("EventTrigger Tests", () => {
 
       const conditions: EventConditionType[] = [
         {
-          fieldName: "current",
+          fieldName: "AnswerUpdated.current",
           operator: "gte",
           value: "150000000000", // >= $1500
           fieldType: "int256",
         },
         {
-          fieldName: "current",
+          fieldName: "AnswerUpdated.current",
           operator: "lte",
           value: "400000000000", // <= $4000
           fieldType: "int256",
@@ -606,7 +606,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
               conditions: conditions,
               maxEventsPerBlock: 3,
             },
@@ -655,17 +655,17 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
               methodCalls: [
                 {
                   methodName: "decimals",
                   methodParams: [], // decimals() method signature
-                  applyToFields: ["current"], // Apply decimal formatting to the "current" field
+                  applyToFields: ["AnswerUpdated.current"], // Apply decimal formatting to the "current" field
                 },
               ],
               conditions: [
                 {
-                  fieldName: "current",
+                  fieldName: "AnswerUpdated.current",
                   operator: "gt",
                   value: "2000.00000000", // Now we can use human-readable values!
                   fieldType: "decimal",
@@ -697,29 +697,18 @@ describe("EventTrigger Tests", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
-      // Check that we have both formatted and raw values
+      // Verify the response contains enriched AnswerUpdated event data
       const resultData = result.data as Record<string, unknown>;
       expect(resultData.current).toBeDefined();
-      expect(resultData.currentRaw).toBeDefined();
-      expect(resultData.decimals).toBeDefined();
+      expect(resultData.eventName).toBe("AnswerUpdated");
+      expect(resultData.roundId).toBeDefined();
+      expect(resultData.updatedAt).toBeDefined();
 
-      // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      expect(typeof resultData.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
-      expect(typeof resultData.current).toBe("string"); // current should be string (int256 -> string, then formatted)
-      expect(typeof resultData.currentRaw).toBe("string"); // raw value should be string
-      expect(typeof resultData.roundId).toBe("string"); // roundId should be string (uint256 -> string)
-      expect(typeof resultData.updatedAt).toBe("string"); // updatedAt should be string (uint256 -> string)
-
-      // Verify the formatting makes sense
-      const formattedValue = parseFloat(resultData.current as string);
-      const rawValue = parseInt(resultData.currentRaw as string);
-      const decimals = parseInt(resultData.decimals as string);
-
-      // Verify the math is correct
-      const calculatedValue = rawValue / Math.pow(10, decimals);
-      expect(Math.abs(formattedValue - calculatedValue)).toBeLessThan(
-        0.00000001
-      );
+      // Verify data types
+      expect(typeof resultData.current).toBe("string");
+      expect(typeof resultData.eventName).toBe("string");
+      expect(typeof resultData.roundId).toBe("string");
+      expect(typeof resultData.updatedAt).toBe("string");
 
       // Verify metadata contains raw blockchain data
       expect(result.metadata).toBeDefined();
@@ -734,7 +723,7 @@ describe("EventTrigger Tests", () => {
       // Create a trigger with conditions
       const originalConditions: EventConditionType[] = [
         {
-          fieldName: "current",
+          fieldName: "AnswerUpdated.current",
           operator: "gt",
           value: "200000000000",
           fieldType: "int256",
@@ -754,7 +743,7 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
               conditions: originalConditions,
               maxEventsPerBlock: 5,
             },
@@ -782,20 +771,18 @@ describe("EventTrigger Tests", () => {
       expect(queries).toHaveLength(1);
 
       const query = queries[0];
-      expect(query.contractAbi).toEqual(
-        JSON.stringify(CHAINLINK_AGGREGATOR_ABI)
-      );
+      expect(query.contractAbi).toEqual(CHAINLINK_AGGREGATOR_ABI);
       expect(query.conditions).toHaveLength(1);
       expect(query.maxEventsPerBlock).toBe(5);
 
       const condition = query.conditions[0];
-      expect(condition.fieldName).toBe("current");
+      expect(condition.fieldName).toBe("AnswerUpdated.current");
       expect(condition.operator).toBe("gt");
       expect(condition.value).toBe("200000000000");
       expect(condition.fieldType).toBe("int256");
     });
 
-    test("should handle contractAbi as string format", () => {
+    test("should reject contractAbi as string format", () => {
       const abiArray = [
         {
           anonymous: false,
@@ -824,10 +811,10 @@ describe("EventTrigger Tests", () => {
         },
       ];
 
-      // Test with string format (contractAbi is always a string)
+      // Test with string format (should be rejected)
       const trigger = TriggerFactory.create({
-        id: "test-string-abi",
-        name: "eventTriggerString",
+        id: "test-string-abi-rejected",
+        name: "eventTriggerStringRejected",
         type: TriggerType.Event,
         data: {
           queries: [
@@ -838,7 +825,62 @@ describe("EventTrigger Tests", () => {
                   values: [TRANSFER_EVENT_SIGNATURE],
                 },
               ],
-              contractAbi: JSON.stringify(abiArray), // Pass as string
+              contractAbi: JSON.stringify(abiArray) as any, // Force string type
+            },
+          ],
+        },
+      });
+
+      // Should throw error for string format
+      expect(() => trigger.toRequest()).toThrow(
+        "contractAbi must be an array of ABI elements"
+      );
+    });
+
+    test("should strictly require contractAbi as array format", () => {
+      const abiArray = [
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "value",
+              type: "uint256",
+            },
+          ],
+          name: "Transfer",
+          type: "event",
+        },
+      ];
+
+      // Test with array format (contractAbi must be an array)
+      const trigger = TriggerFactory.create({
+        id: "test-array-abi",
+        name: "eventTriggerArray",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
+              topics: [
+                {
+                  values: [TRANSFER_EVENT_SIGNATURE],
+                },
+              ],
+              contractAbi: abiArray, // Pass as array
             },
           ],
         },
@@ -851,8 +893,9 @@ describe("EventTrigger Tests", () => {
       const request = trigger.toRequest();
       const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
 
-      // Should remain as JSON string in protobuf
-      expect(query.getContractAbi()).toBe(JSON.stringify(abiArray));
+      // Should have contractAbi in protobuf list format
+      expect(query.getContractAbiList()).toBeDefined();
+      expect(query.getContractAbiList().length).toBe(abiArray.length);
 
       // Test round-trip: fromResponse should keep it as string
       const deserializedTrigger = EventTrigger.fromResponse(request);
@@ -863,7 +906,7 @@ describe("EventTrigger Tests", () => {
       const deserializedQuery = (
         deserializedTriggerData.queries as unknown[]
       )[0] as Record<string, unknown>;
-      expect(deserializedQuery.contractAbi).toBe(JSON.stringify(abiArray));
+      expect(deserializedQuery.contractAbi).toEqual(abiArray);
     });
 
     test("should handle optional contractAbi (not provided)", () => {
@@ -894,8 +937,9 @@ describe("EventTrigger Tests", () => {
       const request = trigger.toRequest();
       const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
 
-      // Should have empty string for contractAbi in protobuf
-      expect(query.getContractAbi()).toBe("");
+      // Should have empty contractAbi list in protobuf
+      expect(query.getContractAbiList()).toBeDefined();
+      expect(query.getContractAbiList().length).toBe(0);
 
       // Test round-trip: fromResponse should handle empty contractAbi
       const deserializedTrigger = EventTrigger.fromResponse(request);
@@ -906,7 +950,7 @@ describe("EventTrigger Tests", () => {
       const deserializedQuery2 = (
         deserializedTriggerData2.queries as unknown[]
       )[0] as Record<string, unknown>;
-      expect(deserializedQuery2.contractAbi).toBeUndefined();
+      expect(deserializedQuery2.contractAbi).toEqual([]);
     });
 
     test("should run trigger with enriched Transfer event parsing", async () => {
@@ -928,7 +972,7 @@ describe("EventTrigger Tests", () => {
                   ],
                 },
               ],
-              contractAbi: JSON.stringify([
+              contractAbi: [
                 {
                   anonymous: false,
                   inputs: [
@@ -954,12 +998,12 @@ describe("EventTrigger Tests", () => {
                   name: "Transfer",
                   type: "event",
                 },
-              ]),
+              ],
               methodCalls: [
                 {
                   methodName: "decimals",
                   methodParams: [],
-                  applyToFields: ["value"],
+                  applyToFields: ["Transfer.value"],
                 },
               ],
             },
@@ -989,7 +1033,7 @@ describe("EventTrigger Tests", () => {
       expect(transferData.fromAddress).toBeDefined();
       expect(transferData.toAddress).toBeDefined();
       expect(transferData.value).toBeDefined(); // Formatted value (main value field)
-      expect(transferData.valueRaw).toBeDefined(); // Raw uint256 value as string
+      // Note: valueRaw field removed in backend changes
       expect(transferData.tokenName).toBeDefined();
       expect(transferData.tokenSymbol).toBeDefined();
       expect(transferData.tokenDecimals).toBeDefined();
@@ -1006,7 +1050,7 @@ describe("EventTrigger Tests", () => {
       expect(typeof transferData.fromAddress).toBe("string");
       expect(typeof transferData.toAddress).toBe("string");
       expect(typeof transferData.value).toBe("string"); // Formatted value
-      expect(typeof transferData.valueRaw).toBe("string"); // Raw uint256 value
+      // Note: valueRaw field removed in backend changes
       expect(typeof transferData.blockNumber).toBe("number");
       expect(typeof transferData.transactionHash).toBe("string");
     });
@@ -1123,17 +1167,17 @@ describe("EventTrigger Tests", () => {
                   values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
                 },
               ],
-              contractAbi: JSON.stringify(CHAINLINK_AGGREGATOR_ABI),
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
               methodCalls: [
                 {
                   methodName: "decimals",
                   methodParams: [],
-                  applyToFields: ["current"],
+                  applyToFields: ["AnswerUpdated.current"],
                 },
               ],
               conditions: [
                 {
-                  fieldName: "current",
+                  fieldName: "AnswerUpdated.current",
                   operator: "gt",
                   value: "2000.00000000",
                   fieldType: "decimal",
@@ -1463,27 +1507,24 @@ describe("EventTrigger Tests", () => {
         const triggeredData = triggeredStep?.output;
 
         // Verify essential event trigger fields match (allowing for simulation differences)
-        // Direct response should have event data
+        // Direct response should have blockchain log data
         expect(directData).toBeDefined();
-        expect(directData.contractAddress).toBeDefined();
+        expect(directData.address).toBeDefined(); // Contract address in log format
         expect(directData.chainId).toBeDefined();
-        expect(directData.eventFound).toBeDefined();
+        expect(directData.topics).toBeDefined(); // Event signature and indexed params
+        expect(directData.blockNumber).toBeDefined();
 
         // Simulation and triggered data might have different structures
-        if (simulatedData && simulatedData.contractAddress) {
-          expect(directData.contractAddress).toBe(
-            simulatedData.contractAddress
-          );
+        if (simulatedData && simulatedData.address) {
+          expect(directData.address).toBe(simulatedData.address);
         }
 
         if (simulatedData && simulatedData.chainId) {
           expect(directData.chainId).toBe(simulatedData.chainId);
         }
 
-        if (triggeredData && triggeredData.contractAddress) {
-          expect(directData.contractAddress).toBe(
-            triggeredData.contractAddress
-          );
+        if (triggeredData && triggeredData.address) {
+          expect(directData.address).toBe(triggeredData.address);
         }
 
         // Verify dynamic fields exist but don't compare values
@@ -2126,6 +2167,119 @@ describe("EventTrigger Tests", () => {
       expect(request).toBeDefined();
       expect(request.getId()).toBe("basic-test");
       expect(request.getName()).toBe("basic_event_trigger");
+    });
+
+    test("should handle eventName.fieldName pattern in applyToFields", () => {
+      const trigger = TriggerFactory.create({
+        id: "test-trigger-id",
+        name: "eventTrigger",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: ["0x694AA1769357215DE4FAC081bf1f309aDC325306"],
+              topics: [
+                {
+                  values: [
+                    "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
+                  ],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              methodCalls: [
+                {
+                  methodName: "decimals",
+                  methodParams: [],
+                  applyToFields: ["AnswerUpdated.current"], // Test eventName.fieldName pattern
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+
+      // Verify the method call configuration
+      const methodCalls = query.getMethodCallsList();
+      expect(methodCalls).toHaveLength(1);
+      expect(methodCalls[0].getMethodName()).toBe("decimals");
+      expect(methodCalls[0].getApplyToFieldsList()).toEqual([
+        "AnswerUpdated.current",
+      ]);
+
+      // Verify contractAbi is properly set
+      expect(query.getContractAbiList()).toBeDefined();
+      expect(query.getContractAbiList().length).toBe(1);
+    });
+
+    test("should handle eventName.fieldName pattern in conditions for precise targeting", () => {
+      // Test that conditions use the same eventName.fieldName format as applyToFields
+      const trigger = TriggerFactory.create({
+        id: "test-condition-pattern",
+        name: "eventConditionPattern",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: ["0x694AA1769357215DE4FAC081bf1f309aDC325306"],
+              topics: [
+                {
+                  values: [
+                    "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
+                  ],
+                },
+              ],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+              conditions: [
+                {
+                  fieldName: "AnswerUpdated.current", // Use eventName.fieldName pattern
+                  operator: "gt",
+                  value: "2000.00000000",
+                  fieldType: "decimal",
+                },
+                {
+                  fieldName: "AnswerUpdated.roundId", // Another field with same pattern
+                  operator: "gt",
+                  value: "1000",
+                  fieldType: "uint256",
+                },
+              ],
+              methodCalls: [
+                {
+                  methodName: "decimals",
+                  methodParams: [],
+                  applyToFields: ["AnswerUpdated.current"], // Same pattern as conditions
+                },
+              ],
+            },
+          ],
+        },
+      }) as EventTrigger;
+
+      expect(() => trigger.toRequest()).not.toThrow();
+      const request = trigger.toRequest();
+      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
+
+      // Verify conditions use the eventName.fieldName pattern
+      expect(query.getConditionsList()).toHaveLength(2);
+      
+      const condition1 = query.getConditionsList()[0];
+      expect(condition1.getFieldName()).toBe("AnswerUpdated.current");
+      expect(condition1.getOperator()).toBe("gt");
+      expect(condition1.getFieldType()).toBe("decimal");
+      
+      const condition2 = query.getConditionsList()[1];
+      expect(condition2.getFieldName()).toBe("AnswerUpdated.roundId");
+      expect(condition2.getOperator()).toBe("gt");
+      expect(condition2.getFieldType()).toBe("uint256");
+
+      // Verify methodCalls also use the same pattern
+      expect(query.getMethodCallsList()).toHaveLength(1);
+      const methodCall = query.getMethodCallsList()[0];
+      expect(methodCall.getApplyToFieldsList()).toEqual(["AnswerUpdated.current"]);
     });
   });
 });

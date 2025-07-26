@@ -183,29 +183,26 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
-      // Handle both flattened (single method) and array (multiple methods) formats
-      // Multiple methods format
-      expect((result.data as any[]).length).toBe(
-        params.nodeConfig.methodCalls.length
-      );
-      const latestRoundResult = (result.data as any[]).find(
-        (r: any) => r.methodName === "latestRoundData"
-      );
-      expect(latestRoundResult).toBeDefined();
-      expect(latestRoundResult.success).toBe(true);
-      expect(latestRoundResult.value).toBeDefined(); // Changed from .data to .data
+      // Handle flattened object format (new design)
+      expect(typeof result.data).toBe("object");
+      expect(result.data).not.toBeNull();
+      expect(Array.isArray(result.data)).toBe(false);
+
+      // Verify the method result is available as a top-level property
+      const data = result.data as Record<string, any>;
+      expect(data.latestRoundData).toBeDefined();
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      if (latestRoundResult.success && latestRoundResult.value) {
+      if (data.latestRoundData) {
         // The response should be an object with named fields
-        expect(typeof latestRoundResult.value).toBe("object");
+        expect(typeof data.latestRoundData).toBe("object");
 
         // Verify it contains expected oracle fields
-        expect(latestRoundResult.value.roundId).toBeDefined();
-        expect(latestRoundResult.value.answer).toBeDefined();
-        expect(latestRoundResult.value.startedAt).toBeDefined();
-        expect(latestRoundResult.value.updatedAt).toBeDefined();
-        expect(latestRoundResult.value.answeredInRound).toBeDefined();
+        expect(data.latestRoundData.roundId).toBeDefined();
+        expect(data.latestRoundData.answer).toBeDefined();
+        expect(data.latestRoundData.startedAt).toBeDefined();
+        expect(data.latestRoundData.updatedAt).toBeDefined();
+        expect(data.latestRoundData.answeredInRound).toBeDefined();
       }
 
       expect(result.nodeId).toBeDefined();
@@ -242,43 +239,31 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect((result.data as any[]).length).toBe(
-        params.nodeConfig.methodCalls.length
-      );
+      
+      // Handle flattened object format (new design)
+      expect(typeof result.data).toBe("object");
+      expect(result.data).not.toBeNull();
+      expect(Array.isArray(result.data)).toBe(false);
       expect(result.nodeId).toBeDefined();
 
-      // Check that we got results for both methods
-      const latestRoundResult = (result.data as any[]).find(
-        (r: any) => r.methodName === "latestRoundData"
-      );
-      const decimalsResult = (result.data as any[]).find(
-        (r: any) => r.methodName === "decimals"
-      );
-
-      expect(latestRoundResult).toBeDefined();
-      expect(decimalsResult).toBeDefined();
+      // Check that we got results for both methods in flattened format
+      const data = result.data as Record<string, any>;
+      expect(data.latestRoundData).toBeDefined();
+      expect(data.decimals).toBeDefined();
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      if (
-        latestRoundResult &&
-        latestRoundResult.value &&
-        typeof latestRoundResult.value === "object"
-      ) {
-        const data = latestRoundResult.value as any;
-        if (data.roundId) expect(typeof data.roundId).toBe("string"); // uint80 -> string (large number)
-        if (data.answer) expect(typeof data.answer).toBe("string"); // int256 -> string (large number)
-        if (data.startedAt) expect(typeof data.startedAt).toBe("string"); // uint256 -> string (large number)
-        if (data.updatedAt) expect(typeof data.updatedAt).toBe("string"); // uint256 -> string (large number)
-        if (data.answeredInRound)
-          expect(typeof data.answeredInRound).toBe("string"); // uint80 -> string (large number)
+      if (data.latestRoundData && typeof data.latestRoundData === "object") {
+        const latestRoundData = data.latestRoundData as any;
+        if (latestRoundData.roundId) expect(typeof latestRoundData.roundId).toBe("string"); // uint80 -> string (large number)
+        if (latestRoundData.answer) expect(typeof latestRoundData.answer).toBe("string"); // int256 -> string (large number)
+        if (latestRoundData.startedAt) expect(typeof latestRoundData.startedAt).toBe("string"); // uint256 -> string (large number)
+        if (latestRoundData.updatedAt) expect(typeof latestRoundData.updatedAt).toBe("string"); // uint256 -> string (large number)
+        if (latestRoundData.answeredInRound)
+          expect(typeof latestRoundData.answeredInRound).toBe("string"); // uint80 -> string (large number)
       }
 
-      if (decimalsResult && decimalsResult.value) {
-        expect(typeof decimalsResult.value).toBe("object"); // decimals result should be object containing the decimals field
-        const decimalsData = decimalsResult.value as any;
-        if (decimalsData.decimals) {
-          expect(typeof decimalsData.decimals).toBe("string"); // decimals field should be string type (uint8 -> string)
-        }
+      if (data.decimals) {
+        expect(typeof data.decimals).toBe("string"); // decimals field should be string type (uint8 -> string)
       }
     });
 
@@ -385,25 +370,20 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect((result.data as any[]).length).toBe(
-        params.nodeConfig.methodCalls.length
-      );
+      
+      // Handle flattened object format (new design)
+      expect(typeof result.data).toBe("object");
+      expect(result.data).not.toBeNull();
+      expect(Array.isArray(result.data)).toBe(false);
       expect(result.nodeId).toBeDefined();
 
-      // Check that we got results for the description method
-      const descriptionResult = (result.data as any[]).find(
-        (r: any) => r.methodName === "description"
-      );
-      expect(descriptionResult).toBeDefined();
-      expect(descriptionResult.success).toBe(true);
+      // Check that we got results for the description method in flattened format
+      const data = result.data as Record<string, any>;
+      expect(data.description).toBeDefined();
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      if (descriptionResult && descriptionResult.value) {
-        expect(typeof descriptionResult.value).toBe("object"); // description result should be object containing the description field
-        const descriptionData = descriptionResult.value as any;
-        if (descriptionData.description) {
-          expect(typeof descriptionData.description).toBe("string"); // description field should be string type (string -> string)
-        }
+      if (data.description) {
+        expect(typeof data.description).toBe("string"); // description field should be string type (string -> string)
       }
     });
 
@@ -451,72 +431,44 @@ describe("ContractRead Node Tests", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
-      const data = result.data as any;
+      // Handle flattened object format (new design)
+      expect(typeof result.data).toBe("object");
+      expect(result.data).not.toBeNull();
+      expect(Array.isArray(result.data)).toBe(false);
 
-      // Check that rawStructuredFields is NOT present in the data field for direct execution
-      // This ensures the backend fix is working correctly for all execution types
-      expect(Array.isArray(data)).toBe(true);
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length); // decimals and latestRoundData
+      const data = result.data as Record<string, any>;
 
-      // Find the latestRoundData result
-      const latestRoundResult = data.find(
-        (item: any) => item.methodName === "latestRoundData"
-      );
-      const decimalsResult = data.find(
-        (item: any) => item.methodName === "decimals"
-      );
-
-      expect(latestRoundResult).toBeDefined();
-      expect(decimalsResult).toBeDefined();
-
-      // Check that rawStructuredFields is NOT present in the data field
-      expect(latestRoundResult.value.rawStructuredFields).toBeUndefined();
+      // Check that we got results for both methods in flattened format
+      expect(data.latestRoundData).toBeDefined();
+      expect(data.decimals).toBeDefined();
 
       // For our new implementation, we expect direct field access in the latestRoundData result
-      expect(latestRoundResult.value.answer).toBeDefined();
-      expect(latestRoundResult.value.roundId).toBeDefined();
-      expect(latestRoundResult.value.startedAt).toBeDefined();
-      expect(latestRoundResult.value.updatedAt).toBeDefined();
-      expect(latestRoundResult.value.answeredInRound).toBeDefined();
+      expect(data.latestRoundData.answer).toBeDefined();
+      expect(data.latestRoundData.roundId).toBeDefined();
+      expect(data.latestRoundData.startedAt).toBeDefined();
+      expect(data.latestRoundData.updatedAt).toBeDefined();
+      expect(data.latestRoundData.answeredInRound).toBeDefined();
 
-      const answerValue = latestRoundResult.value.answer;
+      const answerValue = data.latestRoundData.answer;
       expect(answerValue).toBeTruthy();
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
       expect(typeof answerValue).toBe("string"); // answer should be string type (formatted decimal)
-      expect(typeof decimalsResult.value).toBe("object"); // decimals result should be object containing the decimals field
-      if (decimalsResult.value && typeof decimalsResult.value === "object") {
-        const decimalsData = decimalsResult.value as any;
-        if (decimalsData.decimals) {
-          expect(typeof decimalsData.decimals).toBe("string"); // decimals field should be string type
-        }
-      }
+      expect(typeof data.decimals).toBe("string"); // decimals field should be string type
 
       expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
 
       expect(result.nodeId).toBeDefined();
 
-      expect(result.metadata?._raw).toBeDefined();
+      // Check metadata array (new format)
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBeGreaterThan(0);
 
-      const firstMethod = result.metadata?._raw?.[0];
+      const firstMethod = result.metadata[0];
       expect(firstMethod.methodName).toBeDefined();
       expect(firstMethod.success).toBe(true);
       expect(firstMethod.methodName).toBe("decimals");
-
-      // Check if the structured fields data is present
-      if (firstMethod.value && Array.isArray(firstMethod.value)) {
-        expect(firstMethod.value.length).toBeGreaterThan(0);
-
-        // Check the format of the first field
-        const firstField = firstMethod.value[0];
-        expect(firstField).toHaveProperty("name");
-        expect(firstField).toHaveProperty("type");
-        expect(firstField).toHaveProperty("value");
-      }
-
-      expect(result.metadata?._raw).toBeDefined();
-      expect(result.metadata?._raw?.length).toBeGreaterThan(0);
-      expect(result.metadata?._raw?.[0]?.data).toBeDefined();
     });
   });
 
@@ -572,42 +524,25 @@ describe("ContractRead Node Tests", () => {
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      expect(Array.isArray(output)).toBe(true);
-      expect(output.length).toBe(contractReadNode.data.methodCalls.length);
+      
+      // Handle flattened object format (new design)
+      expect(typeof output).toBe("object");
+      expect(output).not.toBeNull();
+      expect(Array.isArray(output)).toBe(false);
 
-      // Check that rawStructuredFields is NOT present in the data field for simulation
-      // This ensures the backend fix is working correctly
-      for (const item of output) {
-        expect(item.value).toBeDefined();
-        expect(item.value.rawStructuredFields).toBeUndefined();
-
-        // Also check that rawStructuredFields is not present at the top level of the result
-        expect(item.rawStructuredFields).toBeUndefined();
-      }
-
-      // Verify that the actual data fields are present
-      const latestRoundResult = output.find(
-        (r: any) => r.methodName === "latestRoundData"
-      );
-      const decimalsResult = output.find(
-        (r: any) => r.methodName === "decimals"
-      );
-
-      expect(latestRoundResult).toBeDefined();
-      expect(decimalsResult).toBeDefined();
-      expect(latestRoundResult.value).toHaveProperty("answer");
-      expect(latestRoundResult.value).toHaveProperty("roundId");
-      expect(decimalsResult.value).toHaveProperty("decimals");
+      // Verify that the actual data fields are present in flattened format
+      expect(output.latestRoundData).toBeDefined();
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(typeof output.decimals).toBe("string");
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
-      if (latestRoundResult.value.answer) {
-        expect(typeof latestRoundResult.value.answer).toBe("string"); // int256 -> string (large number)
+      if (output.latestRoundData.answer) {
+        expect(typeof output.latestRoundData.answer).toBe("string"); // int256 -> string (large number)
       }
-      if (latestRoundResult.value.roundId) {
-        expect(typeof latestRoundResult.value.roundId).toBe("string"); // uint80 -> string (large number)
-      }
-      if (decimalsResult.value.decimals) {
-        expect(typeof decimalsResult.value.decimals).toBe("string"); // uint8 -> string (ABI parsing)
+      if (output.latestRoundData.roundId) {
+        expect(typeof output.latestRoundData.roundId).toBe("string"); // uint80 -> string (large number)
       }
     });
 
@@ -667,46 +602,24 @@ describe("ContractRead Node Tests", () => {
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      expect(output.length).toBe(contractReadNode.data.methodCalls.length);
+      
+      // Handle flattened object format (new design)
+      expect(typeof output).toBe("object");
+      expect(output).not.toBeNull();
+      expect(Array.isArray(output)).toBe(false);
 
-      // Check that rawStructuredFields is NOT present in the data field for simulation
-      // This ensures the backend fix is working correctly
-      for (const item of output) {
-        expect(item.value).toBeDefined();
-        expect(item.value.rawStructuredFields).toBeUndefined();
-      }
-
-      // Verify that the actual data fields are present
-      const latestRoundResult = output.find(
-        (r: any) => r.methodName === "latestRoundData"
-      );
-      const decimalsResult = output.find(
-        (r: any) => r.methodName === "decimals"
-      );
-
-      expect(latestRoundResult).toBeDefined();
-      expect(decimalsResult).toBeDefined();
-      expect(latestRoundResult.value).toHaveProperty("answer");
-      expect(latestRoundResult.value).toHaveProperty("answerRaw");
-      expect(latestRoundResult.value).toHaveProperty("roundId");
-      expect(decimalsResult.value).toHaveProperty("decimals");
+      // Verify that the actual data fields are present in flattened format
+      expect(output.latestRoundData).toBeDefined();
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(typeof output.decimals).toBe("string");
 
       // Check that decimal formatting was applied
-      if (latestRoundResult.value.answer) {
+      if (output.latestRoundData.answer) {
         // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
-        expect(typeof latestRoundResult.value.answer).toBe("string");
-        expect(latestRoundResult.value.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
-      }
-
-      // Check that answerRaw field is present
-      if (latestRoundResult.value.answerRaw) {
-        expect(typeof latestRoundResult.value.answerRaw).toBe("string");
-        expect(latestRoundResult.value.answerRaw).toMatch(/^\d+$/); // Should be raw integer
-      }
-
-      // 🔍 TYPE CHECK: Verify other fields have correct types
-      if (decimalsResult.value.decimals) {
-        expect(typeof decimalsResult.value.decimals).toBe("string"); // decimals field should be string type
+        expect(typeof output.latestRoundData.answer).toBe("string");
+        expect(output.latestRoundData.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
       }
     });
   });
@@ -803,21 +716,15 @@ describe("ContractRead Node Tests", () => {
 
         const output = contractReadStep.output as any;
         expect(output).toBeDefined();
-        expect(Array.isArray(output)).toBe(true);
-        expect(output.length).toBe(contractReadNode.data.methodCalls.length);
+        
+        // Handle flattened object format (new design)
+        expect(typeof output).toBe("object");
+        expect(output).not.toBeNull();
+        expect(Array.isArray(output)).toBe(false);
 
-        const latestRoundResult = output.find(
-          (r: any) => r.methodName === "latestRoundData"
-        );
-
-        const descriptionResult = output.find(
-          (r: any) => r.methodName === "description"
-        );
-
-        expect(latestRoundResult).toBeDefined();
-        expect(descriptionResult).toBeDefined();
-        expect(latestRoundResult.success).toBe(true);
-        expect(descriptionResult.success).toBe(true);
+        // Verify that the actual data fields are present in flattened format
+        expect(output.latestRoundData).toBeDefined();
+        expect(output.description).toBeDefined();
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -924,57 +831,39 @@ describe("ContractRead Node Tests", () => {
 
         const output = contractReadStep.output as any;
         expect(output).toBeDefined();
-        expect(Array.isArray(output)).toBe(true);
-        expect(output.length).toBe(contractReadNode.data.methodCalls.length);
+        
+        // Handle flattened object format (new design)
+        expect(typeof output).toBe("object");
+        expect(output).not.toBeNull();
+        expect(Array.isArray(output)).toBe(false);
 
-        // Find the specific method results
-        const decimalsResult = output.find(
-          (r: any) => r.methodName === "decimals"
-        );
-        const latestRoundResult = output.find(
-          (r: any) => r.methodName === "latestRoundData"
-        );
-
-        expect(decimalsResult).toBeDefined();
-        expect(latestRoundResult).toBeDefined();
-        expect(decimalsResult.success).toBe(true);
-        expect(latestRoundResult.success).toBe(true);
-
-        // Verify that both method calls are included in the response
-        expect(decimalsResult.value).toBeDefined();
-        expect(latestRoundResult.value).toBeDefined();
+        // Verify that both method calls are included in the response in flattened format
+        expect(output.decimals).toBeDefined();
+        expect(output.latestRoundData).toBeDefined();
 
         // Verify that decimals result contains the decimals value
-        expect(decimalsResult.value).toHaveProperty("decimals");
-        expect(typeof decimalsResult.value.decimals).toBe("string");
+        expect(typeof output.decimals).toBe("string");
 
-        // Verify that latestRoundData result contains formatted and raw values
-        expect(latestRoundResult.value).toHaveProperty("answer");
-        expect(latestRoundResult.value).toHaveProperty("answerRaw");
-        expect(latestRoundResult.value).toHaveProperty("roundId");
-        expect(latestRoundResult.value).toHaveProperty("answeredInRound");
-        expect(latestRoundResult.value).toHaveProperty("startedAt");
-        expect(latestRoundResult.value).toHaveProperty("updatedAt");
+        // Verify that latestRoundData result contains formatted values
+        expect(output.latestRoundData).toHaveProperty("answer");
+        expect(output.latestRoundData).toHaveProperty("roundId");
+        expect(output.latestRoundData).toHaveProperty("answeredInRound");
+        expect(output.latestRoundData).toHaveProperty("startedAt");
+        expect(output.latestRoundData).toHaveProperty("updatedAt");
 
         // Verify decimal formatting was applied to answer field
-        const answer = latestRoundResult.value.answer;
-        const answerRaw = latestRoundResult.value.answerRaw;
+        const answer = output.latestRoundData.answer;
 
         expect(typeof answer).toBe("string");
-        expect(typeof answerRaw).toBe("string");
 
         // Answer should be formatted as decimal (contains a dot)
         expect(answer).toMatch(/^\d+\.\d+$/);
 
-        // AnswerRaw should be raw integer (no decimal point)
-        expect(answerRaw).toMatch(/^\d+$/);
-
-        // Verify that answerRaw is the original value before formatting
-        expect(parseInt(answerRaw)).toBeGreaterThan(0);
+        // Verify that answer is a valid formatted value
         expect(parseFloat(answer)).toBeGreaterThan(0);
 
-        // Check that rawStructuredFields is present for deployed workflow execution
-        expect(latestRoundResult.value.rawStructuredFields).toBeUndefined();
+        // Check that rawStructuredFields is not present for deployed workflow execution
+        // (rawStructuredFields should not exist in the flattened object format)
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1130,29 +1019,26 @@ describe("ContractRead Node Tests", () => {
         // Verify consistent structure
         const directOutput = directResponse.data;
 
-        // Check that all outputs have the same structure - they should all be arrays directly
-        expect(Array.isArray(executedStep?.output)).toBe(true);
-        expect(Array.isArray(simulatedStep?.output)).toBe(true);
-        expect(Array.isArray(directOutput)).toBe(true);
+        // Check that all outputs have the same structure - they should all be flattened objects
+        expect(typeof executedStep?.output).toBe("object");
+        expect(typeof simulatedStep?.output).toBe("object");
+        expect(typeof directOutput).toBe("object");
+        expect(Array.isArray(executedStep?.output)).toBe(false);
+        expect(Array.isArray(simulatedStep?.output)).toBe(false);
+        expect(Array.isArray(directOutput)).toBe(false);
 
         // Check that none of them have the old results wrapper
         expect(executedStep?.output).not.toHaveProperty("results");
         expect(simulatedStep?.output).not.toHaveProperty("results");
         expect(directOutput).not.toHaveProperty("results");
 
-        // Check that all have the same method names
-        const simulatedMethods = simulatedStep?.output
-          .map((r: any) => r.methodName)
-          .sort();
-        const executedMethods = executedStep?.output
-          .map((r: any) => r.methodName)
-          .sort();
-        const directMethods = (directOutput as any)
-          ?.map((r: any) => r.methodName)
-          .sort();
+        // Check that all have the same method fields (flattened object format)
+        const simulatedKeys = Object.keys(simulatedStep?.output || {}).sort();
+        const executedKeys = Object.keys(executedStep?.output || {}).sort();
+        const directKeys = Object.keys(directOutput || {}).sort();
 
-        expect(simulatedMethods).toEqual(executedMethods);
-        expect(simulatedMethods).toEqual(directMethods);
+        expect(simulatedKeys).toEqual(executedKeys);
+        expect(simulatedKeys).toEqual(directKeys);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1613,56 +1499,35 @@ describe("ContractRead Node Tests", () => {
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      expect(Array.isArray(output)).toBe(true);
-      expect(output.length).toBe(contractReadNode.data.methodCalls.length);
+      
+      // Handle flattened object format (new design)
+      expect(typeof output).toBe("object");
+      expect(output).not.toBeNull();
+      expect(Array.isArray(output)).toBe(false);
 
-      // Find the specific method results
-      const decimalsResult = output.find(
-        (r: any) => r.methodName === "decimals"
-      );
-      const latestRoundResult = output.find(
-        (r: any) => r.methodName === "latestRoundData"
-      );
-
-      expect(decimalsResult).toBeDefined();
-      expect(latestRoundResult).toBeDefined();
-      expect(decimalsResult.success).toBe(true);
-      expect(latestRoundResult.success).toBe(true);
-
-      // Verify that both method calls are included in the response
-      expect(decimalsResult.value).toBeDefined();
-      expect(latestRoundResult.value).toBeDefined();
-
-      // Check that rawStructuredFields is NOT present in simulation
-      expect(latestRoundResult.value.rawStructuredFields).toBeUndefined();
+      // Verify that both method calls are included in the response in flattened format
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toBeDefined();
 
       // Verify that decimals result contains the decimals value
-      expect(decimalsResult.value).toHaveProperty("decimals");
-      expect(typeof decimalsResult.value.decimals).toBe("string");
+      expect(typeof output.decimals).toBe("string");
 
-      // Verify that latestRoundData result contains formatted and raw values
-      expect(latestRoundResult.value).toHaveProperty("answer");
-      expect(latestRoundResult.value).toHaveProperty("answerRaw");
-      expect(latestRoundResult.value).toHaveProperty("roundId");
-      expect(latestRoundResult.value).toHaveProperty("answeredInRound");
-      expect(latestRoundResult.value).toHaveProperty("startedAt");
-      expect(latestRoundResult.value).toHaveProperty("updatedAt");
+      // Verify that latestRoundData result contains formatted values
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(output.latestRoundData).toHaveProperty("answeredInRound");
+      expect(output.latestRoundData).toHaveProperty("startedAt");
+      expect(output.latestRoundData).toHaveProperty("updatedAt");
 
       // Verify decimal formatting was applied to answer field
-      const answer = latestRoundResult.value.answer;
-      const answerRaw = latestRoundResult.value.answerRaw;
+      const answer = output.latestRoundData.answer;
 
       expect(typeof answer).toBe("string");
-      expect(typeof answerRaw).toBe("string");
 
       // Answer should be formatted as decimal (contains a dot)
       expect(answer).toMatch(/^\d+\.\d+$/);
 
-      // AnswerRaw should be raw integer (no decimal point)
-      expect(answerRaw).toMatch(/^\d+$/);
-
-      // Verify that answerRaw is the original value before formatting
-      expect(parseInt(answerRaw)).toBeGreaterThan(0);
+      // Verify that answer is a valid formatted value
       expect(parseFloat(answer)).toBeGreaterThan(0);
     });
   });

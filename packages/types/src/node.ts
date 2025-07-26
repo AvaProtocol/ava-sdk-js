@@ -68,31 +68,37 @@ type LoopRunnerConfig =
     }
   | {
       type: "contractRead";
-      config: avs_pb.ContractReadNode.Config.AsObject & {
-        contractAbi?: Array<Record<string, unknown>>; // Allow contractAbi for test compatibility
-        methodCalls?: Array<{
+      config: {
+        contractAddress: string;
+        contractAbi: Array<Record<string, unknown>>;
+        methodCalls: Array<{
           methodName: string;
-          methodParams: string[]; // Array of Handlebars templates for positional parameters
-          applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
-          callData?: string; // Optional: Hex-encoded calldata for the method, which overrides the methodParams if provided
-        }>; // Allow methodCalls for test compatibility
+          methodParams: string[];
+          applyToFields?: string[];
+          callData?: string;
+        }>;
       };
     }
   | {
       type: "contractWrite";
-      config: avs_pb.ContractWriteNode.Config.AsObject & {
-        contractAbi?: Array<Record<string, unknown>>; // Allow contractAbi for test compatibility
-        methodCalls?: Array<{
+      config: {
+        contractAddress: string;
+        contractAbi: Array<Record<string, unknown>>;
+        methodCalls: Array<{
           methodName: string;
-          methodParams: string[]; // Array of Handlebars templates for positional parameters
-          applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
-          callData?: string; // Optional: Hex-encoded calldata for the method, which overrides the methodParams if provided
-        }>; // Allow methodCalls for test compatibility
+          methodParams: string[];
+          applyToFields?: string[];
+          callData?: string;
+        }>;
       };
     }
   | {
-      type: "graphqlDataQuery";
+      type: "graphqlQuery";
       config: avs_pb.GraphQLQueryNode.Config.AsObject;
+    }
+  | {
+      type: "filter";
+      config: avs_pb.FilterNode.Config.AsObject;
     };
 
 export type LoopNodeData = Omit<
