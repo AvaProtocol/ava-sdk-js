@@ -13,7 +13,7 @@ import {
   NodeProps,
   ExecutionMode,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 class LoopNode extends Node {
   constructor(props: LoopNodeProps) {
@@ -52,7 +52,7 @@ class LoopNode extends Node {
 
   private static extractRunnerFromProtobuf(
     loopNodeData: Record<string, unknown>
-  ): { type: string; data: unknown } | null {
+  ): { type: string; config: unknown } | null {
     // Define a mapping of runner types to their corresponding data keys
     const runnerMapping: Record<string, string> = {
       restApi: "restApi",
@@ -66,7 +66,7 @@ class LoopNode extends Node {
     // Iterate over the mapping to find the matching runner type
     for (const [type, key] of Object.entries(runnerMapping)) {
       if (loopNodeData[key]) {
-        return { type, data: loopNodeData[key] };
+        return { type, config: loopNodeData[key] };
       }
     }
     return null;
@@ -147,14 +147,19 @@ class LoopNode extends Node {
 
   private setRunnerOnProtobuf(
     loopNode: avs_pb.LoopNode,
-    runner: { type: string; data?: Record<string, unknown>; config?: Record<string, unknown> }
+    runner: {
+      type: string;
+      data?: Record<string, unknown>;
+      config?: Record<string, unknown>;
+    }
   ): void {
     if (!runner || !runner.type) {
       return;
     }
 
     // Support both old structure (runner.data.config) and new structure (runner.config)
-    const config = runner.config || (runner.data && (runner.data as any).config);
+    const config =
+      runner.config || (runner.data && (runner.data as any).config);
     if (!config) {
       return;
     }
@@ -176,11 +181,13 @@ class LoopNode extends Node {
           contractAddress: writeConfig.contractAddress as string,
           contractAbi: writeConfig.contractAbi as any[],
           methodCalls:
-            (writeConfig.methodCallsList as Array<{
-              methodName: string;
-              methodParams: string[];
-              callData?: string;
-            }>)?.map(call => ({
+            (
+              writeConfig.methodCalls as Array<{
+                methodName: string;
+                methodParams: string[];
+                callData?: string;
+              }>
+            )?.map((call) => ({
               methodName: call.methodName || "",
               methodParams: call.methodParams || [],
               ...(call.callData && { callData: call.callData }),
@@ -196,12 +203,14 @@ class LoopNode extends Node {
           contractAddress: readConfig.contractAddress as string,
           contractAbi: readConfig.contractAbi as any[],
           methodCalls:
-            (readConfig.methodCallsList as Array<{
-              methodName: string;
-              methodParams: string[];
-              callData?: string;
-              applyToFields?: string[];
-            }>)?.map(call => ({
+            (
+              readConfig.methodCalls as Array<{
+                methodName: string;
+                methodParams: string[];
+                callData?: string;
+                applyToFields?: string[];
+              }>
+            )?.map((call) => ({
               methodName: call.methodName || "",
               methodParams: call.methodParams || [],
               ...(call.callData && { callData: call.callData }),
@@ -248,7 +257,26 @@ class LoopNode extends Node {
   }
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown {
-    // For immediate execution, data comes as CustomCode format
+    // For workflow execution, data comes as Loop format with new protobuf Value
+    const loopOutput = outputData.getLoop();
+    if (loopOutput) {
+      // Extract data from the new data field
+      const dataValue = loopOutput.getData();
+      if (dataValue) {
+        try {
+          // Use the standard protobuf conversion utility
+          return convertProtobufValueToJs(dataValue);
+        } catch (error) {
+          console.warn(
+            "Failed to convert loop data from protobuf Value:",
+            error
+          );
+          return null;
+        }
+      }
+    }
+
+    // Fallback: For immediate execution, data might come as CustomCode format
     const customCodeOutput = outputData.getCustomCode();
     if (customCodeOutput) {
       const result = customCodeOutput.toObject();
@@ -264,22 +292,6 @@ class LoopNode extends Node {
       }
 
       return result;
-    }
-
-    // For workflow execution, data comes as Loop format with new protobuf Value
-    const loopOutput = outputData.getLoop();
-    if (loopOutput) {
-      // Extract data from the new data field
-      const dataValue = loopOutput.getData();
-      if (dataValue) {
-        try {
-          // Convert protobuf Value to JavaScript
-          return dataValue.toJavaScript();
-        } catch (error) {
-          console.warn("Failed to convert loop data from protobuf Value:", error);
-          return null;
-        }
-      }
     }
 
     return null;

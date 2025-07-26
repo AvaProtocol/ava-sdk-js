@@ -133,7 +133,7 @@ const contractReadNode = NodeFactory.create({
   type: NodeType.ContractRead,
   data: {
     contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7", // ERC20 token
-    contractAbi: JSON.stringify([/* ERC20 ABI */]),
+    contractAbi: [/* ERC20 ABI */],
     methodCalls: [
       {
         callData: "0x70a08231", // balanceOf(address) signature
@@ -158,7 +158,7 @@ const contractWriteNode = NodeFactory.create({
   data: {
     contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7", // ERC20 token
     callData: "0xa9059cbb", // transfer(address,uint256) signature (fallback)
-    contractAbi: JSON.stringify([/* ERC20 ABI */]),
+    contractAbi: [/* ERC20 ABI */],
     methodCalls: [
       {
         callData: "0xa9059cbb", // transfer(address,uint256) signature
@@ -177,7 +177,7 @@ const transferFromNode = NodeFactory.create({
   data: {
     contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7",
     callData: "0x23b872dd", // transferFrom(address,address,uint256)
-    contractAbi: JSON.stringify([/* ERC20 ABI */]),
+    contractAbi: [/* ERC20 ABI */],
     methodCalls: [
       {
         callData: "0x23b872dd",
@@ -208,7 +208,7 @@ const loopNode = NodeFactory.create({
       data: {
         config: {
           contractAddress: "0xA0b86a33E6411b6a7d9AE326E74250f0DAc8D7C7",
-          contractAbi: JSON.stringify([/* ERC20 ABI */]),
+          contractAbi: [/* ERC20 ABI */],
           methodCalls: [
             {
               callData: "0x70a08231",

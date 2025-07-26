@@ -59,12 +59,6 @@ export const createContractWriteNodeProps = async (
   salt: string
 ): Promise<ContractWriteNodeProps> => {
   const config = await getTestConfig();
-  // Encode the createAccount function call
-  const contract = new ethers.Contract(config.factoryAddress, factoryProxyAbi);
-  const callData = contract.interface.encodeFunctionData("createAccount", [
-    owner,
-    ethers.toBigInt(salt),
-  ]);
 
   return {
     id: getNextId(),
@@ -72,8 +66,13 @@ export const createContractWriteNodeProps = async (
     type: NodeType.ContractWrite,
     data: {
       contractAddress: config.factoryAddress,
-      callData,
       contractAbi: factoryProxyAbi,
+      methodCalls: [
+        {
+          methodName: "createAccount",
+          methodParams: [salt],
+        },
+      ],
     },
   };
 };
@@ -83,12 +82,6 @@ export const createContractReadNodeProps = async (
   salt: string
 ): Promise<ContractReadNodeProps> => {
   const config = await getTestConfig();
-  // Encode the getAddress function call
-  const contract = new ethers.Contract(config.factoryAddress, factoryProxyAbi);
-  const callData = contract.interface.encodeFunctionData("getAddress", [
-    owner,
-    ethers.toBigInt(salt),
-  ]);
 
   return {
     id: getNextId(),
@@ -99,8 +92,8 @@ export const createContractReadNodeProps = async (
       contractAbi: factoryProxyAbi,
       methodCalls: [
         {
-          callData,
           methodName: "getAddress",
+          methodParams: [salt],
         },
       ],
     },

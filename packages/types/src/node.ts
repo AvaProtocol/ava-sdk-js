@@ -51,29 +51,56 @@ export interface RestAPINodeData {
 }
 export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
+
+// Define individual runner types for better type discrimination
+type LoopRunnerConfig =
+  | {
+      type: "restApi";
+      config: avs_pb.RestAPINode.Config.AsObject;
+    }
+  | {
+      type: "customCode";
+      config: { lang: CustomCodeLang; source: string };
+    }
+  | {
+      type: "ethTransfer";
+      config: avs_pb.ETHTransferNode.Config.AsObject;
+    }
+  | {
+      type: "contractRead";
+      config: avs_pb.ContractReadNode.Config.AsObject & {
+        contractAbi?: Array<Record<string, unknown>>; // Allow contractAbi for test compatibility
+        methodCalls?: Array<{
+          methodName: string;
+          methodParams: string[]; // Array of Handlebars templates for positional parameters
+          applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
+          callData?: string; // Optional: Hex-encoded calldata for the method, which overrides the methodParams if provided
+        }>; // Allow methodCalls for test compatibility
+      };
+    }
+  | {
+      type: "contractWrite";
+      config: avs_pb.ContractWriteNode.Config.AsObject & {
+        contractAbi?: Array<Record<string, unknown>>; // Allow contractAbi for test compatibility
+        methodCalls?: Array<{
+          methodName: string;
+          methodParams: string[]; // Array of Handlebars templates for positional parameters
+          applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
+          callData?: string; // Optional: Hex-encoded calldata for the method, which overrides the methodParams if provided
+        }>; // Allow methodCalls for test compatibility
+      };
+    }
+  | {
+      type: "graphqlDataQuery";
+      config: avs_pb.GraphQLQueryNode.Config.AsObject;
+    };
+
 export type LoopNodeData = Omit<
   avs_pb.LoopNode.Config.AsObject,
   "executionMode"
 > & {
   // The runner field matches the protobuf oneof runner structure
-  runner?: {
-    type:
-      | "restApi"
-      | "customCode"
-      | "ethTransfer"
-      | "contractRead"
-      | "contractWrite"
-      | "graphqlDataQuery";
-    data: {
-      config:
-        | avs_pb.RestAPINode.Config.AsObject
-        | { lang: CustomCodeLang; source: string }
-        | avs_pb.ETHTransferNode.Config.AsObject
-        | avs_pb.ContractReadNode.Config.AsObject
-        | avs_pb.ContractWriteNode.Config.AsObject
-        | avs_pb.GraphQLQueryNode.Config.AsObject;
-    };
-  };
+  runner?: LoopRunnerConfig;
   // Execution mode for loop iterations - override the protobuf executionMode field
   executionMode?: ExecutionMode;
 };

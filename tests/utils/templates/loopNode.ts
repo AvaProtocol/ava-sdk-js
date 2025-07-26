@@ -80,8 +80,8 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
           contractAbi: "{{contract.abi}}",
           methodCalls: [
             {
-              callData: "{{contract.callData}}",
               methodName: "{{contract.methodName}}",
+              methodParams: "{{contract.methodParams}}",
             },
           ],
         },
@@ -106,8 +106,8 @@ export const loopNodeWithContractWriteProps: LoopNodeProps = {
           contractAbi: "{{contract.abi}}",
           methodCalls: [
             {
-              callData: "{{contract.callData}}",
               methodName: "{{contract.methodName}}",
+              methodParams: "{{contract.methodParams}}",
             },
           ],
         },
