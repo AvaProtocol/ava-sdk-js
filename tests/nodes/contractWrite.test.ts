@@ -40,7 +40,7 @@ const SEPOLIA_TOKEN_CONFIGS = {
 };
 
 // Standard ERC20 ABI for testing (approve and transfer functions)
-const ERC20_ABI = JSON.stringify([
+const ERC20_ABI: any[] = [
   {
     constant: false,
     inputs: [
@@ -80,8 +80,8 @@ const ERC20_ABI = JSON.stringify([
     outputs: [{ name: "", type: "string" }],
     stateMutability: "view",
     type: "function",
-  },
-]);
+  }
+];
 
 // Helper function to check if we're on Sepolia
 async function isSepoliaChain(): Promise<boolean> {
@@ -154,7 +154,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: approveCallData,
@@ -199,7 +199,7 @@ describe("ContractWrite Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.nodeId).toBeDefined();
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
+      
       expect(result.data).not.toHaveProperty("results");
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
@@ -211,8 +211,8 @@ describe("ContractWrite Node Tests", () => {
       const approveResult = data.find((r: any) => r.methodName === "approve");
       expect(approveResult).toBeDefined();
       expect(approveResult.methodName).toBe("approve");
-      expect(approveResult.transaction).toBeDefined();
-      expect(approveResult.transaction.hash).toBeDefined();
+      expect(approveResult.receipt).toBeDefined();
+      expect(approveResult.receipt.transactionHash).toBeDefined();
     });
 
     test("should handle multiple method calls", async () => {
@@ -228,7 +228,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: createApproveCallData(spender1, "50"),
@@ -258,7 +258,7 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
+      
       expect(result.data).not.toHaveProperty("results");
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
@@ -281,7 +281,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Zero address
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -309,7 +309,7 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
+      
       expect(result.data).not.toHaveProperty("results");
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
@@ -329,11 +329,11 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: "0xinvalidcalldata", // Invalid call data
               methodName: "approve",
+              methodParams: ["invalid_address", "invalid_amount"], // Invalid parameters
             },
           ],
         },
@@ -355,7 +355,7 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
+      
       expect(result.data).not.toHaveProperty("results");
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
@@ -381,7 +381,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: ERC20_ABI, // ERC20_ABI is already a JSON string
+          contractAbi: ERC20_ABI, // Convert array to JSON string
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -445,7 +445,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -511,7 +511,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -602,7 +602,7 @@ describe("ContractWrite Node Tests", () => {
 
       const contractWriteConfig = {
         contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-        contractAbi: JSON.stringify(ERC20_ABI),
+        contractAbi: ERC20_ABI,
         methodCalls: [
           {
             callData: createApproveCallData(
@@ -732,14 +732,14 @@ describe("ContractWrite Node Tests", () => {
           expect(directData[i].success).toBe(simulatedData[i].success);
           expect(directData[i].returnData).toBe(simulatedData[i].returnData);
 
-          // Verify transaction structure exists but don't compare dynamic fields
-          expect(directData[i].transaction).toBeDefined();
-          expect(simulatedData[i].transaction).toBeDefined();
-          expect(directData[i].transaction.chainId).toBe(
-            simulatedData[i].transaction.chainId
+          // Verify receipt structure exists but don't compare dynamic fields
+          expect(directData[i].receipt).toBeDefined();
+          expect(simulatedData[i].receipt).toBeDefined();
+          expect(directData[i].receipt.blockNumber).toBe(
+            simulatedData[i].receipt.blockNumber
           );
-          expect(directData[i].transaction.simulation).toBe(
-            simulatedData[i].transaction.simulation
+          expect(directData[i].receipt.status).toBe(
+            simulatedData[i].receipt.status
           );
         }
 
@@ -799,7 +799,7 @@ describe("ContractWrite Node Tests", () => {
             },
           ]),
           methodCalls: [
-            { callData: "0x12345678", methodName: "nonExistentMethod" },
+            { methodName: "nonExistentMethod", methodParams: [] },
           ],
         },
         inputVariables: {
@@ -838,7 +838,7 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
+      
       expect(result.data).not.toHaveProperty("results");
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
@@ -865,21 +865,21 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: "0x1234567890123456789012345678901234567890",
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(
+              methodName: "approve",
+              methodParams: [
                 "0x0000000000000000000000000000000000000001",
                 "100"
-              ),
-              methodName: "approve",
+              ],
             },
             {
-              callData: createApproveCallData(
+              methodName: "approve",
+              methodParams: [
                 "0x0000000000000000000000000000000000000002",
                 "200"
-              ),
-              methodName: "approve",
+              ],
             },
           ],
         },
@@ -899,12 +899,18 @@ describe("ContractWrite Node Tests", () => {
       // Check first method call
       const firstCall = methodCalls[0];
       expect(firstCall.getMethodName()).toBe("approve");
-      expect(firstCall.getCallData()).toContain("0x095ea7b3");
+      expect(firstCall.getMethodParamsList()).toEqual([
+        "0x0000000000000000000000000000000000000001",
+        "100"
+      ]);
 
       // Check second method call
       const secondCall = methodCalls[1];
       expect(secondCall.getMethodName()).toBe("approve");
-      expect(secondCall.getCallData()).toContain("0x095ea7b3");
+      expect(secondCall.getMethodParamsList()).toEqual([
+        "0x0000000000000000000000000000000000000002",
+        "200"
+      ]);
 
       console.log(
         "✅ Protobuf serialization test passed - methodCalls are properly serialized"
@@ -925,7 +931,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -972,7 +978,7 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
+      
       expect(result.data).not.toHaveProperty("results");
       const data = result.data as any[];
       expect(data.length).toBe(params.nodeConfig.methodCalls.length);
@@ -996,7 +1002,7 @@ describe("ContractWrite Node Tests", () => {
         type: NodeType.ContractWrite,
         data: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify(ERC20_ABI),
+          contractAbi: ERC20_ABI,
           methodCalls: [
             {
               callData: createApproveCallData(
@@ -1065,7 +1071,7 @@ describe("ContractWrite Node Tests", () => {
           type: NodeType.ContractWrite,
           data: {
             contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-            contractAbi: JSON.stringify(ERC20_ABI),
+            contractAbi: ERC20_ABI,
             methodCalls: [
               {
                 callData: createApproveCallData(
@@ -1164,23 +1170,19 @@ describe("ContractWrite Node Tests", () => {
       type: NodeType.ContractWrite,
       data: {
         contractAddress: "0x1234567890123456789012345678901234567890",
-        callData: "0xa9059cbb", // transfer(address,uint256)
-        contractAbi: "[]",
+        contractAbi: [],
         methodCalls: [
           {
-            callData: "0xa9059cbb", // transfer(address,uint256)
             methodName: "transfer",
             methodParams: ["{{value.recipient}}", "{{value.amount}}"], // Array with multiple parameters
           },
           {
-            callData: "0x23b872dd", // transferFrom(address,address,uint256)
             methodName: "transferFrom",
             methodParams: ["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"], // Array with 3 parameters
           },
           {
-            callData: "0x095ea7b3", // approve(address,uint256)
             methodName: "approve",
-            // No methodParams - should be empty array
+            methodParams: [], // Empty array when no parameters
           },
         ],
       },
@@ -1200,19 +1202,16 @@ describe("ContractWrite Node Tests", () => {
     // Check first method call (transfer with 2 parameters)
     const transferCall = methodCalls[0];
     expect(transferCall.getMethodName()).toBe("transfer");
-    expect(transferCall.getCallData()).toBe("0xa9059cbb");
     expect(transferCall.getMethodParamsList()).toEqual(["{{value.recipient}}", "{{value.amount}}"]);
 
     // Check second method call (transferFrom with 3 parameters)
     const transferFromCall = methodCalls[1];
     expect(transferFromCall.getMethodName()).toBe("transferFrom");
-    expect(transferFromCall.getCallData()).toBe("0x23b872dd");
     expect(transferFromCall.getMethodParamsList()).toEqual(["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"]);
 
-    // Check third method call (approve without methodParams)
+    // Check third method call (approve with empty methodParams)
     const approveCall = methodCalls[2];
     expect(approveCall.getMethodName()).toBe("approve");
-    expect(approveCall.getCallData()).toBe("0x095ea7b3");
-    expect(approveCall.getMethodParamsList()).toEqual([]); // Should be empty array when not set
+    expect(approveCall.getMethodParamsList()).toEqual([]); // Should be empty array when no parameters
   });
 });

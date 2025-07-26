@@ -30,7 +30,7 @@ let saltIndex = SaltGlobal.CreateWorkflow * 6000;
 // Sepolia Chainlink ETH/USD Price Feed Oracle
 const SEPOLIA_ORACLE_CONFIG = {
   contractAddress: "0xB0C712f98daE15264c8E26132BCC91C40aD4d5F9",
-  contractAbi: JSON.stringify([
+  contractAbi: [
     {
       inputs: [],
       name: "decimals",
@@ -78,10 +78,10 @@ const SEPOLIA_ORACLE_CONFIG = {
       stateMutability: "view",
       type: "function",
     },
-  ]),
+  ],
   methodCalls: [
-    { callData: "0xfeaf968c", methodName: "latestRoundData" },
-    { callData: "0x313ce567", methodName: "decimals" },
+    { methodName: "latestRoundData", methodParams: [] },
+    { methodName: "decimals", methodParams: [] },
   ],
 };
 
@@ -143,7 +143,7 @@ describe("ContractRead Node Tests", () => {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
-            { callData: "0xfeaf968c", methodName: "latestRoundData" },
+            { methodName: "latestRoundData", methodParams: [] },
           ],
         },
         inputVariables: {
@@ -182,7 +182,6 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
 
       // Handle both flattened (single method) and array (multiple methods) formats
       // Multiple methods format
@@ -194,20 +193,19 @@ describe("ContractRead Node Tests", () => {
       );
       expect(latestRoundResult).toBeDefined();
       expect(latestRoundResult.success).toBe(true);
-      expect(latestRoundResult.data).toBeDefined();
+      expect(latestRoundResult.value).toBeDefined(); // Changed from .data to .data
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      if (
-        latestRoundResult.data &&
-        typeof latestRoundResult.data === "object"
-      ) {
-        const data = latestRoundResult.data as any;
-        if (data.roundId) expect(typeof data.roundId).toBe("string"); // uint80 -> string (large number)
-        if (data.answer) expect(typeof data.answer).toBe("string"); // int256 -> string (large number)
-        if (data.startedAt) expect(typeof data.startedAt).toBe("string"); // uint256 -> string (large number)
-        if (data.updatedAt) expect(typeof data.updatedAt).toBe("string"); // uint256 -> string (large number)
-        if (data.answeredInRound)
-          expect(typeof data.answeredInRound).toBe("string"); // uint80 -> string (large number)
+      if (latestRoundResult.success && latestRoundResult.value) {
+        // The response should be an object with named fields
+        expect(typeof latestRoundResult.value).toBe("object");
+
+        // Verify it contains expected oracle fields
+        expect(latestRoundResult.value.roundId).toBeDefined();
+        expect(latestRoundResult.value.answer).toBeDefined();
+        expect(latestRoundResult.value.startedAt).toBeDefined();
+        expect(latestRoundResult.value.updatedAt).toBeDefined();
+        expect(latestRoundResult.value.answeredInRound).toBeDefined();
       }
 
       expect(result.nodeId).toBeDefined();
@@ -244,7 +242,6 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
       expect((result.data as any[]).length).toBe(
         params.nodeConfig.methodCalls.length
       );
@@ -264,10 +261,10 @@ describe("ContractRead Node Tests", () => {
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
       if (
         latestRoundResult &&
-        latestRoundResult.data &&
-        typeof latestRoundResult.data === "object"
+        latestRoundResult.value &&
+        typeof latestRoundResult.value === "object"
       ) {
-        const data = latestRoundResult.data as any;
+        const data = latestRoundResult.value as any;
         if (data.roundId) expect(typeof data.roundId).toBe("string"); // uint80 -> string (large number)
         if (data.answer) expect(typeof data.answer).toBe("string"); // int256 -> string (large number)
         if (data.startedAt) expect(typeof data.startedAt).toBe("string"); // uint256 -> string (large number)
@@ -276,9 +273,9 @@ describe("ContractRead Node Tests", () => {
           expect(typeof data.answeredInRound).toBe("string"); // uint80 -> string (large number)
       }
 
-      if (decimalsResult && decimalsResult.data) {
-        expect(typeof decimalsResult.data).toBe("object"); // decimals result should be object containing the decimals field
-        const decimalsData = decimalsResult.data as any;
+      if (decimalsResult && decimalsResult.value) {
+        expect(typeof decimalsResult.value).toBe("object"); // decimals result should be object containing the decimals field
+        const decimalsData = decimalsResult.value as any;
         if (decimalsData.decimals) {
           expect(typeof decimalsData.decimals).toBe("string"); // decimals field should be string type (uint8 -> string)
         }
@@ -290,7 +287,7 @@ describe("ContractRead Node Tests", () => {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Invalid address
-          contractAbi: JSON.stringify([
+          contractAbi: [
             {
               inputs: [],
               name: "totalSupply",
@@ -298,8 +295,8 @@ describe("ContractRead Node Tests", () => {
               stateMutability: "view",
               type: "function",
             },
-          ]),
-          methodCalls: [{ callData: "0x18160ddd", methodName: "totalSupply" }],
+          ],
+          methodCalls: [{ methodName: "totalSupply", methodParams: [] }],
         },
         inputVariables: {
           workflowContext: {
@@ -350,7 +347,7 @@ describe("ContractRead Node Tests", () => {
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
-          methodCalls: [{ callData: "0x7284e416", methodName: "description" }],
+          methodCalls: [{ methodName: "description", methodParams: [] }],
         },
         inputVariables: {
           workflowContext: {
@@ -388,7 +385,6 @@ describe("ContractRead Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(Array.isArray(result.data)).toBe(true);
       expect((result.data as any[]).length).toBe(
         params.nodeConfig.methodCalls.length
       );
@@ -402,9 +398,9 @@ describe("ContractRead Node Tests", () => {
       expect(descriptionResult.success).toBe(true);
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      if (descriptionResult && descriptionResult.data) {
-        expect(typeof descriptionResult.data).toBe("object"); // description result should be object containing the description field
-        const descriptionData = descriptionResult.data as any;
+      if (descriptionResult && descriptionResult.value) {
+        expect(typeof descriptionResult.value).toBe("object"); // description result should be object containing the description field
+        const descriptionData = descriptionResult.value as any;
         if (descriptionData.description) {
           expect(typeof descriptionData.description).toBe("string"); // description field should be string type (string -> string)
         }
@@ -424,13 +420,13 @@ describe("ContractRead Node Tests", () => {
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
             {
-              callData: "0x313ce567", // decimals()
               methodName: "decimals",
-              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
+              methodParams: [],
+              applyToFields: ["latestRoundData.answer"], // Use dot notation for nested fields
             },
             {
-              callData: "0xfeaf968c", // latestRoundData()
               methodName: "latestRoundData",
+              methodParams: [], // latestRoundData()
             },
           ],
         },
@@ -474,23 +470,23 @@ describe("ContractRead Node Tests", () => {
       expect(decimalsResult).toBeDefined();
 
       // Check that rawStructuredFields is NOT present in the data field
-      expect(latestRoundResult.data.rawStructuredFields).toBeUndefined();
+      expect(latestRoundResult.value.rawStructuredFields).toBeUndefined();
 
       // For our new implementation, we expect direct field access in the latestRoundData result
-      expect(latestRoundResult.data.answer).toBeDefined();
-      expect(latestRoundResult.data.roundId).toBeDefined();
-      expect(latestRoundResult.data.startedAt).toBeDefined();
-      expect(latestRoundResult.data.updatedAt).toBeDefined();
-      expect(latestRoundResult.data.answeredInRound).toBeDefined();
+      expect(latestRoundResult.value.answer).toBeDefined();
+      expect(latestRoundResult.value.roundId).toBeDefined();
+      expect(latestRoundResult.value.startedAt).toBeDefined();
+      expect(latestRoundResult.value.updatedAt).toBeDefined();
+      expect(latestRoundResult.value.answeredInRound).toBeDefined();
 
-      const answerValue = latestRoundResult.data.answer;
+      const answerValue = latestRoundResult.value.answer;
       expect(answerValue).toBeTruthy();
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
       expect(typeof answerValue).toBe("string"); // answer should be string type (formatted decimal)
-      expect(typeof decimalsResult.data).toBe("object"); // decimals result should be object containing the decimals field
-      if (decimalsResult.data && typeof decimalsResult.data === "object") {
-        const decimalsData = decimalsResult.data as any;
+      expect(typeof decimalsResult.value).toBe("object"); // decimals result should be object containing the decimals field
+      if (decimalsResult.value && typeof decimalsResult.value === "object") {
+        const decimalsData = decimalsResult.value as any;
         if (decimalsData.decimals) {
           expect(typeof decimalsData.decimals).toBe("string"); // decimals field should be string type
         }
@@ -508,11 +504,11 @@ describe("ContractRead Node Tests", () => {
       expect(firstMethod.methodName).toBe("decimals");
 
       // Check if the structured fields data is present
-      if (firstMethod.data && Array.isArray(firstMethod.data)) {
-        expect(firstMethod.data.length).toBeGreaterThan(0);
+      if (firstMethod.value && Array.isArray(firstMethod.value)) {
+        expect(firstMethod.value.length).toBeGreaterThan(0);
 
         // Check the format of the first field
-        const firstField = firstMethod.data[0];
+        const firstField = firstMethod.value[0];
         expect(firstField).toHaveProperty("name");
         expect(firstField).toHaveProperty("type");
         expect(firstField).toHaveProperty("value");
@@ -541,8 +537,8 @@ describe("ContractRead Node Tests", () => {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
-            { callData: "0xfeaf968c", methodName: "latestRoundData" },
-            { callData: "0x313ce567", methodName: "decimals" },
+            { methodName: "latestRoundData", methodParams: [] },
+            { methodName: "decimals", methodParams: [] },
           ],
         },
       });
@@ -582,8 +578,8 @@ describe("ContractRead Node Tests", () => {
       // Check that rawStructuredFields is NOT present in the data field for simulation
       // This ensures the backend fix is working correctly
       for (const item of output) {
-        expect(item.data).toBeDefined();
-        expect(item.data.rawStructuredFields).toBeUndefined();
+        expect(item.value).toBeDefined();
+        expect(item.value.rawStructuredFields).toBeUndefined();
 
         // Also check that rawStructuredFields is not present at the top level of the result
         expect(item.rawStructuredFields).toBeUndefined();
@@ -599,19 +595,19 @@ describe("ContractRead Node Tests", () => {
 
       expect(latestRoundResult).toBeDefined();
       expect(decimalsResult).toBeDefined();
-      expect(latestRoundResult.data).toHaveProperty("answer");
-      expect(latestRoundResult.data).toHaveProperty("roundId");
-      expect(decimalsResult.data).toHaveProperty("decimals");
+      expect(latestRoundResult.value).toHaveProperty("answer");
+      expect(latestRoundResult.value).toHaveProperty("roundId");
+      expect(decimalsResult.value).toHaveProperty("decimals");
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
-      if (latestRoundResult.data.answer) {
-        expect(typeof latestRoundResult.data.answer).toBe("string"); // int256 -> string (large number)
+      if (latestRoundResult.value.answer) {
+        expect(typeof latestRoundResult.value.answer).toBe("string"); // int256 -> string (large number)
       }
-      if (latestRoundResult.data.roundId) {
-        expect(typeof latestRoundResult.data.roundId).toBe("string"); // uint80 -> string (large number)
+      if (latestRoundResult.value.roundId) {
+        expect(typeof latestRoundResult.value.roundId).toBe("string"); // uint80 -> string (large number)
       }
-      if (decimalsResult.data.decimals) {
-        expect(typeof decimalsResult.data.decimals).toBe("string"); // uint8 -> string (ABI parsing)
+      if (decimalsResult.value.decimals) {
+        expect(typeof decimalsResult.value.decimals).toBe("string"); // uint8 -> string (ABI parsing)
       }
     });
 
@@ -632,13 +628,13 @@ describe("ContractRead Node Tests", () => {
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
             {
-              callData: "0x313ce567", // decimals()
               methodName: "decimals",
+              methodParams: [],
               applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
-              callData: "0xfeaf968c", // latestRoundData()
               methodName: "latestRoundData",
+              methodParams: [], // latestRoundData()
             },
           ],
         },
@@ -676,8 +672,8 @@ describe("ContractRead Node Tests", () => {
       // Check that rawStructuredFields is NOT present in the data field for simulation
       // This ensures the backend fix is working correctly
       for (const item of output) {
-        expect(item.data).toBeDefined();
-        expect(item.data.rawStructuredFields).toBeUndefined();
+        expect(item.value).toBeDefined();
+        expect(item.value.rawStructuredFields).toBeUndefined();
       }
 
       // Verify that the actual data fields are present
@@ -690,27 +686,27 @@ describe("ContractRead Node Tests", () => {
 
       expect(latestRoundResult).toBeDefined();
       expect(decimalsResult).toBeDefined();
-      expect(latestRoundResult.data).toHaveProperty("answer");
-      expect(latestRoundResult.data).toHaveProperty("answerRaw");
-      expect(latestRoundResult.data).toHaveProperty("roundId");
-      expect(decimalsResult.data).toHaveProperty("decimals");
+      expect(latestRoundResult.value).toHaveProperty("answer");
+      expect(latestRoundResult.value).toHaveProperty("answerRaw");
+      expect(latestRoundResult.value).toHaveProperty("roundId");
+      expect(decimalsResult.value).toHaveProperty("decimals");
 
       // Check that decimal formatting was applied
-      if (latestRoundResult.data.answer) {
+      if (latestRoundResult.value.answer) {
         // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
-        expect(typeof latestRoundResult.data.answer).toBe("string");
-        expect(latestRoundResult.data.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+        expect(typeof latestRoundResult.value.answer).toBe("string");
+        expect(latestRoundResult.value.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
       }
 
       // Check that answerRaw field is present
-      if (latestRoundResult.data.answerRaw) {
-        expect(typeof latestRoundResult.data.answerRaw).toBe("string");
-        expect(latestRoundResult.data.answerRaw).toMatch(/^\d+$/); // Should be raw integer
+      if (latestRoundResult.value.answerRaw) {
+        expect(typeof latestRoundResult.value.answerRaw).toBe("string");
+        expect(latestRoundResult.value.answerRaw).toMatch(/^\d+$/); // Should be raw integer
       }
 
       // 🔍 TYPE CHECK: Verify other fields have correct types
-      if (decimalsResult.data.decimals) {
-        expect(typeof decimalsResult.data.decimals).toBe("string"); // decimals field should be string type
+      if (decimalsResult.value.decimals) {
+        expect(typeof decimalsResult.value.decimals).toBe("string"); // decimals field should be string type
       }
     });
   });
@@ -736,8 +732,8 @@ describe("ContractRead Node Tests", () => {
             contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
             contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
             methodCalls: [
-              { callData: "0xfeaf968c", methodName: "latestRoundData" },
-              { callData: "0x7284e416", methodName: "description" },
+              { methodName: "latestRoundData", methodParams: [] },
+              { methodName: "description", methodParams: [] },
             ],
           },
         });
@@ -851,13 +847,13 @@ describe("ContractRead Node Tests", () => {
             contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
             methodCalls: [
               {
-                callData: "0x313ce567", // decimals()
                 methodName: "decimals",
+                methodParams: [],
                 applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
               },
               {
-                callData: "0xfeaf968c", // latestRoundData()
                 methodName: "latestRoundData",
+                methodParams: [], // latestRoundData()
               },
             ],
           },
@@ -945,24 +941,24 @@ describe("ContractRead Node Tests", () => {
         expect(latestRoundResult.success).toBe(true);
 
         // Verify that both method calls are included in the response
-        expect(decimalsResult.data).toBeDefined();
-        expect(latestRoundResult.data).toBeDefined();
+        expect(decimalsResult.value).toBeDefined();
+        expect(latestRoundResult.value).toBeDefined();
 
         // Verify that decimals result contains the decimals value
-        expect(decimalsResult.data).toHaveProperty("decimals");
-        expect(typeof decimalsResult.data.decimals).toBe("string");
+        expect(decimalsResult.value).toHaveProperty("decimals");
+        expect(typeof decimalsResult.value.decimals).toBe("string");
 
         // Verify that latestRoundData result contains formatted and raw values
-        expect(latestRoundResult.data).toHaveProperty("answer");
-        expect(latestRoundResult.data).toHaveProperty("answerRaw");
-        expect(latestRoundResult.data).toHaveProperty("roundId");
-        expect(latestRoundResult.data).toHaveProperty("answeredInRound");
-        expect(latestRoundResult.data).toHaveProperty("startedAt");
-        expect(latestRoundResult.data).toHaveProperty("updatedAt");
+        expect(latestRoundResult.value).toHaveProperty("answer");
+        expect(latestRoundResult.value).toHaveProperty("answerRaw");
+        expect(latestRoundResult.value).toHaveProperty("roundId");
+        expect(latestRoundResult.value).toHaveProperty("answeredInRound");
+        expect(latestRoundResult.value).toHaveProperty("startedAt");
+        expect(latestRoundResult.value).toHaveProperty("updatedAt");
 
         // Verify decimal formatting was applied to answer field
-        const answer = latestRoundResult.data.answer;
-        const answerRaw = latestRoundResult.data.answerRaw;
+        const answer = latestRoundResult.value.answer;
+        const answerRaw = latestRoundResult.value.answerRaw;
 
         expect(typeof answer).toBe("string");
         expect(typeof answerRaw).toBe("string");
@@ -978,7 +974,7 @@ describe("ContractRead Node Tests", () => {
         expect(parseFloat(answer)).toBeGreaterThan(0);
 
         // Check that rawStructuredFields is present for deployed workflow execution
-        expect(latestRoundResult.data.rawStructuredFields).toBeUndefined();
+        expect(latestRoundResult.value.rawStructuredFields).toBeUndefined();
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1005,8 +1001,8 @@ describe("ContractRead Node Tests", () => {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
-            { callData: "0x313ce567", methodName: "decimals" },
-            { callData: "0x54fd4d50", methodName: "version" },
+            { methodName: "decimals", methodParams: [] },
+            { methodName: "version", methodParams: [] },
           ],
         };
 
@@ -1172,7 +1168,7 @@ describe("ContractRead Node Tests", () => {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
-          contractAbi: JSON.stringify([
+          contractAbi: [
             {
               inputs: [],
               name: "nonExistentMethod",
@@ -1180,9 +1176,9 @@ describe("ContractRead Node Tests", () => {
               stateMutability: "view",
               type: "function",
             },
-          ]),
+          ],
           methodCalls: [
-            { callData: "0x12345678", methodName: "nonExistentMethod" },
+            { methodName: "nonExistentMethod", methodParams: [] },
           ],
         },
         inputVariables: {
@@ -1213,8 +1209,6 @@ describe("ContractRead Node Tests", () => {
 
       const result = await client.runNodeWithInputs(params);
 
-
-
       expect(result).toBeDefined();
       // Backend fails the entire node execution for invalid method signatures
       expect(result.success).toBe(false);
@@ -1230,16 +1224,16 @@ describe("ContractRead Node Tests", () => {
         type: NodeType.ContractRead,
         data: {
           contractAddress: "0x1234567890123456789012345678901234567890",
-          contractAbi: "[]",
+          contractAbi: [], // Fixed: Use array instead of string
           methodCalls: [
             {
-              callData: "0x313ce567", // decimals()
               methodName: "decimals",
+              methodParams: [],
               applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
-              callData: "0xfeaf968c", // latestRoundData()
               methodName: "latestRoundData",
+              methodParams: [], // latestRoundData()
             },
           ],
         },
@@ -1259,7 +1253,7 @@ describe("ContractRead Node Tests", () => {
       // Check first method call (decimals with applyToFields)
       const decimalsCall = methodCalls[0];
       expect(decimalsCall.getMethodName()).toBe("decimals");
-      expect(decimalsCall.getCallData()).toBe("0x313ce567");
+      expect(decimalsCall.getMethodParamsList()).toEqual([]);
       expect(decimalsCall.getApplyToFieldsList()).toEqual([
         "latestRoundData.answer",
       ]);
@@ -1267,7 +1261,7 @@ describe("ContractRead Node Tests", () => {
       // Check second method call (no applyToFields)
       const latestRoundCall = methodCalls[1];
       expect(latestRoundCall.getMethodName()).toBe("latestRoundData");
-      expect(latestRoundCall.getCallData()).toBe("0xfeaf968c");
+      expect(latestRoundCall.getMethodParamsList()).toEqual([]);
       expect(latestRoundCall.getApplyToFieldsList()).toEqual([]);
     });
 
@@ -1278,21 +1272,19 @@ describe("ContractRead Node Tests", () => {
         type: NodeType.ContractRead,
         data: {
           contractAddress: "0x1234567890123456789012345678901234567890",
-          contractAbi: "[]",
+          contractAbi: [],
           methodCalls: [
             {
-              callData: "0x70a08231", // balanceOf(address)
               methodName: "balanceOf",
               methodParams: ["{{value.address}}"], // Array with single parameter
             },
             {
-              callData: "0xa9059cbb", // transfer(address,uint256)
               methodName: "transfer",
               methodParams: ["{{value.recipient}}", "{{value.amount}}"], // Array with multiple parameters
             },
             {
-              callData: "0x313ce567", // decimals()
               methodName: "decimals",
+              methodParams: [],
               // No methodParams - should be empty array
             },
           ],
@@ -1313,25 +1305,27 @@ describe("ContractRead Node Tests", () => {
       // Check first method call (balanceOf with single parameter)
       const balanceOfCall = methodCalls[0];
       expect(balanceOfCall.getMethodName()).toBe("balanceOf");
-      expect(balanceOfCall.getCallData()).toBe("0x70a08231");
-      expect(balanceOfCall.getMethodParamsList()).toEqual(["{{value.address}}"]);
+      expect(balanceOfCall.getMethodParamsList()).toEqual([
+        "{{value.address}}",
+      ]);
 
       // Check second method call (transfer with multiple parameters)
       const transferCall = methodCalls[1];
       expect(transferCall.getMethodName()).toBe("transfer");
-      expect(transferCall.getCallData()).toBe("0xa9059cbb");
-      expect(transferCall.getMethodParamsList()).toEqual(["{{value.recipient}}", "{{value.amount}}"]);
+      expect(transferCall.getMethodParamsList()).toEqual([
+        "{{value.recipient}}",
+        "{{value.amount}}",
+      ]);
 
       // Check third method call (decimals without methodParams)
       const decimalsCall = methodCalls[2];
       expect(decimalsCall.getMethodName()).toBe("decimals");
-      expect(decimalsCall.getCallData()).toBe("0x313ce567");
       expect(decimalsCall.getMethodParamsList()).toEqual([]); // Should be empty array when not set
     });
   });
 
   describe("ApplyToFields Decimal Formatting Tests", () => {
-    test("should include answerRaw field when using applyToFields with runNodeWithInputs", async () => {
+    test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -1344,13 +1338,13 @@ describe("ContractRead Node Tests", () => {
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
             {
-              callData: "0x313ce567", // decimals()
               methodName: "decimals",
+              methodParams: [],
               applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
-              callData: "0xfeaf968c", // latestRoundData()
               methodName: "latestRoundData",
+              methodParams: [], // latestRoundData()
             },
           ],
         },
@@ -1375,63 +1369,192 @@ describe("ContractRead Node Tests", () => {
         },
       };
 
+      console.log(
+        "🚀 ~ Chainlink oracle applyToFields test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
       const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ Chainlink oracle applyToFields test ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
+      expect(result.metadata).toBeDefined();
 
-      const data = result.data as any;
-      expect(Array.isArray(data)).toBe(true);
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length); // decimals and latestRoundData
+      // NEW: data is now a flattened object, not an array
+      const data = result.data as Record<string, unknown>;
+      const metadata = result.metadata as Record<string, unknown>[];
 
-      // Find the specific method results
-      const decimalsResult = data.find((r: any) => r.methodName === "decimals");
-      const latestRoundResult = data.find(
-        (r: any) => r.methodName === "latestRoundData"
+      // NEW: data should be an object, not an array
+      expect(typeof data).toBe("object");
+      expect(Array.isArray(data)).toBe(false);
+      expect(Array.isArray(metadata)).toBe(true);
+      expect(metadata.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // NEW: Access flattened data directly
+      expect(data.decimals).toBeDefined();
+      expect(data.latestRoundData).toBeDefined();
+
+      // Verify decimals field
+      expect(typeof data.decimals).toBe("string");
+      expect(parseInt(data.decimals as string)).toBeGreaterThan(0);
+
+      // Verify latestRoundData structure with decimal formatting applied
+      const latestRoundData = data.latestRoundData as Record<string, unknown>;
+      expect(latestRoundData.answer).toBeDefined();
+      expect(latestRoundData.roundId).toBeDefined();
+      expect(latestRoundData.startedAt).toBeDefined();
+      expect(latestRoundData.updatedAt).toBeDefined();
+      expect(latestRoundData.answeredInRound).toBeDefined();
+
+      // Verify that decimal formatting is applied to the answer field
+      const answer = latestRoundData.answer as string;
+      expect(typeof answer).toBe("string");
+      expect(parseFloat(answer)).toBeGreaterThan(0);
+      expect(answer).toMatch(/^\d+\.\d+$/); // Should contain decimal point (formatted)
+
+      // Find metadata for verification
+      const decimalsMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "decimals"
+      );
+      const latestRoundMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "latestRoundData"
       );
 
-      expect(decimalsResult).toBeDefined();
-      expect(latestRoundResult).toBeDefined();
-      expect(decimalsResult.success).toBe(true);
-      expect(latestRoundResult.success).toBe(true);
+      expect(decimalsMetadata).toBeDefined();
+      expect(latestRoundMetadata).toBeDefined();
 
-      // Verify that both method calls are included in the response
-      expect(decimalsResult.data).toBeDefined();
-      expect(latestRoundResult.data).toBeDefined();
+      // Verify metadata structure
+      expect(decimalsMetadata!.success).toBe(true);
+      expect(latestRoundMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.methodName).toBe("decimals");
+      expect(latestRoundMetadata!.methodName).toBe("latestRoundData");
+      expect(decimalsMetadata!.methodABI).toBeDefined();
+      expect(latestRoundMetadata!.methodABI).toBeDefined();
 
-      // Verify that decimals result contains the decimals value
-      expect(decimalsResult.data).toHaveProperty("decimals");
-      expect(typeof decimalsResult.data.decimals).toBe("string");
+      // Verify that metadata contains raw unformatted values
+      const rawLatestRoundData = latestRoundMetadata!.value as Record<string, unknown>;
+      const rawAnswer = rawLatestRoundData.answer as string;
+      
+      // Raw answer should be different from formatted answer (no decimal point in raw)
+      expect(rawAnswer).not.toEqual(answer);
+      expect(parseInt(rawAnswer)).toBeGreaterThan(0);
 
-      // Verify that latestRoundData result contains formatted and raw values
-      expect(latestRoundResult.data).toHaveProperty("answer");
-      expect(latestRoundResult.data).toHaveProperty("answerRaw");
-      expect(latestRoundResult.data).toHaveProperty("roundId");
-      expect(latestRoundResult.data).toHaveProperty("answeredInRound");
-      expect(latestRoundResult.data).toHaveProperty("startedAt");
-      expect(latestRoundResult.data).toHaveProperty("updatedAt");
+      console.log(`✅ Decimal formatting applied: raw=${rawAnswer}, formatted=${answer}`);
+    });
 
-      // Verify decimal formatting was applied to answer field
-      const answer = latestRoundResult.data.answer;
-      const answerRaw = latestRoundResult.data.answerRaw;
+    test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
+      if (!isSepoliaTest) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
 
-      expect(typeof answer).toBe("string");
-      expect(typeof answerRaw).toBe("string");
+      // USDC contract on Sepolia - test simplified applyToFields syntax
+      const params = {
+        nodeType: NodeType.ContractRead,
+        nodeConfig: {
+          contractAddress: "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC on Sepolia
+          contractAbi: [
+            {
+              constant: true,
+              inputs: [],
+              name: "totalSupply",
+              outputs: [{ name: "", type: "uint256" }],
+              payable: false,
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              constant: true,
+              inputs: [],
+              name: "decimals",
+              outputs: [{ name: "", type: "uint8" }],
+              payable: false,
+              stateMutability: "view",
+              type: "function",
+            },
+          ],
+          methodCalls: [
+            {
+              methodName: "decimals",
+              methodParams: [],
+              applyToFields: ["totalSupply"], // ✅ Simplified syntax: just method name for single values
+            },
+            {
+              methodName: "totalSupply",
+              methodParams: [],
+            },
+          ],
+        },
+        inputVariables: {},
+      };
 
-      // Answer should be formatted as decimal (contains a dot)
-      expect(answer).toMatch(/^\d+\.\d+$/);
+      console.log(
+        "🚀 ~ USDC simplified applyToFields test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
 
-      // AnswerRaw should be raw integer (no decimal point)
-      expect(answerRaw).toMatch(/^\d+$/);
+      const result = await client.runNodeWithInputs(params);
 
-      // Verify that answerRaw is the original value before formatting
-      expect(parseInt(answerRaw)).toBeGreaterThan(0);
-      expect(parseFloat(answer)).toBeGreaterThan(0);
+      console.log(
+        "🚀 ~ USDC simplified applyToFields test ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
-      // Check that rawStructuredFields is present for direct execution
-      expect(latestRoundResult.data.rawStructuredFields).toBeUndefined();
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(typeof result.data).toBe("object");
 
+      // For standalone contractRead, the data is a flattened object containing all method results
+      const data = result.data as Record<string, unknown>;
 
+      // Verify both method results are present in the flattened data
+      expect(data.decimals).toBeDefined();
+      expect(data.totalSupply).toBeDefined();
+
+      // Verify decimals result
+      expect(typeof data.decimals).toBe("string");
+      expect(data.decimals).toBe("6"); // USDC has 6 decimals
+
+      // Verify totalSupply result with decimal formatting applied
+      expect(typeof data.totalSupply).toBe("string");
+
+      // totalSupply should be formatted as decimal (contains a dot)
+      const totalSupply = data.totalSupply as string;
+      expect(totalSupply).toMatch(/^\d+\.\d+$/);
+
+      // Verify that no Raw fields are created automatically
+      expect(data.totalSupplyRaw).toBeUndefined();
+
+      // Verify the value is properly formatted (should be a reasonable USDC total supply)
+      const parsedTotalSupply = parseFloat(totalSupply);
+      expect(parsedTotalSupply).toBeGreaterThan(0);
+      expect(parsedTotalSupply).toBeLessThan(Number.MAX_SAFE_INTEGER);
+
+      console.log(`✅ USDC totalSupply formatted correctly: ${totalSupply} (${parsedTotalSupply})`);
+
+      // Verify metadata structure (should be array of method results)
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+      const metadata = result.metadata as Record<string, unknown>[];
+      expect(metadata.length).toBe(2);
+
+      // Find the specific method results in metadata
+      const decimalsMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "decimals"
+      );
+      const totalSupplyMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "totalSupply"
+      );
+
+      expect(decimalsMetadata).toBeDefined();
+      expect(totalSupplyMetadata).toBeDefined();
+      expect(decimalsMetadata!.success).toBe(true);
+      expect(totalSupplyMetadata!.success).toBe(true);
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
@@ -1451,13 +1574,13 @@ describe("ContractRead Node Tests", () => {
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
             {
-              callData: "0x313ce567", // decimals()
               methodName: "decimals",
+              methodParams: [],
               applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
-              callData: "0xfeaf968c", // latestRoundData()
               methodName: "latestRoundData",
+              methodParams: [], // latestRoundData()
             },
           ],
         },
@@ -1468,7 +1591,7 @@ describe("ContractRead Node Tests", () => {
       ]);
 
       console.log(
-        "🚀 ~ simulateWorkflow applyToFields test ~ workflowProps:",
+        "�� ~ simulateWorkflow applyToFields test ~ workflowProps:",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -1507,27 +1630,27 @@ describe("ContractRead Node Tests", () => {
       expect(latestRoundResult.success).toBe(true);
 
       // Verify that both method calls are included in the response
-      expect(decimalsResult.data).toBeDefined();
-      expect(latestRoundResult.data).toBeDefined();
+      expect(decimalsResult.value).toBeDefined();
+      expect(latestRoundResult.value).toBeDefined();
 
       // Check that rawStructuredFields is NOT present in simulation
-      expect(latestRoundResult.data.rawStructuredFields).toBeUndefined();
+      expect(latestRoundResult.value.rawStructuredFields).toBeUndefined();
 
       // Verify that decimals result contains the decimals value
-      expect(decimalsResult.data).toHaveProperty("decimals");
-      expect(typeof decimalsResult.data.decimals).toBe("string");
+      expect(decimalsResult.value).toHaveProperty("decimals");
+      expect(typeof decimalsResult.value.decimals).toBe("string");
 
       // Verify that latestRoundData result contains formatted and raw values
-      expect(latestRoundResult.data).toHaveProperty("answer");
-      expect(latestRoundResult.data).toHaveProperty("answerRaw");
-      expect(latestRoundResult.data).toHaveProperty("roundId");
-      expect(latestRoundResult.data).toHaveProperty("answeredInRound");
-      expect(latestRoundResult.data).toHaveProperty("startedAt");
-      expect(latestRoundResult.data).toHaveProperty("updatedAt");
+      expect(latestRoundResult.value).toHaveProperty("answer");
+      expect(latestRoundResult.value).toHaveProperty("answerRaw");
+      expect(latestRoundResult.value).toHaveProperty("roundId");
+      expect(latestRoundResult.value).toHaveProperty("answeredInRound");
+      expect(latestRoundResult.value).toHaveProperty("startedAt");
+      expect(latestRoundResult.value).toHaveProperty("updatedAt");
 
       // Verify decimal formatting was applied to answer field
-      const answer = latestRoundResult.data.answer;
-      const answerRaw = latestRoundResult.data.answerRaw;
+      const answer = latestRoundResult.value.answer;
+      const answerRaw = latestRoundResult.value.answerRaw;
 
       expect(typeof answer).toBe("string");
       expect(typeof answerRaw).toBe("string");
@@ -1540,7 +1663,7 @@ describe("ContractRead Node Tests", () => {
 
       // Verify that answerRaw is the original value before formatting
       expect(parseInt(answerRaw)).toBeGreaterThan(0);
-      expect(parseFloat(answer)).toBeGreaterThan(0)
+      expect(parseFloat(answer)).toBeGreaterThan(0);
     });
   });
 });

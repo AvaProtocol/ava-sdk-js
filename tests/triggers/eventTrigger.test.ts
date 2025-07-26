@@ -659,7 +659,7 @@ describe("EventTrigger Tests", () => {
               methodCalls: [
                 {
                   methodName: "decimals",
-                  callData: "0x313ce567", // decimals() method signature
+                  methodParams: [], // decimals() method signature
                   applyToFields: ["current"], // Apply decimal formatting to the "current" field
                 },
               ],
@@ -958,7 +958,7 @@ describe("EventTrigger Tests", () => {
               methodCalls: [
                 {
                   methodName: "decimals",
-                  callData: "0x313ce567",
+                  methodParams: [],
                   applyToFields: ["value"],
                 },
               ],
@@ -1127,7 +1127,7 @@ describe("EventTrigger Tests", () => {
               methodCalls: [
                 {
                   methodName: "decimals",
-                  callData: "0x313ce567",
+                  methodParams: [],
                   applyToFields: ["current"],
                 },
               ],
