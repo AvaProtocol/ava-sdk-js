@@ -44,34 +44,28 @@ class FilterNode extends Node {
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown[] {
     const filterOutput = outputData.getFilter();
-
+    
     if (!filterOutput) {
       throw new Error("FilterNode output data is missing");
     }
 
     const anyData = filterOutput.getData();
+
     if (!anyData) {
       throw new Error("FilterNode output data.getData() is missing");
     }
 
-    // The data is now directly a Value, not wrapped in Any
+    // The data is now directly a Value containing the filtered array
     const result = anyData.toJavaScript();
 
-    // The result contains nested data structure, extract the actual array
-    if (
-      result &&
-      typeof result === "object" &&
-      !Array.isArray(result) &&
-      (result as any).data &&
-      (result as any).data.data &&
-      Array.isArray((result as any).data.data)
-    ) {
-      return (result as any).data.data;
+    // If result is already an array, return it directly (this should be the normal case now)
+    if (Array.isArray(result)) {
+      return result;
     }
 
-    // If result.data is already an array, return it directly
+    // Fallback: if result is an object with data field
     if (
       result &&
       typeof result === "object" &&
@@ -80,11 +74,6 @@ class FilterNode extends Node {
       Array.isArray((result as any).data)
     ) {
       return (result as any).data;
-    }
-
-    // If result is already an array, return it directly
-    if (Array.isArray(result)) {
-      return result;
     }
 
     throw new Error(
