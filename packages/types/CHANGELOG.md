@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.3
+
+### Patch Changes
+
+- fd04f63: Updated the type definitions of contractRead and contractWrite
+
 ## 2.4.2
 
 ### Patch Changes

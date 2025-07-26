@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.3
+
+### Patch Changes
+
+- fd04f63: Updated the type definitions of contractRead and contractWrite
+- Updated dependencies [fd04f63]
+  - @avaprotocol/types@2.4.3
+
 ## 2.6.2
 
 ### Patch Changes
