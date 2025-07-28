@@ -150,8 +150,8 @@ describe("Input Field Tests", () => {
             message: "Test API call using comprehensive trigger config",
             apiBaseUrl: "{{ManualTriggerWithInput.data.apiBaseUrl}}",
             environment: "{{ManualTriggerWithInput.data.environment}}",
-            version: "{{ManualTriggerWithInput.pathParams.0.version}}",
-            format: "{{ManualTriggerWithInput.pathParams.0.format}}",
+            version: "{{ManualTriggerWithInput.pathParams.version}}",
+            format: "{{ManualTriggerWithInput.pathParams.format}}",
           }),
         },
       });
@@ -298,11 +298,12 @@ describe("Input Field Tests", () => {
       expect(nodeStep.success).toBe(true);
       expect(nodeStep.error).toBe("");
       expect(nodeStep.output).toBeDefined();
-      expect(nodeStep.output.body).toBeDefined();
-      expect(nodeStep.output.body.message).toBe(
-        "Mock API response from EigenLayer-AVS"
+      expect(nodeStep.output.data).toBeDefined();
+      expect(nodeStep.output.data.data).toBeDefined();
+      expect(nodeStep.output.data.data.message).toBe(
+        "Test API call using comprehensive trigger config"
       );
-      expect(nodeStep.output.body.success).toBe(true);
+      expect(nodeStep.output.status).toBe(200);
     } finally {
       // Clean up
       if (workflowId) {

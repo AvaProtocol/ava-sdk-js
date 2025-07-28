@@ -224,6 +224,7 @@ describe("createWorkflow Tests", () => {
                 }
               ],
               maxEventsPerBlock: 100,
+              contractAbi: [], // Backend now adds this field
             },
           ],
         },
@@ -287,6 +288,7 @@ describe("createWorkflow Tests", () => {
                 }
               ],
               maxEventsPerBlock: 100,
+              contractAbi: [], // Backend now adds this field
             },
           ],
         },

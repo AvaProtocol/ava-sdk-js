@@ -98,8 +98,9 @@ describe("getExecution Tests", () => {
       // Verify the trigger data is available in the inputs
       expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -131,8 +132,9 @@ describe("getExecution Tests", () => {
         client.getExecution(workflowId, nonExistentExecutionId)
       ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -197,11 +199,12 @@ describe("getExecution Tests", () => {
         result.executionId
       );
       expect(executionStatus).toEqual(
-        ExecutionStatus.EXECUTION_STATUS_COMPLETED
+        ExecutionStatus.Completed
       );
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -279,11 +282,12 @@ describe("getExecution Tests", () => {
         execution.id
       );
       expect(executionStatus).toEqual(
-        ExecutionStatus.EXECUTION_STATUS_COMPLETED
+        ExecutionStatus.Completed
       );
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 
@@ -467,8 +471,9 @@ describe("getExecution Tests", () => {
       // For now, we just verify the validation structure exists
       expect(nodeOutput.validation.allTestsPassed).toBeDefined();
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
     }
   });
 });
