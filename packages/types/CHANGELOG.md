@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.5
+
+### Patch Changes
+
+- df22279: Update triggerWorkflow response to return the result when isBlocking:true
+
 ## 2.4.4
 
 ### Patch Changes
