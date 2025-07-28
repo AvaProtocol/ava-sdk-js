@@ -1,22 +1,25 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
-import {
-  TriggerType,
+import { 
+  TriggerType, 
+  CronTriggerProps, 
   CronTriggerDataType,
   CronTriggerOutput,
-  CronTriggerProps,
-  TriggerProps,
+  TriggerProps 
 } from "@avaprotocol/types";
 
 class CronTrigger extends Trigger {
   constructor(props: CronTriggerProps) {
-    super({ ...props, type: TriggerType.Cron, data: props.data });
+    super({
+      ...props,
+      type: TriggerType.Cron,
+    });
   }
 
   toRequest(): avs_pb.TaskTrigger {
     const request = new avs_pb.TaskTrigger();
-    request.setName(this.name);
     request.setId(this.id);
+    request.setName(this.name);
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_CRON);
 
     if (!this.data) {
@@ -26,39 +29,36 @@ class CronTrigger extends Trigger {
     const cronData = this.data as CronTriggerDataType;
 
     // Validate schedules is present and not null/undefined
-    if (cronData.schedules === null || cronData.schedules === undefined) {
+    if (!cronData.schedules || !Array.isArray(cronData.schedules)) {
       throw new Error("Schedules are required for cron trigger");
     }
 
-    // Validate schedules is not empty
-    if (!Array.isArray(cronData.schedules) || cronData.schedules.length === 0) {
+    // Validate schedules array is not empty
+    if (cronData.schedules.length === 0) {
       throw new Error("Schedules are required for cron trigger");
     }
 
-    const trigger = new avs_pb.CronTrigger();
     const config = new avs_pb.CronTrigger.Config();
     config.setSchedulesList(cronData.schedules);
-    trigger.setConfig(config);
 
-    request.setCron(trigger);
+    const cronTrigger = new avs_pb.CronTrigger();
+    cronTrigger.setConfig(config);
+
+    request.setCron(cronTrigger);
 
     return request;
   }
 
   static fromResponse(raw: avs_pb.TaskTrigger): CronTrigger {
-    // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: CronTriggerDataType = { schedules: [] };
 
     if (raw.getCron() && raw.getCron()!.hasConfig()) {
-      const config = raw.getCron()!.getConfig();
-
-      if (config) {
-        data = {
-          schedules: config.getSchedulesList() || [],
-        };
-      }
+      const config = raw.getCron()!.getConfig()!;
+      data = {
+        schedules: config.getSchedulesList(),
+      };
     }
 
     return new CronTrigger({
@@ -69,7 +69,7 @@ class CronTrigger extends Trigger {
   }
 
   /**
-   * Convert raw data from runTrigger response to CronOutput format
+   * Convert raw data from runNodeWithInputs response to CronOutput format
    * @param rawData - The raw data from the gRPC response
    * @returns {CronTriggerOutput | undefined} - The converted data
    */

@@ -309,7 +309,7 @@ describe("triggerWorkflow Tests", () => {
       workflowId,
       result.executionId
     );
-    expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
+    expect(executionStatus).toEqual(ExecutionStatus.Completed);
 
     await client.deleteWorkflow(workflowId);
   });
@@ -345,7 +345,7 @@ describe("triggerWorkflow Tests", () => {
       isBlocking: false,
     });
 
-    expect(result.status).toEqual(ExecutionStatus.EXECUTION_STATUS_PENDING);
+    expect(result.status).toEqual(ExecutionStatus.Pending);
     expect(result.executionId).toBeDefined();
 
     await client.deleteWorkflow(workflowId);

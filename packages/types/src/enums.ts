@@ -6,6 +6,13 @@ export enum WorkflowStatus {
   Executing = "executing",
 }
 
+export enum ExecutionStatus {
+  Unspecified = "unspecified",
+  Pending = "pending",
+  Completed = "completed", 
+  Failed = "failed",
+}
+
 export enum TriggerType {
   Unspecified = "unspecified",
   Manual = "manualTrigger",

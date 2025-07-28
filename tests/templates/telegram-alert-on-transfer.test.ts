@@ -113,7 +113,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             ],
           },
         ],
-      }
+      },
     });
   }
 
@@ -145,10 +145,10 @@ if (!eventTrigger.data.topics) {
 const fromAddress = eventTrigger.data.topics[1] ? '0x' + eventTrigger.data.topics[1].slice(-40) : 'unknown';
 const toAddress = eventTrigger.data.topics[2] ? '0x' + eventTrigger.data.topics[2].slice(-40) : 'unknown';
 
-// Decode value from rawData (assuming 18 decimals for USDC-like token)
-const rawValue = eventTrigger.data.rawData;
+// Decode value from data field (assuming 6 decimals for USDC)
+const rawValue = eventTrigger.data.data;
 const valueWei = parseInt(rawValue, 16);
-const valueFormatted = valueWei / Math.pow(10, 18); // Assuming 18 decimals
+const valueFormatted = valueWei / Math.pow(10, 6); // USDC has 6 decimals
 
 // Check if this is a receive or send (compare with wallet address if available)
 const walletAddress = eventTrigger.input?.address?.toLowerCase();
@@ -163,7 +163,7 @@ const formattedTime = dayjs().format('YYYY-MM-DD HH:mm');
 const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at block \${blockNumber} (\${formattedTime})\`;
 
 return message;`,
-      }
+      },
     });
   }
 
@@ -180,7 +180,7 @@ return message;`,
         method: "POST",
         body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}"}',
         headers: { "Content-Type": "application/json" },
-      }
+      },
     });
   }
 
@@ -204,8 +204,6 @@ return message;`,
 
   describe("1. Individual Component Testing", () => {
     test("should test EventTrigger with runTrigger", async () => {
-      
-
       const eventTrigger = createEventTrigger();
 
       const result = await client.runTrigger({
@@ -233,17 +231,16 @@ return message;`,
           testWalletAddress
         );
       } else {
-
-        // If we get mock data, verify it has the expected structure
+        // If we get mock data, verify it has the expected raw blockchain log structure
         expect(result.data).toHaveProperty("blockNumber");
-        expect(result.data).toHaveProperty("eventType");
+        expect(result.data).toHaveProperty("address");
         expect(result.data).toHaveProperty("topics");
+        expect(result.data).toHaveProperty("data"); // Raw transaction data
+        expect(result.data).toHaveProperty("transactionHash");
       }
     });
 
     test("should test CustomCode node with runNodeWithInputs", async () => {
-      
-
       const customCodeNode = createCustomCodeNode();
 
       // Mock the eventTrigger context data with actual event structure
@@ -259,8 +256,7 @@ return message;`,
               "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
             eventType: "Transfer",
             logIndex: 0,
-            rawData:
-              "0x00000000000000000000000000000000000000000000000572b7b98736c20000", // ~100.5 tokens with 18 decimals
+            data: "0x0000000000000000000000000000000000000000000000000000000005fd8a80", // 100.5 USDC with 6 decimals (100,500,000)
             topics: [
               "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
               "0x0000000000000000000000001234567890123456789012345678901234567890", // from address (padded)
@@ -292,12 +288,10 @@ return message;`,
       expect(typeof result.data).toBe("string");
       expect(result.data).toContain("Received");
       expect(result.data).toContain("USDC");
-      expect(result.data).toContain("100.5");
+      expect(result.data).toMatch(/100\.5\d*/); // Should show ~100.5 USDC (allowing for decimal precision)
     });
 
     test("should test Telegram node with runNodeWithInputs", async () => {
-      
-
       const telegramNode = createTelegramNode();
 
       // Mock the code0 output and apContext
@@ -371,7 +365,7 @@ return message;`,
       const triggerConfig = triggerStep.config as Record<string, unknown>;
       expect(triggerConfig.queries).toBeDefined();
       expect(Array.isArray(triggerConfig.queries)).toBe(true);
-      
+
       // TODO: These fields are not currently populated due to backend issue
       // expect(triggerConfig.address).toBeDefined();
       // expect(triggerConfig.chainId).toBe(11155111);
@@ -391,8 +385,6 @@ return message;`,
       expect(typeof customCodeStep.output).toBe("string");
       expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_TOPICS_ERROR);
       expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_DATA_ERROR);
-
-      
     });
   });
 
@@ -441,9 +433,9 @@ return message;`,
       const triggerData = savedWorkflow.trigger.data as any;
       expect(triggerData.queries).toBeDefined();
       expect(triggerData.queries).toHaveLength(2); // FROM and TO queries
-      expect(triggerData.queries[0].addresses).toContain("0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238");
-
-      
+      expect(triggerData.queries[0].addresses).toContain(
+        "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+      );
     });
 
     test("should verify workflow nodes are properly saved (regression test)", async () => {

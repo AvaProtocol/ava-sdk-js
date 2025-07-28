@@ -1,26 +1,27 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
-import {
-  TriggerType,
+import { 
+  TriggerType, 
+  FixedTimeTriggerProps, 
   FixedTimeTriggerDataType,
   FixedTimeTriggerOutput,
-  FixedTimeTriggerProps,
-  TriggerProps,
-  TriggerOutput,
+  TriggerProps 
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { epochsList }
 
 class FixedTimeTrigger extends Trigger {
   constructor(props: FixedTimeTriggerProps) {
-    super({ ...props, type: TriggerType.FixedTime, data: props.data });
+    super({
+      ...props,
+      type: TriggerType.FixedTime,
+    });
   }
 
   toRequest(): avs_pb.TaskTrigger {
     const request = new avs_pb.TaskTrigger();
-    request.setName(this.name);
     request.setId(this.id);
+    request.setName(this.name);
     request.setType(avs_pb.TriggerType.TRIGGER_TYPE_FIXED_TIME);
 
     if (!this.data) {
@@ -40,19 +41,15 @@ class FixedTimeTrigger extends Trigger {
   }
 
   static fromResponse(raw: avs_pb.TaskTrigger): FixedTimeTrigger {
-    // Convert the raw object to TriggerProps, which should keep name and id
     const obj = raw.toObject() as unknown as TriggerProps;
 
     let data: FixedTimeTriggerDataType = { epochsList: [] };
 
     if (raw.getFixedTime() && raw.getFixedTime()!.hasConfig()) {
-      const config = raw.getFixedTime()!.getConfig();
-
-      if (config) {
-        data = {
-          epochsList: config.getEpochsList() || [],
-        };
-      }
+      const config = raw.getFixedTime()!.getConfig()!;
+      data = {
+        epochsList: config.getEpochsList(),
+      };
     }
 
     return new FixedTimeTrigger({
@@ -63,7 +60,7 @@ class FixedTimeTrigger extends Trigger {
   }
 
   /**
-   * Convert raw data from runTrigger response to FixedTimeOutput format
+   * Convert raw data from runNodeWithInputs response to FixedTimeOutput format
    * @param rawData - The raw data from the gRPC response
    * @returns {FixedTimeTriggerOutput | undefined} - The converted data
    */

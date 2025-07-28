@@ -107,5 +107,3 @@ export type WorkflowProps = Omit<
   lastRanAt?: number;
   executionCount?: number;
 };
-
-export const ExecutionStatus = avs_pb.ExecutionStatus;

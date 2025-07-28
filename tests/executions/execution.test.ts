@@ -67,39 +67,42 @@ describe("Execution Management Tests", () => {
           isBlocking: true,
         });
 
-        const execution = await client.getExecution(workflowId, triggerResult.executionId);
+        const execution = await client.getExecution(
+          workflowId,
+          triggerResult.executionId
+        );
 
         expect(execution).toBeDefined();
         expect(execution.id).toEqual(triggerResult.executionId);
         expect(execution.success).toBe(true);
-        
+
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node
         expect(execution.steps).toBeDefined();
         expect(execution.steps.length).toBeGreaterThanOrEqual(2);
-        
+
         // The first step should be the trigger step
         const triggerStep = execution.steps[0];
         expect(triggerStep.type).toEqual(TriggerType.Block);
         expect(triggerStep.name).toEqual("blockTrigger");
         expect(triggerStep.success).toBe(true);
-        
+
         // The second step should be the ETH transfer node
         const ethTransferStep = execution.steps[1];
         expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
         expect(ethTransferStep.name).toEqual("sendETH");
         expect(ethTransferStep.success).toBe(true);
-        
+
         // Verify the trigger data is available in the inputs
         expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
     test("should throw error when trying to get an execution with a non-existent workflow ID", async () => {
-      const nonExistentWorkflowId = "non-existent-workflow-id";
       const nonExistentExecutionId = "non-existent-execution-id";
 
       await expect(
@@ -120,10 +123,13 @@ describe("Execution Management Tests", () => {
 
         await expect(
           client.getExecution(workflowId, nonExistentExecutionId)
-        ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
+        ).rejects.toThrowError(
+          /execution not found|NOT_FOUND|resource not found/i
+        );
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -155,34 +161,41 @@ describe("Execution Management Tests", () => {
           isBlocking: true,
         });
 
-        const execution = await client.getExecution(workflowId, result.executionId);
+        const execution = await client.getExecution(
+          workflowId,
+          result.executionId
+        );
         expect(execution.id).toEqual(result.executionId);
-        
+
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node
         expect(execution.steps).toBeDefined();
         expect(execution.steps.length).toBeGreaterThanOrEqual(2);
-        
+
         // The first step should be the trigger step
         const triggerStep = execution.steps[0];
         expect(triggerStep.type).toEqual(TriggerType.Cron);
         expect(triggerStep.name).toEqual("cronTrigger");
         expect(triggerStep.success).toBe(true);
-        
+
         // The second step should be the ETH transfer node
         const ethTransferStep = execution.steps[1];
         expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
         expect(ethTransferStep.name).toEqual("sendETH");
         expect(ethTransferStep.success).toBe(true);
-        
+
         // Verify the trigger data is available in the inputs
         expect(ethTransferStep.inputsList).toContain("cronTrigger.data");
 
-        const executionStatus = await client.getExecutionStatus(workflowId, result.executionId);
-        expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
+        const executionStatus = await client.getExecutionStatus(
+          workflowId,
+          result.executionId
+        );
+        expect(executionStatus).toEqual(ExecutionStatus.Completed);
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -222,37 +235,46 @@ describe("Execution Management Tests", () => {
         const executionIdFromList = executionsResponse.items[0].id;
 
         // Get the specific execution using the ID from the list
-        const execution = await client.getExecution(workflowId, executionIdFromList);
+        const execution = await client.getExecution(
+          workflowId,
+          executionIdFromList
+        );
 
         expect(execution).toBeDefined();
         expect(execution.id).toEqual(executionIdFromList);
         expect(execution.success).toBe(true);
-        
+
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node
         expect(execution.steps).toBeDefined();
         expect(execution.steps.length).toBeGreaterThanOrEqual(2);
-        
+
         // The first step should be the trigger step
         const triggerStep = execution.steps[0];
         expect(triggerStep.type).toEqual(TriggerType.Block);
         expect(triggerStep.name).toEqual("blockTriggerForGetExecutionsTest");
         expect(triggerStep.success).toBe(true);
-        
+
         // The second step should be the ETH transfer node
         const ethTransferStep = execution.steps[1];
         expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
         expect(ethTransferStep.name).toEqual("sendETH");
         expect(ethTransferStep.success).toBe(true);
-        
-        // Verify the trigger data is available in the inputs
-        expect(ethTransferStep.inputsList).toContain("blockTriggerForGetExecutionsTest.data");
 
-        const executionStatus = await client.getExecutionStatus(workflowId, execution.id);
-        expect(executionStatus).toEqual(ExecutionStatus.EXECUTION_STATUS_COMPLETED);
+        // Verify the trigger data is available in the inputs
+        expect(ethTransferStep.inputsList).toContain(
+          "blockTriggerForGetExecutionsTest.data"
+        );
+
+        const executionStatus = await client.getExecutionStatus(
+          workflowId,
+          execution.id
+        );
+        expect(executionStatus).toEqual(ExecutionStatus.Completed);
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
   });
@@ -342,8 +364,9 @@ describe("Execution Management Tests", () => {
         // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
         expect(typeof resultWithExtraLimit.pageInfo.endCursor).toBe("string");
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -380,8 +403,9 @@ describe("Execution Management Tests", () => {
           })
         ).rejects.toThrowError(/item per page is not valid/);
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -423,7 +447,7 @@ describe("Execution Management Tests", () => {
         const firstPage = await client.getExecutions([workflowId], {
           limit: pageSize,
         });
-        
+
         expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
         expect(firstPage.pageInfo.endCursor).toBeTruthy();
         expect(firstPage.pageInfo.hasNextPage).toBe(true);
@@ -438,7 +462,7 @@ describe("Execution Management Tests", () => {
         // Verify no overlap between pages
         const firstPageIds = firstPage.items.map((item: any) => item.id);
         const secondPageIds = secondPage.items.map((item: any) => item.id);
-        
+
         const overlap = firstPageIds.filter((id) => secondPageIds.includes(id));
         expect(overlap.length).toBe(0);
 
@@ -448,8 +472,9 @@ describe("Execution Management Tests", () => {
           expect(executionIds.includes(id)).toBe(true);
         });
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -491,7 +516,7 @@ describe("Execution Management Tests", () => {
         const firstPage = await client.getExecutions([workflowId], {
           limit: pageSize,
         });
-        
+
         expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
         expect(firstPage.pageInfo.endCursor).toBeTruthy();
 
@@ -511,14 +536,15 @@ describe("Execution Management Tests", () => {
         // Verify all returned executions are in our created list
         const previousPageIds = previousPage.items.map((item: any) => item.id);
         const firstPageIds = firstPage.items.map((item: any) => item.id);
-        
+
         [...previousPageIds, ...firstPageIds].forEach((id) => {
           expect(id).toBeDefined();
           expect(executionIds.includes(id)).toBe(true);
         });
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -549,8 +575,9 @@ describe("Execution Management Tests", () => {
           client.getExecutions([workflowId], { after: "invalid-cursor" })
         ).rejects.toThrowError(/Invalid pagination cursor|INVALID_ARGUMENT/i);
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
   });
@@ -589,8 +616,9 @@ describe("Execution Management Tests", () => {
         const count = await client.getExecutionCount([workflowId]);
         expect(count).toBeGreaterThanOrEqual(3);
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
 
@@ -647,7 +675,10 @@ describe("Execution Management Tests", () => {
           isBlocking: true,
         });
 
-        const count = await client.getExecutionCount([workflowId1, workflowId2]);
+        const count = await client.getExecutionCount([
+          workflowId1,
+          workflowId2,
+        ]);
         expect(count).toBeGreaterThanOrEqual(3);
       } finally {
         // Clean up all created workflows
@@ -676,9 +707,10 @@ describe("Execution Management Tests", () => {
         const count = await client.getExecutionCount([workflowId]);
         expect(count).toBe(0);
       } finally {
-        expect(workflowId).toBeDefined();
-        await client.deleteWorkflow(workflowId);
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+        }
       }
     });
   });
-}); 
+});

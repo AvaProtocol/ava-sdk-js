@@ -49,9 +49,10 @@ import {
   type DeleteTaskResponse,
   type GetExecutionStatsResponse,
   type GetExecutionStatsOptions,
+  ExecutionStatus,
 } from "@avaprotocol/types";
 
-import { ExecutionStatus } from "@/grpc_codegen/avs_pb";
+import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 // Import the consolidated conversion utilities
@@ -60,6 +61,27 @@ import {
   convertJSValueToProtobuf,
   cleanGrpcErrorMessage,
 } from "./utils";
+
+/**
+ * Convert protobuf ExecutionStatus numeric value to meaningful string enum
+ * @param protobufStatus - The numeric status from protobuf (0=UNSPECIFIED, 1=PENDING, 2=COMPLETED, 3=FAILED)
+ * @returns {ExecutionStatus} - The meaningful string enum value
+ */
+function convertProtobufExecutionStatus(
+  protobufStatus: ProtobufExecutionStatus
+): ExecutionStatus {
+  switch (protobufStatus) {
+    case ProtobufExecutionStatus.EXECUTION_STATUS_PENDING:
+      return ExecutionStatus.Pending;
+    case ProtobufExecutionStatus.EXECUTION_STATUS_COMPLETED:
+      return ExecutionStatus.Completed;
+    case ProtobufExecutionStatus.EXECUTION_STATUS_FAILED:
+      return ExecutionStatus.Failed;
+    case ProtobufExecutionStatus.EXECUTION_STATUS_UNSPECIFIED:
+    default:
+      return ExecutionStatus.Unspecified;
+  }
+}
 
 class BaseClient {
   readonly endpoint: string;
@@ -774,7 +796,7 @@ class Client extends BaseClient {
       avs_pb.ExecutionReq
     >("getExecutionStatus", request, options);
 
-    return result.getStatus();
+    return convertProtobufExecutionStatus(result.getStatus());
   }
 
   /**
@@ -832,7 +854,9 @@ class Client extends BaseClient {
           timestampIso: (triggerData as any).timestampIso,
         };
         const dataValue = new google_protobuf_struct_pb.Value();
-        dataValue.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData));
+        dataValue.setStructValue(
+          google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData)
+        );
         fixedTimeOutput.setData(dataValue);
         request.setFixedTimeTrigger(fixedTimeOutput);
         break;
@@ -844,7 +868,9 @@ class Client extends BaseClient {
           timestampIso: (triggerData as any).timestampIso,
         };
         const dataValue = new google_protobuf_struct_pb.Value();
-        dataValue.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData));
+        dataValue.setStructValue(
+          google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData)
+        );
         cronOutput.setData(dataValue);
         request.setCronTrigger(cronOutput);
         break;
@@ -862,7 +888,9 @@ class Client extends BaseClient {
           gasUsed: blockData.gasUsed || 0,
         };
         const dataValue = new google_protobuf_struct_pb.Value();
-        dataValue.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData));
+        dataValue.setStructValue(
+          google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData)
+        );
         blockOutput.setData(dataValue);
         request.setBlockTrigger(blockOutput);
         break;
@@ -883,15 +911,13 @@ class Client extends BaseClient {
       case TriggerType.Manual: {
         const manualData = triggerData as any;
         const manualOutput = new avs_pb.ManualTrigger.Output();
-        
+
         // Convert JavaScript data to protobuf Value
         if (manualData.data) {
           const protobufValue = convertJSValueToProtobuf(manualData.data);
           manualOutput.setData(protobufValue);
         }
-        
 
-        
         request.setManualTrigger(manualOutput);
         break;
       }
@@ -909,7 +935,13 @@ class Client extends BaseClient {
       avs_pb.TriggerTaskReq
     >("triggerTask", request, options);
 
-    return result.toObject();
+    const responseObject = result.toObject();
+
+    // Transform numeric protobuf status to meaningful string enum
+    return {
+      ...responseObject,
+      status: convertProtobufExecutionStatus(result.getStatus()),
+    } as typeof responseObject & { status: ExecutionStatus };
   }
 
   /**
@@ -1274,10 +1306,7 @@ class Client extends BaseClient {
       try {
         metadata = convertProtobufValueToJs(metadataValue);
       } catch (error) {
-        console.warn(
-          "Failed to convert metadata from protobuf Value:",
-          error
-        );
+        console.warn("Failed to convert metadata from protobuf Value:", error);
         metadata = metadataValue; // fallback to raw value
       }
     }
