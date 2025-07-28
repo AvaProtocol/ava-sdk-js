@@ -1477,7 +1477,7 @@ describe("ContractRead Node Tests", () => {
       ]);
 
       console.log(
-        "�� ~ simulateWorkflow applyToFields test ~ workflowProps:",
+        "🚀 ~ simulateWorkflow applyToFields test ~ workflowProps:",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 

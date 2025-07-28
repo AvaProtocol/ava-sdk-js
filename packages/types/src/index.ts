@@ -6,6 +6,7 @@ export * from "./trigger";
 export * from "./workflow";
 export * from "./api";
 export * from "./shared";
+export * from "./abi";
 
 // Export the new structured response types
 export type {
