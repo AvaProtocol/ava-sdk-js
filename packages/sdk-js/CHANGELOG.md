@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.5
+
+### Patch Changes
+
+- df22279: Update triggerWorkflow response to return the result when isBlocking:true
+- Updated dependencies [df22279]
+  - @avaprotocol/types@2.4.5
+
 ## 2.6.4
 
 ### Patch Changes
