@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.4
+
+### Patch Changes
+
+- 031f401: Update triggerWorkflow for manual trigger and fix template tests
+- Updated dependencies [031f401]
+  - @avaprotocol/types@2.4.4
+
 ## 2.6.3
 
 ### Patch Changes

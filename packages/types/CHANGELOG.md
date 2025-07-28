@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.4
+
+### Patch Changes
+
+- 031f401: Update triggerWorkflow for manual trigger and fix template tests
+
 ## 2.4.3
 
 ### Patch Changes
