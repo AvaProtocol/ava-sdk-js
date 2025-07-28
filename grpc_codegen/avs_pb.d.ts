@@ -2508,6 +2508,32 @@ export class TriggerTaskResp extends jspb.Message {
     setExecutionId(value: string): TriggerTaskResp;
     getStatus(): ExecutionStatus;
     setStatus(value: ExecutionStatus): TriggerTaskResp;
+    getWorkflowId(): string;
+    setWorkflowId(value: string): TriggerTaskResp;
+
+    hasStartAt(): boolean;
+    clearStartAt(): void;
+    getStartAt(): number | undefined;
+    setStartAt(value: number): TriggerTaskResp;
+
+    hasEndAt(): boolean;
+    clearEndAt(): void;
+    getEndAt(): number | undefined;
+    setEndAt(value: number): TriggerTaskResp;
+
+    hasSuccess(): boolean;
+    clearSuccess(): void;
+    getSuccess(): boolean | undefined;
+    setSuccess(value: boolean): TriggerTaskResp;
+
+    hasError(): boolean;
+    clearError(): void;
+    getError(): string | undefined;
+    setError(value: string): TriggerTaskResp;
+    clearStepsList(): void;
+    getStepsList(): Array<Execution.Step>;
+    setStepsList(value: Array<Execution.Step>): TriggerTaskResp;
+    addSteps(value?: Execution.Step, index?: number): Execution.Step;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): TriggerTaskResp.AsObject;
@@ -2523,6 +2549,12 @@ export namespace TriggerTaskResp {
     export type AsObject = {
         executionId: string,
         status: ExecutionStatus,
+        workflowId: string,
+        startAt?: number,
+        endAt?: number,
+        success?: boolean,
+        error?: string,
+        stepsList: Array<Execution.Step.AsObject>,
     }
 }
 

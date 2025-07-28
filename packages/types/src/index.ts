@@ -15,5 +15,7 @@ export type {
   CancelTaskResponse,
   DeleteTaskResponse,
   GetExecutionStatsResponse,
-  GetExecutionStatsOptions
+  GetExecutionStatsOptions,
+  TriggerWorkflowResponse,
+  ExecutionStep
 } from "./api";

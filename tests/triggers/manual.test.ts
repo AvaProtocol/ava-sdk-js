@@ -10,9 +10,11 @@ import {
 } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
+  WorkflowStatus,
   NodeType,
   CustomCodeLang,
   ExecutionMode,
+  ManualTriggerProps,
 } from "@avaprotocol/types";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
@@ -1337,5 +1339,74 @@ describe("ManualTrigger Tests", () => {
       expect(Array.isArray(result.data[4])).toBe(true);
       expect(result.data[5]).toBeNull();
     });
+  });
+
+  test("should return execution details when isBlocking=true", async () => {
+    const manualTriggerProps: ManualTriggerProps = {
+      id: getNextId(),
+      name: "blocking_test_manual_trigger",
+      type: TriggerType.Manual,
+      data: {
+        data: { test: "blocking execution" },
+      },
+    };
+
+    const manualTrigger = TriggerFactory.create(manualTriggerProps);
+
+    // Create workflow with a simple custom code node
+    const workflowProps = createFromTemplate(
+      await client.getWallet(getNextId().toString()),
+      [
+        {
+          id: getNextId(),
+          name: "test_node",
+          type: NodeType.CustomCode,
+          data: {
+            lang: CustomCodeLang.JavaScript,
+            source: "return { message: 'blocking test completed' };",
+          },
+        },
+      ]
+    );
+    workflowProps.trigger = manualTrigger;
+
+    let workflowId: string | undefined;
+    try {
+      workflowId = await client.submitWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+      createdIdMap.set(workflowId, true);
+
+      // Test blocking trigger
+      const blockingResponse = await client.triggerWorkflow({
+        id: workflowId,
+        triggerData: {
+          type: TriggerType.Manual,
+          data: { test: "blocking execution" },
+        },
+        isBlocking: true,
+      });
+
+      console.log("Blocking trigger response:", blockingResponse);
+
+      // Verify all fields are present for blocking execution
+      expect(blockingResponse.executionId).toBeDefined();
+      expect(blockingResponse.status).toBe("completed");
+      expect(blockingResponse.workflowId).toBe(workflowId);
+      expect(blockingResponse.startAt).toBeDefined();
+      expect(blockingResponse.endAt).toBeDefined();
+      expect(blockingResponse.success).toBeDefined();
+
+      // Steps should be present for workflows with nodes
+      if (blockingResponse.success) {
+        expect(blockingResponse.steps).toBeDefined();
+        expect(Array.isArray(blockingResponse.steps)).toBe(true);
+        expect(blockingResponse.steps!.length).toBeGreaterThan(0);
+      }
+    } finally {
+      if (workflowId) {
+        await client.deleteWorkflow(workflowId);
+      }
+    }
   });
 });

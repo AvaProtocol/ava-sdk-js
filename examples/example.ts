@@ -970,8 +970,7 @@ const main = async (cmd: string) => {
     case "schedule-manual": {
       const resultSchedule = await schedulePriceReport(
         commandArgs.args[0],
-        commandArgs.args[1],
-        { authKey }
+        commandArgs.args[1]
       );
 
       console.log(

@@ -1838,7 +1838,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.TriggerTaskResp = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.TriggerTaskResp.repeatedFields_, null);
 };
 goog.inherits(proto.aggregator.TriggerTaskResp, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -20214,6 +20214,13 @@ proto.aggregator.TriggerTaskReq.prototype.setIsBlocking = function(value) {
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.TriggerTaskResp.repeatedFields_ = [8];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -20246,7 +20253,14 @@ proto.aggregator.TriggerTaskResp.prototype.toObject = function(opt_includeInstan
 proto.aggregator.TriggerTaskResp.toObject = function(includeInstance, msg) {
   var f, obj = {
     executionId: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    status: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    status: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    workflowId: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    startAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    endAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    success: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
+    error: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    stepsList: jspb.Message.toObjectList(msg.getStepsList(),
+    proto.aggregator.Execution.Step.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -20291,6 +20305,31 @@ proto.aggregator.TriggerTaskResp.deserializeBinaryFromReader = function(msg, rea
       var value = /** @type {!proto.aggregator.ExecutionStatus} */ (reader.readEnum());
       msg.setStatus(value);
       break;
+    case 3:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setWorkflowId(value);
+      break;
+    case 4:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setStartAt(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setEndAt(value);
+      break;
+    case 6:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setSuccess(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setError(value);
+      break;
+    case 8:
+      var value = new proto.aggregator.Execution.Step;
+      reader.readMessage(value,proto.aggregator.Execution.Step.deserializeBinaryFromReader);
+      msg.addSteps(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -20334,6 +20373,49 @@ proto.aggregator.TriggerTaskResp.serializeBinaryToWriter = function(message, wri
       f
     );
   }
+  f = message.getWorkflowId();
+  if (f.length > 0) {
+    writer.writeString(
+      3,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 4));
+  if (f != null) {
+    writer.writeInt64(
+      4,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 5));
+  if (f != null) {
+    writer.writeInt64(
+      5,
+      f
+    );
+  }
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 6));
+  if (f != null) {
+    writer.writeBool(
+      6,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 7));
+  if (f != null) {
+    writer.writeString(
+      7,
+      f
+    );
+  }
+  f = message.getStepsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      8,
+      f,
+      proto.aggregator.Execution.Step.serializeBinaryToWriter
+    );
+  }
 };
 
 
@@ -20370,6 +20452,206 @@ proto.aggregator.TriggerTaskResp.prototype.getStatus = function() {
  */
 proto.aggregator.TriggerTaskResp.prototype.setStatus = function(value) {
   return jspb.Message.setProto3EnumField(this, 2, value);
+};
+
+
+/**
+ * optional string workflow_id = 3;
+ * @return {string}
+ */
+proto.aggregator.TriggerTaskResp.prototype.getWorkflowId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.setWorkflowId = function(value) {
+  return jspb.Message.setProto3StringField(this, 3, value);
+};
+
+
+/**
+ * optional int64 start_at = 4;
+ * @return {number}
+ */
+proto.aggregator.TriggerTaskResp.prototype.getStartAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.setStartAt = function(value) {
+  return jspb.Message.setField(this, 4, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.clearStartAt = function() {
+  return jspb.Message.setField(this, 4, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.TriggerTaskResp.prototype.hasStartAt = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional int64 end_at = 5;
+ * @return {number}
+ */
+proto.aggregator.TriggerTaskResp.prototype.getEndAt = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.setEndAt = function(value) {
+  return jspb.Message.setField(this, 5, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.clearEndAt = function() {
+  return jspb.Message.setField(this, 5, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.TriggerTaskResp.prototype.hasEndAt = function() {
+  return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional bool success = 6;
+ * @return {boolean}
+ */
+proto.aggregator.TriggerTaskResp.prototype.getSuccess = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 6, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.setSuccess = function(value) {
+  return jspb.Message.setField(this, 6, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.clearSuccess = function() {
+  return jspb.Message.setField(this, 6, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.TriggerTaskResp.prototype.hasSuccess = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional string error = 7;
+ * @return {string}
+ */
+proto.aggregator.TriggerTaskResp.prototype.getError = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.setError = function(value) {
+  return jspb.Message.setField(this, 7, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.clearError = function() {
+  return jspb.Message.setField(this, 7, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.TriggerTaskResp.prototype.hasError = function() {
+  return jspb.Message.getField(this, 7) != null;
+};
+
+
+/**
+ * repeated Execution.Step steps = 8;
+ * @return {!Array<!proto.aggregator.Execution.Step>}
+ */
+proto.aggregator.TriggerTaskResp.prototype.getStepsList = function() {
+  return /** @type{!Array<!proto.aggregator.Execution.Step>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.aggregator.Execution.Step, 8));
+};
+
+
+/**
+ * @param {!Array<!proto.aggregator.Execution.Step>} value
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+*/
+proto.aggregator.TriggerTaskResp.prototype.setStepsList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 8, value);
+};
+
+
+/**
+ * @param {!proto.aggregator.Execution.Step=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.Execution.Step}
+ */
+proto.aggregator.TriggerTaskResp.prototype.addSteps = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 8, opt_value, proto.aggregator.Execution.Step, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.TriggerTaskResp} returns this
+ */
+proto.aggregator.TriggerTaskResp.prototype.clearStepsList = function() {
+  return this.setStepsList([]);
 };
 
 
