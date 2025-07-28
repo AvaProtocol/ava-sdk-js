@@ -50,6 +50,7 @@ import {
   type GetExecutionStatsResponse,
   type GetExecutionStatsOptions,
   ExecutionStatus,
+  type TriggerWorkflowResponse,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -819,13 +820,13 @@ class Client extends BaseClient {
   }
 
   /**
-   * Trigger a workflow with the new flattened trigger data structure
+   * Trigger a workflow with enhanced response including workflowId and optional execution details
    * @param {Object} params - The trigger parameters
    * @param {string} params.id - The workflow id
    * @param {TriggerDataProps} params.triggerData - The trigger data
    * @param {boolean} params.isBlocking - Whether to block until execution completes
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<avs_pb.TriggerTaskResp.AsObject>} - The response from triggering the workflow
+   * @returns {Promise<TriggerWorkflowResponse>} - Enhanced response with workflowId and execution details
    */
   async triggerWorkflow(
     {
@@ -838,7 +839,7 @@ class Client extends BaseClient {
       isBlocking?: boolean;
     },
     options?: RequestOptions
-  ): Promise<avs_pb.TriggerTaskResp.AsObject> {
+  ): Promise<TriggerWorkflowResponse> {
     const request = new avs_pb.TriggerTaskReq();
 
     request.setTaskId(id);
@@ -848,10 +849,11 @@ class Client extends BaseClient {
     // Set the appropriate trigger output based on type
     switch (triggerData.type) {
       case TriggerType.FixedTime: {
+        const fixedTimeData = triggerData as any;
         const fixedTimeOutput = new avs_pb.FixedTimeTrigger.Output();
         const triggerOutputData = {
-          timestamp: (triggerData as any).timestamp,
-          timestampIso: (triggerData as any).timestampIso,
+          timestamp: fixedTimeData.timestamp,
+          timestampIso: fixedTimeData.timestampIso,
         };
         const dataValue = new google_protobuf_struct_pb.Value();
         dataValue.setStructValue(
@@ -862,10 +864,11 @@ class Client extends BaseClient {
         break;
       }
       case TriggerType.Cron: {
+        const cronData = triggerData as any;
         const cronOutput = new avs_pb.CronTrigger.Output();
         const triggerOutputData = {
-          timestamp: (triggerData as any).timestamp,
-          timestampIso: (triggerData as any).timestampIso,
+          timestamp: cronData.timestamp,
+          timestampIso: cronData.timestampIso,
         };
         const dataValue = new google_protobuf_struct_pb.Value();
         dataValue.setStructValue(
@@ -937,11 +940,62 @@ class Client extends BaseClient {
 
     const responseObject = result.toObject();
 
-    // Transform numeric protobuf status to meaningful string enum
-    return {
-      ...responseObject,
+    // Transform to TriggerWorkflowResponse format
+    const response: TriggerWorkflowResponse = {
+      executionId: responseObject.executionId,
       status: convertProtobufExecutionStatus(result.getStatus()),
-    } as typeof responseObject & { status: ExecutionStatus };
+      workflowId: responseObject.workflowId,
+    };
+
+    // Add optional fields if present
+    if (responseObject.startAt !== undefined) {
+      response.startAt = responseObject.startAt;
+    }
+    if (responseObject.endAt !== undefined) {
+      response.endAt = responseObject.endAt;
+    }
+    if (responseObject.success !== undefined) {
+      response.success = responseObject.success;
+    }
+    if (responseObject.error) {
+      response.error = responseObject.error;
+    }
+    if (responseObject.stepsList && responseObject.stepsList.length > 0) {
+      response.steps = responseObject.stepsList.map(step => {
+        // Extract output data from the appropriate oneof field
+        let output: unknown = undefined;
+        if (step.blockTrigger) output = step.blockTrigger;
+        else if (step.fixedTimeTrigger) output = step.fixedTimeTrigger;
+        else if (step.cronTrigger) output = step.cronTrigger;
+        else if (step.eventTrigger) output = step.eventTrigger;
+        else if (step.manualTrigger) output = step.manualTrigger;
+        else if (step.ethTransfer) output = step.ethTransfer;
+        else if (step.graphql) output = step.graphql;
+        else if (step.contractRead) output = step.contractRead;
+        else if (step.contractWrite) output = step.contractWrite;
+        else if (step.customCode) output = step.customCode;
+        else if (step.restApi) output = step.restApi;
+        else if (step.branch) output = step.branch;
+        else if (step.filter) output = step.filter;
+        else if (step.loop) output = step.loop;
+
+        return {
+          id: step.id,
+          type: step.type,
+          name: step.name,
+          success: step.success,
+          error: step.error,
+          log: step.log,
+          inputsList: step.inputsList,
+          config: step.config,
+          output: output,
+          startAt: step.startAt,
+          endAt: step.endAt,
+        };
+      });
+    }
+
+    return response;
   }
 
   /**

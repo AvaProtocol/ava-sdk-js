@@ -170,6 +170,50 @@ export type NodeOutputData =
   | any[];
 
 /**
+ * Enhanced response type for triggerWorkflow that includes workflowId and optional execution fields
+ * 
+ * When isBlocking = false:
+ * - executionId: string - ID of the execution
+ * - status: ExecutionStatus - Will be "pending"
+ * - workflowId: string - ID of the workflow
+ * - startAt: number - Timestamp when execution started (milliseconds)
+ * 
+ * When isBlocking = true:
+ * - All fields from non-blocking mode plus:
+ * - endAt: number - Timestamp when execution ended (milliseconds)
+ * - success: boolean - Whether execution was successful
+ * - error?: string - Error message if execution failed
+ * - steps: ExecutionStep[] - Array of execution steps (same as getExecution response)
+ */
+export interface TriggerWorkflowResponse {
+  executionId: string;
+  status: string; // ExecutionStatus as string enum
+  workflowId: string;
+  startAt?: number;
+  endAt?: number;
+  success?: boolean;
+  error?: string;
+  steps?: ExecutionStep[];
+}
+
+/**
+ * Execution step data structure (matches the structure from getExecution)
+ */
+export interface ExecutionStep {
+  id: string;
+  type: string;
+  name: string;
+  success: boolean;
+  error: string;
+  log: string;
+  inputsList: string[];
+  config?: unknown;
+  output?: unknown;
+  startAt: number;
+  endAt: number;
+}
+
+/**
  * Comprehensive type for trigger output data that handles all possible return types
  * 
  * This type represents the actual data returned by triggers after execution.
