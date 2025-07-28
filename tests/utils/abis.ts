@@ -1,50 +1,50 @@
-export const factoryProxyAbi = `[
+export const factoryProxyAbi = [
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
+        internalType: "address",
+        name: "owner",
+        type: "address"
       },
       {
-        "internalType": "uint256",
-        "name": "salt",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "salt",
+        type: "uint256"
       }
     ],
-    "name": "createAccount",
-    "outputs": [
+    name: "createAccount",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        internalType: "address",
+        name: "",
+        type: "address"
       }
     ],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    stateMutability: "nonpayable",
+    type: "function"
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
+        internalType: "address",
+        name: "owner",
+        type: "address"
       },
       {
-        "internalType": "uint256",
-        "name": "salt",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "salt",
+        type: "uint256"
       }
     ],
-    "name": "getAddress",
-    "outputs": [
+    name: "getAddress",
+    outputs: [
       {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
+        internalType: "address",
+        name: "",
+        type: "address"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function"
   }
-]`; 
+] as Record<string, unknown>[]; 
