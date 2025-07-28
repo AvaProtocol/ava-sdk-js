@@ -377,8 +377,8 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           contractAddresses: [
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // Real USDC contract on Sepolia
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // Same contract for consistency
+            "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
+            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC contract (has name/symbol)
           ],
         },
       };
@@ -1979,7 +1979,7 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           contractAddresses: [
-            "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419", // Chainlink ETH/USD price feed (doesn't have name/symbol)
+            "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
             "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC contract (has name/symbol)
           ],
         },

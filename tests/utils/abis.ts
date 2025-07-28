@@ -1,4 +1,6 @@
-export const factoryProxyAbi = [
+import { ContractAbi } from "@avaprotocol/types";
+
+export const factoryProxyAbi: ContractAbi = [
   {
     inputs: [
       {
@@ -47,4 +49,4 @@ export const factoryProxyAbi = [
     stateMutability: "view",
     type: "function"
   }
-] as Record<string, unknown>[]; 
+]; 

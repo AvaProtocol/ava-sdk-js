@@ -1,12 +1,13 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { NodeType, ExecutionMode } from "./enums";
+import { ContractAbi } from "./abi";
 
 // Node DataTypes
 export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
 // Custom ContractWrite data type with cleaner field names
 export interface ContractWriteNodeData {
   contractAddress: string;
-  contractAbi: Array<Record<string, unknown>>; // Contract ABI as array
+  contractAbi: ContractAbi; // Contract ABI as array
   methodCalls?: Array<{
     methodName: string;
     methodParams: string[]; // Array of Handlebars templates for positional parameters
@@ -18,8 +19,8 @@ export interface ContractWriteNodeData {
 // Custom ContractRead data type with cleaner field names
 export interface ContractReadNodeData {
   contractAddress: string;
-  contractAbi: Array<Record<string, unknown>>; // Contract ABI as array
-  methodCalls: Array<{
+  contractAbi: ContractAbi; // Contract ABI as array
+  methodCalls?: Array<{
     methodName: string;
     methodParams: string[]; // Array of Handlebars templates for positional parameters
     applyToFields?: string[]; // Optional: Fields to apply decimal formatting to
@@ -70,7 +71,7 @@ type LoopRunnerConfig =
       type: "contractRead";
       config: {
         contractAddress: string;
-        contractAbi: Array<Record<string, unknown>>;
+        contractAbi: ContractAbi;
         methodCalls: Array<{
           methodName: string;
           methodParams: string[];
@@ -83,7 +84,7 @@ type LoopRunnerConfig =
       type: "contractWrite";
       config: {
         contractAddress: string;
-        contractAbi: Array<Record<string, unknown>>;
+        contractAbi: ContractAbi;
         methodCalls: Array<{
           methodName: string;
           methodParams: string[];

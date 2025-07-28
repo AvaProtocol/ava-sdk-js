@@ -12,6 +12,7 @@ import {
   LoopNodeProps,
   NodeProps,
   ExecutionMode,
+  ContractAbi,
 } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
@@ -179,7 +180,7 @@ class LoopNode extends Node {
         const writeConfig = config as Record<string, unknown>;
         const contractWrite = ContractWriteNode.createProtobufNode({
           contractAddress: writeConfig.contractAddress as string,
-          contractAbi: writeConfig.contractAbi as any[],
+          contractAbi: writeConfig.contractAbi as ContractAbi,
           methodCalls:
             (
               writeConfig.methodCalls as Array<{
@@ -201,7 +202,7 @@ class LoopNode extends Node {
         const readConfig = config as Record<string, unknown>;
         const contractRead = ContractReadNode.createProtobufNode({
           contractAddress: readConfig.contractAddress as string,
-          contractAbi: readConfig.contractAbi as any[],
+          contractAbi: readConfig.contractAbi as ContractAbi,
           methodCalls:
             (
               readConfig.methodCalls as Array<{

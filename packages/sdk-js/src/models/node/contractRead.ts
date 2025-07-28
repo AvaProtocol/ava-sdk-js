@@ -77,10 +77,11 @@ class ContractReadNode extends Node {
       ),
       methodCalls:
         protobufData.methodCallsList?.map((call) => ({
-          callData: call.callData,
           methodName: call.methodName,
           applyToFields: call.applyToFieldsList || [],
           methodParams: call.methodParamsList || [],
+          // Only include callData if present
+          ...(call.callData && { callData: call.callData }),
         })) || [],
     };
 

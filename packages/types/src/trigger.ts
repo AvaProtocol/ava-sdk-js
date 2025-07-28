@@ -1,5 +1,6 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "./enums";
+import { ContractAbi } from "./abi";
 
 // Custom CronTrigger data type with cleaner field names
 export interface CronTriggerDataType {
@@ -35,7 +36,7 @@ export interface EventTriggerDataType {
       values?: string[];
     }>;
     maxEventsPerBlock?: number;
-    contractAbi: Array<Record<string, unknown>>; // Contract ABI as array
+    contractAbi: ContractAbi; // Contract ABI as array
     conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
     methodCalls?: MethodCallType[]; // Method calls for enhanced formatting (e.g., decimals)
   }>;
