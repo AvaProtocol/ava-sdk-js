@@ -207,12 +207,20 @@ describe("ContractWrite Node Tests", () => {
       expect(result.success).toBe(true);
       expect(data.length).toBeGreaterThan(0);
 
-      // Should have transaction hash for successful write
+      // Should have transaction hash regardless of success/failure
       const approveResult = data.find((r: any) => r.methodName === "approve");
       expect(approveResult).toBeDefined();
       expect(approveResult.methodName).toBe("approve");
       expect(approveResult.receipt).toBeDefined();
       expect(approveResult.receipt.transactionHash).toBeDefined();
+      
+      // Check that the receipt status matches the method success
+      if (approveResult.success) {
+        expect(approveResult.receipt.status).toBe("0x1"); // Success
+      } else {
+        expect(approveResult.receipt.status).toBe("0x0"); // Failure
+        expect(approveResult.error).toBeDefined(); // Should have error message
+      }
     });
 
     test("should handle multiple method calls", async () => {
@@ -789,7 +797,7 @@ describe("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
           contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
-          contractAbi: JSON.stringify([
+          contractAbi: [
             {
               inputs: [],
               name: "nonExistentMethod",
@@ -797,7 +805,7 @@ describe("ContractWrite Node Tests", () => {
               stateMutability: "nonpayable",
               type: "function",
             },
-          ]),
+          ],
           methodCalls: [
             { methodName: "nonExistentMethod", methodParams: [] },
           ],

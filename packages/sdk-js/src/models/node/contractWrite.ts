@@ -128,6 +128,7 @@ class ContractWriteNode extends Node {
           success: result.success,
           error: result.error || "",
           value: result.value,
+          receipt: result.receipt || null, // Add receipt field
         };
       });
     } else {
@@ -139,6 +140,7 @@ class ContractWriteNode extends Node {
         success: jsData.success,
         error: jsData.error || "",
         value: jsData.value,
+        receipt: jsData.receipt || null, // Add receipt field
       }];
     }
   }
