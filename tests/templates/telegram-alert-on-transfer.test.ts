@@ -128,7 +128,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             methodCalls: [
               {
                 methodName: "decimals",
-                callData: "0x313ce567",
+                methodParams: [],
                 applyToFields: ["Transfer.value"],
               },
             ],
@@ -179,7 +179,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             methodCalls: [
               {
                 methodName: "decimals",
-                callData: "0x313ce567",
+                methodParams: [],
                 applyToFields: ["Transfer.value"],
               },
             ],
