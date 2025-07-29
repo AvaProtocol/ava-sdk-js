@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.8
+
+### Patch Changes
+
+- 8a767da: Remove input from both TriggerProps and NodeProps
+
 ## 2.4.7
 
 ### Patch Changes

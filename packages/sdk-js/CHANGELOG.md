@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.8
+
+### Patch Changes
+
+- 8a767da: Remove input from both TriggerProps and NodeProps
+- Updated dependencies [8a767da]
+  - @avaprotocol/types@2.4.8
+
 ## 2.6.7
 
 ### Patch Changes
