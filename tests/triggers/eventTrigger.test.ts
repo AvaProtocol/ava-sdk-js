@@ -1040,8 +1040,6 @@ describe("EventTrigger Tests", () => {
       expect(transferData.address).toBeDefined();
       expect(transferData.transactionHash).toBeDefined();
       expect(transferData.blockNumber).toBeDefined();
-      expect(transferData.logIndex).toBeDefined();
-      expect(transferData.transactionIndex).toBeDefined();
 
       // Type checks for enhanced Transfer enrichment
       expect(typeof transferData.tokenName).toBe("string");

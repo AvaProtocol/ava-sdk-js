@@ -18,7 +18,6 @@ class ManualTrigger extends Trigger {
       ...props,
       type: TriggerType.Manual,
       data: props.data,
-      input: props.input,
     });
   }
 

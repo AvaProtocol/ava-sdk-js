@@ -73,7 +73,6 @@ export type TriggerProps = Omit<
   type: TriggerType;
   data: TriggerData;
   output?: TriggerOutput;
-  input?: Record<string, any>;
 };
 
 export type CronTriggerProps = TriggerProps & { data: CronTriggerDataType };

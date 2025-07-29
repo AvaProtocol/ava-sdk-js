@@ -12,9 +12,8 @@ import {
   CronTriggerProps,
   EventTriggerProps,
   FixedTimeTriggerProps,
-  ManualTriggerProps
+  ManualTriggerProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
 
 class TriggerFactory {
   /**
