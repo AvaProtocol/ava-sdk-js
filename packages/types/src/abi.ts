@@ -18,16 +18,24 @@ export interface AbiOutput {
   components?: AbiOutput[]; // For struct types
 }
 
-export interface AbiElement {
+export interface AbiFunctionElement {
   inputs: AbiInput[];
   name: string;
   outputs: AbiOutput[];
   stateMutability: string;
-  type: string;
+  type: "function" | "constructor" | "receive" | "fallback";
   constant?: boolean; // Legacy field for older ABIs
   payable?: boolean; // Legacy field for older ABIs
-  anonymous?: boolean; // For events
 }
+
+export interface AbiEventElement {
+  inputs: AbiInput[];
+  name: string;
+  type: "event";
+  anonymous?: boolean;
+}
+
+export type AbiElement = AbiFunctionElement | AbiEventElement;
 
 /**
  * Type alias for contract ABI arrays
@@ -36,19 +44,41 @@ export interface AbiElement {
 export type ContractAbi = AbiElement[];
 
 /**
- * Type guard to check if an object is a valid ABI element
+ * Type guard to check if an object is a valid ABI function element
  */
-export function isAbiElement(obj: unknown): obj is AbiElement {
+export function isAbiFunctionElement(obj: unknown): obj is AbiFunctionElement {
   if (typeof obj !== 'object' || obj === null) return false;
   
-  const element = obj as Partial<AbiElement>;
+  const element = obj as Partial<AbiFunctionElement>;
   return (
     Array.isArray(element.inputs) &&
     typeof element.name === 'string' &&
     Array.isArray(element.outputs) &&
     typeof element.stateMutability === 'string' &&
-    typeof element.type === 'string'
+    typeof element.type === 'string' &&
+    ['function', 'constructor', 'receive', 'fallback'].includes(element.type)
   );
+}
+
+/**
+ * Type guard to check if an object is a valid ABI event element
+ */
+export function isAbiEventElement(obj: unknown): obj is AbiEventElement {
+  if (typeof obj !== 'object' || obj === null) return false;
+  
+  const element = obj as Partial<AbiEventElement>;
+  return (
+    Array.isArray(element.inputs) &&
+    typeof element.name === 'string' &&
+    element.type === 'event'
+  );
+}
+
+/**
+ * Type guard to check if an object is a valid ABI element
+ */
+export function isAbiElement(obj: unknown): obj is AbiElement {
+  return isAbiFunctionElement(obj) || isAbiEventElement(obj);
 }
 
 /**
