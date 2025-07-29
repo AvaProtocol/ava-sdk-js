@@ -147,7 +147,6 @@ export type NodeProps = Omit<
 > & {
   type: NodeType; // Use our own NodeType enum
   data: NodeData;
-  input?: Record<string, unknown>; // Simplified to plain JS object - transformation handled in SDK
 };
 
 export type LoopNodeProps = NodeProps & { data: LoopNodeData };
