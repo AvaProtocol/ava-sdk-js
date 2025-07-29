@@ -4950,7 +4950,7 @@ proto.aggregator.EventTrigger.Query.prototype.clearMethodCallsList = function() 
  * @private {!Array<number>}
  * @const
  */
-proto.aggregator.EventTrigger.MethodCall.repeatedFields_ = [3];
+proto.aggregator.EventTrigger.MethodCall.repeatedFields_ = [3,4];
 
 
 
@@ -4985,7 +4985,8 @@ proto.aggregator.EventTrigger.MethodCall.toObject = function(includeInstance, ms
   var f, obj = {
     methodName: jspb.Message.getFieldWithDefault(msg, 1, ""),
     callData: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    applyToFieldsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    applyToFieldsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    methodParamsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -5034,6 +5035,10 @@ proto.aggregator.EventTrigger.MethodCall.deserializeBinaryFromReader = function(
       var value = /** @type {string} */ (reader.readString());
       msg.addApplyToFields(value);
       break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addMethodParams(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5070,8 +5075,8 @@ proto.aggregator.EventTrigger.MethodCall.serializeBinaryToWriter = function(mess
       f
     );
   }
-  f = message.getCallData();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
     writer.writeString(
       2,
       f
@@ -5081,6 +5086,13 @@ proto.aggregator.EventTrigger.MethodCall.serializeBinaryToWriter = function(mess
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
+      f
+    );
+  }
+  f = message.getMethodParamsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
       f
     );
   }
@@ -5119,7 +5131,25 @@ proto.aggregator.EventTrigger.MethodCall.prototype.getCallData = function() {
  * @return {!proto.aggregator.EventTrigger.MethodCall} returns this
  */
 proto.aggregator.EventTrigger.MethodCall.prototype.setCallData = function(value) {
-  return jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.EventTrigger.MethodCall} returns this
+ */
+proto.aggregator.EventTrigger.MethodCall.prototype.clearCallData = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.EventTrigger.MethodCall.prototype.hasCallData = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -5157,6 +5187,43 @@ proto.aggregator.EventTrigger.MethodCall.prototype.addApplyToFields = function(v
  */
 proto.aggregator.EventTrigger.MethodCall.prototype.clearApplyToFieldsList = function() {
   return this.setApplyToFieldsList([]);
+};
+
+
+/**
+ * repeated string method_params = 4;
+ * @return {!Array<string>}
+ */
+proto.aggregator.EventTrigger.MethodCall.prototype.getMethodParamsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.EventTrigger.MethodCall} returns this
+ */
+proto.aggregator.EventTrigger.MethodCall.prototype.setMethodParamsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.EventTrigger.MethodCall} returns this
+ */
+proto.aggregator.EventTrigger.MethodCall.prototype.addMethodParams = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.EventTrigger.MethodCall} returns this
+ */
+proto.aggregator.EventTrigger.MethodCall.prototype.clearMethodParamsList = function() {
+  return this.setMethodParamsList([]);
 };
 
 
@@ -7512,7 +7579,7 @@ proto.aggregator.ContractWriteNode.Config.prototype.clearMethodCallsList = funct
  * @private {!Array<number>}
  * @const
  */
-proto.aggregator.ContractWriteNode.MethodCall.repeatedFields_ = [3];
+proto.aggregator.ContractWriteNode.MethodCall.repeatedFields_ = [3,4];
 
 
 
@@ -7547,7 +7614,8 @@ proto.aggregator.ContractWriteNode.MethodCall.toObject = function(includeInstanc
   var f, obj = {
     callData: jspb.Message.getFieldWithDefault(msg, 1, ""),
     methodName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    methodParamsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f
+    applyToFieldsList: (f = jspb.Message.getRepeatedField(msg, 3)) == null ? undefined : f,
+    methodParamsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -7594,6 +7662,10 @@ proto.aggregator.ContractWriteNode.MethodCall.deserializeBinaryFromReader = func
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
+      msg.addApplyToFields(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
       msg.addMethodParams(value);
       break;
     default:
@@ -7625,8 +7697,8 @@ proto.aggregator.ContractWriteNode.MethodCall.prototype.serializeBinary = functi
  */
 proto.aggregator.ContractWriteNode.MethodCall.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getCallData();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  if (f != null) {
     writer.writeString(
       1,
       f
@@ -7639,10 +7711,17 @@ proto.aggregator.ContractWriteNode.MethodCall.serializeBinaryToWriter = function
       f
     );
   }
-  f = message.getMethodParamsList();
+  f = message.getApplyToFieldsList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       3,
+      f
+    );
+  }
+  f = message.getMethodParamsList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      4,
       f
     );
   }
@@ -7663,7 +7742,25 @@ proto.aggregator.ContractWriteNode.MethodCall.prototype.getCallData = function()
  * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
  */
 proto.aggregator.ContractWriteNode.MethodCall.prototype.setCallData = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
+ */
+proto.aggregator.ContractWriteNode.MethodCall.prototype.clearCallData = function() {
+  return jspb.Message.setField(this, 1, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.MethodCall.prototype.hasCallData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -7686,10 +7783,10 @@ proto.aggregator.ContractWriteNode.MethodCall.prototype.setMethodName = function
 
 
 /**
- * repeated string method_params = 3;
+ * repeated string apply_to_fields = 3;
  * @return {!Array<string>}
  */
-proto.aggregator.ContractWriteNode.MethodCall.prototype.getMethodParamsList = function() {
+proto.aggregator.ContractWriteNode.MethodCall.prototype.getApplyToFieldsList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 3));
 };
 
@@ -7698,7 +7795,7 @@ proto.aggregator.ContractWriteNode.MethodCall.prototype.getMethodParamsList = fu
  * @param {!Array<string>} value
  * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
  */
-proto.aggregator.ContractWriteNode.MethodCall.prototype.setMethodParamsList = function(value) {
+proto.aggregator.ContractWriteNode.MethodCall.prototype.setApplyToFieldsList = function(value) {
   return jspb.Message.setField(this, 3, value || []);
 };
 
@@ -7708,8 +7805,45 @@ proto.aggregator.ContractWriteNode.MethodCall.prototype.setMethodParamsList = fu
  * @param {number=} opt_index
  * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
  */
-proto.aggregator.ContractWriteNode.MethodCall.prototype.addMethodParams = function(value, opt_index) {
+proto.aggregator.ContractWriteNode.MethodCall.prototype.addApplyToFields = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 3, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
+ */
+proto.aggregator.ContractWriteNode.MethodCall.prototype.clearApplyToFieldsList = function() {
+  return this.setApplyToFieldsList([]);
+};
+
+
+/**
+ * repeated string method_params = 4;
+ * @return {!Array<string>}
+ */
+proto.aggregator.ContractWriteNode.MethodCall.prototype.getMethodParamsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 4));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
+ */
+proto.aggregator.ContractWriteNode.MethodCall.prototype.setMethodParamsList = function(value) {
+  return jspb.Message.setField(this, 4, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.ContractWriteNode.MethodCall} returns this
+ */
+proto.aggregator.ContractWriteNode.MethodCall.prototype.addMethodParams = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
 
@@ -8539,8 +8673,8 @@ proto.aggregator.ContractReadNode.MethodCall.prototype.serializeBinary = functio
  */
 proto.aggregator.ContractReadNode.MethodCall.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getCallData();
-  if (f.length > 0) {
+  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  if (f != null) {
     writer.writeString(
       1,
       f
@@ -8584,7 +8718,25 @@ proto.aggregator.ContractReadNode.MethodCall.prototype.getCallData = function() 
  * @return {!proto.aggregator.ContractReadNode.MethodCall} returns this
  */
 proto.aggregator.ContractReadNode.MethodCall.prototype.setCallData = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setField(this, 1, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.ContractReadNode.MethodCall} returns this
+ */
+proto.aggregator.ContractReadNode.MethodCall.prototype.clearCallData = function() {
+  return jspb.Message.setField(this, 1, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractReadNode.MethodCall.prototype.hasCallData = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

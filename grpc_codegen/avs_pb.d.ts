@@ -389,12 +389,19 @@ export namespace EventTrigger {
     export class MethodCall extends jspb.Message { 
         getMethodName(): string;
         setMethodName(value: string): MethodCall;
-        getCallData(): string;
+
+        hasCallData(): boolean;
+        clearCallData(): void;
+        getCallData(): string | undefined;
         setCallData(value: string): MethodCall;
         clearApplyToFieldsList(): void;
         getApplyToFieldsList(): Array<string>;
         setApplyToFieldsList(value: Array<string>): MethodCall;
         addApplyToFields(value: string, index?: number): string;
+        clearMethodParamsList(): void;
+        getMethodParamsList(): Array<string>;
+        setMethodParamsList(value: Array<string>): MethodCall;
+        addMethodParams(value: string, index?: number): string;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): MethodCall.AsObject;
@@ -409,8 +416,9 @@ export namespace EventTrigger {
     export namespace MethodCall {
         export type AsObject = {
             methodName: string,
-            callData: string,
+            callData?: string,
             applyToFieldsList: Array<string>,
+            methodParamsList: Array<string>,
         }
     }
 
@@ -760,10 +768,17 @@ export namespace ContractWriteNode {
     }
 
     export class MethodCall extends jspb.Message { 
-        getCallData(): string;
+
+        hasCallData(): boolean;
+        clearCallData(): void;
+        getCallData(): string | undefined;
         setCallData(value: string): MethodCall;
         getMethodName(): string;
         setMethodName(value: string): MethodCall;
+        clearApplyToFieldsList(): void;
+        getApplyToFieldsList(): Array<string>;
+        setApplyToFieldsList(value: Array<string>): MethodCall;
+        addApplyToFields(value: string, index?: number): string;
         clearMethodParamsList(): void;
         getMethodParamsList(): Array<string>;
         setMethodParamsList(value: Array<string>): MethodCall;
@@ -781,8 +796,9 @@ export namespace ContractWriteNode {
 
     export namespace MethodCall {
         export type AsObject = {
-            callData: string,
+            callData?: string,
             methodName: string,
+            applyToFieldsList: Array<string>,
             methodParamsList: Array<string>,
         }
     }
@@ -886,7 +902,10 @@ export namespace ContractReadNode {
 
 
     export class MethodCall extends jspb.Message { 
-        getCallData(): string;
+
+        hasCallData(): boolean;
+        clearCallData(): void;
+        getCallData(): string | undefined;
         setCallData(value: string): MethodCall;
         getMethodName(): string;
         setMethodName(value: string): MethodCall;
@@ -911,7 +930,7 @@ export namespace ContractReadNode {
 
     export namespace MethodCall {
         export type AsObject = {
-            callData: string,
+            callData?: string,
             methodName: string,
             applyToFieldsList: Array<string>,
             methodParamsList: Array<string>,
