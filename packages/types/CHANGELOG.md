@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.6
+
+### Patch Changes
+
+- d8706f3: Created ContractABI type
+
 ## 2.4.5
 
 ### Patch Changes

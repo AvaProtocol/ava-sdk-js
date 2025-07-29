@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.6
+
+### Patch Changes
+
+- d8706f3: Created ContractABI type
+- Updated dependencies [d8706f3]
+  - @avaprotocol/types@2.4.6
+
 ## 2.6.5
 
 ### Patch Changes
