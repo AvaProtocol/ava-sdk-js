@@ -19,10 +19,6 @@ jest.setTimeout(TIMEOUT_DURATION);
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
 
-const EVENT_TRIGGER_DATA_ERROR = "Error: eventTrigger.data not available";
-const EVENT_TRIGGER_TOPICS_ERROR =
-  "Error: eventTrigger.data.topics not available - keys: ";
-
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
   let eoaAddress: string;
@@ -77,7 +73,7 @@ describe("Template: Telegram Alert on Transfer", () => {
   });
 
   /**
-   * Create the real EventTrigger with input data
+   * Create the real EventTrigger with input data (monitoring both incoming and outgoing transfers)
    */
   function createEventTrigger() {
     return TriggerFactory.create({
@@ -87,28 +83,104 @@ describe("Template: Telegram Alert on Transfer", () => {
       data: {
         queries: [
           {
-            type: "event",
+            // Query 1: Outgoing transfers (wallet address === from)
             addresses: [USDC_CONTRACT_ADDRESS],
             topics: [
               {
-                values: [
-                  TRANSFER_TOPIC,
-                  testWalletAddress, // from address
-                  null, // to address (any)
+                values: [TRANSFER_TOPIC, testWalletAddress, ""],
+              },
+            ],
+            maxEventsPerBlock: 100,
+            contractAbi: [
+              {
+                inputs: [],
+                name: "decimals",
+                outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+                stateMutability: "view",
+                type: "function",
+              },
+              {
+                anonymous: false,
+                inputs: [
+                  {
+                    indexed: true,
+                    internalType: "address",
+                    name: "from",
+                    type: "address",
+                  },
+                  {
+                    indexed: true,
+                    internalType: "address",
+                    name: "to",
+                    type: "address",
+                  },
+                  {
+                    indexed: false,
+                    internalType: "uint256",
+                    name: "value",
+                    type: "uint256",
+                  },
                 ],
+                name: "Transfer",
+                type: "event",
+              },
+            ],
+            methodCalls: [
+              {
+                methodName: "decimals",
+                callData: "0x313ce567",
+                applyToFields: ["Transfer.value"],
               },
             ],
           },
           {
-            type: "event",
+            // Query 2: Incoming transfers (wallet address === to)
             addresses: [USDC_CONTRACT_ADDRESS],
             topics: [
               {
-                values: [
-                  TRANSFER_TOPIC,
-                  null, // from address (any)
-                  testWalletAddress, // to address
+                values: [TRANSFER_TOPIC, "", testWalletAddress],
+              },
+            ],
+            maxEventsPerBlock: 100,
+            contractAbi: [
+              {
+                inputs: [],
+                name: "decimals",
+                outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+                stateMutability: "view",
+                type: "function",
+              },
+              {
+                anonymous: false,
+                inputs: [
+                  {
+                    indexed: true,
+                    internalType: "address",
+                    name: "from",
+                    type: "address",
+                  },
+                  {
+                    indexed: true,
+                    internalType: "address",
+                    name: "to",
+                    type: "address",
+                  },
+                  {
+                    indexed: false,
+                    internalType: "uint256",
+                    name: "value",
+                    type: "uint256",
+                  },
                 ],
+                name: "Transfer",
+                type: "event",
+              },
+            ],
+            methodCalls: [
+              {
+                methodName: "decimals",
+                callData: "0x313ce567",
+                applyToFields: ["Transfer.value"],
               },
             ],
           },
@@ -118,7 +190,7 @@ describe("Template: Telegram Alert on Transfer", () => {
   }
 
   /**
-   * Create the CustomCode node that processes transfer data
+   * Create the CustomCode node that processes transfer data (matching studio template)
    */
   function createCustomCodeNode() {
     return NodeFactory.create({
@@ -127,40 +199,28 @@ describe("Template: Telegram Alert on Transfer", () => {
       type: NodeType.CustomCode,
       data: {
         lang: CustomCodeLang.JavaScript,
+
+        // eslint-disable-next-line max-len
         source: `const _ = require("lodash");
 const dayjs = require("dayjs");
+const isReceive = eventTrigger.data.toAddress === eventTrigger.input.address;
 
-if (!eventTrigger || !eventTrigger.data) {
-  return "${EVENT_TRIGGER_DATA_ERROR}";
-}
+const {
+  tokenSymbol,
+  value,
+  fromAddress,
+  toAddress,
+  blockTimestamp
+} = eventTrigger.data;
 
-if (!eventTrigger.data.topics) {
-  return "${EVENT_TRIGGER_TOPICS_ERROR}" + Object.keys(eventTrigger.data).join(", ");
-}
+// Format the timestamp into a readable string (e.g. "2025-07-09 14:30")
+const formattedTime = dayjs(blockTimestamp).format('YYYY-MM-DD HH:mm');
 
-// Extract addresses from topics (ERC20 Transfer event structure)
-// topics[0] = event signature
-// topics[1] = from address (padded to 32 bytes)
-// topics[2] = to address (padded to 32 bytes)
-const fromAddress = eventTrigger.data.topics[1] ? '0x' + eventTrigger.data.topics[1].slice(-40) : 'unknown';
-const toAddress = eventTrigger.data.topics[2] ? '0x' + eventTrigger.data.topics[2].slice(-40) : 'unknown';
-
-// Decode value from data field (assuming 6 decimals for USDC)
-const rawValue = eventTrigger.data.data;
-const valueWei = parseInt(rawValue, 16);
-const valueFormatted = valueWei / Math.pow(10, 6); // USDC has 6 decimals
-
-// Check if this is a receive or send (compare with wallet address if available)
-const walletAddress = eventTrigger.input?.address?.toLowerCase();
-const isReceive = walletAddress && toAddress.toLowerCase() === walletAddress;
-
-const blockNumber = eventTrigger.data.blockNumber;
-const tokenSymbol = "USDC"; // Default token symbol
-
-// Use current time since blockTimestamp is no longer available
-const formattedTime = dayjs().format('YYYY-MM-DD HH:mm');
-
-const message = \`\${isReceive ? "Received" : "Sent"} \${_.floor(valueFormatted, 4)} \${tokenSymbol} \${isReceive ? \`from \${fromAddress}\` : \`to \${toAddress}\`} at block \${blockNumber} (\${formattedTime})\`;
+const direction = isReceive ? "⬇️ Received" : "⬆️ Sent";
+const amount = \`<b>\${_.floor(parseFloat(value), 4)} \${tokenSymbol}</b>\`;
+const fromTo = isReceive ? \`from <code>\${fromAddress}</code>\` : \`to <code>\${toAddress}</code>\`;
+const chain = \`on <b>Sepolia</b>\`; // Hardcoded for now since chainName is not available
+const message = \`\${direction} \${amount} \${fromTo} \${chain}\\n<i>\${formattedTime}</i>\`;
 
 return message;`,
       },
@@ -168,7 +228,7 @@ return message;`,
   }
 
   /**
-   * Create the Telegram notification node
+   * Create the Telegram notification node (matching studio template)
    */
   function createTelegramNode() {
     return NodeFactory.create({
@@ -178,7 +238,7 @@ return message;`,
       data: {
         url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage",
         method: "POST",
-        body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}"}',
+        body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}","parse_mode":"HTML"}',
         headers: { "Content-Type": "application/json" },
       },
     });
@@ -231,11 +291,13 @@ return message;`,
           testWalletAddress
         );
       } else {
-        // If we get mock data, verify it has the expected raw blockchain log structure
+        // If we get mock data, verify it has the expected structured event data
         expect(result.data).toHaveProperty("blockNumber");
         expect(result.data).toHaveProperty("address");
-        expect(result.data).toHaveProperty("topics");
-        expect(result.data).toHaveProperty("data"); // Raw transaction data
+        expect(result.data).toHaveProperty("fromAddress");
+        expect(result.data).toHaveProperty("toAddress");
+        expect(result.data).toHaveProperty("value"); // Formatted value from applyToFields
+        expect(result.data).toHaveProperty("tokenSymbol");
         expect(result.data).toHaveProperty("transactionHash");
       }
     });
@@ -243,31 +305,33 @@ return message;`,
     test("should test CustomCode node with runNodeWithInputs", async () => {
       const customCodeNode = createCustomCodeNode();
 
-      // Mock the eventTrigger context data with actual event structure
+      // Mock the eventTrigger context data with structured event fields (post-applyToFields processing)
       const inputVariables = {
         eventTrigger: {
           data: {
+            // Structured fields created by backend event parsing with applyToFields
+            fromAddress: "0x1234567890123456789012345678901234567890",
+            toAddress: testWalletAddress,
+            value: "100.5", // Decimal-formatted value (applyToFields: ["Transfer.value"])
+            tokenSymbol: "USDC",
+            blockTimestamp: Date.now(),
+            // Raw blockchain log fields (still available)
             blockNumber: 12345678,
             chainId: 11155111,
-            contractAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-            eventDescription: "ERC20 Transfer event",
-            eventFound: true,
-            eventSignature:
-              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-            eventType: "Transfer",
-            logIndex: 0,
-            data: "0x0000000000000000000000000000000000000000000000000000000005fd8a80", // 100.5 USDC with 6 decimals (100,500,000)
+            address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+            data: "0x0000000000000000000000000000000000000000000000000000000005fd8220",
             topics: [
-              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-              "0x0000000000000000000000001234567890123456789012345678901234567890", // from address (padded)
-              `0x000000000000000000000000${testWalletAddress.slice(2)}`, // to address (padded)
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+              "0x0000000000000000000000001234567890123456789012345678901234567890",
+              `0x000000000000000000000000${testWalletAddress.slice(2)}`,
             ],
             transactionHash:
               "0x000000000000000000000000000000000000000000000000185331f3d274a668",
           },
           input: {
             address: testWalletAddress,
-            tokens: [{ symbol: "USDC", name: "USD Coin" }],
+            chainName: "Sepolia",
+            tokens: [{ symbol: "USDC", name: "USD Coin", decimals: 6 }],
           },
         },
       };
@@ -278,17 +342,36 @@ return message;`,
         inputVariables: inputVariables,
       });
 
+      console.log("=== CustomCode Input Variables ===");
       console.log(
-        "CustomCode result:",
+        "eventTrigger.data.value (formatted):",
+        inputVariables.eventTrigger.data.value
+      );
+      console.log(
+        "eventTrigger.data.tokenSymbol:",
+        inputVariables.eventTrigger.data.tokenSymbol
+      );
+      console.log(
+        "eventTrigger.data.fromAddress:",
+        inputVariables.eventTrigger.data.fromAddress
+      );
+      console.log(
+        "eventTrigger.data.toAddress:",
+        inputVariables.eventTrigger.data.toAddress
+      );
+
+      console.log(
+        "=== CustomCode result ===",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(typeof result.data).toBe("string");
-      expect(result.data).toContain("Received");
+      expect(result.data).toContain("⬇️ Received"); // Should be "Received" since to === testWalletAddress
       expect(result.data).toContain("USDC");
-      expect(result.data).toMatch(/100\.5\d*/); // Should show ~100.5 USDC (allowing for decimal precision)
+      expect(result.data).toContain("100.5"); // Exact match since we're using pre-formatted value
+      expect(result.data).toContain("Sepolia"); // Should include chain name
     });
 
     test("should test Telegram node with runNodeWithInputs", async () => {
@@ -366,25 +449,15 @@ return message;`,
       expect(triggerConfig.queries).toBeDefined();
       expect(Array.isArray(triggerConfig.queries)).toBe(true);
 
-      // TODO: These fields are not currently populated due to backend issue
-      // expect(triggerConfig.address).toBeDefined();
-      // expect(triggerConfig.chainId).toBe(11155111);
-      // expect(triggerConfig.subType).toBe("transfer");
-      // expect(triggerConfig.tokens).toBeDefined();
-      // expect(triggerConfig.tokens).toHaveLength(1);
-
       // Custom input data should be accessible via VM variables (checked in subsequent node's inputsList)
       // The CustomCode node should have access to eventTrigger.data which contains the trigger output data
       const customCodeStep = simulationResult.steps[1];
       expect(customCodeStep.inputsList).toContain("eventTrigger.data");
 
-      // CRITICAL: Validate that the CustomCode execution succeeds with proper event trigger data
-      // The test should fail if eventTrigger.data.topics is not available
+      // CRITICAL: Validate that the CustomCode execution succeeds with structured event trigger data
       expect(customCodeStep.success).toBe(true);
       expect(customCodeStep.output).toBeDefined();
       expect(typeof customCodeStep.output).toBe("string");
-      expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_TOPICS_ERROR);
-      expect(customCodeStep.output).not.toContain(EVENT_TRIGGER_DATA_ERROR);
     });
   });
 
@@ -432,7 +505,7 @@ return message;`,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const triggerData = savedWorkflow.trigger.data as any;
       expect(triggerData.queries).toBeDefined();
-      expect(triggerData.queries).toHaveLength(2); // FROM and TO queries
+      expect(triggerData.queries).toHaveLength(2); // Two queries: outgoing (from) and incoming (to) transfers
       expect(triggerData.queries[0].addresses).toContain(
         "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
       );
@@ -472,17 +545,17 @@ return message;`,
 
       // Verify node details are preserved
       const savedCustomCodeNode = savedWorkflow.nodes.find(
-        (n) => n.id === nodeIds.customCode
+        (n: { id: string }) => n.id === nodeIds.customCode
       );
       const savedTelegramNode = savedWorkflow.nodes.find(
-        (n) => n.id === nodeIds.telegram
+        (n: { id: string }) => n.id === nodeIds.telegram
       );
 
       expect(savedCustomCodeNode).toBeDefined();
       expect(savedCustomCodeNode!.type).toBe(NodeType.CustomCode);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((savedCustomCodeNode!.data as any).source).toContain(
-        "eventTrigger.data.topics"
+        "eventTrigger.data.to"
       );
 
       expect(savedTelegramNode).toBeDefined();

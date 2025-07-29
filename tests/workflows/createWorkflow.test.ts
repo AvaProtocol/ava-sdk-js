@@ -183,7 +183,7 @@ describe("createWorkflow Tests", () => {
         id: getNextId(),
         data: {
           config: {
-            url: "https://api.telegram.org/bot{{ap_notify_bot_token}}/sendMessage?parse_mode=MarkdownV2",
+            url: "https://api.telegram.org/bot{{ap_notify_bot_token}}/sendMessage?parse_mode=HTML",
             method: "POST",
             headersMap: [["content-type", "application/json"]],
             body: `JSON.stringify({
@@ -213,15 +213,18 @@ describe("createWorkflow Tests", () => {
         data: {
           queries: [
             {
-              addresses: ["0x7b79995e5f793a07bc00c21412e50ecae098e7f9", "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"], // WETH and USDC
+              addresses: [
+                "0x7b79995e5f793a07bc00c21412e50ecae098e7f9",
+                "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+              ], // WETH and USDC
               topics: [
                 {
                   values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
                     "", // Any from address
                     wallet.address, // To specific wallet address
-                  ]
-                }
+                  ],
+                },
               ],
               maxEventsPerBlock: 100,
               contractAbi: [], // Backend now adds this field
@@ -277,15 +280,18 @@ describe("createWorkflow Tests", () => {
         data: {
           queries: [
             {
-              addresses: ["0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0", "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6"], // USDT and DAI
+              addresses: [
+                "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0",
+                "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6",
+              ], // USDT and DAI
               topics: [
                 {
                   values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
-                    "", // Any from address  
+                    "", // Any from address
                     "0x06DBb141d8275d9eDb8a7446F037D20E215188ff", // To specific address
-                  ]
-                }
+                  ],
+                },
               ],
               maxEventsPerBlock: 100,
               contractAbi: [], // Backend now adds this field

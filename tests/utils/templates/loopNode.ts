@@ -1,5 +1,4 @@
-import { LoopNodeProps } from "@avaprotocol/sdk-js";
-import { NodeType, CustomCodeLang } from "@avaprotocol/types";
+import { NodeType, CustomCodeLang, LoopNodeProps } from "@avaprotocol/types";
 import { getNextId } from "../utils";
 
 export const loopNodeWithRestApiProps: LoopNodeProps = {

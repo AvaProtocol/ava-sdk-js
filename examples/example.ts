@@ -375,21 +375,25 @@ async function schedulePriceReport(
         type: NodeType.ContractRead,
         data: {
           contractAddress: getConfig().ORACLE_PRICE_CONTRACT,
-          contractAbi: `[
+          contractAbi: [
             {
-              "inputs":[],
-              "name":"latestRoundData",
-              "outputs":[
-                {"internalType":"uint80","name":"roundId","type":"uint80"},
-                {"internalType":"int256","name":"answer","type":"int256"},
-                {"internalType":"uint256","name":"startedAt","type":"uint256"},
-                {"internalType":"uint256","name":"updatedAt","type":"uint256"},
-                {"internalType":"uint80","name":"answeredInRound","type":"uint80"}
+              inputs: [],
+              name: "latestRoundData",
+              outputs: [
+                { internalType: "uint80", name: "roundId", type: "uint80" },
+                { internalType: "int256", name: "answer", type: "int256" },
+                { internalType: "uint256", name: "startedAt", type: "uint256" },
+                { internalType: "uint256", name: "updatedAt", type: "uint256" },
+                {
+                  internalType: "uint80",
+                  name: "answeredInRound",
+                  type: "uint80",
+                },
               ],
-              "stateMutability":"view",
-              "type":"function"
-            }
-          ]`,
+              stateMutability: "view",
+              type: "function",
+            },
+          ],
           methodCalls: [
             {
               callData: "0xfeaf968c",
@@ -465,7 +469,7 @@ async function scheduleTelegram(owner: string, token: string) {
         name: "notification",
         type: NodeType.RestAPI,
         data: {
-          url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=HTML",
           method: "POST",
           //body: `{
           //  "chat_id": -4609037622,
@@ -558,7 +562,7 @@ async function scheduleSweep(owner: string, token: string, target: string) {
         name: "log",
         type: NodeType.RestAPI,
         data: {
-          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=HTML",
           url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
           // Update the chat id according to your own telegram bot
@@ -579,7 +583,7 @@ async function scheduleSweep(owner: string, token: string, target: string) {
           callData:
             "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
           // Adding required contractAbi property
-          contractAbi: "[]",
+          contractAbi: [],
         },
       },
     ]),
@@ -685,7 +689,7 @@ async function scheduleMonitorTransfer(
         name: "notification",
         type: NodeType.RestAPI,
         data: {
-          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=Markdown",
+          //url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage?parse_mode=HTML",
           url: "https://wet-butcher-89.webhook.cool",
           method: "POST",
           // Update the chat id according to your own telegram bot
