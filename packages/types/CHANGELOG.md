@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.7
+
+### Patch Changes
+
+- 1f8948b: Add specific type of contract event ABI
+
 ## 2.4.6
 
 ### Patch Changes
