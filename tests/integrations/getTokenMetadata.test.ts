@@ -29,7 +29,7 @@ const CHAIN_TOKENS: Record<string, Record<string, any>> = {
       expectedDecimals: 6,
     },
     WETH: {
-      address: "0x7b79995e5f793a07bc00c21412e50ecae098e7f9",
+      address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
       expectedName: "Wrapped Ether",
       expectedSymbol: "WETH",
       expectedDecimals: 18,

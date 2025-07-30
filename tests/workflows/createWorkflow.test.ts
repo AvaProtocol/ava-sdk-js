@@ -214,7 +214,7 @@ describe("createWorkflow Tests", () => {
           queries: [
             {
               addresses: [
-                "0x7b79995e5f793a07bc00c21412e50ecae098e7f9",
+                "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
                 "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
               ], // WETH and USDC
               topics: [
