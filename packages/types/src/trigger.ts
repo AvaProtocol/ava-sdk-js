@@ -1,6 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType } from "./enums";
 import { ContractAbi } from "./abi";
+import { MethodCallType } from "./shared";
 
 // Custom CronTrigger data type with cleaner field names
 export interface CronTriggerDataType {
@@ -13,13 +14,6 @@ export interface EventConditionType {
   operator: string; // Comparison operator: "gt", "gte", "lt", "lte", "eq", "ne"
   value: string; // Value to compare against (as string, parsed based on type)
   fieldType: string; // Field type: "uint256", "int256", "address", "bool", "bytes32", etc.
-}
-
-// MethodCall interface for enhanced event data formatting
-export interface MethodCallType {
-  methodName: string; // Method name (e.g., "decimals")
-  callData: string; // Hex-encoded calldata for the method
-  applyToFields: string[]; // Fields to apply formatting to (e.g., ["current", "answer"])
 }
 
 export interface ManualTriggerDataType {

@@ -12,11 +12,7 @@ import {
   MethodCallType,
 } from "@avaprotocol/types";
 
-import {
-  convertInputToProtobuf,
-  extractInputFromProtobuf,
-  convertProtobufValueToJs,
-} from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 // Ref: https://github.com/AvaProtocol/EigenLayer-AVS/issues/94
 // The trigger is an array of Condition, which can be topics, dateRage, etc.
 // We imply or operator among all conditions.
@@ -119,13 +115,15 @@ class EventTrigger extends Trigger {
       if (queryData.contractAbi) {
         // Strictly require array format (no string support)
         if (!Array.isArray(queryData.contractAbi)) {
-          throw new Error('contractAbi must be an array of ABI elements');
+          throw new Error("contractAbi must be an array of ABI elements");
         }
 
         // Convert array to protobuf Value list
-        const abiValueList = queryData.contractAbi.map(item => {
+        const abiValueList = queryData.contractAbi.map((item) => {
           const value = new google_protobuf_struct_pb.Value();
-          value.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(item as any));
+          value.setStructValue(
+            google_protobuf_struct_pb.Struct.fromJavaScript(item as any)
+          );
           return value;
         });
         query.setContractAbiList(abiValueList);
@@ -150,7 +148,14 @@ class EventTrigger extends Trigger {
           (methodCallData: MethodCallType) => {
             const methodCall = new avs_pb.EventTrigger.MethodCall();
             methodCall.setMethodName(methodCallData.methodName);
-            methodCall.setCallData(methodCallData.callData);
+            methodCall.setMethodParamsList(methodCallData.methodParams);
+
+            // Optional: Set callData if provided
+            if (methodCallData.callData) {
+              methodCall.setCallData(methodCallData.callData);
+            }
+
+            // Optional: Set applyToFields if provided
             if (
               methodCallData.applyToFields &&
               methodCallData.applyToFields.length > 0
@@ -218,7 +223,7 @@ class EventTrigger extends Trigger {
             // Extract contractAbi
             const contractAbi = query.getContractAbiList();
             if (contractAbi && contractAbi.length > 0) {
-              queryData.contractAbi = contractAbi.map(value => 
+              queryData.contractAbi = contractAbi.map((value) =>
                 convertProtobufValueToJs(value)
               );
             }
@@ -249,11 +254,7 @@ class EventTrigger extends Trigger {
 
         data = { queries: queries };
       }
-
     }
-
-    
-
 
     return new EventTrigger({
       ...obj,

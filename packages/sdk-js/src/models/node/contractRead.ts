@@ -7,9 +7,7 @@ import {
   ContractReadNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import {
-  convertProtobufValueToJs,
-} from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data
 
@@ -23,15 +21,19 @@ class ContractReadNode extends Node {
    * @param configData - The configuration data for the contract read node
    * @returns Configured avs_pb.ContractReadNode
    */
-  static createProtobufNode(configData: ContractReadNodeData): avs_pb.ContractReadNode {
+  static createProtobufNode(
+    configData: ContractReadNodeData
+  ): avs_pb.ContractReadNode {
     const node = new avs_pb.ContractReadNode();
     const config = new avs_pb.ContractReadNode.Config();
 
     config.setContractAddress(configData.contractAddress);
     // Convert array to protobuf Value list
-    const abiValueList = configData.contractAbi.map(item => {
+    const abiValueList = configData.contractAbi.map((item) => {
       const value = new google_protobuf_struct_pb.Value();
-      value.setStructValue(google_protobuf_struct_pb.Struct.fromJavaScript(item as any));
+      value.setStructValue(
+        google_protobuf_struct_pb.Struct.fromJavaScript(item as any)
+      );
       return value;
     });
     config.setContractAbiList(abiValueList);
@@ -40,21 +42,19 @@ class ContractReadNode extends Node {
     const methodCalls = configData.methodCalls || [];
     methodCalls.forEach((methodCall) => {
       const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
-      
-      // Set callData only if provided (now optional)
+      methodCallMsg.setMethodName(methodCall.methodName);
+      methodCallMsg.setMethodParamsList(methodCall.methodParams);
+
+      // Optional: Set callData if provided
       if (methodCall.callData) {
         methodCallMsg.setCallData(methodCall.callData);
       }
-      
-      if (methodCall.methodName) {
-        methodCallMsg.setMethodName(methodCall.methodName);
-      }
+
+      // Optional: Set applyToFields if provided
       if (methodCall.applyToFields) {
         methodCallMsg.setApplyToFieldsList(methodCall.applyToFields);
       }
-      if (methodCall.methodParams) {
-        methodCallMsg.setMethodParamsList(methodCall.methodParams);
-      }
+
       config.addMethodCalls(methodCallMsg);
     });
 
@@ -72,9 +72,9 @@ class ContractReadNode extends Node {
     // Convert protobuf data to our custom interface
     const data: ContractReadNodeData = {
       contractAddress: protobufData.contractAddress,
-      contractAbi: config.getContractAbiList().map(value => 
-        convertProtobufValueToJs(value)
-      ),
+      contractAbi: config
+        .getContractAbiList()
+        .map((value) => convertProtobufValueToJs(value)),
       methodCalls:
         protobufData.methodCallsList?.map((call) => ({
           methodName: call.methodName,
@@ -107,7 +107,9 @@ class ContractReadNode extends Node {
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown | null {
+  static fromOutputData(
+    outputData: avs_pb.RunNodeWithInputsResp
+  ): unknown | null {
     const contractReadOutput = outputData.getContractRead();
     if (!contractReadOutput) return null;
 

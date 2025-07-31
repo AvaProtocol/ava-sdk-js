@@ -36,3 +36,12 @@ export type TriggerDataProps = {
   headers?: Record<string, string>;
   pathParams?: Record<string, string>;
 };
+
+// MethodCall interface for enhanced event data formatting
+// Used by both triggers and nodes for contract interactions
+export interface MethodCallType {
+  methodName: string; // Method name (e.g., "decimals")
+  methodParams: string[]; // Method parameters array (replaces need for callData generation)
+  applyToFields?: string[]; // Optional: Fields to apply formatting to (e.g., ["current", "answer"])
+  callData?: string; // Optional: Hex-encoded calldata for the method (used when methodParams is not provided)
+}
