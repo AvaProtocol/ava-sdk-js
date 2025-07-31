@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.9
+
+### Patch Changes
+
+- 83af57c: Updated MethodCallType type definitions
+- Updated dependencies [83af57c]
+  - @avaprotocol/types@2.4.9
+
 ## 2.6.8
 
 ### Patch Changes

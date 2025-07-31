@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.9
+
+### Patch Changes
+
+- 83af57c: Updated MethodCallType type definitions
+
 ## 2.4.8
 
 ### Patch Changes
