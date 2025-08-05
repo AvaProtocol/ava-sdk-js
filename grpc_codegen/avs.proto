@@ -370,8 +370,12 @@ message ContractWriteNode {
 
   message Output {
     // Changed from repeated MethodResult to google.protobuf.Value for better JavaScript native type support
-    // Data will be a JSON array of method results with enhanced response structure
+    // Data will be a JSON object containing decoded event logs, where each event log is represented as a top-level key-value pair.
+    // "Flattened" means that any nested structures within the event logs are converted to a single-level object,
+    // with nested keys concatenated using dots (e.g., "eventName.fieldName"). This provides user-facing results in a simple, non-nested format.
     google.protobuf.Value data = 1;
+    // Metadata contains the raw method execution results with receipts and detailed information
+    google.protobuf.Value metadata = 2;
   }
 
   message MethodResult {

@@ -80,7 +80,7 @@ const ERC20_ABI: any[] = [
     outputs: [{ name: "", type: "string" }],
     stateMutability: "view",
     type: "function",
-  }
+  },
 ];
 
 // Helper function to check if we're on Sepolia
@@ -199,21 +199,25 @@ describe("ContractWrite Node Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.nodeId).toBeDefined();
       expect(result.data).toBeDefined();
-      
-      expect(result.data).not.toHaveProperty("results");
-      const data = result.data as any[];
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // NEW: Check new response structure with data and metadata at top level
+      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.metadata).toBeDefined(); // Method execution details
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
       expect(result.success).toBe(true);
-      expect(data.length).toBeGreaterThan(0);
+      expect(result.metadata.length).toBeGreaterThan(0);
 
       // Should have transaction hash regardless of success/failure
-      const approveResult = data.find((r: any) => r.methodName === "approve");
+      const approveResult = result.metadata.find(
+        (r: any) => r.methodName === "approve"
+      );
       expect(approveResult).toBeDefined();
       expect(approveResult.methodName).toBe("approve");
       expect(approveResult.receipt).toBeDefined();
       expect(approveResult.receipt.transactionHash).toBeDefined();
-      
+
       // Check that the receipt status matches the method success
       if (approveResult.success) {
         expect(approveResult.receipt.status).toBe("0x1"); // Success
@@ -266,15 +270,17 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
-      expect(result.data).not.toHaveProperty("results");
-      const data = result.data as any[];
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // 🚀 NEW: Check new response structure with data and metadata at top level
+      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.metadata).toBeDefined(); // Method execution details
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
       expect(result.success).toBe(true);
-      expect(data.length).toBeGreaterThan(0);
+      expect(result.metadata.length).toBeGreaterThan(0);
 
-      data.forEach((methodResult: any) => {
+      result.metadata.forEach((methodResult: any) => {
         expect(methodResult.methodName).toBe("approve");
       });
     });
@@ -317,10 +323,12 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
-      expect(result.data).not.toHaveProperty("results");
-      const data = result.data as any[];
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // 🚀 NEW: Check new response structure with data and metadata at top level
+      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.metadata).toBeDefined(); // Method execution details
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Backend handles invalid addresses gracefully, returning success but may indicate issues in data
       expect(result.success).toBe(true);
@@ -363,10 +371,12 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
-      expect(result.data).not.toHaveProperty("results");
-      const data = result.data as any[];
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // 🚀 NEW: Check new response structure with data and metadata at top level
+      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.metadata).toBeDefined(); // Method execution details
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Backend handles malformed call data gracefully, returning success but may indicate issues in data
       expect(result.success).toBe(true);
@@ -725,12 +735,12 @@ describe("ContractWrite Node Tests", () => {
         expect(simulatedStep?.output).toBeDefined();
         expect(executedStep?.output).toBeDefined();
 
-        // All outputs should have consistent structure (excluding dynamic fields like transaction hash)
-        const directData = directResponse.data as any[];
+        // 🚀 NEW: All outputs should have consistent structure with metadata at top level
+        const directData = directResponse.metadata as any[];
         const simulatedData = simulatedStep?.output as any[];
         const executedData = executedStep?.output as any[];
 
-        // Verify array lengths match
+        // Verify array lengths match (metadata contains the method results)
         expect(directData.length).toBe(simulatedData.length);
         expect(simulatedData.length).toBe(executedData.length);
 
@@ -756,16 +766,18 @@ describe("ContractWrite Node Tests", () => {
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
 
-        // Check that all outputs have the same structure - they should all be arrays directly
-        expect(Array.isArray(directResponse.data)).toBe(true);
-        expect(directResponse.data).not.toHaveProperty("results");
+        // 🚀 NEW: Check response structure - direct call has data/metadata at top level
+        expect(typeof directResponse.data).toBe("object");
+        expect(directResponse.data).toBeDefined(); // Decoded events
+        expect(directResponse.metadata).toBeDefined(); // Method results
+        expect(Array.isArray(directResponse.metadata)).toBe(true);
         expect(Array.isArray(simulatedStep?.output)).toBe(true);
         expect(simulatedStep?.output).not.toHaveProperty("results");
         expect(Array.isArray(executedStep?.output)).toBe(true);
         expect(executedStep?.output).not.toHaveProperty("results");
 
         // Check that all have the same method names
-        const directMethods = (directResponse.data as any[])
+        const directMethods = (directResponse.metadata as any[])
           ?.map((r: any) => r.methodName)
           .sort();
         const simulatedMethods = (simulatedStep?.output as any[])
@@ -806,9 +818,7 @@ describe("ContractWrite Node Tests", () => {
               type: "function",
             },
           ],
-          methodCalls: [
-            { methodName: "nonExistentMethod", methodParams: [] },
-          ],
+          methodCalls: [{ methodName: "nonExistentMethod", methodParams: [] }],
         },
         inputVariables: {
           workflowContext: {
@@ -846,15 +856,17 @@ describe("ContractWrite Node Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
-      expect(result.data).not.toHaveProperty("results");
-      const data = result.data as any[];
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // 🚀 NEW: Check new response structure with data and metadata at top level
+      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.metadata).toBeDefined(); // Method execution details
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
       // Since we're using Tenderly simulation, it might return success even for invalid methods
       // The important thing is that we get a response with the correct structure
-      if (result.success && result.data && Array.isArray(result.data)) {
-        const errorResult = (result.data as any[]).find(
+      if (result.success && result.metadata && Array.isArray(result.metadata)) {
+        const errorResult = result.metadata.find(
           (r: any) => r.methodName === "nonExistentMethod"
         );
         expect(errorResult).toBeDefined();
@@ -879,14 +891,14 @@ describe("ContractWrite Node Tests", () => {
               methodName: "approve",
               methodParams: [
                 "0x0000000000000000000000000000000000000001",
-                "100"
+                "100",
               ],
             },
             {
               methodName: "approve",
               methodParams: [
                 "0x0000000000000000000000000000000000000002",
-                "200"
+                "200",
               ],
             },
           ],
@@ -909,7 +921,7 @@ describe("ContractWrite Node Tests", () => {
       expect(firstCall.getMethodName()).toBe("approve");
       expect(firstCall.getMethodParamsList()).toEqual([
         "0x0000000000000000000000000000000000000001",
-        "100"
+        "100",
       ]);
 
       // Check second method call
@@ -917,7 +929,7 @@ describe("ContractWrite Node Tests", () => {
       expect(secondCall.getMethodName()).toBe("approve");
       expect(secondCall.getMethodParamsList()).toEqual([
         "0x0000000000000000000000000000000000000002",
-        "200"
+        "200",
       ]);
 
       console.log(
@@ -986,13 +998,17 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(result.data).toBeDefined();
-      
-      expect(result.data).not.toHaveProperty("results");
-      const data = result.data as any[];
-      expect(data.length).toBe(params.nodeConfig.methodCalls.length);
 
-      // Find the approve result
-      const approveResult = data.find((r: any) => r.methodName === "approve");
+      // 🚀 NEW: Check new response structure with data and metadata at top level
+      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.metadata).toBeDefined(); // Method execution details
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // Find the approve result in metadata
+      const approveResult = result.metadata.find(
+        (r: any) => r.methodName === "approve"
+      );
       expect(approveResult).toBeDefined();
     });
 
@@ -1186,7 +1202,11 @@ describe("ContractWrite Node Tests", () => {
           },
           {
             methodName: "transferFrom",
-            methodParams: ["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"], // Array with 3 parameters
+            methodParams: [
+              "{{value.sender}}",
+              "{{value.recipient}}",
+              "{{value.amount}}",
+            ], // Array with 3 parameters
           },
           {
             methodName: "approve",
@@ -1210,12 +1230,19 @@ describe("ContractWrite Node Tests", () => {
     // Check first method call (transfer with 2 parameters)
     const transferCall = methodCalls[0];
     expect(transferCall.getMethodName()).toBe("transfer");
-    expect(transferCall.getMethodParamsList()).toEqual(["{{value.recipient}}", "{{value.amount}}"]);
+    expect(transferCall.getMethodParamsList()).toEqual([
+      "{{value.recipient}}",
+      "{{value.amount}}",
+    ]);
 
     // Check second method call (transferFrom with 3 parameters)
     const transferFromCall = methodCalls[1];
     expect(transferFromCall.getMethodName()).toBe("transferFrom");
-    expect(transferFromCall.getMethodParamsList()).toEqual(["{{value.sender}}", "{{value.recipient}}", "{{value.amount}}"]);
+    expect(transferFromCall.getMethodParamsList()).toEqual([
+      "{{value.sender}}",
+      "{{value.recipient}}",
+      "{{value.amount}}",
+    ]);
 
     // Check third method call (approve with empty methodParams)
     const approveCall = methodCalls[2];

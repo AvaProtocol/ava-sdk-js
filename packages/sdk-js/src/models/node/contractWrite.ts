@@ -105,44 +105,16 @@ class ContractWriteNode extends Node {
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown[] | null {
+  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 
-    // Use the new getData() method instead of the old resultsList
-    const data = contractWriteOutput.getData();
-    if (!data) return null;
-
-    // Convert protobuf Value to JavaScript object
-    const jsData = convertProtobufValueToJs(data);
-
-    // Format response for consistency with ContractRead
-    if (Array.isArray(jsData)) {
-      return jsData.map((result: any) => {
-        // ContractWrite already uses the consistent format with method_abi and value
-        const methodName = result.method_name || result.methodName;
-        
-        return {
-          methodName: methodName,
-          methodABI: result.method_abi || null,
-          success: result.success,
-          error: result.error || "",
-          value: result.value,
-          receipt: result.receipt || null, // Add receipt field
-        };
-      });
-    } else {
-      // Single result - wrap in array for consistency
-      const methodName = jsData.method_name || jsData.methodName;
-      return [{
-        methodName: methodName,
-        methodABI: jsData.method_abi || null,
-        success: jsData.success,
-        error: jsData.error || "",
-        value: jsData.value,
-        receipt: jsData.receipt || null, // Add receipt field
-      }];
-    }
+    // NEW: Only return the data part (decoded events, like ContractRead)
+    // The metadata is handled at the protobuf response level by the client
+    const dataValue = contractWriteOutput.getData();
+    
+    // Convert protobuf Value to JavaScript object (flattened decoded event data)
+    return dataValue ? convertProtobufValueToJs(dataValue) : {};
   }
 }
 

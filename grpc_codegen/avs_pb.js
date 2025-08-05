@@ -7888,7 +7888,8 @@ proto.aggregator.ContractWriteNode.Output.prototype.toObject = function(opt_incl
  */
 proto.aggregator.ContractWriteNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7930,6 +7931,11 @@ proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader = function
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
+    case 2:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setMetadata(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -7963,6 +7969,14 @@ proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter = function(mes
   if (f != null) {
     writer.writeMessage(
       1,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getMetadata();
+  if (f != null) {
+    writer.writeMessage(
+      2,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -8004,6 +8018,43 @@ proto.aggregator.ContractWriteNode.Output.prototype.clearData = function() {
  */
 proto.aggregator.ContractWriteNode.Output.prototype.hasData = function() {
   return jspb.Message.getField(this, 1) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value metadata = 2;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.getMetadata = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.ContractWriteNode.Output} returns this
+*/
+proto.aggregator.ContractWriteNode.Output.prototype.setMetadata = function(value) {
+  return jspb.Message.setWrapperField(this, 2, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.Output} returns this
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.clearMetadata = function() {
+  return this.setMetadata(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Output.prototype.hasMetadata = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
