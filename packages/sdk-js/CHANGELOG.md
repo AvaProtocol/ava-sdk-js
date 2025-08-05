@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.6.11
+
+### Patch Changes
+
+- 9261ba8: Update response of ContractWriteNode to fix metadata
+
 ## 2.6.10
 
 ### Patch Changes
