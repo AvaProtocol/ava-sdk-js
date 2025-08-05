@@ -109,7 +109,7 @@ class ContractWriteNode extends Node {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 
-    // 🚀 NEW: Only return the data part (decoded events, like ContractRead)
+    // NEW: Only return the data part (decoded events, like ContractRead)
     // The metadata is handled at the protobuf response level by the client
     const dataValue = contractWriteOutput.getData();
     
