@@ -1118,7 +1118,7 @@ describe("ManualTrigger Tests", () => {
         age: 25,
         active: true,
         tags: ["tag1", "tag2"],
-        metadata: {
+        info: {
           created: "2023-01-01",
           version: 1.0,
         },
@@ -1141,7 +1141,7 @@ describe("ManualTrigger Tests", () => {
       expect(result.data.age).toBe(25);
       expect(result.data.active).toBe(true);
       expect(Array.isArray(result.data.tags)).toBe(true);
-      expect(typeof result.data.metadata).toBe("object");
+      expect(typeof result.data.info).toBe("object");
     });
 
     test("should preserve JSON array types", async () => {
@@ -1260,7 +1260,7 @@ describe("ManualTrigger Tests", () => {
             },
           },
         ],
-        metadata: {
+        summary: {
           total: 2,
           page: 1,
           hasMore: false,
@@ -1286,8 +1286,8 @@ describe("ManualTrigger Tests", () => {
       expect(Array.isArray(result.data.users[0].settings.preferences)).toBe(
         true
       );
-      expect(typeof result.data.metadata).toBe("object");
-      expect(typeof result.data.metadata.hasMore).toBe("boolean");
+      expect(typeof result.data.summary).toBe("object");
+      expect(typeof result.data.summary.hasMore).toBe("boolean");
     });
 
     test("should NOT convert JSON strings to objects (preserve string type)", async () => {

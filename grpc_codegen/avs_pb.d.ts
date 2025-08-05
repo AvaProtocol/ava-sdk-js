@@ -810,6 +810,11 @@ export namespace ContractWriteNode {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
 
+        hasMetadata(): boolean;
+        clearMetadata(): void;
+        getMetadata(): google_protobuf_struct_pb.Value | undefined;
+        setMetadata(value?: google_protobuf_struct_pb.Value): Output;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
         static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
@@ -823,6 +828,7 @@ export namespace ContractWriteNode {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
+            metadata?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
