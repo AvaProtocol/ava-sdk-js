@@ -6,7 +6,7 @@ import {
   ETHTransferNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { convertInputToProtobuf, extractInputFromProtobuf, convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
 
@@ -67,7 +67,17 @@ class ETHTransferNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const ethTransferOutput = outputData.getEthTransfer();
-    return ethTransferOutput?.toObject() || null;
+    if (!ethTransferOutput) {
+      return null;
+    }
+
+    // Use convertProtobufValueToJs to get clean JavaScript objects
+    const rawData = ethTransferOutput.getData();
+    if (rawData) {
+      return convertProtobufValueToJs(rawData);
+    }
+
+    return null;
   }
 }
 

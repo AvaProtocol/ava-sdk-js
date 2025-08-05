@@ -293,7 +293,7 @@ return message;`,
       } else {
         // If we get mock data, verify it has the expected structured event data
         expect(result.data).toHaveProperty("blockNumber");
-        expect(result.data).toHaveProperty("address");
+        expect(result.data).toHaveProperty("walletAddress"); // Changed from "address" to "walletAddress"
         expect(result.data).toHaveProperty("fromAddress");
         expect(result.data).toHaveProperty("toAddress");
         expect(result.data).toHaveProperty("value"); // Formatted value from applyToFields

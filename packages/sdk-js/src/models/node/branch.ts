@@ -6,7 +6,7 @@ import {
 } from "@avaprotocol/types";
 import Node from "./interface";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { conditions }
 
@@ -72,7 +72,17 @@ class BranchNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const branchOutput = outputData.getBranch();
-    return branchOutput?.toObject() || null;
+    if (!branchOutput) {
+      return null;
+    }
+
+    // Use convertProtobufValueToJs to get clean JavaScript objects
+    const rawData = branchOutput.getData();
+    if (rawData) {
+      return convertProtobufValueToJs(rawData);
+    }
+
+    return null;
   }
 
   // TODO: do we need a getConditionId() to avoid exporting BranchNodeData?

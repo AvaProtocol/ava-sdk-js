@@ -280,19 +280,13 @@ class LoopNode extends Node {
     // Fallback: For immediate execution, data might come as CustomCode format
     const customCodeOutput = outputData.getCustomCode();
     if (customCodeOutput) {
-      const result = customCodeOutput.toObject();
-
-      // Handle nested data structure
-      if (
-        result &&
-        typeof result === "object" &&
-        Object.keys(result).length === 1 &&
-        "data" in result
-      ) {
-        return result.data;
+      // Use convertProtobufValueToJs to get clean JavaScript objects
+      const rawData = customCodeOutput.getData();
+      if (rawData) {
+        return convertProtobufValueToJs(rawData);
       }
 
-      return result;
+      return null;
     }
 
     return null;

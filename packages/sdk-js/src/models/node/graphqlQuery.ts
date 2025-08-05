@@ -6,7 +6,7 @@ import {
   GraphQLQueryNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
+import { convertInputToProtobuf, extractInputFromProtobuf, convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, query, variablesMap }
 
@@ -77,7 +77,17 @@ class GraphQLQueryNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
     const graphqlOutput = outputData.getGraphql();
-    return graphqlOutput?.toObject() || null;
+    if (!graphqlOutput) {
+      return null;
+    }
+
+    // Use convertProtobufValueToJs to get clean JavaScript objects
+    const rawData = graphqlOutput.getData();
+    if (rawData) {
+      return convertProtobufValueToJs(rawData);
+    }
+
+    return null;
   }
 }
 

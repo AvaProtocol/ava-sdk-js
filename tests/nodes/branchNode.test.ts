@@ -73,6 +73,17 @@ describe("BranchNode Tests", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.nodeId).toBeDefined();
+      
+      // Validate data format - should be clean JSON, not protobuf structures
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          conditionId: expect.any(String)
+        })
+      );
+      // Ensure no protobuf artifacts like nullValue, numberValue, structValue
+      expect(result.data).not.toHaveProperty('nullValue');
+      expect(result.data).not.toHaveProperty('numberValue');
+      expect(result.data).not.toHaveProperty('structValue');
     });
 
     test("should evaluate status string comparison with preprocessing", async () => {
@@ -101,6 +112,17 @@ describe("BranchNode Tests", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.nodeId).toBeDefined();
+      
+      // Validate data format - should be clean JSON, not protobuf structures
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          conditionId: expect.any(String)
+        })
+      );
+      // Ensure no protobuf artifacts like nullValue, numberValue, structValue
+      expect(result.data).not.toHaveProperty('nullValue');
+      expect(result.data).not.toHaveProperty('numberValue');
+      expect(result.data).not.toHaveProperty('structValue');
     });
 
     test("should evaluate nested object property access with preprocessing", async () => {
@@ -131,6 +153,17 @@ describe("BranchNode Tests", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.nodeId).toBeDefined();
+      
+      // Validate data format - should be clean JSON, not protobuf structures
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          conditionId: expect.any(String)
+        })
+      );
+      // Ensure no protobuf artifacts like nullValue, numberValue, structValue
+      expect(result.data).not.toHaveProperty('nullValue');
+      expect(result.data).not.toHaveProperty('numberValue');
+      expect(result.data).not.toHaveProperty('structValue');
     });
 
     test("should evaluate complex logical expression with preprocessing", async () => {
@@ -163,6 +196,17 @@ describe("BranchNode Tests", () => {
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(result.nodeId).toBeDefined();
+      
+      // Validate data format - should be clean JSON, not protobuf structures
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          conditionId: expect.any(String)
+        })
+      );
+      // Ensure no protobuf artifacts like nullValue, numberValue, structValue
+      expect(result.data).not.toHaveProperty('nullValue');
+      expect(result.data).not.toHaveProperty('numberValue');
+      expect(result.data).not.toHaveProperty('structValue');
     });
   });
 

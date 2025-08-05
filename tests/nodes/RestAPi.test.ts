@@ -126,11 +126,11 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(response.success).toBe(true); // HTTP call succeeds even with 404
-      if (response.data) {
-        const data = response.data as RestApiResponse;
-        expect(data.status).toBe(404);
-      }
+      expect(response.success).toBe(false); // HTTP 404 should be categorized as failed
+      
+      // NOTE: Backend currently doesn't populate detailed response data for failed runNodeWithInputs calls
+      // This is different from simulateWorkflow which does return full status information
+      expect(response.data).toEqual({}); // Empty object for failed requests via runNodeWithInputs
     });
   });
 
@@ -195,10 +195,13 @@ describe("RestAPI Node Tests", () => {
         (step) => step.id === restApiNode.id
       );
       expect(restApiStep).toBeDefined();
-      expect(restApiStep!.success).toBe(true); // HTTP call succeeds even with 500
+      expect(restApiStep!.success).toBe(false); // HTTP 500 should be categorized as failed
 
       const output = restApiStep!.output as RestApiResponse;
       expect(output.status).toBe(500);
+      expect(output.statusText).toBe("Internal Server Error");
+      expect(output.data).toBeDefined();
+      expect(output.data.error).toBe("Internal Server Error");
     });
   });
 
@@ -431,9 +434,9 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      // Both should succeed at HTTP level but have different status codes
+      // 204 should succeed (2xx), but 500 should fail (5xx)
       expect(emptyResponse.success).toBe(true);
-      expect(errorResponse.success).toBe(true);
+      expect(errorResponse.success).toBe(false);
 
       if (emptyResponse.data && typeof emptyResponse.data === "object") {
         const emptyData = emptyResponse.data as RestApiResponse;
@@ -441,10 +444,7 @@ describe("RestAPI Node Tests", () => {
         expect(emptyData.data).toBe("");
       }
 
-      if (errorResponse.data && typeof errorResponse.data === "object") {
-        const errorData = errorResponse.data as RestApiResponse;
-        expect(errorData.status).toBe(500);
-      }
+      // Note: 500 responses now fail (success=false) and may not include detailed response data
     });
   });
 });
