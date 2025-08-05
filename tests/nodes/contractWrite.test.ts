@@ -200,7 +200,7 @@ describe("ContractWrite Node Tests", () => {
       expect(result.nodeId).toBeDefined();
       expect(result.data).toBeDefined();
 
-      // 🚀 NEW: Check new response structure with data and metadata at top level
+      // NEW: Check new response structure with data and metadata at top level
       expect(result.data).toBeDefined(); // Decoded event data
       expect(result.metadata).toBeDefined(); // Method execution details
       expect(Array.isArray(result.metadata)).toBe(true);
