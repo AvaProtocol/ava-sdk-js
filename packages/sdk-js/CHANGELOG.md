@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.6.10
+
+### Patch Changes
+
+- c0afaa3: Fix BranchNode runNodeImmediately response format
+
 ## 2.6.9
 
 ### Patch Changes
