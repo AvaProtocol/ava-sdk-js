@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.12
+
+### Patch Changes
+
+- 56d89ae: Updated ContractWrite protobuf conversion
+- Updated dependencies [56d89ae]
+  - @avaprotocol/types@2.4.10
+
 ## 2.6.11
 
 ### Patch Changes

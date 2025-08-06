@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.10
+
+### Patch Changes
+
+- 56d89ae: Updated ContractWrite protobuf conversion
+
 ## 2.4.9
 
 ### Patch Changes
