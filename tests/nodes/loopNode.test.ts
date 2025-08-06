@@ -8,6 +8,8 @@ import {
   TriggerType,
   ExecutionMode,
   LoopNodeData,
+  WorkflowProps,
+  Edge,
 } from "@avaprotocol/types";
 
 // Type definitions for test responses
@@ -1466,6 +1468,125 @@ describe("LoopNode Tests", () => {
         expect(directSecondItem.key).toBe("value2");
         expect(simulatedSecondItem.key).toBe("value2");
         expect(executedSecondItem.key).toBe("value2");
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
+
+    test("should handle client workflow with parallel loop execution consistently", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      let workflowId: string | undefined;
+
+      try {
+        // Create manual trigger with array data (from client workflow)
+        const manualTrigger = TriggerFactory.create({
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
+          data: {
+            data: [
+              { key: "key", amount: 1 },
+              { key: "key2", amount: 2000 }
+            ],
+            headers: {},
+            pathParams: {}
+          }
+        });
+
+        // Create loop node with parallel execution (from client workflow)
+        const loopNode = NodeFactory.create({
+          id: getNextId(),
+          name: "loop1",
+          type: NodeType.Loop,
+          data: {
+            inputNodeName: manualTrigger.name,
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Parallel,
+            runner: {
+              type: "customCode",
+              config: {
+                lang: CustomCodeLang.JavaScript,
+                source: "return value;"
+              }
+            }
+          }
+        });
+
+        // Test runNodeWithInputs
+        const directResponse = await client.runNodeWithInputs({
+          nodeType: "loop",
+          nodeConfig: loopNode.data,
+          inputVariables: {
+            [manualTrigger.name]: [
+              { key: "key", amount: 1 },
+              { key: "key2", amount: 2000 }
+            ]
+          }
+        });
+
+        console.log("🔍 Direct Response:", JSON.stringify(directResponse, null, 2));
+
+        // Test simulateWorkflow
+        const workflowProps: WorkflowProps = {
+          smartWalletAddress: wallet.address,
+          nodes: [loopNode],
+          edges: [
+            {
+              id: getNextId(),
+              source: manualTrigger.id,
+              target: loopNode.id,
+            } as Edge,
+          ],
+          trigger: manualTrigger,
+          startAt: Date.now(),
+          expiredAt: Date.now() + 3600 * 24 * 30 * 1000,
+          maxExecution: 1,
+        };
+        const simulatedWorkflow = await client.simulateWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+
+        console.log("🔍 Simulated Workflow:", JSON.stringify(simulatedWorkflow, null, 2));
+
+        // TODO: Add deployWorkflow test once triggerWorkflow API issue is resolved
+
+        // Assertions for response format consistency
+        expect(directResponse.success).toBe(true);
+        expect(simulatedWorkflow.success).toBe(true);
+
+        // Check data structure consistency
+        expect(Array.isArray(directResponse.data)).toBe(true);
+        expect((directResponse.data as any[]).length).toBe(2);
+
+        const simulatedLoopStep = simulatedWorkflow.steps.find((step) => step.id === loopNode.id);
+        expect(simulatedLoopStep).toBeDefined();
+        expect(simulatedLoopStep!.success).toBe(true);
+        expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
+        expect((simulatedLoopStep!.output as any[]).length).toBe(2);
+
+        // Check that data is correctly passed through
+        const directFirstItem = (directResponse.data as any[])[0];
+        const simulatedFirstItem = (simulatedLoopStep!.output as any[])[0];
+
+        const directSecondItem = (directResponse.data as any[])[1];
+        const simulatedSecondItem = (simulatedLoopStep!.output as any[])[1];
+
+        // First item should be { key: "key", amount: 1 }
+        expect(directFirstItem.key).toBe("key");
+        expect(directFirstItem.amount).toBe(1);
+        expect(simulatedFirstItem.key).toBe("key");
+        expect(simulatedFirstItem.amount).toBe(1);
+
+        // Second item should be { key: "key2", amount: 2000 }
+        expect(directSecondItem.key).toBe("key2");
+        expect(directSecondItem.amount).toBe(2000);
+        expect(simulatedSecondItem.key).toBe("key2");
+        expect(simulatedSecondItem.amount).toBe(2000);
+
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
