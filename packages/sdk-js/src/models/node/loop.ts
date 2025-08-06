@@ -227,7 +227,7 @@ class LoopNode extends Node {
         const graphqlQuery = GraphQLQueryNode.createProtobufNode({
           url: gqlConfig.url as string,
           query: gqlConfig.query as string,
-          variablesMap: gqlConfig.variablesMap as Array<[string, string]>,
+          variables: gqlConfig.variables as Record<string, string>,
         });
         loopNode.setGraphqlDataQuery(graphqlQuery);
         break;

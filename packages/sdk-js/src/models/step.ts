@@ -57,8 +57,42 @@ class Step implements StepProps {
     const outputData = this.extractOutputData(step);
     if (!outputData) return null;
     
-    // STANDARDIZED Direct Mapping - ALL triggers and nodes use the same logic
+    const outputCase = this.getOutputDataCase(step);
+    
+    // 🚀 Special handling for ContractWrite and ContractRead - return both data and metadata
+    if (outputCase === avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE ||
+        outputCase === avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ) {
+      try {
+        const result: any = {};
+        
+        // Extract data field (decoded events/results)
+        if (typeof outputData.getData === "function") {
+          result.data = convertProtobufValueToJs(outputData.getData());
+        }
+        
+        // Extract metadata field (method execution details)
+        if (typeof outputData.getMetadata === "function") {
+          result.metadata = convertProtobufValueToJs(outputData.getMetadata());
+        }
+        
+        // Return both data and metadata for ContractWrite and ContractRead
+        // This ensures consistent structure between simulated and deployed workflow execution
+        return result;
+      } catch (error) {
+        console.warn("Failed to convert ContractWrite/ContractRead protobuf to JavaScript:", error);
+        return outputData.getData ? outputData.getData() : null;
+      }
+    }
+    
+    // STANDARDIZED Direct Mapping - ALL other triggers and nodes use the same logic
     if (typeof outputData.hasData === "function" && outputData.hasData()) {
+      try {
+        return convertProtobufValueToJs(outputData.getData());
+      } catch (error) {
+        console.warn("Failed to convert protobuf Value to JavaScript:", error);
+        return outputData.getData();
+      }
+    } else if (typeof outputData.getData === "function") {
       try {
         return convertProtobufValueToJs(outputData.getData());
       } catch (error) {

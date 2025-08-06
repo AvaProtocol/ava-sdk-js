@@ -36,8 +36,8 @@ class ContractWriteNode extends Node {
     });
     config.setContractAbiList(abiValueList);
 
-    // Handle method calls array
-    const methodCalls = configData.methodCalls || [];
+    // Handle method calls array (now required)
+    const methodCalls = configData.methodCalls;
     methodCalls.forEach((methodCall) => {
       const methodCallMsg = new avs_pb.ContractWriteNode.MethodCall();
       
@@ -109,11 +109,12 @@ class ContractWriteNode extends Node {
     const contractWriteOutput = outputData.getContractWrite();
     if (!contractWriteOutput) return null;
 
-    // NEW: Only return the data part (decoded events, like ContractRead)
-    // The metadata is handled at the protobuf response level by the client
+    // ContractWrite decoded events are stored in data field (flattened object format)
+    // This contains parsed receipt logs/events, similar to ContractRead format
     const dataValue = contractWriteOutput.getData();
     
-    // Convert protobuf Value to JavaScript object (flattened decoded event data)
+    // Convert protobuf Value to JavaScript object (decoded events object)
+    // Return empty object if no events were decoded from transaction receipts
     return dataValue ? convertProtobufValueToJs(dataValue) : {};
   }
 }

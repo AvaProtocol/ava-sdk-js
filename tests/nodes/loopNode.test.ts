@@ -39,6 +39,7 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  TEST_SMART_WALLET_ADDRESS,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -442,12 +443,12 @@ describe("LoopNode Tests", () => {
           writeParams: [
             {
               contractAddress: "0x1111111111111111111111111111111111111111",
-              spender: "0x0000000000000000000000000000000000000001",
+              spender: TEST_SMART_WALLET_ADDRESS,
               amount: "10",
             },
             {
               contractAddress: "0x2222222222222222222222222222222222222222",
-              spender: "0x0000000000000000000000000000000000000002",
+              spender: TEST_SMART_WALLET_ADDRESS,
               amount: "10",
             },
           ],
@@ -803,12 +804,12 @@ describe("LoopNode Tests", () => {
             return [
               {
                 contractAddress: "0x1111111111111111111111111111111111111111",
-                spender: "0x0000000000000000000000000000000000000001",
+                spender: TEST_SMART_WALLET_ADDRESS,
                 amount: "10"
               },
               {
                 contractAddress: "0x2222222222222222222222222222222222222222",
-                spender: "0x0000000000000000000000000000000000000002", 
+                spender: TEST_SMART_WALLET_ADDRESS, 
                 amount: "10"
               }
             ];
@@ -1207,12 +1208,12 @@ describe("LoopNode Tests", () => {
             return [
               {
                 contractAddress: "0x1111111111111111111111111111111111111111",
-                spender: "0x0000000000000000000000000000000000000001",
+                spender: TEST_SMART_WALLET_ADDRESS,
                 amount: "10"
               },
               {
                 contractAddress: "0x2222222222222222222222222222222222222222",
-                spender: "0x0000000000000000000000000000000000000002", 
+                spender: TEST_SMART_WALLET_ADDRESS, 
                 amount: "10"
               }
             ];

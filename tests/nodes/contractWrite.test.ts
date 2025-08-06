@@ -11,11 +11,39 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  TEST_SMART_WALLET_ADDRESS,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
+
+/**
+ * ContractWrite Node Expected Response Structure:
+ *
+ * For runNodeWithInputs:
+ * {
+ *   success: true,
+ *   data: { methodName: {} }, // Object organized by method name, each containing decoded receipt logs/events
+ *   metadata: [], // Array of method execution details with transaction receipts, ABIs, etc.
+ *   error: "",
+ *   nodeId: "..."
+ * }
+ *
+ * For simulateWorkflow/deployWorkflow:
+ * {
+ *   output: {
+ *     data: { methodName: {} }, // Object organized by method name, each containing decoded events
+ *     metadata: [] // Array of method execution details with transaction receipts, ABIs, etc.
+ *   }
+ * }
+ *
+ * The data field contains decoded events from transaction receipts, organized by method name
+ * for easy access (e.g., { approve: {}, transfer: {} }). Each method contains its parsed events.
+ * The metadata field contains detailed method execution information including transaction receipts,
+ * method ABIs, and execution status. Both simulateWorkflow and deployWorkflow now have consistent
+ * structure with both data and metadata fields.
+ */
 
 const { avsEndpoint, walletPrivateKey, factoryAddress, chainEndpoint } =
   getConfig();
@@ -92,19 +120,6 @@ async function isSepoliaChain(): Promise<boolean> {
   }
 }
 
-// Helper function to create approve call data for ERC20
-function createApproveCallData(
-  spender: string,
-  amount: string = "1000000"
-): string {
-  // approve(address,uint256) function selector: 0x095ea7b3
-  // Pad spender address to 32 bytes
-  const paddedSpender = spender.replace("0x", "").padStart(64, "0");
-  // Pad amount to 32 bytes (1000000 = 0xF4240)
-  const paddedAmount = parseInt(amount).toString(16).padStart(64, "0");
-  return `0x095ea7b3${paddedSpender}${paddedAmount}`;
-}
-
 describe("ContractWrite Node Tests", () => {
   let client: Client;
   let isSepoliaTest: boolean;
@@ -147,8 +162,7 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
-      const spenderAddress = "0x0000000000000000000000000000000000000001"; // Dummy address
-      const approveCallData = createApproveCallData(spenderAddress, "100");
+      const spenderAddress = TEST_SMART_WALLET_ADDRESS; // Use test smart wallet for success path
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -157,8 +171,8 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: approveCallData,
               methodName: "approve",
+              methodParams: [spenderAddress, "100"],
             },
           ],
         },
@@ -201,10 +215,23 @@ describe("ContractWrite Node Tests", () => {
       expect(result.data).toBeDefined();
 
       // NEW: Check new response structure with data and metadata at top level
-      expect(result.data).toBeDefined(); // Decoded event data
+      expect(result.data).toBeDefined(); // Decoded event data (organized by method name)
+      expect(typeof result.data).toBe("object"); // Should be an object, not array
+      expect(Array.isArray(result.data)).toBe(false); // Should NOT be an array
+
+      // Verify flattened structure by method name - this test only has approve
+      expect(result.data).toHaveProperty("approve");
+      expect(typeof result.data.approve).toBe("object");
+
       expect(result.metadata).toBeDefined(); // Method execution details
       expect(Array.isArray(result.metadata)).toBe(true);
       expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // For ERC20 approve, typically no events are emitted, so each method should have empty object
+      // If events were emitted, they would be flattened into the method's object
+      expect(Object.keys(result.data).length).toBe(
+        params.nodeConfig.methodCalls.length
+      ); // One method = one key
 
       expect(result.success).toBe(true);
       expect(result.metadata.length).toBeGreaterThan(0);
@@ -233,8 +260,8 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
-      const spender1 = "0x0000000000000000000000000000000000000001";
-      const spender2 = "0x0000000000000000000000000000000000000002";
+      const spender1 = TEST_SMART_WALLET_ADDRESS;
+      const spender2 = TEST_SMART_WALLET_ADDRESS; // Use test smart wallet for consistency
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -243,12 +270,12 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(spender1, "50"),
               methodName: "approve",
+              methodParams: [spender1, "50"],
             },
             {
-              callData: createApproveCallData(spender2, "75"),
-              methodName: "approve",
+              methodName: "approve", 
+              methodParams: [spender2, "75"],
             },
           ],
         },
@@ -298,10 +325,8 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(
-                "0x0000000000000000000000000000000000000001"
-              ),
               methodName: "approve",
+              methodParams: ["0x0000000000000000000000000000000000000001", "1000000"],
             },
           ],
         },
@@ -402,11 +427,11 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI, // Convert array to JSON string
           methodCalls: [
             {
-              callData: createApproveCallData(
+              methodName: "approve",
+              methodParams: [
                 wallet.address, // Use wallet address as spender (self-approval is always valid)
                 "1000000" // 1 USDC (6 decimals)
-              ),
-              methodName: "approve",
+              ],
             },
           ],
         },
@@ -440,16 +465,16 @@ describe("ContractWrite Node Tests", () => {
 
       const output = contractWriteStep!.output as any;
       expect(output).toBeDefined();
-      expect(Array.isArray(output)).toBe(true);
-      expect(output).not.toHaveProperty("results");
-      expect(output.length).toBe(
-        (contractWriteNode.data as any).methodCalls.length
-      );
+
+      // Contract write simulation should return flattened object format (consistent with contract_read)
+      expect(typeof output).toBe("object");
+      expect(output).not.toBeNull();
+      expect(Array.isArray(output)).toBe(false);
 
       expect(contractWriteStep!.success).toBe(true);
     });
 
-    test("should simulate workflow with multiple contract writes", async () => {
+    test("should simulate workflow with approve and transfer calls", async () => {
       if (!isSepoliaTest) {
         console.log("Skipping test - not on Sepolia chain");
         return;
@@ -466,18 +491,12 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(
-                "0x0000000000000000000000000000000001",
-                "100"
-              ),
               methodName: "approve",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
             },
             {
-              callData: createApproveCallData(
-                "0x0000000000000000000000000000000002",
-                "150"
-              ),
-              methodName: "approve",
+              methodName: "transfer",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
             },
           ],
         },
@@ -487,8 +506,18 @@ describe("ContractWrite Node Tests", () => {
         contractWriteNode,
       ]);
 
+      console.log(
+        "🚀 ~ simulateWorkflow ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "simulateWorkflow response:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       expect(simulation.success).toBe(true);
@@ -499,15 +528,23 @@ describe("ContractWrite Node Tests", () => {
 
       const output = contractWriteStep!.output as any;
       expect(output).toBeDefined();
-      expect(Array.isArray(output)).toBe(true);
+      expect(typeof output).toBe("object");
+      expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
       expect(output).not.toHaveProperty("results");
-      expect(output.length).toBe(
-        (contractWriteNode.data as any).methodCalls.length
-      );
 
-      console.log(
-        "Multiple writes simulation result:",
-        contractWriteStep!.success
+      // Verify structure has both data and metadata fields
+      expect(output).toHaveProperty("data");
+      expect(output).toHaveProperty("metadata");
+      
+      // Verify flattened structure by method name in data field
+      expect(output.data).toHaveProperty("approve");
+      expect(output.data).toHaveProperty("transfer");
+      expect(typeof output.data.approve).toBe("object");
+      expect(typeof output.data.transfer).toBe("object");
+
+      // Should have same number of methods as methodCalls in data field
+      expect(Object.keys(output.data).length).toBe(
+        (contractWriteNode.data as any).methodCalls.length
       );
     });
   });
@@ -532,11 +569,8 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(
-                "0x0000000000000000000000000000000000000003",
-                "300"
-              ),
               methodName: "approve",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "300"],
             },
           ],
         },
@@ -590,9 +624,20 @@ describe("ContractWrite Node Tests", () => {
 
         const output = contractWriteStep.output as any;
         expect(output).toBeDefined();
-        expect(Array.isArray(output)).toBe(true);
+        expect(typeof output).toBe("object");
+        expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
         expect(output).not.toHaveProperty("results");
-        expect(output.length).toBe(
+
+        // Verify structure has both data and metadata fields
+        expect(output).toHaveProperty("data");
+        expect(output).toHaveProperty("metadata");
+        
+        // Verify flattened structure by method name - this test only has approve
+        expect(output.data).toHaveProperty("approve");
+        expect(typeof output.data.approve).toBe("object");
+
+        // Should have same number of methods as methodCalls in data field
+        expect(Object.keys(output.data).length).toBe(
           (contractWriteNode.data as any).methodCalls.length
         );
 
@@ -623,11 +668,8 @@ describe("ContractWrite Node Tests", () => {
         contractAbi: ERC20_ABI,
         methodCalls: [
           {
-            callData: createApproveCallData(
-              "0x0000000000000000000000000000000000000004",
-              "400"
-            ),
             methodName: "approve",
+            methodParams: [TEST_SMART_WALLET_ADDRESS, "400"],
           },
         ],
       };
@@ -710,17 +752,7 @@ describe("ContractWrite Node Tests", () => {
           isBlocking: true,
         };
 
-        console.log(
-          "🚀 ~ trigger test ~ params:",
-          util.inspect(triggerParams, { depth: null, colors: true })
-        );
-
-        const triggerResult = await client.triggerWorkflow(triggerParams);
-
-        console.log(
-          "🚀 ~ trigger test ~ result:",
-          util.inspect(triggerResult, { depth: null, colors: true })
-        );
+        await client.triggerWorkflow(triggerParams);
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -730,35 +762,55 @@ describe("ContractWrite Node Tests", () => {
           (step) => step.id === contractWriteNode.id
         );
 
+        console.log(
+          "🚀 ~ deploy test ~ executedStep:",
+          util.inspect(executedStep, { depth: null, colors: true })
+        );
+
         // Compare response formats - verify all three methods return consistent data
         expect(directResponse.data).toBeDefined();
         expect(simulatedStep?.output).toBeDefined();
         expect(executedStep?.output).toBeDefined();
 
-        // 🚀 NEW: All outputs should have consistent structure with metadata at top level
-        const directData = directResponse.metadata as any[];
-        const simulatedData = simulatedStep?.output as any[];
-        const executedData = executedStep?.output as any[];
+        // 🚀 NEW: Verify consistent structure between different execution methods
+        // runNodeWithInputs: metadata is array, data is flattened object by method name
+        // simulateWorkflow/deployWorkflow: output contains both data and metadata fields
 
-        // Verify array lengths match (metadata contains the method results)
-        expect(directData.length).toBe(simulatedData.length);
-        expect(simulatedData.length).toBe(executedData.length);
+        const directMetadata = directResponse.metadata as any[]; // Array of method results
+        const directData = directResponse.data as any; // Object organized by method name
+        const simulatedOutput = simulatedStep?.output as any; // Object with data and metadata fields
+        const executedOutput = executedStep?.output as any; // Object with data and metadata fields
 
-        // Verify each method call result has consistent structure (excluding dynamic fields)
-        for (let i = 0; i < directData.length; i++) {
-          expect(directData[i].methodName).toBe(simulatedData[i].methodName);
-          expect(directData[i].success).toBe(simulatedData[i].success);
-          expect(directData[i].returnData).toBe(simulatedData[i].returnData);
+        // Verify metadata array length matches number of method calls
+        expect(directMetadata.length).toBe(
+          contractWriteConfig.methodCalls.length
+        );
 
-          // Verify receipt structure exists but don't compare dynamic fields
-          expect(directData[i].receipt).toBeDefined();
-          expect(simulatedData[i].receipt).toBeDefined();
-          expect(directData[i].receipt.blockNumber).toBe(
-            simulatedData[i].receipt.blockNumber
-          );
-          expect(directData[i].receipt.status).toBe(
-            simulatedData[i].receipt.status
-          );
+        // 🚀 NEW: Verify simulatedOutput and executedOutput have both data and metadata fields
+        expect(simulatedOutput).toHaveProperty("data");
+        expect(simulatedOutput).toHaveProperty("metadata");
+        expect(executedOutput).toHaveProperty("data");
+        expect(executedOutput).toHaveProperty("metadata");
+
+        // Verify all outputs have the same method names (keys) in their data fields
+        const directDataKeys = Object.keys(directData).sort();
+        const simulatedDataKeys = Object.keys(simulatedOutput.data).sort();
+        const executedDataKeys = Object.keys(executedOutput.data).sort();
+
+        expect(directDataKeys).toEqual(simulatedDataKeys);
+        expect(simulatedDataKeys).toEqual(executedDataKeys);
+
+        // Verify each method has consistent structure across execution types
+        for (const methodName of directDataKeys) {
+          // All should have the same method represented in their data fields
+          expect(directData[methodName]).toBeDefined();
+          expect(simulatedOutput.data[methodName]).toBeDefined();
+          expect(executedOutput.data[methodName]).toBeDefined();
+
+          // All should be objects (decoded events)
+          expect(typeof directData[methodName]).toBe("object");
+          expect(typeof simulatedOutput.data[methodName]).toBe("object");
+          expect(typeof executedOutput.data[methodName]).toBe("object");
         }
 
         // Verify consistent structure
@@ -768,24 +820,30 @@ describe("ContractWrite Node Tests", () => {
 
         // 🚀 NEW: Check response structure - direct call has data/metadata at top level
         expect(typeof directResponse.data).toBe("object");
-        expect(directResponse.data).toBeDefined(); // Decoded events
+        expect(directResponse.data).toBeDefined(); // Decoded events (flattened by method)
         expect(directResponse.metadata).toBeDefined(); // Method results
         expect(Array.isArray(directResponse.metadata)).toBe(true);
-        expect(Array.isArray(simulatedStep?.output)).toBe(true);
-        expect(simulatedStep?.output).not.toHaveProperty("results");
-        expect(Array.isArray(executedStep?.output)).toBe(true);
-        expect(executedStep?.output).not.toHaveProperty("results");
+
+        // simulateWorkflow and deployWorkflow should have object structure with data and metadata
+        expect(typeof simulatedStep?.output).toBe("object");
+        expect(Array.isArray(simulatedStep?.output)).toBe(false); // Should be object with data/metadata
+        expect(simulatedStep?.output).toHaveProperty("data");
+        expect(simulatedStep?.output).toHaveProperty("metadata");
+        expect(typeof executedStep?.output).toBe("object");
+        expect(Array.isArray(executedStep?.output)).toBe(false); // Should be object with data/metadata
+        expect(executedStep?.output).toHaveProperty("data");
+        expect(executedStep?.output).toHaveProperty("metadata");
 
         // Check that all have the same method names
         const directMethods = (directResponse.metadata as any[])
           ?.map((r: any) => r.methodName)
           .sort();
-        const simulatedMethods = (simulatedStep?.output as any[])
-          ?.map((r: any) => r.methodName)
-          .sort();
-        const executedMethods = (executedStep?.output as any[])
-          ?.map((r: any) => r.methodName)
-          .sort();
+        const simulatedMethods = Object.keys(
+          simulatedStep?.output?.data || {}
+        ).sort();
+        const executedMethods = Object.keys(
+          executedStep?.output?.data || {}
+        ).sort();
 
         expect(simulatedMethods).toEqual(executedMethods);
         expect(simulatedMethods).toEqual(directMethods);
@@ -889,17 +947,11 @@ describe("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "approve",
-              methodParams: [
-                "0x0000000000000000000000000000000000000001",
-                "100",
-              ],
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
             },
             {
               methodName: "approve",
-              methodParams: [
-                "0x0000000000000000000000000000000000000002",
-                "200",
-              ],
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "200"],
             },
           ],
         },
@@ -920,7 +972,7 @@ describe("ContractWrite Node Tests", () => {
       const firstCall = methodCalls[0];
       expect(firstCall.getMethodName()).toBe("approve");
       expect(firstCall.getMethodParamsList()).toEqual([
-        "0x0000000000000000000000000000000000000001",
+        TEST_SMART_WALLET_ADDRESS,
         "100",
       ]);
 
@@ -928,7 +980,7 @@ describe("ContractWrite Node Tests", () => {
       const secondCall = methodCalls[1];
       expect(secondCall.getMethodName()).toBe("approve");
       expect(secondCall.getMethodParamsList()).toEqual([
-        "0x0000000000000000000000000000000000000002",
+        TEST_SMART_WALLET_ADDRESS,
         "200",
       ]);
 
@@ -954,11 +1006,8 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(
-                "0x0000000000000000000000000000000000000001",
-                "100"
-              ),
               methodName: "approve",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
               applyToFields: ["amount"], // Apply formatting to amount field if applicable
             },
           ],
@@ -983,11 +1032,6 @@ describe("ContractWrite Node Tests", () => {
           },
         },
       };
-
-      console.log(
-        "�� ~ test ~ params:",
-        util.inspect(params, { depth: null, colors: true })
-      );
 
       const result = await client.runNodeWithInputs(params);
 
@@ -1029,11 +1073,8 @@ describe("ContractWrite Node Tests", () => {
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
-              callData: createApproveCallData(
-                "0x0000000000000000000000000000000000000001",
-                "150"
-              ),
               methodName: "approve",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "150"],
               applyToFields: ["amount"], // Apply formatting to amount field if applicable
             },
           ],
@@ -1066,15 +1107,27 @@ describe("ContractWrite Node Tests", () => {
 
       const output = contractWriteStep!.output as any;
       expect(output).toBeDefined();
-      expect(Array.isArray(output)).toBe(true);
+      expect(typeof output).toBe("object");
+      expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
       expect(output).not.toHaveProperty("results");
-      expect(output.length).toBe(
+
+      // Verify structure has both data and metadata fields
+      expect(output).toHaveProperty("data");
+      expect(output).toHaveProperty("metadata");
+      
+      // Verify flattened structure by method name - this test only has approve
+      expect(output.data).toHaveProperty("approve");
+      expect(typeof output.data.approve).toBe("object");
+
+      // Should have same number of methods as methodCalls in data field
+      expect(Object.keys(output.data).length).toBe(
         (contractWriteNode.data as any).methodCalls.length
       );
 
-      // Find the approve result
-      const approveResult = output.find((r: any) => r.methodName === "approve");
+      // Access the approve result directly from flattened structure
+      const approveResult = output.data.approve;
       expect(approveResult).toBeDefined();
+      expect(typeof approveResult).toBe("object");
     });
 
     test("should deploy and trigger workflow with applyToFields", async () => {
@@ -1098,11 +1151,8 @@ describe("ContractWrite Node Tests", () => {
             contractAbi: ERC20_ABI,
             methodCalls: [
               {
-                callData: createApproveCallData(
-                  "0x0000000000000000000000000000000000000001",
-                  "250"
-                ),
                 methodName: "approve",
+                methodParams: [TEST_SMART_WALLET_ADDRESS, "250"],
                 applyToFields: ["amount"], // Apply formatting to amount field if applicable
               },
             ],
@@ -1132,17 +1182,7 @@ describe("ContractWrite Node Tests", () => {
           isBlocking: true,
         };
 
-        console.log(
-          "�� ~ test ~ params:",
-          util.inspect(triggerParams, { depth: null, colors: true })
-        );
-
-        const triggerResult = await client.triggerWorkflow(triggerParams);
-
-        console.log(
-          "🚀 ~ test ~ result:",
-          util.inspect(triggerResult, { depth: null, colors: true })
-        );
+        await client.triggerWorkflow(triggerParams);
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -1166,17 +1206,27 @@ describe("ContractWrite Node Tests", () => {
 
         const output = contractWriteStep.output as any;
         expect(output).toBeDefined();
-        expect(Array.isArray(output)).toBe(true);
+        expect(typeof output).toBe("object");
+        expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
         expect(output).not.toHaveProperty("results");
-        expect(output.length).toBe(
+
+        // Verify structure has both data and metadata fields
+        expect(output).toHaveProperty("data");
+        expect(output).toHaveProperty("metadata");
+        
+        // Verify flattened structure by method name - this test only has approve
+        expect(output.data).toHaveProperty("approve");
+        expect(typeof output.data.approve).toBe("object");
+
+        // Should have same number of methods as methodCalls in data field
+        expect(Object.keys(output.data).length).toBe(
           (contractWriteNode.data as any).methodCalls.length
         );
 
-        // Find the approve result
-        const approveResult = output.find(
-          (r: any) => r.methodName === "approve"
-        );
+        // Access the approve result directly from flattened structure
+        const approveResult = output.data.approve;
         expect(approveResult).toBeDefined();
+        expect(typeof approveResult).toBe("object");
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

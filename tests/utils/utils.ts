@@ -29,6 +29,12 @@ function getTestConfig() {
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 15000; // 15 seconds
 
+// Test addresses
+export const TEST_SMART_WALLET_ADDRESS =
+  "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"; // User's test smart wallet with ETH and USDC on Sepolia
+export const MOCK_FAILURE_ADDRESS =
+  "0x0000000000000000000000000000000000000001"; // Mock address for failure tests
+
 // Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
 export const SaltGlobal = {
   Auth: 0,

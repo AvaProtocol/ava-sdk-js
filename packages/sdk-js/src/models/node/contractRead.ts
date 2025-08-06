@@ -38,8 +38,8 @@ class ContractReadNode extends Node {
     });
     config.setContractAbiList(abiValueList);
 
-    // Handle method calls array
-    const methodCalls = configData.methodCalls || [];
+    // Handle method calls array (now required)
+    const methodCalls = configData.methodCalls;
     methodCalls.forEach((methodCall) => {
       const methodCallMsg = new avs_pb.ContractReadNode.MethodCall();
       methodCallMsg.setMethodName(methodCall.methodName);

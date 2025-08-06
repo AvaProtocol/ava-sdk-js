@@ -9,14 +9,14 @@ export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
 export interface ContractWriteNodeData {
   contractAddress: string;
   contractAbi: ContractAbi; // Contract ABI as array
-  methodCalls?: MethodCallType[];
+  methodCalls: MethodCallType[]; // Required: Method calls with methodParams
 }
 
 // Custom ContractRead data type with cleaner field names
 export interface ContractReadNodeData {
   contractAddress: string;
   contractAbi: ContractAbi; // Contract ABI as array
-  methodCalls?: MethodCallType[];
+  methodCalls: MethodCallType[]; // Required: Method calls with methodParams
 }
 
 // Custom CustomCode data type with cleaner field names
@@ -41,7 +41,13 @@ export interface RestAPINodeData {
   body: string;
   method: string;
 }
-export type GraphQLQueryNodeData = avs_pb.GraphQLQueryNode.Config.AsObject;
+
+export type GraphQLQueryNodeData = {
+  url: string;
+  query: string;
+  variables?: Record<string, string>;
+};
+
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
 
 // Define individual runner types for better type discrimination

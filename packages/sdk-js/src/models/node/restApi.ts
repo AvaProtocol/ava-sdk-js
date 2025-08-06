@@ -91,7 +91,6 @@ class RestAPINode extends Node {
   ): Record<string, unknown> | null {
     const restApiOutput = outputData.getRestApi();
     if (!restApiOutput) {
-      console.log("Debug RestAPI: No restApiOutput found");
       return null;
     }
 

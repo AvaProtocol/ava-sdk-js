@@ -6,7 +6,7 @@ import {
   GraphQLQueryNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf, convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, query, variablesMap }
 
@@ -27,7 +27,7 @@ class GraphQLQueryNode extends Node {
   static createProtobufNode(configData: {
     url: string;
     query: string;
-    variablesMap?: Array<[string, string]>;
+    variables?: Record<string, string>;
   }): avs_pb.GraphQLQueryNode {
     const node = new avs_pb.GraphQLQueryNode();
     const config = new avs_pb.GraphQLQueryNode.Config();
@@ -35,9 +35,9 @@ class GraphQLQueryNode extends Node {
     config.setUrl(configData.url);
     config.setQuery(configData.query);
 
-    if (configData.variablesMap && configData.variablesMap.length > 0) {
+    if (configData.variables && Object.keys(configData.variables).length > 0) {
       const variablesMap = config.getVariablesMap();
-      configData.variablesMap.forEach(([key, value]: [string, string]) => {
+      Object.entries(configData.variables).forEach(([key, value]) => {
         variablesMap.set(key, value);
       });
     }
@@ -50,13 +50,22 @@ class GraphQLQueryNode extends Node {
     // Convert the raw object to GraphQLQueryNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
+    const config = raw.getGraphqlQuery()!.getConfig()!;
+    const variablesMap = config.getVariablesMap();
+    const variables: Record<string, string> = {};
+
+    variablesMap.forEach((value, key) => {
+      variables[key] = value;
+    });
+
     return new GraphQLQueryNode({
       ...obj,
       type: NodeType.GraphQLQuery,
-      data: raw
-        .getGraphqlQuery()!
-        .getConfig()!
-        .toObject() as GraphQLQueryNodeData,
+      data: {
+        url: config.getUrl(),
+        query: config.getQuery(),
+        variables: variables,
+      } as GraphQLQueryNodeData,
     });
   }
 
@@ -75,7 +84,9 @@ class GraphQLQueryNode extends Node {
     return request;
   }
 
-  static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): any {
+  static fromOutputData(
+    outputData: avs_pb.RunNodeWithInputsResp
+  ): Record<string, unknown> | null {
     const graphqlOutput = outputData.getGraphql();
     if (!graphqlOutput) {
       return null;
