@@ -16,7 +16,7 @@ jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in
 let saltIndex = SaltGlobal.GetWallet * 1000; // Salt index 5,000 - 5,999
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("Wallet Management Tests", () => {
   let client: Client;
@@ -28,7 +28,7 @@ describe("Wallet Management Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
+      // No factory address - let aggregator use its default
     });
 
     console.log("Authenticating with signature ...");
@@ -42,17 +42,14 @@ describe("Wallet Management Tests", () => {
   });
 
   describe("getWallet Tests", () => {
-    test("should get wallet with client.factoryAddress", async () => {
+        test("should get wallet with aggregator's default factory", async () => {
       const salt = _.toString(saltIndex++);
-      // Set the factory address in client
-      client.setFactoryAddress(factoryAddress);
-      expect(client.getFactoryAddress()).toEqual(factoryAddress);
 
       const result = await client.getWallet({ salt });
-
+      
       expect(result).toBeDefined();
       expect(result.salt).toEqual(salt);
-      expect(result.factory).toEqual(factoryAddress);
+      expect(result.factory).toBeDefined(); // Should use aggregator's default factory
       expect(result.address).toHaveLength(42);
     });
 

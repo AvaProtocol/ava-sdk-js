@@ -15,9 +15,6 @@ const ALLOWED_ENVIRONMENTS = [
 ] as const;
 type Environment = (typeof ALLOWED_ENVIRONMENTS)[number];
 
-// Smart wallet factory address is the same for all chain
-const FACTORY_ADDRESS = "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834";
-
 // Environment-specific configurations
 const ENV_CONFIGS = {
   dev: {
@@ -110,7 +107,10 @@ const validatedEnv = cleanEnv(
     AVS_API_KEY: str({ desc: "AVS API Key" }),
     CHAIN_ENDPOINT: str({ desc: "Chain RPC Endpoint" }),
     TEST_PRIVATE_KEY: privateKeyValidator({ desc: "Wallet Private Key" }),
-    TEST_ENV: environmentValidator({ desc: "Test environment", default: "dev" }),
+    TEST_ENV: environmentValidator({
+      desc: "Test environment",
+      default: "dev",
+    }),
   }
 );
 
@@ -124,7 +124,7 @@ export const getConfig = () => ({
   chainId: envConfig.chainId,
   chainEndpoint: validatedEnv.CHAIN_ENDPOINT,
   walletPrivateKey: validatedEnv.TEST_PRIVATE_KEY,
-  factoryAddress: FACTORY_ADDRESS,
+  // factoryAddress: FACTORY_ADDRESS, // Let aggregator use its default factory
   environment: validatedEnv.TEST_ENV,
 });
 
