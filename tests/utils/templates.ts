@@ -26,9 +26,7 @@ async function getTestConfig() {
       error
     );
     // Return mock config for CI/CD or when real credentials aren't available
-    return {
-      factoryAddress: "0x0000000000000000000000000000000000000000",
-    };
+    return {};
   }
 }
 
@@ -40,7 +38,7 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
   type: NodeType.ETHTransfer,
   data: {
     destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    amount: "1000000000000000000", // 1 ETH in wei (decimal string)
+    amount: "1000000000000000", // 0.001 ETH in wei (decimal string) - reduced from 1 ETH
   },
 };
 
@@ -58,14 +56,12 @@ export const createContractWriteNodeProps = async (
   owner: string,
   salt: string
 ): Promise<ContractWriteNodeProps> => {
-  const config = await getTestConfig();
-
   return {
     id: getNextId(),
     name: "create account",
     type: NodeType.ContractWrite,
     data: {
-      contractAddress: config.factoryAddress,
+      contractAddress: "0x0000000000000000000000000000000000000000", // Will be replaced by aggregator's default factory
       contractAbi: factoryProxyAbi,
       methodCalls: [
         {
@@ -81,14 +77,12 @@ export const createContractReadNodeProps = async (
   owner: string,
   salt: string
 ): Promise<ContractReadNodeProps> => {
-  const config = await getTestConfig();
-
   return {
     id: getNextId(),
     name: "get account address",
     type: NodeType.ContractRead,
     data: {
-      contractAddress: config.factoryAddress,
+      contractAddress: "0x0000000000000000000000000000000000000000", // Will be replaced by aggregator's default factory
       contractAbi: factoryProxyAbi,
       methodCalls: [
         {
@@ -139,7 +133,7 @@ const customCodeNodeProps: CustomCodeNodeProps = {
   },
 };
 
-export const NodesTemplate = [ethTransferNodeProps];
+export const NodesTemplate = [customCodeNodeProps];
 
 // Programmatically create edges from nodes
 const createEdgesFromNodes = (nodes: NodeProps[]): Edge[] => {

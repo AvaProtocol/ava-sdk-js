@@ -11,7 +11,7 @@ import { createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 let saltIndex = SaltGlobal.GetWorkflow * 1000; // Salt index 7,000 - 7,999
 
@@ -26,7 +26,6 @@ describe("Workflow Management Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);

@@ -28,7 +28,7 @@ import { getConfig } from "../utils/envalid";
 jest.setTimeout(TIMEOUT_DURATION);
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 let saltIndex = SaltGlobal.CreateWorkflow * 1000; // Salt index 11,000 - 11,999
 
@@ -41,7 +41,6 @@ describe("createWorkflow Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);

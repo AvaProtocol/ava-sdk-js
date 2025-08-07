@@ -29,7 +29,7 @@ import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 jest.setTimeout(TIMEOUT_DURATION);
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 const createdSecretMap: Map<string, boolean> = new Map();
@@ -47,7 +47,6 @@ describe("secret Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);
@@ -63,7 +62,6 @@ describe("secret Tests", () => {
     // Initialize the client with test credentials
     client2 = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message: message2 } = await client2.getSignatureFormat(eoaAddress2);

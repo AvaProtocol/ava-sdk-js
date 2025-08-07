@@ -21,7 +21,7 @@ const MOCK_API_BASE_URL = MOCKED_API_ENDPOINT_AGGREGATOR;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateSecret * 1000 + 600;
@@ -45,7 +45,6 @@ describe("RestAPI Node Tests", () => {
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);

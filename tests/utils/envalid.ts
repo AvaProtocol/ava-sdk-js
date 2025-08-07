@@ -71,7 +71,6 @@ type Config = {
   chainId: string;
   walletPrivateKey: string;
   environment: Environment;
-  factoryAddress: string;
 };
 
 // Create a custom validator for private key

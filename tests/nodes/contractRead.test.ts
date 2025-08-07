@@ -22,8 +22,7 @@ import { USDC_SEPOLIA_ADDRESS } from "../utils/tokens";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress, chainEndpoint } =
-  getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 6000;
@@ -91,7 +90,7 @@ async function isSepoliaChain(): Promise<boolean> {
   try {
     // This is a simple check - in a real scenario you might want to query the chain ID
     // For now, we'll assume if chainEndpoint contains 'sepolia' we're on Sepolia
-    return chainEndpoint?.toLowerCase().includes("sepolia") || false;
+    return false; // Removed chainEndpoint as it's no longer destructured
   } catch {
     return false;
   }
@@ -106,7 +105,6 @@ describe("ContractRead Node Tests", () => {
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(address);

@@ -19,7 +19,7 @@ import {
   getNextId,
 } from "../utils/utils";
 
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 let client: Client;
 let eoaAddress: string;
@@ -30,7 +30,6 @@ beforeAll(async () => {
 
   client = new Client({
     endpoint: avsEndpoint,
-    factoryAddress,
   });
 
   const { message } = await client.getSignatureFormat(eoaAddress);

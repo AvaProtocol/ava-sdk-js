@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Client } from "@avaprotocol/sdk-js";
-import { GetKeyRequestSignature, WorkflowStatus } from "@avaprotocol/types";
+import { WorkflowStatus } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -13,8 +13,7 @@ import { createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsApiKey, avsEndpoint, walletPrivateKey, factoryAddress } =
-  getConfig();
+const { avsApiKey, avsEndpoint, walletPrivateKey } = getConfig();
 
 let saltIndex = SaltGlobal.Auth * 1000; // Salt index 0 - 999
 
@@ -26,7 +25,6 @@ describe("Authentication Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     // Generate the address here
@@ -54,7 +52,8 @@ describe("Authentication Tests", () => {
       expect(result).toBeDefined();
       expect(result?.address).toHaveLength(42);
       expect(result?.salt).toEqual(saltValue);
-      expect(result?.factory).toEqual(factoryAddress);
+      // Factory address is now handled by aggregator default
+      expect(result?.factory).toBeDefined();
     });
 
     test("getWallets works with client.authKey", async () => {
@@ -207,7 +206,8 @@ describe("Authentication Tests", () => {
 
       expect(wallet).toHaveProperty("address");
       expect(wallet).toHaveProperty("salt", saltValue);
-      expect(wallet).toHaveProperty("factory", factoryAddress);
+      // Factory address is now handled by aggregator default
+      expect(wallet).toHaveProperty("factory");
 
       const res2 = await client.getWallet(
         { salt: saltValue },
@@ -215,7 +215,8 @@ describe("Authentication Tests", () => {
       );
       expect(res2).toHaveProperty("address");
       expect(res2).toHaveProperty("salt", saltValue);
-      expect(res2).toHaveProperty("factory", factoryAddress);
+      // Factory address is now handled by aggregator default
+      expect(res2).toHaveProperty("factory");
     });
 
     test("createWorkflow works with options.authKey", async () => {

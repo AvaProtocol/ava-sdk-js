@@ -9,8 +9,7 @@ import { getAddress, generateSignature } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress, chainId, environment } =
-  getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 // Chain-specific test tokens - only populate for chains where we have known tokens
 const SEPOLIA_CHAIN_ID = "11155111";
@@ -54,7 +53,7 @@ const CHAIN_TOKENS: Record<string, Record<string, any>> = {
 };
 
 // Get tokens for current chain, or empty object if not supported
-const REAL_TOKENS = CHAIN_TOKENS[chainId] || {};
+const REAL_TOKENS = CHAIN_TOKENS[SEPOLIA_CHAIN_ID] || {};
 const SUPPORTED_CHAIN = Object.keys(REAL_TOKENS).length > 0;
 
 // Helper to check if we should skip chain-specific tests
@@ -168,7 +167,6 @@ describeOrSkip("getTokenMetadata Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     console.log("Authenticating with signature ...");
@@ -308,7 +306,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
   if (!SUPPORTED_CHAIN) {
     test("should skip chain-specific tests - no test tokens available", () => {
       console.log(
-        `ℹ️  Skipping chain-specific token tests for chain ID ${chainId} (${environment})`
+        `ℹ️  Skipping chain-specific token tests for chain ID ${SEPOLIA_CHAIN_ID} (Sepolia)`
       );
       console.log(
         "   To add support for this chain, add test tokens to CHAIN_TOKENS in the test file"

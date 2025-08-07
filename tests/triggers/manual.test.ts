@@ -29,26 +29,6 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(45000);
 
-// Lazy-load configuration to handle CI/CD environments gracefully
-async function getTestConfig() {
-  try {
-    return getConfig();
-  } catch (error) {
-    console.warn(
-      "⚠️ Environment validation failed, using mock config for unit tests:",
-      error
-    );
-    // Return mock config for CI/CD or when real credentials aren't available
-    return {
-      avsEndpoint: "mock-endpoint:2206",
-      walletPrivateKey:
-        "0x0000000000000000000000000000000000000000000000000000000000000001",
-      factoryAddress: "0x0000000000000000000000000000000000000000",
-      chainEndpoint: "https://mock-chain-endpoint.com",
-    };
-  }
-}
-
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 8000;
 
@@ -112,14 +92,12 @@ describe("ManualTrigger Tests", () => {
 
   beforeAll(async () => {
     // Load real configuration for integration tests
-    const { avsEndpoint, walletPrivateKey, factoryAddress } =
-      await getTestConfig();
+    const { avsEndpoint, walletPrivateKey } = getConfig();
 
     coreAddress = await getAddress(walletPrivateKey);
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(coreAddress);
