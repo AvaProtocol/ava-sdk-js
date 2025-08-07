@@ -18,6 +18,7 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
+import { USDC_SEPOLIA_ADDRESS } from "../utils/tokens";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -1361,7 +1362,7 @@ describe("ContractRead Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC on Sepolia
+          contractAddress: USDC_SEPOLIA_ADDRESS, // USDC on Sepolia
           contractAbi: [
             {
               constant: true,

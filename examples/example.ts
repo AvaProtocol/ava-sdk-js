@@ -11,6 +11,7 @@
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
+import { USDC_SEPOLIA_ADDRESS } from "../tests/utils/tokens";
 
 import _ from "lodash";
 import { ethers } from "ethers";
@@ -664,7 +665,7 @@ async function scheduleContractWrite(
   // Default values based on the workflow data you provided
   const defaultRecipient = recipientAddress || "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
   const defaultAmount = amount || "1000000"; // 1 USDC (6 decimals)
-  const usdcAddress = "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"; // Sepolia USDC
+  const usdcAddress = USDC_SEPOLIA_ADDRESS; // Sepolia USDC
 
   const triggerId = UlidMonotonic.generate().toCanonical();
   const contractWriteNodeId = UlidMonotonic.generate().toCanonical();

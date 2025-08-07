@@ -45,6 +45,7 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
+import { USDC_SEPOLIA_ADDRESS } from "../utils/tokens";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -381,7 +382,7 @@ describe("LoopNode Tests", () => {
         inputVariables: {
           contractAddresses: [
             "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC contract (has name/symbol)
+            USDC_SEPOLIA_ADDRESS, // USDC contract (has name/symbol)
           ],
         },
       };
@@ -698,7 +699,7 @@ describe("LoopNode Tests", () => {
           lang: CustomCodeLang.JavaScript,
           source: `
             return [
-              "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+              USDC_SEPOLIA_ADDRESS,
               "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
             ];
           `,
@@ -1098,7 +1099,7 @@ describe("LoopNode Tests", () => {
           lang: CustomCodeLang.JavaScript,
           source: `
             return [
-              "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+              USDC_SEPOLIA_ADDRESS,
               "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
             ];
           `,
@@ -1998,8 +1999,8 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           contractAddresses: [
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // Real USDC contract on Sepolia
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // Same contract for consistency
+            USDC_SEPOLIA_ADDRESS, // Real USDC contract on Sepolia
+            USDC_SEPOLIA_ADDRESS, // Same contract for consistency
           ],
         },
       };
@@ -2102,7 +2103,7 @@ describe("LoopNode Tests", () => {
         inputVariables: {
           contractAddresses: [
             "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC contract (has name/symbol)
+            USDC_SEPOLIA_ADDRESS, // USDC contract (has name/symbol)
           ],
         },
       };

@@ -15,6 +15,7 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
+import { SEPOLIA_TOKEN_CONFIGS } from "../utils/tokens";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -52,20 +53,7 @@ const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 8000;
 
 // Sepolia ERC20 Test Token Configurations
-const SEPOLIA_TOKEN_CONFIGS = {
-  USDC: {
-    address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-    name: "USD Coin",
-    symbol: "USDC",
-    decimals: 6,
-  },
-  LINK: {
-    address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
-    name: "ChainLink Token",
-    symbol: "LINK",
-    decimals: 18,
-  },
-};
+// (Imported from shared location at top of file)
 
 // Standard ERC20 ABI for testing (approve and transfer functions)
 const ERC20_ABI: any[] = [
@@ -1251,12 +1239,8 @@ describe("ContractWrite Node Tests", () => {
       console.log("EOA Address:", eoaAddress);
       console.log("Using default smart wallet (salt: 0)");
       
-      // Check if this is the expected smart wallet with USDC balance
-      if (wallet.address.toLowerCase() === "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49".toLowerCase()) {
-        console.log("✅ Using the smart wallet with 40 USDC balance!");
-      } else {
-        console.log("⚠️  This smart wallet may not have USDC balance. Expected: 0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49");
-      }
+      // Note: Smart wallet address is dynamically generated based on EOA + salt + factory
+      // No need for hardcoded address comparison - test works with any generated address
 
       const contractWriteNode = NodeFactory.create({
         id: getNextId(),
