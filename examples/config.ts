@@ -38,7 +38,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
     ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
-    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
+    // FACTORY_ADDRESS: "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7", // Let aggregator use default
   },
 
   sepolia: {
@@ -47,7 +47,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
     ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
-    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
+    // FACTORY_ADDRESS: "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7", // Let aggregator use default
   },
 
   "base-sepolia": {
@@ -56,7 +56,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
     ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
-    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
+    // FACTORY_ADDRESS: "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7", // Let aggregator use default
   },
 
   base: {
@@ -65,7 +65,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
     ORACLE_PRICE_CONTRACT: "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
-    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
+    // FACTORY_ADDRESS: "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7", // Let aggregator use default
   },
 
   ethereum: {
@@ -74,7 +74,7 @@ export const config = {
     TEST_TRANSFER_TO: "0xa5ABB97A2540E4A4756E33f93fB2D7987668396a",
     ORACLE_PRICE_CONTRACT: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
     RPC_PROVIDER: "https://mainnet.gateway.tenderly.co",
-    FACTORY_ADDRESS: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
+    // FACTORY_ADDRESS: "0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7", // Let aggregator use default
   },
 
   // TODO: Minato no longer works so we comment out in this, will add it back it eventually
