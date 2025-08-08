@@ -1910,6 +1910,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should force sequential mode for ContractWrite operations", async () => {
+      const wallet = await client.getWallet({ salt: "0" });
       const params = {
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -1950,6 +1951,10 @@ describe("LoopNode Tests", () => {
             "0x1111111111111111111111111111111111111111",
             "0x2222222222222222222222222222222222222222",
           ],
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
         },
       };
 
