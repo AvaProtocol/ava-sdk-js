@@ -7,6 +7,7 @@ import {
   generateAuthPayloadWithApiKey,
   compareResults,
   SaltGlobal,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 
 import { createFromTemplate } from "../utils/templates";
@@ -15,7 +16,7 @@ import { getConfig } from "../utils/envalid";
 // Get environment variables from envalid config
 const { avsApiKey, avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.Auth * 100; // Salt index 0 - 99
+let saltIndex = SaltGlobal.Auth * SALT_BUCKET_SIZE;
 
 describe("Authentication Tests", () => {
   let client: Client;

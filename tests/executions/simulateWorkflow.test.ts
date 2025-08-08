@@ -6,6 +6,8 @@ import {
   generateSignature,
   TIMEOUT_DURATION,
   getNextId,
+  SaltGlobal,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
@@ -16,6 +18,7 @@ const { avsEndpoint, walletPrivateKey } = getConfig();
 describe("SimulateWorkflow", () => {
   let eoaAddress: string;
   let client: Client;
+  let saltIndex = SaltGlobal.SimulateWorkflow * SALT_BUCKET_SIZE;
 
   beforeAll(async () => {
     eoaAddress = await getAddress(walletPrivateKey);
@@ -66,11 +69,17 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        inputVariables: {},
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
       });
 
       expect(result).toBeDefined();
@@ -120,6 +129,7 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
@@ -127,6 +137,10 @@ describe("SimulateWorkflow", () => {
         inputVariables: {
           name: "World",
           value: 42,
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
         },
       });
 
@@ -185,11 +199,17 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        inputVariables: {},
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
       });
 
       expect(result).toBeDefined();
@@ -321,11 +341,17 @@ describe("SimulateWorkflow", () => {
       ];
 
       try {
+        const wallet = await client.getWallet({ salt: String(saltIndex++) });
         const result = await client.simulateWorkflow({
           trigger,
           nodes,
           edges,
-          inputVariables: {},
+          inputVariables: {
+            workflowContext: {
+              eoaAddress,
+              runner: wallet.address,
+            },
+          },
         });
 
         // If we get here, the simulation succeeded despite the error
@@ -429,11 +455,17 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        inputVariables: {},
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
       });
 
       expect(result).toBeDefined();
@@ -521,11 +553,17 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        inputVariables: {},
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
       });
 
       expect(result).toBeDefined();

@@ -15,6 +15,7 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -24,7 +25,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 9000;
+let saltIndex = SaltGlobal.GraphQLQuery * SALT_BUCKET_SIZE;
 
 /**
  * ⚠️  IMPORTANT: This test file is EXCLUSIVELY for testing gateway.thegraph.com GraphQL API
@@ -343,9 +344,15 @@ describe("GraphQL Query Node Tests", () => {
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "🚀 ~ simulateWorkflow with GraphQL query ~ result:",
@@ -423,9 +430,15 @@ describe("GraphQL Query Node Tests", () => {
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "🚀 ~ simulateWorkflow with GraphQL variables ~ result:",
@@ -679,9 +692,15 @@ describe("GraphQL Query Node Tests", () => {
         });
 
         const workflowProps = createFromTemplate(wallet.address, [graphqlNode]);
-        const simulation = await client.simulateWorkflow(
-          client.createWorkflow(workflowProps)
-        );
+        const simulation = await client.simulateWorkflow({
+          ...client.createWorkflow(workflowProps).toJson(),
+          inputVariables: {
+            workflowContext: {
+              eoaAddress,
+              runner: wallet.address,
+            },
+          },
+        });
 
         expect(simulation.success).toBe(false); // Network error expected for mock endpoint
         const simGraphqlStep = simulation.steps.find(

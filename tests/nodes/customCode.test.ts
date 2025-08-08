@@ -11,6 +11,7 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -20,7 +21,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 5000;
+let saltIndex = SaltGlobal.CustomCode * SALT_BUCKET_SIZE;
 
 describe("CustomCode Node Tests", () => {
   let client: Client;
@@ -490,9 +491,15 @@ describe("CustomCode Node Tests", () => {
 
       
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
 
 
@@ -567,9 +574,15 @@ describe("CustomCode Node Tests", () => {
         "🚀 Testing simulateWorkflow with complex data processing..."
       );
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "Complex simulation result:",
@@ -781,9 +794,15 @@ describe("CustomCode Node Tests", () => {
         dataNode,
         customCodeNode,
       ]);
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
@@ -1003,9 +1022,15 @@ describe("CustomCode Node Tests", () => {
 
       
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "Empty data simulation result:",
@@ -1230,9 +1255,15 @@ describe("CustomCode Node Tests", () => {
 
       
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "Manual trigger reference result:",

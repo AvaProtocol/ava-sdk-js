@@ -12,6 +12,9 @@ const config = getConfig();
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 15000; // 15 seconds
 
+// Salt bucket size per suite to ensure total salts < 2000
+export const SALT_BUCKET_SIZE = 20;
+
 // Test addresses
 export const TEST_SMART_WALLET_ADDRESS =
   "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"; // User's test smart wallet with ETH and USDC on Sepolia
@@ -36,6 +39,23 @@ export const SaltGlobal = {
   GetExecution: 13,
   RestAPITest: 18,
   Pagination: 14,
+  SimulateWorkflow: 15,
+  // New suite-specific buckets
+  BranchNode: 19,
+  CronTrigger: 20,
+  BlockTrigger: 21,
+  GraphQLQuery: 22,
+  RestAPI: 23,
+  FilterNode: 24,
+  CustomCode: 25,
+  ContractRead: 26,
+  ContractWrite: 27,
+  StepInput: 28,
+  TelegramTemplate: 29,
+  EventTrigger: 30,
+  ManualTrigger: 31,
+  LoopNode: 32,
+  ExportedWorkflow: 33,
 };
 
 // Get wallet address from private key

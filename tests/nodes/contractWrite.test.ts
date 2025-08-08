@@ -12,6 +12,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   TEST_SMART_WALLET_ADDRESS,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
@@ -50,7 +51,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 8000;
+let saltIndex = SaltGlobal.ContractWrite * SALT_BUCKET_SIZE;
 
 // Sepolia ERC20 Test Token Configurations
 // (Imported from shared location at top of file)

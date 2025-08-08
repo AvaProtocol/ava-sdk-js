@@ -8,6 +8,7 @@ import {
   TIMEOUT_DURATION,
   SaltGlobal,
   removeCreatedWorkflows,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -17,7 +18,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 9000;
+let saltIndex = SaltGlobal.CronTrigger * SALT_BUCKET_SIZE;
 
 describe("CronTrigger Tests", () => {
   let client: Client;
@@ -447,9 +448,15 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress: coreAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "simulateWorkflow response:",
@@ -484,9 +491,15 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress: coreAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       expect(simulation.success).toBe(true);
       const triggerStep = simulation.steps.find(
@@ -574,9 +587,15 @@ describe("CronTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = cronTrigger;
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress: coreAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === cronTrigger.id

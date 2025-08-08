@@ -15,6 +15,7 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
@@ -25,7 +26,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 6000;
+let saltIndex = SaltGlobal.ContractRead * SALT_BUCKET_SIZE;
 
 // Sepolia Chainlink ETH/USD Price Feed Oracle
 const SEPOLIA_ORACLE_CONFIG = {
