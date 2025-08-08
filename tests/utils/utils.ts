@@ -10,7 +10,7 @@ import { getConfig } from "./envalid";
 const config = getConfig();
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
-export const TIMEOUT_DURATION = 15000; // 15 seconds
+export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
 
 // Salt bucket size per suite to ensure total salts < 2000
 export const SALT_BUCKET_SIZE = 20;

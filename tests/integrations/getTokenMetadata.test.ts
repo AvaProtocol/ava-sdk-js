@@ -323,7 +323,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
   });
 
   testOrSkip("should handle concurrent requests properly", async () => {
-    const addresses = Object.values(REAL_TOKENS)
+    const addresses = Object.values(TOKENS)
       .map((token) => token.address)
       .filter(Boolean);
 
@@ -418,14 +418,14 @@ describeOrSkip("getTokenMetadata Tests", () => {
   testOrSkip(
     "should return consistent data across multiple calls",
     async () => {
-      if (!REAL_TOKENS.USDC) {
+      if (!TOKENS.USDC) {
         console.log(
           "Skipping consistency test - no USDC token defined for this chain"
         );
         return;
       }
 
-      const address = REAL_TOKENS.USDC.address;
+      const address = TOKENS.USDC.address;
 
       // Make multiple calls to the same token
       const responses = await Promise.all([

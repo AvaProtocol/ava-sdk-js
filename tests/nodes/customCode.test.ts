@@ -25,6 +25,7 @@ let saltIndex = SaltGlobal.CustomCode * SALT_BUCKET_SIZE;
 
 describe("CustomCode Node Tests", () => {
   let client: Client;
+  let eoaAddress: string;
 
   // Define all node props at the beginning for consistency
   const returnNullProps = {
@@ -115,13 +116,13 @@ describe("CustomCode Node Tests", () => {
   };
 
   beforeAll(async () => {
-    const address = await getAddress(walletPrivateKey);
+    eoaAddress = await getAddress(walletPrivateKey);
 
     client = new Client({
       endpoint: avsEndpoint,
     });
 
-    const { message } = await client.getSignatureFormat(address);
+    const { message } = await client.getSignatureFormat(eoaAddress);
     const signature = await generateSignature(message, walletPrivateKey);
 
     const res = await client.authWithSignature({
