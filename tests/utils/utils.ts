@@ -15,9 +15,6 @@ export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
 // Salt bucket size per suite to ensure total salts < 2000
 export const SALT_BUCKET_SIZE = 20;
 
-// Salt bucket size per suite to ensure total salts < 2000
-export const SALT_BUCKET_SIZE = 20;
-
 // Test addresses
 export const TEST_SMART_WALLET_ADDRESS =
   "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"; // User's test smart wallet with ETH and USDC on Sepolia
