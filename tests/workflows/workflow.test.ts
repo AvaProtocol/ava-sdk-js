@@ -13,7 +13,7 @@ import { getConfig } from "../utils/envalid";
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetWorkflow * 1000; // Salt index 7,000 - 7,999
+let saltIndex = SaltGlobal.GetWorkflow * 100; // Salt index 700 - 799
 
 describe("Workflow Management Tests", () => {
   let client: Client;

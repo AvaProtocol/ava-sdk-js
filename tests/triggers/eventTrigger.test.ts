@@ -10,28 +10,9 @@ import {
   removeCreatedWorkflows,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
+import { getConfig, isSepolia } from "../utils/envalid";
 
 jest.setTimeout(45000);
-
-// Lazy-load configuration to handle CI/CD environments gracefully
-async function getTestConfig() {
-  try {
-    return getConfig();
-  } catch (error) {
-    console.warn(
-      "⚠️ Environment validation failed, using mock config for unit tests:",
-      error
-    );
-    // Return mock config for CI/CD or when real credentials aren't available
-    return {
-      avsEndpoint: "mock-endpoint:2206",
-      walletPrivateKey:
-        "0x0000000000000000000000000000000000000000000000000000000000000001",
-      chainEndpoint: "https://mock-chain-endpoint.com",
-    };
-  }
-}
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 7000;
@@ -79,16 +60,6 @@ const CHAINLINK_AGGREGATOR_ABI = [
     type: "event",
   },
 ];
-
-// Helper function to check if we're on Sepolia
-async function isSepoliaChain(): Promise<boolean> {
-  try {
-    const config = await getTestConfig();
-    return config.chainEndpoint?.toLowerCase().includes("sepolia") || false;
-  } catch {
-    return false;
-  }
-}
 
 // Helper function to pad addresses to 32 bytes for topics
 function padAddressForTopic(address: string): string {
@@ -225,9 +196,7 @@ describe("EventTrigger Tests", () => {
     client.setAuthKey(res.authKey);
 
     // Check if we're on Sepolia chain
-    const isSepoliaTest = await isSepoliaChain();
-
-    if (!isSepoliaTest) {
+    if (!isSepolia) {
       console.log(
         "⚠️  Skipping Sepolia-specific EventTrigger tests - not on Sepolia chain"
       );
@@ -395,8 +364,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger for Transfer events from core address", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -443,8 +411,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger for Transfer events to core address", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -495,8 +462,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple Transfer event queries", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -531,8 +497,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with Chainlink price condition", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -571,8 +536,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple price range conditions", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -635,8 +599,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with Chainlink price condition with decimal formatting", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1061,8 +1024,7 @@ describe("EventTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow without contractAbi or methodCalls", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1107,8 +1069,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with single event query", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1149,8 +1110,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1265,8 +1225,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1396,8 +1355,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across trigger methods", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1521,10 +1479,7 @@ describe("EventTrigger Tests", () => {
         // Direct response should have blockchain log data
         expect(directData).toBeDefined();
         expect(directData.tokenContract).toBeDefined(); // Contract address in log format (changed from 'address' to 'tokenContract')
-        // chainId might not be available in directData, so we'll check if it exists
-        if (directData.chainId !== undefined) {
-          expect(directData.chainId).toBeDefined();
-        }
+        expect(directData.chainId).toBeDefined();
         expect(directData.topics).toBeDefined(); // Event signature and indexed params
         expect(directData.blockNumber).toBeDefined();
 
@@ -1696,8 +1651,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address array", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1736,8 +1690,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle complex topic filtering", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1789,8 +1742,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle no matching events (empty data) vs query errors", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1834,8 +1786,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address arrays consistently", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1873,8 +1824,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty topics array consistently", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1914,8 +1864,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should maintain empty data consistency across execution methods", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1985,8 +1934,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle malformed query configurations gracefully", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }

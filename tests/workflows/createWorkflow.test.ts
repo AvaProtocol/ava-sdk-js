@@ -30,7 +30,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.CreateWorkflow * 1000; // Salt index 11,000 - 11,999
+let saltIndex = SaltGlobal.CreateWorkflow * 100; // Salt index 1100 - 1199
 
 describe("createWorkflow Tests", () => {
   let eoaAddress: string;

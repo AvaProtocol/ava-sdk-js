@@ -4,7 +4,6 @@ import {
   ContractWriteNodeProps,
   ContractReadNodeProps,
   ETHTransferNodeProps,
-  RestAPINodeProps,
   CustomCodeNodeProps,
   GraphQLQueryNodeProps,
   BranchNodeProps,
@@ -12,23 +11,8 @@ import {
 } from "@avaprotocol/types";
 import { getNextId } from "./utils";
 import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
-import { ethers } from "ethers";
 import { factoryProxyAbi } from "./abis";
-
-// Lazy-load configuration to handle CI/CD environments gracefully
-async function getTestConfig() {
-  try {
-    const { getConfig } = await import("./envalid");
-    return getConfig();
-  } catch (error) {
-    console.warn(
-      "⚠️ Environment validation failed in templates, using mock config:",
-      error
-    );
-    // Return mock config for CI/CD or when real credentials aren't available
-    return {};
-  }
-}
+import { getConfig } from "./envalid";
 
 export const defaultTriggerId = getNextId();
 
@@ -38,7 +22,7 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
   type: NodeType.ETHTransfer,
   data: {
     destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
-    amount: "1000000000000000", // 0.001 ETH in wei (decimal string) - reduced from 1 ETH
+    amount: "100000000000000", // 0.0001 ETH in wei (decimal string)
   },
 };
 
@@ -61,7 +45,7 @@ export const createContractWriteNodeProps = async (
     name: "create account",
     type: NodeType.ContractWrite,
     data: {
-      contractAddress: "0x0000000000000000000000000000000000000000", // Will be replaced by aggregator's default factory
+      contractAddress: getConfig().factoryAddress,
       contractAbi: factoryProxyAbi,
       methodCalls: [
         {
@@ -82,7 +66,7 @@ export const createContractReadNodeProps = async (
     name: "get account address",
     type: NodeType.ContractRead,
     data: {
-      contractAddress: "0x0000000000000000000000000000000000000000", // Will be replaced by aggregator's default factory
+      contractAddress: getConfig().factoryAddress,
       contractAbi: factoryProxyAbi,
       methodCalls: [
         {
@@ -106,7 +90,9 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
           value
         }
       }`,
-    variablesMap: [["test", "true"]],
+    variables: {
+      test: "true",
+    },
   },
 };
 

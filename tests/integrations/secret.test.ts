@@ -33,7 +33,7 @@ const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 const createdSecretMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.Secrets * 1000; // Salt index 9,000 - 9,999
+let saltIndex = SaltGlobal.Secrets * 100; // Salt index 900 - 999
 const privateKey2 =
   "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293";
 

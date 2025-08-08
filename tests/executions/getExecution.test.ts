@@ -17,7 +17,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetExecution * 1000; // Salt index 13000 - 13999
+let saltIndex = SaltGlobal.GetExecution * 100; // Salt index 1300 - 1399
 
 describe("getExecution Tests", () => {
   let ownerAddress: string;
@@ -75,8 +75,7 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
-      // The execution might fail due to ETH transfer issues, so we'll accept both success and failure
-      expect([true, false]).toContain(execution.success);
+      expect(execution.success).toBe(true);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -252,8 +251,7 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
-      // The execution might fail due to ETH transfer issues, so we'll accept both success and failure
-      expect([true, false]).toContain(execution.success);
+      expect(execution.success).toBe(true);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node

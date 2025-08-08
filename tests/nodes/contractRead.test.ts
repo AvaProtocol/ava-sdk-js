@@ -17,8 +17,8 @@ import {
   getBlockNumber,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
-import { USDC_SEPOLIA_ADDRESS } from "../utils/tokens";
+import { getConfig, isSepolia } from "../utils/envalid";
+const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -85,20 +85,8 @@ const SEPOLIA_ORACLE_CONFIG = {
   ],
 };
 
-// Helper function to check if we're on Sepolia
-async function isSepoliaChain(): Promise<boolean> {
-  try {
-    // This is a simple check - in a real scenario you might want to query the chain ID
-    // For now, we'll assume if chainEndpoint contains 'sepolia' we're on Sepolia
-    return false; // Removed chainEndpoint as it's no longer destructured
-  } catch {
-    return false;
-  }
-}
-
 describe("ContractRead Node Tests", () => {
   let client: Client;
-  let isSepoliaTest: boolean;
 
   beforeAll(async () => {
     const address = await getAddress(walletPrivateKey);
@@ -118,9 +106,7 @@ describe("ContractRead Node Tests", () => {
     client.setAuthKey(res.authKey);
 
     // Check if we're on Sepolia chain
-    isSepoliaTest = await isSepoliaChain();
-
-    if (!isSepoliaTest) {
+    if (!isSepolia) {
       console.log(
         "⚠️  Skipping Sepolia-specific ContractRead tests - not on Sepolia chain"
       );
@@ -131,7 +117,7 @@ describe("ContractRead Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should read latest round data from Chainlink oracle", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -208,7 +194,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should read multiple methods from contract", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -321,7 +307,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should read oracle description method", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -387,7 +373,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting using applyToFields", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -473,7 +459,7 @@ describe("ContractRead Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with contract read", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -548,7 +534,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should simulate workflow with decimal formatting using applyToFields", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -629,7 +615,7 @@ describe("ContractRead Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract read", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -739,7 +725,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with applyToFields decimal formatting", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -882,7 +868,7 @@ describe("ContractRead Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1229,7 +1215,7 @@ describe("ContractRead Node Tests", () => {
 
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1351,7 +1337,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1360,7 +1346,7 @@ describe("ContractRead Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: USDC_SEPOLIA_ADDRESS, // USDC on Sepolia
+          contractAddress: tokens?.USDC?.address, // Due to the isSepolia check, tokens.USDC should be defined
           contractAbi: [
             {
               constant: true,
@@ -1461,7 +1447,7 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }

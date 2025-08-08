@@ -13,7 +13,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 
-let saltIndex = SaltGlobal.GetWallet * 1000; // Salt index 5,000 - 5,999
+let saltIndex = SaltGlobal.GetWallet * 100; // Salt index 500 - 599
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();

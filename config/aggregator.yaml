@@ -31,6 +31,7 @@ smart_wallet:
 
   # dummy key, cannot actually run transaction
   controller_private_key: e0502ddd5a0d05ec7b5c22614a01c8ce783810edaa98e44cc82f5fa5a819aaa9
+  max_wallets_per_owner: 2000
 
 macros:
   secrets:

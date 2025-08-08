@@ -15,7 +15,7 @@ import { getConfig } from "../utils/envalid";
 // Get environment variables from envalid config
 const { avsApiKey, avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.Auth * 1000; // Salt index 0 - 999
+let saltIndex = SaltGlobal.Auth * 100; // Salt index 0 - 99
 
 describe("Authentication Tests", () => {
   let client: Client;

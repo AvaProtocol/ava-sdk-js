@@ -45,7 +45,9 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-import { USDC_SEPOLIA_ADDRESS } from "../utils/tokens";
+const { tokens } = getConfig();
+
+const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -1489,11 +1491,11 @@ describe("LoopNode Tests", () => {
           data: {
             data: [
               { key: "key", amount: 1 },
-              { key: "key2", amount: 2000 }
+              { key: "key2", amount: 2000 },
             ],
             headers: {},
-            pathParams: {}
-          }
+            pathParams: {},
+          },
         });
 
         // Create loop node with parallel execution (from client workflow)
@@ -1510,10 +1512,10 @@ describe("LoopNode Tests", () => {
               type: "customCode",
               config: {
                 lang: CustomCodeLang.JavaScript,
-                source: "return value;"
-              }
-            }
-          }
+                source: "return value;",
+              },
+            },
+          },
         });
 
         // Test runNodeWithInputs
@@ -1523,12 +1525,15 @@ describe("LoopNode Tests", () => {
           inputVariables: {
             [manualTrigger.name]: [
               { key: "key", amount: 1 },
-              { key: "key2", amount: 2000 }
-            ]
-          }
+              { key: "key2", amount: 2000 },
+            ],
+          },
         });
 
-        console.log("🔍 Direct Response:", JSON.stringify(directResponse, null, 2));
+        console.log(
+          "🔍 Direct Response:",
+          JSON.stringify(directResponse, null, 2)
+        );
 
         // Test simulateWorkflow
         const workflowProps: WorkflowProps = {
@@ -1550,7 +1555,10 @@ describe("LoopNode Tests", () => {
           client.createWorkflow(workflowProps)
         );
 
-        console.log("🔍 Simulated Workflow:", JSON.stringify(simulatedWorkflow, null, 2));
+        console.log(
+          "🔍 Simulated Workflow:",
+          JSON.stringify(simulatedWorkflow, null, 2)
+        );
 
         // TODO: Add deployWorkflow test once triggerWorkflow API issue is resolved
 
@@ -1562,7 +1570,9 @@ describe("LoopNode Tests", () => {
         expect(Array.isArray(directResponse.data)).toBe(true);
         expect((directResponse.data as any[]).length).toBe(2);
 
-        const simulatedLoopStep = simulatedWorkflow.steps.find((step) => step.id === loopNode.id);
+        const simulatedLoopStep = simulatedWorkflow.steps.find(
+          (step) => step.id === loopNode.id
+        );
         expect(simulatedLoopStep).toBeDefined();
         expect(simulatedLoopStep!.success).toBe(true);
         expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
@@ -1586,7 +1596,6 @@ describe("LoopNode Tests", () => {
         expect(directSecondItem.amount).toBe(2000);
         expect(simulatedSecondItem.key).toBe("key2");
         expect(simulatedSecondItem.amount).toBe(2000);
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

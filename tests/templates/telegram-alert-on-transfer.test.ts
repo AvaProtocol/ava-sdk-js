@@ -1,3 +1,4 @@
+import util from "util";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
@@ -11,8 +12,9 @@ import {
   TIMEOUT_DURATION,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-import { USDC_SEPOLIA_ADDRESS } from "../utils/tokens";
-import util from "util";
+const { tokens } = getConfig();
+
+const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);

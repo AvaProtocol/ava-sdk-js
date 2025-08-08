@@ -18,7 +18,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetExecutions * 1000; // Salt index 4000 - 4999
+let saltIndex = SaltGlobal.GetExecutions * 100; // Salt index 400 - 499
 
 describe("getExecutions Tests", () => {
   let ownerAddress: string;

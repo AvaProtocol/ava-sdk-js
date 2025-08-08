@@ -18,7 +18,7 @@ import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
-let saltIndex = SaltGlobal.TriggerWorkflow * 1000; // Salt index 10,000 - 10,999
+let saltIndex = SaltGlobal.TriggerWorkflow * 100; // Salt index 1000 - 1099
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
@@ -82,7 +82,7 @@ describe("triggerWorkflow Tests", () => {
       });
 
       // Wait a bit for the execution to complete
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // The list should now contain one execution
       const executions2 = await client.getExecutions([workflowId]);
@@ -138,7 +138,7 @@ describe("triggerWorkflow Tests", () => {
     });
 
     // Wait a bit for the execution to complete
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // The list should now contain one execution, the id from manual trigger should matched
     const executions2 = await client.getExecutions([workflowId]);
@@ -220,12 +220,12 @@ describe("triggerWorkflow Tests", () => {
                 values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
                   null, // Any FROM address
-                  wallet.address.toLowerCase() // TO this specific wallet
-                ]
-              }
+                  wallet.address.toLowerCase(), // TO this specific wallet
+                ],
+              },
             ],
             maxEventsPerBlock: 100,
-          }
+          },
         ],
       },
     });
@@ -314,8 +314,8 @@ describe("triggerWorkflow Tests", () => {
       workflowId,
       result.executionId
     );
-    // The execution might fail due to ETH transfer issues, so we'll accept both completed and failed
-    expect([ExecutionStatus.Completed, ExecutionStatus.Failed]).toContain(executionStatus);
+
+    expect(executionStatus).toEqual(ExecutionStatus.Completed);
 
     await client.deleteWorkflow(workflowId);
   });
@@ -548,12 +548,12 @@ describe("triggerWorkflow Tests", () => {
                 values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
                   null, // Any FROM address
-                  wallet.address.toLowerCase() // TO this specific wallet
-                ]
-              }
+                  wallet.address.toLowerCase(), // TO this specific wallet
+                ],
+              },
             ],
             maxEventsPerBlock: 100,
-          }
+          },
         ],
       },
     });

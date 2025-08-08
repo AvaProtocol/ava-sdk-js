@@ -14,8 +14,9 @@ import {
   TEST_SMART_WALLET_ADDRESS,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
-import { SEPOLIA_TOKEN_CONFIGS } from "../utils/tokens";
+import { getConfig, isSepolia } from "../utils/envalid";
+const {  tokens } = getConfig();
+const SEPOLIA_TOKEN_CONFIGS = tokens;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -98,21 +99,8 @@ const ERC20_ABI: any[] = [
   },
 ];
 
-// Helper function to check if we're on Sepolia
-async function isSepoliaChain(): Promise<boolean> {
-  try {
-    // The original code had chainEndpoint here, but it's not destructured.
-    // Assuming it's not needed or will be added back if needed.
-    // For now, we'll return false as a placeholder.
-    return false;
-  } catch {
-    return false;
-  }
-}
-
 describe("ContractWrite Node Tests", () => {
   let client: Client;
-  let isSepoliaTest: boolean;
   let eoaAddress: string;
 
   beforeAll(async () => {
@@ -132,10 +120,7 @@ describe("ContractWrite Node Tests", () => {
 
     client.setAuthKey(res.authKey);
 
-    // Check if we're on Sepolia chain
-    isSepoliaTest = await isSepoliaChain();
-
-    if (!isSepoliaTest) {
+    if (!isSepolia()) {
       console.log(
         "⚠️  Skipping Sepolia-specific ContractWrite tests - not on Sepolia chain"
       );
@@ -146,7 +131,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should handle ERC20 approve transaction", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia()) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -244,7 +229,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("should handle multiple method calls", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia()) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -263,7 +248,7 @@ describe("ContractWrite Node Tests", () => {
               methodParams: [spender1, "50"],
             },
             {
-              methodName: "approve", 
+              methodName: "approve",
               methodParams: [spender2, "75"],
             },
           ],
@@ -302,7 +287,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("should handle invalid contract address gracefully", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -315,7 +300,10 @@ describe("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "approve",
-              methodParams: ["0x0000000000000000000000000000000000000001", "1000000"],
+              methodParams: [
+                "0x0000000000000000000000000000000000000001",
+                "1000000",
+              ],
             },
           ],
         },
@@ -350,7 +338,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("should handle malformed call data gracefully", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -400,7 +388,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with contract write node", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -419,7 +407,7 @@ describe("ContractWrite Node Tests", () => {
               methodName: "approve",
               methodParams: [
                 wallet.address, // Use wallet address as spender (self-approval is always valid)
-                "1000000" // 1 USDC (6 decimals)
+                "1000000", // 1 USDC (6 decimals)
               ],
             },
           ],
@@ -464,7 +452,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("should simulate workflow with approve and transfer calls", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -524,7 +512,7 @@ describe("ContractWrite Node Tests", () => {
       // Verify structure has both data and metadata fields
       expect(output).toHaveProperty("data");
       expect(output).toHaveProperty("metadata");
-      
+
       // Verify flattened structure by method name in data field
       expect(output.data).toHaveProperty("approve");
       expect(output.data).toHaveProperty("transfer");
@@ -540,7 +528,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract write", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -620,7 +608,7 @@ describe("ContractWrite Node Tests", () => {
         // Verify structure has both data and metadata fields
         expect(output).toHaveProperty("data");
         expect(output).toHaveProperty("metadata");
-        
+
         // Verify flattened structure by method name - this test only has approve
         expect(output.data).toHaveProperty("approve");
         expect(typeof output.data.approve).toBe("object");
@@ -643,7 +631,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all methods", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -847,7 +835,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle invalid method signature gracefully", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -981,7 +969,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should include answerRaw field when using applyToFields with runNodeWithInputs", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1046,7 +1034,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1103,7 +1091,7 @@ describe("ContractWrite Node Tests", () => {
       // Verify structure has both data and metadata fields
       expect(output).toHaveProperty("data");
       expect(output).toHaveProperty("metadata");
-      
+
       // Verify flattened structure by method name - this test only has approve
       expect(output.data).toHaveProperty("approve");
       expect(typeof output.data.approve).toBe("object");
@@ -1120,7 +1108,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with applyToFields", async () => {
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1202,7 +1190,7 @@ describe("ContractWrite Node Tests", () => {
         // Verify structure has both data and metadata fields
         expect(output).toHaveProperty("data");
         expect(output).toHaveProperty("metadata");
-        
+
         // Verify flattened structure by method name - this test only has approve
         expect(output.data).toHaveProperty("approve");
         expect(typeof output.data.approve).toBe("object");
@@ -1226,20 +1214,20 @@ describe("ContractWrite Node Tests", () => {
   });
 
   describe("Real UserOp Transaction Debug Tests", () => {
-    test("should test real UserOp transactions with manual trigger and debug logging", async () => {
-      if (!isSepoliaTest) {
+    test("should test real UserOp with salt:0 (funded wallet)", async () => {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
 
-      // Get the default smart wallet for the test EOA (salt: 0)
+      // Use the default smart wallet (salt: 0) that is pre-funded
       const wallet = await client.getWallet({ salt: "0" });
-      
+
       console.log("🚀 Testing Real UserOp Transactions");
       console.log("Smart Wallet Address:", wallet.address);
       console.log("EOA Address:", eoaAddress);
       console.log("Using default smart wallet (salt: 0)");
-      
+
       // Note: Smart wallet address is dynamically generated based on EOA + salt + factory
       // No need for hardcoded address comparison - test works with any generated address
 
@@ -1255,7 +1243,7 @@ describe("ContractWrite Node Tests", () => {
               methodName: "transfer",
               methodParams: [
                 "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // Test recipient (EOA)
-                "1000000" // 1.0 USDC (6 decimals: 1000000 = 1.0 USDC) - should work with 10 USDC balance
+                "1000000", // 1.0 USDC (6 decimals: 1000000 = 1.0 USDC) - should work with 10 USDC balance
               ],
             },
           ],
@@ -1268,11 +1256,13 @@ describe("ContractWrite Node Tests", () => {
         name: "manualTrigger",
         type: TriggerType.Manual,
         data: {
-          note: "Debug test for real UserOp transactions"
+          note: "Debug test for real UserOp transactions",
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractWriteNode,
+      ]);
       workflowProps.trigger = manualTrigger;
       workflowProps.name = "Real UserOp Debug Test";
 
@@ -1292,12 +1282,12 @@ describe("ContractWrite Node Tests", () => {
 
         // Trigger the workflow manually
         console.log("🚀 Triggering workflow manually...");
-        
+
         await client.triggerWorkflow({
           id: workflowId,
           triggerData: {
             type: TriggerType.Manual,
-            note: "Manual trigger for debug test"
+            note: "Manual trigger for debug test",
           },
           isBlocking: true,
         });
@@ -1335,7 +1325,11 @@ describe("ContractWrite Node Tests", () => {
         expect(output).toBeDefined();
         expect(output).toHaveProperty("metadata");
 
-        if (output.metadata && Array.isArray(output.metadata) && output.metadata.length > 0) {
+        if (
+          output.metadata &&
+          Array.isArray(output.metadata) &&
+          output.metadata.length > 0
+        ) {
           const transferResult = output.metadata[0];
           console.log(
             "🔍 Transfer Result Analysis:",
@@ -1354,18 +1348,27 @@ describe("ContractWrite Node Tests", () => {
             console.log("  Status:", receipt.status);
 
             // Check if this looks like a real transaction or simulation
-            const isSimulated = (
-              receipt.blockNumber === '0x1' ||
-              receipt.blockHash === '0x0000000000000000000000000000000000000000000000000000000000000001' ||
-              receipt.transactionHash?.startsWith('0x000000000000000000000000000000000000000000000000')
+            const isSimulated =
+              receipt.blockNumber === "0x1" ||
+              receipt.blockHash ===
+                "0x0000000000000000000000000000000000000000000000000000000000000001" ||
+              receipt.transactionHash?.startsWith(
+                "0x000000000000000000000000000000000000000000000000"
+              );
+
+            console.log(
+              "🎯 Transaction Type:",
+              isSimulated ? "SIMULATED" : "REAL"
             );
 
-            console.log("🎯 Transaction Type:", isSimulated ? "SIMULATED" : "REAL");
-            
             if (isSimulated) {
-              console.log("⚠️  Transaction appears to be simulated - real UserOp not used");
+              console.log(
+                "⚠️  Transaction appears to be simulated - real UserOp not used"
+              );
             } else {
-              console.log("✅ Transaction appears to be real - UserOp successfully used!");
+              console.log(
+                "✅ Transaction appears to be real - UserOp successfully used!"
+              );
             }
           }
         }
@@ -1444,22 +1447,19 @@ describe("ContractWrite Node Tests", () => {
     expect(approveCall.getMethodParamsList()).toEqual([]); // Should be empty array when no parameters
   });
 
-  test("should test real on-chain transaction with simple contract call", async () => {
-    if (!isSepoliaTest) {
+  test("should test real on-chain transaction with simple contract call (paymaster-sponsored, non-zero salt)", async () => {
+    if (!isSepolia) {
       console.log("Skipping test - not on Sepolia chain");
       return;
     }
 
-    // Get the default smart wallet for the test EOA
-    const wallet = await client.getWallet({ salt: "0" });
-    
-    console.log("🚀 Testing Real On-Chain Transaction");
+    // Use a fresh smart wallet (non-zero salt) so it has no ETH balance and should use the paymaster
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+    console.log("🚀 Testing Real On-Chain Transaction (paymaster-sponsored, unfunded wallet)");
     console.log("Smart Wallet Address:", wallet.address);
     console.log("EOA Address:", eoaAddress);
-    console.log("Strategy: Fund smart wallet with ETH first, then test transaction");
-
-    console.log("🔍 Smart wallet has been funded with 0.1 ETH and 10 USDC");
-    console.log("💰 Testing simple contract call that should succeed...");
+    console.log("💰 Testing simple contract call that should succeed via paymaster sponsorship...");
 
     // Instead of ETH transfer, let's use a contract write that will definitely succeed
     // Use USDC approve with amount 0 - this will always succeed and doesn't require balance
@@ -1475,7 +1475,7 @@ describe("ContractWrite Node Tests", () => {
             methodName: "approve",
             methodParams: [
               "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // Spender address (EOA)
-              "0" // Amount: 0 - this will always succeed regardless of balance
+              "0", // Amount: 0 - this will always succeed regardless of balance
             ],
           },
         ],
@@ -1487,11 +1487,13 @@ describe("ContractWrite Node Tests", () => {
       name: "contractTrigger",
       type: TriggerType.Manual,
       data: {
-        note: "Test contract approve with real on-chain transaction"
+        note: "Test contract approve with real on-chain transaction",
       },
     });
 
-    const workflowProps = createFromTemplate(wallet.address, [contractWriteNode]);
+    const workflowProps = createFromTemplate(wallet.address, [
+      contractWriteNode,
+    ]);
     workflowProps.trigger = manualTrigger;
     workflowProps.name = "Real On-Chain Contract Write Test";
 
@@ -1510,7 +1512,7 @@ describe("ContractWrite Node Tests", () => {
         id: workflowId,
         triggerData: {
           type: TriggerType.Manual,
-          note: "Test contract approve with real on-chain transaction"
+          note: "Test contract approve with real on-chain transaction",
         },
         isBlocking: true,
       });
@@ -1518,7 +1520,10 @@ describe("ContractWrite Node Tests", () => {
 
       // Get execution results
       const executions = await client.getExecutions([workflowId], { limit: 1 });
-      console.log("🔍 Execution results:", util.inspect(executions, { depth: null, colors: true }));
+      console.log(
+        "🔍 Execution results:",
+        util.inspect(executions, { depth: null, colors: true })
+      );
 
       expect(executions.items.length).toBe(1);
       const execution = executions.items[0];
@@ -1531,12 +1536,11 @@ describe("ContractWrite Node Tests", () => {
 
       expect(contractWriteStep).toBeDefined();
       expect(contractWriteStep!.success).toBe(true);
-      
-      console.log("🎉 Real on-chain contract write completed successfully!");
 
+      console.log("🎉 Real on-chain contract write completed successfully!");
     } catch (error) {
       console.error("❌ Test failed with error:", error);
       throw error;
     }
-  }, 120000); // 2 minutes for real blockchain transaction (deployment + confirmation)
+  }, 180000); // 3 minutes for real blockchain transaction (deployment + confirmation)
 });
