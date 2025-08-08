@@ -8,6 +8,7 @@ import {
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -18,7 +19,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetExecutions * 100; // Salt index 400 - 499
+let saltIndex = SaltGlobal.GetExecutions * SALT_BUCKET_SIZE;
 
 describe("getExecutions Tests", () => {
   let ownerAddress: string;
@@ -331,7 +332,7 @@ describe("getExecutions Tests", () => {
       const firstPage = await client.getExecutions([workflowId], {
         limit: pageSize,
       });
-      
+
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
       expect(firstPage.pageInfo.endCursor).toBeTruthy();
       expect(firstPage.pageInfo.hasNextPage).toBe(true);
@@ -346,7 +347,7 @@ describe("getExecutions Tests", () => {
       // Verify no overlap between pages
       const firstPageIds = firstPage.items.map((item: any) => item.id);
       const secondPageIds = secondPage.items.map((item: any) => item.id);
-      
+
       const overlap = firstPageIds.filter((id) => secondPageIds.includes(id));
       expect(overlap.length).toBe(0);
 
@@ -399,7 +400,7 @@ describe("getExecutions Tests", () => {
       const firstPage = await client.getExecutions([workflowId], {
         limit: pageSize,
       });
-      
+
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
       expect(firstPage.pageInfo.endCursor).toBeTruthy();
 
@@ -419,7 +420,7 @@ describe("getExecutions Tests", () => {
       // Verify all returned executions are in our created list
       const previousPageIds = previousPage.items.map((item: any) => item.id);
       const firstPageIds = firstPage.items.map((item: any) => item.id);
-      
+
       [...previousPageIds, ...firstPageIds].forEach((id) => {
         expect(id).toBeDefined();
         expect(executionIds.includes(id)).toBe(true);

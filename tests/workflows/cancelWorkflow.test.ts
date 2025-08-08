@@ -1,7 +1,12 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { getAddress, generateSignature, SaltGlobal } from "../utils/utils";
+import {
+  getAddress,
+  generateSignature,
+  SaltGlobal,
+  SALT_BUCKET_SIZE,
+} from "../utils/utils";
 import { createFromTemplate } from "../utils/templates";
 import { WorkflowStatus } from "@avaprotocol/types";
 import { getConfig } from "../utils/envalid";
@@ -9,7 +14,7 @@ import { getConfig } from "../utils/envalid";
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.CancelWorkflow * 100; // Salt index 100 - 199
+let saltIndex = SaltGlobal.CancelWorkflow * SALT_BUCKET_SIZE;
 
 describe("cancelWorkflow Tests", () => {
   let client: Client;

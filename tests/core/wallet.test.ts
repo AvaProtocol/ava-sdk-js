@@ -7,13 +7,14 @@ import {
   generateSignature,
   SaltGlobal,
   TIMEOUT_DURATION,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 
-let saltIndex = SaltGlobal.GetWallet * 100; // Salt index 500 - 599
+let saltIndex = SaltGlobal.GetWallet * SALT_BUCKET_SIZE;
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();

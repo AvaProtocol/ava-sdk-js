@@ -6,6 +6,7 @@ import {
   generateSignature,
   compareResults,
   SaltGlobal,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -13,7 +14,7 @@ import { getConfig } from "../utils/envalid";
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetWorkflow * 100; // Salt index 700 - 799
+let saltIndex = SaltGlobal.GetWorkflow * SALT_BUCKET_SIZE;
 
 describe("Workflow Management Tests", () => {
   let client: Client;

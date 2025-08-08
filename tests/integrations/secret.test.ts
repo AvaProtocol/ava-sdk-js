@@ -18,6 +18,7 @@ import {
   cleanupSecrets,
   getBlockNumber,
   TIMEOUT_DURATION,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 
 // Note: Helper functions for waiting for secrets removed due to server-side
@@ -33,7 +34,7 @@ const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 const createdSecretMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.Secrets * 100; // Salt index 900 - 999
+let saltIndex = SaltGlobal.Secrets * SALT_BUCKET_SIZE;
 const privateKey2 =
   "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293";
 

@@ -11,6 +11,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   TIMEOUT_DURATION,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
@@ -24,7 +25,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateSecret * 1000 + 600;
+let saltIndex = SaltGlobal.RestAPI * SALT_BUCKET_SIZE;
 
 interface RestApiResponse {
   status: number;
@@ -151,9 +152,15 @@ describe("RestAPI Node Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(2); // trigger + REST API node
@@ -186,9 +193,15 @@ describe("RestAPI Node Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const restApiStep = simulation.steps.find(
         (step) => step.id === restApiNode.id
@@ -305,9 +318,15 @@ describe("RestAPI Node Tests", () => {
       });
 
       const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === restApiNode.id

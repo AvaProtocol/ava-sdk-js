@@ -9,15 +9,16 @@ import {
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
+import { getConfig } from "../utils/envalid"; 
 
 jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetExecution * 100; // Salt index 1300 - 1399
+let saltIndex = SaltGlobal.GetExecution * SALT_BUCKET_SIZE;
 
 describe("getExecution Tests", () => {
   let ownerAddress: string;

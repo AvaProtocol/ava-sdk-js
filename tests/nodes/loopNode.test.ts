@@ -42,6 +42,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   TEST_SMART_WALLET_ADDRESS,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -54,7 +55,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 1000 + 500; // Use a different range than createWorkflow.test.ts
+let saltIndex = SaltGlobal.LoopNode * SALT_BUCKET_SIZE; // Use a reserved bucket
 
 describe("LoopNode Tests", () => {
   let eoaAddress: string;
@@ -538,9 +539,16 @@ describe("LoopNode Tests", () => {
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const base = client.createWorkflow(workflowProps);
+      const simulation = await client.simulateWorkflow({
+        ...base.toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: TEST_SMART_WALLET_ADDRESS,
+          },
+        },
+      });
 
       console.log(
         "simulateWorkflow loop response:",
@@ -1902,6 +1910,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should force sequential mode for ContractWrite operations", async () => {
+      const wallet = await client.getWallet({ salt: "0" });
       const params = {
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -1942,6 +1951,10 @@ describe("LoopNode Tests", () => {
             "0x1111111111111111111111111111111111111111",
             "0x2222222222222222222222222222222222222222",
           ],
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
         },
       };
 

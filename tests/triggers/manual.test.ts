@@ -1332,8 +1332,9 @@ describe("ManualTrigger Tests", () => {
     const manualTrigger = TriggerFactory.create(manualTriggerProps);
 
     // Create workflow with a simple custom code node
+    const wallet = await client.getWallet({ salt: String(saltIndex++) });
     const workflowProps = createFromTemplate(
-      await client.getWallet(getNextId().toString()),
+      wallet,
       [
         {
           id: getNextId(),

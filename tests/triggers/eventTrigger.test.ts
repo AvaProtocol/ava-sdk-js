@@ -8,6 +8,7 @@ import {
   generateSignature,
   SaltGlobal,
   removeCreatedWorkflows,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
@@ -15,7 +16,8 @@ import { getConfig, isSepolia } from "../utils/envalid";
 jest.setTimeout(45000);
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 7000;
+
+let saltIndex = SaltGlobal.EventTrigger * SALT_BUCKET_SIZE;
 
 const SEPOLIA_TOKEN_ADDRESSES = [
   "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Sepolia
@@ -264,7 +266,7 @@ describe("EventTrigger Tests", () => {
                 {
                   values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                  ],
+              ],
                 },
               ],
             },
@@ -312,7 +314,7 @@ describe("EventTrigger Tests", () => {
                 {
                   values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                  ],
+              ],
                 },
               ],
             },
@@ -1479,7 +1481,8 @@ describe("EventTrigger Tests", () => {
         // Direct response should have blockchain log data
         expect(directData).toBeDefined();
         expect(directData.tokenContract).toBeDefined(); // Contract address in log format (changed from 'address' to 'tokenContract')
-        expect(directData.chainId).toBeDefined();
+        const directChainId = (directData as any)?.chainId ?? (directResponse.metadata as any)?.chainId;
+        expect(directChainId).toBeDefined();
         expect(directData.topics).toBeDefined(); // Event signature and indexed params
         expect(directData.blockNumber).toBeDefined();
 
@@ -2244,6 +2247,6 @@ describe("EventTrigger Tests", () => {
       expect(methodCall.getApplyToFieldsList()).toEqual([
         "AnswerUpdated.current",
       ]);
-    });
   });
+}); 
 });

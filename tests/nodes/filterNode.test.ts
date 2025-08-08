@@ -11,6 +11,7 @@ import {
   SaltGlobal,
   getBlockNumber,
   removeCreatedWorkflows,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -20,19 +21,20 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 5000;
+let saltIndex = SaltGlobal.FilterNode * SALT_BUCKET_SIZE;
 
 describe("FilterNode Tests", () => {
   let client: Client;
+  let eoaAddress: string;
 
   beforeAll(async () => {
-    const address = await getAddress(walletPrivateKey);
+    eoaAddress = await getAddress(walletPrivateKey);
 
     client = new Client({
       endpoint: avsEndpoint,
     });
 
-    const { message } = await client.getSignatureFormat(address);
+    const { message } = await client.getSignatureFormat(eoaAddress);
     const signature = await generateSignature(message, walletPrivateKey);
 
     const res = await client.authWithSignature({
@@ -61,8 +63,6 @@ describe("FilterNode Tests", () => {
           ],
         },
       });
-
-
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -191,11 +191,15 @@ describe("FilterNode Tests", () => {
         filterNode,
       ]);
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
-
-
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       expect(simulation.success).toBe(true);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + filter node
@@ -243,9 +247,15 @@ describe("FilterNode Tests", () => {
         filterNode,
       ]);
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       expect(simulation.success).toBe(true);
       const filterStep = simulation.steps.find(
@@ -308,7 +318,7 @@ describe("FilterNode Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        const triggerResult = await client.triggerWorkflow({
+        await client.triggerWorkflow({
           id: workflowId,
           triggerData: {
             type: TriggerType.Block,
@@ -316,8 +326,6 @@ describe("FilterNode Tests", () => {
           },
           isBlocking: true,
         });
-
-
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -335,7 +343,6 @@ describe("FilterNode Tests", () => {
         }
 
         expect(filterStep.success).toBe(true);
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -363,8 +370,6 @@ describe("FilterNode Tests", () => {
           { name: "Carol", age: 25 },
         ],
       };
-
-
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
@@ -406,9 +411,15 @@ describe("FilterNode Tests", () => {
         dataNode,
         filterNode,
       ]);
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === filterNode.id
@@ -458,8 +469,6 @@ describe("FilterNode Tests", () => {
         if (directResponse.data && Array.isArray(directResponse.data)) {
           expect(directResponse.data.length).toBe(2); // Alice(21) and Carol(25)
         }
-
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

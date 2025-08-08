@@ -10,6 +10,8 @@ import {
   getAddress,
   generateSignature,
   TIMEOUT_DURATION,
+  SaltGlobal,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens } = getConfig();
@@ -27,6 +29,7 @@ describe("Template: Telegram Alert on Transfer", () => {
   let eoaAddress: string;
   let testWalletAddress: string;
   const createdWorkflowIds: string[] = [];
+  let saltIndex = SaltGlobal.TelegramTemplate * SALT_BUCKET_SIZE; // Reserved bucket for this suite
 
   // Real client data for USDC transfer monitoring
   const REAL_WALLET_ADDRESS = "0xB3Fb744d8B811B4fb19586cdbEc821b4aAFbEEe7";
@@ -428,7 +431,16 @@ return message;`,
       };
 
       const workflow = client.createWorkflow(workflowProps);
-      const simulationResult = await client.simulateWorkflow(workflow);
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const simulationResult = await client.simulateWorkflow({
+        ...workflow,
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "Simulation result:",
