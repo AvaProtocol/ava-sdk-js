@@ -11,7 +11,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("SimulateWorkflow", () => {
   let eoaAddress: string;
@@ -21,7 +21,6 @@ describe("SimulateWorkflow", () => {
     eoaAddress = await getAddress(walletPrivateKey);
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);

@@ -6,9 +6,9 @@ import { createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.DeleteWorkflow * 1000; // Salt index 3,000 - 3,999
+let saltIndex = SaltGlobal.DeleteWorkflow * 100; // Salt index 300 - 399
 
 describe("deleteWorkflow Tests", () => {
   let client: Client;
@@ -20,7 +20,6 @@ describe("deleteWorkflow Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);

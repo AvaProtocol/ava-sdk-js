@@ -15,46 +15,105 @@ const ALLOWED_ENVIRONMENTS = [
 ] as const;
 type Environment = (typeof ALLOWED_ENVIRONMENTS)[number];
 
-// Smart wallet factory address is the same for all chain
-const FACTORY_ADDRESS = "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834";
+// Token configuration types
+type TokenDef = {
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+};
+type TokenMap = Record<string, TokenDef>;
 
-// Environment-specific configurations
-const ENV_CONFIGS = {
+// Environment-specific configurations (with chain-specific token presets)
+const ENV_CONFIGS: Record<
+  Environment,
+  {
+    avsEndpoint: string;
+    chainId: string;
+    tokens: TokenMap;
+    factoryAddress: string;
+  }
+> = {
   dev: {
     avsEndpoint: "localhost:2206",
     chainId: "11155111",
+    tokens: {
+      USDC: {
+        address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      LINK: {
+        address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
+        name: "ChainLink Token",
+        symbol: "LINK",
+        decimals: 18,
+      },
+    },
+    // From docs/Contract.md Factory Proxy
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   ethereum: {
     avsEndpoint: "aggregator.avaprotocol.org:2206",
     chainId: "1",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   sepolia: {
     avsEndpoint: "aggregator-sepolia.avaprotocol.org:2206",
     chainId: "11155111",
+    tokens: {
+      USDC: {
+        address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      LINK: {
+        address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
+        name: "ChainLink Token",
+        symbol: "LINK",
+        decimals: 18,
+      },
+    },
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   base: {
     avsEndpoint: "aggregator-base.avaprotocol.org:3206", // TODO:Change to 2207
     chainId: "8453",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   "base-sepolia": {
     avsEndpoint: "aggregator-base-sepolia.avaprotocol.org:3206", // TODO:Change to 2207
     chainId: "84532",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   soneium: {
     avsEndpoint: "aggregator-soneium.avaprotocol.org:2208",
     chainId: "1868",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   "soneium-minato": {
     avsEndpoint: "aggregator-soneium-minato.avaprotocol.org:2208",
     chainId: "1946",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   bsc: {
     avsEndpoint: "aggregator-bsc.avaprotocol.org:2209",
     chainId: "56",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   "bsc-testnet": {
     avsEndpoint: "aggregator-bsc-testnet.avaprotocol.org:2209",
     chainId: "97",
+    tokens: {},
+    factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 } as const;
 
@@ -67,15 +126,7 @@ if (process.env.TEST_ENV) {
 }
 
 // Define the config type
-type Config = {
-  avsEndpoint: string;
-  avsApiKey: string;
-  chainEndpoint: string;
-  chainId: string;
-  walletPrivateKey: string;
-  environment: Environment;
-  factoryAddress: string;
-};
+// NOTE: Config type was unused; removed to satisfy linter
 
 // Create a custom validator for private key
 const privateKeyValidator = makeValidator((privateKey) => {
@@ -110,7 +161,10 @@ const validatedEnv = cleanEnv(
     AVS_API_KEY: str({ desc: "AVS API Key" }),
     CHAIN_ENDPOINT: str({ desc: "Chain RPC Endpoint" }),
     TEST_PRIVATE_KEY: privateKeyValidator({ desc: "Wallet Private Key" }),
-    TEST_ENV: environmentValidator({ desc: "Test environment", default: "dev" }),
+    TEST_ENV: environmentValidator({
+      desc: "Test environment",
+      default: "dev",
+    }),
   }
 );
 
@@ -124,8 +178,10 @@ export const getConfig = () => ({
   chainId: envConfig.chainId,
   chainEndpoint: validatedEnv.CHAIN_ENDPOINT,
   walletPrivateKey: validatedEnv.TEST_PRIVATE_KEY,
-  factoryAddress: FACTORY_ADDRESS,
+  // factoryAddress: FACTORY_ADDRESS, // Let aggregator use its default factory
   environment: validatedEnv.TEST_ENV,
+  tokens: envConfig.tokens,
+  factoryAddress: envConfig.factoryAddress,
 });
 
 // Export the environment for use in other files
@@ -133,3 +189,5 @@ export const getEnvironment = () => validatedEnv.TEST_ENV;
 
 // Export the validation function for use in other files
 export const validateEnv = () => validatedEnv;
+
+export const isSepolia = () => getConfig().chainId === "11155111";

@@ -11,6 +11,7 @@
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
+import { USDC_SEPOLIA_ADDRESS } from "../tests/utils/tokens";
 
 import _ from "lodash";
 import { ethers } from "ethers";
@@ -434,8 +435,8 @@ async function schedulePriceReport(
     ],
 
     trigger,
-    startAt: Math.floor(Date.now() / 1000) + 30,
-    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    startAt: Date.now() + 30000, // Start in 30 seconds
+    expiredAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
     maxExecution: 1,
   });
 
@@ -501,8 +502,8 @@ async function scheduleTelegram(owner: string, token: string) {
         interval: 5,
       },
     }),
-    startAt: Math.floor(Date.now() / 1000) + 30,
-    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    startAt: Date.now() + 30000, // Start in 30 seconds
+    expiredAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
     maxExecution: 1,
   });
 
@@ -631,8 +632,8 @@ async function scheduleSweep(owner: string, token: string, target: string) {
         ],
       },
     }),
-    startAt: Math.floor(Date.now() / 1000) + 30,
-    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    startAt: Date.now() + 30000, // Start in 30 seconds
+    expiredAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
     maxExecution: 1,
   });
 
@@ -640,6 +641,99 @@ async function scheduleSweep(owner: string, token: string, target: string) {
 
   console.log("create task", workflowId);
 
+  return workflowId;
+}
+
+// Create a workflow with block trigger that performs ERC-20 contract write
+async function scheduleContractWrite(
+  owner: string,
+  token: string,
+  recipientAddress?: string,
+  amount?: string
+) {
+  console.log("Creating contract write workflow with block trigger");
+  
+  const wallets = await getWallets(owner, token);
+  if (_.isEmpty(wallets)) {
+    console.log(
+      "Please create at least one wallet. This example will auto pick the first wallet to schedule the test"
+    );
+    return;
+  }
+  const smartWalletAddress = wallets[0].address;
+
+  // Default values based on the workflow data you provided
+  const defaultRecipient = recipientAddress || "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
+  const defaultAmount = amount || "1000000"; // 1 USDC (6 decimals)
+  const usdcAddress = USDC_SEPOLIA_ADDRESS; // Sepolia USDC
+
+  const triggerId = UlidMonotonic.generate().toCanonical();
+  const contractWriteNodeId = UlidMonotonic.generate().toCanonical();
+
+  // USDC ABI (minimal - just transfer function)
+  const usdcAbi = [
+    {
+      inputs: [
+        { internalType: "address", name: "to", type: "address" },
+        { internalType: "uint256", name: "value", type: "uint256" }
+      ],
+      name: "transfer",
+      outputs: [{ internalType: "bool", name: "", type: "bool" }],
+      stateMutability: "nonpayable",
+      type: "function"
+    }
+  ];
+
+  const workflow = client.createWorkflow({
+    name: `Contract Write Test - ${new Date().toISOString()}`,
+    smartWalletAddress,
+    trigger: TriggerFactory.create({
+      id: triggerId,
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: {
+        interval: 10, // Every 10 blocks (about 2 minutes)
+      },
+    }),
+    nodes: NodeFactory.createNodes([
+      {
+        id: contractWriteNodeId,
+        name: "contractWrite1",
+        type: NodeType.ContractWrite,
+        data: {
+          contractAddress: usdcAddress,
+          contractAbi: usdcAbi,
+          methodCalls: [
+            {
+              methodName: "transfer",
+              methodParams: [defaultRecipient, defaultAmount],
+            },
+          ],
+        },
+      },
+    ]),
+    edges: [
+      new Edge({
+        id: UlidMonotonic.generate().toCanonical(),
+        source: triggerId,
+        target: contractWriteNodeId,
+      }),
+    ],
+    startAt: Date.now() + 30000, // Start in 30 seconds (30000 ms)
+    expiredAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days from now (in ms)
+    maxExecution: 5, // Limit to 5 executions for testing
+  });
+
+  const workflowId = await client.submitWorkflow(workflow);
+  console.log("Contract write workflow created:", {
+    id: workflowId,
+    smartWalletAddress,
+    contractAddress: usdcAddress,
+    recipient: defaultRecipient,
+    amount: defaultAmount,
+    maxExecutions: 5,
+  });
+  
   return workflowId;
 }
 
@@ -740,8 +834,8 @@ async function scheduleMonitorTransfer(
         ],
       },
     }),
-    startAt: Math.floor(Date.now() / 1000) + 30,
-    expiredAt: Math.floor(Date.now() / 1000 + 3600 * 24 * 30),
+    startAt: Date.now() + 30000, // Start in 30 seconds
+    expiredAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days from now
     maxExecution: 1,
   });
 
@@ -947,7 +1041,7 @@ const main = async (cmd: string) => {
       break;
     case "getWallet": {
       const salt = commandArgs.args[0];
-      const factoryAddress = commandArgs.args[1] || getConfig().FACTORY_ADDRESS;
+      const factoryAddress = commandArgs.args[1]; // Optional factory address
       const smartWalletAddress = await client.getWallet({
         salt,
         factoryAddress,
@@ -967,6 +1061,9 @@ const main = async (cmd: string) => {
       break;
     case "schedule-sweep":
       scheduleSweep(owner, authKey, commandArgs.args[0]);
+      break;
+    case "schedule-contract-write":
+      scheduleContractWrite(owner, authKey, commandArgs.args[0], commandArgs.args[1]);
       break;
     case "schedule":
     case "schedule-cron":

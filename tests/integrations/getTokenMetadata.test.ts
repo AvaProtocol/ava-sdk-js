@@ -9,57 +9,15 @@ import { getAddress, generateSignature } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress, chainId, environment } =
-  getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
-// Chain-specific test tokens - only populate for chains where we have known tokens
-const SEPOLIA_CHAIN_ID = "11155111";
-
-// Define tokens per chain
-// To add support for a new chain:
-// 1. Add the chain ID as a key
-// 2. Add test token addresses that exist on that chain and match the server's whitelist
-// 3. Include expected metadata (name, symbol, decimals) for validation
-const CHAIN_TOKENS: Record<string, Record<string, any>> = {
-  [SEPOLIA_CHAIN_ID]: {
-    USDC: {
-      address: "0xa0b86a33e6bd4e5ea99b2dbcb5e6fe41b82b5e7a",
-      expectedName: "USD Coin",
-      expectedSymbol: "USDC",
-      expectedDecimals: 6,
-    },
-    WETH: {
-      address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
-      expectedName: "Wrapped Ether",
-      expectedSymbol: "WETH",
-      expectedDecimals: 18,
-    },
-    USDT: {
-      address: "0xaa8e23fb1079ea71e0a56f48a2aa51851d8433d0",
-      expectedName: "Tether USD",
-      expectedSymbol: "USDT",
-      expectedDecimals: 6,
-    },
-    LINK: {
-      address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
-      expectedName: "ChainLink Token",
-      expectedSymbol: "LINK",
-      expectedDecimals: 18,
-    },
-  },
-  // Add more chains here:
-  // "1": { // Ethereum mainnet
-  //   USDC: { address: "0xa0b86a33e...", expectedName: "USD Coin", ... }
-  // }
-};
-
-// Get tokens for current chain, or empty object if not supported
-const REAL_TOKENS = CHAIN_TOKENS[chainId] || {};
-const SUPPORTED_CHAIN = Object.keys(REAL_TOKENS).length > 0;
+// Use chain-specific tokens from getConfig(); if none, skip chain-specific tests
+const TOKENS = getConfig().tokens as Record<string, any>;
+const HAS_TOKENS = Object.keys(TOKENS).length > 0;
 
 // Helper to check if we should skip chain-specific tests
-const describeOrSkip = SUPPORTED_CHAIN ? describe : describe.skip;
-const testOrSkip = SUPPORTED_CHAIN ? test : test.skip;
+const describeOrSkip = HAS_TOKENS ? describe : describe.skip;
+const testOrSkip = HAS_TOKENS ? test : test.skip;
 
 /**
  * Helper function to perform flexible assertions on token metadata
@@ -67,7 +25,7 @@ const testOrSkip = SUPPORTED_CHAIN ? test : test.skip;
  */
 function assertTokenMetadata(
   response: GetTokenMetadataResponse,
-  expectedToken: (typeof REAL_TOKENS)[keyof typeof REAL_TOKENS],
+  expectedToken: any,
   tokenName: string
 ) {
   expect(response).toBeDefined();
@@ -88,14 +46,14 @@ function assertTokenMetadata(
       // Handle flexible name matching for tokens that may return symbol instead of full name
       const isFlexibleNameMatch = isTokenNameMatch(
         response.token.name,
-        expectedToken.expectedName,
-        expectedToken.expectedSymbol
+        expectedToken.name,
+        expectedToken.symbol
       );
       if (!isFlexibleNameMatch) {
-        expect(response.token.name).toBe(expectedToken.expectedName);
+        expect(response.token.name).toBe(expectedToken.name);
       }
-      expect(response.token.symbol).toBe(expectedToken.expectedSymbol);
-      expect(response.token.decimals).toBe(expectedToken.expectedDecimals);
+      expect(response.token.symbol).toBe(expectedToken.symbol);
+      expect(response.token.decimals).toBe(expectedToken.decimals);
     }
   }
 }
@@ -168,7 +126,6 @@ describeOrSkip("getTokenMetadata Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     console.log("Authenticating with signature ...");
@@ -181,40 +138,11 @@ describeOrSkip("getTokenMetadata Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  testOrSkip("DEBUG: Check what server returns for USDC", async () => {
-    const response = await client.getTokenMetadata({
-      address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", // Sepolia USDC
-    });
-
-    // Just verify we get a response
-    expect(response).toBeDefined();
-    expect(response.found).toBeDefined();
-    expect(response.source).toBeDefined();
-  });
-
-  testOrSkip(
-    "DEBUG: Check what server returns for invalid address",
-    async () => {
-      const response = await client.getTokenMetadata({
-        address: "0x0000000000000000000000000000000000000000",
-      });
-
-      // Just verify we get a response
-      expect(response).toBeDefined();
-      expect(response.found).toBeDefined();
-      expect(response.source).toBeDefined();
-    }
-  );
-
   // Test each token with flexible assertions
-  testOrSkip.each(
-    Object.entries(REAL_TOKENS).map(([name, data]) => [name, data])
-  )(
+  testOrSkip.each(Object.entries(TOKENS).map(([name, data]) => [name, data]))(
     "should get token metadata for %s (flexible)",
     async (tokenName, tokenData) => {
-      const request: GetTokenMetadataRequest = {
-        address: tokenData.address,
-      };
+      const request: GetTokenMetadataRequest = { address: tokenData.address };
 
       const response: GetTokenMetadataResponse = await client.getTokenMetadata(
         request
@@ -305,13 +233,13 @@ describeOrSkip("getTokenMetadata Tests", () => {
   });
 
   // Skip the chain-specific tests if no tokens are available
-  if (!SUPPORTED_CHAIN) {
+  if (!HAS_TOKENS) {
     test("should skip chain-specific tests - no test tokens available", () => {
       console.log(
-        `ℹ️  Skipping chain-specific token tests for chain ID ${chainId} (${environment})`
+        "ℹ️  Skipping chain-specific token tests - no test tokens configured in getConfig()"
       );
       console.log(
-        "   To add support for this chain, add test tokens to CHAIN_TOKENS in the test file"
+        "   To enable these tests, add tokens to tests/utils/envalid.ts under the current TEST_ENV"
       );
       expect(true).toBe(true); // Always pass
     });
@@ -320,14 +248,14 @@ describeOrSkip("getTokenMetadata Tests", () => {
   testOrSkip(
     "should handle lowercase and uppercase addresses consistently",
     async () => {
-      if (!REAL_TOKENS.USDC) {
+      if (!TOKENS.USDC) {
         console.log(
           "Skipping address case test - no USDC token defined for this chain"
         );
         return;
       }
 
-      const originalAddress = REAL_TOKENS.USDC.address;
+      const originalAddress = TOKENS.USDC.address;
       const lowercaseAddress = originalAddress.toLowerCase();
       const uppercaseAddress = originalAddress.toUpperCase();
       const mixedCaseAddress =
@@ -361,7 +289,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
   // Test structure validation for multiple tokens using test.each
   testOrSkip.each(
-    Object.values(REAL_TOKENS)
+    Object.values(TOKENS)
       .map((token) => token.address)
       .filter(Boolean)
   )("should validate token metadata structure for %s", async (address) => {
@@ -425,7 +353,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
   });
 
   testOrSkip("should respect request options", async () => {
-    if (!REAL_TOKENS.USDC) {
+    if (!TOKENS.USDC) {
       console.log(
         "Skipping request options test - no USDC token defined for this chain"
       );
@@ -433,7 +361,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
     }
 
     const request: GetTokenMetadataRequest = {
-      address: REAL_TOKENS.USDC.address,
+      address: TOKENS.USDC.address,
     };
 
     // Test with available request options
@@ -452,8 +380,8 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
   // Test tokens with different decimal places using test.each
   testOrSkip.each(
-    Object.entries(REAL_TOKENS)
-      .map(([name, token]) => [name, token, token.expectedDecimals])
+    Object.entries(TOKENS)
+      .map(([name, token]) => [name, token, token.decimals])
       .filter(([name, token]) => token)
   )(
     "should handle %s with %d decimals (flexible)",
@@ -469,15 +397,15 @@ describeOrSkip("getTokenMetadata Tests", () => {
         // Flexible assertion - if server returns correct data, check it
         if (response.token.name !== "Unknown Token") {
           expect(response.token.decimals).toBe(expectedDecimals);
-          expect(response.token.symbol).toBe(token.expectedSymbol);
+          expect(response.token.symbol).toBe(token.symbol);
           // Use flexible name matching for consistency
           const isFlexibleNameMatch = isTokenNameMatch(
             response.token.name,
-            token.expectedName,
-            token.expectedSymbol
+            token.name,
+            token.symbol
           );
           if (!isFlexibleNameMatch) {
-            expect(response.token.name).toBe(token.expectedName);
+            expect(response.token.name).toBe(token.name);
           }
         } else {
           console.log(`ℹ️  Server returning placeholder data for ${tokenName}`);

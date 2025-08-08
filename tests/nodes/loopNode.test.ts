@@ -45,10 +45,13 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
+const { tokens } = getConfig();
+
+const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 1000 + 500; // Use a different range than createWorkflow.test.ts
@@ -173,7 +176,6 @@ describe("LoopNode Tests", () => {
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);
@@ -381,7 +383,7 @@ describe("LoopNode Tests", () => {
         inputVariables: {
           contractAddresses: [
             "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC contract (has name/symbol)
+            USDC_SEPOLIA_ADDRESS, // USDC contract (has name/symbol)
           ],
         },
       };
@@ -698,7 +700,7 @@ describe("LoopNode Tests", () => {
           lang: CustomCodeLang.JavaScript,
           source: `
             return [
-              "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+              USDC_SEPOLIA_ADDRESS,
               "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
             ];
           `,
@@ -1098,7 +1100,7 @@ describe("LoopNode Tests", () => {
           lang: CustomCodeLang.JavaScript,
           source: `
             return [
-              "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238",
+              USDC_SEPOLIA_ADDRESS,
               "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238"
             ];
           `,
@@ -1489,11 +1491,11 @@ describe("LoopNode Tests", () => {
           data: {
             data: [
               { key: "key", amount: 1 },
-              { key: "key2", amount: 2000 }
+              { key: "key2", amount: 2000 },
             ],
             headers: {},
-            pathParams: {}
-          }
+            pathParams: {},
+          },
         });
 
         // Create loop node with parallel execution (from client workflow)
@@ -1510,10 +1512,10 @@ describe("LoopNode Tests", () => {
               type: "customCode",
               config: {
                 lang: CustomCodeLang.JavaScript,
-                source: "return value;"
-              }
-            }
-          }
+                source: "return value;",
+              },
+            },
+          },
         });
 
         // Test runNodeWithInputs
@@ -1523,12 +1525,15 @@ describe("LoopNode Tests", () => {
           inputVariables: {
             [manualTrigger.name]: [
               { key: "key", amount: 1 },
-              { key: "key2", amount: 2000 }
-            ]
-          }
+              { key: "key2", amount: 2000 },
+            ],
+          },
         });
 
-        console.log("🔍 Direct Response:", JSON.stringify(directResponse, null, 2));
+        console.log(
+          "🔍 Direct Response:",
+          JSON.stringify(directResponse, null, 2)
+        );
 
         // Test simulateWorkflow
         const workflowProps: WorkflowProps = {
@@ -1550,7 +1555,10 @@ describe("LoopNode Tests", () => {
           client.createWorkflow(workflowProps)
         );
 
-        console.log("🔍 Simulated Workflow:", JSON.stringify(simulatedWorkflow, null, 2));
+        console.log(
+          "🔍 Simulated Workflow:",
+          JSON.stringify(simulatedWorkflow, null, 2)
+        );
 
         // TODO: Add deployWorkflow test once triggerWorkflow API issue is resolved
 
@@ -1562,7 +1570,9 @@ describe("LoopNode Tests", () => {
         expect(Array.isArray(directResponse.data)).toBe(true);
         expect((directResponse.data as any[]).length).toBe(2);
 
-        const simulatedLoopStep = simulatedWorkflow.steps.find((step) => step.id === loopNode.id);
+        const simulatedLoopStep = simulatedWorkflow.steps.find(
+          (step) => step.id === loopNode.id
+        );
         expect(simulatedLoopStep).toBeDefined();
         expect(simulatedLoopStep!.success).toBe(true);
         expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
@@ -1586,7 +1596,6 @@ describe("LoopNode Tests", () => {
         expect(directSecondItem.amount).toBe(2000);
         expect(simulatedSecondItem.key).toBe("key2");
         expect(simulatedSecondItem.amount).toBe(2000);
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1998,8 +2007,8 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           contractAddresses: [
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // Real USDC contract on Sepolia
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // Same contract for consistency
+            USDC_SEPOLIA_ADDRESS, // Real USDC contract on Sepolia
+            USDC_SEPOLIA_ADDRESS, // Same contract for consistency
           ],
         },
       };
@@ -2102,7 +2111,7 @@ describe("LoopNode Tests", () => {
         inputVariables: {
           contractAddresses: [
             "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
-            "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238", // USDC contract (has name/symbol)
+            USDC_SEPOLIA_ADDRESS, // USDC contract (has name/symbol)
           ],
         },
       };

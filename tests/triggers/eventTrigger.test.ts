@@ -10,29 +10,9 @@ import {
   removeCreatedWorkflows,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
+import { getConfig, isSepolia } from "../utils/envalid";
 
 jest.setTimeout(45000);
-
-// Lazy-load configuration to handle CI/CD environments gracefully
-async function getTestConfig() {
-  try {
-    return getConfig();
-  } catch (error) {
-    console.warn(
-      "⚠️ Environment validation failed, using mock config for unit tests:",
-      error
-    );
-    // Return mock config for CI/CD or when real credentials aren't available
-    return {
-      avsEndpoint: "mock-endpoint:2206",
-      walletPrivateKey:
-        "0x0000000000000000000000000000000000000000000000000000000000000001",
-      factoryAddress: "0x0000000000000000000000000000000000000000",
-      chainEndpoint: "https://mock-chain-endpoint.com",
-    };
-  }
-}
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CreateWorkflow * 7000;
@@ -80,16 +60,6 @@ const CHAINLINK_AGGREGATOR_ABI = [
     type: "event",
   },
 ];
-
-// Helper function to check if we're on Sepolia
-async function isSepoliaChain(): Promise<boolean> {
-  try {
-    const config = await getTestConfig();
-    return config.chainEndpoint?.toLowerCase().includes("sepolia") || false;
-  } catch {
-    return false;
-  }
-}
 
 // Helper function to pad addresses to 32 bytes for topics
 function padAddressForTopic(address: string): string {
@@ -207,14 +177,12 @@ describe("EventTrigger Tests", () => {
 
   beforeAll(async () => {
     // Load real configuration for integration tests
-    const { avsEndpoint, walletPrivateKey, factoryAddress } =
-      await getTestConfig();
+    const { avsEndpoint, walletPrivateKey } = getConfig();
 
     coreAddress = await getAddress(walletPrivateKey);
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(coreAddress);
@@ -228,9 +196,7 @@ describe("EventTrigger Tests", () => {
     client.setAuthKey(res.authKey);
 
     // Check if we're on Sepolia chain
-    const isSepoliaTest = await isSepoliaChain();
-
-    if (!isSepoliaTest) {
+    if (!isSepolia) {
       console.log(
         "⚠️  Skipping Sepolia-specific EventTrigger tests - not on Sepolia chain"
       );
@@ -398,8 +364,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger for Transfer events from core address", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -446,8 +411,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger for Transfer events to core address", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -498,8 +462,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple Transfer event queries", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -534,8 +497,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with Chainlink price condition", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -574,8 +536,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple price range conditions", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -638,8 +599,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with Chainlink price condition with decimal formatting", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -700,10 +660,12 @@ describe("EventTrigger Tests", () => {
       // Verify the response contains enriched AnswerUpdated event data
       // TODO: Backend methodParams processing not implemented yet - expecting null for now
       if (result.data === null) {
-        console.log("⚠️  Backend methodParams processing not yet implemented - data is null");
+        console.log(
+          "⚠️  Backend methodParams processing not yet implemented - data is null"
+        );
         return; // Skip test until backend implements methodParams processing
       }
-      
+
       const resultData = result.data as Record<string, unknown>;
       expect(resultData.current).toBeDefined();
       expect(resultData.eventName).toBe("AnswerUpdated");
@@ -1062,8 +1024,7 @@ describe("EventTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow without contractAbi or methodCalls", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1108,8 +1069,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with single event query", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1150,8 +1110,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1225,7 +1184,9 @@ describe("EventTrigger Tests", () => {
 
       // TODO: Backend methodParams processing not implemented yet - skip if null
       if (output === null) {
-        console.log("⚠️  Backend methodParams processing not yet implemented - output is null");
+        console.log(
+          "⚠️  Backend methodParams processing not yet implemented - output is null"
+        );
         return; // Skip test until backend implements methodParams processing
       }
 
@@ -1264,8 +1225,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1395,8 +1355,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across trigger methods", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1692,8 +1651,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address array", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1732,8 +1690,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle complex topic filtering", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1785,8 +1742,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle no matching events (empty data) vs query errors", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1830,8 +1786,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address arrays consistently", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1869,8 +1824,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty topics array consistently", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1910,8 +1864,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should maintain empty data consistency across execution methods", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -1981,8 +1934,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle malformed query configurations gracefully", async () => {
-      const isSepoliaTest = await isSepoliaChain();
-      if (!isSepoliaTest) {
+      if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
@@ -2275,12 +2227,12 @@ describe("EventTrigger Tests", () => {
 
       // Verify conditions use the eventName.fieldName pattern
       expect(query.getConditionsList()).toHaveLength(2);
-      
+
       const condition1 = query.getConditionsList()[0];
       expect(condition1.getFieldName()).toBe("AnswerUpdated.current");
       expect(condition1.getOperator()).toBe("gt");
       expect(condition1.getFieldType()).toBe("decimal");
-      
+
       const condition2 = query.getConditionsList()[1];
       expect(condition2.getFieldName()).toBe("AnswerUpdated.roundId");
       expect(condition2.getOperator()).toBe("gt");
@@ -2289,7 +2241,9 @@ describe("EventTrigger Tests", () => {
       // Verify methodCalls also use the same pattern
       expect(query.getMethodCallsList()).toHaveLength(1);
       const methodCall = query.getMethodCallsList()[0];
-      expect(methodCall.getApplyToFieldsList()).toEqual(["AnswerUpdated.current"]);
+      expect(methodCall.getApplyToFieldsList()).toEqual([
+        "AnswerUpdated.current",
+      ]);
     });
   });
 });

@@ -15,9 +15,9 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.GetExecution * 1000; // Salt index 13000 - 13999
+let saltIndex = SaltGlobal.GetExecution * 100; // Salt index 1300 - 1399
 
 describe("getExecution Tests", () => {
   let ownerAddress: string;
@@ -28,7 +28,6 @@ describe("getExecution Tests", () => {
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(ownerAddress);
@@ -89,14 +88,14 @@ describe("getExecution Tests", () => {
       expect(triggerStep.name).toEqual("blockTrigger");
       expect(triggerStep.success).toBe(true);
 
-      // The second step should be the ETH transfer node
-      const ethTransferStep = execution.steps[1];
-      expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-      expect(ethTransferStep.name).toEqual("sendETH");
-      expect(ethTransferStep.success).toBe(true);
+      // The second step should be the CustomCode node
+      const customCodeStep = execution.steps[1];
+      expect(customCodeStep.type).toEqual(NodeType.CustomCode);
+      expect(customCodeStep.name).toEqual("customCode");
+      expect(customCodeStep.success).toBe(true);
 
       // Verify the trigger data is available in the inputs
-      expect(ethTransferStep.inputsList).toContain("blockTrigger.data");
+      expect(customCodeStep.inputsList).toContain("blockTrigger.data");
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -107,7 +106,6 @@ describe("getExecution Tests", () => {
   // This test ensures that the system correctly handles requests for executions
   // where the provided workflow ID does not exist, expecting an error.
   test("should throw error when trying to get an execution with a non-existent workflow ID", async () => {
-    const nonExistentWorkflowId = "non-existent-workflow-id";
     const nonExistentExecutionId = "non-existent-execution-id";
 
     await expect(
@@ -185,14 +183,14 @@ describe("getExecution Tests", () => {
       expect(triggerStep.name).toEqual("cronTrigger");
       expect(triggerStep.success).toBe(true);
 
-      // The second step should be the ETH transfer node
-      const ethTransferStep = execution.steps[1];
-      expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-      expect(ethTransferStep.name).toEqual("sendETH");
-      expect(ethTransferStep.success).toBe(true);
+      // The second step should be the CustomCode node
+      const customCodeStep = execution.steps[1];
+      expect(customCodeStep.type).toEqual(NodeType.CustomCode);
+      expect(customCodeStep.name).toEqual("customCode");
+      expect(customCodeStep.success).toBe(true);
 
       // Verify the trigger data is available in the inputs
-      expect(ethTransferStep.inputsList).toContain("cronTrigger.data");
+      expect(customCodeStep.inputsList).toContain("cronTrigger.data");
 
       const executionStatus = await client.getExecutionStatus(
         workflowId,
@@ -266,14 +264,14 @@ describe("getExecution Tests", () => {
       expect(triggerStep.name).toEqual("blockTriggerForGetExecutionsTest");
       expect(triggerStep.success).toBe(true);
 
-      // The second step should be the ETH transfer node
-      const ethTransferStep = execution.steps[1];
-      expect(ethTransferStep.type).toEqual(NodeType.ETHTransfer);
-      expect(ethTransferStep.name).toEqual("sendETH");
-      expect(ethTransferStep.success).toBe(true);
+      // The second step should be the CustomCode node
+      const customCodeStep = execution.steps[1];
+      expect(customCodeStep.type).toEqual(NodeType.CustomCode);
+      expect(customCodeStep.name).toEqual("customCode");
+      expect(customCodeStep.success).toBe(true);
 
       // Verify the trigger data is available in the inputs
-      expect(ethTransferStep.inputsList).toContain(
+      expect(customCodeStep.inputsList).toContain(
         "blockTriggerForGetExecutionsTest.data"
       );
 

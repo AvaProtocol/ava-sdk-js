@@ -1,3 +1,4 @@
+import util from "util";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
@@ -11,13 +12,15 @@ import {
   TIMEOUT_DURATION,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-import util from "util";
+const { tokens } = getConfig();
+
+const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
@@ -27,7 +30,8 @@ describe("Template: Telegram Alert on Transfer", () => {
 
   // Real client data for USDC transfer monitoring
   const REAL_WALLET_ADDRESS = "0xB3Fb744d8B811B4fb19586cdbEc821b4aAFbEEe7";
-  const USDC_CONTRACT_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // Sepolia USDC
+  // Import USDC address from shared configuration
+  const USDC_CONTRACT_ADDRESS = USDC_SEPOLIA_ADDRESS;
   const TRANSFER_TOPIC =
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
@@ -48,7 +52,6 @@ describe("Template: Telegram Alert on Transfer", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);

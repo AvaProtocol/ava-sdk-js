@@ -19,7 +19,7 @@ import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 let saltIndex = 20000; // Start from 20000 for input field tests
 
@@ -32,7 +32,6 @@ describe("Input Field Tests", () => {
 
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(ownerAddress);
@@ -529,7 +528,7 @@ describe("Input Field Tests", () => {
             // Use simulation data
             const tokenSymbol = "USDC"; // Default for simulation
             const blockNumber = eventData.blockNumber || "Unknown";
-            const chainId = eventData.chainId || null;
+            const chainId = eventData.chainId || 11155111; // Default to Sepolia chain ID
             
             // Mock input data for testing (since EventTrigger simulation doesn't provide it)
             const mockAddress = "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";

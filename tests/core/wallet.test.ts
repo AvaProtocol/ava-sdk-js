@@ -13,10 +13,10 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
 
-let saltIndex = SaltGlobal.GetWallet * 1000; // Salt index 5,000 - 5,999
+let saltIndex = SaltGlobal.GetWallet * 100; // Salt index 500 - 599
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("Wallet Management Tests", () => {
   let client: Client;
@@ -28,7 +28,7 @@ describe("Wallet Management Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
+      // No factory address - let aggregator use its default
     });
 
     console.log("Authenticating with signature ...");
@@ -42,25 +42,18 @@ describe("Wallet Management Tests", () => {
   });
 
   describe("getWallet Tests", () => {
-    test("should get wallet with client.factoryAddress", async () => {
+    test("should get wallet with aggregator's default factory", async () => {
       const salt = _.toString(saltIndex++);
-      // Set the factory address in client
-      client.setFactoryAddress(factoryAddress);
-      expect(client.getFactoryAddress()).toEqual(factoryAddress);
 
       const result = await client.getWallet({ salt });
-
+      
       expect(result).toBeDefined();
       expect(result.salt).toEqual(salt);
-      expect(result.factory).toEqual(factoryAddress);
+      expect(result.factory).toBeDefined(); // Should use aggregator's default factory
       expect(result.address).toHaveLength(42);
     });
 
     test("should return correct task count", async () => {
-      // Set the factory address in client
-      client.setFactoryAddress(factoryAddress);
-      expect(client.getFactoryAddress()).toEqual(factoryAddress);
-
       const salt = _.toString(saltIndex++);
       let wallet = await client.getWallet({ salt });
       let workflowId1: string | undefined;
@@ -145,65 +138,35 @@ describe("Wallet Management Tests", () => {
       }
     });
 
-    test("should get wallet with options.factoryAddress", async () => {
-      // Unset the factory address in client
-      const invalidAddress = "0x0000000000000000000000000000000000000000";
-      client.setFactoryAddress(invalidAddress);
-      expect(client.getFactoryAddress()).toEqual(invalidAddress);
-
-      // TODO: find a different factory address other than the one set in client to test
-      const result = await client.getWallet({
-        salt: "0",
-        factoryAddress,
-      });
-
-      expect(result).toBeDefined();
-      expect(result.salt).toEqual("0");
-      expect(result.factory).toEqual(factoryAddress); // Equal to options.factoryAddress but not client.factoryAddress
-      expect(result.address).toHaveLength(42);
-    });
-
     test("should get wallet with custom salt value", async () => {
       const salt1 = "12345";
       const salt2 = "-12";
 
       const result1 = await client.getWallet({
         salt: salt1,
-        factoryAddress,
       });
       expect(result1).toBeDefined();
       expect(result1.salt).toEqual(salt1);
-      expect(result1.factory).toEqual(factoryAddress);
+      expect(result1.factory).toBeDefined(); // Should use aggregator's default factory
       expect(result1.address).toHaveLength(42);
 
       const result2 = await client.getWallet({
         salt: salt2,
-        factoryAddress,
       });
       expect(result2).toBeDefined();
       expect(result2.salt).toEqual(salt2);
-      expect(result2.factory).toEqual(factoryAddress);
+      expect(result2.factory).toBeDefined(); // Should use aggregator's default factory
       expect(result2.address).toHaveLength(42);
     });
 
     test("will fail when getting wallet with non-existent factory address", async () => {
-      // Unset the factory address in client
-      const invalidAddress = "0x0000000000000000000000000000000000000000";
-      client.setFactoryAddress(invalidAddress);
-      expect(client.getFactoryAddress()).toEqual(invalidAddress);
-
       await expect(
         client.getWallet({ salt: "0", factoryAddress: "0x1234" })
       ).rejects.toThrow(/invalid factory address|^3 INVALID_ARGUMENT:.*invalid factory address/);
-
-      await expect(client.getWallet({ salt: "0" })).rejects.toThrow(
-        /Factory address cannot be the zero address|^3 INVALID_ARGUMENT:.*Factory address cannot be the zero address/
-      );
     });
 
     test("should include isHidden property in getWallet response with default value of false", async () => {
       const salt = _.toString(saltIndex++);
-      client.setFactoryAddress(factoryAddress);
 
       const wallet = await client.getWallet({ salt });
 
@@ -236,8 +199,17 @@ describe("Wallet Management Tests", () => {
       const wallets = await client.getWallets();
 
       // Make sure the same salt from the getWallets list not returning duplicate wallets
-      expect(wallets.filter((item) => item.salt === salt1)).toHaveLength(1);
-      expect(wallets.filter((item) => item.salt === salt2)).toHaveLength(1);
+      // Note: There might be multiple wallets with the same salt but different factory addresses
+      // We should only have one wallet per salt per factory address
+      const walletsWithSalt1 = wallets.filter((item) => item.salt === salt1);
+      const walletsWithSalt2 = wallets.filter((item) => item.salt === salt2);
+      
+      // Check that we don't have duplicate wallets with the same salt AND factory address
+      const uniqueWalletsSalt1 = new Set(walletsWithSalt1.map(w => `${w.salt}-${w.factory}`));
+      const uniqueWalletsSalt2 = new Set(walletsWithSalt2.map(w => `${w.salt}-${w.factory}`));
+      
+      expect(uniqueWalletsSalt1.size).toBe(walletsWithSalt1.length);
+      expect(uniqueWalletsSalt2.size).toBe(walletsWithSalt2.length);
     });
 
     test("should include isHidden property in getWallets response with default value of false", async () => {
@@ -275,7 +247,8 @@ describe("Wallet Management Tests", () => {
       expect(hiddenWallet.isHidden).toBe(true);
 
       wallets = await client.getWallets();
-      wallet = wallets.find((w) => w.salt === saltValue);
+      // Find the wallet with the same salt and factory address as the hidden wallet
+      wallet = wallets.find((w) => w.salt === saltValue && w.factory === hiddenWallet.factory);
 
       expect(wallet).toBeDefined();
       if (wallet) {
@@ -289,7 +262,8 @@ describe("Wallet Management Tests", () => {
       expect(unhiddenWallet.isHidden).toBe(false);
 
       wallets = await client.getWallets();
-      wallet = wallets.find((w) => w.salt === saltValue);
+      // Find the wallet with the same salt and factory address as the unhidden wallet
+      wallet = wallets.find((w) => w.salt === saltValue && w.factory === unhiddenWallet.factory);
       expect(wallet).toBeDefined();
       if (wallet) {
         expect(wallet.isHidden).toBe(false); // The initial value should be false

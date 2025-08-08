@@ -7,9 +7,9 @@ import { WorkflowStatus } from "@avaprotocol/types";
 import { getConfig } from "../utils/envalid";
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, factoryAddress } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = SaltGlobal.CancelWorkflow * 1000; // Salt index 1,000 - 1,999
+let saltIndex = SaltGlobal.CancelWorkflow * 100; // Salt index 100 - 199
 
 describe("cancelWorkflow Tests", () => {
   let client: Client;
@@ -20,7 +20,6 @@ describe("cancelWorkflow Tests", () => {
     // Initialize the client with test credentials
     client = new Client({
       endpoint: avsEndpoint,
-      factoryAddress,
     });
 
     const { message } = await client.getSignatureFormat(eoaAddress);
