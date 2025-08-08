@@ -97,6 +97,51 @@ const ERC20_ABI: any[] = [
     stateMutability: "view",
     type: "function",
   },
+  // --- ERC20 events ---
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "owner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        name: "spender",
+        type: "address"
+      },
+      {
+        indexed: false,
+        name: "value",
+        type: "uint256"
+      }
+    ],
+    name: "Approval",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "from",
+        type: "address"
+      },
+      {
+        indexed: true,
+        name: "to",
+        type: "address"
+      },
+      {
+        indexed: false,
+        name: "value",
+        type: "uint256"
+      }
+    ],
+    name: "Transfer",
+    type: "event"
+  }
 ];
 
 describe("ContractWrite Node Tests", () => {
@@ -136,6 +181,7 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const spenderAddress = TEST_SMART_WALLET_ADDRESS; // Use test smart wallet for success path
 
       const params = {
@@ -157,7 +203,7 @@ describe("ContractWrite Node Tests", () => {
             name: "Contract Write Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
@@ -840,6 +886,8 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
@@ -862,7 +910,7 @@ describe("ContractWrite Node Tests", () => {
             name: "Error Handling Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
@@ -974,6 +1022,8 @@ describe("ContractWrite Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       // Note: For contract write, applyToFields might not be as relevant as for contract read
       // But we'll test it for consistency with the contract read tests
       const params = {
@@ -996,7 +1046,7 @@ describe("ContractWrite Node Tests", () => {
             name: "ApplyToFields Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,

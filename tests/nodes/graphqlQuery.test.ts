@@ -125,6 +125,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should fail runNodeWithInputs with network error from mock endpoint", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_ENDPOINT;
 
       const params = {
@@ -141,7 +142,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL Basic Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
             maxExecution: 0,
@@ -191,6 +192,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000); // 15 second timeout for network request
 
     test("should fail runNodeWithInputs with variables and return network error", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_WITH_VARIABLES;
 
       const params = {
@@ -208,7 +210,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL Variables Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -246,6 +248,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should fail runNodeWithInputs gracefully with invalid domain endpoint", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const endpoint = GRAPHQL_ENDPOINTS.INVALID_ENDPOINT;
 
       const params = {
@@ -261,7 +264,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL Error Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -281,6 +284,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should fail runNodeWithInputs gracefully with empty query configuration", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -294,7 +298,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL Empty Query Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -654,7 +658,7 @@ describe("GraphQL Query Node Tests", () => {
               name: "GraphQL Consistency Test",
               userId: "test-user",
               eoaAddress: eoaAddress,
-              runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+              runner: wallet.address,
             },
           },
         };
@@ -777,6 +781,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("Real GraphQL Success Tests", () => {
     test("should successfully query The Graph Uniswap V3 API", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const endpoint = THEGRAPH_UNISWAP_V3_QUERY;
 
       const params = {
@@ -792,7 +797,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "Real The Graph GraphQL Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -833,6 +838,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 30000); // 30 second timeout for real network requests
 
     test("should successfully query The Graph Uniswap V3 API with variables", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const endpoint = THEGRAPH_UNISWAP_V3_WITH_VARIABLES;
 
       const params = {
@@ -848,7 +854,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "Real The Graph GraphQL Test with Variables",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -883,6 +889,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should fail gracefully with GraphQL server error (400 Bad Request)", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -896,7 +903,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL Malformed Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -916,6 +923,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should fail gracefully with missing URL configuration error", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -929,7 +937,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL No URL Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
@@ -946,6 +954,7 @@ describe("GraphQL Query Node Tests", () => {
     });
 
     test("should fail gracefully with network connection error from invalid domain", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -959,7 +968,7 @@ describe("GraphQL Query Node Tests", () => {
             name: "GraphQL Network Error Test",
             userId: "test-user",
             eoaAddress: eoaAddress,
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            runner: wallet.address,
           },
         },
       };
