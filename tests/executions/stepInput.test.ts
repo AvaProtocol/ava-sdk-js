@@ -373,6 +373,7 @@ describe("Input Field Tests", () => {
 
     // This is the EXACT call that was failing for the original client
     // The error would occur when simulateWorkflow processes the execution steps
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     let result;
     expect(async () => {
       result = await client.simulateWorkflow({
@@ -384,6 +385,10 @@ describe("Input Field Tests", () => {
           userToken: "test-token-123",
           environment: "production",
           debugMode: true,
+          workflowContext: {
+            eoaAddress: ownerAddress,
+            runner: wallet.address,
+          },
         },
       });
     }).not.toThrow();
@@ -397,6 +402,10 @@ describe("Input Field Tests", () => {
         userToken: "test-token-123",
         environment: "production",
         debugMode: true,
+        workflowContext: {
+          eoaAddress: ownerAddress,
+          runner: wallet.address,
+        },
       },
     });
 
@@ -460,6 +469,7 @@ describe("Input Field Tests", () => {
   });
 
   test("should handle EventTrigger input field correctly (reproducing server-side input nil issue)", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const eventTrigger = TriggerFactory.create({
       id: getNextId(),
       name: "event_trigger_with_input",
@@ -561,7 +571,12 @@ describe("Input Field Tests", () => {
           target: customCodeNode.id,
         }),
       ],
-      inputVariables: {},
+      inputVariables: {
+        workflowContext: {
+          eoaAddress: ownerAddress,
+          runner: wallet.address,
+        },
+      },
     });
 
     // Verify the simulation has the expected structure
@@ -583,7 +598,7 @@ describe("Input Field Tests", () => {
     // The trigger step's config field contains the trigger configuration (queries)
     expect(triggerConfig.queries).toBeDefined();
     expect(Array.isArray(triggerConfig.queries)).toBe(true);
-    const queries = triggerConfig.queries as Array<any>;
+    const queries = triggerConfig.queries as Array<Record<string, unknown>>;
     expect(queries).toHaveLength(2);
     
     // Check the first query structure
