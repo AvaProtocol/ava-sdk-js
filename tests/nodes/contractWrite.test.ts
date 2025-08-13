@@ -679,16 +679,16 @@ describe("ContractWrite Node Tests", () => {
         expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
         expect(output).not.toHaveProperty("results");
 
-        // Verify structure has both data and metadata fields
-        expect(output).toHaveProperty("data");
-        expect(output).toHaveProperty("metadata");
+        // Output is the data object directly; metadata is step-level
+        expect(typeof output).toBe("object");
+        expect(contractWriteStep as any).toHaveProperty("metadata");
 
         // Verify flattened structure by method name - this test only has approve
-        expect(output.data).toHaveProperty("approve");
-        expect(typeof output.data.approve).toBe("object");
+        expect(output).toHaveProperty("approve");
+        expect(typeof output.approve).toBe("object");
 
-        // Should have same number of methods as methodCalls in data field
-        expect(Object.keys(output.data).length).toBe(
+        // Should have same number of methods as methodCalls
+        expect(Object.keys(output).length).toBe(
           (contractWriteNode.data as any).methodCalls.length
         );
 
@@ -839,16 +839,16 @@ describe("ContractWrite Node Tests", () => {
           contractWriteConfig.methodCalls.length
         );
 
-        // 🚀 NEW: Verify simulatedOutput and executedOutput have both data and metadata fields
-        expect(simulatedOutput).toHaveProperty("data");
-        expect(simulatedOutput).toHaveProperty("metadata");
-        expect(executedOutput).toHaveProperty("data");
-        expect(executedOutput).toHaveProperty("metadata");
+        // Output should be the data object directly; metadata is step-level
+        expect(typeof simulatedOutput).toBe("object");
+        expect(typeof executedOutput).toBe("object");
+        expect(simulatedStep as any).toHaveProperty("metadata");
+        expect(executedStep as any).toHaveProperty("metadata");
 
         // Verify all outputs have the same method names (keys) in their data fields
         const directDataKeys = Object.keys(directData).sort();
-        const simulatedDataKeys = Object.keys(simulatedOutput.data).sort();
-        const executedDataKeys = Object.keys(executedOutput.data).sort();
+        const simulatedDataKeys = Object.keys(simulatedOutput || {}).sort();
+        const executedDataKeys = Object.keys(executedOutput || {}).sort();
 
         expect(directDataKeys).toEqual(simulatedDataKeys);
         expect(simulatedDataKeys).toEqual(executedDataKeys);
@@ -857,13 +857,13 @@ describe("ContractWrite Node Tests", () => {
         for (const methodName of directDataKeys) {
           // All should have the same method represented in their data fields
           expect(directData[methodName]).toBeDefined();
-          expect(simulatedOutput.data[methodName]).toBeDefined();
-          expect(executedOutput.data[methodName]).toBeDefined();
+          expect(simulatedOutput[methodName]).toBeDefined();
+          expect(executedOutput[methodName]).toBeDefined();
 
           // All should be objects (decoded events)
           expect(typeof directData[methodName]).toBe("object");
-          expect(typeof simulatedOutput.data[methodName]).toBe("object");
-          expect(typeof executedOutput.data[methodName]).toBe("object");
+          expect(typeof simulatedOutput[methodName]).toBe("object");
+          expect(typeof executedOutput[methodName]).toBe("object");
         }
 
         // Verify consistent structure
@@ -879,13 +879,9 @@ describe("ContractWrite Node Tests", () => {
 
         // simulateWorkflow and deployWorkflow should have object structure with data and metadata
         expect(typeof simulatedStep?.output).toBe("object");
-        expect(Array.isArray(simulatedStep?.output)).toBe(false); // Should be object with data/metadata
-        expect(simulatedStep?.output).toHaveProperty("data");
-        expect(simulatedStep?.output).toHaveProperty("metadata");
+        expect(Array.isArray(simulatedStep?.output)).toBe(false);
         expect(typeof executedStep?.output).toBe("object");
-        expect(Array.isArray(executedStep?.output)).toBe(false); // Should be object with data/metadata
-        expect(executedStep?.output).toHaveProperty("data");
-        expect(executedStep?.output).toHaveProperty("metadata");
+        expect(Array.isArray(executedStep?.output)).toBe(false);
 
         // Check that all have the same method names
         const directMethods = (directResponse.metadata as any[])
@@ -1172,21 +1168,21 @@ describe("ContractWrite Node Tests", () => {
       expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
       expect(output).not.toHaveProperty("results");
 
-      // Verify structure has both data and metadata fields
-      expect(output).toHaveProperty("data");
-      expect(output).toHaveProperty("metadata");
+      // Output is the data object directly; metadata is step-level
+      expect(typeof output).toBe("object");
+      expect(contractWriteStep as any).toHaveProperty("metadata");
 
       // Verify flattened structure by method name - this test only has approve
-      expect(output.data).toHaveProperty("approve");
-      expect(typeof output.data.approve).toBe("object");
+      expect(output).toHaveProperty("approve");
+      expect(typeof output.approve).toBe("object");
 
-      // Should have same number of methods as methodCalls in data field
-      expect(Object.keys(output.data).length).toBe(
+      // Should have same number of methods as methodCalls
+      expect(Object.keys(output).length).toBe(
         (contractWriteNode.data as any).methodCalls.length
       );
 
       // Access the approve result directly from flattened structure
-      const approveResult = output.data.approve;
+      const approveResult = output.approve;
       expect(approveResult).toBeDefined();
       expect(typeof approveResult).toBe("object");
     });
@@ -1271,21 +1267,21 @@ describe("ContractWrite Node Tests", () => {
         expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
         expect(output).not.toHaveProperty("results");
 
-        // Verify structure has both data and metadata fields
-        expect(output).toHaveProperty("data");
-        expect(output).toHaveProperty("metadata");
+        // Output is the data object directly; metadata is step-level
+        expect(typeof output).toBe("object");
+        expect(contractWriteStep as any).toHaveProperty("metadata");
 
         // Verify flattened structure by method name - this test only has approve
-        expect(output.data).toHaveProperty("approve");
-        expect(typeof output.data.approve).toBe("object");
+        expect(output).toHaveProperty("approve");
+        expect(typeof output.approve).toBe("object");
 
-        // Should have same number of methods as methodCalls in data field
-        expect(Object.keys(output.data).length).toBe(
+        // Should have same number of methods as methodCalls
+        expect(Object.keys(output).length).toBe(
           (contractWriteNode.data as any).methodCalls.length
         );
 
         // Access the approve result directly from flattened structure
-        const approveResult = output.data.approve;
+        const approveResult = output.approve;
         expect(approveResult).toBeDefined();
         expect(typeof approveResult).toBe("object");
       } finally {

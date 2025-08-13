@@ -764,26 +764,25 @@ describe("ContractRead Node Tests", () => {
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
       
-      // Verify structure has both data and metadata fields
+      // Output is the data object directly; metadata is step-level
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
       expect(Array.isArray(output)).toBe(false);
-      expect(output).toHaveProperty("data");
-      expect(output).toHaveProperty("metadata");
+      expect(contractReadStep as any).toHaveProperty("metadata");
 
-      // Verify that the actual data fields are present in data field
-      expect(output.data.latestRoundData).toBeDefined();
-      expect(output.data.decimals).toBeDefined();
-      expect(output.data.latestRoundData).toHaveProperty("answer");
-      expect(output.data.latestRoundData).toHaveProperty("roundId");
-      expect(typeof output.data.decimals).toBe("string");
+      // Verify that the actual data fields are present directly on output
+      expect(output.latestRoundData).toBeDefined();
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(typeof output.decimals).toBe("string");
 
       // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
-      if (output.data.latestRoundData.answer) {
-        expect(typeof output.data.latestRoundData.answer).toBe("string"); // int256 -> string (large number)
+      if (output.latestRoundData.answer) {
+        expect(typeof output.latestRoundData.answer).toBe("string"); // int256 -> string (large number)
       }
-      if (output.data.latestRoundData.roundId) {
-        expect(typeof output.data.latestRoundData.roundId).toBe("string"); // uint80 -> string (large number)
+      if (output.latestRoundData.roundId) {
+        expect(typeof output.latestRoundData.roundId).toBe("string"); // uint80 -> string (large number)
       }
     });
 
@@ -844,25 +843,24 @@ describe("ContractRead Node Tests", () => {
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
       
-      // Verify structure has both data and metadata fields
+      // Output is the data object directly; metadata is step-level
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
       expect(Array.isArray(output)).toBe(false);
-      expect(output).toHaveProperty("data");
-      expect(output).toHaveProperty("metadata");
+      expect(contractReadStep as any).toHaveProperty("metadata");
 
-      // Verify that the actual data fields are present in data field
-      expect(output.data.latestRoundData).toBeDefined();
-      expect(output.data.decimals).toBeDefined();
-      expect(output.data.latestRoundData).toHaveProperty("answer");
-      expect(output.data.latestRoundData).toHaveProperty("roundId");
-      expect(typeof output.data.decimals).toBe("string");
+      // Verify that the actual data fields are present directly on output
+      expect(output.latestRoundData).toBeDefined();
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(typeof output.decimals).toBe("string");
 
       // Check that decimal formatting was applied
-      if (output.data.latestRoundData.answer) {
+      if (output.latestRoundData.answer) {
         // 🔍 TYPE CHECK: Verify ABI type improvements are working in simulation mode
-        expect(typeof output.data.latestRoundData.answer).toBe("string");
-        expect(output.data.latestRoundData.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+        expect(typeof output.latestRoundData.answer).toBe("string");
+        expect(output.latestRoundData.answer).toMatch(/^\d+\.\d+$/); // Should be a decimal number
       }
     });
   });
@@ -960,16 +958,15 @@ describe("ContractRead Node Tests", () => {
         const output = contractReadStep.output as any;
         expect(output).toBeDefined();
         
-        // Verify structure has both data and metadata fields
+        // Output is the data object directly; metadata is step-level
         expect(typeof output).toBe("object");
         expect(output).not.toBeNull();
         expect(Array.isArray(output)).toBe(false);
-        expect(output).toHaveProperty("data");
-        expect(output).toHaveProperty("metadata");
+        expect(contractReadStep as any).toHaveProperty("metadata");
 
-        // Verify that the actual data fields are present in data field
-        expect(output.data.latestRoundData).toBeDefined();
-        expect(output.data.description).toBeDefined();
+        // Verify that the actual data fields are present directly on output
+        expect(output.latestRoundData).toBeDefined();
+        expect(output.description).toBeDefined();
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1077,29 +1074,28 @@ describe("ContractRead Node Tests", () => {
         const output = contractReadStep.output as any;
         expect(output).toBeDefined();
         
-        // Verify structure has both data and metadata fields
+        // Output is the data object directly; metadata is step-level
         expect(typeof output).toBe("object");
         expect(output).not.toBeNull();
         expect(Array.isArray(output)).toBe(false);
-        expect(output).toHaveProperty("data");
-        expect(output).toHaveProperty("metadata");
+        expect(contractReadStep as any).toHaveProperty("metadata");
 
-        // Verify that both method calls are included in the response in data field
-        expect(output.data.decimals).toBeDefined();
-        expect(output.data.latestRoundData).toBeDefined();
+        // Verify that both method calls are included directly on output
+        expect(output.decimals).toBeDefined();
+        expect(output.latestRoundData).toBeDefined();
 
         // Verify that decimals result contains the decimals value
-        expect(typeof output.data.decimals).toBe("string");
+        expect(typeof output.decimals).toBe("string");
 
         // Verify that latestRoundData result contains formatted values
-        expect(output.data.latestRoundData).toHaveProperty("answer");
-        expect(output.data.latestRoundData).toHaveProperty("roundId");
-        expect(output.data.latestRoundData).toHaveProperty("answeredInRound");
-        expect(output.data.latestRoundData).toHaveProperty("startedAt");
-        expect(output.data.latestRoundData).toHaveProperty("updatedAt");
+        expect(output.latestRoundData).toHaveProperty("answer");
+        expect(output.latestRoundData).toHaveProperty("roundId");
+        expect(output.latestRoundData).toHaveProperty("answeredInRound");
+        expect(output.latestRoundData).toHaveProperty("startedAt");
+        expect(output.latestRoundData).toHaveProperty("updatedAt");
 
         // Verify decimal formatting was applied to answer field
-        const answer = output.data.latestRoundData.answer;
+        const answer = output.latestRoundData.answer;
 
         expect(typeof answer).toBe("string");
 
@@ -1268,32 +1264,30 @@ describe("ContractRead Node Tests", () => {
         // Verify consistent structure
         const directOutput = directResponse.data; // runNodeWithInputs returns flattened data
         
-        // For simulateWorkflow/deployWorkflow, extract the data field for comparison
+        // For simulateWorkflow/deployWorkflow, outputs are the data objects directly
         const simulatedOutput = simulatedStep?.output as any;
         const executedOutput = executedStep?.output as any;
 
-        // Check that simulateWorkflow/deployWorkflow have both data and metadata fields
-        expect(simulatedOutput).toHaveProperty("data");
-        expect(simulatedOutput).toHaveProperty("metadata");
-        expect(executedOutput).toHaveProperty("data");
-        expect(executedOutput).toHaveProperty("metadata");
+        // Check that simulateWorkflow/deployWorkflow have step-level metadata property
+        expect(simulatedStep as any).toHaveProperty("metadata");
+        expect(executedStep as any).toHaveProperty("metadata");
 
-        // Check that all data outputs have the same structure - they should all be flattened objects
-        expect(typeof executedOutput.data).toBe("object");
-        expect(typeof simulatedOutput.data).toBe("object");
+        // Check that all outputs have the same structure - they should all be flattened objects
+        expect(typeof executedOutput).toBe("object");
+        expect(typeof simulatedOutput).toBe("object");
         expect(typeof directOutput).toBe("object");
-        expect(Array.isArray(executedOutput.data)).toBe(false);
-        expect(Array.isArray(simulatedOutput.data)).toBe(false);
+        expect(Array.isArray(executedOutput)).toBe(false);
+        expect(Array.isArray(simulatedOutput)).toBe(false);
         expect(Array.isArray(directOutput)).toBe(false);
 
         // Check that none of them have the old results wrapper
-        expect(executedOutput.data).not.toHaveProperty("results");
-        expect(simulatedOutput.data).not.toHaveProperty("results");
+        expect(executedOutput).not.toHaveProperty("results");
+        expect(simulatedOutput).not.toHaveProperty("results");
         expect(directOutput).not.toHaveProperty("results");
 
         // Check that all have the same method fields (flattened object format)
-        const simulatedKeys = Object.keys(simulatedOutput.data || {}).sort();
-        const executedKeys = Object.keys(executedOutput.data || {}).sort();
+        const simulatedKeys = Object.keys(simulatedOutput || {}).sort();
+        const executedKeys = Object.keys(executedOutput || {}).sort();
         const directKeys = Object.keys(directOutput || {}).sort();
 
         expect(simulatedKeys).toEqual(executedKeys);
@@ -1768,29 +1762,28 @@ describe("ContractRead Node Tests", () => {
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
       
-      // Verify structure has both data and metadata fields
+      // Output is the data object directly; metadata is step-level
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
       expect(Array.isArray(output)).toBe(false);
-      expect(output).toHaveProperty("data");
-      expect(output).toHaveProperty("metadata");
+      expect(contractReadStep as any).toHaveProperty("metadata");
 
-      // Verify that both method calls are included in the response in data field
-      expect(output.data.decimals).toBeDefined();
-      expect(output.data.latestRoundData).toBeDefined();
+      // Verify that both method calls are included directly on output
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toBeDefined();
 
       // Verify that decimals result contains the decimals value
-      expect(typeof output.data.decimals).toBe("string");
+      expect(typeof output.decimals).toBe("string");
 
       // Verify that latestRoundData result contains formatted values
-      expect(output.data.latestRoundData).toHaveProperty("answer");
-      expect(output.data.latestRoundData).toHaveProperty("roundId");
-      expect(output.data.latestRoundData).toHaveProperty("answeredInRound");
-      expect(output.data.latestRoundData).toHaveProperty("startedAt");
-      expect(output.data.latestRoundData).toHaveProperty("updatedAt");
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(output.latestRoundData).toHaveProperty("answeredInRound");
+      expect(output.latestRoundData).toHaveProperty("startedAt");
+      expect(output.latestRoundData).toHaveProperty("updatedAt");
 
       // Verify decimal formatting was applied to answer field
-      const answer = output.data.latestRoundData.answer;
+      const answer = output.latestRoundData.answer;
 
       expect(typeof answer).toBe("string");
 
