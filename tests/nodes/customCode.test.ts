@@ -79,7 +79,7 @@ describe("CustomCode Node Tests", () => {
       return {
         inputData: inputData,
         processedData: inputData.map(item => item * 2),
-        metadata: {
+        stats: {
           count: inputData.length,
           sum: inputData.reduce((a, b) => a + b, 0)
         }
@@ -101,7 +101,7 @@ describe("CustomCode Node Tests", () => {
             preferences: userPreferences
           }
         },
-        metadata: {
+        details: {
           timestamp: new Date().toISOString(),
           processed: true,
           version: "1.0.0"
@@ -274,11 +274,13 @@ describe("CustomCode Node Tests", () => {
       expect(result.data).toEqual({
         inputData: [1, 2, 3, 4, 5],
         processedData: [2, 4, 6, 8, 10],
-        metadata: {
+        stats: {
           count: 5,
           sum: 15,
         },
       });
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext!.isSimulated).toBe(true);
     });
 
     test("CustomCode should handle complex object with nested data", async () => {
@@ -307,7 +309,7 @@ describe("CustomCode Node Tests", () => {
             preferences: { theme: "dark", notifications: true },
           },
         },
-        metadata: {
+        details: {
           timestamp: expect.any(String),
           processed: true,
           version: "1.0.0",
@@ -318,6 +320,8 @@ describe("CustomCode Node Tests", () => {
           conversionRate: 0.75,
         },
       });
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext!.isSimulated).toBe(true);
     });
   });
 

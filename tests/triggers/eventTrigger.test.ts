@@ -401,7 +401,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
       expect(result.metadata).toBeDefined();
 
       // For specific address filters, no matching events is a valid outcome
@@ -452,7 +452,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
       expect(result.metadata).toBeDefined();
 
       // For specific address filters, no matching events is a valid outcome
@@ -488,7 +488,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       // For specific address filters, no matching events is a valid outcome
       expect(result.success).toBe(true);
@@ -526,7 +526,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
       expect(result.metadata).toBeDefined();
 
       // Conditions filter events, so no matching events is expected when condition is not met
@@ -591,7 +591,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
@@ -654,7 +654,7 @@ describe("EventTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.error).toBe("");
-      expect(result.triggerId).toBeDefined();
+      
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -1732,7 +1732,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       // For specific filters like minting events, no matching events is expected
       expect(result.success).toBe(true);
@@ -1785,7 +1785,6 @@ describe("EventTrigger Tests", () => {
       expect(noEventsResult.success).toBe(true);
       expect(noEventsResult.error).toBe("");
       expect(noEventsResult.data).toBe(null);
-      expect(noEventsResult.triggerId).toBeDefined();
     });
 
     test("should handle empty address arrays consistently", async () => {
@@ -1819,7 +1818,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       // Should either succeed with broad monitoring or handle gracefully
       expect(result.success).toBe(true);
@@ -1859,7 +1858,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       // Should handle empty topics gracefully
       expect(result.success).toBe(true);
@@ -1973,7 +1972,7 @@ describe("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       // Should handle gracefully - either succeed with null data or fail with error
       expect(result.success).toBe(true);

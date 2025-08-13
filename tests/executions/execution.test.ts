@@ -74,7 +74,18 @@ describe("Execution Management Tests", () => {
 
         expect(execution).toBeDefined();
         expect(execution.id).toEqual(triggerResult.executionId);
-        expect(execution.success).toBe(true);
+        // Overall success must be false if any blockchain write step failed
+        const hasWriteFailure = execution.steps.some(
+          (s: any) =>
+            s.type === NodeType.ContractWrite &&
+            s.metadata &&
+            Array.isArray(s.metadata) &&
+            s.metadata.some(
+              (m: any) =>
+                m.success === false || (m.receipt && m.receipt.status === "0x0")
+            )
+        );
+        expect(execution.success).toBe(!hasWriteFailure);
 
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node

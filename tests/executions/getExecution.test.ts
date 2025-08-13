@@ -1,6 +1,11 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { TriggerType, ExecutionStatus, NodeType, CustomCodeLang } from "@avaprotocol/types";
+import {
+  TriggerType,
+  ExecutionStatus,
+  NodeType,
+  CustomCodeLang,
+} from "@avaprotocol/types";
 import util from "util";
 import _ from "lodash";
 import {
@@ -12,7 +17,7 @@ import {
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
-import { getConfig } from "../utils/envalid"; 
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -76,7 +81,9 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
-      expect(execution.success).toBe(true);
+      // Ensure success reflects step outcomes: no failed blockchain write steps
+      const stepFailures = execution.steps.filter((s: any) => s.type === NodeType.ContractWrite && s.metadata && Array.isArray(s.metadata) && s.metadata.some((m: any) => m.success === false || (m.receipt && m.receipt.status === "0x0")));
+      expect(execution.success).toBe(stepFailures.length === 0);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -94,6 +101,11 @@ describe("getExecution Tests", () => {
       expect(customCodeStep.type).toEqual(NodeType.CustomCode);
       expect(customCodeStep.name).toEqual("customCode");
       expect(customCodeStep.success).toBe(true);
+
+      // Execution context should exist and be camelCased at step level for trigger and/or overall execution
+      // Note: getExecution returns server objects; ensure presence at least on the first step (trigger)
+      // Execution context should exist for at least the custom code step in deployed runs
+      expect((customCodeStep as any).executionContext).toBeDefined();
 
       // Verify the trigger data is available in the inputs
       expect(customCodeStep.inputsList).toContain("blockTrigger.data");
@@ -129,7 +141,9 @@ describe("getExecution Tests", () => {
 
       await expect(
         client.getExecution(workflowId, nonExistentExecutionId)
-      ).rejects.toThrowError(/execution not found|NOT_FOUND|resource not found/i);
+      ).rejects.toThrowError(
+        /execution not found|NOT_FOUND|resource not found/i
+      );
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -197,9 +211,7 @@ describe("getExecution Tests", () => {
         workflowId,
         result.executionId
       );
-      expect(executionStatus).toEqual(
-        ExecutionStatus.Completed
-      );
+      expect(executionStatus).toEqual(ExecutionStatus.Completed);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -280,9 +292,7 @@ describe("getExecution Tests", () => {
         workflowId,
         execution.id
       );
-      expect(executionStatus).toEqual(
-        ExecutionStatus.Completed
-      );
+      expect(executionStatus).toEqual(ExecutionStatus.Completed);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -290,7 +300,7 @@ describe("getExecution Tests", () => {
     }
   });
 
-  test("should verify input data is present in execution steps after workflow submission and execution", async () => {
+  test("should verify ManualTrigger input config is accessible and propagates via data to subsequent nodes", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
@@ -298,22 +308,23 @@ describe("getExecution Tests", () => {
     try {
       // Create workflow props and create trigger properly using TriggerFactory
       const workflowProps = createFromTemplate(wallet.address);
-      
-      // Create trigger using TriggerFactory, then add input data manually
+
+      // Create Manual trigger with custom input config
       const trigger = TriggerFactory.create({
         id: defaultTriggerId,
-        name: "blockTriggerWithInput",
-        type: TriggerType.Block,
-        data: { interval: 5 }
+        name: "manualTriggerWithInput",
+        type: TriggerType.Manual,
+        data: {
+          data: {
+            environment: "test",
+            priority: "high",
+            description: "Test workflow with input fields for getExecution",
+          },
+          headers: { "x-test": "true" },
+          pathParams: { mode: "dev" },
+        },
       });
-      
-      // Manually add input data to the trigger instance (until TriggerFactory supports input parameter)
-      (trigger as any).input = {
-        environment: "test",
-        priority: "high",
-        description: "Test workflow with input fields for getExecution"
-      };
-      
+
       workflowProps.trigger = trigger;
 
       // Create CustomCode node using NodeFactory to ensure it has toRequest() method
@@ -324,59 +335,43 @@ describe("getExecution Tests", () => {
         data: {
           lang: CustomCodeLang.JavaScript,
           source: `
-            // Test accessing actual values inside blockTriggerWithInput.input
+            // Access ManualTrigger input (config) and its data
             try {
-              // Access the trigger input data
-              const inputData = blockTriggerWithInput.input;
-              
-              // Access individual properties
-              const environment = inputData.environment;
-              const priority = inputData.priority;  
-              const description = inputData.description;
-              
-              // Verify values match what we set
-              const environmentMatch = environment === "test";
-              const priorityMatch = priority === "high";
-              const descriptionMatch = typeof description === "string" && description.includes("getExecution");
-              
-              // Handle known backend issue where input values might be null
-              const inputDataAvailable = inputData && (environment !== null || priority !== null || description !== null);
-              const allTestsPassed = inputDataAvailable ? (environmentMatch && priorityMatch && descriptionMatch) : true;
-              
+              const inputCfg = manualTriggerWithInput.input;   // { data, headers, pathParams }
+              const outData  = manualTriggerWithInput.data;    // should mirror inputCfg.data for Manual trigger
+              const env = inputCfg?.data?.environment;
+              const pr  = inputCfg?.data?.priority;
+              const desc = inputCfg?.data?.description;
+              const headerOk = inputCfg?.headers?.["x-test"] === "true";
+              const pathOk = inputCfg?.pathParams?.mode === "dev";
+              const envMatch = env === "test";
+              const prMatch = pr === "high";
+              const descMatch = typeof desc === "string" && desc.includes("getExecution");
+              const dataMirrors = outData && outData.environment === env && outData.priority === pr;
+              const inputDataAvailable = !!(inputCfg && inputCfg.data);
+              const allTestsPassed = inputDataAvailable && envMatch && prMatch && descMatch && headerOk && pathOk && dataMirrors;
               return {
                 success: true,
-                message: inputDataAvailable ? "Successfully accessed trigger input values" : "Input data unavailable due to known backend issue",
-                inputValues: {
-                  environment: environment,
-                  priority: priority,
-                  description: description
-                },
-                validation: {
-                  environmentMatch: environmentMatch,
-                  priorityMatch: priorityMatch,
-                  descriptionMatch: descriptionMatch,
-                  inputDataAvailable: inputDataAvailable,
-                  allTestsPassed: allTestsPassed
-                },
+                inputValues: { environment: env, priority: pr, description: desc },
+                validation: { envMatch, prMatch, descMatch, headerOk, pathOk, dataMirrors, inputDataAvailable, allTestsPassed },
                 timestamp: Date.now()
               };
-              
             } catch (error) {
-              return {
-                success: false,
-                error: error.message,
-                timestamp: Date.now()
-              };
+              return { success: false, error: error.message, timestamp: Date.now() };
             }
-          `
-        }
+          `,
+        },
       });
 
       // Add input data to the CustomCode node
       (customCodeNode as any).input = {
         nodeType: "input_data_tester",
         purpose: "testing input field value access",
-        expectations: ["trigger input access", "value validation", "property verification"]
+        expectations: [
+          "trigger input access",
+          "value validation",
+          "property verification",
+        ],
       };
 
       // Replace the first node
@@ -392,8 +387,7 @@ describe("getExecution Tests", () => {
       const triggerResult = await client.triggerWorkflow({
         id: workflowId,
         triggerData: {
-          type: TriggerType.Block,
-          blockNumber: blockNumber + 5,
+          type: TriggerType.Manual,
         },
         isBlocking: true,
       });
@@ -414,8 +408,8 @@ describe("getExecution Tests", () => {
 
       // Verify trigger step
       const triggerStep = execution.steps[0];
-      expect(triggerStep.type).toEqual(TriggerType.Block);
-      expect(triggerStep.name).toEqual("blockTriggerWithInput");
+      expect(triggerStep.type).toEqual(TriggerType.Manual);
+      expect(triggerStep.name).toEqual("manualTriggerWithInput");
       expect(triggerStep.success).toBe(true);
 
       // Verify CustomCode node step
@@ -425,50 +419,48 @@ describe("getExecution Tests", () => {
       expect(customCodeStep.success).toBe(true);
 
       // Verify that the node can access trigger data
-      expect(customCodeStep.inputsList).toContain("blockTriggerWithInput.data");
-      
-      // ✅ SUCCESSFULLY IMPLEMENTED: Verify that trigger input data is exposed
-      expect(customCodeStep.inputsList).toContain("blockTriggerWithInput.input");
-      
-      // Verify that both data and input fields are present for the trigger
-      const triggerInputs = customCodeStep.inputsList.filter(input => 
-        input.startsWith("blockTriggerWithInput.")
+      expect(customCodeStep.inputsList).toContain(
+        "manualTriggerWithInput.data"
       );
-      expect(triggerInputs).toContain("blockTriggerWithInput.data");
-      expect(triggerInputs).toContain("blockTriggerWithInput.input");
-      
-      // 🎯 CRITICAL TEST: Verify actual input values were accessed successfully
+
+      // Verify that trigger input (config) is exposed
+      expect(customCodeStep.inputsList).toContain(
+        "manualTriggerWithInput.input"
+      );
+
+      // Verify that both data and input fields are present for the trigger
+      const triggerInputs = customCodeStep.inputsList.filter((input) =>
+        input.startsWith("manualTriggerWithInput.")
+      );
+      expect(triggerInputs).toContain("manualTriggerWithInput.data");
+      expect(triggerInputs).toContain("manualTriggerWithInput.input");
+
+      // Verify actual input values were accessed successfully
       expect(customCodeStep.output).toBeDefined();
-      expect(typeof customCodeStep.output).toBe('object');
-      
+      expect(typeof customCodeStep.output).toBe("object");
+
       const nodeOutput = customCodeStep.output as any;
-      
+
       expect(nodeOutput.success).toBe(true);
-      
+
       // Verify the trigger input values were correctly accessed
       expect(nodeOutput.inputValues).toBeDefined();
-      
-      // TODO: Known backend issue - ManualTrigger input extraction fails, shows input: undefined
-      // This is tracked in memory ID: 3762015
-      // For now, we check if the values are accessible, but handle the case where they might be null
-      if (nodeOutput.inputValues.environment !== null) {
-        expect(nodeOutput.inputValues.environment).toBe("test");
-        expect(nodeOutput.inputValues.priority).toBe("high"); 
-        expect(nodeOutput.inputValues.description).toContain("getExecution");
-      } else {
-        console.warn("⚠️  Known backend issue: ManualTrigger input data is null - input extraction failed");
-        // Still verify the structure exists even if values are null
-        expect(nodeOutput.inputValues).toHaveProperty('environment');
-        expect(nodeOutput.inputValues).toHaveProperty('priority');
-        expect(nodeOutput.inputValues).toHaveProperty('description');
-      }
-      
+      expect(nodeOutput.inputValues.environment).toBe("test");
+      expect(nodeOutput.inputValues.priority).toBe("high");
+      expect(nodeOutput.inputValues.description).toContain("getExecution");
+
       // Verify validation results
       expect(nodeOutput.validation).toBeDefined();
-      
-      // TODO: Known backend issue - input extraction fails for ManualTrigger
-      // For now, we just verify the validation structure exists
-      expect(nodeOutput.validation.allTestsPassed).toBeDefined();
+
+      // Validation flags should all be true
+      expect(nodeOutput.validation.envMatch).toBe(true);
+      expect(nodeOutput.validation.prMatch).toBe(true);
+      expect(nodeOutput.validation.descMatch).toBe(true);
+      expect(nodeOutput.validation.headerOk).toBe(true);
+      expect(nodeOutput.validation.pathOk).toBe(true);
+      expect(nodeOutput.validation.dataMirrors).toBe(true);
+      expect(nodeOutput.validation.inputDataAvailable).toBe(true);
+      expect(nodeOutput.validation.allTestsPassed).toBe(true);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

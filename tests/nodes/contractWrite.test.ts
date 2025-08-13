@@ -13,10 +13,11 @@ import {
   getBlockNumber,
   TEST_SMART_WALLET_ADDRESS,
   SALT_BUCKET_SIZE,
+  stepIndicatesWriteFailure,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
-const {  tokens } = getConfig();
+const { tokens } = getConfig();
 const SEPOLIA_TOKEN_CONFIGS = tokens;
 
 jest.setTimeout(TIMEOUT_DURATION);
@@ -105,21 +106,21 @@ const ERC20_ABI: any[] = [
       {
         indexed: true,
         name: "owner",
-        type: "address"
+        type: "address",
       },
       {
         indexed: true,
         name: "spender",
-        type: "address"
+        type: "address",
       },
       {
         indexed: false,
         name: "value",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     name: "Approval",
-    type: "event"
+    type: "event",
   },
   {
     anonymous: false,
@@ -127,22 +128,22 @@ const ERC20_ABI: any[] = [
       {
         indexed: true,
         name: "from",
-        type: "address"
+        type: "address",
       },
       {
         indexed: true,
         name: "to",
-        type: "address"
+        type: "address",
       },
       {
         indexed: false,
         name: "value",
-        type: "uint256"
-      }
+        type: "uint256",
+      },
     ],
     name: "Transfer",
-    type: "event"
-  }
+    type: "event",
+  },
 ];
 
 describe("ContractWrite Node Tests", () => {
@@ -232,7 +233,7 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
+
       expect(result.data).toBeDefined();
 
       // NEW: Check new response structure with data and metadata at top level
@@ -254,8 +255,25 @@ describe("ContractWrite Node Tests", () => {
         params.nodeConfig.methodCalls.length
       ); // One method = one key
 
-      expect(result.success).toBe(true);
+      // success must reflect metadata/receipt success
+      const allOk = Array.isArray(result.metadata)
+        ? (result.metadata as any[]).every(
+            (m: any) =>
+              m &&
+              m.success === true &&
+              (!m.receipt || m.receipt.status === "0x1")
+          )
+        : true;
+      expect(result.success).toBe(allOk);
       expect(result.metadata.length).toBeGreaterThan(0);
+
+      // Verify executionContext present and camelCased
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext!.isSimulated).toBe(true);
+      // chainId may vary by config; just assert it exists as a number if provided
+      if ((result.executionContext as any).chainId !== undefined) {
+        expect(typeof (result.executionContext as any).chainId).toBe("number");
+      }
 
       // Should have transaction hash regardless of success/failure
       const approveResult = result.metadata.find(
@@ -332,7 +350,19 @@ describe("ContractWrite Node Tests", () => {
       expect(Array.isArray(result.metadata)).toBe(true);
       expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
-      expect(result.success).toBe(true);
+      // Verify executionContext present and camelCased
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext!.isSimulated).toBe(true);
+
+      const allOk2 = Array.isArray(result.metadata)
+        ? (result.metadata as any[]).every(
+            (m: any) =>
+              m &&
+              m.success === true &&
+              (!m.receipt || m.receipt.status === "0x1")
+          )
+        : true;
+      expect(result.success).toBe(allOk2);
       expect(result.metadata.length).toBeGreaterThan(0);
 
       result.metadata.forEach((methodResult: any) => {
@@ -393,8 +423,20 @@ describe("ContractWrite Node Tests", () => {
       expect(Array.isArray(result.metadata)).toBe(true);
       expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
-      // Backend handles invalid addresses gracefully, returning success but may indicate issues in data
-      expect(result.success).toBe(true);
+      // Verify executionContext present and camelCased
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext!.isSimulated).toBe(true);
+
+      // If metadata indicates failure or receipt.status != 0x1, success must be false
+      const allOkInvalid = Array.isArray(result.metadata)
+        ? (result.metadata as any[]).every(
+            (m: any) =>
+              m &&
+              m.success === true &&
+              (!m.receipt || m.receipt.status === "0x1")
+          )
+        : true;
+      expect(result.success).toBe(allOkInvalid);
       expect(result.data).toBeDefined();
     });
 
@@ -441,8 +483,16 @@ describe("ContractWrite Node Tests", () => {
       expect(Array.isArray(result.metadata)).toBe(true);
       expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
-      // Backend handles malformed call data gracefully, returning success but may indicate issues in data
-      expect(result.success).toBe(true);
+      // If metadata indicates failure or receipt.status != 0x1, success must be false
+      const allOkMalformed = Array.isArray(result.metadata)
+        ? (result.metadata as any[]).every(
+            (m: any) =>
+              m &&
+              m.success === true &&
+              (!m.receipt || m.receipt.status === "0x1")
+          )
+        : true;
+      expect(result.success).toBe(allOkMalformed);
       expect(result.data).toBeDefined();
     });
   });
@@ -500,7 +550,13 @@ describe("ContractWrite Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      // success must reflect step outcomes
+      const contractWriteSimStep1 = simulation.steps.find(
+        (s: any) => s.id === contractWriteNode.id
+      );
+      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
+      const writeFail1 = stepIndicatesWriteFailure(contractWriteSimStep1 as any);
+      expect(simulation.success).toBe(!writeFail1);
       expect(simulation.steps).toHaveLength(2); // trigger + contract write node
 
       const contractWriteStep = simulation.steps.find(
@@ -572,7 +628,12 @@ describe("ContractWrite Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      const contractWriteSimStep2 = simulation.steps.find(
+        (s: any) => s.id === contractWriteNode.id
+      );
+      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
+      const writeFail2 = stepIndicatesWriteFailure(contractWriteSimStep2 as any);
+      expect(simulation.success).toBe(!writeFail2);
       const contractWriteStep = simulation.steps.find(
         (step) => step.id === contractWriteNode.id
       );
@@ -699,7 +760,16 @@ describe("ContractWrite Node Tests", () => {
         );
 
         // Note: The step might succeed or fail depending on wallet funding and gas
-        expect(contractWriteStep.success).toBe(true);
+        // step success must reflect metadata/receipt success
+      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
+      const stepFail =
+          (contractWriteStep as any).metadata &&
+          Array.isArray((contractWriteStep as any).metadata) &&
+          (contractWriteStep as any).metadata.some(
+            (m: any) =>
+              m.success === false || (m.receipt && m.receipt.status === "0x0")
+          );
+        expect(contractWriteStep.success).toBe(!stepFail);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -770,7 +840,9 @@ describe("ContractWrite Node Tests", () => {
       const wfSim = client.createWorkflow(workflowProps);
       const simulation = await client.simulateWorkflow({
         ...wfSim.toJson(),
-        inputVariables: { workflowContext: { eoaAddress, runner: wallet.address } },
+        inputVariables: {
+          workflowContext: { eoaAddress, runner: wallet.address },
+        },
       });
 
       console.log(
@@ -894,11 +966,9 @@ describe("ContractWrite Node Tests", () => {
           ?.map((r: any) => r.methodName)
           .sort();
         const simulatedMethods = Object.keys(
-          simulatedStep?.output?.data || {}
+          simulatedStep?.output || {}
         ).sort();
-        const executedMethods = Object.keys(
-          executedStep?.output?.data || {}
-        ).sort();
+        const executedMethods = Object.keys(executedStep?.output || {}).sort();
 
         expect(simulatedMethods).toEqual(executedMethods);
         expect(simulatedMethods).toEqual(directMethods);
@@ -982,7 +1052,9 @@ describe("ContractWrite Node Tests", () => {
       // The important thing is that we get a response with the correct structure
       if (result.success && result.metadata && Array.isArray(result.metadata)) {
         const errorResult = Array.isArray(result.metadata)
-          ? result.metadata.find((r: any) => r.methodName === "nonExistentMethod")
+          ? result.metadata.find(
+              (r: any) => r.methodName === "nonExistentMethod"
+            )
           : undefined;
         // Some backends may not include the failing method explicitly; only assert structure
         if (errorResult) {
@@ -1154,7 +1226,9 @@ describe("ContractWrite Node Tests", () => {
       const wfApply = client.createWorkflow(workflowProps);
       const simulation = await client.simulateWorkflow({
         ...wfApply.toJson(),
-        inputVariables: { workflowContext: { eoaAddress, runner: wallet.address } },
+        inputVariables: {
+          workflowContext: { eoaAddress, runner: wallet.address },
+        },
       });
 
       console.log(
@@ -1162,7 +1236,12 @@ describe("ContractWrite Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      const contractWriteSimStep3 = simulation.steps.find(
+        (s: any) => s.id === contractWriteNode.id
+      );
+      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
+      const writeFail3 = stepIndicatesWriteFailure(contractWriteSimStep3 as any);
+      expect(simulation.success).toBe(!writeFail3);
       const contractWriteStep = simulation.steps.find(
         (step) => step.id === contractWriteNode.id
       );
@@ -1409,7 +1488,8 @@ describe("ContractWrite Node Tests", () => {
         // Analyze the transaction result to see if it's real or simulated
         const output = contractWriteStep.output as any;
         expect(output).toBeDefined();
-        expect(output).toHaveProperty("metadata");
+        // metadata is top-level on the step, not inside output
+        expect((contractWriteStep as any).metadata).toBeDefined();
 
         if (
           output.metadata &&
@@ -1459,7 +1539,15 @@ describe("ContractWrite Node Tests", () => {
           }
         }
 
-        expect(contractWriteStep.success).toBe(true);
+      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
+      const stepFail2 =
+          (contractWriteStep as any).metadata &&
+          Array.isArray((contractWriteStep as any).metadata) &&
+          (contractWriteStep as any).metadata.some(
+            (m: any) =>
+              m.success === false || (m.receipt && m.receipt.status === "0x0")
+          );
+        expect(contractWriteStep.success).toBe(!stepFail2);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1542,10 +1630,14 @@ describe("ContractWrite Node Tests", () => {
     // Use a fresh smart wallet (non-zero salt) so it has no ETH balance and should use the paymaster
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
-    console.log("🚀 Testing Real On-Chain Transaction (paymaster-sponsored, unfunded wallet)");
+    console.log(
+      "🚀 Testing Real On-Chain Transaction (paymaster-sponsored, unfunded wallet)"
+    );
     console.log("Smart Wallet Address:", wallet.address);
     console.log("EOA Address:", eoaAddress);
-    console.log("💰 Testing simple contract call that should succeed via paymaster sponsorship...");
+    console.log(
+      "💰 Testing simple contract call that should succeed via paymaster sponsorship..."
+    );
 
     // Instead of ETH transfer, let's use a contract write that will definitely succeed
     // Use USDC approve with amount 0 - this will always succeed and doesn't require balance

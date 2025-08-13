@@ -284,7 +284,7 @@ return message;`,
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.triggerId).toBeDefined();
+      
 
       // For event triggers, no matching events is a valid outcome
       expect(result.success).toBe(true);

@@ -61,6 +61,7 @@ import {
   convertProtobufValueToJs,
   convertJSValueToProtobuf,
   cleanGrpcErrorMessage,
+  toCamelCaseKeys,
 } from "./utils";
 
 /**
@@ -1311,13 +1312,13 @@ class Client extends BaseClient {
 
     return {
       success: result.getSuccess(),
-      data: NodeFactory.fromOutputData(result),
+      data: toCamelCaseKeys(NodeFactory.fromOutputData(result)),
       error: result.getError(),
       metadata: result.hasMetadata()
-        ? convertProtobufValueToJs(result.getMetadata()!)
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getMetadata()!))
         : undefined,
       executionContext: result.hasExecutionContext()
-        ? convertProtobufValueToJs(result.getExecutionContext()!)
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
         : undefined,
     };
   }
@@ -1368,11 +1369,11 @@ class Client extends BaseClient {
 
     return {
       success: result.getSuccess(),
-      data: TriggerFactory.fromOutputData(result),
+      data: toCamelCaseKeys(TriggerFactory.fromOutputData(result)),
       error: result.getError(),
-      metadata: metadata,
+      metadata: toCamelCaseKeys(metadata),
       executionContext: result.hasExecutionContext()
-        ? convertProtobufValueToJs(result.getExecutionContext()!)
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
         : undefined,
     };
   }
