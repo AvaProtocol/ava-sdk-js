@@ -6,8 +6,6 @@
 
 import * as grpc from "@grpc/grpc-js";
 import * as avs_pb from "./avs_pb";
-import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
-import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceImplementation> {

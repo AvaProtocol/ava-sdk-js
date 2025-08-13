@@ -128,7 +128,7 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(result.success).toBe(true);
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data).toEqual(["value1", "value2"]); // Should return array of key values
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should test FilterNode with inputNodeName", async () => {
@@ -153,7 +153,7 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toEqual([{ key: "value1" }]); // FilterNode now returns array of filtered items
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should test CustomCode node accessing trigger data", async () => {
@@ -180,7 +180,7 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toEqual(inputData); // Should return the trigger data
-      expect(result.nodeId).toBeDefined();
+      
     });
   });
 

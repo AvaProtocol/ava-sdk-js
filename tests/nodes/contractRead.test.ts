@@ -194,7 +194,7 @@ describe("ContractRead Node Tests", () => {
         expect(data.latestRoundData.answeredInRound).toBeDefined();
       }
 
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should read multiple methods from contract", async () => {
@@ -233,7 +233,7 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.data).toBe("object");
       expect(result.data).not.toBeNull();
       expect(Array.isArray(result.data)).toBe(false);
-      expect(result.nodeId).toBeDefined();
+      
 
       // Check that we got results for both methods in flattened format
       const data = result.data as Record<string, any>;
@@ -373,7 +373,7 @@ describe("ContractRead Node Tests", () => {
       expect(typeof result.data).toBe("object");
       expect(result.data).not.toBeNull();
       expect(Array.isArray(result.data)).toBe(false);
-      expect(result.nodeId).toBeDefined();
+      
 
       // Check that we got results for the description method in flattened format
       const data = result.data as Record<string, any>;

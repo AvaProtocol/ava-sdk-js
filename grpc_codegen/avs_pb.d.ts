@@ -5,8 +5,6 @@
 /* eslint-disable */
 
 import * as jspb from "google-protobuf";
-import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
-import * as google_protobuf_any_pb from "google-protobuf/google/protobuf/any_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 export class TokenMetadata extends jspb.Message { 
@@ -810,11 +808,6 @@ export namespace ContractWriteNode {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
 
-        hasMetadata(): boolean;
-        clearMetadata(): void;
-        getMetadata(): google_protobuf_struct_pb.Value | undefined;
-        setMetadata(value?: google_protobuf_struct_pb.Value): Output;
-
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
         static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
@@ -828,7 +821,6 @@ export namespace ContractWriteNode {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
-            metadata?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1039,11 +1031,6 @@ export namespace ContractReadNode {
         getData(): google_protobuf_struct_pb.Value | undefined;
         setData(value?: google_protobuf_struct_pb.Value): Output;
 
-        hasMetadata(): boolean;
-        clearMetadata(): void;
-        getMetadata(): google_protobuf_struct_pb.Value | undefined;
-        setMetadata(value?: google_protobuf_struct_pb.Value): Output;
-
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Output.AsObject;
         static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
@@ -1057,7 +1044,6 @@ export namespace ContractReadNode {
     export namespace Output {
         export type AsObject = {
             data?: google_protobuf_struct_pb.Value.AsObject,
-            metadata?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
@@ -1764,6 +1750,16 @@ export namespace Execution {
         getConfig(): google_protobuf_struct_pb.Value | undefined;
         setConfig(value?: google_protobuf_struct_pb.Value): Step;
 
+        hasMetadata(): boolean;
+        clearMetadata(): void;
+        getMetadata(): google_protobuf_struct_pb.Value | undefined;
+        setMetadata(value?: google_protobuf_struct_pb.Value): Step;
+
+        hasExecutionContext(): boolean;
+        clearExecutionContext(): void;
+        getExecutionContext(): google_protobuf_struct_pb.Value | undefined;
+        setExecutionContext(value?: google_protobuf_struct_pb.Value): Step;
+
         hasBlockTrigger(): boolean;
         clearBlockTrigger(): void;
         getBlockTrigger(): BlockTrigger.Output | undefined;
@@ -1860,6 +1856,8 @@ export namespace Execution {
             log: string,
             inputsList: Array<string>,
             config?: google_protobuf_struct_pb.Value.AsObject,
+            metadata?: google_protobuf_struct_pb.Value.AsObject,
+            executionContext?: google_protobuf_struct_pb.Value.AsObject,
             blockTrigger?: BlockTrigger.Output.AsObject,
             fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
             cronTrigger?: CronTrigger.Output.AsObject,
@@ -3170,6 +3168,11 @@ export class RunNodeWithInputsResp extends jspb.Message {
     getMetadata(): google_protobuf_struct_pb.Value | undefined;
     setMetadata(value?: google_protobuf_struct_pb.Value): RunNodeWithInputsResp;
 
+    hasExecutionContext(): boolean;
+    clearExecutionContext(): void;
+    getExecutionContext(): google_protobuf_struct_pb.Value | undefined;
+    setExecutionContext(value?: google_protobuf_struct_pb.Value): RunNodeWithInputsResp;
+
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
     getEthTransfer(): ETHTransferNode.Output | undefined;
@@ -3233,6 +3236,7 @@ export namespace RunNodeWithInputsResp {
         error: string,
         nodeId: string,
         metadata?: google_protobuf_struct_pb.Value.AsObject,
+        executionContext?: google_protobuf_struct_pb.Value.AsObject,
         ethTransfer?: ETHTransferNode.Output.AsObject,
         graphql?: GraphQLQueryNode.Output.AsObject,
         contractRead?: ContractReadNode.Output.AsObject,
@@ -3302,6 +3306,11 @@ export class RunTriggerResp extends jspb.Message {
     getMetadata(): google_protobuf_struct_pb.Value | undefined;
     setMetadata(value?: google_protobuf_struct_pb.Value): RunTriggerResp;
 
+    hasExecutionContext(): boolean;
+    clearExecutionContext(): void;
+    getExecutionContext(): google_protobuf_struct_pb.Value | undefined;
+    setExecutionContext(value?: google_protobuf_struct_pb.Value): RunTriggerResp;
+
     hasBlockTrigger(): boolean;
     clearBlockTrigger(): void;
     getBlockTrigger(): BlockTrigger.Output | undefined;
@@ -3345,6 +3354,7 @@ export namespace RunTriggerResp {
         error: string,
         triggerId: string,
         metadata?: google_protobuf_struct_pb.Value.AsObject,
+        executionContext?: google_protobuf_struct_pb.Value.AsObject,
         blockTrigger?: BlockTrigger.Output.AsObject,
         fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
         cronTrigger?: CronTrigger.Output.AsObject,

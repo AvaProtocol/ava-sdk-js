@@ -21,10 +21,6 @@ var global = (function() {
   return Function('return this')();
 }.call(null));
 
-var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
-goog.object.extend(proto, google_protobuf_wrappers_pb);
-var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
-goog.object.extend(proto, google_protobuf_any_pb);
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 goog.object.extend(proto, google_protobuf_struct_pb);
 goog.exportSymbol('proto.aggregator.BlockTrigger', null, global);
@@ -7888,8 +7884,7 @@ proto.aggregator.ContractWriteNode.Output.prototype.toObject = function(opt_incl
  */
 proto.aggregator.ContractWriteNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -7931,11 +7926,6 @@ proto.aggregator.ContractWriteNode.Output.deserializeBinaryFromReader = function
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
-    case 2:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setMetadata(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -7969,14 +7959,6 @@ proto.aggregator.ContractWriteNode.Output.serializeBinaryToWriter = function(mes
   if (f != null) {
     writer.writeMessage(
       1,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
-  }
-  f = message.getMetadata();
-  if (f != null) {
-    writer.writeMessage(
-      2,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -8018,43 +8000,6 @@ proto.aggregator.ContractWriteNode.Output.prototype.clearData = function() {
  */
 proto.aggregator.ContractWriteNode.Output.prototype.hasData = function() {
   return jspb.Message.getField(this, 1) != null;
-};
-
-
-/**
- * optional google.protobuf.Value metadata = 2;
- * @return {?proto.google.protobuf.Value}
- */
-proto.aggregator.ContractWriteNode.Output.prototype.getMetadata = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.ContractWriteNode.Output} returns this
-*/
-proto.aggregator.ContractWriteNode.Output.prototype.setMetadata = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.aggregator.ContractWriteNode.Output} returns this
- */
-proto.aggregator.ContractWriteNode.Output.prototype.clearMetadata = function() {
-  return this.setMetadata(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.ContractWriteNode.Output.prototype.hasMetadata = function() {
-  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -9598,8 +9543,7 @@ proto.aggregator.ContractReadNode.Output.prototype.toObject = function(opt_inclu
  */
 proto.aggregator.ContractReadNode.Output.toObject = function(includeInstance, msg) {
   var f, obj = {
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
-    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
+    data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -9641,11 +9585,6 @@ proto.aggregator.ContractReadNode.Output.deserializeBinaryFromReader = function(
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setData(value);
       break;
-    case 2:
-      var value = new google_protobuf_struct_pb.Value;
-      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
-      msg.setMetadata(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -9679,14 +9618,6 @@ proto.aggregator.ContractReadNode.Output.serializeBinaryToWriter = function(mess
   if (f != null) {
     writer.writeMessage(
       1,
-      f,
-      google_protobuf_struct_pb.Value.serializeBinaryToWriter
-    );
-  }
-  f = message.getMetadata();
-  if (f != null) {
-    writer.writeMessage(
-      2,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -9728,43 +9659,6 @@ proto.aggregator.ContractReadNode.Output.prototype.clearData = function() {
  */
 proto.aggregator.ContractReadNode.Output.prototype.hasData = function() {
   return jspb.Message.getField(this, 1) != null;
-};
-
-
-/**
- * optional google.protobuf.Value metadata = 2;
- * @return {?proto.google.protobuf.Value}
- */
-proto.aggregator.ContractReadNode.Output.prototype.getMetadata = function() {
-  return /** @type{?proto.google.protobuf.Value} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 2));
-};
-
-
-/**
- * @param {?proto.google.protobuf.Value|undefined} value
- * @return {!proto.aggregator.ContractReadNode.Output} returns this
-*/
-proto.aggregator.ContractReadNode.Output.prototype.setMetadata = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
-};
-
-
-/**
- * Clears the message field making it undefined.
- * @return {!proto.aggregator.ContractReadNode.Output} returns this
- */
-proto.aggregator.ContractReadNode.Output.prototype.clearMetadata = function() {
-  return this.setMetadata(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.ContractReadNode.Output.prototype.hasMetadata = function() {
-  return jspb.Message.getField(this, 2) != null;
 };
 
 
@@ -14398,6 +14292,8 @@ proto.aggregator.Execution.Step.toObject = function(includeInstance, msg) {
     log: jspb.Message.getFieldWithDefault(msg, 12, ""),
     inputsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
     config: (f = msg.getConfig()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    executionContext: (f = msg.getExecutionContext()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
     fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
     cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
@@ -14482,6 +14378,16 @@ proto.aggregator.Execution.Step.deserializeBinaryFromReader = function(msg, read
       var value = new google_protobuf_struct_pb.Value;
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setConfig(value);
+      break;
+    case 25:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setMetadata(value);
+      break;
+    case 26:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setExecutionContext(value);
       break;
     case 20:
       var value = new proto.aggregator.BlockTrigger.Output;
@@ -14643,6 +14549,22 @@ proto.aggregator.Execution.Step.serializeBinaryToWriter = function(message, writ
   if (f != null) {
     writer.writeMessage(
       19,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getMetadata();
+  if (f != null) {
+    writer.writeMessage(
+      25,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getExecutionContext();
+  if (f != null) {
+    writer.writeMessage(
+      26,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -14955,6 +14877,80 @@ proto.aggregator.Execution.Step.prototype.clearConfig = function() {
  */
 proto.aggregator.Execution.Step.prototype.hasConfig = function() {
   return jspb.Message.getField(this, 19) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value metadata = 25;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.Execution.Step.prototype.getMetadata = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 25));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setMetadata = function(value) {
+  return jspb.Message.setWrapperField(this, 25, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearMetadata = function() {
+  return this.setMetadata(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasMetadata = function() {
+  return jspb.Message.getField(this, 25) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value execution_context = 26;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.Execution.Step.prototype.getExecutionContext = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 26));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+*/
+proto.aggregator.Execution.Step.prototype.setExecutionContext = function(value) {
+  return jspb.Message.setWrapperField(this, 26, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.clearExecutionContext = function() {
+  return this.setExecutionContext(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.Step.prototype.hasExecutionContext = function() {
+  return jspb.Message.getField(this, 26) != null;
 };
 
 
@@ -25252,6 +25248,7 @@ proto.aggregator.RunNodeWithInputsResp.toObject = function(includeInstance, msg)
     error: jspb.Message.getFieldWithDefault(msg, 3, ""),
     nodeId: jspb.Message.getFieldWithDefault(msg, 4, ""),
     metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    executionContext: (f = msg.getExecutionContext()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.Output.toObject(includeInstance, f),
     graphql: (f = msg.getGraphql()) && proto.aggregator.GraphQLQueryNode.Output.toObject(includeInstance, f),
     contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.Output.toObject(includeInstance, f),
@@ -25313,6 +25310,11 @@ proto.aggregator.RunNodeWithInputsResp.deserializeBinaryFromReader = function(ms
       var value = new google_protobuf_struct_pb.Value;
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setMetadata(value);
+      break;
+    case 6:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setExecutionContext(value);
       break;
     case 10:
       var value = new proto.aggregator.ETHTransferNode.Output;
@@ -25413,6 +25415,14 @@ proto.aggregator.RunNodeWithInputsResp.serializeBinaryToWriter = function(messag
   if (f != null) {
     writer.writeMessage(
       5,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getExecutionContext();
+  if (f != null) {
+    writer.writeMessage(
+      6,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -25580,6 +25590,43 @@ proto.aggregator.RunNodeWithInputsResp.prototype.clearMetadata = function() {
  */
 proto.aggregator.RunNodeWithInputsResp.prototype.hasMetadata = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value execution_context = 6;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getExecutionContext = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 6));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+*/
+proto.aggregator.RunNodeWithInputsResp.prototype.setExecutionContext = function(value) {
+  return jspb.Message.setWrapperField(this, 6, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.clearExecutionContext = function() {
+  return this.setExecutionContext(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.hasExecutionContext = function() {
+  return jspb.Message.getField(this, 6) != null;
 };
 
 
@@ -26177,6 +26224,7 @@ proto.aggregator.RunTriggerResp.toObject = function(includeInstance, msg) {
     error: jspb.Message.getFieldWithDefault(msg, 2, ""),
     triggerId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    executionContext: (f = msg.getExecutionContext()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
     fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
     cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
@@ -26234,6 +26282,11 @@ proto.aggregator.RunTriggerResp.deserializeBinaryFromReader = function(msg, read
       var value = new google_protobuf_struct_pb.Value;
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setMetadata(value);
+      break;
+    case 5:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setExecutionContext(value);
       break;
     case 10:
       var value = new proto.aggregator.BlockTrigger.Output;
@@ -26314,6 +26367,14 @@ proto.aggregator.RunTriggerResp.serializeBinaryToWriter = function(message, writ
   if (f != null) {
     writer.writeMessage(
       4,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getExecutionContext();
+  if (f != null) {
+    writer.writeMessage(
+      5,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
@@ -26449,6 +26510,43 @@ proto.aggregator.RunTriggerResp.prototype.clearMetadata = function() {
  */
 proto.aggregator.RunTriggerResp.prototype.hasMetadata = function() {
   return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional google.protobuf.Value execution_context = 5;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.RunTriggerResp.prototype.getExecutionContext = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 5));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.RunTriggerResp} returns this
+*/
+proto.aggregator.RunTriggerResp.prototype.setExecutionContext = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RunTriggerResp} returns this
+ */
+proto.aggregator.RunTriggerResp.prototype.clearExecutionContext = function() {
+  return this.setExecutionContext(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RunTriggerResp.prototype.hasExecutionContext = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 

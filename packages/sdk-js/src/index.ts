@@ -1281,7 +1281,6 @@ class Client extends BaseClient {
         success: false,
         error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
         data: null,
-        nodeId: "",
       };
     }
 
@@ -1314,9 +1313,11 @@ class Client extends BaseClient {
       success: result.getSuccess(),
       data: NodeFactory.fromOutputData(result),
       error: result.getError(),
-      nodeId: result.getNodeId(),
       metadata: result.hasMetadata()
         ? convertProtobufValueToJs(result.getMetadata()!)
+        : undefined,
+      executionContext: result.hasExecutionContext()
+        ? convertProtobufValueToJs(result.getExecutionContext()!)
         : undefined,
     };
   }
@@ -1369,8 +1370,10 @@ class Client extends BaseClient {
       success: result.getSuccess(),
       data: TriggerFactory.fromOutputData(result),
       error: result.getError(),
-      triggerId: result.getTriggerId(),
       metadata: metadata,
+      executionContext: result.hasExecutionContext()
+        ? convertProtobufValueToJs(result.getExecutionContext()!)
+        : undefined,
     };
   }
 

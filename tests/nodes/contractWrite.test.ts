@@ -232,7 +232,7 @@ describe("ContractWrite Node Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.nodeId).toBeDefined();
+      
       expect(result.data).toBeDefined();
 
       // NEW: Check new response structure with data and metadata at top level
@@ -597,6 +597,12 @@ describe("ContractWrite Node Tests", () => {
 
       // Step-level metadata property should exist (may be undefined if backend didn't set it)
       expect(contractWriteStep as any).toHaveProperty("metadata");
+
+      // Execution context: should indicate simulated run with provider tenderly
+      expect((contractWriteStep as any).executionContext).toBeDefined();
+      const ctx = (contractWriteStep as any).executionContext as any;
+      expect(ctx.is_simulated).toBe(true);
+      expect(ctx.provider).toBe("tenderly");
     });
   });
 

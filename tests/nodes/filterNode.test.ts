@@ -68,7 +68,7 @@ describe("FilterNode Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(2);
     });
@@ -93,7 +93,7 @@ describe("FilterNode Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(1);
     });
@@ -118,7 +118,7 @@ describe("FilterNode Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(2);
     });
@@ -148,7 +148,7 @@ describe("FilterNode Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(2);
     });

@@ -220,7 +220,7 @@ describe("LoopNode Tests", () => {
       // With the consistency fix, result.data is now the array directly
       expect(Array.isArray(result.data)).toBe(true);
       expect((result.data as ProcessedLoopItem[]).length).toBe(5);
-      expect(result.nodeId).toBeDefined();
+      
 
       // Check first processed item
       const firstItem = (
@@ -263,7 +263,7 @@ describe("LoopNode Tests", () => {
       // With the consistency fix, result.data is now the array directly
       expect(Array.isArray(result.data)).toBe(true);
       expect((result.data as Record<string, unknown>[]).length).toBe(2);
-      expect(result.nodeId).toBeDefined();
+      
 
       // Check that each item has the expected structure
       const firstItem = (result.data as Record<string, unknown>[])[0] as Record<
@@ -302,7 +302,7 @@ describe("LoopNode Tests", () => {
       // With the consistency fix, result.data is now the array directly
       expect(Array.isArray(result.data)).toBe(true);
       expect((result.data as ProcessedLoopItem[]).length).toBe(0);
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should handle complex object array", async () => {
@@ -338,7 +338,7 @@ describe("LoopNode Tests", () => {
       // With the consistency fix, result.data is now the array directly
       expect(Array.isArray(result.data)).toBe(true);
       expect((result.data as ProcessedLoopItem[]).length).toBe(3);
-      expect(result.nodeId).toBeDefined();
+      
 
       const firstResult = (
         result.data as ProcessedLoopItem[]
@@ -404,7 +404,7 @@ describe("LoopNode Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
 
       // Note: The test may fail due to contract validation or network issues,
       // but the important part is that the backend now supports contractRead as a loop runner
@@ -475,7 +475,7 @@ describe("LoopNode Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
 
       // Note: The test may fail due to contract validation or network issues,
       // but the important part is that the backend now supports contractWrite as a loop runner

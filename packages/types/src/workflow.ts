@@ -76,6 +76,7 @@ export type StepProps = Omit<
 > & {
   output: OutputDataProps;
   metadata?: any;
+  executionContext?: any;
 };
 
 // Execution Props

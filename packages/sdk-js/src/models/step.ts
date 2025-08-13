@@ -19,6 +19,7 @@ class Step implements StepProps {
   startAt: number;
   endAt: number;
   metadata?: any;
+  executionContext?: any;
 
   constructor(props: StepProps) {
     this.id = props.id;
@@ -33,6 +34,7 @@ class Step implements StepProps {
     this.startAt = props.startAt;
     this.endAt = props.endAt;
     this.metadata = (props as any).metadata;
+    this.executionContext = (props as any).executionContext;
   }
 
   /**
@@ -53,6 +55,7 @@ class Step implements StepProps {
       startAt: this.startAt,
       endAt: this.endAt,
       metadata: this.metadata,
+      executionContext: this.executionContext,
     };
   }
 
@@ -259,6 +262,23 @@ class Step implements StepProps {
       stepMetadata = (step as any).metadata;
     }
 
+    // Extract executionContext if present on the step
+    let executionContext: any = undefined;
+    if (
+      typeof (step as any).getExecutionContext === "function" &&
+      (step as any).getExecutionContext()
+    ) {
+      try {
+        executionContext = convertProtobufValueToJs(
+          (step as any).getExecutionContext()
+        );
+      } catch (e) {
+        executionContext = (step as any).getExecutionContext();
+      }
+    } else if ((step as any).executionContext) {
+      executionContext = (step as any).executionContext;
+    }
+
     return new Step({
       id: getId(),
       type: convertProtobufStepTypeToSdk(getType()),
@@ -272,6 +292,7 @@ class Step implements StepProps {
       startAt: getStartAt(),
       endAt: getEndAt(),
       metadata: stepMetadata,
+      executionContext,
     } as any);
   }
 

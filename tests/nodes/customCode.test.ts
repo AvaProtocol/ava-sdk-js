@@ -353,7 +353,7 @@ describe("CustomCode Node Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBe(30);
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should execute JavaScript with lodash module", async () => {
@@ -391,7 +391,7 @@ describe("CustomCode Node Tests", () => {
       expect(data).toBeDefined();
       expect(data.sum).toBe(21);
       expect(data.max).toBe(6);
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should execute JavaScript with date manipulation", async () => {
@@ -430,7 +430,7 @@ describe("CustomCode Node Tests", () => {
       expect(data).toBeDefined();
       expect(data.formatted).toBe("2023-12-25");
       expect(data.addDays).toBe("2024-01-01");
-      expect(result.nodeId).toBeDefined();
+      
     });
 
     test("should handle error in custom code execution", async () => {

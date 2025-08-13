@@ -236,13 +236,8 @@ export interface RunNodeWithInputsResponse {
   success: boolean;
   data: NodeOutputData;
   error?: string;
-  executionId?: string;
-  nodeId?: string;
-  metadata?: {
-    _raw?: any[]; // Array of raw method results for contract reads
-    eval?: any; // Evaluation metadata (for consistency with eventTrigger)
-    [key: string]: any; // Allow additional metadata fields for other node types
-  };
+  metadata?: Record<string, any> | any[];
+  executionContext?: Record<string, any>;
 }
 
 export interface RunTriggerRequest {
@@ -254,8 +249,8 @@ export interface RunTriggerResponse {
   success: boolean;
   data: TriggerOutputData;
   error?: string;
-  triggerId?: string;
-  metadata?: string; // Optional JSON-encoded metadata for testing/debugging
+  metadata?: Record<string, any> | any[];
+  executionContext?: Record<string, any>;
 }
 
 export interface SimulateWorkflowRequest {
