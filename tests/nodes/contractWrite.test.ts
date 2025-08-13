@@ -761,14 +761,7 @@ describe("ContractWrite Node Tests", () => {
 
         // Note: The step might succeed or fail depending on wallet funding and gas
         // step success must reflect metadata/receipt success
-      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
-      const stepFail =
-          (contractWriteStep as any).metadata &&
-          Array.isArray((contractWriteStep as any).metadata) &&
-          (contractWriteStep as any).metadata.some(
-            (m: any) =>
-              m.success === false || (m.receipt && m.receipt.status === "0x0")
-          );
+        const stepFail = stepIndicatesWriteFailure(contractWriteStep as any);
         expect(contractWriteStep.success).toBe(!stepFail);
       } finally {
         if (workflowId) {
@@ -1539,14 +1532,7 @@ describe("ContractWrite Node Tests", () => {
           }
         }
 
-      // Return true if any metadata item indicates a failed write (success === false or receipt.status === "0x0")
-      const stepFail2 =
-          (contractWriteStep as any).metadata &&
-          Array.isArray((contractWriteStep as any).metadata) &&
-          (contractWriteStep as any).metadata.some(
-            (m: any) =>
-              m.success === false || (m.receipt && m.receipt.status === "0x0")
-          );
+      const stepFail2 = stepIndicatesWriteFailure(contractWriteStep as any);
         expect(contractWriteStep.success).toBe(!stepFail2);
       } finally {
         if (workflowId) {

@@ -16,6 +16,7 @@ import {
   TIMEOUT_DURATION,
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
+import { executionHasWriteFailure } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
@@ -82,8 +83,8 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
       // Ensure success reflects step outcomes: no failed blockchain write steps
-      const stepFailures = execution.steps.filter((s: any) => s.type === NodeType.ContractWrite && s.metadata && Array.isArray(s.metadata) && s.metadata.some((m: any) => m.success === false || (m.receipt && m.receipt.status === "0x0")));
-      expect(execution.success).toBe(stepFailures.length === 0);
+      const hasWriteFailure = executionHasWriteFailure(execution as any);
+      expect(execution.success).toBe(!hasWriteFailure);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
