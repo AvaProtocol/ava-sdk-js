@@ -12,16 +12,18 @@ import {
   getAddress,
   generateSignature,
   TIMEOUT_DURATION,
+  getNextId,
+  SaltGlobal,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-import { getNextId } from "../utils/utils";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
-let saltIndex = 20000; // Start from 20000 for input field tests
+let saltIndex = SaltGlobal.StepInput * SALT_BUCKET_SIZE; // Reserve a distinct range for this suite
 
 describe("Input Field Tests", () => {
   let ownerAddress: string;
@@ -224,26 +226,31 @@ describe("Input Field Tests", () => {
       // NOTE: There is a known backend issue where trigger steps do not populate the config field
       // during execution. The TaskTriggerToConfig function now works correctly and populates the config field
       // with the trigger configuration data (data, headers, pathParams for ManualTrigger).
-      console.log('📊 Trigger step:', JSON.stringify(triggerStep, null, 2));
-      
+      console.log("📊 Trigger step:", JSON.stringify(triggerStep, null, 2));
+
       // Test the trigger config directly - the backend should populate this field
       expect(triggerStep.config).toBeDefined();
       const triggerConfig = triggerStep.config as Record<string, unknown>;
       expect(triggerConfig.data).toBeDefined();
       expect(triggerConfig.headers).toBeDefined();
       expect(triggerConfig.pathParams).toBeDefined();
-      
+
       const triggerData = triggerConfig.data as Record<string, unknown>;
-      expect(triggerData.apiBaseUrl).toBe('https://mock-api.ap-aggregator.local');
-      expect(triggerData.apiKey).toBe('test-api-key-123');
-      expect(triggerData.environment).toBe('testing');
-      expect(triggerData.priority).toBe('high');
-      
+      expect(triggerData.apiBaseUrl).toBe(
+        "https://mock-api.ap-aggregator.local"
+      );
+      expect(triggerData.apiKey).toBe("test-api-key-123");
+      expect(triggerData.environment).toBe("testing");
+      expect(triggerData.priority).toBe("high");
+
       const triggerHeaders = triggerConfig.headers as Record<string, unknown>;
-      expect(triggerHeaders.Authorization).toBe('Bearer trigger-token-123');
-      
-      const triggerPathParams = triggerConfig.pathParams as Record<string, unknown>;
-      expect(triggerPathParams.endpoint).toBe('data');
+      expect(triggerHeaders.Authorization).toBe("Bearer trigger-token-123");
+
+      const triggerPathParams = triggerConfig.pathParams as Record<
+        string,
+        unknown
+      >;
+      expect(triggerPathParams.endpoint).toBe("data");
 
       // Check node step receives comprehensive configuration from the trigger
       const nodeStep = execution.steps[1];
@@ -331,7 +338,7 @@ describe("Input Field Tests", () => {
           retries: 3,
           timeout: 30000,
         },
-      }
+      },
     } as TriggerProps;
 
     // Create a custom code node that processes data (common pattern that was failing)
@@ -373,6 +380,7 @@ describe("Input Field Tests", () => {
 
     // This is the EXACT call that was failing for the original client
     // The error would occur when simulateWorkflow processes the execution steps
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     let result;
     expect(async () => {
       result = await client.simulateWorkflow({
@@ -384,6 +392,10 @@ describe("Input Field Tests", () => {
           userToken: "test-token-123",
           environment: "production",
           debugMode: true,
+          workflowContext: {
+            eoaAddress: ownerAddress,
+            runner: wallet.address,
+          },
         },
       });
     }).not.toThrow();
@@ -397,6 +409,10 @@ describe("Input Field Tests", () => {
         userToken: "test-token-123",
         environment: "production",
         debugMode: true,
+        workflowContext: {
+          eoaAddress: ownerAddress,
+          runner: wallet.address,
+        },
       },
     });
 
@@ -447,7 +463,7 @@ describe("Input Field Tests", () => {
     expect(triggerStep.config).toBeDefined();
     expect(typeof triggerStep.config).toBe("object");
     const triggerInput = triggerStep.config as Record<string, unknown>;
-    
+
     // The trigger config contains a nested data structure
     const inputData = triggerInput.data as Record<string, unknown>;
     expect(inputData.userToken).toBe("abc123");
@@ -460,6 +476,7 @@ describe("Input Field Tests", () => {
   });
 
   test("should handle EventTrigger input field correctly (reproducing server-side input nil issue)", async () => {
+    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const eventTrigger = TriggerFactory.create({
       id: getNextId(),
       name: "event_trigger_with_input",
@@ -493,7 +510,7 @@ describe("Input Field Tests", () => {
             ],
           },
         ],
-      },      
+      },
     });
 
     // Create a CustomCode node that uses the EventTrigger input data
@@ -561,7 +578,12 @@ describe("Input Field Tests", () => {
           target: customCodeNode.id,
         }),
       ],
-      inputVariables: {},
+      inputVariables: {
+        workflowContext: {
+          eoaAddress: ownerAddress,
+          runner: wallet.address,
+        },
+      },
     });
 
     // Verify the simulation has the expected structure
@@ -574,8 +596,8 @@ describe("Input Field Tests", () => {
 
     // 🎯 KEY TEST: Verify EventTrigger config field contains configuration
     // The config field should contain the trigger configuration (queries), not the input data
-    console.log('📊 EventTrigger step:', JSON.stringify(triggerStep, null, 2));
-    
+    console.log("📊 EventTrigger step:", JSON.stringify(triggerStep, null, 2));
+
     expect(triggerStep.config).toBeDefined();
     expect(typeof triggerStep.config).toBe("object");
     const triggerConfig = triggerStep.config as Record<string, unknown>;
@@ -583,13 +605,15 @@ describe("Input Field Tests", () => {
     // The trigger step's config field contains the trigger configuration (queries)
     expect(triggerConfig.queries).toBeDefined();
     expect(Array.isArray(triggerConfig.queries)).toBe(true);
-    const queries = triggerConfig.queries as Array<any>;
+    const queries = triggerConfig.queries as Array<Record<string, unknown>>;
     expect(queries).toHaveLength(2);
-    
+
     // Check the first query structure
     expect(queries[0].addresses).toBeDefined();
     expect(Array.isArray(queries[0].addresses)).toBe(true);
-    expect(queries[0].addresses[0]).toBe("0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238");
+    expect(queries[0].addresses[0]).toBe(
+      "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+    );
     expect(queries[0].topics).toBeDefined();
     expect(Array.isArray(queries[0].topics)).toBe(true);
 
@@ -611,16 +635,18 @@ describe("Input Field Tests", () => {
     // Verify the CustomCode processed the EventTrigger input correctly
     // Note: CustomCode node returns direct output, not wrapped in {data: ...}
     expect(output.success).toBe(true);
-    
+
     // Test that EventTrigger input data is properly made available in the JavaScript execution context
-    console.log('📊 CustomCode output:', JSON.stringify(output, null, 2));
-    
+    console.log("📊 CustomCode output:", JSON.stringify(output, null, 2));
+
     // Input data should be available - test the values
     expect(output.inputDataAccessed).toBe(true);
-    expect(output.inputAddress).toBe("0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788");
+    expect(output.inputAddress).toBe(
+      "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788"
+    );
     expect(output.inputChainId).toBe(11155111);
     expect(output.inputTokensCount).toBe(1);
-    
+
     expect(output.message).toBeDefined();
     expect(typeof output.message).toBe("string");
   });

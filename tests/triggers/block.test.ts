@@ -10,6 +10,7 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -19,7 +20,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 8000;
+let saltIndex = SaltGlobal.BlockTrigger * SALT_BUCKET_SIZE;
 
 describe("BlockTrigger Tests", () => {
   let client: Client;
@@ -293,9 +294,15 @@ describe("BlockTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = blockTrigger;
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress: coreAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       console.log(
         "🚀 simulateWorkflow result:",
@@ -330,9 +337,15 @@ describe("BlockTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = blockTrigger;
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress: coreAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       expect(simulation.success).toBe(true);
       const triggerStep = simulation.steps.find(
@@ -435,9 +448,15 @@ describe("BlockTrigger Tests", () => {
       const workflowProps = createFromTemplate(wallet.address, []);
       workflowProps.trigger = blockTrigger;
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress: coreAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === blockTrigger.id

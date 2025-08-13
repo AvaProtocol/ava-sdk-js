@@ -11,6 +11,7 @@ import {
   SaltGlobal,
   getBlockNumber,
   removeCreatedWorkflows,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -20,19 +21,20 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 4000;
+let saltIndex = SaltGlobal.BranchNode * SALT_BUCKET_SIZE;
 
 describe("BranchNode Tests", () => {
   let client: Client;
+  let eoaAddress: string;
 
   beforeAll(async () => {
-    const address = await getAddress(walletPrivateKey);
+    eoaAddress = await getAddress(walletPrivateKey);
 
     client = new Client({
       endpoint: avsEndpoint,
     });
 
-    const { message } = await client.getSignatureFormat(address);
+    const { message } = await client.getSignatureFormat(eoaAddress);
     const signature = await generateSignature(message, walletPrivateKey);
 
     const res = await client.authWithSignature({
@@ -231,9 +233,15 @@ describe("BranchNode Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [branchNode]);
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
 
 
@@ -267,9 +275,15 @@ describe("BranchNode Tests", () => {
 
       const workflowProps = createFromTemplate(wallet.address, [branchNode]);
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       expect(simulation.success).toBe(true);
       const branchStep = simulation.steps.find(
@@ -397,9 +411,15 @@ describe("BranchNode Tests", () => {
       });
 
       const workflowProps = createFromTemplate(wallet.address, [branchNode]);
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      });
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === branchNode.id

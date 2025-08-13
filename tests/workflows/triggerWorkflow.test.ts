@@ -13,12 +13,13 @@ import {
   getBlockNumber,
   SaltGlobal,
   TIMEOUT_DURATION,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
-let saltIndex = SaltGlobal.TriggerWorkflow * 100; // Salt index 1000 - 1099
+let saltIndex = SaltGlobal.TriggerWorkflow * SALT_BUCKET_SIZE;
 
 // Get environment variables from envalid config
 const { avsEndpoint, walletPrivateKey } = getConfig();

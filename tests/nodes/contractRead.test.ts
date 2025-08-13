@@ -15,6 +15,7 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
+  SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
@@ -25,7 +26,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 6000;
+let saltIndex = SaltGlobal.ContractRead * SALT_BUCKET_SIZE;
 
 // Sepolia Chainlink ETH/USD Price Feed Oracle
 const SEPOLIA_ORACLE_CONFIG = {
@@ -87,15 +88,16 @@ const SEPOLIA_ORACLE_CONFIG = {
 
 describe("ContractRead Node Tests", () => {
   let client: Client;
+  let eoaAddress: string;
 
   beforeAll(async () => {
-    const address = await getAddress(walletPrivateKey);
+    eoaAddress = await getAddress(walletPrivateKey);
 
     client = new Client({
       endpoint: avsEndpoint,
     });
 
-    const { message } = await client.getSignatureFormat(address);
+    const { message } = await client.getSignatureFormat(eoaAddress);
     const signature = await generateSignature(message, walletPrivateKey);
 
     const res = await client.authWithSignature({
@@ -122,6 +124,8 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -137,8 +141,8 @@ describe("ContractRead Node Tests", () => {
             chainId: null,
             name: "Contract Read Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
             maxExecution: 0,
@@ -253,10 +257,17 @@ describe("ContractRead Node Tests", () => {
     });
 
     test("should handle invalid contract address", async () => {
+      if (!isSepolia) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: "0x0000000000000000000000000000000000000000", // Invalid address
+          contractAddress: "0x1234567890123456789012345678901234567890",
           contractAbi: [
             {
               inputs: [],
@@ -274,8 +285,8 @@ describe("ContractRead Node Tests", () => {
             chainId: null,
             name: "Invalid Contract Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
@@ -312,6 +323,8 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -325,8 +338,8 @@ describe("ContractRead Node Tests", () => {
             chainId: null,
             name: "Description Method Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
@@ -378,6 +391,8 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -387,7 +402,7 @@ describe("ContractRead Node Tests", () => {
             {
               methodName: "decimals",
               methodParams: [],
-              applyToFields: ["latestRoundData.answer"], // Use dot notation for nested fields
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
             },
             {
               methodName: "latestRoundData",
@@ -395,65 +410,303 @@ describe("ContractRead Node Tests", () => {
             },
           ],
         },
+        inputVariables: {
+          workflowContext: {
+            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
+            chainId: null,
+            name: "ApplyToFields Test",
+            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
+            startAt: new Date(),
+            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            maxExecution: 0,
+            status: "draft",
+            completedAt: null,
+            lastRanAt: null,
+            executionCount: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        },
+      };
+
+      console.log(
+        "🚀 ~ Chainlink oracle applyToFields test ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ Chainlink oracle applyToFields test ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.metadata).toBeDefined();
+
+      // NEW: data is now a flattened object, not an array
+      const data = result.data as Record<string, unknown>;
+      const metadata = result.metadata as Record<string, unknown>[];
+
+      // NEW: data should be an object, not an array
+      expect(typeof data).toBe("object");
+      expect(Array.isArray(data)).toBe(false);
+      expect(Array.isArray(metadata)).toBe(true);
+      expect(metadata.length).toBe(params.nodeConfig.methodCalls.length);
+
+      // NEW: Access flattened data directly
+      expect(data.decimals).toBeDefined();
+      expect(data.latestRoundData).toBeDefined();
+
+      // Verify decimals field
+      expect(typeof data.decimals).toBe("string");
+      expect(parseInt(data.decimals as string)).toBeGreaterThan(0);
+
+      // Verify latestRoundData structure with decimal formatting applied
+      const latestRoundData = data.latestRoundData as Record<string, unknown>;
+      expect(latestRoundData.answer).toBeDefined();
+      expect(latestRoundData.roundId).toBeDefined();
+      expect(latestRoundData.startedAt).toBeDefined();
+      expect(latestRoundData.updatedAt).toBeDefined();
+      expect(latestRoundData.answeredInRound).toBeDefined();
+
+      // Verify that decimal formatting is applied to the answer field
+      const answer = latestRoundData.answer as string;
+      expect(typeof answer).toBe("string");
+      expect(parseFloat(answer)).toBeGreaterThan(0);
+      expect(answer).toMatch(/^\d+\.\d+$/); // Should contain decimal point (formatted)
+
+      // Find metadata for verification
+      const decimalsMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "decimals"
+      );
+      const latestRoundMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "latestRoundData"
+      );
+
+      expect(decimalsMetadata).toBeDefined();
+      expect(latestRoundMetadata).toBeDefined();
+
+      // Verify metadata structure
+      expect(decimalsMetadata!.success).toBe(true);
+      expect(latestRoundMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.methodName).toBe("decimals");
+      expect(latestRoundMetadata!.methodName).toBe("latestRoundData");
+      expect(decimalsMetadata!.methodABI).toBeDefined();
+      expect(latestRoundMetadata!.methodABI).toBeDefined();
+
+      // Verify that metadata contains raw unformatted values
+      const rawLatestRoundData = latestRoundMetadata!.value as Record<string, unknown>;
+      const rawAnswer = rawLatestRoundData.answer as string;
+      
+      // Raw answer should be different from formatted answer (no decimal point in raw)
+      expect(rawAnswer).not.toEqual(answer);
+      expect(parseInt(rawAnswer)).toBeGreaterThan(0);
+
+      console.log(`✅ Decimal formatting applied: raw=${rawAnswer}, formatted=${answer}`);
+    });
+
+    test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
+      if (!isSepolia) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      // USDC contract on Sepolia - test simplified applyToFields syntax
+      const params = {
+        nodeType: NodeType.ContractRead,
+        nodeConfig: {
+          contractAddress: tokens?.USDC?.address, // Due to the isSepolia check, tokens.USDC should be defined
+          contractAbi: [
+            {
+              constant: true,
+              inputs: [],
+              name: "totalSupply",
+              outputs: [{ name: "", type: "uint256" }],
+              payable: false,
+              stateMutability: "view",
+              type: "function",
+            },
+            {
+              constant: true,
+              inputs: [],
+              name: "decimals",
+              outputs: [{ name: "", type: "uint8" }],
+              payable: false,
+              stateMutability: "view",
+              type: "function",
+            },
+          ],
+          methodCalls: [
+            {
+              methodName: "decimals",
+              methodParams: [],
+              applyToFields: ["totalSupply"], // ✅ Simplified syntax: just method name for single values
+            },
+            {
+              methodName: "totalSupply",
+              methodParams: [],
+            },
+          ],
+        },
         inputVariables: {},
       };
 
       console.log(
-        "🚀 ~ runNodeWithInputs with decimal formatting ~ params:",
+        "🚀 ~ USDC simplified applyToFields test ~ params:",
         util.inspect(params, { depth: null, colors: true })
       );
 
-      const result: RunNodeWithInputsResponse = await client.runNodeWithInputs(
-        params
-      );
+      const result = await client.runNodeWithInputs(params);
 
       console.log(
-        "🚀 ~ runNodeWithInputs with decimal formatting ~ result:",
+        "🚀 ~ USDC simplified applyToFields test ~ result:",
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-
-      // Handle flattened object format (new design)
       expect(typeof result.data).toBe("object");
-      expect(result.data).not.toBeNull();
-      expect(Array.isArray(result.data)).toBe(false);
 
-      const data = result.data as Record<string, any>;
+      // For standalone contractRead, the data is a flattened object containing all method results
+      const data = result.data as Record<string, unknown>;
 
-      // Check that we got results for both methods in flattened format
-      expect(data.latestRoundData).toBeDefined();
+      // Verify both method results are present in the flattened data
       expect(data.decimals).toBeDefined();
+      expect(data.totalSupply).toBeDefined();
 
-      // For our new implementation, we expect direct field access in the latestRoundData result
-      expect(data.latestRoundData.answer).toBeDefined();
-      expect(data.latestRoundData.roundId).toBeDefined();
-      expect(data.latestRoundData.startedAt).toBeDefined();
-      expect(data.latestRoundData.updatedAt).toBeDefined();
-      expect(data.latestRoundData.answeredInRound).toBeDefined();
+      // Verify decimals result
+      expect(typeof data.decimals).toBe("string");
+      expect(data.decimals).toBe("6"); // USDC has 6 decimals
 
-      const answerValue = data.latestRoundData.answer;
-      expect(answerValue).toBeTruthy();
+      // Verify totalSupply result with decimal formatting applied
+      expect(typeof data.totalSupply).toBe("string");
 
-      // 🔍 TYPE CHECK: Verify ABI type improvements are working
-      expect(typeof answerValue).toBe("string"); // answer should be string type (formatted decimal)
-      expect(typeof data.decimals).toBe("string"); // decimals field should be string type
+      // totalSupply should be formatted as decimal (contains a dot)
+      const totalSupply = data.totalSupply as string;
+      expect(totalSupply).toMatch(/^\d+\.\d+$/);
 
-      expect(answerValue).toMatch(/^\d+\.\d+$/); // Should be a decimal number
+      // Verify that no Raw fields are created automatically
+      expect(data.totalSupplyRaw).toBeUndefined();
 
-      expect(result.nodeId).toBeDefined();
+      // Verify the value is properly formatted (should be a reasonable USDC total supply)
+      const parsedTotalSupply = parseFloat(totalSupply);
+      expect(parsedTotalSupply).toBeGreaterThan(0);
+      expect(parsedTotalSupply).toBeLessThan(Number.MAX_SAFE_INTEGER);
 
-      // Check metadata array (new format)
+      console.log(`✅ USDC totalSupply formatted correctly: ${totalSupply} (${parsedTotalSupply})`);
+
+      // Verify metadata structure (should be array of method results)
       expect(result.metadata).toBeDefined();
       expect(Array.isArray(result.metadata)).toBe(true);
-      expect(result.metadata.length).toBeGreaterThan(0);
+      const metadata = result.metadata as Record<string, unknown>[];
+      expect(metadata.length).toBe(2);
 
-      const firstMethod = result.metadata[0];
-      expect(firstMethod.methodName).toBeDefined();
-      expect(firstMethod.success).toBe(true);
-      expect(firstMethod.methodName).toBe("decimals");
+      // Find the specific method results in metadata
+      const decimalsMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "decimals"
+      );
+      const totalSupplyMetadata = metadata.find(
+        (r: Record<string, unknown>) => r.methodName === "totalSupply"
+      );
+
+      expect(decimalsMetadata).toBeDefined();
+      expect(totalSupplyMetadata).toBeDefined();
+      expect(decimalsMetadata!.success).toBe(true);
+      expect(totalSupplyMetadata!.success).toBe(true);
+    });
+
+    test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
+      if (!isSepolia) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const contractReadNode = NodeFactory.create({
+        id: getNextId(),
+        name: "simulate_applyToFields_test",
+        type: NodeType.ContractRead,
+        data: {
+          contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
+          contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
+          methodCalls: [
+            {
+              methodName: "decimals",
+              methodParams: [],
+              applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer field
+            },
+            {
+              methodName: "latestRoundData",
+              methodParams: [], // latestRoundData()
+            },
+          ],
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractReadNode,
+      ]);
+
+      console.log(
+        "🚀 ~ simulateWorkflow applyToFields test ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ simulateWorkflow applyToFields test ~ result:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
+
+      expect(simulation.success).toBe(true);
+      const contractReadStep = simulation.steps.find(
+        (step) => step.id === contractReadNode.id
+      );
+      expect(contractReadStep).toBeDefined();
+      expect(contractReadStep!.success).toBe(true);
+
+      const output = contractReadStep!.output as any;
+      expect(output).toBeDefined();
+      
+      // Verify structure has both data and metadata fields
+      expect(typeof output).toBe("object");
+      expect(output).not.toBeNull();
+      expect(Array.isArray(output)).toBe(false);
+      expect(output).toHaveProperty("data");
+      expect(output).toHaveProperty("metadata");
+
+      // Verify that both method calls are included in the response in data field
+      expect(output.data.decimals).toBeDefined();
+      expect(output.data.latestRoundData).toBeDefined();
+
+      // Verify that decimals result contains the decimals value
+      expect(typeof output.data.decimals).toBe("string");
+
+      // Verify that latestRoundData result contains formatted values
+      expect(output.data.latestRoundData).toHaveProperty("answer");
+      expect(output.data.latestRoundData).toHaveProperty("roundId");
+      expect(output.data.latestRoundData).toHaveProperty("answeredInRound");
+      expect(output.data.latestRoundData).toHaveProperty("startedAt");
+      expect(output.data.latestRoundData).toHaveProperty("updatedAt");
+
+      // Verify decimal formatting was applied to answer field
+      const answer = output.data.latestRoundData.answer;
+
+      expect(typeof answer).toBe("string");
+
+      // Answer should be formatted as decimal (contains a dot)
+      expect(answer).toMatch(/^\d+\.\d+$/);
+
+      // Verify that answer is a valid formatted value
+      expect(parseFloat(answer)).toBeGreaterThan(0);
     });
   });
 
@@ -485,7 +738,7 @@ describe("ContractRead Node Tests", () => {
       ]);
 
       console.log(
-        "🚀 ~ simulateWorkflow with contract read ~ workflowProps:",
+        " ~ simulateWorkflow with contract read ~ workflowProps:",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -567,7 +820,7 @@ describe("ContractRead Node Tests", () => {
       ]);
 
       console.log(
-        "🚀 ~ simulateWorkflow with decimal formatting ~ workflowProps:",
+        " ~ simulateWorkflow with decimal formatting ~ workflowProps:",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -879,6 +1132,8 @@ describe("ContractRead Node Tests", () => {
       let workflowId: string | undefined;
 
       try {
+        const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
         const contractReadConfig = {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
@@ -894,8 +1149,8 @@ describe("ContractRead Node Tests", () => {
             chainId: null,
             name: "Consistency Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
@@ -1052,7 +1307,14 @@ describe("ContractRead Node Tests", () => {
   });
 
   describe("Error Handling Tests", () => {
-    test("should handle invalid method signature gracefully", async () => {
+    test("should handle non-existent method gracefully", async () => {
+      if (!isSepolia) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
+      }
+
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -1076,8 +1338,8 @@ describe("ContractRead Node Tests", () => {
             chainId: null,
             name: "Error Handling Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
@@ -1220,6 +1482,8 @@ describe("ContractRead Node Tests", () => {
         return;
       }
 
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -1243,8 +1507,8 @@ describe("ContractRead Node Tests", () => {
             chainId: null,
             name: "ApplyToFields Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: "0xB861aEe06De8694E129b50adA89437a1BF688F69",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
             startAt: new Date(),
             expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             maxExecution: 0,
