@@ -675,30 +675,31 @@ describe("ContractRead Node Tests", () => {
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      
-      // Verify structure has both data and metadata fields
+
+      // Output should be a plain object containing method results directly
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
       expect(Array.isArray(output)).toBe(false);
-      expect(output).toHaveProperty("data");
-      expect(output).toHaveProperty("metadata");
 
-      // Verify that both method calls are included in the response in data field
-      expect(output.data.decimals).toBeDefined();
-      expect(output.data.latestRoundData).toBeDefined();
+      // Verify both method calls are included directly on output
+      expect(output.decimals).toBeDefined();
+      expect(output.latestRoundData).toBeDefined();
 
       // Verify that decimals result contains the decimals value
-      expect(typeof output.data.decimals).toBe("string");
+      expect(typeof output.decimals).toBe("string");
 
       // Verify that latestRoundData result contains formatted values
-      expect(output.data.latestRoundData).toHaveProperty("answer");
-      expect(output.data.latestRoundData).toHaveProperty("roundId");
-      expect(output.data.latestRoundData).toHaveProperty("answeredInRound");
-      expect(output.data.latestRoundData).toHaveProperty("startedAt");
-      expect(output.data.latestRoundData).toHaveProperty("updatedAt");
+      expect(output.latestRoundData).toHaveProperty("answer");
+      expect(output.latestRoundData).toHaveProperty("roundId");
+      expect(output.latestRoundData).toHaveProperty("answeredInRound");
+      expect(output.latestRoundData).toHaveProperty("startedAt");
+      expect(output.latestRoundData).toHaveProperty("updatedAt");
 
       // Verify decimal formatting was applied to answer field
-      const answer = output.data.latestRoundData.answer;
+      const answer = output.latestRoundData.answer;
+
+      // Step-level metadata property should exist (may be undefined if backend didn't set it)
+      expect(contractReadStep as any).toHaveProperty("metadata");
 
       expect(typeof answer).toBe("string");
 

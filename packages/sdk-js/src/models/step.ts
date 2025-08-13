@@ -244,54 +244,19 @@ class Step implements StepProps {
         ? step.getEndAt()
         : (step as any).endAt;
 
-    // Extract step-level metadata if present
+    // Extract step-level metadata if present (per protobuf: Execution.Step.metadata)
     let stepMetadata: any = undefined;
-    const outCaseForMeta = this.getOutputDataCase(step);
-    const outObjForMeta = this.extractOutputData(step);
     if (
-      outObjForMeta &&
-      (outCaseForMeta === avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE ||
-        outCaseForMeta === avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ)
+      typeof (step as any).getMetadata === "function" &&
+      (step as any).getMetadata()
     ) {
-      // Prefer reading metadata from the node-specific output when present
-      if (
-        typeof (outObjForMeta as any).hasMetadata === "function" &&
-        (outObjForMeta as any).hasMetadata()
-      ) {
-        try {
-          stepMetadata = convertProtobufValueToJs(
-            (outObjForMeta as any).getMetadata()
-          );
-        } catch (e) {
-          stepMetadata = (outObjForMeta as any).getMetadata();
-        }
-      } else if (typeof (outObjForMeta as any).getMetadata === "function") {
-        const mv = (outObjForMeta as any).getMetadata();
-        if (mv) {
-          try {
-            stepMetadata = convertProtobufValueToJs(mv);
-          } catch (e) {
-            stepMetadata = mv as any;
-          }
-        }
-      } else if ((outObjForMeta as any).metadata) {
-        stepMetadata = (outObjForMeta as any).metadata;
+      try {
+        stepMetadata = convertProtobufValueToJs((step as any).getMetadata());
+      } catch (e) {
+        stepMetadata = (step as any).getMetadata();
       }
-    }
-    // Fallback to step-level metadata if present
-    if (stepMetadata === undefined) {
-      if (
-        typeof (step as any).getMetadata === "function" &&
-        (step as any).getMetadata()
-      ) {
-        try {
-          stepMetadata = convertProtobufValueToJs((step as any).getMetadata());
-        } catch (e) {
-          stepMetadata = (step as any).getMetadata();
-        }
-      } else if ((step as any).metadata) {
-        stepMetadata = (step as any).metadata;
-      }
+    } else if ((step as any).metadata) {
+      stepMetadata = (step as any).metadata;
     }
 
     return new Step({

@@ -584,20 +584,19 @@ describe("ContractWrite Node Tests", () => {
       expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
       expect(output).not.toHaveProperty("results");
 
-      // Verify structure has both data and metadata fields
-      expect(output).toHaveProperty("data");
-      expect(output).toHaveProperty("metadata");
+      // Verify flattened structure by method name directly on output
+      expect(output).toHaveProperty("approve");
+      expect(output).toHaveProperty("transfer");
+      expect(typeof output.approve).toBe("object");
+      expect(typeof output.transfer).toBe("object");
 
-      // Verify flattened structure by method name in data field
-      expect(output.data).toHaveProperty("approve");
-      expect(output.data).toHaveProperty("transfer");
-      expect(typeof output.data.approve).toBe("object");
-      expect(typeof output.data.transfer).toBe("object");
-
-      // Should have same number of methods as methodCalls in data field
-      expect(Object.keys(output.data).length).toBe(
+      // Should have same number of methods as methodCalls
+      expect(Object.keys(output).length).toBe(
         (contractWriteNode.data as any).methodCalls.length
       );
+
+      // Step-level metadata property should exist (may be undefined if backend didn't set it)
+      expect(contractWriteStep as any).toHaveProperty("metadata");
     });
   });
 
