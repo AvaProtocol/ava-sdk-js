@@ -75,6 +75,7 @@ export type StepProps = Omit<
   | "manualTrigger"
 > & {
   output: OutputDataProps;
+  metadata?: any;
 };
 
 // Execution Props
