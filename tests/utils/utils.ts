@@ -79,7 +79,7 @@ export async function generateAuthPayloadWithApiKey(
   address: string,
   apiKey: string
 ): Promise<GetKeyRequestApiKey> {
-  try {;
+  try {
     const client = new Client({
       endpoint: config.avsEndpoint,
     });
@@ -153,8 +153,8 @@ export const cleanupWorkflows = async (
   // Filter out undefined ids and convert the array to a Map
   const workflowIds = new Map(
     workflowArray.items
-      .filter((item: any) => item.id !== undefined)
-      .map((item: any) => [item.id as string, false])
+      .filter((item: { id?: string }) => item.id !== undefined)
+      .map((item: { id?: string }) => [item.id as string, false])
   );
 
   await removeCreatedWorkflows(client, workflowIds);
@@ -220,16 +220,18 @@ export const getBlockNumber = async (): Promise<number> => {
       ),
     ]);
     return blockNumber;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new Error(
-      `Failed to get block number: ${error?.message || "Unknown error"}`
+      `Failed to get block number: ${
+        (error as { message?: string })?.message || "Unknown error"
+      }`
     );
   }
 };
 
 export const getChainId = async (): Promise<number> => {
-  const config = getTestConfig();
-  const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
+  const cfg = getConfig();
+  const provider = new ethers.JsonRpcProvider(cfg.chainEndpoint);
   try {
     // Set a 5 second timeout for the connection
     const network = await Promise.race<ethers.Network>([
@@ -239,12 +241,75 @@ export const getChainId = async (): Promise<number> => {
       ),
     ]);
     return Number(network.chainId);
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw new Error(
-      `Failed to get chain ID: ${error?.message || "Unknown error"}`
+      `Failed to get chain ID: ${
+        (error as { message?: string })?.message || "Unknown error"
+      }`
     );
   }
 };
+
+// ===== Test helpers for blockchain write success/failure checks =====
+
+type ReceiptLike = { status?: string } | null | undefined;
+type MethodMetadataLike =
+  | { success?: boolean; receipt?: ReceiptLike }
+  | null
+  | undefined;
+
+/**
+ * Return true if any metadata item indicates a failed write
+ * (success === false or receipt.status === "0x0").
+ */
+export function hasWriteFailureFromMetadata(metadata: unknown): boolean {
+  if (!Array.isArray(metadata)) return false;
+  return (metadata as MethodMetadataLike[]).some(
+    (m) =>
+      !!m && (m.success === false || (m.receipt && m.receipt.status === "0x0"))
+  );
+}
+
+/** Return true if every metadata item indicates a successful write. */
+export function metadataIndicatesAllWritesSuccessful(
+  metadata: unknown
+): boolean {
+  if (!Array.isArray(metadata)) return true;
+  return (metadata as MethodMetadataLike[]).every(
+    (m) => !!m && m.success === true && (!m.receipt || m.receipt.status === "0x1")
+  );
+}
+
+/** Return true if the given result object has metadata and it indicates all writes succeeded. */
+export function resultIndicatesAllWritesSuccessful(
+  result: { metadata?: unknown } | null | undefined
+): boolean {
+  if (!result || result.metadata === undefined) return true;
+  return metadataIndicatesAllWritesSuccessful(result.metadata);
+}
+
+/** Return true if a step has metadata that indicates a failed write. */
+export function stepIndicatesWriteFailure(
+  step: { metadata?: unknown } | null | undefined
+): boolean {
+  if (!step || step.metadata === undefined) return false;
+  return hasWriteFailureFromMetadata(step.metadata);
+}
+
+/**
+ * Return true if any ContractWrite step in an execution indicates a failed write.
+ */
+export function executionHasWriteFailure(
+  execution:
+    | { steps?: Array<{ type?: string; metadata?: unknown }> }
+    | null
+    | undefined
+): boolean {
+  if (!execution || !Array.isArray(execution.steps)) return false;
+  return execution.steps
+    .filter((s) => s && s.type === "contractWrite")
+    .some((s) => hasWriteFailureFromMetadata(s.metadata));
+}
 
 export const verifyExecutionStepResults = (
   expected: StepProps,

@@ -73,7 +73,7 @@ describe("BranchNode Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       
       // Validate data format - should be clean JSON, not protobuf structures
       expect(result.data).toEqual(
@@ -112,7 +112,7 @@ describe("BranchNode Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       
       // Validate data format - should be clean JSON, not protobuf structures
       expect(result.data).toEqual(
@@ -153,7 +153,7 @@ describe("BranchNode Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       
       // Validate data format - should be clean JSON, not protobuf structures
       expect(result.data).toEqual(
@@ -196,7 +196,7 @@ describe("BranchNode Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.nodeId).toBeDefined();
+      
       
       // Validate data format - should be clean JSON, not protobuf structures
       expect(result.data).toEqual(

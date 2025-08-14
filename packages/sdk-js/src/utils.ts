@@ -91,6 +91,25 @@ export function convertJSValueToProtobuf(value: any): ProtobufValue {
 }
 
 /**
+ * Recursively convert object keys from snake_case to camelCase.
+ * Leaves non-objects and arrays intact (arrays are mapped over).
+ */
+export function toCamelCaseKeys<T = any>(input: any): T {
+  if (input === null || input === undefined) return input as T;
+  if (Array.isArray(input)) {
+    return input.map((item) => toCamelCaseKeys(item)) as unknown as T;
+  }
+  if (typeof input !== "object") return input as T;
+
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(input)) {
+    const camelKey = key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    result[camelKey] = toCamelCaseKeys(value);
+  }
+  return result as T;
+}
+
+/**
  * Convert protobuf trigger type string to SDK trigger type string
  *
  * @param protobufType - The protobuf trigger type string (e.g., "TRIGGER_TYPE_MANUAL")

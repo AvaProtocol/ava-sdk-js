@@ -18,6 +18,8 @@ class Step implements StepProps {
   output: OutputDataProps;
   startAt: number;
   endAt: number;
+  metadata?: any;
+  executionContext?: any;
 
   constructor(props: StepProps) {
     this.id = props.id;
@@ -31,6 +33,8 @@ class Step implements StepProps {
     this.output = props.output;
     this.startAt = props.startAt;
     this.endAt = props.endAt;
+    this.metadata = (props as any).metadata;
+    this.executionContext = (props as any).executionContext;
   }
 
   /**
@@ -50,62 +54,44 @@ class Step implements StepProps {
       output: this.output,
       startAt: this.startAt,
       endAt: this.endAt,
+      metadata: this.metadata,
+      executionContext: this.executionContext,
     };
   }
 
   static getOutput(step: avs_pb.Execution.Step): OutputDataProps {
-    const outputData = this.extractOutputData(step);
-    if (!outputData) return null;
-    
-    const outputCase = this.getOutputDataCase(step);
-    
-    // 🚀 Special handling for ContractWrite and ContractRead - return both data and metadata
-    if (outputCase === avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE ||
-        outputCase === avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ) {
+    // Always return Output.data; step-level metadata is separate.
+    const outputObj = this.extractOutputData(step);
+    if (!outputObj) return null;
+
+    // Protobuf accessor path
+    if (typeof (outputObj as any).getData === "function") {
+      const val = (outputObj as any).getData();
+      if (!val) return null;
       try {
-        const result: any = {};
-        
-        // Extract data field (decoded events/results)
-        if (typeof outputData.getData === "function") {
-          result.data = convertProtobufValueToJs(outputData.getData());
-        }
-        
-        // Extract metadata field (method execution details)
-        if (typeof outputData.getMetadata === "function") {
-          result.metadata = convertProtobufValueToJs(outputData.getMetadata());
-        }
-        
-        // Return both data and metadata for ContractWrite and ContractRead
-        // This ensures consistent structure between simulated and deployed workflow execution
-        return result;
-      } catch (error) {
-        console.warn("Failed to convert ContractWrite/ContractRead protobuf to JavaScript:", error);
-        return outputData.getData ? outputData.getData() : null;
-      }
-    }
-    
-    // STANDARDIZED Direct Mapping - ALL other triggers and nodes use the same logic
-    if (typeof outputData.hasData === "function" && outputData.hasData()) {
-      try {
-        return convertProtobufValueToJs(outputData.getData());
+        return convertProtobufValueToJs(val);
       } catch (error) {
         console.warn("Failed to convert protobuf Value to JavaScript:", error);
-        return outputData.getData();
+        return val as any;
       }
-    } else if (typeof outputData.getData === "function") {
-      try {
-        return convertProtobufValueToJs(outputData.getData());
-      } catch (error) {
-        console.warn("Failed to convert protobuf Value to JavaScript:", error);
-        return outputData.getData();
-      }
-    } else if (outputData.data) {
-      // For plain objects, try to convert or use directly
-      return typeof outputData.data.getKindCase === "function"
-        ? convertProtobufValueToJs(outputData.data)
-        : outputData.data;
     }
-    
+
+    // Plain object fallback
+    const data = (outputObj as any).data;
+    if (data) {
+      try {
+        return typeof (data as any).getKindCase === "function"
+          ? convertProtobufValueToJs(data)
+          : data;
+      } catch (error) {
+        console.warn(
+          "Failed to convert plain object Value to JavaScript:",
+          error
+        );
+        return data;
+      }
+    }
+
     return null;
   }
 
@@ -114,67 +100,69 @@ class Step implements StepProps {
     const outputCase = this.getOutputDataCase(step);
     switch (outputCase) {
       case avs_pb.Execution.Step.OutputDataCase.BLOCK_TRIGGER:
-        return typeof step.getBlockTrigger === "function" 
-          ? step.getBlockTrigger() 
+        return typeof step.getBlockTrigger === "function"
+          ? step.getBlockTrigger()
           : (step as any).blockTrigger;
       case avs_pb.Execution.Step.OutputDataCase.FIXED_TIME_TRIGGER:
-        return typeof step.getFixedTimeTrigger === "function" 
-          ? step.getFixedTimeTrigger() 
+        return typeof step.getFixedTimeTrigger === "function"
+          ? step.getFixedTimeTrigger()
           : (step as any).fixedTimeTrigger;
       case avs_pb.Execution.Step.OutputDataCase.CRON_TRIGGER:
-        return typeof step.getCronTrigger === "function" 
-          ? step.getCronTrigger() 
+        return typeof step.getCronTrigger === "function"
+          ? step.getCronTrigger()
           : (step as any).cronTrigger;
       case avs_pb.Execution.Step.OutputDataCase.EVENT_TRIGGER:
-        return typeof step.getEventTrigger === "function" 
-          ? step.getEventTrigger() 
+        return typeof step.getEventTrigger === "function"
+          ? step.getEventTrigger()
           : (step as any).eventTrigger;
       case avs_pb.Execution.Step.OutputDataCase.MANUAL_TRIGGER:
-        return typeof step.getManualTrigger === "function" 
-          ? step.getManualTrigger() 
+        return typeof step.getManualTrigger === "function"
+          ? step.getManualTrigger()
           : (step as any).manualTrigger;
       case avs_pb.Execution.Step.OutputDataCase.ETH_TRANSFER:
-        return typeof step.getEthTransfer === "function" 
-          ? step.getEthTransfer() 
+        return typeof step.getEthTransfer === "function"
+          ? step.getEthTransfer()
           : (step as any).ethTransfer;
       case avs_pb.Execution.Step.OutputDataCase.GRAPHQL:
-        return typeof step.getGraphql === "function" 
-          ? step.getGraphql() 
+        return typeof step.getGraphql === "function"
+          ? step.getGraphql()
           : (step as any).graphql;
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_READ:
-        return typeof step.getContractRead === "function" 
-          ? step.getContractRead() 
+        return typeof step.getContractRead === "function"
+          ? step.getContractRead()
           : (step as any).contractRead;
       case avs_pb.Execution.Step.OutputDataCase.CONTRACT_WRITE:
-        return typeof step.getContractWrite === "function" 
-          ? step.getContractWrite() 
+        return typeof step.getContractWrite === "function"
+          ? step.getContractWrite()
           : (step as any).contractWrite;
       case avs_pb.Execution.Step.OutputDataCase.CUSTOM_CODE:
-        return typeof step.getCustomCode === "function" 
-          ? step.getCustomCode() 
+        return typeof step.getCustomCode === "function"
+          ? step.getCustomCode()
           : (step as any).customCode;
       case avs_pb.Execution.Step.OutputDataCase.REST_API:
-        return typeof step.getRestApi === "function" 
-          ? step.getRestApi() 
+        return typeof step.getRestApi === "function"
+          ? step.getRestApi()
           : (step as any).restApi;
       case avs_pb.Execution.Step.OutputDataCase.BRANCH:
-        return typeof step.getBranch === "function" 
-          ? step.getBranch() 
+        return typeof step.getBranch === "function"
+          ? step.getBranch()
           : (step as any).branch;
       case avs_pb.Execution.Step.OutputDataCase.FILTER:
-        return typeof step.getFilter === "function" 
-          ? step.getFilter() 
+        return typeof step.getFilter === "function"
+          ? step.getFilter()
           : (step as any).filter;
       case avs_pb.Execution.Step.OutputDataCase.LOOP:
-        return typeof step.getLoop === "function" 
-          ? step.getLoop() 
+        return typeof step.getLoop === "function"
+          ? step.getLoop()
           : (step as any).loop;
       default:
         return null;
     }
   }
 
-  private static getOutputDataCase(step: avs_pb.Execution.Step): avs_pb.Execution.Step.OutputDataCase {
+  private static getOutputDataCase(
+    step: avs_pb.Execution.Step
+  ): avs_pb.Execution.Step.OutputDataCase {
     if (typeof step.getOutputDataCase === "function") {
       return step.getOutputDataCase();
     }
@@ -259,6 +247,38 @@ class Step implements StepProps {
         ? step.getEndAt()
         : (step as any).endAt;
 
+    // Extract step-level metadata if present (per protobuf: Execution.Step.metadata)
+    let stepMetadata: any = undefined;
+    if (
+      typeof (step as any).getMetadata === "function" &&
+      (step as any).getMetadata()
+    ) {
+      try {
+        stepMetadata = convertProtobufValueToJs((step as any).getMetadata());
+      } catch (e) {
+        stepMetadata = (step as any).getMetadata();
+      }
+    } else if ((step as any).metadata) {
+      stepMetadata = (step as any).metadata;
+    }
+
+    // Extract executionContext if present on the step
+    let executionContext: any = undefined;
+    if (
+      typeof (step as any).getExecutionContext === "function" &&
+      (step as any).getExecutionContext()
+    ) {
+      try {
+        executionContext = convertProtobufValueToJs(
+          (step as any).getExecutionContext()
+        );
+      } catch (e) {
+        executionContext = (step as any).getExecutionContext();
+      }
+    } else if ((step as any).executionContext) {
+      executionContext = (step as any).executionContext;
+    }
+
     return new Step({
       id: getId(),
       type: convertProtobufStepTypeToSdk(getType()),
@@ -271,7 +291,9 @@ class Step implements StepProps {
       output: Step.getOutput(step),
       startAt: getStartAt(),
       endAt: getEndAt(),
-    });
+      metadata: stepMetadata,
+      executionContext,
+    } as any);
   }
 
   // Client side does not generate the step, so there's no toRequest() method

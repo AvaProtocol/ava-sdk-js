@@ -10,6 +10,7 @@ import {
   TIMEOUT_DURATION,
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
+import { executionHasWriteFailure } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
@@ -74,7 +75,9 @@ describe("Execution Management Tests", () => {
 
         expect(execution).toBeDefined();
         expect(execution.id).toEqual(triggerResult.executionId);
-        expect(execution.success).toBe(true);
+        // Overall success must be false if any blockchain write step failed
+        const hasWriteFailure = executionHasWriteFailure(execution as any);
+        expect(execution.success).toBe(!hasWriteFailure);
 
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node

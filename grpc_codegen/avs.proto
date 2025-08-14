@@ -3,8 +3,6 @@ package aggregator;
 
 option go_package = "./avsproto";
 
-import "google/protobuf/wrappers.proto";
-import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
 
 // ============================================================================
@@ -370,12 +368,8 @@ message ContractWriteNode {
 
   message Output {
     // Changed from repeated MethodResult to google.protobuf.Value for better JavaScript native type support
-    // Data will be a JSON object containing decoded event logs, where each event log is represented as a top-level key-value pair.
-    // "Flattened" means that any nested structures within the event logs are converted to a single-level object,
-    // with nested keys concatenated using dots (e.g., "eventName.fieldName"). This provides user-facing results in a simple, non-nested format.
+    // Data will be a flattened JSON object with decoded event logs (user-facing results)
     google.protobuf.Value data = 1;
-    // Metadata contains the raw method execution results with receipts and detailed information
-    google.protobuf.Value metadata = 2;
   }
 
   message MethodResult {
@@ -427,8 +421,6 @@ message ContractReadNode {
     // Changed from repeated MethodResult to google.protobuf.Value for better JavaScript native type support
     // Data will be a JSON array of method results with flattened key-value structure
     google.protobuf.Value data = 1;
-    // Metadata contains the raw backend responses with methodName, methodABI, success, error details
-    google.protobuf.Value metadata = 2;
   }
 
   // Include Config as field 
@@ -622,6 +614,10 @@ message Execution {
     repeated string inputs = 16;
     // Configuration data that was set on this trigger/node
     google.protobuf.Value config = 19;
+    // Optional structured metadata for testing/debugging; not consumed by subsequent nodes
+    google.protobuf.Value metadata = 25;
+    // Optional execution context for runtime flags and extra info (e.g., is_simulated)
+    google.protobuf.Value execution_context = 26;
     oneof output_data {
       // Trigger outputs
       BlockTrigger.Output block_trigger = 20;
@@ -1108,6 +1104,8 @@ message RunNodeWithInputsResp {
   string error = 3; // Error message if execution failed
   string node_id = 4; // ID of the executed node
   google.protobuf.Value metadata = 5; // Optional structured metadata for testing/debugging
+  // Optional execution context for runtime flags and extra info (e.g., is_simulated)
+  google.protobuf.Value execution_context = 6;
   
   // Use specific output types for nodes only
   oneof output_data {
@@ -1137,6 +1135,8 @@ message RunTriggerResp {
   string error = 2; // Error message if execution failed
   string trigger_id = 3; // ID of the executed trigger
   google.protobuf.Value metadata = 4; // Optional structured metadata for testing/debugging
+  // Optional execution context for runtime flags and extra info (e.g., is_simulated)
+  google.protobuf.Value execution_context = 5;
   
   // Use specific output types for triggers
   oneof output_data {

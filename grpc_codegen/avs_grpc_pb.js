@@ -3,8 +3,6 @@
 'use strict';
 var grpc = require('@grpc/grpc-js');
 var avs_pb = require('./avs_pb.js');
-var google_protobuf_wrappers_pb = require('google-protobuf/google/protobuf/wrappers_pb.js');
-var google_protobuf_any_pb = require('google-protobuf/google/protobuf/any_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
 function serialize_aggregator_CancelTaskResp(arg) {

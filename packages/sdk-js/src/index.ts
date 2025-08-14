@@ -61,6 +61,7 @@ import {
   convertProtobufValueToJs,
   convertJSValueToProtobuf,
   cleanGrpcErrorMessage,
+  toCamelCaseKeys,
 } from "./utils";
 
 /**
@@ -1281,7 +1282,6 @@ class Client extends BaseClient {
         success: false,
         error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
         data: null,
-        nodeId: "",
       };
     }
 
@@ -1312,11 +1312,13 @@ class Client extends BaseClient {
 
     return {
       success: result.getSuccess(),
-      data: NodeFactory.fromOutputData(result),
+      data: toCamelCaseKeys(NodeFactory.fromOutputData(result)),
       error: result.getError(),
-      nodeId: result.getNodeId(),
       metadata: result.hasMetadata()
-        ? convertProtobufValueToJs(result.getMetadata()!)
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getMetadata()!))
+        : undefined,
+      executionContext: result.hasExecutionContext()
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
         : undefined,
     };
   }
@@ -1367,10 +1369,12 @@ class Client extends BaseClient {
 
     return {
       success: result.getSuccess(),
-      data: TriggerFactory.fromOutputData(result),
+      data: toCamelCaseKeys(TriggerFactory.fromOutputData(result)),
       error: result.getError(),
-      triggerId: result.getTriggerId(),
-      metadata: metadata,
+      metadata: toCamelCaseKeys(metadata),
+      executionContext: result.hasExecutionContext()
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
+        : undefined,
     };
   }
 

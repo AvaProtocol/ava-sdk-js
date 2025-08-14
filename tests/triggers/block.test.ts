@@ -214,7 +214,7 @@ describe("BlockTrigger Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with medium interval", async () => {
@@ -234,7 +234,7 @@ describe("BlockTrigger Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with large interval", async () => {
@@ -254,7 +254,7 @@ describe("BlockTrigger Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with single block interval", async () => {
@@ -274,7 +274,7 @@ describe("BlockTrigger Tests", () => {
       expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
   });
 

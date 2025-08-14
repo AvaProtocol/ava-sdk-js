@@ -17,6 +17,7 @@ export interface PageInfo {
   hasPreviousPage: boolean;
   hasNextPage: boolean;
 }
+
 export type SecretProps = {
   name: string;
   secret?: string;

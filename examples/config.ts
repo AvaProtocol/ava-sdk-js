@@ -6,7 +6,7 @@ const optionDefinitions = [
     name: "avs-target",
     alias: "t",
     type: String,
-    defaultValue: "development",
+    defaultValue: "dev",
   },
   { name: "args", type: String, multiple: true, defaultValue: [] }, // Captures extra arguments like `0`
 ];
@@ -28,16 +28,30 @@ export const commandArgs = {
 
 console.log("commandArgs", commandArgs);
 
-export const env = commandArgs["avs-target"] || "development";
+export const env = commandArgs["avs-target"] || "dev";
 
 export const config = {
-  // The development environment is the local environment run on your machine. It can be bring up following the instructions in this file https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/docs/development.md
-  development: {
+  // The dev environment is the local environment run on your machine. It can be bring up following the instructions in this file https://github.com/AvaProtocol/EigenLayer-AVS/blob/main/docs/dev.md
+  dev: {
     AP_AVS_RPC: "localhost:2206",
     TEST_TRANSFER_TOKEN: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
     TEST_TRANSFER_TO: "0xe0f7D11FD714674722d325Cd86062A5F1882E13a",
     ORACLE_PRICE_CONTRACT: "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1",
     RPC_PROVIDER: "https://sepolia.gateway.tenderly.co",
+    TOKENS: {
+      USDC: {
+        address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+    },
+    ORACLES: {
+      "ETH / USD": {
+        pair: "ETH / USD",
+        address: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+      },
+    },
   },
 
   sepolia: {

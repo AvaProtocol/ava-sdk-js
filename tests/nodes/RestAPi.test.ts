@@ -78,7 +78,6 @@ describe("RestAPI Node Tests", () => {
 
       expect(response.success).toBe(true);
       expect(response.error).toBe("");
-      expect(response.nodeId).toBeDefined();
 
       if (response.data) {
         const data = response.data as RestApiResponse;
@@ -127,7 +126,7 @@ describe("RestAPI Node Tests", () => {
       });
 
       expect(response.success).toBe(false); // HTTP 404 should be categorized as failed
-      
+
       // NOTE: Backend currently doesn't populate detailed response data for failed runNodeWithInputs calls
       // This is different from simulateWorkflow which does return full status information
       expect(response.data).toEqual({}); // Empty object for failed requests via runNodeWithInputs
@@ -392,7 +391,6 @@ describe("RestAPI Node Tests", () => {
           expect(simulatedOutput.data).toBeDefined();
           expect(executedOutput.data).toBeDefined();
         }
-
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

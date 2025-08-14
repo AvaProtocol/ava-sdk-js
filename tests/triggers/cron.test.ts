@@ -241,7 +241,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with hourly schedule", async () => {
@@ -260,7 +260,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with every 15 minutes schedule", async () => {
@@ -279,7 +279,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with complex schedule", async () => {
@@ -298,7 +298,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with minute-based schedule", async () => {
@@ -317,7 +317,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should run trigger with weekly schedule", async () => {
@@ -336,7 +336,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should handle standard cron expressions", async () => {
@@ -391,7 +391,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should handle step values in cron expressions", async () => {
@@ -410,7 +410,7 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.triggerId).toBeDefined();
+      
     });
 
     test("should validate cron expression format in TriggerFactory", () => {
