@@ -19,7 +19,6 @@ import {
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
 const { tokens } = getConfig();
-const SEPOLIA_TOKEN_CONFIGS = tokens;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -196,7 +195,7 @@ describe("ContractWrite Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -274,7 +273,6 @@ describe("ContractWrite Node Tests", () => {
       expect(result.metadata!.length).toBeGreaterThan(0);
       const transferMetadata = result.metadata![0];
       expect(transferMetadata.receipt).toBeDefined();
-      expect(transferMetadata.receipt.logs).toBeDefined();
       expect(Array.isArray(transferMetadata.receipt.logs)).toBe(true);
       expect(transferMetadata.receipt.logs.length).toBeGreaterThan(0); // Should have Transfer event log
 
@@ -322,7 +320,7 @@ describe("ContractWrite Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
+          contractAddress: tokens.LINK.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -394,7 +392,7 @@ describe("ContractWrite Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address, // USDC contract
+          contractAddress: tokens.USDC.address, // USDC contract
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -529,7 +527,7 @@ describe("ContractWrite Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -586,7 +584,7 @@ describe("ContractWrite Node Tests", () => {
         name: "simulate_contract_write",
         type: NodeType.ContractWrite,
         data: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI, // Convert array to JSON string
           methodCalls: [
             {
@@ -665,7 +663,7 @@ describe("ContractWrite Node Tests", () => {
         name: "simulate_multiple_writes",
         type: NodeType.ContractWrite,
         data: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.LINK.address,
+          contractAddress: tokens.LINK.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -760,7 +758,7 @@ describe("ContractWrite Node Tests", () => {
         name: "deploy_contract_write_test",
         type: NodeType.ContractWrite,
         data: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -868,7 +866,7 @@ describe("ContractWrite Node Tests", () => {
       const expectedMethodName = "transfer";
 
       const contractWriteConfig = {
-        contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+        contractAddress: tokens.USDC.address,
         contractAbi: ERC20_ABI,
         methodCalls: [
           {
@@ -1132,7 +1130,7 @@ describe("ContractWrite Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: [
             {
               inputs: [],
@@ -1274,7 +1272,7 @@ describe("ContractWrite Node Tests", () => {
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -1341,7 +1339,7 @@ describe("ContractWrite Node Tests", () => {
         name: "simulate_applyToFields_test",
         type: NodeType.ContractWrite,
         data: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -1430,7 +1428,7 @@ describe("ContractWrite Node Tests", () => {
           name: "deploy_contract_write_applyToFields_test",
           type: NodeType.ContractWrite,
           data: {
-            contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+            contractAddress: tokens.USDC.address,
             contractAbi: ERC20_ABI,
             methodCalls: [
               {
@@ -1542,7 +1540,7 @@ describe("ContractWrite Node Tests", () => {
         name: "real_userop_debug_test",
         type: NodeType.ContractWrite,
         data: {
-          contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address,
+          contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
             {
@@ -1780,7 +1778,7 @@ describe("ContractWrite Node Tests", () => {
       name: "simple_contract_transfer_test",
       type: NodeType.ContractWrite,
       data: {
-        contractAddress: SEPOLIA_TOKEN_CONFIGS.USDC.address, // USDC contract
+        contractAddress: tokens.USDC.address, // USDC contract
         contractAbi: ERC20_ABI,
         methodCalls: [
           {
