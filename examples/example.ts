@@ -11,7 +11,6 @@
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
-import { USDC_SEPOLIA_ADDRESS } from "../tests/utils/tokens";
 
 import _ from "lodash";
 import { ethers } from "ethers";
@@ -19,7 +18,10 @@ import util from "node:util";
 import id128library from "id128";
 const { UlidMonotonic } = id128library;
 
-import { commandArgs, currentEnv, getConfig } from "./config";
+import { commandArgs, currentEnv } from "./config";
+import { ENV_CONFIGS } from "../tests/utils/envalid";
+
+const config = ENV_CONFIGS[currentEnv];
 
 const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
 
@@ -28,11 +30,11 @@ console.log(
   "Current environment is: ",
   currentEnv,
   "endpoint: ",
-  getConfig().AP_AVS_RPC
+  config.avsEndpoint
 );
 
 const client = new Client({
-  endpoint: getConfig().AP_AVS_RPC,
+  endpoint: config.avsEndpoint,
 });
 
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-4609037622";
@@ -71,11 +73,6 @@ async function generateApiToken() {
 
   client.setAuthKey(result.authKey);
   return result;
-}
-
-async function signMessageWithEthers(wallet, message: string) {
-  const signature = await wallet.signMessage(message);
-  return signature;
 }
 
 async function getWorkflows(
@@ -231,10 +228,10 @@ async function getWallets(
   if (shouldFetchBalances) {
     console.log("Fetching balances from RPC provider ...");
     // Update the provider creation
-    const provider = new ethers.JsonRpcProvider(getConfig().RPC_PROVIDER);
+    const provider = new ethers.JsonRpcProvider(config.rpcProvider);
 
     // Get token balance
-    const tokenAddress = getConfig().TEST_TRANSFER_TOKEN;
+    const tokenAddress = config.tokens[token].address;
     const tokenAbi = [
       "function balanceOf(address account) view returns (uint256)",
       "function decimals() view returns (uint8)",
@@ -375,7 +372,7 @@ async function schedulePriceReport(
         name: "checkPrice",
         type: NodeType.ContractRead,
         data: {
-          contractAddress: getConfig().ORACLE_PRICE_CONTRACT,
+          contractAddress: config.oracles["ETH / USD"].address,
           contractAbi: [
             {
               inputs: [],
@@ -652,7 +649,7 @@ async function scheduleContractWrite(
   amount?: string
 ) {
   console.log("Creating contract write workflow with block trigger");
-  
+
   const wallets = await getWallets(owner, token);
   if (_.isEmpty(wallets)) {
     console.log(
@@ -663,9 +660,10 @@ async function scheduleContractWrite(
   const smartWalletAddress = wallets[0].address;
 
   // Default values based on the workflow data you provided
-  const defaultRecipient = recipientAddress || "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
+  const defaultRecipient =
+    recipientAddress || "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
   const defaultAmount = amount || "1000000"; // 1 USDC (6 decimals)
-  const usdcAddress = USDC_SEPOLIA_ADDRESS; // Sepolia USDC
+  const usdcAddress = config.tokens[token].address; // Sepolia USDC
 
   const triggerId = UlidMonotonic.generate().toCanonical();
   const contractWriteNodeId = UlidMonotonic.generate().toCanonical();
@@ -675,13 +673,13 @@ async function scheduleContractWrite(
     {
       inputs: [
         { internalType: "address", name: "to", type: "address" },
-        { internalType: "uint256", name: "value", type: "uint256" }
+        { internalType: "uint256", name: "value", type: "uint256" },
       ],
       name: "transfer",
       outputs: [{ internalType: "bool", name: "", type: "bool" }],
       stateMutability: "nonpayable",
-      type: "function"
-    }
+      type: "function",
+    },
   ];
 
   const workflow = client.createWorkflow({
@@ -733,7 +731,7 @@ async function scheduleContractWrite(
     amount: defaultAmount,
     maxExecutions: 5,
   });
-  
+
   return workflowId;
 }
 
@@ -1063,7 +1061,12 @@ const main = async (cmd: string) => {
       scheduleSweep(owner, authKey, commandArgs.args[0]);
       break;
     case "schedule-contract-write":
-      scheduleContractWrite(owner, authKey, commandArgs.args[0], commandArgs.args[1]);
+      scheduleContractWrite(
+        owner,
+        authKey,
+        commandArgs.args[0],
+        commandArgs.args[1]
+      );
       break;
     case "schedule":
     case "schedule-cron":
