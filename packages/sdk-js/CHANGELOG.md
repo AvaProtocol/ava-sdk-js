@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.6.13
+
+### Patch Changes
+
+- 98dfca0: Added executionContext to runNode response
+- Updated dependencies [98dfca0]
+  - @avaprotocol/types@2.4.11
+
 ## 2.6.12
 
 ### Patch Changes

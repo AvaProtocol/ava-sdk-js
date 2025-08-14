@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.4.11
+
+### Patch Changes
+
+- 98dfca0: Added executionContext to runNode response
+
 ## 2.4.10
 
 ### Patch Changes
