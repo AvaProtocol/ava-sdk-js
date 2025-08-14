@@ -274,7 +274,6 @@ describe("ContractWrite Node Tests", () => {
       expect(result.metadata!.length).toBeGreaterThan(0);
       const transferMetadata = result.metadata![0];
       expect(transferMetadata.receipt).toBeDefined();
-      expect(transferMetadata.receipt.logs).toBeDefined();
       expect(Array.isArray(transferMetadata.receipt.logs)).toBe(true);
       expect(transferMetadata.receipt.logs.length).toBeGreaterThan(0); // Should have Transfer event log
 
