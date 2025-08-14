@@ -16,6 +16,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   SALT_BUCKET_SIZE,
+  resultIndicatesAllWritesSuccessful,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig, isSepolia } from "../utils/envalid";
@@ -443,7 +444,10 @@ describe("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
+      // success must reflect per-method metadata/receipt outcomes
+
       expect(result.success).toBe(true);
+      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
 
@@ -567,7 +571,9 @@ describe("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
+
       expect(result.success).toBe(true);
+      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
 
@@ -1530,6 +1536,7 @@ describe("ContractRead Node Tests", () => {
       );
 
       expect(result.success).toBe(true);
+      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
 
@@ -1654,6 +1661,7 @@ describe("ContractRead Node Tests", () => {
       );
 
       expect(result.success).toBe(true);
+      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
 

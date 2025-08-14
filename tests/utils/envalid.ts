@@ -15,6 +15,11 @@ const ALLOWED_ENVIRONMENTS = [
 ] as const;
 type Environment = (typeof ALLOWED_ENVIRONMENTS)[number];
 
+type OracleDef = {
+  address: string;
+  pair: string;
+};
+
 // Token configuration types
 type TokenDef = {
   address: string;
@@ -22,15 +27,18 @@ type TokenDef = {
   symbol: string;
   decimals: number;
 };
+
 type TokenMap = Record<string, TokenDef>;
+type OracleMap = Record<string, OracleDef>;
 
 // Environment-specific configurations (with chain-specific token presets)
-const ENV_CONFIGS: Record<
+export const ENV_CONFIGS: Record<
   Environment,
   {
     avsEndpoint: string;
     chainId: string;
     tokens: TokenMap;
+    oracles: OracleMap;
     factoryAddress: string;
   }
 > = {
@@ -51,6 +59,16 @@ const ENV_CONFIGS: Record<
         decimals: 18,
       },
     },
+    oracles: {
+      "BTC / USD": {
+        pair: "BTC / USD",
+        address: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+      },
+      "ETH / USD": {
+        pair: "ETH / USD",
+        address: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+      },
+    },
     // From docs/Contract.md Factory Proxy
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
@@ -58,6 +76,7 @@ const ENV_CONFIGS: Record<
     avsEndpoint: "aggregator.avaprotocol.org:2206",
     chainId: "1",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   sepolia: {
@@ -77,42 +96,49 @@ const ENV_CONFIGS: Record<
         decimals: 18,
       },
     },
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   base: {
     avsEndpoint: "aggregator-base.avaprotocol.org:3206", // TODO:Change to 2207
     chainId: "8453",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   "base-sepolia": {
     avsEndpoint: "aggregator-base-sepolia.avaprotocol.org:3206", // TODO:Change to 2207
     chainId: "84532",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   soneium: {
     avsEndpoint: "aggregator-soneium.avaprotocol.org:2208",
     chainId: "1868",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   "soneium-minato": {
     avsEndpoint: "aggregator-soneium-minato.avaprotocol.org:2208",
     chainId: "1946",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   bsc: {
     avsEndpoint: "aggregator-bsc.avaprotocol.org:2209",
     chainId: "56",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
   "bsc-testnet": {
     avsEndpoint: "aggregator-bsc-testnet.avaprotocol.org:2209",
     chainId: "97",
     tokens: {},
+    oracles: {},
     factoryAddress: "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834",
   },
 } as const;
@@ -181,6 +207,7 @@ export const getConfig = () => ({
   // factoryAddress: FACTORY_ADDRESS, // Let aggregator use its default factory
   environment: validatedEnv.TEST_ENV,
   tokens: envConfig.tokens,
+  oracles: envConfig.oracles,
   factoryAddress: envConfig.factoryAddress,
 });
 

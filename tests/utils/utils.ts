@@ -270,6 +270,24 @@ export function hasWriteFailureFromMetadata(metadata: unknown): boolean {
   );
 }
 
+/** Return true if every metadata item indicates a successful write. */
+export function metadataIndicatesAllWritesSuccessful(
+  metadata: unknown
+): boolean {
+  if (!Array.isArray(metadata)) return true;
+  return (metadata as MethodMetadataLike[]).every(
+    (m) => !!m && m.success === true && (!m.receipt || m.receipt.status === "0x1")
+  );
+}
+
+/** Return true if the given result object has metadata and it indicates all writes succeeded. */
+export function resultIndicatesAllWritesSuccessful(
+  result: { metadata?: unknown } | null | undefined
+): boolean {
+  if (!result || result.metadata === undefined) return true;
+  return metadataIndicatesAllWritesSuccessful(result.metadata);
+}
+
 /** Return true if a step has metadata that indicates a failed write. */
 export function stepIndicatesWriteFailure(
   step: { metadata?: unknown } | null | undefined
