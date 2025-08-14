@@ -2,7 +2,6 @@ import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import { TriggerType, NodeType, CustomCodeLang } from "@avaprotocol/types";
 import util from "util";
-import _ from "lodash";
 import { getConfig } from "../utils/envalid";
 import {
   getAddress,
@@ -18,9 +17,7 @@ import {
  * one read node is pruned/deduped and CustomCode throws due to missing input.
  */
 
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
 
 let client: Client;
 let eoaAddress: string;
@@ -56,7 +53,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "contractRead1",
       type: NodeType.ContractRead,
       data: {
-        contractAddress: USDC_SEPOLIA,
+        contractAddress: tokens.USDC.address,
         contractAbi: [
           {
             constant: true,
@@ -82,7 +79,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "contractRead2",
       type: NodeType.ContractRead,
       data: {
-        contractAddress: USDC_SEPOLIA,
+        contractAddress: tokens.USDC.address,
         contractAbi: [
           {
             constant: true,
@@ -108,7 +105,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "contractWrite1",
       type: NodeType.ContractWrite,
       data: {
-        contractAddress: USDC_SEPOLIA,
+        contractAddress: tokens.USDC.address,
         contractAbi: [
           {
             constant: false,
@@ -249,7 +246,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "contractRead1",
       type: NodeType.ContractRead,
       data: {
-        contractAddress: USDC_SEPOLIA,
+        contractAddress: tokens.USDC.address,
         contractAbi: [
           {
             constant: true,
@@ -269,7 +266,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "contractRead2",
       type: NodeType.ContractRead,
       data: {
-        contractAddress: USDC_SEPOLIA,
+        contractAddress: tokens.USDC.address,
         contractAbi: [
           {
             constant: true,
@@ -289,7 +286,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "contractWrite1",
       type: NodeType.ContractWrite,
       data: {
-        contractAddress: USDC_SEPOLIA,
+        contractAddress: tokens.USDC.address,
         contractAbi: [
           {
             constant: false,
