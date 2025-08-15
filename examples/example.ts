@@ -17,6 +17,8 @@ import { ethers } from "ethers";
 import util from "node:util";
 import id128library from "id128";
 const { UlidMonotonic } = id128library;
+import fs from "node:fs";
+import path from "node:path";
 
 import { commandArgs, currentEnv } from "./config";
 import { ENV_CONFIGS } from "../tests/utils/envalid";
@@ -844,6 +846,38 @@ async function scheduleMonitorTransfer(
   return workflowId;
 }
 
+// Examine a workflow and write a sanitized log in the examples folder
+async function examineWorkflow(workflowId: string) {
+  if (!workflowId) {
+    console.error("Usage: yarn start examineWorkflow <workflow-id>");
+    return;
+  }
+  const workflow = await client.getWorkflow(workflowId);
+  const execList: any = await client.getExecutions([workflowId], { after: "", limit: 50 });
+  const items: any[] = execList?.items || execList || [];
+  const failed = items.find((e: any) => e && e.success === false) || items.find((e: any) => !!e?.error);
+  let executionDetail: any = null;
+  if (failed?.id) {
+    executionDetail = await client.getExecution(workflowId, failed.id);
+  }
+  const header = `examineWorkflow for ${workflowId}`;
+  const wfStr = `\n=== Workflow ===\n` + util.inspect(workflow, { depth: null, colors: false });
+  const firstFive = Array.isArray(items) ? items.slice(0, 5) : items;
+  const listStr = `\n\n=== Executions (first 5) ===\n` + util.inspect(firstFive, { depth: null, colors: false });
+  const detailStr = executionDetail
+    ? `\n\n=== First Failed Execution Detail (${failed.id}) ===\n` + util.inspect(executionDetail, { depth: null, colors: false })
+    : `\n\n=== First Failed Execution Detail ===\nNo failed execution found.`;
+  let output = [header, wfStr, listStr, detailStr].join("\n");
+  // Sanitize: redact bot token and chat_id
+  output = output.replace(/https:\/\/api\.telegram\.org\/bot[0-9A-Za-z:_-]+/g, "https://api.telegram.org/bot<REDACTED>");
+  output = output.replace(/\b(bot)([0-9A-Za-z:_-]{20,})/g, "$1<REDACTED>");
+  output = output.replace(/(\"chat_id\"\s*:\s*\")(?:-?\d+)(\")/g, '$1<REDACTED>$2');
+  const outFile = path.join(__dirname, `examineWorkflow.${workflowId}.sanitized.log`);
+  fs.writeFileSync(outFile, output, "utf8");
+  console.log(`\nWrote sanitized log: ${outFile}`);
+  if (failed?.id) console.log(`First failed execution: ${failed.id}`);
+}
+
 // ✨ NEW: Example using input fields with triggers and nodes
 export async function exampleWithInputFields() {
   const client = new Client({
@@ -1122,6 +1156,11 @@ const main = async (cmd: string) => {
       );
       break;
     }
+    case "examineWorkflow": {
+      const workflowId = commandArgs.args[0];
+      await examineWorkflow(workflowId);
+      break;
+    }
     case "cancelWorkflow": {
       console.log("Cancelling workflow", commandArgs.args[0]);
       const resultCancel = await client.cancelWorkflow(commandArgs.args[0]);
@@ -1185,6 +1224,7 @@ const main = async (cmd: string) => {
       getWorkflow <workflow-id>:                          to get workflow detail. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecutions <workflow-id> <cursor> <limit>:       to get workflow execution history. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecution <workflow-id> <execution-id>:          to get a single workflow execution. a permission error is thrown if the eoa isn't the smart wallet owner
+      examineWorkflow <workflow-id>:                       fetch workflow, list executions, fetch details of first failed execution, write sanitized .log in examples
       schedule <smart-wallet-address>:                    to schedule a task that run on every block, with chainlink eth-usd its condition will be matched quickly
       schedule-cron <smart-wallet-address>:               same as above, but run on cron
       schedule-monitor <wallet-address>:                  to monitor erc20 in/out for an address

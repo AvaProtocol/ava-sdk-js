@@ -7,7 +7,8 @@ import {
   getAddress,
   generateSignature,
   getNextId,
-  SaltGlobal,
+  TIMEOUT_DURATION,
+  USDC_Implementation_ABI,
 } from "../utils/utils";
 
 /**
@@ -19,9 +20,11 @@ import {
 
 const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
 
+// Set timeout to 180 seconds for all tests in this file (deployed workflows need more time)
+jest.setTimeout(TIMEOUT_DURATION * 3); // 3 * 60 seconds = 180 seconds
+
 let client: Client;
 let eoaAddress: string;
-let saltIndex = SaltGlobal.CreateWorkflow * 1000 + 1200;
 
 beforeAll(async () => {
   eoaAddress = await getAddress(walletPrivateKey);
@@ -34,17 +37,15 @@ beforeAll(async () => {
 });
 
 describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)", () => {
-  test("simulate workflow end-to-end (trigger -> read1/read2 -> write -> code -> rest)", async () => {
+  test("simulate workflow end-to-end", async () => {
     const wallet = await client.getWallet({ salt: "0" });
 
-    // timeTrigger in the original; for simulation it is fine to keep Manual for determinism
+    // Use Cron trigger to match the deployed workflow
     const trigger = TriggerFactory.create({
       id: "timeTrigger",
       name: "timeTrigger",
-      type: TriggerType.Manual,
-      data: {
-        note: "Replicated workflow trigger",
-      },
+      type: TriggerType.Cron,
+      data: { schedules: ["*/2 * * * *"] },
     });
 
     // contractRead1: symbol
@@ -99,31 +100,18 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       },
     });
 
-    // contractWrite1: transfer 1 USDC (6 decimals) to EOA (matches example)
+    // contractWrite1: transfer 0.1 USDC (100000 units) to match deployed workflow
     const contractWrite1 = NodeFactory.create({
       id: "contractWrite1",
       name: "contractWrite1",
       type: NodeType.ContractWrite,
       data: {
         contractAddress: tokens.USDC.address,
-        contractAbi: [
-          {
-            constant: false,
-            inputs: [
-              { name: "to", type: "address" },
-              { name: "value", type: "uint256" },
-            ],
-            name: "transfer",
-            outputs: [{ name: "", type: "bool" }],
-            payable: false,
-            stateMutability: "nonpayable",
-            type: "function",
-          },
-        ],
+        contractAbi: USDC_Implementation_ABI,
         methodCalls: [
           {
             methodName: "transfer",
-            methodParams: [eoaAddress, "1000000"],
+            methodParams: [eoaAddress, "100000"],
           },
         ],
       },
@@ -144,7 +132,18 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           "const value = Number(result?.value);\n" +
           "const symbol = contractRead1?.data?.symbol;\n" +
           "const decimals = Number(contractRead2?.data?.decimals);\n" +
-          "return { sender, recipient, value, symbol, decimals };",
+          "let message = `Workflow: [${workflowContext.name}]\\n" +
+          "Wallet: ${sender}\\n" +
+          "`;\n" +
+          "const amount = !isNaN(value) && !isNaN(decimals)\n" +
+          "  ? value / 10 ** decimals\n" +
+          "  : NaN;\n" +
+          "if (!isNaN(amount)) {\n" +
+          "  message += `You have ${methodName} ${amount} ${symbol} to ${recipient}.`;\n" +
+          "} else {\n" +
+          "  message += `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
+          "}\n" +
+          "return message;",
       },
     });
 
@@ -191,26 +190,26 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       startAt: Date.now(),
       expiredAt: Date.now() + 24 * 60 * 60 * 1000,
       maxExecution: 1,
-      name: "USDC Read/Write + CustomCode Template",
+      name: "Recurring Transfer with report",
     });
 
-    const simulation = await client.simulateWorkflow(workflow);
+    // Extract workflow data and include name in inputVariables
+    const workflowJson = workflow.toJson();
+    const simulation = await client.simulateWorkflow({
+      trigger: workflowJson.trigger,
+      nodes: workflowJson.nodes,
+      edges: workflowJson.edges,
+      inputVariables: {
+        workflowContext: {
+          name: workflowJson.name,
+          chainId: 11155111, // Sepolia chain ID for simulation
+        }
+      }
+    });
 
-    // Verbose debug logging for simulation
-    // Print a compact summary of all steps: id, type, name, success, inputsList
     console.log(
-      "🧪 Simulation steps summary:",
-      util.inspect(
-        simulation.steps.map((s: any) => ({
-          id: s.id,
-          type: s.type,
-          name: s.name,
-          success: s.success,
-          hasOutput: !!s.output,
-          inputsList: s.inputsList,
-        })),
-        { depth: null, colors: true }
-      )
+      "🧪 Simulation",
+      util.inspect(simulation, { depth: null, colors: true })
     );
 
     // Basic shape assertions
@@ -231,14 +230,14 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
     }
   });
 
-  test("deploy + trigger workflow and ensure contractRead2 executes and code1 sees it", async () => {
+  test("deploy workflow and ensure contractRead2 executes and code1 sees it", async () => {
     const wallet = await client.getWallet({ salt: "0" });
 
     const trigger = TriggerFactory.create({
       id: "timeTrigger",
       name: "timeTrigger",
-      type: TriggerType.Manual,
-      data: { note: "Replicated workflow trigger" },
+      type: TriggerType.Cron,
+      data: { schedules: ["*/2 * * * *"] },
     });
 
     const contractRead1 = NodeFactory.create({
@@ -287,25 +286,12 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       type: NodeType.ContractWrite,
       data: {
         contractAddress: tokens.USDC.address,
-        contractAbi: [
-          {
-            constant: false,
-            inputs: [
-              { name: "to", type: "address" },
-              { name: "value", type: "uint256" },
-            ],
-            name: "transfer",
-            outputs: [{ name: "", type: "bool" }],
-            payable: false,
-            stateMutability: "nonpayable",
-            type: "function",
-          },
-        ],
+        contractAbi: USDC_Implementation_ABI,
         methodCalls: [
           {
             methodName: "transfer",
-            // Use a small value (1 USDC) like the example; paymaster/funded wallet should handle gas
-            methodParams: [eoaAddress, "1000000"],
+            // Use 100000 (0.1 USDC) to match the actual workflow
+            methodParams: [eoaAddress, "100000"],
           },
         ],
       },
@@ -325,7 +311,18 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           "const value = Number(result?.value);\n" +
           "const symbol = contractRead1?.data?.symbol;\n" +
           "const decimals = Number(contractRead2?.data?.decimals);\n" +
-          "return { sender, recipient, value, symbol, decimals };",
+          "let message = `Workflow: [${workflowContext.name}]\\n" +
+          "Wallet: ${sender}\\n" +
+          "`;\n" +
+          "const amount = !isNaN(value) && !isNaN(decimals)\n" +
+          "  ? value / 10 ** decimals\n" +
+          "  : NaN;\n" +
+          "if (!isNaN(amount)) {\n" +
+          "  message += `You have ${methodName} ${amount} ${symbol} to ${recipient}.`;\n" +
+          "} else {\n" +
+          "  message += `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
+          "}\n" +
+          "return message;",
       },
     });
 
@@ -371,42 +368,46 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       startAt: Date.now(),
       expiredAt: Date.now() + 24 * 60 * 60 * 1000,
       maxExecution: 1,
-      name: "USDC Read/Write + CustomCode Deployed",
+      name: "Recurring Transfer with report",
     });
+
+    console.log(
+      "🚀 Deploying workflow, workflowProps",
+      util.inspect(workflow, { depth: null, colors: true })
+    );
 
     let workflowId: string | undefined;
     try {
       workflowId = await client.submitWorkflow(workflow);
       expect(workflowId).toBeDefined();
 
-      const exec = await client.triggerWorkflow({
-        id: workflowId!,
-        triggerData: { type: TriggerType.Manual, note: "run" },
-        isBlocking: true,
-      });
+      const exec = await client.triggerWorkflow(
+        {
+          id: workflowId!,
+          triggerData: {
+            type: TriggerType.Cron,
+            timestamp: Date.now(),
+            timestampIso: new Date().toISOString(),
+          },
+          isBlocking: true,
+        },
+        {
+          timeout: { timeout: TIMEOUT_DURATION * 3, retries: 0, retryDelay: 0 }, // 180 seconds
+        }
+      );
       expect(exec).toBeDefined();
 
       const executions = await client.getExecutions([workflowId!], {
         limit: 1,
       });
       const execution = executions.items[0];
-      expect(execution).toBeDefined();
 
-      // Verbose debug logging for deployed execution
       console.log(
-        "🚀 Deployed execution steps summary:",
-        util.inspect(
-          execution.steps.map((s: any) => ({
-            id: s.id,
-            type: s.type,
-            name: s.name,
-            success: s.success,
-            hasOutput: !!s.output,
-            inputsList: s.inputsList,
-          })),
-          { depth: null, colors: true }
-        )
+        "🚀 Deployed workflow, execution",
+        util.inspect(execution, { depth: null, colors: true })
       );
+
+      expect(execution).toBeDefined();
 
       const stepNames = execution.steps.map((s: any) => s.name);
       // Ensure both read nodes executed

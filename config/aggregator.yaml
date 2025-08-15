@@ -26,11 +26,8 @@ smart_wallet:
   eth_rpc_url: https://ethereum-sepolia.core.chainstack.com/2504cb0765f0edf6c33d99095148006f
   eth_ws_url: wss://ethereum-sepolia.core.chainstack.com/2504cb0765f0edf6c33d99095148006f
   bundler_url: https://bundler-sepolia.avaprotocol.org
-  factory_address: 0x29adA1b5217242DEaBB142BC3b1bCfFdd56008e7
-  entrypoint_address: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789
 
-  # dummy key, cannot actually run transaction
-  controller_private_key: e0502ddd5a0d05ec7b5c22614a01c8ce783810edaa98e44cc82f5fa5a819aaa9
+  controller_private_key: 
   max_wallets_per_owner: 2000
 
 macros:
