@@ -600,36 +600,63 @@ describe("EventTrigger Tests", () => {
       );
     });
 
-    test("should run trigger with Chainlink price condition with decimal formatting", async () => {
+    test("should run trigger with Chainlink oracle direct method calls - conditions not met", async () => {
       if (!isSepolia) {
         console.log("Skipping test - not on Sepolia chain");
         return;
       }
 
+      // Use direct method calls (no topics) for oracle price reading
+      // Test conditions NOT met by using a very small threshold (ETH price is much higher than $0.01)
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
           queries: [
             {
               addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [
+              topics: [], // Empty topics for direct method calls
+              contractAbi: [
                 {
-                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                  constant: false,
+                  inputs: [],
+                  name: "decimals",
+                  outputs: [{ name: "", type: "uint8" }],
+                  payable: false,
+                  stateMutability: "view",
+                  type: "function",
+                },
+                {
+                  constant: false,
+                  inputs: [],
+                  name: "latestRoundData",
+                  outputs: [
+                    { name: "roundId", type: "uint80" },
+                    { name: "answer", type: "int256" },
+                    { name: "startedAt", type: "uint256" },
+                    { name: "updatedAt", type: "uint256" },
+                    { name: "answeredInRound", type: "uint80" },
+                  ],
+                  payable: false,
+                  stateMutability: "view",
+                  type: "function",
                 },
               ],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
               methodCalls: [
                 {
                   methodName: "decimals",
-                  methodParams: [], // decimals() method signature
-                  applyToFields: ["AnswerUpdated.current"], // Apply decimal formatting to the "current" field
+                  methodParams: [],
+                  applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer
+                },
+                {
+                  methodName: "latestRoundData",
+                  methodParams: [],
                 },
               ],
               conditions: [
                 {
-                  fieldName: "AnswerUpdated.current",
-                  operator: "gt",
-                  value: "2000.00000000", // Now we can use human-readable values!
+                  fieldName: "latestRoundData.answer",
+                  operator: "lt",
+                  value: "0.01", // ETH price < $0.01 (will definitely fail)
                   fieldType: "decimal",
                 },
               ],
@@ -640,53 +667,200 @@ describe("EventTrigger Tests", () => {
       };
 
       console.log(
-        "🚀 ~ runTrigger with decimal formatting ~ input params:",
+        "🚀 ~ runTrigger with oracle direct calls (conditions not met) ~ input params:",
         util.inspect(params, { depth: null, colors: true })
       );
 
       const result = await client.runTrigger(params);
 
       console.log(
-        "runTrigger decimal formatting response:",
+        "runTrigger oracle direct calls (conditions not met) response:",
         util.inspect(result, { depth: null, colors: true })
       );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      expect(result.error).toBe("");
       
+      // Since ETH price is much higher than $0.01, conditions should fail
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Conditions not met");
+      expect(result.error).toContain("is not less than 0.01");
 
-      expect(result.success).toBe(true);
+      // Verify data contains formatted method call results
       expect(result.data).toBeDefined();
+      const resultData = result.data as Record<string, unknown>;
+      expect(resultData.decimals).toBe("8");
+      expect(resultData.latestRoundData).toBeDefined();
+      
+      const latestRoundData = resultData.latestRoundData as Record<string, unknown>;
+      expect(latestRoundData.answer).toBeDefined();
+      expect(latestRoundData.roundId).toBeDefined();
+      expect(latestRoundData.startedAt).toBeDefined();
+      expect(latestRoundData.updatedAt).toBeDefined();
+      expect(latestRoundData.answeredInRound).toBeDefined();
 
-      // Verify the response contains enriched AnswerUpdated event data
-      // TODO: Backend methodParams processing not implemented yet - expecting null for now
-      if (result.data === null) {
-        console.log(
-          "⚠️  Backend methodParams processing not yet implemented - data is null"
-        );
-        return; // Skip test until backend implements methodParams processing
+      // Verify formatted decimal value
+      expect(typeof latestRoundData.answer).toBe("string");
+      expect(parseFloat(latestRoundData.answer as string)).toBeGreaterThan(0);
+
+      // Verify metadata contains method info without value field
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+      const metadata = result.metadata as Array<Record<string, unknown>>;
+      expect(metadata).toHaveLength(2);
+
+      // Check decimals method metadata
+      const decimalsMetadata = metadata[0];
+      expect(decimalsMetadata.methodName).toBe("decimals");
+      expect(decimalsMetadata.success).toBe(true);
+      expect(decimalsMetadata.error).toBe("");
+      expect(decimalsMetadata.methodABI).toBeDefined();
+      expect(decimalsMetadata.value).toBeUndefined(); // Should not have value field
+
+      // Check latestRoundData method metadata
+      const latestRoundDataMetadata = metadata[1];
+      expect(latestRoundDataMetadata.methodName).toBe("latestRoundData");
+      expect(latestRoundDataMetadata.success).toBe(true);
+      expect(latestRoundDataMetadata.error).toBe("");
+      expect(latestRoundDataMetadata.methodABI).toBeDefined();
+      expect(latestRoundDataMetadata.value).toBeUndefined(); // Should not have value field
+
+      // Verify executionContext is present for contract interactions
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext.chainId).toBe(11155111);
+      expect(result.executionContext.isSimulated).toBe(false);
+      expect(result.executionContext.provider).toBe("chain_rpc");
+    });
+
+    test("should run trigger with Chainlink oracle direct method calls - conditions met", async () => {
+      if (!isSepolia) {
+        console.log("Skipping test - not on Sepolia chain");
+        return;
       }
 
+      // Use direct method calls (no topics) for oracle price reading
+      // Test conditions MET by using a low threshold (ETH price is much higher than $0.01)
+      const params = {
+        triggerType: TriggerType.Event,
+        triggerConfig: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [], // Empty topics for direct method calls
+              contractAbi: [
+                {
+                  constant: false,
+                  inputs: [],
+                  name: "decimals",
+                  outputs: [{ name: "", type: "uint8" }],
+                  payable: false,
+                  stateMutability: "view",
+                  type: "function",
+                },
+                {
+                  constant: false,
+                  inputs: [],
+                  name: "latestRoundData",
+                  outputs: [
+                    { name: "roundId", type: "uint80" },
+                    { name: "answer", type: "int256" },
+                    { name: "startedAt", type: "uint256" },
+                    { name: "updatedAt", type: "uint256" },
+                    { name: "answeredInRound", type: "uint80" },
+                  ],
+                  payable: false,
+                  stateMutability: "view",
+                  type: "function",
+                },
+              ],
+              methodCalls: [
+                {
+                  methodName: "decimals",
+                  methodParams: [],
+                  applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer
+                },
+                {
+                  methodName: "latestRoundData",
+                  methodParams: [],
+                },
+              ],
+              conditions: [
+                {
+                  fieldName: "latestRoundData.answer",
+                  operator: "gt",
+                  value: "0.01", // ETH price > $0.01 (will definitely pass)
+                  fieldType: "decimal",
+                },
+              ],
+              maxEventsPerBlock: 5,
+            },
+          ],
+        },
+      };
+
+      console.log(
+        "🚀 ~ runTrigger with oracle direct calls (conditions met) ~ input params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(params);
+
+      console.log(
+        "runTrigger oracle direct calls (conditions met) response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      
+      // Since ETH price is much higher than $0.01, conditions should pass
+      expect(result.success).toBe(true);
+      expect(result.error).toBe("");
+
+      // Verify data contains formatted method call results
+      expect(result.data).toBeDefined();
       const resultData = result.data as Record<string, unknown>;
-      expect(resultData.current).toBeDefined();
-      expect(resultData.eventName).toBe("AnswerUpdated");
-      expect(resultData.roundId).toBeDefined();
-      expect(resultData.updatedAt).toBeDefined();
+      expect(resultData.decimals).toBe("8");
+      expect(resultData.latestRoundData).toBeDefined();
+      
+      const latestRoundData = resultData.latestRoundData as Record<string, unknown>;
+      expect(latestRoundData.answer).toBeDefined();
+      expect(latestRoundData.roundId).toBeDefined();
+      expect(latestRoundData.startedAt).toBeDefined();
+      expect(latestRoundData.updatedAt).toBeDefined();
+      expect(latestRoundData.answeredInRound).toBeDefined();
 
-      // Verify data types
-      expect(typeof resultData.current).toBe("string");
-      expect(typeof resultData.eventName).toBe("string");
-      expect(typeof resultData.roundId).toBe("string");
-      expect(typeof resultData.updatedAt).toBe("string");
+      // Verify formatted decimal value
+      expect(typeof latestRoundData.answer).toBe("string");
+      expect(parseFloat(latestRoundData.answer as string)).toBeGreaterThan(0.01);
 
-      // Verify metadata contains raw blockchain data
+      // Verify metadata contains method info without value field
       expect(result.metadata).toBeDefined();
-      const resultMetadata = result.metadata as Record<string, unknown>;
-      expect(resultMetadata.address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
-      expect(resultMetadata.topics).toBeDefined();
-      expect(Array.isArray(resultMetadata.topics)).toBe(true);
-      expect((resultMetadata.topics as unknown[]).length).toBeGreaterThan(0);
+      expect(Array.isArray(result.metadata)).toBe(true);
+      const metadata = result.metadata as Array<Record<string, unknown>>;
+      expect(metadata).toHaveLength(2);
+
+      // Check decimals method metadata
+      const decimalsMetadata = metadata[0];
+      expect(decimalsMetadata.methodName).toBe("decimals");
+      expect(decimalsMetadata.success).toBe(true);
+      expect(decimalsMetadata.error).toBe("");
+      expect(decimalsMetadata.methodABI).toBeDefined();
+      expect(decimalsMetadata.value).toBeUndefined(); // Should not have value field
+
+      // Check latestRoundData method metadata
+      const latestRoundDataMetadata = metadata[1];
+      expect(latestRoundDataMetadata.methodName).toBe("latestRoundData");
+      expect(latestRoundDataMetadata.success).toBe(true);
+      expect(latestRoundDataMetadata.error).toBe("");
+      expect(latestRoundDataMetadata.methodABI).toBeDefined();
+      expect(latestRoundDataMetadata.value).toBeUndefined(); // Should not have value field
+
+      // Verify executionContext is present for contract interactions
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext.chainId).toBe(11155111);
+      expect(result.executionContext.isSimulated).toBe(false);
+      expect(result.executionContext.provider).toBe("chain_rpc");
     });
 
     test("should deserialize trigger with conditions from response", () => {
@@ -1382,13 +1556,13 @@ describe("EventTrigger Tests", () => {
         triggerType: TriggerType.Event,
         triggerConfig: eventTriggerConfig,
       };
+  
+      const directResponse = await client.runTrigger(params);
 
       console.log(
-        "🚀 ~ runTrigger for empty data consistency ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        "🚀 ~ runTrigger for empty data consistency ~ direct response:",
+        util.inspect(directResponse, { depth: null, colors: true })
       );
-
-      const directResponse = await client.runTrigger(params);
 
       // Test 2: simulateWorkflow
       const eventTrigger = TriggerFactory.create({
@@ -1403,6 +1577,11 @@ describe("EventTrigger Tests", () => {
 
       const simulation = await client.simulateWorkflow(
         client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ runTrigger for empty data consistency ~ simulation response:",
+        util.inspect(simulation, { depth: null, colors: true })
       );
 
       const simulatedStep = simulation.steps.find(

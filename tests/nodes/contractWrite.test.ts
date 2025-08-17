@@ -1517,6 +1517,64 @@ describe("ContractWrite Node Tests", () => {
     });
   });
 
+  describe("Boolean Return Value Tests", () => {
+    test("should properly decode boolean return values as output_0", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "approve",
+              methodParams: [
+                "0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e", // Uniswap router
+                "1000000", // 1.0 USDC approval
+              ],
+            },
+          ],
+        },
+        inputVariables: {
+          workflowContext: {
+            eoaAddress,
+            runner: wallet.address,
+          },
+        },
+      };
+
+      console.log("🚀 ~ Boolean return value test ~ params:", params);
+      
+      const result = await client.runNodeWithInputs(params);
+      console.log("Boolean return value test result:", util.inspect(result, { depth: null, colors: true }));
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(typeof result.data).toBe("object");
+
+      // Check that approve method data exists
+      expect(result.data).toHaveProperty("approve");
+      expect(typeof result.data.approve).toBe("object");
+
+      // Check for output_0 field (boolean return value)
+      expect(result.data.approve).toHaveProperty("output_0");
+      expect(typeof result.data.approve.output_0).toBe("boolean");
+      expect(result.data.approve.output_0).toBe(true);
+
+      // Check that event data is also included (owner, spender, value)
+      expect(result.data.approve).toHaveProperty("owner");
+      expect(result.data.approve).toHaveProperty("spender");
+      expect(result.data.approve).toHaveProperty("value");
+      
+      // Verify the event data matches our parameters
+      expect(result.data.approve.owner).toBe(wallet.address);
+      expect(result.data.approve.spender).toBe("0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E");
+      expect(result.data.approve.value).toBe("1000000");
+    });
+  });
+
   describe("Real UserOp Transaction Debug Tests", () => {
     test("should test real UserOp with salt:0 (funded wallet)", async () => {
       if (!isSepolia) {
