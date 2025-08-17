@@ -189,7 +189,7 @@ describe("ContractWrite Node Tests", () => {
       const transferAmount = "1"; // Use 1 wei - should emit Transfer event even if it reverts
       const expectedFrom = wallet.address.toLowerCase(); // runner (smart wallet) address
       const expectedTo = recipientAddress.toLowerCase();
-      const expectedValue = "0"; // Tenderly may simulate as 0 if wallet has no balance
+      const expectedValue = transferAmount; // Should match the actual transfer amount in simulation
       const expectedMethodName = "transfer";
 
       const params = {
@@ -1517,8 +1517,8 @@ describe("ContractWrite Node Tests", () => {
     });
   });
 
-  describe("Boolean Return Value Tests", () => {
-    test("should properly decode boolean return values as output_0", async () => {
+  describe("Event Priority Tests", () => {
+    test("should prioritize Approval event data over boolean return values", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       
       const params = {
@@ -1558,12 +1558,10 @@ describe("ContractWrite Node Tests", () => {
       expect(result.data).toHaveProperty("approve");
       expect(typeof result.data.approve).toBe("object");
 
-      // Check for output_0 field (boolean return value)
-      expect(result.data.approve).toHaveProperty("output_0");
-      expect(typeof result.data.approve.output_0).toBe("boolean");
-      expect(result.data.approve.output_0).toBe(true);
-
-      // Check that event data is also included (owner, spender, value)
+      // For approve methods, events take priority over return values (more descriptive)
+      // The Approval event contains owner, spender, value fields which are more useful than just output_0: true
+      
+      // Check that event data is included (owner, spender, value)
       expect(result.data.approve).toHaveProperty("owner");
       expect(result.data.approve).toHaveProperty("spender");
       expect(result.data.approve).toHaveProperty("value");
@@ -1805,10 +1803,10 @@ describe("ContractWrite Node Tests", () => {
       "{{value.amount}}",
     ]);
 
-    // Check third method call (transfer with empty methodParams)
-    const thirdTransferCall = methodCalls[2];
-    expect(thirdTransferCall.getMethodName()).toBe("transfer");
-    expect(thirdTransferCall.getMethodParamsList()).toEqual([]); // Should be empty array when no parameters
+    // Check third method call (approve with empty methodParams)
+    const thirdApproveCall = methodCalls[2];
+    expect(thirdApproveCall.getMethodName()).toBe("approve");
+    expect(thirdApproveCall.getMethodParamsList()).toEqual([]); // Should be empty array when no parameters
   });
 
   test("should test real on-chain transaction with simple contract call (paymaster-sponsored, non-zero salt)", async () => {

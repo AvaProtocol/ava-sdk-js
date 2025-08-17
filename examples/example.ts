@@ -881,7 +881,7 @@ async function examineWorkflow(workflowId: string) {
 // ✨ NEW: Example using input fields with triggers and nodes
 export async function exampleWithInputFields() {
   const client = new Client({
-    endpoint: "https://avs-aggregator-holesky.avaprotocol.org",
+    endpoint: "https://avs-aggregator-sepolia.avaprotocol.org",
   });
 
   // For now, let's comment out the input helper functions since they need to be properly exported
