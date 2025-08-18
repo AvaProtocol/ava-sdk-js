@@ -280,7 +280,8 @@ describe("CustomCode Node Tests", () => {
         },
       });
       expect(result.executionContext).toBeDefined();
-      expect(result.executionContext!.isSimulated).toBe(true);
+      // runNodeWithInputs sets isSimulated=false for CustomCode (only ContractWrite gets true)
+      expect(result.executionContext!.isSimulated).toBe(false);
     });
 
     test("CustomCode should handle complex object with nested data", async () => {
@@ -321,7 +322,8 @@ describe("CustomCode Node Tests", () => {
         },
       });
       expect(result.executionContext).toBeDefined();
-      expect(result.executionContext!.isSimulated).toBe(true);
+      // runNodeWithInputs sets isSimulated=false for CustomCode (only ContractWrite gets true)
+      expect(result.executionContext!.isSimulated).toBe(false);
     });
   });
 
