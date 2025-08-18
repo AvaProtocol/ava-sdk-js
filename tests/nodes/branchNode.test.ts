@@ -1,7 +1,6 @@
-import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
-import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
@@ -331,7 +330,7 @@ describe("BranchNode Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        const triggerResult = await client.triggerWorkflow({
+        await client.triggerWorkflow({
           id: workflowId,
           triggerData: {
             type: TriggerType.Block,
@@ -471,6 +470,119 @@ describe("BranchNode Tests", () => {
           await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
         }
+      }
+    });
+  });
+
+  // --- New gating tests ---
+  describe("Branch gating of successors", () => {
+    test("simulateWorkflow: true -> NodeA only; false -> NodeB only", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Case 1: condition true -> NodeA
+      const branchTrue = NodeFactory.create({
+        id: getNextId(),
+        name: "branch_true",
+        type: NodeType.Branch,
+        data: { conditions: [ { id: "on", type: "if", expression: "true" }, { id: "off", type: "else", expression: "" } ] }
+      });
+      const nodeAT = NodeFactory.create({ id: getNextId(), name: "NodeA_T", type: NodeType.CustomCode, data: { lang: 0, source: "return { a: 1 }" } });
+      const nodeBT = NodeFactory.create({ id: getNextId(), name: "NodeB_T", type: NodeType.CustomCode, data: { lang: 0, source: "return { b: 1 }" } });
+      const triggerT = TriggerFactory.create({ id: defaultTriggerId, name: "blockTrigger", type: TriggerType.Block, data: { interval: 3 } });
+      const edgesT = [
+        new Edge({ id: getNextId(), source: defaultTriggerId, target: branchTrue.id }),
+        new Edge({ id: getNextId(), source: `${branchTrue.id}.on`, target: nodeAT.id }),
+        new Edge({ id: getNextId(), source: `${branchTrue.id}.off`, target: nodeBT.id }),
+      ];
+      const wfTrue = { trigger: triggerT, nodes: [branchTrue, nodeAT, nodeBT], edges: edgesT };
+      const simTrue = await client.simulateWorkflow({
+        ...client.createWorkflow(wfTrue).toJson(),
+        inputVariables: { workflowContext: { eoaAddress: await getAddress(walletPrivateKey), runner: wallet.address } }
+      });
+      const stepIdsTrue = simTrue.steps.map((s: { id: string }) => s.id);
+      expect(stepIdsTrue).toContain(branchTrue.id);
+      expect(stepIdsTrue).toContain(nodeAT.id);
+      expect(stepIdsTrue).not.toContain(nodeBT.id);
+
+      // Case 2: condition false -> NodeB
+      const branchFalse = NodeFactory.create({
+        id: getNextId(),
+        name: "branch_false",
+        type: NodeType.Branch,
+        data: { conditions: [ { id: "on", type: "if", expression: "false" }, { id: "off", type: "else", expression: "" } ] }
+      });
+      const nodeAF = NodeFactory.create({ id: getNextId(), name: "NodeA_F", type: NodeType.CustomCode, data: { lang: 0, source: "return { a: 1 }" } });
+      const nodeBF = NodeFactory.create({ id: getNextId(), name: "NodeB_F", type: NodeType.CustomCode, data: { lang: 0, source: "return { b: 1 }" } });
+      const triggerF = TriggerFactory.create({ id: defaultTriggerId, name: "blockTrigger", type: TriggerType.Block, data: { interval: 3 } });
+      const edgesF = [
+        new Edge({ id: getNextId(), source: defaultTriggerId, target: branchFalse.id }),
+        new Edge({ id: getNextId(), source: `${branchFalse.id}.on`, target: nodeAF.id }),
+        new Edge({ id: getNextId(), source: `${branchFalse.id}.off`, target: nodeBF.id }),
+      ];
+      const wfFalse = { trigger: triggerF, nodes: [branchFalse, nodeAF, nodeBF], edges: edgesF };
+      const simFalse = await client.simulateWorkflow({
+        ...client.createWorkflow(wfFalse).toJson(),
+        inputVariables: { workflowContext: { eoaAddress: await getAddress(walletPrivateKey), runner: wallet.address } }
+      });
+      const stepIdsFalse = simFalse.steps.map((s: { id: string }) => s.id);
+      expect(stepIdsFalse).toContain(branchFalse.id);
+      expect(stepIdsFalse).toContain(nodeBF.id);
+      expect(stepIdsFalse).not.toContain(nodeAF.id);
+    });
+
+    test("deployed workflow: true -> NodeA only; false -> NodeB only", async () => {
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 4;
+
+      // True branch
+      const branchT = NodeFactory.create({ id: getNextId(), name: "deploy_branch_true_gating", type: NodeType.Branch, data: { conditions: [ { id: "on", type: "if", expression: "true" }, { id: "off", type: "else", expression: "" } ] } });
+      const nodeATD = NodeFactory.create({ id: getNextId(), name: "NodeA_true", type: NodeType.CustomCode, data: { lang: 0, source: "return { a: 1 }" } });
+      const nodeBTD = NodeFactory.create({ id: getNextId(), name: "NodeB_true", type: NodeType.CustomCode, data: { lang: 0, source: "return { b: 1 }" } });
+      const triggerDeploy = TriggerFactory.create({ id: defaultTriggerId, name: "blockTrigger", type: TriggerType.Block, data: { interval: triggerInterval } });
+      const edgesDT = [
+        new Edge({ id: getNextId(), source: defaultTriggerId, target: branchT.id }),
+        new Edge({ id: getNextId(), source: `${branchT.id}.on`, target: nodeATD.id }),
+        new Edge({ id: getNextId(), source: `${branchT.id}.off`, target: nodeBTD.id }),
+      ];
+      const wfTrue = { trigger: triggerDeploy, nodes: [branchT, nodeATD, nodeBTD], edges: edgesDT };
+
+      let wfIdTrue: string | undefined;
+      try {
+        wfIdTrue = await client.submitWorkflow(client.createWorkflow(wfTrue));
+        createdIdMap.set(wfIdTrue, true);
+        await client.triggerWorkflow({ id: wfIdTrue, triggerData: { type: TriggerType.Block, blockNumber: currentBlockNumber + triggerInterval }, isBlocking: true });
+        const executionsT = await client.getExecutions([wfIdTrue], { limit: 1 });
+        const stepIdsT = (_.first(executionsT.items)?.steps || []).map((s: { id: string }) => s.id);
+        expect(stepIdsT).toContain(branchT.id);
+        expect(stepIdsT).toContain(nodeATD.id);
+        expect(stepIdsT).not.toContain(nodeBTD.id);
+      } finally {
+        if (wfIdTrue) { await client.deleteWorkflow(wfIdTrue); createdIdMap.delete(wfIdTrue); }
+      }
+
+      // False branch
+      const branchF = NodeFactory.create({ id: getNextId(), name: "deploy_branch_false_gating", type: NodeType.Branch, data: { conditions: [ { id: "on", type: "if", expression: "false" }, { id: "off", type: "else", expression: "" } ] } });
+      const nodeAFD = NodeFactory.create({ id: getNextId(), name: "NodeA_false", type: NodeType.CustomCode, data: { lang: 0, source: "return { a: 1 }" } });
+      const nodeBFD = NodeFactory.create({ id: getNextId(), name: "NodeB_false", type: NodeType.CustomCode, data: { lang: 0, source: "return { b: 1 }" } });
+      const edgesDF = [
+        new Edge({ id: getNextId(), source: defaultTriggerId, target: branchF.id }),
+        new Edge({ id: getNextId(), source: `${branchF.id}.on`, target: nodeAFD.id }),
+        new Edge({ id: getNextId(), source: `${branchF.id}.off`, target: nodeBFD.id }),
+      ];
+      const wfFalse = { trigger: triggerDeploy, nodes: [branchF, nodeAFD, nodeBFD], edges: edgesDF };
+
+      let wfIdFalse: string | undefined;
+      try {
+        wfIdFalse = await client.submitWorkflow(client.createWorkflow(wfFalse));
+        createdIdMap.set(wfIdFalse, true);
+        await client.triggerWorkflow({ id: wfIdFalse, triggerData: { type: TriggerType.Block, blockNumber: currentBlockNumber + triggerInterval }, isBlocking: true });
+        const executionsF = await client.getExecutions([wfIdFalse], { limit: 1 });
+        const stepIdsF = (_.first(executionsF.items)?.steps || []).map((s: { id: string }) => s.id);
+        expect(stepIdsF).toContain(branchF.id);
+        expect(stepIdsF).toContain(nodeBFD.id);
+        expect(stepIdsF).not.toContain(nodeAFD.id);
+      } finally {
+        if (wfIdFalse) { await client.deleteWorkflow(wfIdFalse); createdIdMap.delete(wfIdFalse); }
       }
     });
   });
