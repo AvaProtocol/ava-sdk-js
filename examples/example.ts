@@ -852,30 +852,66 @@ async function examineWorkflow(workflowId: string) {
     console.error("Usage: yarn start examineWorkflow <workflow-id>");
     return;
   }
-  const workflow = await client.getWorkflow(workflowId);
-  const execList: any = await client.getExecutions([workflowId], { after: "", limit: 50 });
-  const items: any[] = execList?.items || execList || [];
-  const failed = items.find((e: any) => e && e.success === false) || items.find((e: any) => !!e?.error);
-  let executionDetail: any = null;
-  if (failed?.id) {
-    executionDetail = await client.getExecution(workflowId, failed.id);
+
+  // Create admin client using AVS_API_KEY for admin access to any workflow
+  const adminClient = new Client({
+    endpoint: config.avsEndpoint,
+  });
+
+  // Authenticate with admin API key instead of wallet signature
+  const avsApiKey = process.env.AVS_API_KEY;
+  if (!avsApiKey) {
+    console.error("AVS_API_KEY not found in environment. This is required for admin access to examine any workflow.");
+    return;
   }
-  const header = `examineWorkflow for ${workflowId}`;
-  const wfStr = `\n=== Workflow ===\n` + util.inspect(workflow, { depth: null, colors: false });
-  const firstFive = Array.isArray(items) ? items.slice(0, 5) : items;
-  const listStr = `\n\n=== Executions (first 5) ===\n` + util.inspect(firstFive, { depth: null, colors: false });
-  const detailStr = executionDetail
-    ? `\n\n=== First Failed Execution Detail (${failed.id}) ===\n` + util.inspect(executionDetail, { depth: null, colors: false })
-    : `\n\n=== First Failed Execution Detail ===\nNo failed execution found.`;
-  let output = [header, wfStr, listStr, detailStr].join("\n");
-  // Sanitize: redact bot token and chat_id
-  output = output.replace(/https:\/\/api\.telegram\.org\/bot[0-9A-Za-z:_-]+/g, "https://api.telegram.org/bot<REDACTED>");
-  output = output.replace(/\b(bot)([0-9A-Za-z:_-]{20,})/g, "$1<REDACTED>");
-  output = output.replace(/(\"chat_id\"\s*:\s*\")(?:-?\d+)(\")/g, '$1<REDACTED>$2');
-  const outFile = path.join(__dirname, `examineWorkflow.${workflowId}.sanitized.log`);
-  fs.writeFileSync(outFile, output, "utf8");
-  console.log(`\nWrote sanitized log: ${outFile}`);
-  if (failed?.id) console.log(`First failed execution: ${failed.id}`);
+
+  try {
+    // Use a dummy address for admin authentication (API key bypasses wallet ownership)
+    const dummyAddress = "0x0000000000000000000000000000000000000000";
+    const { message } = await adminClient.getSignatureFormat(dummyAddress);
+    
+    const result = await adminClient.authWithAPIKey({
+      message,
+      apiKey: avsApiKey,
+    });
+    
+    adminClient.setAuthKey(result.authKey);
+    console.log("✅ Authenticated with admin API key for workflow examination");
+    
+    // Now query the workflow using admin privileges
+    const workflow = await adminClient.getWorkflow(workflowId);
+    const execList: any = await adminClient.getExecutions([workflowId], { after: "", limit: 50 });
+    const items: any[] = execList?.items || execList || [];
+    const failed = items.find((e: any) => e && e.success === false) || items.find((e: any) => !!e?.error);
+    let executionDetail: any = null;
+    if (failed?.id) {
+      executionDetail = await adminClient.getExecution(workflowId, failed.id);
+    }
+    
+    const header = `examineWorkflow for ${workflowId}`;
+    const wfStr = `\n=== Workflow ===\n` + util.inspect(workflow, { depth: null, colors: false });
+    const firstFive = Array.isArray(items) ? items.slice(0, 5) : items;
+    const listStr = `\n\n=== Executions (first 5) ===\n` + util.inspect(firstFive, { depth: null, colors: false });
+    const detailStr = executionDetail
+      ? `\n\n=== First Failed Execution Detail (${failed.id}) ===\n` + util.inspect(executionDetail, { depth: null, colors: false })
+      : `\n\n=== First Failed Execution Detail ===\nNo failed execution found.`;
+    let output = [header, wfStr, listStr, detailStr].join("\n");
+    // Sanitize: redact bot token and chat_id
+    output = output.replace(/https:\/\/api\.telegram\.org\/bot[0-9A-Za-z:_-]+/g, "https://api.telegram.org/bot<REDACTED>");
+    output = output.replace(/\b(bot)([0-9A-Za-z:_-]{20,})/g, "$1<REDACTED>");
+    output = output.replace(/(\"chat_id\"\s*:\s*\")(?:-?\d+)(\")/g, '$1<REDACTED>$2');
+    const outFile = path.join(__dirname, `examineWorkflow.${workflowId}.sanitized.log`);
+    fs.writeFileSync(outFile, output, "utf8");
+    console.log(`\nWrote sanitized log: ${outFile}`);
+    if (failed?.id) console.log(`First failed execution: ${failed.id}`);
+  } catch (error) {
+    console.error("❌ Failed to examine workflow with admin API key:", error);
+    console.log("This could be due to:");
+    console.log("1. Invalid AVS_API_KEY");
+    console.log("2. Workflow not found");
+    console.log("3. Network connectivity issues");
+    throw error;
+  }
 }
 
 // ✨ NEW: Example using input fields with triggers and nodes
