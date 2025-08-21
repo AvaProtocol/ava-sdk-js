@@ -19,9 +19,27 @@ import id128library from "id128";
 const { UlidMonotonic } = id128library;
 import fs from "node:fs";
 import path from "node:path";
+import dotenv from "dotenv";
 
 import { commandArgs, currentEnv } from "./config";
 import { ENV_CONFIGS } from "../tests/utils/envalid";
+
+// Load environment variables from root directory based on target environment
+// Load in reverse order so environment-specific files take precedence
+const rootDir = path.join(__dirname, "..");
+const envFiles = [
+  ".env",                // Default .env file (loaded first, lower precedence)
+  `.env.${currentEnv}`,  // Environment-specific file (loaded last, higher precedence)
+];
+
+// Load environment files in order, allowing later files to override earlier ones
+envFiles.forEach(envFile => {
+  const envPath = path.join(rootDir, envFile);
+  if (fs.existsSync(envPath)) {
+    console.log(`📁 Loading environment from: ${envFile}`);
+    dotenv.config({ path: envPath, override: true });
+  }
+});
 
 const config = ENV_CONFIGS[currentEnv];
 
@@ -853,20 +871,22 @@ async function examineWorkflow(workflowId: string) {
     return;
   }
 
-  // Create admin client using AVS_API_KEY for admin access to any workflow
+  // Always use admin API key for examining workflows (required for cross-wallet access)
+  const avsApiKey = process.env.AVS_API_KEY;
+  if (!avsApiKey) {
+    console.error("❌ AVS_API_KEY is required for examineWorkflow command");
+    console.error("   This command needs admin privileges to access workflows from any wallet");
+    return;
+  }
+  
+  console.log(`🔑 Using API key from .env.${currentEnv}`);
+
   const adminClient = new Client({
     endpoint: config.avsEndpoint,
   });
 
-  // Authenticate with admin API key instead of wallet signature
-  const avsApiKey = process.env.AVS_API_KEY;
-  if (!avsApiKey) {
-    console.error("AVS_API_KEY not found in environment. This is required for admin access to examine any workflow.");
-    return;
-  }
-
   try {
-    // Use a dummy address for admin authentication (API key bypasses wallet ownership)
+    console.log("🔑 Authenticating with admin API key...");
     const dummyAddress = "0x0000000000000000000000000000000000000000";
     const { message } = await adminClient.getSignatureFormat(dummyAddress);
     
@@ -876,7 +896,18 @@ async function examineWorkflow(workflowId: string) {
     });
     
     adminClient.setAuthKey(result.authKey);
-    console.log("✅ Authenticated with admin API key for workflow examination");
+    console.log("✅ Admin authentication successful");
+  } catch (error) {
+    console.error("❌ Admin API key authentication failed:", (error as Error).message);
+    console.error("   Possible causes:");
+    console.error("   1. API key is invalid or expired");
+    console.error("   2. API key is for a different environment (dev/sepolia/base)");
+    console.error("   3. API key doesn't have admin privileges");
+    console.error(`   Current environment: ${currentEnv} (${config.avsEndpoint})`);
+    return;
+  }
+
+  try {
     
     // Now query the workflow using admin privileges
     const workflow = await adminClient.getWorkflow(workflowId);
@@ -905,11 +936,11 @@ async function examineWorkflow(workflowId: string) {
     console.log(`\nWrote sanitized log: ${outFile}`);
     if (failed?.id) console.log(`First failed execution: ${failed.id}`);
   } catch (error) {
-    console.error("❌ Failed to examine workflow with admin API key:", error);
-    console.log("This could be due to:");
-    console.log("1. Invalid AVS_API_KEY");
-    console.log("2. Workflow not found");
-    console.log("3. Network connectivity issues");
+    console.error("❌ Failed to examine workflow:", error);
+    console.error("This could be due to:");
+    console.error("1. Workflow not found (check the workflow ID)");
+    console.error("2. Network connectivity issues");
+    console.error("3. Admin API key issues (already handled above)");
     throw error;
   }
 }
@@ -1087,8 +1118,15 @@ export function demonstrateInputDataHelpers() {
 }
 
 const main = async (cmd: string) => {
+  if (!privateKey) {
+    console.log("❌ No PRIVATE_KEY found in environment variables");
+    return;
+  }
+  
+  const walletAddress = await getWalletAddress(privateKey);
+  console.log("🔑 Wallet:", walletAddress);
+  
   const result = await generateApiToken();
-  // Get the wallet address directly
   const owner = await getWalletAddress(privateKey as string);
   const authKey = result.authKey;
 
