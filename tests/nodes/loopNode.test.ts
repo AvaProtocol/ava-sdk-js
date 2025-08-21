@@ -201,17 +201,11 @@ describe("LoopNode Tests", () => {
         },
       };
 
-      console.log(
-        "🚀 CustomCode loop input:",
-        util.inspect(params, { depth: null, colors: true })
-      );
+      console.log("params:", util.inspect(params, { depth: null, colors: true }));
 
       const result = await client.runNodeWithInputs(params);
 
-      console.log(
-        "🚀 CustomCode loop result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+      console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
@@ -238,23 +232,17 @@ describe("LoopNode Tests", () => {
         nodeConfig: restApiLoopProps,
         inputVariables: {
           urlArray: [
-            "https://httpbin.org/get?test=1",
-            "https://httpbin.org/get?test=2",
+            "https://mock-api.ap-aggregator.local/get?test=1",
+            "https://mock-api.ap-aggregator.local/get?test=2",
           ],
         },
       };
 
-      console.log(
-        "🚀 REST API loop input:",
-        util.inspect(params, { depth: null, colors: true })
-      );
+      console.log("params:", util.inspect(params, { depth: null, colors: true }));
 
       const result = await client.runNodeWithInputs(params);
 
-      console.log(
-        "🚀 REST API loop result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+      console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
@@ -609,8 +597,8 @@ describe("LoopNode Tests", () => {
           lang: CustomCodeLang.JavaScript,
           source: `
               return [
-                "https://httpbin.org/get?test=1",
-                "https://httpbin.org/get?test=2"
+                "https://mock-api.ap-aggregator.local/get?test=1",
+                "https://mock-api.ap-aggregator.local/get?test=2"
               ] ;
             `,
         },

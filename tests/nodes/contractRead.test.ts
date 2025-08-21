@@ -19,7 +19,7 @@ import {
   resultIndicatesAllWritesSuccessful,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig, isSepolia } from "../utils/envalid";
+import { getConfig, getEnvironment, isSepolia } from "../utils/envalid";
 const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
@@ -87,7 +87,9 @@ const SEPOLIA_ORACLE_CONFIG = {
   ],
 };
 
-describe("ContractRead Node Tests", () => {
+const env = getEnvironment();
+const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
+describeIfSepolia("ContractRead Node Tests", () => {
   let client: Client;
   let eoaAddress: string;
 
@@ -107,13 +109,6 @@ describe("ContractRead Node Tests", () => {
     });
 
     client.setAuthKey(res.authKey);
-
-    // Check if we're on Sepolia chain
-    if (!isSepolia) {
-      console.log(
-        "⚠️  Skipping Sepolia-specific ContractRead tests - not on Sepolia chain"
-      );
-    }
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));

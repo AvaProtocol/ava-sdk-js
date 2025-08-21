@@ -13,7 +13,7 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
       type: "restApi",
       data: {
         config: {
-          url: "https://httpbin.org/post",
+          url: "https://mock-api.ap-aggregator.local/post",
           method: "POST",
           body: JSON.stringify({ data: "{{value}}", index: "{{index}}" }),
           headersMap: [["Content-Type", "application/json"]],
@@ -127,7 +127,7 @@ export const loopNodeWithGraphQLQueryProps: LoopNodeProps = {
       type: "graphqlDataQuery",
       data: {
         config: {
-          url: "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3",
+          url: "https://mock-api.ap-aggregator.local/graphql",
           query: `
             query GetToken($id: String!) {
               token(id: $id) {
