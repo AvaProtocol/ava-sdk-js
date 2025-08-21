@@ -69,7 +69,11 @@ const CHAINLINK_AGGREGATOR_ABI = [
 function padAddressForTopic(address: string): string {
   // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
   if (!address) {
-    return "0x" + "".padStart(64, "0");
+const ZERO_TOPIC_ADDRESS = "0x" + "0".repeat(64);
+function padAddressForTopic(address: string): string {
+  // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
+  if (!address) {
+    return ZERO_TOPIC_ADDRESS;
   }
   const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
   return "0x" + cleanAddress.toLowerCase().padStart(64, "0");
