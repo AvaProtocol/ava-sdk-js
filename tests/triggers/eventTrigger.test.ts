@@ -65,11 +65,9 @@ const CHAINLINK_AGGREGATOR_ABI = [
   },
 ];
 
-// Helper function to pad addresses to 32 bytes for topics
-function padAddressForTopic(address: string): string {
-  // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
-  if (!address) {
 const ZERO_TOPIC_ADDRESS = "0x" + "0".repeat(64);
+
+// Helper function to pad addresses to 32 bytes for topics
 function padAddressForTopic(address: string): string {
   // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
   if (!address) {
@@ -1597,8 +1595,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle no matching events (empty data) vs query errors", async () => {
-      
-
       // Use a definitely non-existent contract address to ensure no events
       // This should be much faster than real blockchain queries
       const params = {
@@ -1673,11 +1669,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should handle empty topics array consistently", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       // Use a known contract but with empty topics - this should be faster
       const params = {
         triggerType: TriggerType.Event,
@@ -1713,11 +1704,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should maintain empty data consistency across execution methods", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       // Use a definitely non-existent contract to ensure consistent null results
@@ -1772,11 +1758,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should handle malformed query configurations gracefully", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       // Test with invalid topic format
       const params = {
         triggerType: TriggerType.Event,
@@ -2082,6 +2063,6 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(methodCall.getApplyToFieldsList()).toEqual([
         "AnswerUpdated.current",
       ]);
+    });
   });
-}); 
 });
