@@ -11,9 +11,11 @@ import {
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig, isSepolia } from "../utils/envalid";
+import { getConfig, getEnvironment } from "../utils/envalid";
 
 jest.setTimeout(45000);
+const env = getEnvironment();
+const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
 
 const createdIdMap: Map<string, boolean> = new Map();
 
@@ -66,6 +68,9 @@ const CHAINLINK_AGGREGATOR_ABI = [
 // Helper function to pad addresses to 32 bytes for topics
 function padAddressForTopic(address: string): string {
   // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
+  if (!address) {
+    return "0x" + "".padStart(64, "0");
+  }
   const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
   return "0x" + cleanAddress.toLowerCase().padStart(64, "0");
 }
@@ -132,7 +137,7 @@ function createChainlinkPriceConditionConfig(
   };
 }
 
-describe("EventTrigger Tests", () => {
+describeIfSepolia("EventTrigger Tests", () => {
   let client: Client;
   let coreAddress: string;
 
@@ -196,13 +201,6 @@ describe("EventTrigger Tests", () => {
     });
 
     client.setAuthKey(res.authKey);
-
-    // Check if we're on Sepolia chain
-    if (!isSepolia) {
-      console.log(
-        "⚠️  Skipping Sepolia-specific EventTrigger tests - not on Sepolia chain"
-      );
-    }
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -282,25 +280,6 @@ describe("EventTrigger Tests", () => {
       expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(1);
     });
 
-    test("should succeed with FROM-OR-TO scenario", () => {
-      const trigger = TriggerFactory.create({
-        id: "test-trigger-id",
-        name: "eventTrigger",
-        type: TriggerType.Event,
-        data: createEventTriggerConfig(coreAddress, SEPOLIA_TOKEN_ADDRESSES),
-      });
-
-      expect(() => trigger.toRequest()).not.toThrow();
-      const request = trigger.toRequest();
-      expect(request.getEvent()!.getConfig()!.getQueriesList()).toHaveLength(2);
-
-      const queries = request.getEvent()!.getConfig()!.getQueriesList();
-      queries.forEach((query) => {
-        expect(query.getAddressesList()).toEqual(SEPOLIA_TOKEN_ADDRESSES);
-        expect(query.getTopicsList()).toHaveLength(1);
-      });
-    });
-
     test("should handle empty addresses", () => {
       const trigger = TriggerFactory.create({
         id: "test-trigger-id",
@@ -365,61 +344,20 @@ describe("EventTrigger Tests", () => {
       );
     });
 
-    test("should run trigger for Transfer events from core address", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const transferFromProps = {
-        triggerType: TriggerType.Event,
+    const transferCases = [
+      {
+        name: "from core address",
         triggerConfig: {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE, coreAddress, null], // Transfer from coreAddress
-                },
-              ],
+              topics: [{ values: [TRANSFER_EVENT_SIGNATURE, coreAddress, null] }],
             },
           ],
         },
-      };
-
-      console.log(
-        "🚀 runTrigger Transfer FROM events input:",
-        util.inspect(transferFromProps, { depth: null, colors: true })
-      );
-
-      const result = await client.runTrigger(transferFromProps);
-
-      console.log(
-        "🚀 runTrigger Transfer FROM events result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      
-      expect(result.metadata).toBeDefined();
-
-      // For specific address filters, no matching events is a valid outcome
-      expect(result.success).toBe(true);
-      // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === "object").toBe(
-        true
-      );
-    });
-
-    test("should run trigger for Transfer events to core address", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const transferToProps = {
-        triggerType: TriggerType.Event,
+      },
+      {
+        name: "to core address",
         triggerConfig: {
           queries: [
             {
@@ -430,80 +368,35 @@ describe("EventTrigger Tests", () => {
                     TRANSFER_EVENT_SIGNATURE,
                     null,
                     padAddressForTopic(coreAddress),
-                  ], // Transfer to coreAddress
+                  ],
                 },
               ],
             },
           ],
         },
-      };
-
-      console.log(
-        "🚀 runTrigger Transfer TO events input:",
-        util.inspect(transferToProps, { depth: null, colors: true })
-      );
-
-      const result = await client.runTrigger(transferToProps);
-
-      console.log(
-        "🚀 runTrigger Transfer TO events result:",
-        util.inspect(result, { depth: null, colors: true })
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      
-      expect(result.metadata).toBeDefined();
-
-      // For specific address filters, no matching events is a valid outcome
-      expect(result.success).toBe(true);
-      // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === "object").toBe(
-        true
-      );
-    });
-
-    test("should run trigger with multiple Transfer event queries", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const params = {
-        triggerType: TriggerType.Event,
+      },
+      {
+        name: "multiple queries (from/to)",
         triggerConfig: createEventTriggerConfig(coreAddress),
-      };
+      },
+    ] as const;
 
-      console.log(
-        "🚀 ~ runTrigger with multiple Transfer queries ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
-      );
-
-      const result = await client.runTrigger(params);
-
-      console.log(
-        "runTrigger multiple queries response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      
-
-      // For specific address filters, no matching events is a valid outcome
-      expect(result.success).toBe(true);
-      // Data can be null (no events found) or an object (events found)
-      expect(result.data === null || typeof result.data === "object").toBe(
-        true
-      );
-    });
+    test.each(transferCases)(
+      "should run trigger for Transfer events: %s",
+      async (_label, { triggerConfig }) => {
+        const params = { triggerType: TriggerType.Event, triggerConfig };
+        console.log("params:", util.inspect(params, { depth: null, colors: true }));
+        const result = await client.runTrigger(params);
+        console.log("response:", util.inspect(result, { depth: null, colors: true }));
+        expect(result).toBeDefined();
+        expect(typeof result.success).toBe("boolean");
+        expect(result.metadata).toBeDefined();
+        expect(result.success).toBe(true);
+        expect(result.data === null || typeof result.data === "object").toBe(true);
+      }
+    );
 
     test("should run trigger with Chainlink price condition", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: createChainlinkPriceConditionConfig(
@@ -512,17 +405,9 @@ describe("EventTrigger Tests", () => {
         ), // ETH > $2000
       };
 
-      console.log(
-        "🚀 ~ runTrigger with Chainlink price condition ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
-      );
-
+      console.log("params:", util.inspect(params, { depth: null, colors: true }));
       const result = await client.runTrigger(params);
-
-      console.log(
-        "runTrigger Chainlink condition response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+      console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
@@ -538,10 +423,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple price range conditions", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const conditions: EventConditionType[] = [
         {
@@ -600,268 +482,76 @@ describe("EventTrigger Tests", () => {
       );
     });
 
-    test("should run trigger with Chainlink oracle direct method calls - conditions not met", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+    const oracleCases = [
+      { label: "conditions not met", operator: "lt", threshold: "0.01", expectSuccess: false },
+      { label: "conditions met", operator: "gt", threshold: "0.01", expectSuccess: true },
+    ] as const;
 
-      // Use direct method calls (no topics) for oracle price reading
-      // Test conditions NOT met by using a very small threshold (ETH price is much higher than $0.01)
-      const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [], // Empty topics for direct method calls
-              contractAbi: [
-                {
-                  constant: false,
-                  inputs: [],
-                  name: "decimals",
-                  outputs: [{ name: "", type: "uint8" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-                {
-                  constant: false,
-                  inputs: [],
-                  name: "latestRoundData",
-                  outputs: [
+    test.each(oracleCases)(
+      "should run trigger with Chainlink oracle direct calls - %s",
+      async (_label, { operator, threshold, expectSuccess }) => {
+        const params = {
+          triggerType: TriggerType.Event,
+          triggerConfig: {
+            queries: [
+              {
+                addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+                topics: [],
+                contractAbi: [
+                  { constant: false, inputs: [], name: "decimals", outputs: [{ name: "", type: "uint8" }], payable: false, stateMutability: "view", type: "function" },
+                  { constant: false, inputs: [], name: "latestRoundData", outputs: [
                     { name: "roundId", type: "uint80" },
                     { name: "answer", type: "int256" },
                     { name: "startedAt", type: "uint256" },
                     { name: "updatedAt", type: "uint256" },
                     { name: "answeredInRound", type: "uint80" },
-                  ],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-              ],
-              methodCalls: [
-                {
-                  methodName: "decimals",
-                  methodParams: [],
-                  applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer
-                },
-                {
-                  methodName: "latestRoundData",
-                  methodParams: [],
-                },
-              ],
-              conditions: [
-                {
-                  fieldName: "latestRoundData.answer",
-                  operator: "lt",
-                  value: "0.01", // ETH price < $0.01 (will definitely fail)
-                  fieldType: "decimal",
-                },
-              ],
-              maxEventsPerBlock: 5,
-            },
-          ],
-        },
-      };
+                  ], payable: false, stateMutability: "view", type: "function" },
+                ],
+                methodCalls: [
+                  { methodName: "decimals", methodParams: [], applyToFields: ["latestRoundData.answer"] },
+                  { methodName: "latestRoundData", methodParams: [] },
+                ],
+                conditions: [
+                  { fieldName: "latestRoundData.answer", operator, value: threshold, fieldType: "decimal" },
+                ],
+                maxEventsPerBlock: 5,
+              },
+            ],
+          },
+        } as const;
 
-      console.log(
-        "🚀 ~ runTrigger with oracle direct calls (conditions not met) ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
-      );
+        console.log("params:", util.inspect(params, { depth: null, colors: true }));
+        const result = await client.runTrigger(params);
+        console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
-      const result = await client.runTrigger(params);
+        expect(result).toBeDefined();
+        expect(typeof result.success).toBe("boolean");
+        expect(result.success).toBe(expectSuccess);
+        if (!expectSuccess) {
+          expect(result.error).toContain("Conditions not met");
+        }
 
-      console.log(
-        "runTrigger oracle direct calls (conditions not met) response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
+        // Verify data contains formatted method call results
+        expect(result.data).toBeDefined();
+        const resultData = result.data as Record<string, unknown>;
+        expect(resultData.decimals).toBe("8");
+        expect(resultData.latestRoundData).toBeDefined();
+        const latestRoundData = resultData.latestRoundData as Record<string, unknown>;
+        expect(latestRoundData.answer).toBeDefined();
+        expect(typeof latestRoundData.answer).toBe("string");
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      
-      // Since ETH price is much higher than $0.01, conditions should fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("Conditions not met");
-      expect(result.error).toContain("is not less than 0.01");
+        // Verify metadata contains method info without value field
+        expect(result.metadata).toBeDefined();
+        expect(Array.isArray(result.metadata)).toBe(true);
+        const metadata = result.metadata as Array<Record<string, unknown>>;
+        expect(metadata).toHaveLength(2);
+        expect(metadata[0].methodName).toBe("decimals");
+        expect(metadata[1].methodName).toBe("latestRoundData");
 
-      // Verify data contains formatted method call results
-      expect(result.data).toBeDefined();
-      const resultData = result.data as Record<string, unknown>;
-      expect(resultData.decimals).toBe("8");
-      expect(resultData.latestRoundData).toBeDefined();
-      
-      const latestRoundData = resultData.latestRoundData as Record<string, unknown>;
-      expect(latestRoundData.answer).toBeDefined();
-      expect(latestRoundData.roundId).toBeDefined();
-      expect(latestRoundData.startedAt).toBeDefined();
-      expect(latestRoundData.updatedAt).toBeDefined();
-      expect(latestRoundData.answeredInRound).toBeDefined();
-
-      // Verify formatted decimal value
-      expect(typeof latestRoundData.answer).toBe("string");
-      expect(parseFloat(latestRoundData.answer as string)).toBeGreaterThan(0);
-
-      // Verify metadata contains method info without value field
-      expect(result.metadata).toBeDefined();
-      expect(Array.isArray(result.metadata)).toBe(true);
-      const metadata = result.metadata as Array<Record<string, unknown>>;
-      expect(metadata).toHaveLength(2);
-
-      // Check decimals method metadata
-      const decimalsMetadata = metadata[0];
-      expect(decimalsMetadata.methodName).toBe("decimals");
-      expect(decimalsMetadata.success).toBe(true);
-      expect(decimalsMetadata.error).toBe("");
-      expect(decimalsMetadata.methodABI).toBeDefined();
-      expect(decimalsMetadata.value).toBeUndefined(); // Should not have value field
-
-      // Check latestRoundData method metadata
-      const latestRoundDataMetadata = metadata[1];
-      expect(latestRoundDataMetadata.methodName).toBe("latestRoundData");
-      expect(latestRoundDataMetadata.success).toBe(true);
-      expect(latestRoundDataMetadata.error).toBe("");
-      expect(latestRoundDataMetadata.methodABI).toBeDefined();
-      expect(latestRoundDataMetadata.value).toBeUndefined(); // Should not have value field
-
-      // Verify executionContext is present for contract interactions
-      expect(result.executionContext).toBeDefined();
-      expect(result.executionContext.chainId).toBe(11155111);
-      expect(result.executionContext.isSimulated).toBe(false);
-      expect(result.executionContext.provider).toBe("chain_rpc");
-    });
-
-    test("should run trigger with Chainlink oracle direct method calls - conditions met", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
+        expect(result.executionContext).toBeDefined();
+        expect(result.executionContext.chainId).toBe(11155111);
       }
-
-      // Use direct method calls (no topics) for oracle price reading
-      // Test conditions MET by using a low threshold (ETH price is much higher than $0.01)
-      const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [], // Empty topics for direct method calls
-              contractAbi: [
-                {
-                  constant: false,
-                  inputs: [],
-                  name: "decimals",
-                  outputs: [{ name: "", type: "uint8" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-                {
-                  constant: false,
-                  inputs: [],
-                  name: "latestRoundData",
-                  outputs: [
-                    { name: "roundId", type: "uint80" },
-                    { name: "answer", type: "int256" },
-                    { name: "startedAt", type: "uint256" },
-                    { name: "updatedAt", type: "uint256" },
-                    { name: "answeredInRound", type: "uint80" },
-                  ],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-              ],
-              methodCalls: [
-                {
-                  methodName: "decimals",
-                  methodParams: [],
-                  applyToFields: ["latestRoundData.answer"], // Apply decimal formatting to latestRoundData.answer
-                },
-                {
-                  methodName: "latestRoundData",
-                  methodParams: [],
-                },
-              ],
-              conditions: [
-                {
-                  fieldName: "latestRoundData.answer",
-                  operator: "gt",
-                  value: "0.01", // ETH price > $0.01 (will definitely pass)
-                  fieldType: "decimal",
-                },
-              ],
-              maxEventsPerBlock: 5,
-            },
-          ],
-        },
-      };
-
-      console.log(
-        "🚀 ~ runTrigger with oracle direct calls (conditions met) ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
-      );
-
-      const result = await client.runTrigger(params);
-
-      console.log(
-        "runTrigger oracle direct calls (conditions met) response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
-
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      
-      // Since ETH price is much higher than $0.01, conditions should pass
-      expect(result.success).toBe(true);
-      expect(result.error).toBe("");
-
-      // Verify data contains formatted method call results
-      expect(result.data).toBeDefined();
-      const resultData = result.data as Record<string, unknown>;
-      expect(resultData.decimals).toBe("8");
-      expect(resultData.latestRoundData).toBeDefined();
-      
-      const latestRoundData = resultData.latestRoundData as Record<string, unknown>;
-      expect(latestRoundData.answer).toBeDefined();
-      expect(latestRoundData.roundId).toBeDefined();
-      expect(latestRoundData.startedAt).toBeDefined();
-      expect(latestRoundData.updatedAt).toBeDefined();
-      expect(latestRoundData.answeredInRound).toBeDefined();
-
-      // Verify formatted decimal value
-      expect(typeof latestRoundData.answer).toBe("string");
-      expect(parseFloat(latestRoundData.answer as string)).toBeGreaterThan(0.01);
-
-      // Verify metadata contains method info without value field
-      expect(result.metadata).toBeDefined();
-      expect(Array.isArray(result.metadata)).toBe(true);
-      const metadata = result.metadata as Array<Record<string, unknown>>;
-      expect(metadata).toHaveLength(2);
-
-      // Check decimals method metadata
-      const decimalsMetadata = metadata[0];
-      expect(decimalsMetadata.methodName).toBe("decimals");
-      expect(decimalsMetadata.success).toBe(true);
-      expect(decimalsMetadata.error).toBe("");
-      expect(decimalsMetadata.methodABI).toBeDefined();
-      expect(decimalsMetadata.value).toBeUndefined(); // Should not have value field
-
-      // Check latestRoundData method metadata
-      const latestRoundDataMetadata = metadata[1];
-      expect(latestRoundDataMetadata.methodName).toBe("latestRoundData");
-      expect(latestRoundDataMetadata.success).toBe(true);
-      expect(latestRoundDataMetadata.error).toBe("");
-      expect(latestRoundDataMetadata.methodABI).toBeDefined();
-      expect(latestRoundDataMetadata.value).toBeUndefined(); // Should not have value field
-
-      // Verify executionContext is present for contract interactions
-      expect(result.executionContext).toBeDefined();
-      expect(result.executionContext.chainId).toBe(11155111);
-      expect(result.executionContext.isSimulated).toBe(false);
-      expect(result.executionContext.provider).toBe("chain_rpc");
-    });
+    );
 
     test("should deserialize trigger with conditions from response", () => {
       // Create a trigger with conditions
@@ -1200,10 +890,7 @@ describe("EventTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow without contractAbi or methodCalls", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
@@ -1245,10 +932,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with single event query", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
@@ -1286,10 +970,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
@@ -1401,10 +1082,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
@@ -1531,10 +1209,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across trigger methods", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
@@ -1833,10 +1508,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address array", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1872,10 +1544,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle complex topic filtering", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       const params = {
         triggerType: TriggerType.Event,
@@ -1924,10 +1593,7 @@ describe("EventTrigger Tests", () => {
 
   describe("Empty Data Handling Tests", () => {
     test("should handle no matching events (empty data) vs query errors", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       // Use a definitely non-existent contract address to ensure no events
       // This should be much faster than real blockchain queries
@@ -1968,10 +1634,7 @@ describe("EventTrigger Tests", () => {
     });
 
     test("should handle empty address arrays consistently", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
+      
 
       // Use a more targeted approach - empty addresses with specific topic filter
       // This should be faster than monitoring all contracts

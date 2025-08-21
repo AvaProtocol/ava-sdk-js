@@ -183,7 +183,7 @@ describe("createWorkflow Tests", () => {
         id: getNextId(),
         data: {
           config: {
-            url: "https://api.telegram.org/bot{{ap_notify_bot_token}}/sendMessage?parse_mode=HTML",
+            url: "https://mock-api.ap-aggregator.local/post",
             method: "POST",
             headersMap: [["content-type", "application/json"]],
             body: `JSON.stringify({
@@ -263,7 +263,7 @@ describe("createWorkflow Tests", () => {
         id: getNextId(),
         data: {
           config: {
-            url: "https://httpbin.org/get",
+            url: "https://mock-api.ap-aggregator.local/get",
             method: "GET",
             headersMap: [["content-type", "application/json"]],
             body: `helloworld`,

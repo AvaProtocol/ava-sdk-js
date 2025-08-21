@@ -1,7 +1,7 @@
 import util from "util";
 import _ from "lodash";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
-import { TriggerType } from "@avaprotocol/types";
+import { CustomCodeLang, NodeType, TriggerType } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -241,7 +241,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should run trigger with hourly schedule", async () => {
@@ -260,7 +259,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should run trigger with every 15 minutes schedule", async () => {
@@ -279,7 +277,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should run trigger with complex schedule", async () => {
@@ -298,7 +295,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
     });
 
     test("should run trigger with minute-based schedule", async () => {
@@ -317,7 +313,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should run trigger with weekly schedule", async () => {
@@ -336,7 +331,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should handle standard cron expressions", async () => {
@@ -391,7 +385,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should handle step values in cron expressions", async () => {
@@ -410,7 +403,6 @@ describe("CronTrigger Tests", () => {
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
     });
 
     test("should validate cron expression format in TriggerFactory", () => {
@@ -557,6 +549,279 @@ describe("CronTrigger Tests", () => {
         util.inspect(executions, { depth: null, colors: true })
       );
     });
+  });
+
+  describe("End-to-End Cron Triggering Tests", () => {
+    test(
+      "should trigger multiple times with a deployed workflow",
+      async () => {
+        const wallet = await client.getWallet({
+          salt: _.toString(saltIndex++),
+        });
+
+        // Create a custom code node that logs execution time for verification
+        const customCodeNode = {
+          id: "custom-code-node",
+          name: "logExecution",
+          type: NodeType.CustomCode,
+          data: {
+            lang: CustomCodeLang.JavaScript,
+            source: `
+            const now = new Date();
+            const timestamp = now.getTime();
+            const isoString = now.toISOString();
+            
+            console.log('🎯 Custom code execution at:', isoString);
+            console.log('🎯 Execution timestamp:', timestamp);
+            console.log('🎯 Workflow context:', workflowContext);
+            console.log('🎯 Trigger data:', e2e_cron_trigger.data);
+            console.log('🎯 Available inputs:', Object.keys(this || {}));
+            
+            return {
+              executedAt: isoString,
+              timestamp: timestamp,
+              message: "E2E test execution successful",
+              triggerInfo: e2e_cron_trigger.data
+            };
+          `,
+          },
+        };
+
+        // Create cron trigger for every minute with max 2 executions
+        const cronTrigger = TriggerFactory.create({
+          id: defaultTriggerId,
+          name: "e2e_cron_trigger",
+          type: TriggerType.Cron,
+          data: {
+            schedules: ["*/1 * * * *"], // Every minute
+          },
+        });
+
+        // Create workflow with custom code node
+        const workflowProps = createFromTemplate(wallet.address, [
+          customCodeNode,
+        ]);
+        workflowProps.trigger = cronTrigger;
+        workflowProps.maxExecution = 2; // Only allow 2 executions
+        workflowProps.name = "E2E Cron Test Workflow";
+
+        console.log(
+          "🚀 Deploying E2E test workflow:",
+          util.inspect(
+            {
+              trigger: cronTrigger.data,
+              maxExecution: workflowProps.maxExecution,
+              walletAddress: wallet.address,
+            },
+            { depth: null, colors: true }
+          )
+        );
+
+                 // Deploy the workflow
+         const workflowDeployTime = new Date();
+         const workflowId = await client.submitWorkflow(
+           client.createWorkflow(workflowProps)
+         );
+         createdIdMap.set(workflowId, true);
+
+         console.log(`✅ Workflow deployed with ID: ${workflowId}`);
+         console.log(`🕐 Deployed at: ${workflowDeployTime.toISOString()}`);
+         console.log(
+           "⏳ Waiting for operator to trigger workflow automatically..."
+         );
+         console.log("📋 Expected: 2 executions within ~3 minutes");
+         console.log("📅 Cron schedule: */1 * * * * (every minute)");
+         console.log(
+           "🔧 Make sure aggregator (make dev-agg) and operator (make dev-op) are running"
+         );
+
+        // Wait for executions to happen (longer wait for real triggering)
+        const maxWaitTime = 4 * 60 * 1000; // 4 minutes
+        const pollInterval = 15 * 1000; // Check every 15 seconds
+        let executions = { items: [] as Record<string, unknown>[] };
+        let totalWaitTime = 0;
+
+                 console.log("🔍 Polling for executions every 15 seconds...");
+         console.log(`🕐 Test started at: ${new Date().toISOString()}`);
+
+         while (totalWaitTime < maxWaitTime && executions.items.length < 2) {
+           await new Promise((resolve) => setTimeout(resolve, pollInterval));
+           totalWaitTime += pollInterval;
+
+           try {
+             executions = await client.getExecutions([workflowId], {
+               limit: 10,
+               after: "",
+             });
+
+             const now = new Date();
+             console.log(
+               `⏱️  ${Math.floor(totalWaitTime / 1000)}s elapsed (${now.toISOString()}) - Found ${
+                 executions.items.length
+               } executions`
+             );
+
+                         if (executions.items.length > 0) {
+               const executionDetails = executions.items.map((exec) => {
+                 const startAt = (exec as { startAt: number }).startAt;
+                 const endAt = (exec as { endAt?: number }).endAt;
+                 return {
+                   id: (exec as { id: string }).id,
+                   success: (exec as { success: boolean }).success,
+                   startAt: new Date(startAt).toISOString(),
+                   endAt: endAt ? new Date(endAt).toISOString() : "running",
+                   duration: endAt ? `${endAt - startAt}ms` : "ongoing",
+                   error: (exec as { error?: string }).error || "none",
+                 };
+               });
+
+               console.log(
+                 "📊 Current executions with timing:",
+                 util.inspect(executionDetails, { depth: null, colors: true })
+               );
+               
+               // Calculate time between executions if we have multiple
+               if (executionDetails.length > 1) {
+                 const firstStart = new Date(executionDetails[0].startAt).getTime();
+                 const secondStart = new Date(executionDetails[1].startAt).getTime();
+                 const timeBetween = secondStart - firstStart;
+                 console.log(`⏰ Time between executions: ${timeBetween}ms (${Math.round(timeBetween / 1000)}s)`);
+               }
+             }
+          } catch (error) {
+            console.log("⚠️  Error polling executions:", error);
+          }
+        }
+
+        // Verify results
+        console.log(
+          "🎯 Final execution results:",
+          util.inspect(executions, { depth: null, colors: true })
+        );
+
+                 // Test assertions
+         expect(executions.items.length).toBeGreaterThan(0);
+         console.log(`✅ Found ${executions.items.length} execution(s)`);
+
+         // Quick summary of all executions
+         const executionSummary = executions.items.map((exec, index) => ({
+           execution: index + 1,
+           id: (exec as { id: string }).id,
+           success: (exec as { success: boolean }).success,
+           error: (exec as { error?: string }).error || "none"
+         }));
+         console.log("📋 Execution Summary:", executionSummary);
+
+         // Verify each execution
+         executions.items.forEach((execution, index: number) => {
+           const exec = execution as { 
+             id: string; 
+             success: boolean; 
+             error?: string;
+             steps?: Record<string, unknown>[];
+           };
+           
+           console.log(
+             `🔍 Verifying execution ${index + 1}:`,
+             exec.id
+           );
+           
+           console.log(`📊 Execution ${index + 1} details:`, {
+             id: exec.id,
+             success: exec.success,
+             error: exec.error || "none",
+             stepCount: exec.steps?.length || 0
+           });
+           
+           // If execution failed, log detailed error information
+           if (!exec.success) {
+             console.log(`❌ Execution ${index + 1} FAILED:`, exec.error);
+             if (exec.steps) {
+               const failedSteps = exec.steps.filter(
+                 (step: Record<string, unknown>) => !(step as { success: boolean }).success
+               );
+               console.log(`🚫 Failed steps (${failedSteps.length}):`, 
+                 failedSteps.map((step: Record<string, unknown>) => ({
+                   id: (step as { id: string }).id,
+                   error: (step as { error?: string }).error || "unknown error"
+                 }))
+               );
+             }
+           }
+
+           expect(exec.success).toBe(true);
+          expect((execution as { startAt: number }).startAt).toBeDefined();
+          expect((execution as { endAt: number }).endAt).toBeDefined();
+          expect((execution as { steps: unknown[] }).steps).toBeDefined();
+          expect(
+            (execution as { steps: unknown[] }).steps.length
+          ).toBeGreaterThan(0);
+
+          // Find the custom code step
+          const steps = (execution as { steps: Record<string, unknown>[] })
+            .steps;
+          const customCodeStep = steps.find(
+            (step: Record<string, unknown>) =>
+              (step as { id: string }).id === customCodeNode.id
+          );
+
+          if (customCodeStep) {
+            expect((customCodeStep as { success: boolean }).success).toBe(true);
+            expect(
+              (customCodeStep as { output: unknown }).output
+            ).toBeDefined();
+
+            console.log(
+              `📋 Custom code output for execution ${index + 1}:`,
+              util.inspect((customCodeStep as { output: unknown }).output, {
+                depth: null,
+                colors: true,
+              })
+            );
+          }
+
+          // Verify trigger step exists
+          const triggerStep = steps.find(
+            (step: Record<string, unknown>) =>
+              (step as { id: string }).id === cronTrigger.id
+          );
+          expect(triggerStep).toBeDefined();
+          expect((triggerStep as { success: boolean }).success).toBe(true);
+        });
+
+        // If we got 2 executions, verify the workflow is completed/stopped
+        if (executions.items.length >= 2) {
+          console.log(
+            "✅ Workflow reached maxExecution limit - should be completed"
+          );
+
+          // Try to get workflow info to verify status
+          try {
+            const workflowInfo = await client.getWorkflow(workflowId);
+            console.log(
+              "📊 Final workflow status:",
+              util.inspect(
+                {
+                  id: workflowInfo.id,
+                  status: workflowInfo.status,
+                  executionCount: workflowInfo.executionCount,
+                  maxExecution: workflowInfo.maxExecution,
+                },
+                { depth: null, colors: true }
+              )
+            );
+          } catch (error) {
+            console.log(
+              "ℹ️  Could not fetch workflow info (may be completed):",
+              error
+            );
+          }
+        }
+
+        console.log("🎉 E2E cron trigger test completed successfully!");
+      },
+      5 * 60 * 1000
+    ); // 5 minute timeout
   });
 
   describe("Response Format Consistency Tests", () => {

@@ -242,7 +242,7 @@ return message;`,
       name: "telegram0",
       type: NodeType.RestAPI,
       data: {
-        url: "https://api.telegram.org/bot{{apContext.configVars.ap_notify_bot_token}}/sendMessage",
+        url: "https://mock-api.ap-aggregator.local/post",
         method: "POST",
         body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}","parse_mode":"HTML"}',
         headers: { "Content-Type": "application/json" },
@@ -576,7 +576,7 @@ return message;`,
       expect(savedTelegramNode).toBeDefined();
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((savedTelegramNode!.data as any).url).toContain("telegram.org");
+      expect((savedTelegramNode!.data as any).url).toContain("mock-api.ap-aggregator.local/post");
     });
   });
 });

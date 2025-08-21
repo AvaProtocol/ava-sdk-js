@@ -183,7 +183,7 @@ describe("SimulateWorkflow", () => {
           name: "restAPICall",
           type: NodeType.RestAPI,
           data: {
-            url: "https://jsonplaceholder.typicode.com/posts/1",
+            url: "https://mock-api.ap-aggregator.local/posts/1",
             method: "GET",
             body: "",
             headers: {},
@@ -402,7 +402,7 @@ describe("SimulateWorkflow", () => {
           name: "rest_api_node",
           type: NodeType.RestAPI,
           data: {
-            url: "https://jsonplaceholder.typicode.com/posts/1",
+            url: "https://mock-api.ap-aggregator.local/posts/1",
             method: "GET",
             body: "",
             headers: {
