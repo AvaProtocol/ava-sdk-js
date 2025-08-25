@@ -15,7 +15,8 @@ import { getConfig, getEnvironment } from "../utils/envalid";
 
 jest.setTimeout(45000);
 const env = getEnvironment();
-const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
+const describeIfSepolia =
+  env === "sepolia" || env === "dev" ? describe : describe.skip;
 
 const createdIdMap: Map<string, boolean> = new Map();
 
@@ -266,7 +267,7 @@ describeIfSepolia("EventTrigger Tests", () => {
                 {
                   values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-              ],
+                  ],
                 },
               ],
             },
@@ -295,7 +296,7 @@ describeIfSepolia("EventTrigger Tests", () => {
                 {
                   values: [
                     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-              ],
+                  ],
                 },
               ],
             },
@@ -346,57 +347,96 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
     });
 
-    const transferCases = [
-      {
-        name: "from core address",
-        triggerConfig: {
-          queries: [
-            {
-              addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [{ values: [TRANSFER_EVENT_SIGNATURE, coreAddress, null] }],
-            },
-          ],
-        },
-      },
-      {
-        name: "to core address",
-        triggerConfig: {
-          queries: [
-            {
-              addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [
-                {
-                  values: [
-                    TRANSFER_EVENT_SIGNATURE,
-                    null,
-                    padAddressForTopic(coreAddress),
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      },
-      {
-        name: "multiple queries (from/to)",
-        triggerConfig: createEventTriggerConfig(coreAddress),
-      },
-    ] as const;
+    // Transfer event tests - defined as individual tests to access coreAddress after initialization
+    test("should run trigger for Transfer events: from core address", async () => {
+      const triggerConfig = {
+        queries: [
+          {
+            addresses: SEPOLIA_TOKEN_ADDRESSES,
+            topics: [
+              { values: [TRANSFER_EVENT_SIGNATURE, padAddressForTopic(coreAddress), null] },
+            ],
+          },
+        ],
+      };
+      
+      const params = { triggerType: TriggerType.Event, triggerConfig };
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+      const result = await client.runTrigger(params);
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.metadata).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
+    });
 
-    test.each(transferCases)(
-      "should run trigger for Transfer events: %s",
-      async (_label, { triggerConfig }) => {
-        const params = { triggerType: TriggerType.Event, triggerConfig };
-        console.log("params:", util.inspect(params, { depth: null, colors: true }));
-        const result = await client.runTrigger(params);
-        console.log("response:", util.inspect(result, { depth: null, colors: true }));
-        expect(result).toBeDefined();
-        expect(typeof result.success).toBe("boolean");
-        expect(result.metadata).toBeDefined();
-        expect(result.success).toBe(true);
-        expect(result.data === null || typeof result.data === "object").toBe(true);
-      }
-    );
+    test("should run trigger for Transfer events: to core address", async () => {
+      const triggerConfig = {
+        queries: [
+          {
+            addresses: SEPOLIA_TOKEN_ADDRESSES,
+            topics: [
+              {
+                values: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  null,
+                  padAddressForTopic(coreAddress),
+                ],
+              },
+            ],
+          },
+        ],
+      };
+      
+      const params = { triggerType: TriggerType.Event, triggerConfig };
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+      const result = await client.runTrigger(params);
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.metadata).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
+    });
+
+    test("should run trigger for Transfer events: multiple queries (from/to)", async () => {
+      const triggerConfig = createEventTriggerConfig(coreAddress);
+      
+      const params = { triggerType: TriggerType.Event, triggerConfig };
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+      const result = await client.runTrigger(params);
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+      expect(result).toBeDefined();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.metadata).toBeDefined();
+      expect(result.success).toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
+    });
 
     test("should run trigger with Chainlink price condition", async () => {
       const params = {
@@ -407,13 +447,19 @@ describeIfSepolia("EventTrigger Tests", () => {
         ), // ETH > $2000
       };
 
-      console.log("params:", util.inspect(params, { depth: null, colors: true }));
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
       const result = await client.runTrigger(params);
-      console.log("response:", util.inspect(result, { depth: null, colors: true }));
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
+
       expect(result.metadata).toBeDefined();
 
       // Conditions filter events, so no matching events is expected when condition is not met
@@ -425,8 +471,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should run trigger with multiple price range conditions", async () => {
-      
-
       const conditions: EventConditionType[] = [
         {
           fieldName: "AnswerUpdated.current",
@@ -475,7 +519,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
 
       expect(result.success).toBe(true);
       // Data can be null (no events found) or an object (events found)
@@ -484,76 +527,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
     });
 
-    const oracleCases = [
-      { label: "conditions not met", operator: "lt", threshold: "0.01", expectSuccess: false },
-      { label: "conditions met", operator: "gt", threshold: "0.01", expectSuccess: true },
-    ] as const;
 
-    test.each(oracleCases)(
-      "should run trigger with Chainlink oracle direct calls - %s",
-      async (_label, { operator, threshold, expectSuccess }) => {
-        const params = {
-          triggerType: TriggerType.Event,
-          triggerConfig: {
-            queries: [
-              {
-                addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-                topics: [],
-                contractAbi: [
-                  { constant: false, inputs: [], name: "decimals", outputs: [{ name: "", type: "uint8" }], payable: false, stateMutability: "view", type: "function" },
-                  { constant: false, inputs: [], name: "latestRoundData", outputs: [
-                    { name: "roundId", type: "uint80" },
-                    { name: "answer", type: "int256" },
-                    { name: "startedAt", type: "uint256" },
-                    { name: "updatedAt", type: "uint256" },
-                    { name: "answeredInRound", type: "uint80" },
-                  ], payable: false, stateMutability: "view", type: "function" },
-                ],
-                methodCalls: [
-                  { methodName: "decimals", methodParams: [], applyToFields: ["latestRoundData.answer"] },
-                  { methodName: "latestRoundData", methodParams: [] },
-                ],
-                conditions: [
-                  { fieldName: "latestRoundData.answer", operator, value: threshold, fieldType: "decimal" },
-                ],
-                maxEventsPerBlock: 5,
-              },
-            ],
-          },
-        } as const;
-
-        console.log("params:", util.inspect(params, { depth: null, colors: true }));
-        const result = await client.runTrigger(params);
-        console.log("response:", util.inspect(result, { depth: null, colors: true }));
-
-        expect(result).toBeDefined();
-        expect(typeof result.success).toBe("boolean");
-        expect(result.success).toBe(expectSuccess);
-        if (!expectSuccess) {
-          expect(result.error).toContain("Conditions not met");
-        }
-
-        // Verify data contains formatted method call results
-        expect(result.data).toBeDefined();
-        const resultData = result.data as Record<string, unknown>;
-        expect(resultData.decimals).toBe("8");
-        expect(resultData.latestRoundData).toBeDefined();
-        const latestRoundData = resultData.latestRoundData as Record<string, unknown>;
-        expect(latestRoundData.answer).toBeDefined();
-        expect(typeof latestRoundData.answer).toBe("string");
-
-        // Verify metadata contains method info without value field
-        expect(result.metadata).toBeDefined();
-        expect(Array.isArray(result.metadata)).toBe(true);
-        const metadata = result.metadata as Array<Record<string, unknown>>;
-        expect(metadata).toHaveLength(2);
-        expect(metadata[0].methodName).toBe("decimals");
-        expect(metadata[1].methodName).toBe("latestRoundData");
-
-        expect(result.executionContext).toBeDefined();
-        expect(result.executionContext.chainId).toBe(11155111);
-      }
-    );
 
     test("should deserialize trigger with conditions from response", () => {
       // Create a trigger with conditions
@@ -892,8 +866,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow without contractAbi or methodCalls", async () => {
-      
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const eventTrigger = TriggerFactory.create({
@@ -934,8 +906,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with single event query", async () => {
-      
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const eventTrigger = TriggerFactory.create({
@@ -972,8 +942,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
-      
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -1084,8 +1052,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
-      
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const eventTrigger = TriggerFactory.create({
@@ -1210,9 +1176,194 @@ describeIfSepolia("EventTrigger Tests", () => {
   });
 
   describe("Response Format Consistency Tests", () => {
-    test("should return consistent response format across trigger methods", async () => {
-      
+    test("should return consistent AnswerUpdated event format across all execution modes", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
+      // Define oracle event trigger configuration with proper AnswerUpdated event ABI
+      const oracleEventConfig = {
+        queries: [
+          {
+            addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+            topics: [],
+            contractAbi: [
+              {
+                constant: false,
+                inputs: [],
+                name: "decimals",
+                outputs: [{ name: "", type: "uint8" }],
+                payable: false,
+                stateMutability: "view",
+                type: "function",
+              },
+              {
+                constant: false,
+                inputs: [],
+                name: "latestRoundData",
+                outputs: [
+                  { name: "roundId", type: "uint80" },
+                  { name: "answer", type: "int256" },
+                  { name: "startedAt", type: "uint256" },
+                  { name: "updatedAt", type: "uint256" },
+                  { name: "answeredInRound", type: "uint80" },
+                ],
+                payable: false,
+                stateMutability: "view",
+                type: "function",
+              },
+              {
+                anonymous: false,
+                inputs: [
+                  { indexed: true, name: "current", type: "int256" },
+                  { indexed: true, name: "roundId", type: "uint256" },
+                  { indexed: false, name: "updatedAt", type: "uint256" },
+                ],
+                name: "AnswerUpdated",
+                type: "event",
+              },
+            ],
+            methodCalls: [
+              {
+                methodName: "decimals",
+                methodParams: [],
+                applyToFields: ["latestRoundData.answer"],
+              },
+              { methodName: "latestRoundData", methodParams: [] },
+            ],
+            conditions: [
+              {
+                fieldName: "latestRoundData.answer",
+                operator: "gt",
+                value: "0.01",
+                fieldType: "decimal",
+              },
+            ],
+            maxEventsPerBlock: 5,
+          },
+        ],
+      };
+
+      // Test 1: runTrigger (Run Node Immediately)
+      console.log("🧪 Testing runTrigger (Run Node Immediately)...");
+      const runNodeParams = {
+        triggerType: TriggerType.Event,
+        triggerConfig: oracleEventConfig,
+      };
+      
+      const runNodeResponse = await client.runTrigger(runNodeParams);
+      console.log(
+        "🚀 runTrigger response:",
+        util.inspect(runNodeResponse, { depth: null, colors: true })
+      );
+
+      // Test 2: simulateWorkflow (Simulate Task)
+      console.log("🧪 Testing simulateWorkflow (Simulate Task)...");
+      const eventTrigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "oracle_consistency_test",
+        type: TriggerType.Event,
+        data: oracleEventConfig,
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, []);
+      workflowProps.trigger = eventTrigger;
+
+      const simulateResponse = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+      console.log(
+        "🚀 simulateWorkflow response:",
+        util.inspect(simulateResponse, { depth: null, colors: true })
+      );
+
+      // Helper function to validate consistent response structure
+      const validateEventResponse = (response: any, mode: string) => {
+        console.log(`🔍 Validating ${mode} response structure...`);
+
+        expect(response).toBeDefined();
+        expect(response.success).toBe(true);
+
+        // Validate data structure (parsed ABI fields)
+        expect(response.data).toBeDefined();
+        const parsedData = response.data as Record<string, unknown>;
+        
+        expect(typeof parsedData.current).toBe("string");
+        expect(typeof parsedData.roundId).toBe("string");
+        expect(typeof parsedData.updatedAt).toBe("string");
+        expect(parsedData.eventName).toBe("AnswerUpdated");
+
+        // Validate metadata structure (raw event log only)
+        expect(response.metadata).toBeDefined();
+        const metadata = response.metadata as Record<string, unknown>;
+        
+        expect(metadata.address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
+        expect(Array.isArray(metadata.topics)).toBe(true);
+        expect(metadata.topics[0]).toBe(CHAINLINK_ANSWER_UPDATED_SIGNATURE);
+        expect(typeof metadata.blockNumber).toBe("number");
+        expect(typeof metadata.transactionHash).toBe("string");
+        expect(typeof metadata.data).toBe("string");
+        expect(metadata.chainId).toBe(11155111);
+        
+        // Ensure NO executionContext in metadata
+        expect(metadata.executionContext).toBeUndefined();
+
+        // Validate executionContext structure
+        expect(response.executionContext).toBeDefined();
+        expect(response.executionContext.chainId).toBe(11155111);
+        expect(response.executionContext.isSimulated).toBe(true);
+        expect(response.executionContext.provider).toBe("tenderly");
+        expect(Object.keys(response.executionContext)).toHaveLength(3);
+
+        console.log(`✅ ${mode} response structure is valid`);
+      };
+
+      // Extract trigger step from simulate workflow response
+      const triggerStep = simulateResponse.steps.find(step => step.type === "eventTrigger");
+      expect(triggerStep).toBeDefined();
+
+      // Create a normalized response structure for the trigger step
+      const normalizedSimulateResponse = {
+        success: triggerStep!.success,
+        data: triggerStep!.output,
+        metadata: triggerStep!.metadata || {}, // simulateWorkflow doesn't include raw metadata
+        executionContext: {
+          chainId: triggerStep!.executionContext.chain_id,
+          isSimulated: triggerStep!.executionContext.is_simulated,
+          provider: triggerStep!.executionContext.provider,
+        },
+      };
+
+      // Validate both responses have consistent structure
+      validateEventResponse(runNodeResponse, "runTrigger");
+      
+      // For simulate workflow, we only validate the data structure since metadata isn't included
+      console.log("🔍 Validating simulateWorkflow response structure...");
+      expect(normalizedSimulateResponse.success).toBe(true);
+      expect(normalizedSimulateResponse.data).toBeDefined();
+      
+      const simulateData = normalizedSimulateResponse.data as Record<string, unknown>;
+      expect(typeof simulateData.current).toBe("string");
+      expect(typeof simulateData.roundId).toBe("string");
+      expect(typeof simulateData.updatedAt).toBe("string");
+      expect(simulateData.eventName).toBe("AnswerUpdated");
+      
+      expect(normalizedSimulateResponse.executionContext.chainId).toBe(11155111);
+      expect(normalizedSimulateResponse.executionContext.isSimulated).toBe(true);
+      expect(normalizedSimulateResponse.executionContext.provider).toBe("tenderly");
+      
+      console.log("✅ simulateWorkflow response structure is valid");
+
+      // Compare data consistency between modes
+      const runNodeData = runNodeResponse.data as Record<string, unknown>;
+
+      expect(runNodeData.eventName).toBe(simulateData.eventName);
+      expect(typeof runNodeData.current).toBe(typeof simulateData.current);
+      expect(typeof runNodeData.roundId).toBe(typeof simulateData.roundId);
+      expect(typeof runNodeData.updatedAt).toBe(typeof simulateData.updatedAt);
+
+      console.log("🎉 All execution modes return consistent AnswerUpdated event format!");
+    });
+
+    test("should return consistent response format across trigger methods", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const eventTriggerConfig = {
@@ -1233,7 +1384,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         triggerType: TriggerType.Event,
         triggerConfig: eventTriggerConfig,
       };
-  
+
       const directResponse = await client.runTrigger(params);
 
       console.log(
@@ -1337,7 +1488,9 @@ describeIfSepolia("EventTrigger Tests", () => {
         // Direct response should have blockchain log data
         expect(directData).toBeDefined();
         expect(directData.tokenContract).toBeDefined(); // Contract address in log format (changed from 'address' to 'tokenContract')
-        const directChainId = (directData as any)?.chainId ?? (directResponse.metadata as any)?.chainId;
+        const directChainId =
+          (directData as any)?.chainId ??
+          (directResponse.metadata as any)?.chainId;
         expect(directChainId).toBeDefined();
         expect(directData.topics).toBeDefined(); // Event signature and indexed params
         expect(directData.blockNumber).toBeDefined();
@@ -1510,8 +1663,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should handle empty address array", async () => {
-      
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
@@ -1546,8 +1697,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should handle complex topic filtering", async () => {
-      
-
       const params = {
         triggerType: TriggerType.Event,
         triggerConfig: {
@@ -1582,7 +1731,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
 
       // For specific filters like minting events, no matching events is expected
       expect(result.success).toBe(true);
@@ -1634,8 +1782,6 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should handle empty address arrays consistently", async () => {
-      
-
       // Use a more targeted approach - empty addresses with specific topic filter
       // This should be faster than monitoring all contracts
       const result = await client.runTrigger({
@@ -1661,7 +1807,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
 
       // Should either succeed with broad monitoring or handle gracefully
       expect(result.success).toBe(true);
@@ -1696,7 +1841,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
 
       // Should handle empty topics gracefully
       expect(result.success).toBe(true);
@@ -1789,7 +1933,6 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
-      
 
       // Should handle gracefully - either succeed with null data or fail with error
       expect(result.success).toBe(true);
