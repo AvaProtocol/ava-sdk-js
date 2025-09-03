@@ -1184,32 +1184,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         queries: [
           {
             addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-            topics: [],
+            topics: [{ values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE] }],
             contractAbi: [
-              {
-                constant: false,
-                inputs: [],
-                name: "decimals",
-                outputs: [{ name: "", type: "uint8" }],
-                payable: false,
-                stateMutability: "view",
-                type: "function",
-              },
-              {
-                constant: false,
-                inputs: [],
-                name: "latestRoundData",
-                outputs: [
-                  { name: "roundId", type: "uint80" },
-                  { name: "answer", type: "int256" },
-                  { name: "startedAt", type: "uint256" },
-                  { name: "updatedAt", type: "uint256" },
-                  { name: "answeredInRound", type: "uint80" },
-                ],
-                payable: false,
-                stateMutability: "view",
-                type: "function",
-              },
               {
                 anonymous: false,
                 inputs: [
@@ -1221,20 +1197,12 @@ describeIfSepolia("EventTrigger Tests", () => {
                 type: "event",
               },
             ],
-            methodCalls: [
-              {
-                methodName: "decimals",
-                methodParams: [],
-                applyToFields: ["latestRoundData.answer"],
-              },
-              { methodName: "latestRoundData", methodParams: [] },
-            ],
             conditions: [
               {
-                fieldName: "latestRoundData.answer",
+                fieldName: "AnswerUpdated.current",
                 operator: "gt",
-                value: "0.01",
-                fieldType: "decimal",
+                value: "200000000000", // $2000 in 8 decimals
+                fieldType: "int256",
               },
             ],
             maxEventsPerBlock: 5,
