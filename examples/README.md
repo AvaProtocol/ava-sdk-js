@@ -6,23 +6,87 @@ It is not intended to be a flexible, full-featured CLI, but rather a simple scri
 
 ## Environment Setup
 
-Before running the script, you need to set up the following environment variables:
+Before running the script, you need to set up authentication. You have two options:
 
-- `PRIVATE_KEY`: Your private key for accessing the blockchain. This is required for signing transactions.
-- `ENV`: The environment in which the script will run. Options include `development`, `sepolia`, `base-sepolia`, and `ethereum`. Set this to match the desired network.
-
-You can set these variables in a `.env` file or directly in your terminal:
+### Option 1: Private Key Authentication (Wallet-specific access)
+- `TEST_PRIVATE_KEY`: Your private key for accessing the blockchain. This allows you to access only wallets derived from this private key.
 
 ```bash
-export PRIVATE_KEY=<your_private_key>
-export ENV=development
+export TEST_PRIVATE_KEY=<your_private_key>
+```
+
+### Option 2: API Key Authentication (Admin access to any wallet)
+- `AVS_API_KEY`: Admin API key that allows querying wallets for any address, not just your own.
+
+```bash
+export AVS_API_KEY=<your_api_key>
+```
+
+### Key Differences:
+- **TEST_PRIVATE_KEY**: Can only access wallets derived from that specific private key. Good for personal use.
+- **AVS_API_KEY**: Admin access that can query any wallet address. Required for cross-wallet operations.
+
+### For Base Chain specifically:
+You can create environment-specific `.env` files **in the root directory** (same level as `package.json`):
+
+```bash
+# .env.base (for Base mainnet) - place in root directory
+AVS_API_KEY=your_api_key_here
+CHAIN_ENDPOINT=https://base-mainnet.core.chainstack.com/your_endpoint
+
+# .env.base-sepolia (for Base testnet) - place in root directory
+AVS_API_KEY=your_api_key_here  
+CHAIN_ENDPOINT=https://base-sepolia.core.chainstack.com/your_endpoint
+
+# .env (base file) - place in root directory  
+TEST_PRIVATE_KEY=your_private_key_here  # Optional, for fallback
+```
+
+**Important**: These `.env` files should be in the **root directory** of the project (same level as `package.json`), not in the `examples/` folder.
+
+## Targeting Different Networks
+
+The script supports multiple blockchain networks. Use the `--avs-target` flag to specify which network to use:
+
+**Available networks:**
+- `dev` - Local development environment (default)
+- `sepolia` - Ethereum Sepolia testnet  
+- `base-sepolia` - Base Sepolia testnet (Chain ID: 84532)
+- `base` - Base mainnet (Chain ID: 8453)
+- `ethereum` - Ethereum mainnet
+- `soneium` - Soneium mainnet
+- `soneium-minato` - Soneium testnet
+- `bsc` - Binance Smart Chain mainnet
+- `bsc-testnet` - Binance Smart Chain testnet
+
+**Examples:**
+```bash
+yarn start --avs-target base getWallets           # Base mainnet
+yarn start --avs-target base-sepolia getWallets  # Base testnet
+yarn start --avs-target sepolia getWallets       # Ethereum testnet
+
+# Short flag also works
+yarn start -t base getWallets
+```
+
+### Verify Your Setup
+
+To verify your Base chain setup is working:
+
+```bash
+# This should show "Using API key authentication for admin access"
+# and "Loading environment from: .env.base"
+yarn start --avs-target base getWallets
+
+# Query a specific wallet address
+yarn start --avs-target base getWallets 0xYourWalletAddress
 ```
 
 ## Usage
 
 1. **Build the Packages**: The example script imports libraries defined in this repo, so build the packages first by running `yarn build` at the root folder. `node_modules` should only be in the root folder, as all node_modules are managed and shared by this yarn workspace.
 
-2. **Run the Script**: Use `yarn start` to see all options of this command-line tool. For example, run `yarn run wallet` to list all registered smart wallets, and `yarn run create-wallet <salt>` to create and add more smart wallets to the list.
+2. **Run the Script**: Use `yarn start` to see all options of this command-line tool. For example, run `yarn start getWallets` to list all registered smart wallets, and `yarn start getWallet <salt>` to create and add more smart wallets to the list.
 
 ## Example Commands
 
@@ -31,12 +95,27 @@ export ENV=development
 - Create a new smart wallet:
 
   ```bash
-  yarn start create-wallet 1
+  yarn start getWallet 1
+  ```
+
+- Create a smart wallet on Base mainnet:
+  ```bash
+  yarn start --avs-target base getWallet 1
   ```
 
 - List all registered smart wallets:
   ```bash
-  yarn start wallet
+  yarn start getWallets  # Uses dev environment by default
+  ```
+
+- List wallets on Base testnet:
+  ```bash
+  yarn start --avs-target base-sepolia getWallets
+  ```
+
+- Query specific wallet on Base mainnet (requires API key):
+  ```bash
+  yarn start --avs-target base getWallets 0xYourWalletAddressHere
   ```
 
 ### Workflow Related
@@ -47,6 +126,11 @@ export ENV=development
 
    ```bash
    yarn start schedule-monitor 0xC114FB059434563DC65AC8D57e7976e3eaC534F4
+   ```
+
+   **On Base chain:**
+   ```bash
+   yarn start --avs-target base schedule-monitor 0xC114FB059434563DC65AC8D57e7976e3eaC534F4
    ```
 
    After scheduling, set the workflow ID to an environment variable for use in other commands:
@@ -103,6 +187,40 @@ Schedule an auto sweep task where funds transferred to the smart wallet will aut
 ```bash
 n dist/example.js schedule-sweep 0x036cbd53842c5426634e7929541ec2318f3dcf7e
 ```
+
+## Troubleshooting
+
+### Connection Refused Error
+
+If you see an error like:
+```
+Error: 14 UNAVAILABLE: No connection established. Last error: Error: connect ECONNREFUSED 127.0.0.1:2206
+```
+
+This means you're trying to connect to the local development environment (`dev`) but the local aggregator server is not running. 
+
+**Solutions:**
+
+1. **Use a remote environment instead of local dev:**
+   ```bash
+   yarn start --avs-target base-sepolia getWallets  # Use Base testnet
+   # or
+   yarn start --avs-target base getWallets          # Use Base mainnet
+   ```
+
+2. **Or start the local development server** (if you have the EigenLayer-AVS repo set up):
+   ```bash
+   cd ../EigenLayer-AVS
+   make dev-agg
+   ```
+
+### Environment Configuration
+
+The example script automatically loads environment-specific configurations:
+
+- **Base mainnet** (`base`): Connects to `aggregator-base.avaprotocol.org:3206`
+- **Base testnet** (`base-sepolia`): Connects to `aggregator-base-sepolia.avaprotocol.org:3206`  
+- **Local dev** (`dev`): Connects to `localhost:2206` (requires local server)
 
 Feel free to reach out with any questions or suggestions for improvement!
 

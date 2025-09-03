@@ -21,40 +21,43 @@ import fs from "node:fs";
 import path from "node:path";
 import dotenv from "dotenv";
 
-import { commandArgs, currentEnv } from "./config";
-import { ENV_CONFIGS } from "../tests/utils/envalid";
+import { commandArgs, currentEnv, getConfig } from "./config";
 
 // Load environment variables from root directory based on target environment
-// Load in reverse order so environment-specific files take precedence
+// This follows the same pattern as tests/utils/envalid.ts
 const rootDir = path.join(__dirname, "..");
-const envFiles = [
-  ".env",                // Default .env file (loaded first, lower precedence)
-  `.env.${currentEnv}`,  // Environment-specific file (loaded last, higher precedence)
-];
 
-// Load environment files in order, allowing later files to override earlier ones
-envFiles.forEach(envFile => {
-  const envPath = path.join(rootDir, envFile);
-  if (fs.existsSync(envPath)) {
-    console.log(`📁 Loading environment from: ${envFile}`);
-    dotenv.config({ path: envPath, override: true });
+// 1. Load base .env file first (for common variables)
+const baseEnvPath = path.join(rootDir, ".env");
+if (fs.existsSync(baseEnvPath)) {
+  console.log(`📁 Loading base environment from: .env`);
+  dotenv.config({ path: baseEnvPath });
+}
+
+// 2. Then load environment-specific .env file if currentEnv is set
+if (currentEnv && currentEnv !== "dev") {
+  const envSpecificPath = path.join(rootDir, `.env.${currentEnv}`);
+  if (fs.existsSync(envSpecificPath)) {
+    console.log(`📁 Loading environment from: .env.${currentEnv}`);
+    dotenv.config({ path: envSpecificPath, override: true });
   }
-});
+}
 
-const config = ENV_CONFIGS[currentEnv];
+const config = getConfig();
 
-const privateKey = process.env.PRIVATE_KEY; // Make sure to provide your private key with or without the '0x' prefix
+const privateKey = process.env.TEST_PRIVATE_KEY; // Use consistent naming with test infrastructure
+const avsApiKey = process.env.AVS_API_KEY; // API key for admin access to query any wallet
 
 // Initialize SDK
 console.log(
   "Current environment is: ",
   currentEnv,
   "endpoint: ",
-  config.avsEndpoint
+  config.AP_AVS_RPC
 );
 
 const client = new Client({
-  endpoint: config.avsEndpoint,
+  endpoint: config.AP_AVS_RPC,
 });
 
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID || "-4609037622";
@@ -75,24 +78,42 @@ async function generateSignature(
   return signature;
 }
 
-async function generateApiToken() {
-  const wallet = new ethers.Wallet(privateKey as string);
-  const eoaAddress = wallet.address;
+async function generateApiToken(targetAddress?: string) {
+  // Check if API key is available for admin access
+  if (avsApiKey) {
+    if (!targetAddress) {
+      throw new Error("❌ Target address is required when using API key authentication");
+    }
+    console.log("🔑 Using API key authentication for admin access");
+    const { message } = await client.getSignatureFormat(targetAddress);
+    
+    const result = await client.authWithAPIKey({
+      message,
+      apiKey: avsApiKey,
+    });
+    
+    client.setAuthKey(result.authKey);
+    return result;
+  } else if (privateKey) {
+    console.log("🔑 Using signature-based authentication");
+    const wallet = new ethers.Wallet(privateKey as string);
+    const eoaAddress = wallet.address;
 
-  // Get message from server for signing
-  const { message } = await client.getSignatureFormat(eoaAddress);
+    // Get message from server for signing
+    const { message } = await client.getSignatureFormat(eoaAddress);
 
-  const signature = await generateSignature(message, privateKey as string);
+    const signature = await generateSignature(message, privateKey as string);
 
-  // Note: If you get type errors here, you may need to update the @avaprotocol/types package
-  // The interface should match: { message: string, signature: string }
-  const result = await client.authWithSignature({
-    message,
-    signature,
-  } as any);
+    const result = await client.authWithSignature({
+      message,
+      signature,
+    } as any);
 
-  client.setAuthKey(result.authKey);
-  return result;
+    client.setAuthKey(result.authKey);
+    return result;
+  } else {
+    throw new Error("❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided");
+  }
 }
 
 async function getWorkflows(
@@ -248,10 +269,10 @@ async function getWallets(
   if (shouldFetchBalances) {
     console.log("Fetching balances from RPC provider ...");
     // Update the provider creation
-    const provider = new ethers.JsonRpcProvider(config.rpcProvider);
+    const provider = new ethers.JsonRpcProvider(config.RPC_PROVIDER);
 
     // Get token balance
-    const tokenAddress = config.tokens[token].address;
+    const tokenAddress = config.TOKENS[token].address;
     const tokenAbi = [
       "function balanceOf(address account) view returns (uint256)",
       "function decimals() view returns (uint8)",
@@ -392,7 +413,7 @@ async function schedulePriceReport(
         name: "checkPrice",
         type: NodeType.ContractRead,
         data: {
-          contractAddress: config.oracles["ETH / USD"].address,
+          contractAddress: config.ORACLES["ETH / USD"].address,
           contractAbi: [
             {
               inputs: [],
@@ -683,7 +704,7 @@ async function scheduleContractWrite(
   const defaultRecipient =
     recipientAddress || "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
   const defaultAmount = amount || "1000000"; // 1 USDC (6 decimals)
-  const usdcAddress = config.tokens[token].address; // Sepolia USDC
+  const usdcAddress = config.TOKENS[token].address; // USDC address for current environment
 
   const triggerId = UlidMonotonic.generate().toCanonical();
   const contractWriteNodeId = UlidMonotonic.generate().toCanonical();
@@ -882,7 +903,7 @@ async function examineWorkflow(workflowId: string) {
   console.log(`🔑 Using API key from .env.${currentEnv}`);
 
   const adminClient = new Client({
-    endpoint: config.avsEndpoint,
+    endpoint: config.AP_AVS_RPC,
   });
 
   try {
@@ -903,7 +924,7 @@ async function examineWorkflow(workflowId: string) {
     console.error("   1. API key is invalid or expired");
     console.error("   2. API key is for a different environment (dev/sepolia/base)");
     console.error("   3. API key doesn't have admin privileges");
-    console.error(`   Current environment: ${currentEnv} (${config.avsEndpoint})`);
+    console.error(`   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`);
     return;
   }
 
@@ -1118,23 +1139,64 @@ export function demonstrateInputDataHelpers() {
 }
 
 const main = async (cmd: string) => {
-  if (!privateKey) {
-    console.log("❌ No PRIVATE_KEY found in environment variables");
+  if (!privateKey && !avsApiKey) {
+    console.log("❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided in environment variables");
     return;
   }
   
-  const walletAddress = await getWalletAddress(privateKey);
-  console.log("🔑 Wallet:", walletAddress);
+  let owner: string | null = null;
+  let authKey: string | null = null;
   
-  const result = await generateApiToken();
-  const owner = await getWalletAddress(privateKey as string);
-  const authKey = result.authKey;
+  // Show wallet address if using private key (for informational purposes)
+  if (privateKey) {
+    const walletAddress = await getWalletAddress(privateKey);
+    console.log("🔑 Wallet:", walletAddress);
+  }
+  
+  // For private key authentication (when no API key), authenticate immediately
+  if (privateKey && !avsApiKey) {
+    const result = await generateApiToken();
+    owner = await getWalletAddress(privateKey);
+    authKey = result.authKey;
+  }
+  // For API key authentication, we'll authenticate per-command as needed
 
   switch (commandArgs.command) {
     case "auth-key":
-      console.log("The authkey associate with the EOA is", authKey);
+      if (authKey) {
+        console.log("The authkey associate with the EOA is", authKey);
+      } else {
+        console.log("❌ Auth key not available. API key authentication requires target address for each command.");
+      }
       break;
     case "getWallets": {
+      const targetAddress = commandArgs.args[0]; // Optional address argument
+      
+      if (avsApiKey) {
+        if (!targetAddress) {
+          console.error("❌ Error: Target address is required when using API key authentication");
+          console.error("   Usage: yarn start --avs-target <network> getWallets <address>");
+          console.error("   Example: yarn start --avs-target base getWallets 0xB1077B7c62844eFBA104d767127a5DB6c0F5A0CC");
+          break;
+        }
+        // Re-authenticate with the target address for API key auth
+        console.log(`🔍 Querying wallets for address: ${targetAddress} (using API key)`);
+        await generateApiToken(targetAddress);
+      } else if (privateKey) {
+        if (targetAddress) {
+          // For private key auth, check if the address matches our wallet
+          const ourAddress = await getWalletAddress(privateKey);
+          if (targetAddress.toLowerCase() !== ourAddress.toLowerCase()) {
+            console.error(`❌ Error: You can only query wallets for your own address (${ourAddress}) when using private key authentication`);
+            console.error(`   To query wallets for ${targetAddress}, you need API key authentication`);
+            break;
+          }
+          console.log(`🔍 Querying wallets for your address: ${targetAddress}`);
+        } else {
+          console.log("🔍 Getting wallets for authenticated user");
+        }
+      }
+      
       const wallets = await client.getWallets();
       console.log(
         "getWallets response:\n",
@@ -1160,15 +1222,31 @@ const main = async (cmd: string) => {
       break;
     }
     case "schedule-monitor":
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for scheduling workflows");
+        break;
+      }
       scheduleMonitorTransfer(owner, authKey, commandArgs.args[0]);
       break;
     case "schedule-telegram":
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for scheduling workflows");
+        break;
+      }
       scheduleTelegram(owner, authKey);
       break;
     case "schedule-sweep":
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for scheduling workflows");
+        break;
+      }
       scheduleSweep(owner, authKey, commandArgs.args[0]);
       break;
     case "schedule-contract-write":
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for scheduling workflows");
+        break;
+      }
       scheduleContractWrite(
         owner,
         authKey,
@@ -1180,6 +1258,10 @@ const main = async (cmd: string) => {
     case "schedule-cron":
     case "schedule-fixed":
     case "schedule-manual": {
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for scheduling workflows");
+        break;
+      }
       const resultSchedule = await schedulePriceReport(
         commandArgs.args[0],
         commandArgs.args[1]
@@ -1248,10 +1330,18 @@ const main = async (cmd: string) => {
     }
 
     case "gen-task-data":
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for generating task data");
+        break;
+      }
       console.log("pack contract call", getTaskDataQuery(owner));
       break;
 
     case "trigger":
+      if (!owner) {
+        console.log("❌ TEST_PRIVATE_KEY is required for triggering workflows");
+        break;
+      }
       await triggerTask(
         owner,
         authKey,
