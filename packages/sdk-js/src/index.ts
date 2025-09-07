@@ -51,6 +51,8 @@ import {
   type GetExecutionStatsOptions,
   ExecutionStatus,
   type TriggerWorkflowResponse,
+  type WithdrawFundsRequest,
+  type WithdrawFundsResponse,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -532,6 +534,67 @@ class Client extends BaseClient {
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
       canceledTaskCount: result.getCanceledTaskCount(),
+    };
+  }
+
+  /**
+   * Withdraw funds from a smart wallet using UserOp
+   * @param {WithdrawFundsRequest} withdrawRequest - The withdraw request parameters
+   * @param {string} withdrawRequest.recipientAddress - The recipient address to send funds to
+   * @param {string} withdrawRequest.amount - The amount to withdraw in wei for ETH or smallest token unit for ERC20
+   * @param {string} withdrawRequest.token - Token type: "ETH" for native ETH, or contract address for ERC20 tokens
+   * @param {string} [withdrawRequest.smartWalletAddress] - Optional: Override the smart wallet to withdraw from (defaults to user's default wallet)
+   * @param {string} [withdrawRequest.salt] - Optional: Salt for deriving smart wallet address if smartWalletAddress is not provided
+   * @param {string} [withdrawRequest.factoryAddress] - Optional: Factory address for smart wallet derivation
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<WithdrawFundsResponse>} - The response from the withdraw operation
+   */
+  async withdrawFunds(
+    {
+      recipientAddress,
+      amount,
+      token,
+      smartWalletAddress,
+      salt,
+      factoryAddress,
+    }: WithdrawFundsRequest,
+    options?: RequestOptions
+  ): Promise<WithdrawFundsResponse> {
+    const request = new avs_pb.WithdrawFundsReq();
+    request.setRecipientAddress(recipientAddress);
+    request.setAmount(amount);
+    request.setToken(token);
+
+    if (smartWalletAddress) {
+      request.setSmartWalletAddress(smartWalletAddress);
+    }
+
+    if (salt) {
+      request.setSalt(salt);
+    }
+
+    if (factoryAddress) {
+      request.setFactoryAddress(factoryAddress);
+    } else if (this.factoryAddress) {
+      request.setFactoryAddress(this.factoryAddress);
+    }
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.WithdrawFundsResp,
+      avs_pb.WithdrawFundsReq
+    >("withdrawFunds", request, options);
+
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      userOpHash: result.getUserOpHash() || undefined,
+      transactionHash: result.getTransactionHash() || undefined,
+      submittedAt: result.getSubmittedAt() || undefined,
+      smartWalletAddress: result.getSmartWalletAddress(),
+      recipientAddress: result.getRecipientAddress(),
+      amount: result.getAmount(),
+      token: result.getToken(),
     };
   }
 
@@ -1487,6 +1550,8 @@ export type {
   GetTokenMetadataRequest,
   GetTokenMetadataResponse,
   TokenSource,
+  WithdrawFundsRequest,
+  WithdrawFundsResponse,
 } from "@avaprotocol/types";
 
 // Re-export timeout-related types and presets

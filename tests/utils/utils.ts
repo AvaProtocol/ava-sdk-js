@@ -56,6 +56,7 @@ export const SaltGlobal = {
   ManualTrigger: 31,
   LoopNode: 32,
   ExportedWorkflow: 33,
+  Withdraw: 34,
 };
 
 // Get wallet address from private key
