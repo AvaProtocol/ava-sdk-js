@@ -545,7 +545,7 @@ class Client extends BaseClient {
    * @param {string} withdrawRequest.token - Token type: "ETH" for native ETH, or contract address for ERC20 tokens
    * @param {string} [withdrawRequest.smartWalletAddress] - Optional: Override the smart wallet to withdraw from (defaults to user's default wallet)
    * @param {string} [withdrawRequest.salt] - Optional: Salt for deriving smart wallet address if smartWalletAddress is not provided
-   * @param {string} [withdrawRequest.factoryAddress] - Optional: Factory address for smart wallet derivation
+   * @param {string} [withdrawRequest.factoryAddress] - Optional: Factory address for smart wallet derivation. If not provided, the client's default factoryAddress will be used as fallback
    * @param {RequestOptions} options - Request options
    * @returns {Promise<WithdrawFundsResponse>} - The response from the withdraw operation
    */

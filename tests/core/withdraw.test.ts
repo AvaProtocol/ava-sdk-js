@@ -180,16 +180,21 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("should handle custom ERC20 token withdrawal", async () => {
+      // Skip if no custom ERC20 token configured for this environment
+      if (!tokens.CUSTOM_ERC20) {
+        console.log("Skipping custom ERC20 test - token not configured for this environment");
+        return;
+      }
+
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
       
-      // Use a well-known contract address for testing
-      const mockTokenAddress = "0xA0b86a33E6b4e4d70cf3dA2A1F7f8e42B6d2E0aE"; // Mock ERC20 token
+      const customTokenAddress = tokens.CUSTOM_ERC20.address;
       
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000000", // 1 token (18 decimals)
-        token: mockTokenAddress,
+        token: customTokenAddress,
         salt: salt,
       };
 
@@ -254,8 +259,8 @@ describe("Withdraw Funds Tests", () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
       
-      // Use a different valid address as recipient
-      const differentRecipient = "0x742dA5c01C7F4bC30EF8d7bfd0b48CC77Ad87Fd7"; // Random valid address
+      // Generate a deterministic test address different from eoaAddress
+      const differentRecipient = await getAddress("0x0000000000000000000000000000000000000000000000000000000000000001");
       
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: differentRecipient,
