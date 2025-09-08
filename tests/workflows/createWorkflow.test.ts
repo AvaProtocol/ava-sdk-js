@@ -70,13 +70,10 @@ describe("createWorkflow Tests", () => {
       const workflow = client.createWorkflow(workflowProps);
       workflowId = await client.submitWorkflow(workflow);
 
-      expect(workflow).toBeDefined();
       expect(workflow).toBeInstanceOf(Workflow);
-      expect(workflowId).toBeDefined();
       expect(typeof workflowId).toBe("string");
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      await client.deleteWorkflow(workflowId!);
     }
   });
 
@@ -110,8 +107,7 @@ describe("createWorkflow Tests", () => {
         getResult
       );
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      await client.deleteWorkflow(workflowId!);
     }
   });
 
@@ -137,8 +133,7 @@ describe("createWorkflow Tests", () => {
         task
       );
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      await client.deleteWorkflow(workflowId!);
     }
   });
 

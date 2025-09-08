@@ -164,8 +164,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
       // Handle flattened object format (new design)
@@ -221,8 +220,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       
       // Handle flattened object format (new design)
@@ -308,8 +306,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       // This should either fail or return error results
     });
 
@@ -361,8 +358,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       
       // Handle flattened object format (new design)
@@ -441,7 +437,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       // success must reflect per-method metadata/receipt outcomes
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -490,8 +486,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
       expect(latestRoundMetadata).toBeDefined();
 
       // Verify metadata structure
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(latestRoundMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(latestRoundMetadata!.success).toBeTruthy();
       expect(decimalsMetadata!.methodName).toBe("decimals");
       expect(latestRoundMetadata!.methodName).toBe("latestRoundData");
       expect(decimalsMetadata!.methodABI).toBeDefined();
@@ -567,7 +563,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
       );
 
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
@@ -616,8 +612,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       expect(decimalsMetadata).toBeDefined();
       expect(totalSupplyMetadata).toBeDefined();
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(totalSupplyMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(totalSupplyMetadata!.success).toBeTruthy();
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
@@ -667,12 +663,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -753,14 +748,13 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + contract read node
 
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -834,12 +828,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -950,7 +943,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           throw new Error("No corresponding contract read step found.");
         }
 
-        expect(contractReadStep.success).toBe(true);
+        expect(contractReadStep.success).toBeTruthy();
         console.log(
           "Deploy + trigger contract read step output:",
           util.inspect(contractReadStep.output, { depth: null, colors: true })
@@ -1066,7 +1059,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           throw new Error("No corresponding contract read step found.");
         }
 
-        expect(contractReadStep.success).toBe(true);
+        expect(contractReadStep.success).toBeTruthy();
         console.log(
           "Deploy + trigger contract read with applyToFields step output:",
           util.inspect(contractReadStep.output, { depth: null, colors: true })
@@ -1257,10 +1250,10 @@ describeIfSepolia("ContractRead Node Tests", () => {
         );
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
         // Verify consistent structure
         const directOutput = directResponse.data; // runNodeWithInputs returns flattened data
@@ -1358,7 +1351,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       expect(result).toBeDefined();
       // Backend fails the entire node execution for invalid method signatures
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBeDefined();
     });
   });
@@ -1530,7 +1523,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -1579,8 +1572,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
       expect(latestRoundMetadata).toBeDefined();
 
       // Verify metadata structure
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(latestRoundMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(latestRoundMetadata!.success).toBeTruthy();
       expect(decimalsMetadata!.methodName).toBe("decimals");
       expect(latestRoundMetadata!.methodName).toBe("latestRoundData");
       expect(decimalsMetadata!.methodABI).toBeDefined();
@@ -1655,7 +1648,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
@@ -1704,8 +1697,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       expect(decimalsMetadata).toBeDefined();
       expect(totalSupplyMetadata).toBeDefined();
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(totalSupplyMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(totalSupplyMetadata!.success).toBeTruthy();
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
@@ -1755,12 +1748,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();

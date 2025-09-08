@@ -50,11 +50,10 @@ describe("Authentication Tests", () => {
       const saltValue = _.toString(saltIndex++);
       const result = await client.getWallet({ salt: saltValue });
 
-      expect(result).toBeDefined();
       expect(result?.address).toHaveLength(42);
       expect(result?.salt).toEqual(saltValue);
       // Factory address is now handled by aggregator default
-      expect(result?.factory).toBeDefined();
+      expect(result?.factory).toBeTruthy();
     });
 
     test("getWallets works with client.authKey", async () => {

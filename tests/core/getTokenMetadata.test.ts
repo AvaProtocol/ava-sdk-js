@@ -28,9 +28,8 @@ function assertTokenMetadata(
   expectedToken: any,
   tokenName: string
 ) {
-  expect(response).toBeDefined();
-  expect(response.found).toBe(true);
-  expect(response.token).toBeDefined();
+  expect(response.found).toBeTruthy();
+  expect(response.token).toBeTruthy();
 
   if (response.token) {
     expect(response.token.address).toBe(expectedToken.address.toLowerCase());
@@ -39,7 +38,7 @@ function assertTokenMetadata(
     if (response.token.name === "Unknown Token") {
       console.log(`⚠️  Server returning placeholder data for ${tokenName}`);
       expect(response.token.name).toBe("Unknown Token");
-      expect(response.token.symbol).toBeDefined();
+      expect(response.token.symbol).toBeTruthy();
       expect(response.token.decimals).toBeGreaterThanOrEqual(0);
     } else {
       // If server is working correctly, expect actual whitelist data
@@ -106,13 +105,11 @@ function assertFlexibleFoundResponse(
   response: GetTokenMetadataResponse,
   context: string
 ) {
-  expect(response).toBeDefined();
-
   if (response.found === false) {
     expect(response.token).toBeNull();
   } else {
     console.log(`ℹ️  Server returns found=true for ${context}`);
-    expect(response.token).toBeDefined();
+    expect(response.token).toBeTruthy();
   }
 }
 
@@ -202,12 +199,11 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
     for (const address of invalidAddresses) {
       const response = await client.getTokenMetadata({ address });
-      expect(response).toBeDefined();
-      expect(typeof response.found).toBe("boolean");
+            expect(typeof response.found).toBe("boolean");
       expect(typeof response.source).toBe("string");
 
       if (response.found) {
-        expect(response.token).toBeDefined();
+        expect(response.token).toBeTruthy();
       } else {
         expect(response.token).toBeNull();
       }
@@ -228,8 +224,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(10000); // Reasonable time limit
-    expect(response).toBeDefined();
-    expect(typeof response.found).toBe("boolean");
+        expect(typeof response.found).toBe("boolean");
   });
 
   // Skip the chain-specific tests if no tokens are available
@@ -274,7 +269,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
       // All responses should be consistent
       responses.forEach((response) => {
-        expect(response.found).toBe(true);
+        expect(response.found).toBeTruthy();
         expect(response.token).toBeDefined();
         if (response.token) {
           expect(response.token.address).toBe(lowercaseAddress); // Should always return lowercase
@@ -295,8 +290,8 @@ describeOrSkip("getTokenMetadata Tests", () => {
   )("should validate token metadata structure for %s", async (address) => {
     const response = await client.getTokenMetadata({ address });
 
-    expect(response.found).toBe(true);
-    expect(response.token).toBeDefined();
+    expect(response.found).toBeTruthy();
+    expect(response.token).toBeTruthy();
 
     if (response.token) {
       const token: TokenMetadata = response.token;
@@ -343,7 +338,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
     expect(responses).toHaveLength(addresses.length);
     responses.forEach((response, index) => {
       expect(response).toBeDefined();
-      expect(response.found).toBe(true);
+      expect(response.found).toBeTruthy();
       expect(response.token).toBeDefined();
 
       if (response.token) {
@@ -374,7 +369,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(10000); // Reasonable time limit
     expect(response).toBeDefined();
-    expect(response.found).toBe(true);
+    expect(response.found).toBeTruthy();
     expect(response.token).toBeDefined();
   });
 
@@ -390,7 +385,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
         address: token.address,
       });
 
-      expect(response.found).toBe(true);
+      expect(response.found).toBeTruthy();
       expect(response.token).toBeDefined();
 
       if (response.token) {
@@ -441,7 +436,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
       expect(second).toEqual(third);
 
       responses.forEach((response) => {
-        expect(response.found).toBe(true);
+        expect(response.found).toBeTruthy();
         expect(response.token).toBeDefined();
       });
     }

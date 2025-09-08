@@ -370,10 +370,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         "response:",
         util.inspect(result, { depth: null, colors: true })
       );
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.metadata).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+            expect(result.success).toBeTruthy();
       expect(result.data === null || typeof result.data === "object").toBe(
         true
       );
@@ -407,10 +405,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         "response:",
         util.inspect(result, { depth: null, colors: true })
       );
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.metadata).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+            expect(result.success).toBeTruthy();
       expect(result.data === null || typeof result.data === "object").toBe(
         true
       );
@@ -429,10 +425,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         "response:",
         util.inspect(result, { depth: null, colors: true })
       );
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.metadata).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+            expect(result.success).toBeTruthy();
       expect(result.data === null || typeof result.data === "object").toBe(
         true
       );
@@ -457,13 +451,12 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       expect(result.metadata).toBeDefined();
 
       // Conditions filter events, so no matching events is expected when condition is not met
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       // Data can be null (no events found) or an object (events found)
       expect(result.data === null || typeof result.data === "object").toBe(
         true
@@ -517,10 +510,9 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       // Data can be null (no events found) or an object (events found)
       expect(result.data === null || typeof result.data === "object").toBe(
         true
@@ -833,7 +825,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.error).toBe("");
       expect(result.data).toBeDefined();
 
@@ -892,14 +884,13 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
         (step) => step.id === eventTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
 
       // For simulation, we can accept null output when no events are found
       // This is realistic behavior for event triggers
@@ -933,12 +924,11 @@ describeIfSepolia("EventTrigger Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const triggerStep = simulation.steps.find(
         (step) => step.id === eventTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
@@ -996,14 +986,13 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
         (step) => step.id === eventTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
 
       // Check if the trigger step now has output data with decimal formatting
       const output = triggerStep!.output as Record<string, unknown>;
@@ -1247,8 +1236,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       const validateEventResponse = (response: any, mode: string) => {
         console.log(`🔍 Validating ${mode} response structure...`);
 
-        expect(response).toBeDefined();
-        expect(response.success).toBe(true);
+                expect(response.success).toBeTruthy();
 
         // Validate data structure (parsed ABI fields)
         expect(response.data).toBeDefined();
@@ -1305,7 +1293,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       
       // For simulate workflow, we only validate the data structure since metadata isn't included
       console.log("🔍 Validating simulateWorkflow response structure...");
-      expect(normalizedSimulateResponse.success).toBe(true);
+      expect(normalizedSimulateResponse.success).toBeTruthy();
       expect(normalizedSimulateResponse.data).toBeDefined();
       
       const simulateData = normalizedSimulateResponse.data as Record<string, unknown>;
@@ -1489,13 +1477,13 @@ describeIfSepolia("EventTrigger Tests", () => {
         }
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(deployedWorkflow).toBeDefined();
         expect(deployedWorkflow!.trigger!.type).toBe(TriggerType.Event);
         expect(triggerResponse.executionId).toBeDefined();
         expect(triggeredStep).toBeDefined();
-        expect(triggeredStep!.success).toBe(true);
+        expect(triggeredStep!.success).toBeTruthy();
 
         // Verify consistent structure across all three methods
         const directOutput = directResponse.data;
@@ -1544,8 +1532,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         // Test Transfer-specific fields
         expect(triggeredOutput.from).toBeDefined();
         expect(triggeredOutput.to).toBeDefined();
-        expect(triggeredOutput.value).toBeDefined();
-        expect(typeof triggeredOutput.value).toBe("string");
+                expect(typeof triggeredOutput.value).toBe("string");
 
         // Test direct output if it has event data
         if (directOutput && directOutput.eventFound) {
@@ -1607,12 +1594,12 @@ describeIfSepolia("EventTrigger Tests", () => {
         // Test step metadata
         expect(simulatedStep!.type).toBe("eventTrigger");
         expect(simulatedStep!.name).toBe("consistency_test");
-        expect(simulatedStep!.success).toBe(true);
+        expect(simulatedStep!.success).toBeTruthy();
         expect(simulatedStep!.error).toBe("");
 
         expect(triggeredStep!.type).toBe("eventTrigger");
         expect(triggeredStep!.name).toBe("consistency_test");
-        expect(triggeredStep!.success).toBe(true);
+        expect(triggeredStep!.success).toBeTruthy();
         expect(triggeredStep!.error).toBe("");
       } finally {
         // Always clean up the workflow, even if test fails
@@ -1659,8 +1646,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       // This should either succeed with broad monitoring or handle gracefully
     });
 
@@ -1697,11 +1683,10 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // For specific filters like minting events, no matching events is expected
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       // Data can be null (no events found) or an object (events found)
       expect(result.data === null || typeof result.data === "object").toBe(
         true
@@ -1743,7 +1728,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
 
       // Backend returns success: false when no events found
-      expect(noEventsResult.success).toBe(false);
+      expect(noEventsResult.success).toBeFalsy();
       expect(noEventsResult.data).toBeNull();
       // Error message may be empty in some cases
       expect(typeof noEventsResult.error).toBe("string");
@@ -1773,11 +1758,10 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // Should either succeed with broad monitoring or handle gracefully
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.error).toBe("");
     });
 
@@ -1807,11 +1791,10 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // Should handle empty topics gracefully
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.error).toBe("");
     });
 
@@ -1859,13 +1842,12 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
 
       // runTrigger: Backend returns success: false for no events
-      expect(directResponse.success).toBe(false);
+      expect(directResponse.success).toBeFalsy();
       expect(directResponse.data).toBeNull();
       expect(typeof directResponse.error).toBe("string");
 
       // simulateWorkflow: Always succeeds and provides sample data
-      expect(simulatedStep).toBeDefined();
-      expect(simulatedStep!.success).toBe(true);
+            expect(simulatedStep!.success).toBeTruthy();
       expect(simulatedStep!.output).not.toBe(null);
     });
 
@@ -1899,11 +1881,10 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // Should handle gracefully - either succeed with null data or fail with error
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.error).toBe("");
     });
 

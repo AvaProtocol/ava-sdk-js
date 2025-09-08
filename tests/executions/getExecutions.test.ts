@@ -91,7 +91,7 @@ describe("getExecutions Tests", () => {
       expect(Array.isArray(resultWithLimitOne.items)).toBe(true);
       expect(resultWithLimitOne.items.length).toBe(limitOne);
       expect(resultWithLimitOne).toHaveProperty("pageInfo");
-      expect(resultWithLimitOne.pageInfo.hasNextPage).toBe(true);
+      expect(resultWithLimitOne.pageInfo.hasNextPage).toBeTruthy();
       const firstCursor = resultWithLimitOne.pageInfo.endCursor;
 
       // Get executions with limitTwo
@@ -101,7 +101,7 @@ describe("getExecutions Tests", () => {
       });
       expect(Array.isArray(resultWithLimitTwo.items)).toBe(true);
       expect(resultWithLimitTwo.items.length).toBe(limitTwo);
-      expect(resultWithLimitTwo.pageInfo.hasNextPage).toBe(true);
+      expect(resultWithLimitTwo.pageInfo.hasNextPage).toBeTruthy();
 
       // Make sure there's no overlap between the two lists
       expect(
@@ -121,7 +121,7 @@ describe("getExecutions Tests", () => {
       expect(resultWithExtraLimit.items.length).toBe(
         totalTriggerCount - limitTwo - limitOne
       );
-      expect(resultWithExtraLimit.pageInfo.hasNextPage).toBe(false);
+      expect(resultWithExtraLimit.pageInfo.hasNextPage).toBeFalsy();
 
       // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
       expect(typeof resultWithExtraLimit.pageInfo.endCursor).toBe("string");
@@ -335,7 +335,7 @@ describe("getExecutions Tests", () => {
 
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
       expect(firstPage.pageInfo.endCursor).toBeTruthy();
-      expect(firstPage.pageInfo.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
 
       const secondPage = await client.getExecutions([workflowId], {
         after: firstPage.pageInfo.endCursor,

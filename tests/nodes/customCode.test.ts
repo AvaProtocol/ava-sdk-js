@@ -155,7 +155,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeNull();
     });
 
@@ -166,7 +166,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toEqual({});
     });
 
@@ -189,7 +189,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       // Note: JavaScript `undefined` becomes `null` in protobuf conversion since protobuf
       // only supports JSON-compatible types and has no representation for `undefined`
       expect(result.data).toBeNull();
@@ -202,7 +202,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toEqual([]);
     });
 
@@ -213,7 +213,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBe(42);
     });
 
@@ -224,7 +224,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBe("hello world");
     });
 
@@ -235,7 +235,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBe(true);
     });
 
@@ -246,7 +246,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toEqual({ message: "hello", count: 42 });
     });
 
@@ -257,7 +257,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toEqual([1, 2, 3, 4, 5]);
     });
 
@@ -270,7 +270,7 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toEqual({
         inputData: [1, 2, 3, 4, 5],
         processedData: [2, 4, 6, 8, 10],
@@ -298,7 +298,7 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toEqual({
         user: {
           id: 123,
@@ -356,8 +356,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBe(30);
       
     });
@@ -390,8 +389,7 @@ describe("CustomCode Node Tests", () => {
 
 
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       const data = result.data as any;
       expect(data).toBeDefined();
@@ -429,8 +427,7 @@ describe("CustomCode Node Tests", () => {
 
 
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       const data = result.data as any;
       expect(data).toBeDefined();
@@ -463,8 +460,7 @@ describe("CustomCode Node Tests", () => {
 
 
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       // Expect this to fail or handle the error gracefully
     });
   });
@@ -510,14 +506,13 @@ describe("CustomCode Node Tests", () => {
 
 
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node
 
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
-      expect(customCodeStep).toBeDefined();
-      expect(customCodeStep!.success).toBe(true);
+            expect(customCodeStep!.success).toBeTruthy();
 
       const output = customCodeStep!.output as any;
       expect(output.processedData).toEqual([2, 4, 6]);
@@ -596,12 +591,11 @@ describe("CustomCode Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
-      expect(customCodeStep).toBeDefined();
-      expect(customCodeStep!.success).toBe(true);
+            expect(customCodeStep!.success).toBeTruthy();
     });
   });
 
@@ -689,7 +683,7 @@ describe("CustomCode Node Tests", () => {
           "CustomCode step details:",
           util.inspect(customCodeStep, { depth: null, colors: true })
         );
-        expect(customCodeStep.success).toBe(true);
+        expect(customCodeStep.success).toBeTruthy();
         console.log(
           "Deploy + trigger custom code step output:",
           util.inspect(customCodeStep.output, { depth: null, colors: true })
@@ -873,10 +867,10 @@ describe("CustomCode Node Tests", () => {
         expect(simulatedData.processingId).toBeDefined();
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
         // Verify consistent structure
         const directOutput = directResponse.data;
@@ -1045,49 +1039,43 @@ describe("CustomCode Node Tests", () => {
       );
 
       // Verify overall workflow success
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(7); // trigger + 6 custom code nodes
 
       // Verify each node returns expected values
       const nullStep = simulation.steps.find((step) => step.id === nullNode.id);
-      expect(nullStep).toBeDefined();
-      expect(nullStep!.success).toBe(true);
+            expect(nullStep!.success).toBeTruthy();
       expect(nullStep!.output).toBeNull();
 
       const emptyObjectStep = simulation.steps.find(
         (step) => step.id === emptyObjectNode.id
       );
-      expect(emptyObjectStep).toBeDefined();
-      expect(emptyObjectStep!.success).toBe(true);
+            expect(emptyObjectStep!.success).toBeTruthy();
       expect(emptyObjectStep!.output).toEqual({});
 
       const undefinedStep = simulation.steps.find(
         (step) => step.id === undefinedNode.id
       );
-      expect(undefinedStep).toBeDefined();
-      expect(undefinedStep!.success).toBe(true);
+            expect(undefinedStep!.success).toBeTruthy();
       // Note: undefined becomes null in protobuf conversion
       expect(undefinedStep!.output).toBeNull();
 
       const emptyArrayStep = simulation.steps.find(
         (step) => step.id === emptyArrayNode.id
       );
-      expect(emptyArrayStep).toBeDefined();
-      expect(emptyArrayStep!.success).toBe(true);
+            expect(emptyArrayStep!.success).toBeTruthy();
       expect(emptyArrayStep!.output).toEqual([]);
 
       const numberStep = simulation.steps.find(
         (step) => step.id === numberNode.id
       );
-      expect(numberStep).toBeDefined();
-      expect(numberStep!.success).toBe(true);
+            expect(numberStep!.success).toBeTruthy();
       expect(numberStep!.output).toBe(42);
 
       const stringStep = simulation.steps.find(
         (step) => step.id === stringNode.id
       );
-      expect(stringStep).toBeDefined();
-      expect(stringStep!.success).toBe(true);
+            expect(stringStep!.success).toBeTruthy();
       expect(stringStep!.output).toBe("hello");
 
       console.log(
@@ -1167,51 +1155,45 @@ describe("CustomCode Node Tests", () => {
         );
 
         // Verify overall workflow success
-        expect(execution.success).toBe(true);
+        expect(execution.success).toBeTruthy();
         expect(execution.steps).toHaveLength(7); // trigger + 6 custom code nodes
 
         // Verify each node returns expected values
         const nullStep = execution.steps.find(
           (step) => step.id === nullNode.id
         );
-        expect(nullStep).toBeDefined();
-        expect(nullStep!.success).toBe(true);
+                expect(nullStep!.success).toBeTruthy();
         expect(nullStep!.output).toBeNull();
 
         const emptyObjectStep = execution.steps.find(
           (step) => step.id === emptyObjectNode.id
         );
-        expect(emptyObjectStep).toBeDefined();
-        expect(emptyObjectStep!.success).toBe(true);
+                expect(emptyObjectStep!.success).toBeTruthy();
         expect(emptyObjectStep!.output).toEqual({});
 
         const undefinedStep = execution.steps.find(
           (step) => step.id === undefinedNode.id
         );
-        expect(undefinedStep).toBeDefined();
-        expect(undefinedStep!.success).toBe(true);
+                expect(undefinedStep!.success).toBeTruthy();
         // Note: undefined becomes null in protobuf conversion
         expect(undefinedStep!.output).toBeNull();
 
         const emptyArrayStep = execution.steps.find(
           (step) => step.id === emptyArrayNode.id
         );
-        expect(emptyArrayStep).toBeDefined();
-        expect(emptyArrayStep!.success).toBe(true);
+                expect(emptyArrayStep!.success).toBeTruthy();
         expect(emptyArrayStep!.output).toEqual([]);
 
         const numberStep = execution.steps.find(
           (step) => step.id === numberNode.id
         );
-        expect(numberStep).toBeDefined();
-        expect(numberStep!.success).toBe(true);
+                expect(numberStep!.success).toBeTruthy();
         expect(numberStep!.output).toBe(42);
 
         const stringStep = execution.steps.find(
           (step) => step.id === stringNode.id
         );
-        expect(stringStep).toBeDefined();
-        expect(stringStep!.success).toBe(true);
+                expect(stringStep!.success).toBeTruthy();
         expect(stringStep!.output).toBe("hello");
 
         console.log(
@@ -1277,14 +1259,13 @@ describe("CustomCode Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node
 
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
-      expect(customCodeStep).toBeDefined();
-      expect(customCodeStep!.success).toBe(true);
+            expect(customCodeStep!.success).toBeTruthy();
 
       // CustomCode returns the trigger data directly, not wrapped in additional data field
       expect(customCodeStep!.output).toEqual(userData);

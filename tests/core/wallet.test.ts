@@ -48,9 +48,8 @@ describe("Wallet Management Tests", () => {
 
       const result = await client.getWallet({ salt });
       
-      expect(result).toBeDefined();
       expect(result.salt).toEqual(salt);
-      expect(result.factory).toBeDefined(); // Should use aggregator's default factory
+      expect(result.factory).toBeTruthy(); // Should use aggregator's default factory
       expect(result.address).toHaveLength(42);
     });
 
@@ -146,17 +145,15 @@ describe("Wallet Management Tests", () => {
       const result1 = await client.getWallet({
         salt: salt1,
       });
-      expect(result1).toBeDefined();
       expect(result1.salt).toEqual(salt1);
-      expect(result1.factory).toBeDefined(); // Should use aggregator's default factory
+      expect(result1.factory).toBeTruthy(); // Should use aggregator's default factory
       expect(result1.address).toHaveLength(42);
 
       const result2 = await client.getWallet({
         salt: salt2,
       });
-      expect(result2).toBeDefined();
       expect(result2.salt).toEqual(salt2);
-      expect(result2.factory).toBeDefined(); // Should use aggregator's default factory
+      expect(result2.factory).toBeTruthy(); // Should use aggregator's default factory
       expect(result2.address).toHaveLength(42);
     });
 
@@ -171,9 +168,8 @@ describe("Wallet Management Tests", () => {
 
       const wallet = await client.getWallet({ salt });
 
-      expect(wallet).toBeDefined();
       expect(wallet).toHaveProperty("isHidden");
-      expect(wallet.isHidden).toBe(false);
+      expect(wallet.isHidden).toBeFalsy();
     });
   });
 
@@ -220,10 +216,9 @@ describe("Wallet Management Tests", () => {
       const wallets = await client.getWallets();
       const wallet = wallets.find((w) => w.salt === saltValue);
 
-      expect(wallet).toBeDefined();
       expect(wallet).toHaveProperty("isHidden");
       if (wallet) {
-        expect(wallet.isHidden).toBe(false);
+        expect(wallet.isHidden).toBeFalsy();
       }
     });
   });
@@ -235,9 +230,8 @@ describe("Wallet Management Tests", () => {
 
       let wallets = await client.getWallets();
       let wallet = wallets.find((w) => w.salt === saltValue);
-      expect(wallet).toBeDefined();
       if (wallet) {
-        expect(wallet.isHidden).toBe(false); // The initial value should be false
+        expect(wallet.isHidden).toBeFalsy(); // The initial value should be false
       }
 
       const hiddenWallet = await client.setWallet(
@@ -245,29 +239,27 @@ describe("Wallet Management Tests", () => {
         { isHidden: true }
       );
 
-      expect(hiddenWallet.isHidden).toBe(true);
+      expect(hiddenWallet.isHidden).toBeTruthy();
 
       wallets = await client.getWallets();
       // Find the wallet with the same salt and factory address as the hidden wallet
       wallet = wallets.find((w) => w.salt === saltValue && w.factory === hiddenWallet.factory);
 
-      expect(wallet).toBeDefined();
       if (wallet) {
-        expect(wallet.isHidden).toBe(true);
+        expect(wallet.isHidden).toBeTruthy();
       }
 
       const unhiddenWallet = await client.setWallet(
         { salt: saltValue },
         { isHidden: false }
       );
-      expect(unhiddenWallet.isHidden).toBe(false);
+      expect(unhiddenWallet.isHidden).toBeFalsy();
 
       wallets = await client.getWallets();
       // Find the wallet with the same salt and factory address as the unhidden wallet
       wallet = wallets.find((w) => w.salt === saltValue && w.factory === unhiddenWallet.factory);
-      expect(wallet).toBeDefined();
       if (wallet) {
-        expect(wallet.isHidden).toBe(false); // The initial value should be false
+        expect(wallet.isHidden).toBeFalsy(); // The initial value should be false
       }
     });
   });

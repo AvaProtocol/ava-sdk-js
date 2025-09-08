@@ -288,7 +288,7 @@ describe("Input Field Tests", () => {
       );
 
       // Check execution result - This should now succeed with the mock response
-      expect(execution.success).toBe(true);
+      expect(execution.success).toBeTruthy();
       expect(execution.error).toBe("");
 
       // Verify that template resolution is working correctly
@@ -301,7 +301,7 @@ describe("Input Field Tests", () => {
       expect(triggerOutput.priority).toBe("high");
 
       // Verify that the REST API node succeeded and got the mock response
-      expect(nodeStep.success).toBe(true);
+      expect(nodeStep.success).toBeTruthy();
       expect(nodeStep.error).toBe("");
       expect(nodeStep.output).toBeDefined();
       expect(nodeStep.output.data).toBeDefined();
@@ -433,7 +433,7 @@ describe("Input Field Tests", () => {
     expect(triggerStep.id).toBe(triggerId);
     expect(triggerStep.type).toBe(TriggerType.Manual);
     expect(triggerStep.name).toBe("original_error_trigger");
-    expect(triggerStep.success).toBe(true);
+    expect(triggerStep.success).toBeTruthy();
 
     // Verify custom code step (this was the step that Step.fromResponse was failing on)
     const customCodeStep = result.steps[1];
@@ -626,7 +626,7 @@ describe("Input Field Tests", () => {
     expect(codeStep.inputsList).toContain("event_trigger_with_input.data");
 
     // 🎯 MAIN TEST: Verify CustomCode node execution and output
-    expect(codeStep.success).toBe(true);
+    expect(codeStep.success).toBeTruthy();
     expect(codeStep.output).toBeDefined();
 
     // Access the output directly since we've already asserted it's defined
@@ -634,7 +634,7 @@ describe("Input Field Tests", () => {
 
     // Verify the CustomCode processed the EventTrigger input correctly
     // Note: CustomCode node returns direct output, not wrapped in {data: ...}
-    expect(output.success).toBe(true);
+    expect(output.success).toBeTruthy();
 
     // Test that EventTrigger input data is properly made available in the JavaScript execution context
     console.log("📊 CustomCode output:", JSON.stringify(output, null, 2));
@@ -647,7 +647,6 @@ describe("Input Field Tests", () => {
     expect(output.inputChainId).toBe(11155111);
     expect(output.inputTokensCount).toBe(1);
 
-    expect(output.message).toBeDefined();
-    expect(typeof output.message).toBe("string");
+        expect(typeof output.message).toBe("string");
   });
 });

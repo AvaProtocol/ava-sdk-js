@@ -238,8 +238,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -256,8 +255,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -274,8 +272,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -292,8 +289,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
     });
 
@@ -310,8 +306,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -328,8 +323,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -346,8 +340,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
     });
 
     test("should handle invalid cron expressions gracefully", async () => {
@@ -365,7 +358,7 @@ describe("CronTrigger Tests", () => {
 
       expect(result).toBeDefined();
       // Backend handles invalid cron expressions gracefully, returning success
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -382,8 +375,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -400,8 +392,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
     });
 
@@ -455,14 +446,13 @@ describe("CronTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
         (step) => step.id === cronTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
 
       const output = triggerStep!.output as any;
       expect(output).toBeDefined();
@@ -493,12 +483,11 @@ describe("CronTrigger Tests", () => {
         },
       });
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const triggerStep = simulation.steps.find(
         (step) => step.id === cronTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
     });
   });
 
@@ -536,7 +525,7 @@ describe("CronTrigger Tests", () => {
       });
 
       expect(triggerResult).toBeDefined();
-      // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
+      // expect(triggerResult.success).toBeTruthy(); // TODO: Check if triggerWorkflow returns success property
 
       // Check executions
       const executions = await client.getExecutions([workflowId], {
@@ -749,7 +738,7 @@ describe("CronTrigger Tests", () => {
              }
            }
 
-           expect(exec.success).toBe(true);
+           expect(exec.success).toBeTruthy();
           expect((execution as { startAt: number }).startAt).toBeDefined();
           expect((execution as { endAt: number }).endAt).toBeDefined();
           expect((execution as { steps: unknown[] }).steps).toBeDefined();
@@ -891,10 +880,10 @@ describe("CronTrigger Tests", () => {
       // Compare response formats
 
       // All should be successful
-      expect(directResponse.success).toBe(true);
+      expect(directResponse.success).toBeTruthy();
       expect(simulatedStep).toBeDefined();
       expect(executedStep).toBeDefined();
-      expect(executedStep!.success).toBe(true);
+      expect(executedStep!.success).toBeTruthy();
 
       // Verify consistent structure
       const directOutput = directResponse.data;

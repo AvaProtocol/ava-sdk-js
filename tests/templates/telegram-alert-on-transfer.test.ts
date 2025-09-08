@@ -282,12 +282,11 @@ return message;`,
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       
 
       // For event triggers, no matching events is a valid outcome
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
 
       // In test environment, we might get mock event data or null
       // Both are valid outcomes for this test
@@ -371,8 +370,7 @@ return message;`,
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(typeof result.data).toBe("string");
       expect(result.data).toContain("⬇️ Received"); // Should be "Received" since to === testWalletAddress
       expect(result.data).toContain("USDC");
@@ -447,14 +445,14 @@ return message;`,
         util.inspect(simulationResult, { depth: null, colors: true })
       );
 
-      expect(simulationResult.success).toBe(true);
+      expect(simulationResult.success).toBeTruthy();
       expect(simulationResult.steps).toHaveLength(3); // trigger + 2 nodes
 
       // Verify trigger step
       const triggerStep = simulationResult.steps[0];
       expect(triggerStep.id).toBe(triggerIds.eventTrigger);
       expect(triggerStep.type).toBe(TriggerType.Event);
-      expect(triggerStep.success).toBe(true);
+      expect(triggerStep.success).toBeTruthy();
 
       // The trigger step's config field should contain custom configuration data provided by the user
       // TODO: The trigger config field is currently not populated - this is a known backend issue
@@ -470,9 +468,8 @@ return message;`,
       expect(customCodeStep.inputsList).toContain("eventTrigger.data");
 
       // CRITICAL: Validate that the CustomCode execution succeeds with structured event trigger data
-      expect(customCodeStep.success).toBe(true);
-      expect(customCodeStep.output).toBeDefined();
-      expect(typeof customCodeStep.output).toBe("string");
+      expect(customCodeStep.success).toBeTruthy();
+            expect(typeof customCodeStep.output).toBe("string");
     });
   });
 

@@ -73,7 +73,6 @@ describe("Execution Management Tests", () => {
           triggerResult.executionId
         );
 
-        expect(execution).toBeDefined();
         expect(execution.id).toEqual(triggerResult.executionId);
         // Overall success must be false if any blockchain write step failed
         const hasWriteFailure = executionHasWriteFailure(execution as any);
@@ -81,20 +80,19 @@ describe("Execution Management Tests", () => {
 
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node
-        expect(execution.steps).toBeDefined();
         expect(execution.steps.length).toBeGreaterThanOrEqual(2);
 
         // The first step should be the trigger step
         const triggerStep = execution.steps[0];
         expect(triggerStep.type).toEqual(TriggerType.Block);
         expect(triggerStep.name).toEqual("blockTrigger");
-        expect(triggerStep.success).toBe(true);
+        expect(triggerStep.success).toBeTruthy();
 
         // The second step should be the CustomCode node
         const customCodeStep = execution.steps[1];
         expect(customCodeStep.type).toEqual(NodeType.CustomCode);
         expect(customCodeStep.name).toEqual("customCode");
-        expect(customCodeStep.success).toBe(true);
+        expect(customCodeStep.success).toBeTruthy();
 
         // Verify the trigger data is available in the inputs
         expect(customCodeStep.inputsList).toContain("blockTrigger.data");
@@ -172,20 +170,19 @@ describe("Execution Management Tests", () => {
 
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node
-        expect(execution.steps).toBeDefined();
         expect(execution.steps.length).toBeGreaterThanOrEqual(2);
 
         // The first step should be the trigger step
         const triggerStep = execution.steps[0];
         expect(triggerStep.type).toEqual(TriggerType.Cron);
         expect(triggerStep.name).toEqual("cronTrigger");
-        expect(triggerStep.success).toBe(true);
+        expect(triggerStep.success).toBeTruthy();
 
         // The second step should be the CustomCode node
         const customCodeStep = execution.steps[1];
         expect(customCodeStep.type).toEqual(NodeType.CustomCode);
         expect(customCodeStep.name).toEqual("customCode");
-        expect(customCodeStep.success).toBe(true);
+        expect(customCodeStep.success).toBeTruthy();
 
         // Verify the trigger data is available in the inputs
         expect(customCodeStep.inputsList).toContain("cronTrigger.data");
@@ -245,7 +242,7 @@ describe("Execution Management Tests", () => {
 
         expect(execution).toBeDefined();
         expect(execution.id).toEqual(executionIdFromList);
-        expect(execution.success).toBe(true);
+        expect(execution.success).toBeTruthy();
 
         // The execution now contains both trigger and node steps
         // Step 0: Trigger step, Step 1: ETH transfer node
@@ -256,13 +253,13 @@ describe("Execution Management Tests", () => {
         const triggerStep = execution.steps[0];
         expect(triggerStep.type).toEqual(TriggerType.Block);
         expect(triggerStep.name).toEqual("blockTriggerForGetExecutionsTest");
-        expect(triggerStep.success).toBe(true);
+        expect(triggerStep.success).toBeTruthy();
 
         // The second step should be the CustomCode node
         const customCodeStep = execution.steps[1];
         expect(customCodeStep.type).toEqual(NodeType.CustomCode);
         expect(customCodeStep.name).toEqual("customCode");
-        expect(customCodeStep.success).toBe(true);
+        expect(customCodeStep.success).toBeTruthy();
 
         // Verify the trigger data is available in the inputs
         expect(customCodeStep.inputsList).toContain(
@@ -332,7 +329,7 @@ describe("Execution Management Tests", () => {
         expect(Array.isArray(resultWithLimitOne.items)).toBe(true);
         expect(resultWithLimitOne.items.length).toBe(limitOne);
         expect(resultWithLimitOne).toHaveProperty("pageInfo");
-        expect(resultWithLimitOne.pageInfo.hasNextPage).toBe(true);
+        expect(resultWithLimitOne.pageInfo.hasNextPage).toBeTruthy();
         const firstCursor = resultWithLimitOne.pageInfo.endCursor;
 
         // Get executions with limitTwo
@@ -342,7 +339,7 @@ describe("Execution Management Tests", () => {
         });
         expect(Array.isArray(resultWithLimitTwo.items)).toBe(true);
         expect(resultWithLimitTwo.items.length).toBe(limitTwo);
-        expect(resultWithLimitTwo.pageInfo.hasNextPage).toBe(true);
+        expect(resultWithLimitTwo.pageInfo.hasNextPage).toBeTruthy();
 
         // Make sure there's no overlap between the two lists
         expect(
@@ -362,7 +359,7 @@ describe("Execution Management Tests", () => {
         expect(resultWithExtraLimit.items.length).toBe(
           totalTriggerCount - limitTwo - limitOne
         );
-        expect(resultWithExtraLimit.pageInfo.hasNextPage).toBe(false);
+        expect(resultWithExtraLimit.pageInfo.hasNextPage).toBeFalsy();
 
         // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
         expect(typeof resultWithExtraLimit.pageInfo.endCursor).toBe("string");
@@ -453,7 +450,7 @@ describe("Execution Management Tests", () => {
 
         expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
         expect(firstPage.pageInfo.endCursor).toBeTruthy();
-        expect(firstPage.pageInfo.hasNextPage).toBe(true);
+        expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
 
         const secondPage = await client.getExecutions([workflowId], {
           after: firstPage.pageInfo.endCursor,

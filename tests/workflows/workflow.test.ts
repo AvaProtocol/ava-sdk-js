@@ -127,7 +127,7 @@ describe("Workflow Management Tests", () => {
         });
         expect(listResponse.items.length).toBe(countFirstPage);
         expect(listResponse).toHaveProperty("pageInfo");
-        expect(listResponse.pageInfo.hasNextPage).toBe(true);
+        expect(listResponse.pageInfo.hasNextPage).toBeTruthy();
         // because of our usage of ulid, this is fixed length
         const firstCursor = listResponse.pageInfo.endCursor;
         expect(firstCursor).toHaveLength(60);
@@ -141,7 +141,7 @@ describe("Workflow Management Tests", () => {
         // Verify that the count of the second return is totalCount - limit
         expect(Array.isArray(listResponse2.items)).toBe(true);
         expect(listResponse2.items.length).toBe(totalCount - countFirstPage);
-        expect(listResponse2.pageInfo.hasNextPage).toBe(false);
+        expect(listResponse2.pageInfo.hasNextPage).toBeFalsy();
 
         // Make sure there's no overlap between the two lists
         expect(
@@ -210,7 +210,7 @@ describe("Workflow Management Tests", () => {
         
         expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
         expect(firstPage.pageInfo.endCursor).toBeTruthy();
-        expect(firstPage.pageInfo.hasNextPage).toBe(true);
+        expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
 
         // Get the second page using after parameter
         const secondPage = await client.getWorkflows([wallet.address], {
@@ -275,7 +275,7 @@ describe("Workflow Management Tests", () => {
         });
 
         expect(beforePage.items.length).toBeLessThanOrEqual(pageSize);
-        expect(beforePage.pageInfo.hasPreviousPage).toBeDefined();
+        expect(typeof beforePage.pageInfo.hasPreviousPage).toBe("boolean");
 
         // Verify that items in beforePage come before items in the original list
         const beforeIds = beforePage.items.map((item) => item.id);
@@ -298,9 +298,8 @@ describe("Workflow Management Tests", () => {
       const res = await client.getWorkflows([wallet.address]);
       expect(Array.isArray(res.items)).toBe(true);
       expect(res.items.length).toBe(0);
-      expect(res.pageInfo).toBeDefined();
-      expect(res.pageInfo.hasNextPage).toBe(false);
-      expect(res.pageInfo.hasPreviousPage).toBe(false);
+      expect(res.pageInfo.hasNextPage).toBeFalsy();
+      expect(res.pageInfo.hasPreviousPage).toBeFalsy();
     });
 
     test("should filter workflows by status", async () => {
@@ -320,8 +319,7 @@ describe("Workflow Management Tests", () => {
         expect(res.items.length).toBeGreaterThanOrEqual(1);
         
         const createdWorkflow = res.items.find((task) => task.id === workflowId);
-        expect(createdWorkflow).toBeDefined();
-        expect(createdWorkflow?.status).toBeDefined();
+        expect(createdWorkflow?.status).toBeTruthy();
       } finally {
         // Clean up all created workflows
         for (const workflowId of workflowIds) {

@@ -83,7 +83,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify unified step structure
@@ -145,7 +145,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify step structure with input variables
@@ -156,7 +156,7 @@ describe("SimulateWorkflow", () => {
       const nodeStep = result.steps[1];
       expect(nodeStep.id).toBe(nodeId);
       expect(nodeStep.type).toBe(NodeType.CustomCode);
-      expect(nodeStep.success).toBe(true);
+      expect(nodeStep.success).toBeTruthy();
     });
   });
 
@@ -213,7 +213,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify unified step structure
@@ -285,7 +285,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.steps).toHaveLength(3); // trigger + 2 nodes
 
       // Verify all steps have unified structure
@@ -298,13 +298,13 @@ describe("SimulateWorkflow", () => {
       expect(node1Step.id).toBe(node1Id);
       expect(node1Step.type).toBe(NodeType.CustomCode);
       expect(node1Step.name).toBe("customCode1");
-      expect(node1Step.success).toBe(true);
+      expect(node1Step.success).toBeTruthy();
 
       const node2Step = result.steps[2];
       expect(node2Step.id).toBe(node2Id);
       expect(node2Step.type).toBe(NodeType.CustomCode);
       expect(node2Step.name).toBe("customCode2");
-      expect(node2Step.success).toBe(true);
+      expect(node2Step.success).toBeTruthy();
     });
   });
 
@@ -356,7 +356,7 @@ describe("SimulateWorkflow", () => {
 
         // If we get here, the simulation succeeded despite the error
         expect(result).toBeDefined();
-        expect(result.success).toBe(false);
+        expect(result.success).toBeFalsy();
         expect(result.error).toBeDefined();
 
         // Even failed simulations should have unified step structure
@@ -368,7 +368,7 @@ describe("SimulateWorkflow", () => {
         const nodeStep = result.steps[1];
         expect(nodeStep.id).toBe(nodeId);
         expect(nodeStep.type).toBe(NodeType.CustomCode);
-        expect(nodeStep.success).toBe(false);
+        expect(nodeStep.success).toBeFalsy();
       } catch (error: unknown) {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();
@@ -469,7 +469,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.steps).toHaveLength(3); // trigger + 2 nodes
 
       // Verify trigger step
@@ -483,14 +483,14 @@ describe("SimulateWorkflow", () => {
       expect(restApiStep.id).toBe(restApiNodeId);
       expect(restApiStep.type).toBe(NodeType.RestAPI);
       expect(restApiStep.name).toBe("rest_api_node");
-      expect(restApiStep.success).toBe(true);
+      expect(restApiStep.success).toBeTruthy();
 
       // Verify custom code step that accesses input data
       const customCodeStep = result.steps[2];
       expect(customCodeStep.id).toBe(customCodeNodeId);
       expect(customCodeStep.type).toBe(NodeType.CustomCode);
       expect(customCodeStep.name).toBe("input_processor");
-      expect(customCodeStep.success).toBe(true);
+      expect(customCodeStep.success).toBeTruthy();
 
       // The custom code step should have processed the trigger data successfully
       // We can verify this by checking if the step completed successfully
@@ -567,17 +567,17 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify both steps completed successfully
       const triggerStep = result.steps[0];
       expect(triggerStep.id).toBe(triggerId);
-      expect(triggerStep.success).toBe(true);
+      expect(triggerStep.success).toBeTruthy();
 
       const processorStep = result.steps[1];
       expect(processorStep.id).toBe(processorNodeId);
-      expect(processorStep.success).toBe(true);
+      expect(processorStep.success).toBeTruthy();
     });
   });
 });

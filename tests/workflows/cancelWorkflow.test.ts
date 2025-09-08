@@ -47,20 +47,19 @@ describe("cancelWorkflow Tests", () => {
       workflowId = await client.submitWorkflow(workflow);
 
       const result = await client.cancelWorkflow(workflowId);
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
 
       const cancelResult = await client.getWorkflow(workflowId);
       expect(cancelResult.id).toEqual(workflowId);
       expect(cancelResult.status).toEqual(WorkflowStatus.Canceled);
     } finally {
-      expect(workflowId).toBeDefined();
-      await client.deleteWorkflow(workflowId);
+      await client.deleteWorkflow(workflowId!);
     }
   });
 
   test("should return error response when canceling a non-existent task", async () => {
     const result = await client.cancelWorkflow("non-existent-task-id");
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.status).toBe("not_found");
     expect(result.message).toMatch(/task not found/i);
     expect(result.id).toBe("non-existent-task-id");

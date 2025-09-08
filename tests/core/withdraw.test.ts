@@ -1,7 +1,10 @@
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { WithdrawFundsRequest, WithdrawFundsResponse } from "@avaprotocol/types";
+import {
+  WithdrawFundsRequest,
+  WithdrawFundsResponse,
+} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -46,24 +49,24 @@ describe("Withdraw Funds Tests", () => {
     test("should successfully initiate ETH withdrawal with minimal parameters", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
+      console.log("Wallet address:", wallet.address);
+      console.log("EOA address:", eoaAddress);
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress, // Send back to EOA address
         amount: "1000000000000000", // 0.001 ETH in wei
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address, // Use address from getWallet() call
       };
 
-      const response: WithdrawFundsResponse = await client.withdrawFunds(withdrawRequest);
+      const response: WithdrawFundsResponse = await client.withdrawFunds(
+        withdrawRequest
+      );
 
       // Verify response structure
-      expect(response).toBeDefined();
-      expect(response.success).toBeDefined();
-      expect(typeof response.success).toBe("boolean");
-      expect(response.status).toBeDefined();
-      expect(typeof response.status).toBe("string");
-      expect(response.message).toBeDefined();
-      expect(typeof response.message).toBe("string");
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+            expect(typeof response.status).toBe("string");
+            expect(typeof response.message).toBe("string");
       expect(response.smartWalletAddress).toBeDefined();
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
@@ -94,7 +97,7 @@ describe("Withdraw Funds Tests", () => {
     test("should successfully initiate withdrawal with explicit smart wallet address", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "500000000000000", // 0.0005 ETH in wei
@@ -104,7 +107,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -120,7 +123,7 @@ describe("Withdraw Funds Tests", () => {
     test("should successfully initiate withdrawal with factory address", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "250000000000000", // 0.00025 ETH in wei
@@ -131,7 +134,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -149,13 +152,15 @@ describe("Withdraw Funds Tests", () => {
     test("should successfully initiate USDC withdrawal if token is available", async () => {
       // Skip if no USDC token configured for this environment
       if (!tokens.USDC) {
-        console.log("Skipping USDC test - token not configured for this environment");
+        console.log(
+          "Skipping USDC test - token not configured for this environment"
+        );
         return;
       }
 
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000", // 1 USDC (6 decimals)
@@ -165,7 +170,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -182,15 +187,17 @@ describe("Withdraw Funds Tests", () => {
     test("should handle custom ERC20 token withdrawal", async () => {
       // Skip if no custom ERC20 token configured for this environment
       if (!tokens.CUSTOM_ERC20) {
-        console.log("Skipping custom ERC20 test - token not configured for this environment");
+        console.log(
+          "Skipping custom ERC20 test - token not configured for this environment"
+        );
         return;
       }
 
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       const customTokenAddress = tokens.CUSTOM_ERC20.address;
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000000", // 1 token (18 decimals)
@@ -200,7 +207,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -217,7 +224,7 @@ describe("Withdraw Funds Tests", () => {
   describe("withdrawFunds Edge Cases", () => {
     test("should reject zero amount withdrawal", async () => {
       const salt = _.toString(saltIndex++);
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "0", // Zero amount should be rejected
@@ -226,15 +233,15 @@ describe("Withdraw Funds Tests", () => {
       };
 
       // Zero amount should be rejected by the server
-      await expect(
-        client.withdrawFunds(withdrawRequest)
-      ).rejects.toThrow(/invalid amount.*positive integer|INVALID_ARGUMENT/);
+      await expect(client.withdrawFunds(withdrawRequest)).rejects.toThrow(
+        /invalid amount.*positive integer|INVALID_ARGUMENT/
+      );
     });
 
     test("should handle large amount withdrawal", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000000000", // 1000 ETH in wei (likely to fail due to insufficient balance)
@@ -244,7 +251,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.amount).toBe(withdrawRequest.amount);
 
@@ -258,10 +265,12 @@ describe("Withdraw Funds Tests", () => {
     test("should handle withdrawal to different recipient address", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       // Generate a deterministic test address different from eoaAddress
-      const differentRecipient = await getAddress("0x0000000000000000000000000000000000000000000000000000000000000001");
-      
+      const differentRecipient = await getAddress(
+        "0x0000000000000000000000000000000000000000000000000000000000000001"
+      );
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: differentRecipient,
         amount: "100000000000000", // 0.0001 ETH in wei
@@ -271,7 +280,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(differentRecipient);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -285,7 +294,7 @@ describe("Withdraw Funds Tests", () => {
 
     test("should reject withdrawal with invalid recipient address", async () => {
       const salt = _.toString(saltIndex++);
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: "invalid-address", // Invalid address format
         amount: "1000000000000000", // 0.001 ETH in wei
@@ -298,7 +307,7 @@ describe("Withdraw Funds Tests", () => {
 
     test("should reject withdrawal with invalid token address", async () => {
       const salt = _.toString(saltIndex++);
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000", // 0.001 ETH in wei
@@ -311,7 +320,7 @@ describe("Withdraw Funds Tests", () => {
 
     test("should reject withdrawal with invalid amount format", async () => {
       const salt = _.toString(saltIndex++);
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "invalid-amount", // Invalid amount format
@@ -348,7 +357,7 @@ describe("Withdraw Funds Tests", () => {
 
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt }); // Use authenticated client to create wallet
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "100000000000000", // 0.0001 ETH in wei
@@ -365,7 +374,7 @@ describe("Withdraw Funds Tests", () => {
         { authKey: authKey! }
       );
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
 
       console.log("Request-level auth withdrawal response:", {
@@ -379,7 +388,7 @@ describe("Withdraw Funds Tests", () => {
     test("should work with wallet created using custom factory", async () => {
       const salt = _.toString(saltIndex++);
       const config = getConfig();
-      
+
       // Get wallet with specific factory address
       const wallet = await client.getWallet({
         salt: salt,
@@ -396,7 +405,7 @@ describe("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response).toBeDefined();
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
 
@@ -411,7 +420,7 @@ describe("Withdraw Funds Tests", () => {
     test("should handle multiple wallets withdrawal", async () => {
       const salt1 = _.toString(saltIndex++);
       const salt2 = _.toString(saltIndex++);
-      
+
       const wallet1 = await client.getWallet({ salt: salt1 });
       const wallet2 = await client.getWallet({ salt: salt2 });
 
@@ -434,11 +443,11 @@ describe("Withdraw Funds Tests", () => {
         client.withdrawFunds(withdrawRequest2),
       ]);
 
-      expect(response1).toBeDefined();
+      expect(response1.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response1.smartWalletAddress).toBe(wallet1.address);
       expect(response1.amount).toBe("50000000000000");
 
-      expect(response2).toBeDefined();
+      expect(response2.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(response2.smartWalletAddress).toBe(wallet2.address);
       expect(response2.amount).toBe("75000000000000");
 
@@ -461,7 +470,7 @@ describe("Withdraw Funds Tests", () => {
     test("should return properly formatted response for successful withdrawal", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
-      
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000", // 0.001 ETH in wei
@@ -481,7 +490,7 @@ describe("Withdraw Funds Tests", () => {
       expect(response).toHaveProperty("token");
 
       // Validate field types
-      expect(typeof response.success).toBe("boolean");
+      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
       expect(typeof response.status).toBe("string");
       expect(typeof response.message).toBe("string");
       expect(typeof response.smartWalletAddress).toBe("string");
