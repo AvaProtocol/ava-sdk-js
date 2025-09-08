@@ -543,9 +543,7 @@ class Client extends BaseClient {
    * @param {string} withdrawRequest.recipientAddress - The recipient address to send funds to
    * @param {string} withdrawRequest.amount - The amount to withdraw in wei for ETH or smallest token unit for ERC20
    * @param {string} withdrawRequest.token - Token type: "ETH" for native ETH, or contract address for ERC20 tokens
-   * @param {string} [withdrawRequest.smartWalletAddress] - Optional: Override the smart wallet to withdraw from (defaults to user's default wallet)
-   * @param {string} [withdrawRequest.salt] - Optional: Salt for deriving smart wallet address if smartWalletAddress is not provided
-   * @param {string} [withdrawRequest.factoryAddress] - Optional: Factory address for smart wallet derivation. If not provided, the client's default factoryAddress will be used as fallback
+   * @param {string} withdrawRequest.smartWalletAddress - Required: Smart wallet address to withdraw from (must be from user's getWallet() call)
    * @param {RequestOptions} options - Request options
    * @returns {Promise<WithdrawFundsResponse>} - The response from the withdraw operation
    */
@@ -555,8 +553,6 @@ class Client extends BaseClient {
       amount,
       token,
       smartWalletAddress,
-      salt,
-      factoryAddress,
     }: WithdrawFundsRequest,
     options?: RequestOptions
   ): Promise<WithdrawFundsResponse> {
@@ -564,20 +560,7 @@ class Client extends BaseClient {
     request.setRecipientAddress(recipientAddress);
     request.setAmount(amount);
     request.setToken(token);
-
-    if (smartWalletAddress) {
-      request.setSmartWalletAddress(smartWalletAddress);
-    }
-
-    if (salt) {
-      request.setSalt(salt);
-    }
-
-    if (factoryAddress) {
-      request.setFactoryAddress(factoryAddress);
-    } else if (this.factoryAddress) {
-      request.setFactoryAddress(this.factoryAddress);
-    }
+    request.setSmartWalletAddress(smartWalletAddress);
 
     const result = await this.sendGrpcRequest<
       avs_pb.WithdrawFundsResp,

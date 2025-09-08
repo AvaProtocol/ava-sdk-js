@@ -265,9 +265,7 @@ export interface WithdrawFundsRequest {
   recipientAddress: string;
   amount: string; // Amount in wei for ETH or smallest token unit for ERC20
   token: string; // "ETH" for native ETH, or contract address for ERC20 tokens
-  smartWalletAddress?: string; // Optional: Override the smart wallet to withdraw from
-  salt?: string; // Optional: Salt for deriving smart wallet address
-  factoryAddress?: string; // Optional: Factory address for smart wallet derivation
+  smartWalletAddress: string; // Required: Smart wallet address to withdraw from (must be from user's getWallet() call)
 }
 
 // Withdraw funds response interface

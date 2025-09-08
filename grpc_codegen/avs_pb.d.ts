@@ -2467,10 +2467,6 @@ export class WithdrawFundsReq extends jspb.Message {
     setToken(value: string): WithdrawFundsReq;
     getSmartWalletAddress(): string;
     setSmartWalletAddress(value: string): WithdrawFundsReq;
-    getSalt(): string;
-    setSalt(value: string): WithdrawFundsReq;
-    getFactoryAddress(): string;
-    setFactoryAddress(value: string): WithdrawFundsReq;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): WithdrawFundsReq.AsObject;
@@ -2488,8 +2484,6 @@ export namespace WithdrawFundsReq {
         amount: string,
         token: string,
         smartWalletAddress: string,
-        salt: string,
-        factoryAddress: string,
     }
 }
 

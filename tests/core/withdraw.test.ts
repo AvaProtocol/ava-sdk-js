@@ -120,7 +120,7 @@ describe("Withdraw Funds Tests", () => {
       });
     });
 
-    test("should successfully initiate withdrawal with factory address", async () => {
+    test("should successfully initiate withdrawal with smart wallet address", async () => {
       const salt = _.toString(saltIndex++);
       const wallet = await client.getWallet({ salt });
 
@@ -128,8 +128,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: eoaAddress,
         amount: "250000000000000", // 0.00025 ETH in wei
         token: "ETH",
-        salt: salt,
-        factoryAddress: wallet.factory, // Use the same factory as the wallet
+        smartWalletAddress: wallet.address, // Use address from getWallet() call
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
@@ -140,7 +139,7 @@ describe("Withdraw Funds Tests", () => {
       expect(response.amount).toBe(withdrawRequest.amount);
       expect(response.token).toBe(withdrawRequest.token);
 
-      console.log("Factory address withdrawal response:", {
+      console.log("Smart wallet withdrawal response:", {
         success: response.success,
         status: response.status,
         smartWalletAddress: response.smartWalletAddress,
@@ -165,7 +164,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: eoaAddress,
         amount: "1000000", // 1 USDC (6 decimals)
         token: tokens.USDC.address,
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
@@ -202,7 +201,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: eoaAddress,
         amount: "1000000000000000000", // 1 token (18 decimals)
         token: customTokenAddress,
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
@@ -224,12 +223,13 @@ describe("Withdraw Funds Tests", () => {
   describe("withdrawFunds Edge Cases", () => {
     test("should reject zero amount withdrawal", async () => {
       const salt = _.toString(saltIndex++);
+      const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "0", // Zero amount should be rejected
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       // Zero amount should be rejected by the server
@@ -246,7 +246,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: eoaAddress,
         amount: "1000000000000000000000", // 1000 ETH in wei (likely to fail due to insufficient balance)
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
@@ -275,7 +275,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: differentRecipient,
         amount: "100000000000000", // 0.0001 ETH in wei
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
@@ -294,12 +294,13 @@ describe("Withdraw Funds Tests", () => {
 
     test("should reject withdrawal with invalid recipient address", async () => {
       const salt = _.toString(saltIndex++);
+      const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: "invalid-address", // Invalid address format
         amount: "1000000000000000", // 0.001 ETH in wei
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       await expect(client.withdrawFunds(withdrawRequest)).rejects.toThrow();
@@ -307,12 +308,13 @@ describe("Withdraw Funds Tests", () => {
 
     test("should reject withdrawal with invalid token address", async () => {
       const salt = _.toString(saltIndex++);
+      const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000", // 0.001 ETH in wei
         token: "invalid-token", // Invalid token format
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       await expect(client.withdrawFunds(withdrawRequest)).rejects.toThrow();
@@ -320,12 +322,13 @@ describe("Withdraw Funds Tests", () => {
 
     test("should reject withdrawal with invalid amount format", async () => {
       const salt = _.toString(saltIndex++);
+      const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "invalid-amount", // Invalid amount format
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       await expect(client.withdrawFunds(withdrawRequest)).rejects.toThrow();
@@ -338,11 +341,14 @@ describe("Withdraw Funds Tests", () => {
         endpoint: avsEndpoint,
       });
 
+      const salt = _.toString(saltIndex++);
+      const wallet = await client.getWallet({ salt }); // Use authenticated client to create wallet
+
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
         amount: "1000000000000000", // 0.001 ETH in wei
         token: "ETH",
-        salt: _.toString(saltIndex++),
+        smartWalletAddress: wallet.address,
       };
 
       await expect(
@@ -399,8 +405,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: eoaAddress,
         amount: "100000000000000", // 0.0001 ETH in wei
         token: "ETH",
-        salt: salt,
-        factoryAddress: config.factoryAddress,
+        smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
@@ -475,7 +480,7 @@ describe("Withdraw Funds Tests", () => {
         recipientAddress: eoaAddress,
         amount: "1000000000000000", // 0.001 ETH in wei
         token: "ETH",
-        salt: salt,
+        smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
