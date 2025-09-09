@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.5.0
+
+### Minor Changes
+
+- 94225ec: Added withdraw request to transfer from bundler
+
 ## 2.4.11
 
 ### Patch Changes

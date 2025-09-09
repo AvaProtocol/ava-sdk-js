@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.7.0
+
+### Minor Changes
+
+- 94225ec: Added withdraw request to transfer from bundler
+
+### Patch Changes
+
+- Updated dependencies [94225ec]
+  - @avaprotocol/types@2.5.0
+
 ## 2.6.13
 
 ### Patch Changes
