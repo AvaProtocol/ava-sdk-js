@@ -15,9 +15,10 @@ import {
   SALT_BUCKET_SIZE,
   stepIndicatesWriteFailure,
   resultIndicatesAllWritesSuccessful,
+  describeIfSepolia,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig, isSepolia, getEnvironment } from "../utils/envalid";
+import { getConfig } from "../utils/envalid";
 const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
@@ -50,8 +51,6 @@ jest.setTimeout(TIMEOUT_DURATION);
  */
 
 const { avsEndpoint, walletPrivateKey } = getConfig();
-const env = getEnvironment();
-const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.ContractWrite * SALT_BUCKET_SIZE;
@@ -228,7 +227,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
 
       expect(result.data).toBeDefined();
@@ -268,11 +266,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(transferMetadata.receipt.logs.length).toBeGreaterThan(0); // Should have Transfer event log
 
       // success must reflect metadata/receipt success
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result));
 
       // Verify executionContext present and camelCased
-      expect(result.executionContext).toBeDefined();
       expect(result.executionContext!.isSimulated).toBe(true);
       // chainId may vary by config; just assert it exists as a number if provided
       if ((result.executionContext as any).chainId !== undefined) {
@@ -339,7 +336,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
@@ -351,11 +347,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
       // Verify executionContext present and camelCased
       if (result.success) {
-        expect(result.executionContext).toBeDefined();
         expect(result.executionContext!.isSimulated).toBe(true);
       }
 
-      expect(result.success).toBe(false); // Should fail due to insufficient funds
+      expect(result.success).toBeFalsy(); // Should fail due to insufficient funds
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result));
       expect(result.metadata!.length).toBeGreaterThan(0);
 
@@ -406,7 +401,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
@@ -415,7 +409,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(Array.isArray(result.metadata!)).toBe(true);
 
       // runNodeWithInputs sets isSimulated=true for ContractWrite nodes
-      expect(result.executionContext).toBeDefined();
       expect(result.executionContext!.isSimulated).toBe(true);
 
       // Test the multiple method call behavior based on success/failure
@@ -425,13 +418,13 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result));
         result.metadata!.forEach((methodResult: any) => {
           expect(methodResult.methodName).toBe("transfer");
-          expect(methodResult.success).toBe(true);
+          expect(methodResult.success).toBeTruthy();
         });
       } else {
         // Failure case: Should abort after first failure (only 1 metadata entry)
         expect(result.metadata!.length).toBe(1);
         expect(result.metadata![0].methodName).toBe("transfer");
-        expect(result.metadata![0].success).toBe(false);
+        expect(result.metadata![0].success).toBeFalsy();
       }
     });
 
@@ -470,7 +463,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
@@ -481,7 +473,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
 
       // runNodeWithInputs sets isSimulated=true for ContractWrite nodes
-      expect(result.executionContext).toBeDefined();
       expect(result.executionContext!.isSimulated).toBe(true);
 
       // Backend now succeeds for invalid addresses in simulation mode
@@ -518,7 +509,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
@@ -531,7 +521,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       );
 
       // If metadata indicates failure or receipt.status != 0x1, success must be false
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result));
       expect(result.data).toBeDefined();
     });
@@ -554,7 +544,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     test.each(simulateCases)(
       "should simulate workflow with $name call",
       async ({ methodName, methodParams }) => {
-        const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+        const wallet = await client.getWallet({
+          salt: _.toString(saltIndex++),
+        });
 
         const contractWriteNode = NodeFactory.create({
           id: getNextId(),
@@ -635,9 +627,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       });
 
       const simulation = await client.simulateWorkflow({
-        ...client.createWorkflow(
-          createFromTemplate(wallet.address, [contractWriteNode])
-        ).toJson(),
+        ...client
+          .createWorkflow(
+            createFromTemplate(wallet.address, [contractWriteNode])
+          )
+          .toJson(),
         inputVariables: {
           workflowContext: { eoaAddress, runner: wallet.address },
         },
@@ -811,8 +805,14 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const runNodeResponse = await client.runNodeWithInputs(
         runNodeWithInputsParams
       );
-      console.log("params:", util.inspect(runNodeWithInputsParams, { depth: null, colors: true }));
-      console.log("response:", util.inspect(runNodeResponse, { depth: null, colors: true }));
+      console.log(
+        "params:",
+        util.inspect(runNodeWithInputsParams, { depth: null, colors: true })
+      );
+      console.log(
+        "response:",
+        util.inspect(runNodeResponse, { depth: null, colors: true })
+      );
 
       // Test 2: simulateWorkflow
       const contractWriteNode = NodeFactory.create({
@@ -833,7 +833,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           workflowContext: { eoaAddress, runner: wallet.address },
         },
       });
-      console.log("response:", util.inspect(simulation, { depth: null, colors: true }));
+      console.log(
+        "response:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
 
       const simulatedStep = simulation.steps.find(
         (step) => step.id === contractWriteNode.id
@@ -956,7 +959,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(simulatedMethods).toEqual(runNodeResponseMetadataMethods);
 
         // Verify top-level success for all methods - backend behavior may vary
-        expect(runNodeResponse.success).toBe(resultIndicatesAllWritesSuccessful(runNodeResponse));
+        expect(runNodeResponse.success).toBe(
+          resultIndicatesAllWritesSuccessful(runNodeResponse)
+        );
         const simStepFail = stepIndicatesWriteFailure(simulatedStep as any);
         expect(simulatedStep?.success).toBe(!simStepFail);
         // For deployed workflow, success depends on whether wallet is funded/deployed
@@ -985,7 +990,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         if (runNodeResponseData.transfer.value !== undefined) {
           // Simulation may return actual transfer amount or 0 depending on wallet balance
           expect(typeof runNodeResponseData.transfer.value).toBe("string");
-          expect(["0", "1", transferAmount]).toContain(runNodeResponseData.transfer.value);
+          expect(["0", "1", transferAmount]).toContain(
+            runNodeResponseData.transfer.value
+          );
         }
 
         // For simulation workflow step - same conditional validation
@@ -1008,7 +1015,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         }
 
         // Verify deployed workflow success - should be true since we're using salt "0" (funded wallet)
-        expect(executedStep?.success).toBe(true);
+        expect(executedStep?.success).toBeTruthy();
         if (!executedStep?.success) {
           console.log("❌ Deployed workflow failed:", {
             error: executedStep?.error,
@@ -1022,13 +1029,14 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         // Real transactions should always have proper event logs and decoded data
         const deployedOutput = executedStep?.output as any;
         if (executedStep?.success && deployedOutput?.transfer) {
-          expect(deployedOutput.transfer.from).toBeDefined();
           expect(typeof deployedOutput.transfer.from).toBe("string");
           // Note: Real transaction uses smart wallet address as sender
           expect(deployedOutput.transfer.to.toLowerCase()).toBe(expectedTo);
           // Deployed execution may return actual transfer amount or 0 depending on wallet balance
           expect(typeof deployedOutput.transfer.value).toBe("string");
-          expect(["0", "1", transferAmount]).toContain(deployedOutput.transfer.value);
+          expect(["0", "1", transferAmount]).toContain(
+            deployedOutput.transfer.value
+          );
         }
       } finally {
         if (workflowId) {
@@ -1091,7 +1099,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
@@ -1453,8 +1460,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
 
@@ -1479,12 +1485,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
   });
 
-  describe("Real UserOp Transaction Debug Tests", () => {
+  describeIfSepolia("Real UserOp Transaction Debug Tests", () => {
     test("should test real UserOp with salt:0 (funded wallet)", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
 
       // Use the default smart wallet (salt: 0) that is pre-funded
       const wallet = await client.getWallet({ salt: "0" });

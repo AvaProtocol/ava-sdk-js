@@ -75,8 +75,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toEqual({
         data: testData,
         headers: { headerKey: "headerValue" },
@@ -123,8 +122,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data).toEqual(["value1", "value2"]); // Should return array of key values
     });
@@ -148,8 +146,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toEqual([{ key: "value1" }]); // FilterNode now returns array of filtered items
     });
 
@@ -174,8 +171,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toEqual(inputData); // Should return the trigger data
     });
   });
@@ -295,8 +291,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation).toBeDefined();
-      expect(simulation.success).toBe(true);
+            expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(4); // Trigger + 3 nodes
 
       // Comprehensive validation of input and output fields for each step
@@ -309,16 +304,14 @@ describe("Exported Workflow Consistency Tests", () => {
       const triggerStep = simulation.steps.find(
         (s) => s.type === "manualTrigger"
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
       expect(triggerStep!.config).toBeDefined();
       expect(triggerStep!.config).toEqual(manualTriggerProps.data);
       expect(triggerStep!.output).toEqual(testData);
 
       // Validate filter step
       const filterStep = simulation.steps.find((s) => s.type === "filter");
-      expect(filterStep).toBeDefined();
-      expect(filterStep!.success).toBe(true);
+            expect(filterStep!.success).toBeTruthy();
       expect(filterStep!.config).toBeDefined();
       expect(filterStep!.config).toEqual(filterNodeProps.data);
       expect(filterStep!.output).toEqual([{ key: "value1" }]);
@@ -326,8 +319,7 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Validate loop step
       const loopStep = simulation.steps.find((s) => s.type === "loop");
-      expect(loopStep).toBeDefined();
-      expect(loopStep!.success).toBe(true);
+            expect(loopStep!.success).toBeTruthy();
 
       // Validate loop input - should use the new protobuf-compliant runner.config structure
       expect(loopStep!.config).toBeDefined();
@@ -667,9 +659,9 @@ describe("Exported Workflow Consistency Tests", () => {
       );
 
       // All three methods should return identical flat array results
-      expect(directResult.success).toBe(true);
-      expect(simulation.success).toBe(true);
-      expect(executedLoopStep.success).toBe(true);
+      expect(directResult.success).toBeTruthy();
+      expect(simulation.success).toBeTruthy();
+      expect(executedLoopStep.success).toBeTruthy();
 
       // The key consistency check - all return the same flat array
       expect(directResult.data).toEqual(testData);
@@ -792,9 +784,9 @@ describe("Exported Workflow Consistency Tests", () => {
         JSON.stringify(executedFilterStep!.output, null, 2)
       );
 
-      expect(directResult.success).toBe(true);
-      expect(simulation.success).toBe(true);
-      expect(executedFilterStep.success).toBe(true);
+      expect(directResult.success).toBeTruthy();
+      expect(simulation.success).toBeTruthy();
+      expect(executedFilterStep.success).toBeTruthy();
 
       expect(directResult.data).toEqual(expectedResult);
       expect(simulatedFilterStep!.output).toEqual(expectedResult);
@@ -910,9 +902,9 @@ describe("Exported Workflow Consistency Tests", () => {
         JSON.stringify(executedCodeStep!.output, null, 2)
       );
 
-      expect(directResult.success).toBe(true);
-      expect(simulation.success).toBe(true);
-      expect(executedCodeStep.success).toBe(true);
+      expect(directResult.success).toBeTruthy();
+      expect(simulation.success).toBeTruthy();
+      expect(executedCodeStep.success).toBeTruthy();
 
       expect(directResult.data).toEqual(testData);
       expect(simulatedCodeStep!.output).toEqual(testData);
@@ -990,7 +982,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
 
       // Validate trigger step input field
       const triggerStep = simulation.steps.find(

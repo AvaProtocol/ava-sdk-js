@@ -2458,6 +2458,82 @@ export namespace SetWalletReq {
     }
 }
 
+export class WithdrawFundsReq extends jspb.Message { 
+    getRecipientAddress(): string;
+    setRecipientAddress(value: string): WithdrawFundsReq;
+    getAmount(): string;
+    setAmount(value: string): WithdrawFundsReq;
+    getToken(): string;
+    setToken(value: string): WithdrawFundsReq;
+    getSmartWalletAddress(): string;
+    setSmartWalletAddress(value: string): WithdrawFundsReq;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): WithdrawFundsReq.AsObject;
+    static toObject(includeInstance: boolean, msg: WithdrawFundsReq): WithdrawFundsReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: WithdrawFundsReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): WithdrawFundsReq;
+    static deserializeBinaryFromReader(message: WithdrawFundsReq, reader: jspb.BinaryReader): WithdrawFundsReq;
+}
+
+export namespace WithdrawFundsReq {
+    export type AsObject = {
+        recipientAddress: string,
+        amount: string,
+        token: string,
+        smartWalletAddress: string,
+    }
+}
+
+export class WithdrawFundsResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): WithdrawFundsResp;
+    getStatus(): string;
+    setStatus(value: string): WithdrawFundsResp;
+    getMessage(): string;
+    setMessage(value: string): WithdrawFundsResp;
+    getUserOpHash(): string;
+    setUserOpHash(value: string): WithdrawFundsResp;
+    getTransactionHash(): string;
+    setTransactionHash(value: string): WithdrawFundsResp;
+    getSubmittedAt(): number;
+    setSubmittedAt(value: number): WithdrawFundsResp;
+    getSmartWalletAddress(): string;
+    setSmartWalletAddress(value: string): WithdrawFundsResp;
+    getRecipientAddress(): string;
+    setRecipientAddress(value: string): WithdrawFundsResp;
+    getAmount(): string;
+    setAmount(value: string): WithdrawFundsResp;
+    getToken(): string;
+    setToken(value: string): WithdrawFundsResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): WithdrawFundsResp.AsObject;
+    static toObject(includeInstance: boolean, msg: WithdrawFundsResp): WithdrawFundsResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: WithdrawFundsResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): WithdrawFundsResp;
+    static deserializeBinaryFromReader(message: WithdrawFundsResp, reader: jspb.BinaryReader): WithdrawFundsResp;
+}
+
+export namespace WithdrawFundsResp {
+    export type AsObject = {
+        success: boolean,
+        status: string,
+        message: string,
+        userOpHash: string,
+        transactionHash: string,
+        submittedAt: number,
+        smartWalletAddress: string,
+        recipientAddress: string,
+        amount: string,
+        token: string,
+    }
+}
+
 export class TriggerTaskReq extends jspb.Message { 
     getTaskId(): string;
     setTaskId(value: string): TriggerTaskReq;
@@ -3160,8 +3236,6 @@ export class RunNodeWithInputsResp extends jspb.Message {
     setSuccess(value: boolean): RunNodeWithInputsResp;
     getError(): string;
     setError(value: string): RunNodeWithInputsResp;
-    getNodeId(): string;
-    setNodeId(value: string): RunNodeWithInputsResp;
 
     hasMetadata(): boolean;
     clearMetadata(): void;
@@ -3234,7 +3308,6 @@ export namespace RunNodeWithInputsResp {
     export type AsObject = {
         success: boolean,
         error: string,
-        nodeId: string,
         metadata?: google_protobuf_struct_pb.Value.AsObject,
         executionContext?: google_protobuf_struct_pb.Value.AsObject,
         ethTransfer?: ETHTransferNode.Output.AsObject,
@@ -3298,8 +3371,6 @@ export class RunTriggerResp extends jspb.Message {
     setSuccess(value: boolean): RunTriggerResp;
     getError(): string;
     setError(value: string): RunTriggerResp;
-    getTriggerId(): string;
-    setTriggerId(value: string): RunTriggerResp;
 
     hasMetadata(): boolean;
     clearMetadata(): void;
@@ -3352,7 +3423,6 @@ export namespace RunTriggerResp {
     export type AsObject = {
         success: boolean,
         error: string,
-        triggerId: string,
         metadata?: google_protobuf_struct_pb.Value.AsObject,
         executionContext?: google_protobuf_struct_pb.Value.AsObject,
         blockTrigger?: BlockTrigger.Output.AsObject,

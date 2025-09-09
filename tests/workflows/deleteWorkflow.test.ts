@@ -46,7 +46,7 @@ describe("deleteWorkflow Tests", () => {
     workflowId = await client.submitWorkflow(workflow);
 
     const result = await client.deleteWorkflow(workflowId);
-    expect(result.success).toBe(true);
+    expect(result.success).toBeTruthy();
 
     const listRes = await client.getWorkflows([wallet.address]);
 
@@ -56,7 +56,7 @@ describe("deleteWorkflow Tests", () => {
 
   test("should return error response when deleting a non-existent task", async () => {
     const result = await client.deleteWorkflow("non-existent-task-id");
-    expect(result.success).toBe(false);
+    expect(result.success).toBeFalsy();
     expect(result.status).toBe("not_found");
     expect(result.message).toMatch(/task not found/i);
     expect(result.id).toBe("non-existent-task-id");

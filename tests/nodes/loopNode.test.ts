@@ -207,8 +207,7 @@ describe("LoopNode Tests", () => {
 
       console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
 
       // With the consistency fix, result.data is now the array directly
@@ -244,8 +243,7 @@ describe("LoopNode Tests", () => {
 
       console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
 
       // With the consistency fix, result.data is now the array directly
@@ -283,8 +281,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
 
       // With the consistency fix, result.data is now the array directly
@@ -318,8 +315,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
 
       // Type guard to ensure result.data is the expected type
@@ -389,8 +385,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       
 
@@ -460,8 +455,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       
 
@@ -543,12 +537,11 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
-      expect(loopStep).toBeDefined();
-      expect(loopStep!.success).toBe(true);
+            expect(loopStep!.success).toBeTruthy();
 
       // Verify the step input contains the loop node configuration
       expect(loopStep!.config).toBeDefined();
@@ -643,12 +636,11 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
-      expect(loopStep).toBeDefined();
-      expect(loopStep!.success).toBe(true);
+            expect(loopStep!.success).toBeTruthy();
 
       // Verify the step input contains the loop node configuration
       expect(loopStep!.config).toBeDefined();
@@ -980,7 +972,7 @@ describe("LoopNode Tests", () => {
           throw new Error("No corresponding loop step found.");
         }
 
-        expect(loopStep.success).toBe(true);
+        expect(loopStep.success).toBeTruthy();
 
         const output = loopStep.output as ProcessedLoopItem[];
         expect(Array.isArray(output)).toBe(true);
@@ -1068,8 +1060,7 @@ describe("LoopNode Tests", () => {
           (step) => step.id === customCodeLoop.id
         );
 
-        expect(customCodeLoopStep).toBeDefined();
-        expect(customCodeLoopStep!.success).toBe(true);
+                expect(customCodeLoopStep!.success).toBeTruthy();
 
         const output = customCodeLoopStep!.output as ProcessedLoopItem[];
         expect(Array.isArray(output)).toBe(true);
@@ -1414,10 +1405,10 @@ describe("LoopNode Tests", () => {
         // Compare response formats - LoopNode should return consistent data structure
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
         // Verify consistent structure - the key fix from the backend
         console.log(
@@ -1559,8 +1550,8 @@ describe("LoopNode Tests", () => {
         // TODO: Add deployWorkflow test once triggerWorkflow API issue is resolved
 
         // Assertions for response format consistency
-        expect(directResponse.success).toBe(true);
-        expect(simulatedWorkflow.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
+        expect(simulatedWorkflow.success).toBeTruthy();
 
         // Check data structure consistency
         expect(Array.isArray(directResponse.data)).toBe(true);
@@ -1569,8 +1560,7 @@ describe("LoopNode Tests", () => {
         const simulatedLoopStep = simulatedWorkflow.steps.find(
           (step) => step.id === loopNode.id
         );
-        expect(simulatedLoopStep).toBeDefined();
-        expect(simulatedLoopStep!.success).toBe(true);
+                expect(simulatedLoopStep!.success).toBeTruthy();
         expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
         expect((simulatedLoopStep!.output as any[]).length).toBe(2);
 
@@ -1631,8 +1621,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // Should either fail the execution or contain error information
       if (!result.success) {
@@ -1669,8 +1658,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // Should handle missing source gracefully
       if (result.success && result.data) {
@@ -1740,9 +1728,8 @@ describe("LoopNode Tests", () => {
     );
 
     // All should be successful
-    expect(directResponse.success).toBe(true);
-    expect(simulatedStep).toBeDefined();
-    expect(simulatedStep!.success).toBe(true);
+    expect(directResponse.success).toBeTruthy();
+        expect(simulatedStep!.success).toBeTruthy();
 
     const directOutput = directResponse.data as RunNodeResponseData;
     if (directOutput.data && Array.isArray(directOutput.data)) {
@@ -1794,8 +1781,7 @@ describe("LoopNode Tests", () => {
 
       const result = await client.runNodeWithInputs(params);
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
         const responseData = result.data as RunNodeResponseData;
         expect(responseData.data).toBeDefined();
@@ -1826,8 +1812,7 @@ describe("LoopNode Tests", () => {
 
       const result = await client.runNodeWithInputs(params);
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // For parallel execution, we just verify completion - not timing
       const responseData = result.data as ProcessedLoopItem[];
@@ -1880,8 +1865,7 @@ describe("LoopNode Tests", () => {
 
       const result = await client.runNodeWithInputs(params);
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       if (result.success && result.data) {
         const responseData = result.data as RunNodeResponseData;
         expect(responseData.data).toBeDefined();
@@ -1953,8 +1937,7 @@ describe("LoopNode Tests", () => {
 
       const result = await client.runNodeWithInputs(params);
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
 
       // ContractWrite operations may fail due to missing smart wallet config or simulation issues,
       // but the important part is that the backend should have forced sequential execution
@@ -2026,8 +2009,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data)).toBe(true);
 
@@ -2129,8 +2111,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
       // Verify that the data is an array (one item per iteration)
@@ -2267,12 +2248,11 @@ describe("LoopNode Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
-      expect(loopStep).toBeDefined();
-      expect(loopStep!.success).toBe(true);
+            expect(loopStep!.success).toBeTruthy();
 
       // Verify the step input contains the loop node configuration
       expect(loopStep!.config).toBeDefined();
@@ -2370,12 +2350,11 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
-      expect(loopStep).toBeDefined();
-      expect(loopStep!.success).toBe(true);
+            expect(loopStep!.success).toBeTruthy();
 
       // Verify the step input contains the loop node configuration
       expect(loopStep!.config).toBeDefined();

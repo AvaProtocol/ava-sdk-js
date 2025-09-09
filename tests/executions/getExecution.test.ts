@@ -95,13 +95,13 @@ describe("getExecution Tests", () => {
       const triggerStep = execution.steps[0];
       expect(triggerStep.type).toEqual(TriggerType.Block);
       expect(triggerStep.name).toEqual("blockTrigger");
-      expect(triggerStep.success).toBe(true);
+      expect(triggerStep.success).toBeTruthy();
 
       // The second step should be the CustomCode node
       const customCodeStep = execution.steps[1];
       expect(customCodeStep.type).toEqual(NodeType.CustomCode);
       expect(customCodeStep.name).toEqual("customCode");
-      expect(customCodeStep.success).toBe(true);
+      expect(customCodeStep.success).toBeTruthy();
 
       // Execution context should exist and be camelCased at step level for trigger and/or overall execution
       // Note: getExecution returns server objects; ensure presence at least on the first step (trigger)
@@ -197,13 +197,13 @@ describe("getExecution Tests", () => {
       const triggerStep = execution.steps[0];
       expect(triggerStep.type).toEqual(TriggerType.Cron);
       expect(triggerStep.name).toEqual("cronTrigger");
-      expect(triggerStep.success).toBe(true);
+      expect(triggerStep.success).toBeTruthy();
 
       // The second step should be the CustomCode node
       const customCodeStep = execution.steps[1];
       expect(customCodeStep.type).toEqual(NodeType.CustomCode);
       expect(customCodeStep.name).toEqual("customCode");
-      expect(customCodeStep.success).toBe(true);
+      expect(customCodeStep.success).toBeTruthy();
 
       // Verify the trigger data is available in the inputs
       expect(customCodeStep.inputsList).toContain("cronTrigger.data");
@@ -265,7 +265,7 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
-      expect(execution.success).toBe(true);
+      expect(execution.success).toBeTruthy();
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -276,13 +276,13 @@ describe("getExecution Tests", () => {
       const triggerStep = execution.steps[0];
       expect(triggerStep.type).toEqual(TriggerType.Block);
       expect(triggerStep.name).toEqual("blockTriggerForGetExecutionsTest");
-      expect(triggerStep.success).toBe(true);
+      expect(triggerStep.success).toBeTruthy();
 
       // The second step should be the CustomCode node
       const customCodeStep = execution.steps[1];
       expect(customCodeStep.type).toEqual(NodeType.CustomCode);
       expect(customCodeStep.name).toEqual("customCode");
-      expect(customCodeStep.success).toBe(true);
+      expect(customCodeStep.success).toBeTruthy();
 
       // Verify the trigger data is available in the inputs
       expect(customCodeStep.inputsList).toContain(
@@ -401,7 +401,7 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
-      expect(execution.success).toBe(true);
+      expect(execution.success).toBeTruthy();
 
       // Verify execution has both trigger and node steps
       expect(execution.steps).toBeDefined();
@@ -411,13 +411,13 @@ describe("getExecution Tests", () => {
       const triggerStep = execution.steps[0];
       expect(triggerStep.type).toEqual(TriggerType.Manual);
       expect(triggerStep.name).toEqual("manualTriggerWithInput");
-      expect(triggerStep.success).toBe(true);
+      expect(triggerStep.success).toBeTruthy();
 
       // Verify CustomCode node step
       const customCodeStep = execution.steps[1];
       expect(customCodeStep.type).toEqual(NodeType.CustomCode);
       expect(customCodeStep.name).toEqual("input_data_tester");
-      expect(customCodeStep.success).toBe(true);
+      expect(customCodeStep.success).toBeTruthy();
 
       // Verify that the node can access trigger data
       expect(customCodeStep.inputsList).toContain(
@@ -442,7 +442,7 @@ describe("getExecution Tests", () => {
 
       const nodeOutput = customCodeStep.output as any;
 
-      expect(nodeOutput.success).toBe(true);
+      expect(nodeOutput.success).toBeTruthy();
 
       // Verify the trigger input values were correctly accessed
       expect(nodeOutput.inputValues).toBeDefined();

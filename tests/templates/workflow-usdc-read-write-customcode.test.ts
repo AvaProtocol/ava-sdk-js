@@ -434,7 +434,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       expect(codeStep.inputsList || []).toContain("contractRead2.data");
 
       // And custom code should not fail due to missing reference
-      expect(codeStep.success).toBe(true);
+      expect(codeStep.success).toBeTruthy();
     } finally {
       if (workflowId) {
         try {

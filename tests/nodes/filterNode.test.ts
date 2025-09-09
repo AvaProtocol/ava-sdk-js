@@ -64,9 +64,8 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -89,9 +88,8 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -114,9 +112,8 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -144,9 +141,8 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -201,7 +197,7 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(3); // trigger + data node + filter node
 
       const filterStep = simulation.steps.find(
@@ -257,7 +253,7 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const filterStep = simulation.steps.find(
         (step) => step.id === filterNode.id
       );
@@ -342,7 +338,7 @@ describe("FilterNode Tests", () => {
           throw new Error("No corresponding filter step found.");
         }
 
-        expect(filterStep.success).toBe(true);
+        expect(filterStep.success).toBeTruthy();
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -460,10 +456,10 @@ describe("FilterNode Tests", () => {
         // Compare response formats
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
         // Verify filter results are consistent
         if (directResponse.data && Array.isArray(directResponse.data)) {

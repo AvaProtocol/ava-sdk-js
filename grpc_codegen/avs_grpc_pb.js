@@ -511,6 +511,28 @@ function deserialize_aggregator_UpdateSecretResp(buffer_arg) {
   return avs_pb.UpdateSecretResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_WithdrawFundsReq(arg) {
+  if (!(arg instanceof avs_pb.WithdrawFundsReq)) {
+    throw new Error('Expected argument of type aggregator.WithdrawFundsReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_WithdrawFundsReq(buffer_arg) {
+  return avs_pb.WithdrawFundsReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_WithdrawFundsResp(arg) {
+  if (!(arg instanceof avs_pb.WithdrawFundsResp)) {
+    throw new Error('Expected argument of type aggregator.WithdrawFundsResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_WithdrawFundsResp(buffer_arg) {
+  return avs_pb.WithdrawFundsResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 
 var AggregatorService = exports.AggregatorService = {
   // Exchange for an Auth Key to authenticate in subsequent request
@@ -581,6 +603,18 @@ getNonce: {
     requestDeserialize: deserialize_aggregator_ListWalletReq,
     responseSerialize: serialize_aggregator_ListWalletResp,
     responseDeserialize: deserialize_aggregator_ListWalletResp,
+  },
+  // Withdraw funds from a smart wallet using UserOp
+withdrawFunds: {
+    path: '/aggregator.Aggregator/WithdrawFunds',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.WithdrawFundsReq,
+    responseType: avs_pb.WithdrawFundsResp,
+    requestSerialize: serialize_aggregator_WithdrawFundsReq,
+    requestDeserialize: deserialize_aggregator_WithdrawFundsReq,
+    responseSerialize: serialize_aggregator_WithdrawFundsResp,
+    responseDeserialize: deserialize_aggregator_WithdrawFundsResp,
   },
   // Task Management Operation
 createTask: {

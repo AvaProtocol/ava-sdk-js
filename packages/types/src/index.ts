@@ -18,5 +18,7 @@ export type {
   GetExecutionStatsResponse,
   GetExecutionStatsOptions,
   TriggerWorkflowResponse,
-  ExecutionStep
+  ExecutionStep,
+  WithdrawFundsRequest,
+  WithdrawFundsResponse
 } from "./api";

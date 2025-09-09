@@ -95,7 +95,7 @@ describe("secret Tests", () => {
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
 
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
@@ -168,7 +168,7 @@ describe("secret Tests", () => {
       createdSecretMap.set(inputName, false);
 
       // Verify that the secret creation API call succeeded
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
 
       // Note: Due to server-side eventual consistency issues, newly created secrets
       // may not immediately appear in getSecrets() responses. However, the secret
@@ -176,7 +176,7 @@ describe("secret Tests", () => {
 
       // Verify we can delete the secret (which also confirms it was created)
       const deleteResult = await client.deleteSecret(inputName);
-      expect(deleteResult.success).toBe(true);
+      expect(deleteResult.success).toBeTruthy();
     });
 
     it("create secret at workflow level", async () => {
@@ -188,7 +188,7 @@ describe("secret Tests", () => {
       createdSecretMap.set(inputName, false);
 
       // Verify that the secret creation API call succeeded
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
 
       // Note: Due to server-side eventual consistency issues, newly created secrets
       // may not immediately appear in getSecrets() responses. However, the secret
@@ -198,7 +198,7 @@ describe("secret Tests", () => {
       const deleteResult = await client.deleteSecret(inputName, {
         workflowId: inputWorkflowId,
       });
-      expect(deleteResult.success).toBe(true);
+      expect(deleteResult.success).toBeTruthy();
     });
 
     // TODO: add test for create secret at org level
@@ -236,8 +236,8 @@ describe("secret Tests", () => {
       );
       createdSecretMap.set(inputName2, false);
 
-      expect(createResultClient1.success).toBe(true);
-      expect(createResultClient2.success).toBe(true);
+      expect(createResultClient1.success).toBeTruthy();
+      expect(createResultClient2.success).toBeTruthy();
 
       // now we list the secret and it should contain the above
       const listResultClient1 = await client.getSecrets();
@@ -260,11 +260,11 @@ describe("secret Tests", () => {
       createdSecretMap.set(inputName, false);
 
       // Verify secret creation succeeded
-      expect(createResult.success).toBe(true);
+      expect(createResult.success).toBeTruthy();
 
       // Test secret deletion
       const deleted = await client.deleteSecret(inputName);
-      expect(deleted.success).toBe(true);
+      expect(deleted.success).toBeTruthy();
 
       // Note: Due to server-side eventual consistency issues, we cannot reliably
       // verify that the secret disappears from getSecrets() immediately after deletion.
@@ -290,18 +290,18 @@ describe("secret Tests", () => {
       createdSecretMap.set(workflowLevelName, false);
 
       // Verify both secret creations succeeded
-      expect(userResult.success).toBe(true);
-      expect(workflowResult.success).toBe(true);
+      expect(userResult.success).toBeTruthy();
+      expect(workflowResult.success).toBeTruthy();
 
       // Test deleting the workflow-level secret
       const deleted = await client.deleteSecret(workflowLevelName, {
         workflowId: inputWorkflowId,
       });
-      expect(deleted.success).toBe(true);
+      expect(deleted.success).toBeTruthy();
 
       // Test deleting the user-level secret
       const userDeleted = await client.deleteSecret(userLevelName);
-      expect(userDeleted.success).toBe(true);
+      expect(userDeleted.success).toBeTruthy();
 
       // Note: Due to server-side eventual consistency issues, we cannot reliably
       // verify secret presence/absence in getSecrets() immediately after operations.
@@ -319,15 +319,15 @@ describe("secret Tests", () => {
       createdSecretMap.set(inputName, false);
 
       // Verify secret creation succeeded
-      expect(createResult.success).toBe(true);
+      expect(createResult.success).toBeTruthy();
 
       // Test secret update
       const updated = await client.updateSecret(inputName, "newvalue");
-      expect(updated.success).toBe(true);
+      expect(updated.success).toBeTruthy();
 
       // Clean up the secret
       const deleteResult = await client.deleteSecret(inputName);
-      expect(deleteResult.success).toBe(true);
+      expect(deleteResult.success).toBeTruthy();
 
       // Note: Due to server-side eventual consistency issues, we cannot reliably
       // verify secret presence/absence in getSecrets() immediately after operations.
@@ -370,7 +370,7 @@ describe("secret Tests", () => {
         return;
       }
 
-      expect(firstPage.pageInfo.hasNextPage).toBe(true);
+      expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
 
       const secondOptions = {
         after: firstPage.pageInfo.endCursor,
@@ -458,7 +458,7 @@ describe("secret Tests", () => {
       const result = await client.createSecret(testName, testValue, {
         workflowId,
       });
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
 
       createdSecretMap.set(testName, false);
 
@@ -469,14 +469,13 @@ describe("secret Tests", () => {
       });
 
       // Verify the API call succeeds and returns a valid response structure
-      expect(filteredSecrets).toBeDefined();
       expect(Array.isArray(filteredSecrets.items)).toBe(true);
       expect(typeof filteredSecrets.pageInfo.hasNextPage).toBe("boolean");
       expect(typeof filteredSecrets.pageInfo.hasPreviousPage).toBe("boolean");
 
       // Clean up the secret
       const deleteResult = await client.deleteSecret(testName, { workflowId });
-      expect(deleteResult.success).toBe(true);
+      expect(deleteResult.success).toBeTruthy();
 
       // Note: Due to server-side eventual consistency issues, we cannot reliably
       // verify that the newly created secret appears in getSecrets() immediately.

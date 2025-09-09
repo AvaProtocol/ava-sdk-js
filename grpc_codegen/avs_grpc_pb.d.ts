@@ -15,6 +15,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     getWallet: IAggregatorService_IGetWallet;
     setWallet: IAggregatorService_ISetWallet;
     listWallets: IAggregatorService_IListWallets;
+    withdrawFunds: IAggregatorService_IWithdrawFunds;
     createTask: IAggregatorService_ICreateTask;
     listTasks: IAggregatorService_IListTasks;
     getTask: IAggregatorService_IGetTask;
@@ -90,6 +91,15 @@ interface IAggregatorService_IListWallets extends grpc.MethodDefinition<avs_pb.L
     requestDeserialize: grpc.deserialize<avs_pb.ListWalletReq>;
     responseSerialize: grpc.serialize<avs_pb.ListWalletResp>;
     responseDeserialize: grpc.deserialize<avs_pb.ListWalletResp>;
+}
+interface IAggregatorService_IWithdrawFunds extends grpc.MethodDefinition<avs_pb.WithdrawFundsReq, avs_pb.WithdrawFundsResp> {
+    path: "/aggregator.Aggregator/WithdrawFunds";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.WithdrawFundsReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.WithdrawFundsReq>;
+    responseSerialize: grpc.serialize<avs_pb.WithdrawFundsResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.WithdrawFundsResp>;
 }
 interface IAggregatorService_ICreateTask extends grpc.MethodDefinition<avs_pb.CreateTaskReq, avs_pb.CreateTaskResp> {
     path: "/aggregator.Aggregator/CreateTask";
@@ -281,6 +291,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     getWallet: grpc.handleUnaryCall<avs_pb.GetWalletReq, avs_pb.GetWalletResp>;
     setWallet: grpc.handleUnaryCall<avs_pb.SetWalletReq, avs_pb.GetWalletResp>;
     listWallets: grpc.handleUnaryCall<avs_pb.ListWalletReq, avs_pb.ListWalletResp>;
+    withdrawFunds: grpc.handleUnaryCall<avs_pb.WithdrawFundsReq, avs_pb.WithdrawFundsResp>;
     createTask: grpc.handleUnaryCall<avs_pb.CreateTaskReq, avs_pb.CreateTaskResp>;
     listTasks: grpc.handleUnaryCall<avs_pb.ListTasksReq, avs_pb.ListTasksResp>;
     getTask: grpc.handleUnaryCall<avs_pb.IdReq, avs_pb.Task>;
@@ -322,6 +333,9 @@ export interface IAggregatorClient {
     listWallets(request: avs_pb.ListWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
+    withdrawFunds(request: avs_pb.WithdrawFundsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.WithdrawFundsResp) => void): grpc.ClientUnaryCall;
+    withdrawFunds(request: avs_pb.WithdrawFundsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.WithdrawFundsResp) => void): grpc.ClientUnaryCall;
+    withdrawFunds(request: avs_pb.WithdrawFundsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.WithdrawFundsResp) => void): grpc.ClientUnaryCall;
     createTask(request: avs_pb.CreateTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateTaskResp) => void): grpc.ClientUnaryCall;
     createTask(request: avs_pb.CreateTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateTaskResp) => void): grpc.ClientUnaryCall;
     createTask(request: avs_pb.CreateTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateTaskResp) => void): grpc.ClientUnaryCall;
@@ -404,6 +418,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public listWallets(request: avs_pb.ListWalletReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
     public listWallets(request: avs_pb.ListWalletReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ListWalletResp) => void): grpc.ClientUnaryCall;
+    public withdrawFunds(request: avs_pb.WithdrawFundsReq, callback: (error: grpc.ServiceError | null, response: avs_pb.WithdrawFundsResp) => void): grpc.ClientUnaryCall;
+    public withdrawFunds(request: avs_pb.WithdrawFundsReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.WithdrawFundsResp) => void): grpc.ClientUnaryCall;
+    public withdrawFunds(request: avs_pb.WithdrawFundsReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.WithdrawFundsResp) => void): grpc.ClientUnaryCall;
     public createTask(request: avs_pb.CreateTaskReq, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateTaskResp) => void): grpc.ClientUnaryCall;
     public createTask(request: avs_pb.CreateTaskReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateTaskResp) => void): grpc.ClientUnaryCall;
     public createTask(request: avs_pb.CreateTaskReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.CreateTaskResp) => void): grpc.ClientUnaryCall;

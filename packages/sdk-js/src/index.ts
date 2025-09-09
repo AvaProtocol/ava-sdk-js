@@ -51,6 +51,8 @@ import {
   type GetExecutionStatsOptions,
   ExecutionStatus,
   type TriggerWorkflowResponse,
+  type WithdrawFundsRequest,
+  type WithdrawFundsResponse,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -532,6 +534,50 @@ class Client extends BaseClient {
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
       canceledTaskCount: result.getCanceledTaskCount(),
+    };
+  }
+
+  /**
+   * Withdraw funds from a smart wallet using UserOp
+   * @param {WithdrawFundsRequest} withdrawRequest - The withdraw request parameters
+   * @param {string} withdrawRequest.recipientAddress - The recipient address to send funds to
+   * @param {string} withdrawRequest.amount - The amount to withdraw in wei for ETH or smallest token unit for ERC20
+   * @param {string} withdrawRequest.token - Token type: "ETH" for native ETH, or contract address for ERC20 tokens
+   * @param {string} withdrawRequest.smartWalletAddress - Required: Smart wallet address to withdraw from (must be from user's getWallet() call)
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<WithdrawFundsResponse>} - The response from the withdraw operation
+   */
+  async withdrawFunds(
+    {
+      recipientAddress,
+      amount,
+      token,
+      smartWalletAddress,
+    }: WithdrawFundsRequest,
+    options?: RequestOptions
+  ): Promise<WithdrawFundsResponse> {
+    const request = new avs_pb.WithdrawFundsReq();
+    request.setRecipientAddress(recipientAddress);
+    request.setAmount(amount);
+    request.setToken(token);
+    request.setSmartWalletAddress(smartWalletAddress);
+
+    const result = await this.sendGrpcRequest<
+      avs_pb.WithdrawFundsResp,
+      avs_pb.WithdrawFundsReq
+    >("withdrawFunds", request, options);
+
+    return {
+      success: result.getSuccess(),
+      status: result.getStatus(),
+      message: result.getMessage(),
+      userOpHash: result.getUserOpHash() || undefined,
+      transactionHash: result.getTransactionHash() || undefined,
+      submittedAt: result.getSubmittedAt() || undefined,
+      smartWalletAddress: result.getSmartWalletAddress(),
+      recipientAddress: result.getRecipientAddress(),
+      amount: result.getAmount(),
+      token: result.getToken(),
     };
   }
 
@@ -1487,6 +1533,8 @@ export type {
   GetTokenMetadataRequest,
   GetTokenMetadataResponse,
   TokenSource,
+  WithdrawFundsRequest,
+  WithdrawFundsResponse,
 } from "@avaprotocol/types";
 
 // Re-export timeout-related types and presets

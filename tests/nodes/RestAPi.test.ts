@@ -76,7 +76,7 @@ describe("RestAPI Node Tests", () => {
         util.inspect(response, { depth: null, colors: true })
       );
 
-      expect(response.success).toBe(true);
+      expect(response.success).toBeTruthy();
       expect(response.error).toBe("");
 
       if (response.data) {
@@ -105,7 +105,7 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(response.success).toBe(true);
+      expect(response.success).toBeTruthy();
       if (response.data) {
         const data = response.data as RestApiResponse;
         expect(data.status).toBe(200);
@@ -125,7 +125,7 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(response.success).toBe(false); // HTTP 404 should be categorized as failed
+      expect(response.success).toBeFalsy(); // HTTP 404 should be categorized as failed
 
       // NOTE: Backend currently doesn't populate detailed response data for failed runNodeWithInputs calls
       // This is different from simulateWorkflow which does return full status information
@@ -161,14 +161,13 @@ describe("RestAPI Node Tests", () => {
         },
       });
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + REST API node
 
       const restApiStep = simulation.steps.find(
         (step) => step.id === restApiNode.id
       );
-      expect(restApiStep).toBeDefined();
-      expect(restApiStep!.success).toBe(true);
+            expect(restApiStep!.success).toBeTruthy();
 
       const output = restApiStep!.output as RestApiResponse;
       expect(output.status).toBe(200);
@@ -205,8 +204,7 @@ describe("RestAPI Node Tests", () => {
       const restApiStep = simulation.steps.find(
         (step) => step.id === restApiNode.id
       );
-      expect(restApiStep).toBeDefined();
-      expect(restApiStep!.success).toBe(false); // HTTP 500 should be categorized as failed
+            expect(restApiStep!.success).toBeFalsy(); // HTTP 500 should be categorized as failed
 
       const output = restApiStep!.output as RestApiResponse;
       expect(output.status).toBe(500);
@@ -274,7 +272,7 @@ describe("RestAPI Node Tests", () => {
           throw new Error("No corresponding REST API step found.");
         }
 
-        expect(restApiStep.success).toBe(true);
+        expect(restApiStep.success).toBeTruthy();
         const output = restApiStep.output as RestApiResponse;
         expect(output.status).toBe(200);
         expect(output.data).toBeDefined();
@@ -417,7 +415,7 @@ describe("RestAPI Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.error).toBe("");
       expect(result.data).toBeDefined();
       if (result.data && typeof result.data === "object") {
@@ -451,8 +449,8 @@ describe("RestAPI Node Tests", () => {
       });
 
       // 204 should succeed (2xx), but 500 should fail (5xx)
-      expect(emptyResponse.success).toBe(true);
-      expect(errorResponse.success).toBe(false);
+      expect(emptyResponse.success).toBeTruthy();
+      expect(errorResponse.success).toBeFalsy();
 
       if (emptyResponse.data && typeof emptyResponse.data === "object") {
         const emptyData = emptyResponse.data as RestApiResponse;

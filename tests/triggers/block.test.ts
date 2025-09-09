@@ -210,9 +210,8 @@ describe("BlockTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
     });
@@ -230,9 +229,8 @@ describe("BlockTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
     });
@@ -250,9 +248,8 @@ describe("BlockTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
     });
@@ -270,9 +267,8 @@ describe("BlockTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBe(true);
+            expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
     });
@@ -309,14 +305,13 @@ describe("BlockTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
         (step) => step.id === blockTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
 
       const output = triggerStep!.output as Record<string, unknown>;
       expect(output).toBeDefined();
@@ -347,12 +342,11 @@ describe("BlockTrigger Tests", () => {
         },
       });
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const triggerStep = simulation.steps.find(
         (step) => step.id === blockTrigger.id
       );
-      expect(triggerStep).toBeDefined();
-      expect(triggerStep!.success).toBe(true);
+            expect(triggerStep!.success).toBeTruthy();
     });
   });
 
@@ -392,7 +386,7 @@ describe("BlockTrigger Tests", () => {
         });
 
         expect(triggerResult).toBeDefined();
-        // expect(triggerResult.success).toBe(true); // TODO: Check if triggerWorkflow returns success property
+        // expect(triggerResult.success).toBeTruthy(); // TODO: Check if triggerWorkflow returns success property
 
         // Check executions
         const executions = await client.getExecutions([workflowId], {
@@ -491,10 +485,10 @@ describe("BlockTrigger Tests", () => {
         // Compare response formats
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
         // Verify consistent structure
         const directOutput = directResponse.data as Record<string, any>;
@@ -605,12 +599,12 @@ describe("BlockTrigger Tests", () => {
         // Test step metadata
         expect(simulatedStep!.type).toBe("blockTrigger");
         expect(simulatedStep!.name).toBe("consistency_test"); // Should match the trigger name
-        expect(simulatedStep!.success).toBe(true);
+        expect(simulatedStep!.success).toBeTruthy();
         expect(simulatedStep!.error).toBe("");
 
         expect(executedStep!.type).toBe("blockTrigger");
         expect(executedStep!.name).toBe("consistency_test"); // Should match the trigger name
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
         expect(executedStep!.error).toBe("");
       } finally {
         // Ensure cleanup happens regardless of test success/failure
@@ -662,7 +656,7 @@ describe("BlockTrigger Tests", () => {
         triggerConfig: blockTriggerConfig,
       });
 
-      expect(directResponse.success).toBe(true);
+      expect(directResponse.success).toBeTruthy();
       expect(directResponse.data).toBeDefined();
 
       const blockData = directResponse.data as Record<string, any>;
@@ -676,19 +670,16 @@ describe("BlockTrigger Tests", () => {
       expect(typeof blockData.blockNumber).toBe("number");
       expect(blockData.blockNumber).toBeGreaterThan(0);
 
-      expect(blockData.blockHash).toBeDefined();
-      expect(typeof blockData.blockHash).toBe("string");
+            expect(typeof blockData.blockHash).toBe("string");
       expect(blockData.blockHash).toMatch(/^0x[a-fA-F0-9]+$/);
 
       expect(blockData.timestamp).toBeDefined();
       expect(typeof blockData.timestamp).toBe("number");
       expect(blockData.timestamp).toBeGreaterThan(0);
 
-      expect(blockData.parentHash).toBeDefined();
-      expect(typeof blockData.parentHash).toBe("string");
+            expect(typeof blockData.parentHash).toBe("string");
 
-      expect(blockData.difficulty).toBeDefined();
-      expect(typeof blockData.difficulty).toBe("string");
+            expect(typeof blockData.difficulty).toBe("string");
 
       expect(blockData.gasLimit).toBeDefined();
       expect(typeof blockData.gasLimit).toBe("number");
@@ -721,7 +712,7 @@ describe("BlockTrigger Tests", () => {
         util.inspect(response, { depth: null, colors: true })
       );
 
-      expect(response.success).toBe(true);
+      expect(response.success).toBeTruthy();
       expect(response.data).toBeDefined();
       expect((response.data as Record<string, any>).blockNumber).toBeGreaterThan(0);
     });
@@ -739,7 +730,7 @@ describe("BlockTrigger Tests", () => {
         util.inspect(response, { depth: null, colors: true })
       );
 
-      expect(response.success).toBe(true);
+      expect(response.success).toBeTruthy();
       expect(response.data).toBeDefined();
       expect((response.data as Record<string, any>).blockNumber).toBeGreaterThan(0);
     });

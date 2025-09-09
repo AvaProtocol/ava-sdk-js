@@ -17,9 +17,10 @@ import {
   getBlockNumber,
   SALT_BUCKET_SIZE,
   resultIndicatesAllWritesSuccessful,
+  describeIfSepolia,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig, getEnvironment, isSepolia } from "../utils/envalid";
+import { getConfig } from "../utils/envalid";
 const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
@@ -87,8 +88,6 @@ const SEPOLIA_ORACLE_CONFIG = {
   ],
 };
 
-const env = getEnvironment();
-const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
 describeIfSepolia("ContractRead Node Tests", () => {
   let client: Client;
   let eoaAddress: string;
@@ -115,11 +114,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should read latest round data from Chainlink oracle", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -164,8 +158,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
       // Handle flattened object format (new design)
@@ -194,10 +187,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should read multiple methods from contract", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -221,8 +210,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       
       // Handle flattened object format (new design)
@@ -253,11 +241,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should handle invalid contract address", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -308,17 +291,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       // This should either fail or return error results
     });
 
     test("should read oracle description method", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -361,8 +338,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result).toBeDefined();
-      expect(typeof result.success).toBe("boolean");
+            expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
       
       // Handle flattened object format (new design)
@@ -382,12 +358,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting using applyToFields", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -441,7 +412,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       // success must reflect per-method metadata/receipt outcomes
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -490,8 +461,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
       expect(latestRoundMetadata).toBeDefined();
 
       // Verify metadata structure
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(latestRoundMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(latestRoundMetadata!.success).toBeTruthy();
       expect(decimalsMetadata!.methodName).toBe("decimals");
       expect(latestRoundMetadata!.methodName).toBe("latestRoundData");
       expect(decimalsMetadata!.methodABI).toBeDefined();
@@ -509,16 +480,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      // USDC contract on Sepolia - test simplified applyToFields syntax
+// USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: tokens?.USDC?.address, // Due to the isSepolia check, tokens.USDC should be defined
+          contractAddress: tokens?.USDC?.address, // USDC should be available in Sepolia/dev environment
           contractAbi: [
             {
               constant: true,
@@ -567,7 +533,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
       );
 
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
@@ -616,17 +582,12 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       expect(decimalsMetadata).toBeDefined();
       expect(totalSupplyMetadata).toBeDefined();
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(totalSupplyMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(totalSupplyMetadata!.success).toBeTruthy();
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -667,12 +628,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -714,12 +674,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with contract read", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -753,14 +708,13 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + contract read node
 
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -788,12 +742,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should simulate workflow with decimal formatting using applyToFields", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -834,12 +783,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -868,12 +816,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract read", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -950,7 +893,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           throw new Error("No corresponding contract read step found.");
         }
 
-        expect(contractReadStep.success).toBe(true);
+        expect(contractReadStep.success).toBeTruthy();
         console.log(
           "Deploy + trigger contract read step output:",
           util.inspect(contractReadStep.output, { depth: null, colors: true })
@@ -977,12 +920,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with applyToFields decimal formatting", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1066,7 +1004,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           throw new Error("No corresponding contract read step found.");
         }
 
-        expect(contractReadStep.success).toBe(true);
+        expect(contractReadStep.success).toBeTruthy();
         console.log(
           "Deploy + trigger contract read with applyToFields step output:",
           util.inspect(contractReadStep.output, { depth: null, colors: true })
@@ -1119,12 +1057,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1257,10 +1190,10 @@ describeIfSepolia("ContractRead Node Tests", () => {
         );
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
         // Verify consistent structure
         const directOutput = directResponse.data; // runNodeWithInputs returns flattened data
@@ -1304,12 +1237,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle non-existent method gracefully", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1358,7 +1286,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       expect(result).toBeDefined();
       // Backend fails the entire node execution for invalid method signatures
-      expect(result.success).toBe(false);
+      expect(result.success).toBeFalsy();
       expect(result.error).toBeDefined();
     });
   });
@@ -1473,12 +1401,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1530,7 +1453,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -1579,8 +1502,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
       expect(latestRoundMetadata).toBeDefined();
 
       // Verify metadata structure
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(latestRoundMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(latestRoundMetadata!.success).toBeTruthy();
       expect(decimalsMetadata!.methodName).toBe("decimals");
       expect(latestRoundMetadata!.methodName).toBe("latestRoundData");
       expect(decimalsMetadata!.methodABI).toBeDefined();
@@ -1598,16 +1521,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      // USDC contract on Sepolia - test simplified applyToFields syntax
+// USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: tokens?.USDC?.address, // Due to the isSepolia check, tokens.USDC should be defined
+          contractAddress: tokens?.USDC?.address, // USDC should be available in Sepolia/dev environment
           contractAbi: [
             {
               constant: true,
@@ -1655,7 +1573,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBeTruthy();
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
@@ -1704,17 +1622,12 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
       expect(decimalsMetadata).toBeDefined();
       expect(totalSupplyMetadata).toBeDefined();
-      expect(decimalsMetadata!.success).toBe(true);
-      expect(totalSupplyMetadata!.success).toBe(true);
+      expect(decimalsMetadata!.success).toBeTruthy();
+      expect(totalSupplyMetadata!.success).toBeTruthy();
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -1755,12 +1668,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-      expect(contractReadStep).toBeDefined();
-      expect(contractReadStep!.success).toBe(true);
+            expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();

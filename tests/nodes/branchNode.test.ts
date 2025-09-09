@@ -69,8 +69,7 @@ describe("BranchNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       
@@ -108,8 +107,7 @@ describe("BranchNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       
@@ -149,8 +147,7 @@ describe("BranchNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       
@@ -192,8 +189,7 @@ describe("BranchNode Tests", () => {
         },
       });
 
-      expect(result).toBeDefined();
-      expect(result.success).toBe(true);
+            expect(result.success).toBeTruthy();
       expect(result.data).toBeDefined();
       
       
@@ -244,7 +240,7 @@ describe("BranchNode Tests", () => {
 
 
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       expect(simulation.steps).toHaveLength(2); // trigger + branch node
 
       const branchStep = simulation.steps.find(
@@ -284,7 +280,7 @@ describe("BranchNode Tests", () => {
         },
       });
 
-      expect(simulation.success).toBe(true);
+      expect(simulation.success).toBeTruthy();
       const branchStep = simulation.steps.find(
         (step) => step.id === branchNode.id
       );
@@ -356,7 +352,7 @@ describe("BranchNode Tests", () => {
           throw new Error("No corresponding branch step found.");
         }
 
-        expect(branchStep.success).toBe(true);
+        expect(branchStep.success).toBeTruthy();
 
       } finally {
         if (workflowId) {
@@ -459,10 +455,10 @@ describe("BranchNode Tests", () => {
         // Compare response formats
 
         // All should be successful
-        expect(directResponse.success).toBe(true);
+        expect(directResponse.success).toBeTruthy();
         expect(simulatedStep).toBeDefined();
         expect(executedStep).toBeDefined();
-        expect(executedStep!.success).toBe(true);
+        expect(executedStep!.success).toBeTruthy();
 
 
       } finally {

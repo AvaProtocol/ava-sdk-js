@@ -216,5 +216,3 @@ export const getEnvironment = () => validatedEnv.TEST_ENV;
 
 // Export the validation function for use in other files
 export const validateEnv = () => validatedEnv;
-
-export const isSepolia = () => getConfig().chainId === "11155111";

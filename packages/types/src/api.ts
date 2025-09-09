@@ -259,3 +259,25 @@ export interface SimulateWorkflowRequest {
   edges: Array<EdgeProps>;
   inputVariables?: Record<string, any>;
 }
+
+// Withdraw funds request interface
+export interface WithdrawFundsRequest {
+  recipientAddress: string;
+  amount: string; // Amount in wei for ETH or smallest token unit for ERC20
+  token: string; // "ETH" for native ETH, or contract address for ERC20 tokens
+  smartWalletAddress: string; // Required: Smart wallet address to withdraw from (must be from user's getWallet() call)
+}
+
+// Withdraw funds response interface
+export interface WithdrawFundsResponse {
+  success: boolean; // Whether the operation completed successfully
+  status: string; // Status description: "pending", "submitted", "failed"
+  message: string; // Human-readable message about what happened
+  userOpHash?: string; // UserOperation hash from bundler
+  transactionHash?: string; // Blockchain transaction hash (if available)
+  submittedAt?: number; // Unix timestamp when UserOp was submitted
+  smartWalletAddress: string; // Smart wallet address used for withdrawal
+  recipientAddress: string; // Recipient address
+  amount: string; // Amount withdrawn
+  token: string; // Token type (ETH or contract address)
+}
