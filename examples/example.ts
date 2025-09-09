@@ -1172,28 +1172,41 @@ const main = async (cmd: string) => {
     case "getWallets": {
       const targetAddress = commandArgs.args[0]; // Optional address argument
       
-      if (avsApiKey) {
-        if (!targetAddress) {
-          console.error("❌ Error: Target address is required when using API key authentication");
-          console.error("   Usage: yarn start --avs-target <network> getWallets <address>");
-          console.error("   Example: yarn start --avs-target base getWallets 0xB1077B7c62844eFBA104d767127a5DB6c0F5A0CC");
+      if (targetAddress) {
+        // Address provided - use API key authentication for cross-user queries
+        if (!avsApiKey) {
+          console.error("❌ Error: API key is required to query wallets for specific addresses");
+          console.error("   To query wallets for a specific address, set AVS_API_KEY in your environment");
+          console.error("   To query your own wallets, use: yarn start getWallets (without address)");
           break;
         }
-        // Re-authenticate with the target address for API key auth
         console.log(`🔍 Querying wallets for address: ${targetAddress} (using API key)`);
         await generateApiToken(targetAddress);
-      } else if (privateKey) {
-        if (targetAddress) {
-          // For private key auth, check if the address matches our wallet
-          const ourAddress = await getWalletAddress(privateKey);
-          if (targetAddress.toLowerCase() !== ourAddress.toLowerCase()) {
-            console.error(`❌ Error: You can only query wallets for your own address (${ourAddress}) when using private key authentication`);
-            console.error(`   To query wallets for ${targetAddress}, you need API key authentication`);
-            break;
-          }
-          console.log(`🔍 Querying wallets for your address: ${targetAddress}`);
-        } else {
-          console.log("🔍 Getting wallets for authenticated user");
+      } else {
+        // No address provided - use private key authentication for own wallets
+        if (!privateKey) {
+          console.error("❌ Error: TEST_PRIVATE_KEY is required for signature-based authentication");
+          console.error("   To query your own wallets, set TEST_PRIVATE_KEY in your environment");
+          console.error("   To query specific addresses, use: yarn start getWallets <address> (requires AVS_API_KEY)");
+          break;
+        }
+        console.log("🔍 Getting wallets for authenticated user (using private key)");
+        if (!authKey) {
+          // Authenticate with private key if not already done
+          console.log("🔑 Using signature-based authentication");
+          const wallet = new ethers.Wallet(privateKey);
+          const eoaAddress = wallet.address;
+          
+          const { message } = await client.getSignatureFormat(eoaAddress);
+          const signature = await generateSignature(message, privateKey);
+          
+          const result = await client.authWithSignature({
+            message,
+            signature,
+          } as any);
+          
+          client.setAuthKey(result.authKey);
+          authKey = result.authKey;
         }
       }
       
@@ -1210,13 +1223,47 @@ const main = async (cmd: string) => {
     case "getWallet": {
       const salt = commandArgs.args[0];
       const factoryAddress = commandArgs.args[1]; // Optional factory address
+      
+      if (!salt) {
+        console.error("❌ Error: Salt is required");
+        console.error("   Usage: yarn start getWallet <salt> [factory-address]");
+        console.error("   Example: yarn start getWallet 0");
+        console.error("   Example: yarn start getWallet 1 0xFactoryAddress");
+        break;
+      }
+      
+      if (!privateKey) {
+        console.log("❌ TEST_PRIVATE_KEY is required for getWallet");
+        break;
+      }
+      
+      // Authenticate if not already done
+      if (!authKey) {
+        console.log("🔑 Authenticating with signature-based auth...");
+        const wallet = new ethers.Wallet(privateKey);
+        const eoaAddress = wallet.address;
+        
+        const { message } = await client.getSignatureFormat(eoaAddress);
+        const signature = await generateSignature(message, privateKey);
+        
+        const result = await client.authWithSignature({
+          message,
+          signature,
+        } as any);
+        
+        client.setAuthKey(result.authKey);
+        authKey = result.authKey;
+        owner = eoaAddress;
+      }
+      
+      console.log(`📝 Creating/getting smart wallet with salt ${salt}...`);
       const smartWalletAddress = await client.getWallet({
         salt,
         factoryAddress,
       });
 
       console.log(
-        `A new smart wallet with salt ${salt} is created for ${owner}:\nResponse:\n`,
+        `✅ Smart wallet with salt ${salt} for ${owner}:\n`,
         smartWalletAddress
       );
       break;
@@ -1378,12 +1425,101 @@ const main = async (cmd: string) => {
       demonstrateInputDataHelpers();
       break;
 
+    case "withdraw": {
+      if (!privateKey) {
+        console.log("❌ TEST_PRIVATE_KEY is required for withdrawal testing");
+        break;
+      }
+      
+      // Authenticate first
+      if (!authKey) {
+        console.log("🔑 Authenticating with signature-based auth...");
+        const wallet = new ethers.Wallet(privateKey);
+        const eoaAddress = wallet.address;
+        
+        const { message } = await client.getSignatureFormat(eoaAddress);
+        const signature = await generateSignature(message, privateKey);
+        
+        const result = await client.authWithSignature({
+          message,
+          signature,
+        } as any);
+        
+        client.setAuthKey(result.authKey);
+        authKey = result.authKey;
+        owner = eoaAddress;
+      }
+      
+      // Smart parameter parsing: detect if first arg is amount (number) or address (0x...)
+      let recipientAddress = owner; // Default to EOA owner
+      let amountInEth = "0.01"; // Default 0.01 ETH
+      let token = "ETH"; // Default token
+      
+      if (commandArgs.args.length > 0) {
+        const firstArg = commandArgs.args[0];
+        if (firstArg.startsWith("0x")) {
+          // First arg is an address
+          recipientAddress = firstArg;
+          amountInEth = commandArgs.args[1] || "0.01";
+          token = commandArgs.args[2] || "ETH";
+        } else {
+          // First arg is amount, use default recipient (EOA owner)
+          amountInEth = firstArg;
+          token = commandArgs.args[1] || "ETH";
+        }
+      }
+      
+      // Convert ETH to wei for API call
+      const amountInWei = ethers.parseEther(amountInEth).toString();
+      
+      try {
+        console.log("🔍 Testing withdrawal flow...");
+        console.log("  Authenticated user:", owner);
+        console.log("  Recipient:", recipientAddress);
+        console.log("  Amount:", `${amountInEth} ETH (${amountInWei} wei)`);
+        console.log("  Token:", token);
+        
+        // First, get the user's wallet (this should create it if it doesn't exist)
+        console.log("📝 Step 1: Getting user's wallet with salt 0...");
+        const wallet = await client.getWallet({ salt: "0" });
+        console.log("✅ Wallet obtained:", wallet.address);
+        
+        // Then attempt withdrawal
+        console.log("💰 Step 2: Attempting withdrawal...");
+        const withdrawRequest = {
+          recipientAddress: recipientAddress,
+          amount: amountInWei, // Use wei amount for API
+          token: token,
+          smartWalletAddress: wallet.address,
+        };
+        
+        console.log("📡 Withdrawal request:", withdrawRequest);
+        
+        const response = await client.withdrawFunds(withdrawRequest, { timeout: { timeout: 180000 } });
+        
+        console.log("✅ Withdrawal response:", {
+          success: response.success,
+          status: response.status,
+          message: response.message,
+          userOpHash: response.userOpHash,
+          transactionHash: response.transactionHash,
+          smartWalletAddress: response.smartWalletAddress,
+        });
+        
+      } catch (error: any) {
+        console.error("❌ Withdrawal failed:", error.message);
+        console.error("   Full error:", error);
+      }
+      break;
+    }
+
     default:
       console.log(`Usage:
 
       getWallet <salt> <factory-address(optional)>:      to create/get a smart wallet with a salt, and optionally a factory contract
       getWallets:                                         to list smart wallet addresses that have been created
       hideAllWallets:                                     to hide all wallets except the default salt:0 wallet
+      withdraw [recipient-address] [amount-eth] [token]:   to test withdrawal functionality (defaults to EOA owner, 0.01 ETH)
       getWorkflows <smart-wallet>,... <cursor> <limit>:  to list all workflows of given smart wallet addresses, with cursor and limit
       getWorkflow <workflow-id>:                          to get workflow detail. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecutions <workflow-id> <cursor> <limit>:       to get workflow execution history. a permission error is thrown if the eoa isn't the smart wallet owner
