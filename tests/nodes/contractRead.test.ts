@@ -17,9 +17,10 @@ import {
   getBlockNumber,
   SALT_BUCKET_SIZE,
   resultIndicatesAllWritesSuccessful,
+  describeIfSepolia,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig, getEnvironment, isSepolia } from "../utils/envalid";
+import { getConfig } from "../utils/envalid";
 const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
@@ -87,8 +88,6 @@ const SEPOLIA_ORACLE_CONFIG = {
   ],
 };
 
-const env = getEnvironment();
-const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
 describeIfSepolia("ContractRead Node Tests", () => {
   let client: Client;
   let eoaAddress: string;
@@ -115,11 +114,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should read latest round data from Chainlink oracle", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -193,10 +187,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should read multiple methods from contract", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -251,11 +241,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should handle invalid contract address", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -311,11 +296,6 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should read oracle description method", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
@@ -378,12 +358,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting using applyToFields", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -505,16 +480,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      // USDC contract on Sepolia - test simplified applyToFields syntax
+// USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: tokens?.USDC?.address, // Due to the isSepolia check, tokens.USDC should be defined
+          contractAddress: tokens?.USDC?.address, // USDC should be available in Sepolia/dev environment
           contractAbi: [
             {
               constant: true,
@@ -617,12 +587,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -709,12 +674,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with contract read", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -782,12 +742,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should simulate workflow with decimal formatting using applyToFields", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -861,12 +816,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract read", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -970,12 +920,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with applyToFields decimal formatting", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1112,12 +1057,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1297,12 +1237,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle non-existent method gracefully", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1466,12 +1401,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1591,16 +1521,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      // USDC contract on Sepolia - test simplified applyToFields syntax
+// USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
-          contractAddress: tokens?.USDC?.address, // Due to the isSepolia check, tokens.USDC should be defined
+          contractAddress: tokens?.USDC?.address, // USDC should be available in Sepolia/dev environment
           contractAbi: [
             {
               constant: true,
@@ -1702,12 +1627,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      if (!isSepolia) {
-        console.log("Skipping test - not on Sepolia chain");
-        return;
-      }
-
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),

@@ -5,9 +5,13 @@ import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import _ from "lodash";
-import { getConfig } from "./envalid";
+import { getConfig, getEnvironment } from "./envalid";
 
 const config = getConfig();
+
+// Environment-based conditional describe function for Sepolia/dev tests
+const env = getEnvironment();
+export const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts

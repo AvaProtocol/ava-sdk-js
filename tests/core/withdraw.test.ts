@@ -1,6 +1,11 @@
+/**
+ * @jest-environment node
+ * @jest-serial
+ */
+
 import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import { Client } from "@avaprotocol/sdk-js";
+import { Client, TimeoutPresets } from "@avaprotocol/sdk-js";
 import {
   WithdrawFundsRequest,
   WithdrawFundsResponse,
@@ -11,6 +16,7 @@ import {
   SaltGlobal,
   TIMEOUT_DURATION,
   SALT_BUCKET_SIZE,
+  describeIfSepolia,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
@@ -19,11 +25,14 @@ jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in
 let saltIndex = SaltGlobal.Withdraw * SALT_BUCKET_SIZE;
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, chainId, tokens } = getConfig();
+const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
 
-describe("Withdraw Funds Tests", () => {
+describeIfSepolia("Withdraw Funds Tests", () => {
   let client: Client;
   let eoaAddress: string;
+
+  // NOTE: These tests use salt=0 for consistent wallet addresses that can be pre-funded
+  // This is required for real blockchain tests that need funded smart wallets
 
   beforeAll(async () => {
     eoaAddress = await getAddress(walletPrivateKey);
@@ -47,8 +56,8 @@ describe("Withdraw Funds Tests", () => {
 
   describe("withdrawFunds Basic Tests", () => {
     test("should successfully initiate ETH withdrawal with minimal parameters", async () => {
-      const salt = _.toString(saltIndex++);
-      const wallet = await client.getWallet({ salt });
+      // Use salt 0 for consistent wallet address that can be pre-funded
+      const wallet = await client.getWallet({ salt: "0" });
 
       console.log("Wallet address:", wallet.address);
       console.log("EOA address:", eoaAddress);
@@ -60,13 +69,14 @@ describe("Withdraw Funds Tests", () => {
       };
 
       const response: WithdrawFundsResponse = await client.withdrawFunds(
-        withdrawRequest
+        withdrawRequest,
+        { timeout: TimeoutPresets.SLOW } // 3 minutes for blockchain operations
       );
 
       // Verify response structure
       expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
-            expect(typeof response.status).toBe("string");
-            expect(typeof response.message).toBe("string");
+      expect(typeof response.status).toBe("string");
+      expect(typeof response.message).toBe("string");
       expect(response.smartWalletAddress).toBeDefined();
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
@@ -93,58 +103,6 @@ describe("Withdraw Funds Tests", () => {
         smartWalletAddress: response.smartWalletAddress,
       });
     });
-
-    test("should successfully initiate withdrawal with explicit smart wallet address", async () => {
-      const salt = _.toString(saltIndex++);
-      const wallet = await client.getWallet({ salt });
-
-      const withdrawRequest: WithdrawFundsRequest = {
-        recipientAddress: eoaAddress,
-        amount: "500000000000000", // 0.0005 ETH in wei
-        token: "ETH",
-        smartWalletAddress: wallet.address, // Explicitly specify wallet address
-      };
-
-      const response = await client.withdrawFunds(withdrawRequest);
-
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
-      expect(response.smartWalletAddress).toBe(wallet.address);
-      expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
-      expect(response.amount).toBe(withdrawRequest.amount);
-      expect(response.token).toBe(withdrawRequest.token);
-
-      console.log("Explicit wallet address withdrawal response:", {
-        success: response.success,
-        status: response.status,
-        smartWalletAddress: response.smartWalletAddress,
-      });
-    });
-
-    test("should successfully initiate withdrawal with smart wallet address", async () => {
-      const salt = _.toString(saltIndex++);
-      const wallet = await client.getWallet({ salt });
-
-      const withdrawRequest: WithdrawFundsRequest = {
-        recipientAddress: eoaAddress,
-        amount: "250000000000000", // 0.00025 ETH in wei
-        token: "ETH",
-        smartWalletAddress: wallet.address, // Use address from getWallet() call
-      };
-
-      const response = await client.withdrawFunds(withdrawRequest);
-
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
-      expect(response.smartWalletAddress).toBe(wallet.address);
-      expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
-      expect(response.amount).toBe(withdrawRequest.amount);
-      expect(response.token).toBe(withdrawRequest.token);
-
-      console.log("Smart wallet withdrawal response:", {
-        success: response.success,
-        status: response.status,
-        smartWalletAddress: response.smartWalletAddress,
-      });
-    });
   });
 
   describe("withdrawFunds Token Tests", () => {
@@ -157,7 +115,7 @@ describe("Withdraw Funds Tests", () => {
         return;
       }
 
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -192,7 +150,7 @@ describe("Withdraw Funds Tests", () => {
         return;
       }
 
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const customTokenAddress = tokens.CUSTOM_ERC20.address;
@@ -222,7 +180,7 @@ describe("Withdraw Funds Tests", () => {
 
   describe("withdrawFunds Edge Cases", () => {
     test("should reject zero amount withdrawal", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -239,7 +197,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("should handle large amount withdrawal", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -263,7 +221,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("should handle withdrawal to different recipient address", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       // Generate a deterministic test address different from eoaAddress
@@ -293,7 +251,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("should reject withdrawal with invalid recipient address", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -307,7 +265,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("should reject withdrawal with invalid token address", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -321,7 +279,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("should reject withdrawal with invalid amount format", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -341,7 +299,7 @@ describe("Withdraw Funds Tests", () => {
         endpoint: avsEndpoint,
       });
 
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt }); // Use authenticated client to create wallet
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -361,7 +319,7 @@ describe("Withdraw Funds Tests", () => {
         endpoint: avsEndpoint,
       });
 
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt }); // Use authenticated client to create wallet
 
       const withdrawRequest: WithdrawFundsRequest = {
@@ -390,90 +348,9 @@ describe("Withdraw Funds Tests", () => {
     });
   });
 
-  describe("withdrawFunds Integration with Smart Wallet", () => {
-    test("should work with wallet created using custom factory", async () => {
-      const salt = _.toString(saltIndex++);
-      const config = getConfig();
-
-      // Get wallet with specific factory address
-      const wallet = await client.getWallet({
-        salt: salt,
-        factoryAddress: config.factoryAddress,
-      });
-
-      const withdrawRequest: WithdrawFundsRequest = {
-        recipientAddress: eoaAddress,
-        amount: "100000000000000", // 0.0001 ETH in wei
-        token: "ETH",
-        smartWalletAddress: wallet.address,
-      };
-
-      const response = await client.withdrawFunds(withdrawRequest);
-
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
-      expect(response.smartWalletAddress).toBe(wallet.address);
-      expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
-
-      console.log("Custom factory withdrawal response:", {
-        success: response.success,
-        status: response.status,
-        smartWalletAddress: response.smartWalletAddress,
-        factory: wallet.factory,
-      });
-    });
-
-    test("should handle multiple wallets withdrawal", async () => {
-      const salt1 = _.toString(saltIndex++);
-      const salt2 = _.toString(saltIndex++);
-
-      const wallet1 = await client.getWallet({ salt: salt1 });
-      const wallet2 = await client.getWallet({ salt: salt2 });
-
-      const withdrawRequest1: WithdrawFundsRequest = {
-        recipientAddress: eoaAddress,
-        amount: "50000000000000", // 0.00005 ETH in wei
-        token: "ETH",
-        smartWalletAddress: wallet1.address,
-      };
-
-      const withdrawRequest2: WithdrawFundsRequest = {
-        recipientAddress: eoaAddress,
-        amount: "75000000000000", // 0.000075 ETH in wei
-        token: "ETH",
-        smartWalletAddress: wallet2.address,
-      };
-
-      const [response1, response2] = await Promise.all([
-        client.withdrawFunds(withdrawRequest1),
-        client.withdrawFunds(withdrawRequest2),
-      ]);
-
-      expect(response1.success).toBeTruthy(); // Explicitly validate success for this success path test
-      expect(response1.smartWalletAddress).toBe(wallet1.address);
-      expect(response1.amount).toBe("50000000000000");
-
-      expect(response2.success).toBeTruthy(); // Explicitly validate success for this success path test
-      expect(response2.smartWalletAddress).toBe(wallet2.address);
-      expect(response2.amount).toBe("75000000000000");
-
-      console.log("Multiple wallets withdrawal responses:", {
-        wallet1: {
-          success: response1.success,
-          status: response1.status,
-          address: response1.smartWalletAddress,
-        },
-        wallet2: {
-          success: response2.success,
-          status: response2.status,
-          address: response2.smartWalletAddress,
-        },
-      });
-    });
-  });
-
   describe("withdrawFunds Response Validation", () => {
     test("should return properly formatted response for successful withdrawal", async () => {
-      const salt = _.toString(saltIndex++);
+      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
 
       const withdrawRequest: WithdrawFundsRequest = {

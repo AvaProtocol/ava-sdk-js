@@ -9,14 +9,12 @@ import {
   SaltGlobal,
   removeCreatedWorkflows,
   SALT_BUCKET_SIZE,
+  describeIfSepolia,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig, getEnvironment } from "../utils/envalid";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(45000);
-const env = getEnvironment();
-const describeIfSepolia =
-  env === "sepolia" || env === "dev" ? describe : describe.skip;
 
 const createdIdMap: Map<string, boolean> = new Map();
 
@@ -354,12 +352,18 @@ describeIfSepolia("EventTrigger Tests", () => {
           {
             addresses: SEPOLIA_TOKEN_ADDRESSES,
             topics: [
-              { values: [TRANSFER_EVENT_SIGNATURE, padAddressForTopic(coreAddress), null] },
+              {
+                values: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  padAddressForTopic(coreAddress),
+                  null,
+                ],
+              },
             ],
           },
         ],
       };
-      
+
       const params = { triggerType: TriggerType.Event, triggerConfig };
       console.log(
         "params:",
@@ -370,8 +374,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         "response:",
         util.inspect(result, { depth: null, colors: true })
       );
-            expect(typeof result.success).toBe("boolean");
-            expect(result.success).toBeTruthy();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data === null || typeof result.data === "object").toBe(
         true
       );
@@ -394,7 +398,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           },
         ],
       };
-      
+
       const params = { triggerType: TriggerType.Event, triggerConfig };
       console.log(
         "params:",
@@ -405,8 +409,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         "response:",
         util.inspect(result, { depth: null, colors: true })
       );
-            expect(typeof result.success).toBe("boolean");
-            expect(result.success).toBeTruthy();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data === null || typeof result.data === "object").toBe(
         true
       );
@@ -414,7 +418,7 @@ describeIfSepolia("EventTrigger Tests", () => {
 
     test("should run trigger for Transfer events: multiple queries (from/to)", async () => {
       const triggerConfig = createEventTriggerConfig(coreAddress);
-      
+
       const params = { triggerType: TriggerType.Event, triggerConfig };
       console.log(
         "params:",
@@ -425,8 +429,8 @@ describeIfSepolia("EventTrigger Tests", () => {
         "response:",
         util.inspect(result, { depth: null, colors: true })
       );
-            expect(typeof result.success).toBe("boolean");
-            expect(result.success).toBeTruthy();
+      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBeTruthy();
       expect(result.data === null || typeof result.data === "object").toBe(
         true
       );
@@ -451,7 +455,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
 
       expect(result.metadata).toBeDefined();
 
@@ -510,7 +514,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
 
       expect(result.success).toBeTruthy();
       // Data can be null (no events found) or an object (events found)
@@ -518,8 +522,6 @@ describeIfSepolia("EventTrigger Tests", () => {
         true
       );
     });
-
-
 
     test("should deserialize trigger with conditions from response", () => {
       // Create a trigger with conditions
@@ -890,7 +892,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === eventTrigger.id
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
 
       // For simulation, we can accept null output when no events are found
       // This is realistic behavior for event triggers
@@ -928,7 +930,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === eventTrigger.id
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
@@ -992,7 +994,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === eventTrigger.id
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
 
       // Check if the trigger step now has output data with decimal formatting
       const output = triggerStep!.output as Record<string, unknown>;
@@ -1205,7 +1207,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         triggerType: TriggerType.Event,
         triggerConfig: oracleEventConfig,
       };
-      
+
       const runNodeResponse = await client.runTrigger(runNodeParams);
       console.log(
         "🚀 runTrigger response:",
@@ -1236,12 +1238,12 @@ describeIfSepolia("EventTrigger Tests", () => {
       const validateEventResponse = (response: any, mode: string) => {
         console.log(`🔍 Validating ${mode} response structure...`);
 
-                expect(response.success).toBeTruthy();
+        expect(response.success).toBeTruthy();
 
         // Validate data structure (parsed ABI fields)
         expect(response.data).toBeDefined();
         const parsedData = response.data as Record<string, unknown>;
-        
+
         expect(typeof parsedData.current).toBe("string");
         expect(typeof parsedData.roundId).toBe("string");
         expect(typeof parsedData.updatedAt).toBe("string");
@@ -1250,7 +1252,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         // Validate metadata structure (raw event log only)
         expect(response.metadata).toBeDefined();
         const metadata = response.metadata as Record<string, unknown>;
-        
+
         expect(metadata.address).toBe(CHAINLINK_ETH_USD_SEPOLIA);
         expect(Array.isArray(metadata.topics)).toBe(true);
         expect(metadata.topics[0]).toBe(CHAINLINK_ANSWER_UPDATED_SIGNATURE);
@@ -1258,7 +1260,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         expect(typeof metadata.transactionHash).toBe("string");
         expect(typeof metadata.data).toBe("string");
         expect(metadata.chainId).toBe(11155111);
-        
+
         // Ensure NO executionContext in metadata
         expect(metadata.executionContext).toBeUndefined();
 
@@ -1273,7 +1275,9 @@ describeIfSepolia("EventTrigger Tests", () => {
       };
 
       // Extract trigger step from simulate workflow response
-      const triggerStep = simulateResponse.steps.find(step => step.type === "eventTrigger");
+      const triggerStep = simulateResponse.steps.find(
+        (step) => step.type === "eventTrigger"
+      );
       expect(triggerStep).toBeDefined();
 
       // Create a normalized response structure for the trigger step
@@ -1290,22 +1294,31 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       // Validate both responses have consistent structure
       validateEventResponse(runNodeResponse, "runTrigger");
-      
+
       // For simulate workflow, we only validate the data structure since metadata isn't included
       console.log("🔍 Validating simulateWorkflow response structure...");
       expect(normalizedSimulateResponse.success).toBeTruthy();
       expect(normalizedSimulateResponse.data).toBeDefined();
-      
-      const simulateData = normalizedSimulateResponse.data as Record<string, unknown>;
+
+      const simulateData = normalizedSimulateResponse.data as Record<
+        string,
+        unknown
+      >;
       expect(typeof simulateData.current).toBe("string");
       expect(typeof simulateData.roundId).toBe("string");
       expect(typeof simulateData.updatedAt).toBe("string");
       expect(simulateData.eventName).toBe("AnswerUpdated");
-      
-      expect(normalizedSimulateResponse.executionContext.chainId).toBe(11155111);
-      expect(normalizedSimulateResponse.executionContext.isSimulated).toBe(true);
-      expect(normalizedSimulateResponse.executionContext.provider).toBe("tenderly");
-      
+
+      expect(normalizedSimulateResponse.executionContext.chainId).toBe(
+        11155111
+      );
+      expect(normalizedSimulateResponse.executionContext.isSimulated).toBe(
+        true
+      );
+      expect(normalizedSimulateResponse.executionContext.provider).toBe(
+        "tenderly"
+      );
+
       console.log("✅ simulateWorkflow response structure is valid");
 
       // Compare data consistency between modes
@@ -1316,7 +1329,9 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(typeof runNodeData.roundId).toBe(typeof simulateData.roundId);
       expect(typeof runNodeData.updatedAt).toBe(typeof simulateData.updatedAt);
 
-      console.log("🎉 All execution modes return consistent AnswerUpdated event format!");
+      console.log(
+        "🎉 All execution modes return consistent AnswerUpdated event format!"
+      );
     });
 
     test("should return consistent response format across trigger methods", async () => {
@@ -1532,7 +1547,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         // Test Transfer-specific fields
         expect(triggeredOutput.from).toBeDefined();
         expect(triggeredOutput.to).toBeDefined();
-                expect(typeof triggeredOutput.value).toBe("string");
+        expect(typeof triggeredOutput.value).toBe("string");
 
         // Test direct output if it has event data
         if (directOutput && directOutput.eventFound) {
@@ -1646,7 +1661,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       // This should either succeed with broad monitoring or handle gracefully
     });
 
@@ -1683,7 +1698,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
 
       // For specific filters like minting events, no matching events is expected
       expect(result.success).toBeTruthy();
@@ -1758,7 +1773,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
 
       // Should either succeed with broad monitoring or handle gracefully
       expect(result.success).toBeTruthy();
@@ -1791,7 +1806,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
 
       // Should handle empty topics gracefully
       expect(result.success).toBeTruthy();
@@ -1847,7 +1862,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(typeof directResponse.error).toBe("string");
 
       // simulateWorkflow: Always succeeds and provides sample data
-            expect(simulatedStep!.success).toBeTruthy();
+      expect(simulatedStep!.success).toBeTruthy();
       expect(simulatedStep!.output).not.toBe(null);
     });
 
@@ -1881,7 +1896,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
 
       // Should handle gracefully - either succeed with null data or fail with error
       expect(result.success).toBeTruthy();
