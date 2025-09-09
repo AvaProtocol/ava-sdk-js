@@ -74,7 +74,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       );
 
       // Verify response structure
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(typeof response.status).toBe("string");
       expect(typeof response.message).toBe("string");
       expect(response.smartWalletAddress).toBeDefined();
@@ -127,7 +127,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -164,7 +164,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -209,7 +209,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.amount).toBe(withdrawRequest.amount);
 
@@ -238,7 +238,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const response = await client.withdrawFunds(withdrawRequest);
 
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.recipientAddress).toBe(differentRecipient);
       expect(response.amount).toBe(withdrawRequest.amount);
@@ -338,7 +338,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         { authKey: authKey! }
       );
 
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
 
       console.log("Request-level auth withdrawal response:", {
@@ -372,7 +372,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       expect(response).toHaveProperty("token");
 
       // Validate field types
-      expect(response.success).toBeTruthy(); // Explicitly validate success for this success path test
+      expect(response.success).toBeTruthy();
       expect(typeof response.status).toBe("string");
       expect(typeof response.message).toBe("string");
       expect(typeof response.smartWalletAddress).toBe("string");
