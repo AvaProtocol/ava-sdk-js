@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.7.1
+
+### Patch Changes
+
+- aacd631: feat: add execution index field and partial success status support
+- Updated dependencies [aacd631]
+  - @avaprotocol/types@2.5.1
+
 ## 2.7.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.5.1
+
+### Patch Changes
+
+- aacd631: feat: add execution index field and partial success status support
+
 ## 2.5.0
 
 ### Minor Changes
