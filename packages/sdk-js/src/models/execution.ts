@@ -10,6 +10,7 @@ class Execution implements ExecutionProps {
   endAt: number;
   success: boolean;
   error: string;
+  index: number;
   steps: Step[];
 
   constructor(props: ExecutionProps) {
@@ -18,6 +19,7 @@ class Execution implements ExecutionProps {
     this.endAt = props.endAt;
     this.success = props.success;
     this.error = props.error;
+    this.index = props.index;
     this.steps = props.steps.map(s => new Step(s));
   }
 
@@ -32,6 +34,7 @@ class Execution implements ExecutionProps {
       endAt: this.endAt,
       success: this.success,
       error: this.error,
+      index: this.index,
       steps: this.steps.map(step => step.toJson()),
     };
   }
@@ -43,6 +46,7 @@ class Execution implements ExecutionProps {
       endAt: execution.getEndAt(),
       success: execution.getSuccess(),
       error: execution.getError(),
+      index: execution.getIndex(),
       steps: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)) as StepProps[],

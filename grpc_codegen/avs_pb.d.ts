@@ -1701,6 +1701,8 @@ export class Execution extends jspb.Message {
     setSuccess(value: boolean): Execution;
     getError(): string;
     setError(value: string): Execution;
+    getIndex(): number;
+    setIndex(value: number): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
@@ -1723,6 +1725,7 @@ export namespace Execution {
         endAt: number,
         success: boolean,
         error: string,
+        index: number,
         stepsList: Array<Execution.Step.AsObject>,
     }
 
@@ -3596,4 +3599,5 @@ export enum ExecutionStatus {
     EXECUTION_STATUS_PENDING = 1,
     EXECUTION_STATUS_COMPLETED = 2,
     EXECUTION_STATUS_FAILED = 3,
+    EXECUTION_STATUS_PARTIAL_SUCCESS = 4,
 }

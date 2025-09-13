@@ -14113,6 +14113,7 @@ proto.aggregator.Execution.toObject = function(includeInstance, msg) {
     endAt: jspb.Message.getFieldWithDefault(msg, 3, 0),
     success: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
     error: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    index: jspb.Message.getFieldWithDefault(msg, 6, 0),
     stepsList: jspb.Message.toObjectList(msg.getStepsList(),
     proto.aggregator.Execution.Step.toObject, includeInstance)
   };
@@ -14170,6 +14171,10 @@ proto.aggregator.Execution.deserializeBinaryFromReader = function(msg, reader) {
     case 5:
       var value = /** @type {string} */ (reader.readString());
       msg.setError(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setIndex(value);
       break;
     case 8:
       var value = new proto.aggregator.Execution.Step;
@@ -14237,6 +14242,13 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       5,
+      f
+    );
+  }
+  f = message.getIndex();
+  if (f !== 0) {
+    writer.writeInt64(
+      6,
       f
     );
   }
@@ -15639,6 +15651,24 @@ proto.aggregator.Execution.prototype.getError = function() {
  */
 proto.aggregator.Execution.prototype.setError = function(value) {
   return jspb.Message.setProto3StringField(this, 5, value);
+};
+
+
+/**
+ * optional int64 index = 6;
+ * @return {number}
+ */
+proto.aggregator.Execution.prototype.getIndex = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.Execution} returns this
+ */
+proto.aggregator.Execution.prototype.setIndex = function(value) {
+  return jspb.Message.setProto3IntField(this, 6, value);
 };
 
 
@@ -27962,7 +27992,8 @@ proto.aggregator.ExecutionStatus = {
   EXECUTION_STATUS_UNSPECIFIED: 0,
   EXECUTION_STATUS_PENDING: 1,
   EXECUTION_STATUS_COMPLETED: 2,
-  EXECUTION_STATUS_FAILED: 3
+  EXECUTION_STATUS_FAILED: 3,
+  EXECUTION_STATUS_PARTIAL_SUCCESS: 4
 };
 
 goog.object.extend(exports, proto.aggregator);
