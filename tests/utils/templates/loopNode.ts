@@ -11,13 +11,11 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
     iterKey: "index",
     runner: {
       type: "restApi",
-      data: {
-        config: {
-          url: "https://mock-api.ap-aggregator.local/post",
-          method: "POST",
-          body: JSON.stringify({ data: "{{value}}", index: "{{index}}" }),
-          headersMap: [["Content-Type", "application/json"]],
-        },
+      config: {
+        url: "https://mock-api.ap-aggregator.local/post",
+        method: "POST",
+        body: JSON.stringify({ data: "{{value}}", index: "{{index}}" }),
+        headersMap: [["Content-Type", "application/json"]],
       },
     },
   },
@@ -33,11 +31,9 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
     iterKey: "index",
     runner: {
       type: "customCode",
-      data: {
-        config: {
-          lang: CustomCodeLang.JavaScript,
-          source: `const result = { processedValue: value, position: index }; return result;`,
-        },
+      config: {
+        lang: CustomCodeLang.JavaScript,
+        source: `const result = { processedValue: value, position: index }; return result;`,
       },
     },
   },
@@ -53,11 +49,9 @@ export const loopNodeWithETHTransferProps: LoopNodeProps = {
     iterKey: "index",
     runner: {
       type: "ethTransfer",
-      data: {
-        config: {
-          destination: "{{value}}",
-          amount: "1000000000000000000", // 1 ETH in wei (decimal string)
-        },
+      config: {
+        destination: "{{value}}",
+        amount: "100000000000000", // 0.0001 ETH in wei (decimal string)
       },
     },
   },
@@ -73,17 +67,15 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
     iterKey: "index",
     runner: {
       type: "contractRead",
-      data: {
-        config: {
-          contractAddress: "{{contract.address}}",
-          contractAbi: "{{contract.abi}}",
-          methodCalls: [
-            {
-              methodName: "{{contract.methodName}}",
-              methodParams: "{{contract.methodParams}}",
-            },
-          ],
-        },
+      config: {
+        contractAddress: "{{contract.address}}",
+        contractAbi: "{{contract.abi}}" as any,
+        methodCalls: [
+          {
+            methodName: "{{contract.methodName}}",
+            methodParams: "{{contract.methodParams}}",
+          },
+        ],
       },
     },
   },
@@ -99,17 +91,15 @@ export const loopNodeWithContractWriteProps: LoopNodeProps = {
     iterKey: "index",
     runner: {
       type: "contractWrite",
-      data: {
-        config: {
-          contractAddress: "{{contract.address}}",
-          contractAbi: "{{contract.abi}}",
-          methodCalls: [
-            {
-              methodName: "{{contract.methodName}}",
-              methodParams: "{{contract.methodParams}}",
-            },
-          ],
-        },
+      config: {
+        contractAddress: "{{contract.address}}",
+        contractAbi: "{{contract.abi}}" as any,
+        methodCalls: [
+          {
+            methodName: "{{contract.methodName}}",
+            methodParams: "{{contract.methodParams}}",
+          },
+        ],
       },
     },
   },
@@ -124,22 +114,20 @@ export const loopNodeWithGraphQLQueryProps: LoopNodeProps = {
     iterVal: "query",
     iterKey: "index",
     runner: {
-      type: "graphqlDataQuery",
-      data: {
-        config: {
-          url: "https://mock-api.ap-aggregator.local/graphql",
-          query: `
-            query GetToken($id: String!) {
-              token(id: $id) {
-                id
-                symbol
-                name
-                decimals
-              }
+      type: "graphqlQuery",
+      config: {
+        url: "https://mock-api.ap-aggregator.local/graphql",
+        query: `
+          query GetToken($id: String!) {
+            token(id: $id) {
+              id
+              symbol
+              name
+              decimals
             }
-          `,
-          variablesMap: [["id", "{{query.id}}"]],
-        },
+          }
+        `,
+        variablesMap: [["id", "{{query.id}}"]],
       },
     },
   },
