@@ -120,7 +120,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
-        amount: "10000", // 0.01 USDC (token decimals: 1000000)
+        amount: "10000", // 0.01 USDC (token decimals: 6)
         token: tokens.USDC.address,
         smartWalletAddress: wallet.address,
       };

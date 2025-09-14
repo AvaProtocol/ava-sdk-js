@@ -65,7 +65,7 @@ client.setAuthKey(authKey);
 // Withdraw ETH
 const response = await client.withdrawFunds({
   recipientAddress: '0x1234567890123456789012345678901234567890',
-  amount: '1000000000000000000', // 1 ETH in wei
+  amount: '1000000000000000', // 0.001 ETH in wei
   token: 'ETH',
   salt: 'my-wallet-salt',
 });
@@ -79,7 +79,7 @@ console.log('Withdrawal initiated:', response);
 // Withdraw USDC (assuming 6 decimals)
 const response = await client.withdrawFunds({
   recipientAddress: '0x1234567890123456789012345678901234567890',
-  amount: '1000000', // 1 USDC
+  amount: '10000', // 0.01 USDC
   token: '0xA0b86a33E6b4e4d70cf3dA2A1F7f8e42B6d2E0aE', // USDC contract address
   smartWalletAddress: '0x9876543210987654321098765432109876543210', // Explicit wallet
 });

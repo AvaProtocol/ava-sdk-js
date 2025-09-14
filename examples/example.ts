@@ -703,7 +703,7 @@ async function scheduleContractWrite(
   // Default values based on the workflow data you provided
   const defaultRecipient =
     recipientAddress || "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
-  const defaultAmount = amount || "1000000"; // 1 USDC (6 decimals)
+  const defaultAmount = amount || "10000"; // 0.01 USDC (6 decimals)
   const usdcAddress = config.TOKENS[token].address; // USDC address for current environment
 
   const triggerId = UlidMonotonic.generate().toCanonical();

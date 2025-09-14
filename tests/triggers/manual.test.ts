@@ -1313,9 +1313,10 @@ describe("ManualTrigger Tests", () => {
 
     // Create workflow with a simple custom code node
     const wallet = await client.getWallet({ salt: String(saltIndex++) });
+    const nodeId = getNextId();
     const workflowProps = createFromTemplate(wallet.address, [
       {
-        id: getNextId(),
+        id: nodeId,
         name: "test_node",
         type: NodeType.CustomCode,
         data: {
@@ -1324,7 +1325,16 @@ describe("ManualTrigger Tests", () => {
         },
       },
     ]);
+    
+    // Override trigger and fix the edge to use the correct trigger ID
     workflowProps.trigger = manualTrigger;
+    workflowProps.edges = [
+      new Edge({
+        id: getNextId(),
+        source: manualTrigger.id, // Use the actual trigger ID
+        target: nodeId,
+      }),
+    ];
 
     let workflowId: string | undefined;
     try {

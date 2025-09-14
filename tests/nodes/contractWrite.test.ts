@@ -1430,6 +1430,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   describe("Event Priority Tests", () => {
     test("should prioritize Approval event data over boolean return values", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      
+      // Test constants
+      const APPROVAL_AMOUNT = "10000"; // 0.01 USDC (6 decimals: 10000 = 0.01 USDC)
+      const SPENDER_ADDRESS = "0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e"; // Uniswap router
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -1440,8 +1444,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "approve",
               methodParams: [
-                "0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e", // Uniswap router
-                "1000000", // 1.0 USDC approval
+                SPENDER_ADDRESS,
+                APPROVAL_AMOUNT,
               ],
             },
           ],
@@ -1480,10 +1484,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
       // Verify the event data matches our parameters
       expect(result.data.approve.owner).toBe(wallet.address);
-      expect(result.data.approve.spender).toBe(
-        "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E"
+      expect(result.data.approve.spender.toLowerCase()).toBe(
+        SPENDER_ADDRESS.toLowerCase() // Case-insensitive address comparison
       );
-      expect(result.data.approve.value).toBe("1000000");
+      expect(result.data.approve.value).toBe(APPROVAL_AMOUNT);
     });
   });
 
