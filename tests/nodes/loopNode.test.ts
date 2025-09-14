@@ -1551,7 +1551,7 @@ describe("LoopNode Tests", () => {
 
         // Assertions for response format consistency
         expect(directResponse.success).toBeTruthy();
-        expect(simulatedWorkflow.success).toBeTruthy();
+        expect(simulatedWorkflow.status).toBe(ExecutionStatus.Success);
 
         // Check data structure consistency
         expect(Array.isArray(directResponse.data)).toBe(true);

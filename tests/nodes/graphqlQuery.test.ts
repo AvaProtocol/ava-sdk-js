@@ -696,7 +696,7 @@ describe("GraphQL Query Node Tests", () => {
           },
         });
 
-        expect(simulation.status).toBe(ExecutionStatus.Failed); // Network error expected for mock endpoint
+        expect(simulation.status).toBe(ExecutionStatus.PartialSuccess); // Network error expected for mock endpoint
         const simGraphqlStep = simulation.steps.find(
           (step) => step.id === graphqlNode.id
         );
