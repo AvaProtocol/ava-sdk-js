@@ -91,7 +91,7 @@ describe("triggerWorkflow Tests", () => {
       // Verify that the execution is successfully triggered at block number + 5
       expect(Array.isArray(executions2.items)).toBe(true);
       expect(executions2.items.length).toEqual(1);
-      expect(executions2.items[0].success).toEqual(true);
+      expect(executions2.items[0].status).toEqual(ExecutionStatus.Success);
       const workflow = await client.getWorkflow(workflowId);
 
       expect(workflow.status).toEqual(WorkflowStatus.Completed);
@@ -316,7 +316,7 @@ describe("triggerWorkflow Tests", () => {
       result.executionId
     );
 
-    expect(executionStatus).toEqual(ExecutionStatus.Completed);
+    expect(executionStatus).toEqual(ExecutionStatus.Success);
 
     await client.deleteWorkflow(workflowId);
   });
