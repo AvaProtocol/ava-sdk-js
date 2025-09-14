@@ -1,10 +1,10 @@
 import util from "util";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import {
-  TriggerType,
+import {TriggerType,
   NodeType,
   CustomCodeLang,
   WorkflowStatus,
+  ExecutionStatus
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -286,7 +286,7 @@ return message;`,
       
 
       // For event triggers, no matching events is a valid outcome
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
 
       // In test environment, we might get mock event data or null
       // Both are valid outcomes for this test
@@ -370,7 +370,7 @@ return message;`,
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(typeof result.data).toBe("string");
       expect(result.data).toContain("⬇️ Received"); // Should be "Received" since to === testWalletAddress
       expect(result.data).toContain("USDC");
@@ -445,7 +445,7 @@ return message;`,
         util.inspect(simulationResult, { depth: null, colors: true })
       );
 
-      expect(simulationResult.success).toBeTruthy();
+      expect(simulationResult.status).toBe(ExecutionStatus.Success);
       expect(simulationResult.steps).toHaveLength(3); // trigger + 2 nodes
 
       // Verify trigger step

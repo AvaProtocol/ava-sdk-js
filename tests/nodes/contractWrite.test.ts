@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import { NodeType, TriggerType, ExecutionStatus } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -585,7 +585,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const writeFail = stepIndicatesWriteFailure(
           contractWriteSimStep as any
         );
-        expect(simulation.success).toBe(!writeFail);
+        const expectedStatus = writeFail ? ExecutionStatus.PartialSuccess : ExecutionStatus.Success;
+        expect(simulation.status).toBe(expectedStatus);
         expect(simulation.steps).toHaveLength(2); // trigger + contract write node
 
         const contractWriteStep = contractWriteSimStep;
@@ -1293,7 +1294,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const writeFail3 = stepIndicatesWriteFailure(
         contractWriteSimStep3 as any
       );
-      expect(simulation.success).toBe(!writeFail3);
+      const expectedStatus = writeFail3 ? ExecutionStatus.PartialSuccess : ExecutionStatus.Success;
+      expect(simulation.status).toBe(expectedStatus);
       const contractWriteStep = simulation.steps.find(
         (step) => step.id === contractWriteNode.id
       );

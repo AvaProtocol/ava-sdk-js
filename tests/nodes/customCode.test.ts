@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
+import {NodeType, TriggerType, CustomCodeLang, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -155,7 +155,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeNull();
     });
 
@@ -166,7 +166,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual({});
     });
 
@@ -189,7 +189,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       // Note: JavaScript `undefined` becomes `null` in protobuf conversion since protobuf
       // only supports JSON-compatible types and has no representation for `undefined`
       expect(result.data).toBeNull();
@@ -202,7 +202,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual([]);
     });
 
@@ -213,7 +213,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBe(42);
     });
 
@@ -224,7 +224,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBe("hello world");
     });
 
@@ -235,7 +235,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBe(true);
     });
 
@@ -246,7 +246,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual({ message: "hello", count: 42 });
     });
 
@@ -257,7 +257,7 @@ describe("CustomCode Node Tests", () => {
         inputVariables: {},
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual([1, 2, 3, 4, 5]);
     });
 
@@ -270,7 +270,7 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual({
         inputData: [1, 2, 3, 4, 5],
         processedData: [2, 4, 6, 8, 10],
@@ -298,7 +298,7 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual({
         user: {
           id: 123,
@@ -356,7 +356,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBe(30);
       
     });
@@ -389,7 +389,7 @@ describe("CustomCode Node Tests", () => {
 
 
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       const data = result.data as any;
       expect(data).toBeDefined();
@@ -427,7 +427,7 @@ describe("CustomCode Node Tests", () => {
 
 
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       const data = result.data as any;
       expect(data).toBeDefined();
@@ -506,7 +506,7 @@ describe("CustomCode Node Tests", () => {
 
 
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node
 
       const customCodeStep = simulation.steps.find(
@@ -591,7 +591,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
@@ -1039,7 +1039,7 @@ describe("CustomCode Node Tests", () => {
       );
 
       // Verify overall workflow success
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(7); // trigger + 6 custom code nodes
 
       // Verify each node returns expected values
@@ -1155,7 +1155,7 @@ describe("CustomCode Node Tests", () => {
         );
 
         // Verify overall workflow success
-        expect(execution.success).toBeTruthy();
+        expect(execution.status).toBe(ExecutionStatus.Success);
         expect(execution.steps).toHaveLength(7); // trigger + 6 custom code nodes
 
         // Verify each node returns expected values
@@ -1259,7 +1259,7 @@ describe("CustomCode Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node
 
       const customCodeStep = simulation.steps.find(

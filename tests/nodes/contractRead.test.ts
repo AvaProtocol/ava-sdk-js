@@ -2,10 +2,10 @@ import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {
-  NodeType,
+import {NodeType,
   RunNodeWithInputsResponse,
   TriggerType,
+  ExecutionStatus
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -412,7 +412,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       // success must reflect per-method metadata/receipt outcomes
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -533,7 +533,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       );
 
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
@@ -628,7 +628,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
@@ -708,7 +708,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + contract read node
 
       const contractReadStep = simulation.steps.find(
@@ -783,7 +783,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
@@ -1286,7 +1286,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       expect(result).toBeDefined();
       // Backend fails the entire node execution for invalid method signatures
-      expect(result.success).toBeFalsy();
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
     });
   });
@@ -1453,7 +1453,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
@@ -1573,7 +1573,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
@@ -1668,7 +1668,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );

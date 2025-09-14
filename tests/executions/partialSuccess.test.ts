@@ -119,11 +119,11 @@ describe("Execution Partial Success Tests", () => {
         expect(failureStep.error).toBeTruthy();
         
         // When PartialSuccess is implemented, this should be PartialSuccess
-        // For now, it might be Failed, Completed, or Unspecified depending on current implementation
+        // For now, it might be Failed, Success, or Unspecified depending on current implementation
         expect([
           ExecutionStatus.PartialSuccess,
           ExecutionStatus.Failed,
-          ExecutionStatus.Completed,
+          ExecutionStatus.Success,
           ExecutionStatus.Unspecified
         ]).toContain(executionStatus);
       }
@@ -200,7 +200,7 @@ describe("Execution Partial Success Tests", () => {
         expect([
           ExecutionStatus.PartialSuccess,
           ExecutionStatus.Failed,
-          ExecutionStatus.Completed,
+          ExecutionStatus.Success,
           ExecutionStatus.Unspecified
         ]).toContain(executionStatus);
       }
@@ -271,8 +271,8 @@ describe("Execution Partial Success Tests", () => {
         expect(step.error).toBeFalsy();
       });
       
-      // Should be Completed, not PartialSuccess when all succeed
-      expect(executionStatus).toBe(ExecutionStatus.Completed);
+      // Should be Success, not PartialSuccess when all succeed
+      expect(executionStatus).toBe(ExecutionStatus.Success);
       expect(executionStatus).not.toBe(ExecutionStatus.PartialSuccess);
     } finally {
       if (workflowId) {
@@ -281,7 +281,7 @@ describe("Execution Partial Success Tests", () => {
     }
   });
 
-  test("should return Failed status when all nodes fail (not PartialSuccess)", async () => {
+  test("should return PartialSuccess status when all nodes fail but trigger succeeds", async () => {
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
@@ -339,12 +339,8 @@ describe("Execution Partial Success Tests", () => {
         expect(step.error).toBeTruthy();
       });
       
-      // Should be Failed or Unspecified, not PartialSuccess when all fail
-      expect([
-        ExecutionStatus.Failed,
-        ExecutionStatus.Unspecified
-      ]).toContain(executionStatus);
-      expect(executionStatus).not.toBe(ExecutionStatus.PartialSuccess);
+      // Should be PartialSuccess when all nodes fail but trigger succeeds
+      expect(executionStatus).toBe(ExecutionStatus.PartialSuccess);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

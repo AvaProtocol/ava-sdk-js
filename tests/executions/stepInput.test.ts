@@ -5,6 +5,7 @@ import {
   NodeType,
   CustomCodeLang,
   TriggerProps,
+  ExecutionStatus,
 } from "@avaprotocol/types";
 import util from "util";
 import _ from "lodash";
@@ -288,7 +289,7 @@ describe("Input Field Tests", () => {
       );
 
       // Check execution result - This should now succeed with the mock response
-      expect(execution.success).toBeTruthy();
+      expect(execution.status).toBe(ExecutionStatus.Success);
       expect(execution.error).toBe("");
 
       // Verify that template resolution is working correctly

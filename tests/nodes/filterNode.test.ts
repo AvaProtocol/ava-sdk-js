@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
+import {NodeType, TriggerType, CustomCodeLang, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -65,7 +65,7 @@ describe("FilterNode Tests", () => {
       });
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -89,7 +89,7 @@ describe("FilterNode Tests", () => {
       });
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -113,7 +113,7 @@ describe("FilterNode Tests", () => {
       });
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -142,7 +142,7 @@ describe("FilterNode Tests", () => {
       });
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
       expect(Array.isArray(result.data)).toBe(true);
@@ -197,7 +197,7 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + filter node
 
       const filterStep = simulation.steps.find(
@@ -253,7 +253,7 @@ describe("FilterNode Tests", () => {
         },
       });
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const filterStep = simulation.steps.find(
         (step) => step.id === filterNode.id
       );

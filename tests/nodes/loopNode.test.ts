@@ -2,14 +2,14 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
-import {
-  NodeType,
+import {NodeType,
   CustomCodeLang,
   TriggerType,
   ExecutionMode,
   LoopNodeData,
   WorkflowProps,
   Edge,
+  ExecutionStatus
 } from "@avaprotocol/types";
 
 // Type definitions for test responses
@@ -207,7 +207,7 @@ describe("LoopNode Tests", () => {
 
       console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       // With the consistency fix, result.data is now the array directly
@@ -243,7 +243,7 @@ describe("LoopNode Tests", () => {
 
       console.log("response:", util.inspect(result, { depth: null, colors: true }));
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       // With the consistency fix, result.data is now the array directly
@@ -281,7 +281,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       // With the consistency fix, result.data is now the array directly
@@ -315,7 +315,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       // Type guard to ensure result.data is the expected type
@@ -537,7 +537,7 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
@@ -636,7 +636,7 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
@@ -2009,7 +2009,7 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       expect(Array.isArray(result.data)).toBe(true);
 
@@ -2248,7 +2248,7 @@ describe("LoopNode Tests", () => {
         client.createWorkflow(workflowProps)
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
@@ -2350,7 +2350,7 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);

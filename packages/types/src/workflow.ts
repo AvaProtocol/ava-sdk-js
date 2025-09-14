@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerType, WorkflowStatus } from "./enums";
+import { TriggerType, WorkflowStatus, ExecutionStatus } from "./enums";
 import { TriggerProps } from "./trigger";
 import { NodeProps } from "./node";
 
@@ -80,8 +80,9 @@ export type StepProps = Omit<
 };
 
 // Execution Props
-export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList"> & {
+export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList" | "status"> & {
   steps: Array<StepProps>;
+  status: ExecutionStatus;
 };
 
 // Workflow Props - depends on other types so defined last

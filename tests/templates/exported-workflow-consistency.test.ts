@@ -1,12 +1,12 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import {
-  TriggerType,
+import {TriggerType,
   NodeType,
   ExecutionMode,
   ManualTriggerDataType,
   LoopNodeData,
   CustomCodeLang,
+  ExecutionStatus
 } from "@avaprotocol/types";
 import { TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import _ from "lodash";
@@ -75,7 +75,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toEqual({
         data: testData,
         headers: { headerKey: "headerValue" },
@@ -122,7 +122,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data).toEqual(["value1", "value2"]); // Should return array of key values
     });
@@ -146,7 +146,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toEqual([{ key: "value1" }]); // FilterNode now returns array of filtered items
     });
 
@@ -171,7 +171,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toEqual(inputData); // Should return the trigger data
     });
   });
@@ -291,7 +291,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-            expect(simulation.success).toBeTruthy();
+            expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(4); // Trigger + 3 nodes
 
       // Comprehensive validation of input and output fields for each step
@@ -660,7 +660,7 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // All three methods should return identical flat array results
       expect(directResult.success).toBeTruthy();
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(executedLoopStep.success).toBeTruthy();
 
       // The key consistency check - all return the same flat array
@@ -785,7 +785,7 @@ describe("Exported Workflow Consistency Tests", () => {
       );
 
       expect(directResult.success).toBeTruthy();
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(executedFilterStep.success).toBeTruthy();
 
       expect(directResult.data).toEqual(expectedResult);
@@ -903,7 +903,7 @@ describe("Exported Workflow Consistency Tests", () => {
       );
 
       expect(directResult.success).toBeTruthy();
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(executedCodeStep.success).toBeTruthy();
 
       expect(directResult.data).toEqual(testData);
@@ -982,7 +982,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
 
       // Validate trigger step input field
       const triggerStep = simulation.steps.find(

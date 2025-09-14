@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, CustomCodeLang } from "@avaprotocol/types";
+import {TriggerType, NodeType, CustomCodeLang, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -83,7 +83,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBeTruthy();
+      expect(result.status).toBe(ExecutionStatus.Success);
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify unified step structure
@@ -145,7 +145,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBeTruthy();
+      expect(result.status).toBe(ExecutionStatus.Success);
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify step structure with input variables
@@ -213,7 +213,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBeTruthy();
+      expect(result.status).toBe(ExecutionStatus.Success);
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify unified step structure
@@ -285,7 +285,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBeTruthy();
+      expect(result.status).toBe(ExecutionStatus.Success);
       expect(result.steps).toHaveLength(3); // trigger + 2 nodes
 
       // Verify all steps have unified structure
@@ -356,7 +356,8 @@ describe("SimulateWorkflow", () => {
 
         // If we get here, the simulation succeeded despite the error
         expect(result).toBeDefined();
-        expect(result.success).toBeFalsy();
+        // Should be PartialSuccess since trigger succeeds but node fails
+        expect(result.status).toBe(ExecutionStatus.PartialSuccess);
         expect(result.error).toBeDefined();
 
         // Even failed simulations should have unified step structure
@@ -373,7 +374,7 @@ describe("SimulateWorkflow", () => {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();
         expect((error as Error).message).toContain(
-          "Intentional error for testing"
+          "partialSuccess"
         );
       }
     });
@@ -469,7 +470,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBeTruthy();
+      expect(result.status).toBe(ExecutionStatus.Success);
       expect(result.steps).toHaveLength(3); // trigger + 2 nodes
 
       // Verify trigger step
@@ -567,7 +568,7 @@ describe("SimulateWorkflow", () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.success).toBeTruthy();
+      expect(result.status).toBe(ExecutionStatus.Success);
       expect(result.steps).toHaveLength(2); // trigger + node
 
       // Verify both steps completed successfully

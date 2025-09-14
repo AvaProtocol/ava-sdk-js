@@ -2,7 +2,7 @@ import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
-import { TriggerType } from "@avaprotocol/types";
+import {TriggerType, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -211,7 +211,7 @@ describe("BlockTrigger Tests", () => {
       );
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
     });
@@ -230,7 +230,7 @@ describe("BlockTrigger Tests", () => {
       );
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
     });
@@ -249,7 +249,7 @@ describe("BlockTrigger Tests", () => {
       );
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
     });
@@ -268,7 +268,7 @@ describe("BlockTrigger Tests", () => {
       );
 
             expect(typeof result.success).toBe("boolean");
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       
     });
@@ -305,7 +305,7 @@ describe("BlockTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
@@ -342,7 +342,7 @@ describe("BlockTrigger Tests", () => {
         },
       });
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const triggerStep = simulation.steps.find(
         (step) => step.id === blockTrigger.id
       );

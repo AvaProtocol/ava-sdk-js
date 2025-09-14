@@ -9,7 +9,7 @@ export enum WorkflowStatus {
 export enum ExecutionStatus {
   Unspecified = "unspecified",
   Pending = "pending",
-  Completed = "completed", 
+  Success = "success",
   Failed = "failed",
   PartialSuccess = "partialSuccess",
 }

@@ -15,6 +15,7 @@ import {
   CustomCodeLang,
   ExecutionMode,
   ManualTriggerProps,
+  ExecutionStatus,
 } from "@avaprotocol/types";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
@@ -158,7 +159,7 @@ describe("ManualTrigger Tests", () => {
 
       expect(result).toBeDefined();
       // ManualTrigger now requires data, so this should fail
-      expect(result.success).toBeFalsy();
+      expect(result.success).toBe(false);
       expect(result.error).toContain("ManualTrigger data is required");
     });
 
@@ -175,7 +176,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(runTriggerSimpleProps.triggerConfig.data);
     });
 
@@ -192,7 +193,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(
         runTriggerWithHeadersProps.triggerConfig.data
       );
@@ -225,7 +226,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(
         runTriggerWithPathParamsProps.triggerConfig.data
       );
@@ -259,7 +260,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(runTriggerWithBothProps.triggerConfig.data);
     });
 
@@ -292,7 +293,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(runTriggerComplexProps.triggerConfig.data);
     });
 
@@ -322,7 +323,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(runTriggerArrayProps.triggerConfig.data);
     });
 
@@ -351,7 +352,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(runTriggerJsonStringProps.triggerConfig.data);
     });
   });
@@ -384,7 +385,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-            expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toBeDefined();
       expect(Array.isArray(simulation.steps)).toBe(true);
 
@@ -392,7 +393,7 @@ describe("ManualTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === defaultTriggerId
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
 
       // The output should be the raw data directly (new simplified format)
       expect(triggerStep!.output).toEqual({ message: "test simulation" });
@@ -440,7 +441,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-            expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toBeDefined();
       expect(Array.isArray(simulation.steps)).toBe(true);
 
@@ -448,7 +449,7 @@ describe("ManualTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === defaultTriggerId
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
 
       // The trigger step should have the user data available
       expect(triggerStep!.output).toBeDefined();
@@ -460,7 +461,7 @@ describe("ManualTrigger Tests", () => {
       const customCodeStep = simulation.steps.find(
         (step) => step.name === "minimal_node"
       );
-            expect(customCodeStep!.success).toBeTruthy();
+      expect(customCodeStep!.success).toBeTruthy();
 
       // Manual triggers now return user data directly
       expect(customCodeStep!.output).toEqual(expect.objectContaining(userData));
@@ -518,7 +519,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-            expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toBeDefined();
       expect(Array.isArray(simulation.steps)).toBe(true);
 
@@ -526,7 +527,7 @@ describe("ManualTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === defaultTriggerId
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
 
       // With the new simplified format, only the data content is returned (headers and pathParams are config-only)
       expect(triggerStep!.output).toEqual(data);
@@ -535,7 +536,7 @@ describe("ManualTrigger Tests", () => {
       const customCodeStep = simulation.steps.find(
         (step) => step.name === "minimal_node"
       );
-            expect(customCodeStep!.success).toBeTruthy();
+      expect(customCodeStep!.success).toBeTruthy();
 
       // With the new design, only the data content is returned (headers and pathParams are config-only)
       expect(customCodeStep!.output).toEqual(data);
@@ -843,7 +844,7 @@ describe("ManualTrigger Tests", () => {
 
       // Both should be successful
       expect(directResponse.success).toBeTruthy();
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
 
       // Validate trigger data consistency
       expect(directResponse.data).toEqual(testData);
@@ -852,7 +853,7 @@ describe("ManualTrigger Tests", () => {
       const triggerStep = simulation.steps.find(
         (step) => step.id === defaultTriggerId
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
 
       // Validate consistency_test_manual_trigger.config and .output
       expect(triggerStep!.config).toBeDefined();
@@ -860,7 +861,7 @@ describe("ManualTrigger Tests", () => {
 
       // Find the loop step in simulation
       const loopStep = simulation.steps.find((step) => step.id === loopNodeId);
-            expect(loopStep!.success).toBeTruthy();
+      expect(loopStep!.success).toBeTruthy();
 
       // Validate LoopNode output - should contain processed results
       expect(loopStep!.output).toBeDefined();
@@ -895,7 +896,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeFalsy();
+      expect(result.success).toBe(false);
       expect(result.error).toContain("ManualTrigger data is required");
     });
 
@@ -919,7 +920,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeFalsy();
+      expect(result.success).toBe(false);
       expect(result.error).toContain("ManualTrigger data is required");
     });
 
@@ -945,7 +946,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
 
       expect(result.data).toEqual(emptyData);
     });
@@ -974,7 +975,7 @@ describe("ManualTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
 
       expect(result.data).toEqual(emptyArrayData);
     });
@@ -997,7 +998,7 @@ describe("ManualTrigger Tests", () => {
       const result = await client.runTrigger(params);
       console.log("🚀 ~ test ~ result:", result);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(arrayData);
     });
 
@@ -1013,7 +1014,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(stringData);
     });
 
@@ -1029,7 +1030,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(numberData);
     });
 
@@ -1045,7 +1046,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(booleanData);
     });
 
@@ -1063,7 +1064,7 @@ describe("ManualTrigger Tests", () => {
 
       console.log("🚀 ~ test ~ result:", result);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(arrayData);
     });
   });
@@ -1090,7 +1091,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(jsonObjectData);
       expect(typeof result.data).toBe("object");
       expect(Array.isArray(result.data)).toBe(false);
@@ -1117,7 +1118,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(jsonArrayData);
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(3);
@@ -1137,7 +1138,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(stringData);
       expect(typeof result.data).toBe("string");
     });
@@ -1154,7 +1155,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(numberData);
       expect(typeof result.data).toBe("number");
     });
@@ -1171,7 +1172,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(booleanData);
       expect(typeof result.data).toBe("boolean");
     });
@@ -1188,7 +1189,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual({ value: null });
       expect(result.data.value).toBeNull();
     });
@@ -1233,7 +1234,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(complexData);
 
       // Verify nested structure preservation
@@ -1260,7 +1261,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(jsonString);
       expect(typeof result.data).toBe("string");
       // Verify it's NOT parsed as an object
@@ -1286,7 +1287,7 @@ describe("ManualTrigger Tests", () => {
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(mixedArrayData);
       expect(Array.isArray(result.data)).toBe(true);
       expect(typeof result.data[0]).toBe("string");
@@ -1312,20 +1313,17 @@ describe("ManualTrigger Tests", () => {
 
     // Create workflow with a simple custom code node
     const wallet = await client.getWallet({ salt: String(saltIndex++) });
-    const workflowProps = createFromTemplate(
-      wallet,
-      [
-        {
-          id: getNextId(),
-          name: "test_node",
-          type: NodeType.CustomCode,
-          data: {
-            lang: CustomCodeLang.JavaScript,
-            source: "return { message: 'blocking test completed' };",
-          },
+    const workflowProps = createFromTemplate(wallet.address, [
+      {
+        id: getNextId(),
+        name: "test_node",
+        type: NodeType.CustomCode,
+        data: {
+          lang: CustomCodeLang.JavaScript,
+          source: "return { message: 'blocking test completed' };",
         },
-      ]
-    );
+      },
+    ]);
     workflowProps.trigger = manualTrigger;
 
     let workflowId: string | undefined;
@@ -1349,14 +1347,15 @@ describe("ManualTrigger Tests", () => {
 
       // Verify all fields are present for blocking execution
       expect(blockingResponse.executionId).toBeDefined();
-      expect(blockingResponse.status).toBe("completed");
+      expect(blockingResponse.status).toBe("success"); // Changed from "completed" to "success" based on actual response
       expect(blockingResponse.workflowId).toBe(workflowId);
       expect(blockingResponse.startAt).toBeDefined();
       expect(blockingResponse.endAt).toBeDefined();
-      expect(blockingResponse.success).toBeDefined();
+      // Note: success field was removed from TriggerTaskResp protobuf
+      // Use status field to determine success
 
-      // Steps should be present for workflows with nodes
-      if (blockingResponse.success) {
+      // Steps should be present for workflows with nodes when execution succeeded
+      if (blockingResponse.status === "success") {
         expect(blockingResponse.steps).toBeDefined();
         expect(Array.isArray(blockingResponse.steps)).toBe(true);
         expect(blockingResponse.steps!.length).toBeGreaterThan(0);

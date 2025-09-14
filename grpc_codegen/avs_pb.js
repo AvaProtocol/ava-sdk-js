@@ -14111,7 +14111,7 @@ proto.aggregator.Execution.toObject = function(includeInstance, msg) {
     id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     startAt: jspb.Message.getFieldWithDefault(msg, 2, 0),
     endAt: jspb.Message.getFieldWithDefault(msg, 3, 0),
-    success: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
+    status: jspb.Message.getFieldWithDefault(msg, 4, 0),
     error: jspb.Message.getFieldWithDefault(msg, 5, ""),
     index: jspb.Message.getFieldWithDefault(msg, 6, 0),
     stepsList: jspb.Message.toObjectList(msg.getStepsList(),
@@ -14165,8 +14165,8 @@ proto.aggregator.Execution.deserializeBinaryFromReader = function(msg, reader) {
       msg.setEndAt(value);
       break;
     case 4:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setSuccess(value);
+      var value = /** @type {!proto.aggregator.ExecutionStatus} */ (reader.readEnum());
+      msg.setStatus(value);
       break;
     case 5:
       var value = /** @type {string} */ (reader.readString());
@@ -14231,9 +14231,9 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getSuccess();
-  if (f) {
-    writer.writeBool(
+  f = message.getStatus();
+  if (f !== 0.0) {
+    writer.writeEnum(
       4,
       f
     );
@@ -15619,20 +15619,20 @@ proto.aggregator.Execution.prototype.setEndAt = function(value) {
 
 
 /**
- * optional bool success = 4;
- * @return {boolean}
+ * optional ExecutionStatus status = 4;
+ * @return {!proto.aggregator.ExecutionStatus}
  */
-proto.aggregator.Execution.prototype.getSuccess = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
+proto.aggregator.Execution.prototype.getStatus = function() {
+  return /** @type {!proto.aggregator.ExecutionStatus} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
 };
 
 
 /**
- * @param {boolean} value
+ * @param {!proto.aggregator.ExecutionStatus} value
  * @return {!proto.aggregator.Execution} returns this
  */
-proto.aggregator.Execution.prototype.setSuccess = function(value) {
-  return jspb.Message.setProto3BooleanField(this, 4, value);
+proto.aggregator.Execution.prototype.setStatus = function(value) {
+  return jspb.Message.setProto3EnumField(this, 4, value);
 };
 
 
@@ -21150,7 +21150,6 @@ proto.aggregator.TriggerTaskResp.toObject = function(includeInstance, msg) {
     workflowId: jspb.Message.getFieldWithDefault(msg, 3, ""),
     startAt: jspb.Message.getFieldWithDefault(msg, 4, 0),
     endAt: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    success: jspb.Message.getBooleanFieldWithDefault(msg, 6, false),
     error: jspb.Message.getFieldWithDefault(msg, 7, ""),
     stepsList: jspb.Message.toObjectList(msg.getStepsList(),
     proto.aggregator.Execution.Step.toObject, includeInstance)
@@ -21209,10 +21208,6 @@ proto.aggregator.TriggerTaskResp.deserializeBinaryFromReader = function(msg, rea
     case 5:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setEndAt(value);
-      break;
-    case 6:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setSuccess(value);
       break;
     case 7:
       var value = /** @type {string} */ (reader.readString());
@@ -21284,13 +21279,6 @@ proto.aggregator.TriggerTaskResp.serializeBinaryToWriter = function(message, wri
   if (f != null) {
     writer.writeInt64(
       5,
-      f
-    );
-  }
-  f = /** @type {boolean} */ (jspb.Message.getField(message, 6));
-  if (f != null) {
-    writer.writeBool(
-      6,
       f
     );
   }
@@ -21435,42 +21423,6 @@ proto.aggregator.TriggerTaskResp.prototype.clearEndAt = function() {
  */
 proto.aggregator.TriggerTaskResp.prototype.hasEndAt = function() {
   return jspb.Message.getField(this, 5) != null;
-};
-
-
-/**
- * optional bool success = 6;
- * @return {boolean}
- */
-proto.aggregator.TriggerTaskResp.prototype.getSuccess = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 6, false));
-};
-
-
-/**
- * @param {boolean} value
- * @return {!proto.aggregator.TriggerTaskResp} returns this
- */
-proto.aggregator.TriggerTaskResp.prototype.setSuccess = function(value) {
-  return jspb.Message.setField(this, 6, value);
-};
-
-
-/**
- * Clears the field making it undefined.
- * @return {!proto.aggregator.TriggerTaskResp} returns this
- */
-proto.aggregator.TriggerTaskResp.prototype.clearSuccess = function() {
-  return jspb.Message.setField(this, 6, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.TriggerTaskResp.prototype.hasSuccess = function() {
-  return jspb.Message.getField(this, 6) != null;
 };
 
 
@@ -27991,7 +27943,7 @@ proto.aggregator.TaskStatus = {
 proto.aggregator.ExecutionStatus = {
   EXECUTION_STATUS_UNSPECIFIED: 0,
   EXECUTION_STATUS_PENDING: 1,
-  EXECUTION_STATUS_COMPLETED: 2,
+  EXECUTION_STATUS_SUCCESS: 2,
   EXECUTION_STATUS_FAILED: 3,
   EXECUTION_STATUS_PARTIAL_SUCCESS: 4
 };

@@ -181,9 +181,11 @@ export type NodeOutputData =
  * When isBlocking = true:
  * - All fields from non-blocking mode plus:
  * - endAt: number - Timestamp when execution ended (milliseconds)
- * - success: boolean - Whether execution was successful
  * - error?: string - Error message if execution failed
  * - steps: ExecutionStep[] - Array of execution steps (same as getExecution response)
+ * 
+ * Note: The success field was removed from TriggerTaskResp protobuf.
+ * Use status field to determine execution outcome ("success", "failed", "completed", etc.)
  */
 export interface TriggerWorkflowResponse {
   executionId: string;
@@ -191,7 +193,6 @@ export interface TriggerWorkflowResponse {
   workflowId: string;
   startAt?: number;
   endAt?: number;
-  success?: boolean;
   error?: string;
   steps?: ExecutionStep[];
 }

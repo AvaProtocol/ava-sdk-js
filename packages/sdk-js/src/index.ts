@@ -68,7 +68,7 @@ import {
 
 /**
  * Convert protobuf ExecutionStatus numeric value to meaningful string enum
- * @param protobufStatus - The numeric status from protobuf (0=UNSPECIFIED, 1=PENDING, 2=COMPLETED, 3=FAILED)
+ * @param protobufStatus - The numeric status from protobuf (0=UNSPECIFIED, 1=PENDING, 2=SUCCESS, 3=FAILED, 4=PARTIAL_SUCCESS)
  * @returns {ExecutionStatus} - The meaningful string enum value
  */
 function convertProtobufExecutionStatus(
@@ -77,10 +77,12 @@ function convertProtobufExecutionStatus(
   switch (protobufStatus) {
     case ProtobufExecutionStatus.EXECUTION_STATUS_PENDING:
       return ExecutionStatus.Pending;
-    case ProtobufExecutionStatus.EXECUTION_STATUS_COMPLETED:
-      return ExecutionStatus.Completed;
+    case ProtobufExecutionStatus.EXECUTION_STATUS_SUCCESS:
+      return ExecutionStatus.Success;
     case ProtobufExecutionStatus.EXECUTION_STATUS_FAILED:
       return ExecutionStatus.Failed;
+    case ProtobufExecutionStatus.EXECUTION_STATUS_PARTIAL_SUCCESS:
+      return ExecutionStatus.PartialSuccess;
     case ProtobufExecutionStatus.EXECUTION_STATUS_UNSPECIFIED:
     default:
       return ExecutionStatus.Unspecified;
@@ -1001,9 +1003,7 @@ class Client extends BaseClient {
     if (responseObject.endAt !== undefined) {
       response.endAt = responseObject.endAt;
     }
-    if (responseObject.success !== undefined) {
-      response.success = responseObject.success;
-    }
+    // Note: success field was removed from TriggerTaskResp protobuf
     if (responseObject.error) {
       response.error = responseObject.error;
     }

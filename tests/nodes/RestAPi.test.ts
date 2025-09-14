@@ -2,7 +2,7 @@ import util from "util";
 import _ from "lodash";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import {NodeType, TriggerType, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -161,7 +161,7 @@ describe("RestAPI Node Tests", () => {
         },
       });
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + REST API node
 
       const restApiStep = simulation.steps.find(
@@ -415,7 +415,7 @@ describe("RestAPI Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.error).toBe("");
       expect(result.data).toBeDefined();
       if (result.data && typeof result.data === "object") {

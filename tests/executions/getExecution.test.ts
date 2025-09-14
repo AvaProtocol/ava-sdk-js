@@ -82,9 +82,13 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
-      // Ensure success reflects step outcomes: no failed blockchain write steps
+      // Ensure status reflects step outcomes
       const hasWriteFailure = executionHasWriteFailure(execution as any);
-      expect(execution.success).toBe(!hasWriteFailure);
+      if (hasWriteFailure) {
+        expect([ExecutionStatus.Failed, ExecutionStatus.PartialSuccess]).toContain(execution.status);
+      } else {
+        expect(execution.status).toBe(ExecutionStatus.Success);
+      }
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -212,7 +216,7 @@ describe("getExecution Tests", () => {
         workflowId,
         result.executionId
       );
-      expect(executionStatus).toEqual(ExecutionStatus.Completed);
+      expect(executionStatus).toEqual(ExecutionStatus.Success);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -265,7 +269,7 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
-      expect(execution.success).toBeTruthy();
+      expect(execution.status).toBe(ExecutionStatus.Success);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -293,7 +297,7 @@ describe("getExecution Tests", () => {
         workflowId,
         execution.id
       );
-      expect(executionStatus).toEqual(ExecutionStatus.Completed);
+      expect(executionStatus).toEqual(ExecutionStatus.Success);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -401,7 +405,7 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
-      expect(execution.success).toBeTruthy();
+      expect(execution.status).toBe(ExecutionStatus.Success);
 
       // Verify execution has both trigger and node steps
       expect(execution.steps).toBeDefined();

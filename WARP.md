@@ -50,6 +50,9 @@ yarn test:integrations
 TEST_ENV=test yarn test:select -- "createTask"
 ```
 
+**Testing Environment Note:**
+When running tests, do not specify TEST_ENV explicitly - the default value `dev` works fine. The test environment configuration is handled automatically.
+
 ### Docker Development Environment
 The project uses Docker Compose to run a local AVS aggregator for testing:
 

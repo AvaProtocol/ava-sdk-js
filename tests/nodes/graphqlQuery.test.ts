@@ -6,6 +6,7 @@ import {
   NodeType,
   RunNodeWithInputsResponse,
   TriggerType,
+  ExecutionStatus
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -177,7 +178,7 @@ describe("GraphQL Query Node Tests", () => {
 
       // The request should fail due to network (mock endpoint doesn't exist)
       // but this proves GraphQL node creation and execution pipeline is working
-      expect(result.success).toBeFalsy();
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain("mock-api.ap-aggregator.local"); // Network error proves it tried to execute
 
@@ -229,7 +230,7 @@ describe("GraphQL Query Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeFalsy(); // Network error expected for mock endpoint
+            expect(result.success).toBe(false); // Network error expected for mock endpoint
       expect(result.error).toContain(
         "dial tcp: lookup mock-api.ap-aggregator.local: no such host"
       );
@@ -276,7 +277,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should handle the error gracefully
-            expect(result.success).toBeFalsy();
+            expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error.length).toBeGreaterThan(0);
     }, 15000);
@@ -309,7 +310,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should reject empty query
-            expect(result.success).toBeFalsy();
+            expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain("missing required configuration");
     });
@@ -356,7 +357,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // With API key configured, this should succeed
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + graphql node
 
       const graphqlStep = simulation.steps.find(
@@ -440,7 +441,7 @@ describe("GraphQL Query Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const graphqlStep = simulation.steps.find(
         (step) => step.id === graphqlNode.id
       );
@@ -695,7 +696,7 @@ describe("GraphQL Query Node Tests", () => {
           },
         });
 
-        expect(simulation.success).toBeFalsy(); // Network error expected for mock endpoint
+        expect(simulation.status).toBe(ExecutionStatus.Failed); // Network error expected for mock endpoint
         const simGraphqlStep = simulation.steps.find(
           (step) => step.id === graphqlNode.id
         );
@@ -827,7 +828,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should succeed with real data
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       const data = result.data as Record<string, any>;
@@ -878,7 +879,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should succeed with real data
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       const data = result.data as Record<string, any>;
@@ -924,7 +925,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should handle HTTP 400 errors gracefully
-            expect(result.success).toBeFalsy();
+            expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain("400"); // Should contain HTTP status code
     }, 15000);
@@ -952,7 +953,7 @@ describe("GraphQL Query Node Tests", () => {
       const result = await client.runNodeWithInputs(params);
 
       // Should reject empty URL
-            expect(result.success).toBeFalsy();
+            expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain(
         "missing required configuration: url and query"
@@ -987,7 +988,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should handle network errors gracefully
-            expect(result.success).toBeFalsy();
+            expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toMatch(/dial tcp|no such host|network/i); // Network error patterns
     }, 15000);

@@ -316,7 +316,7 @@ enum ErrorCode {
 // TaskStatus represents status of the task. The transition is as follow
 enum TaskStatus {
   Active    = 0;
-  // Task is completed when it reaches its max_execution or its expiration time
+  // Task is completed when it reaches its max_execution count or its expiration time
   Completed = 1;
   Failed    = 2;
   Canceled  = 3;
@@ -327,7 +327,7 @@ enum TaskStatus {
 enum ExecutionStatus {
   EXECUTION_STATUS_UNSPECIFIED = 0;
   EXECUTION_STATUS_PENDING = 1;
-  EXECUTION_STATUS_COMPLETED = 2;
+  EXECUTION_STATUS_SUCCESS = 2;
   EXECUTION_STATUS_FAILED = 3;
   EXECUTION_STATUS_PARTIAL_SUCCESS = 4;
 }
@@ -600,7 +600,7 @@ message Execution {
   
   int64 start_at = 2; // timestamp when execution started (in milliseconds)
   int64 end_at   = 3; // timestamp when execution ended (in milliseconds)
-  bool   success = 4;
+  ExecutionStatus status = 4; // detailed execution status (success, failed, partial_success, etc.)
   string error   = 5;
   
   // index indicates which run this is for the workflow (0-based: 0=1st run, 1=2nd run, etc.)
@@ -883,7 +883,7 @@ message TriggerTaskResp {
   // Optional execution fields - populated when isBlocking=true or when execution is complete
   optional int64 start_at = 4; // timestamp when execution started (in milliseconds) - populated when isBlocking=true or when execution is complete, making it available for both blocking and non-blocking modes
   optional int64 end_at = 5;   // timestamp when execution ended (in milliseconds) - only available for blocking
-  optional bool success = 6;   // execution success status - only available for blocking
+  // Field 6 (success) was removed - do not reuse this field number
   optional string error = 7;   // error message if execution failed - only available for blocking
   repeated Execution.Step steps = 8; // execution steps - only available for blocking
 }

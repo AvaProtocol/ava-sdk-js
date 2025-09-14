@@ -3,7 +3,7 @@
  * @jest-serial
  */
 
-import _ from "lodash";
+import util from "util";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client, TimeoutPresets } from "@avaprotocol/sdk-js";
 import {
@@ -120,12 +120,17 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
-        amount: "1000000", // 1 USDC (6 decimals)
+        amount: "10000", // 0.01 USDC (token decimals: 1000000)
         token: tokens.USDC.address,
         smartWalletAddress: wallet.address,
       };
 
       const response = await client.withdrawFunds(withdrawRequest);
+
+      console.log(
+        "USDC withdrawal response:",
+        util.inspect(response, { depth: null, colors: true })
+      );
 
       expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);

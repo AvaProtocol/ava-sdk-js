@@ -1697,8 +1697,8 @@ export class Execution extends jspb.Message {
     setStartAt(value: number): Execution;
     getEndAt(): number;
     setEndAt(value: number): Execution;
-    getSuccess(): boolean;
-    setSuccess(value: boolean): Execution;
+    getStatus(): ExecutionStatus;
+    setStatus(value: ExecutionStatus): Execution;
     getError(): string;
     setError(value: string): Execution;
     getIndex(): number;
@@ -1723,7 +1723,7 @@ export namespace Execution {
         id: string,
         startAt: number,
         endAt: number,
-        success: boolean,
+        status: ExecutionStatus,
         error: string,
         index: number,
         stepsList: Array<Execution.Step.AsObject>,
@@ -2623,11 +2623,6 @@ export class TriggerTaskResp extends jspb.Message {
     getEndAt(): number | undefined;
     setEndAt(value: number): TriggerTaskResp;
 
-    hasSuccess(): boolean;
-    clearSuccess(): void;
-    getSuccess(): boolean | undefined;
-    setSuccess(value: boolean): TriggerTaskResp;
-
     hasError(): boolean;
     clearError(): void;
     getError(): string | undefined;
@@ -2654,7 +2649,6 @@ export namespace TriggerTaskResp {
         workflowId: string,
         startAt?: number,
         endAt?: number,
-        success?: boolean,
         error?: string,
         stepsList: Array<Execution.Step.AsObject>,
     }
@@ -3597,7 +3591,7 @@ export enum TaskStatus {
 export enum ExecutionStatus {
     EXECUTION_STATUS_UNSPECIFIED = 0,
     EXECUTION_STATUS_PENDING = 1,
-    EXECUTION_STATUS_COMPLETED = 2,
+    EXECUTION_STATUS_SUCCESS = 2,
     EXECUTION_STATUS_FAILED = 3,
     EXECUTION_STATUS_PARTIAL_SUCCESS = 4,
 }

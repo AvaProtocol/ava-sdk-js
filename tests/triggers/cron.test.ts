@@ -1,7 +1,7 @@
 import util from "util";
 import _ from "lodash";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
-import { CustomCodeLang, NodeType, TriggerType } from "@avaprotocol/types";
+import {CustomCodeLang, NodeType, TriggerType, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -238,7 +238,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -255,7 +255,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -272,7 +272,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -306,7 +306,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -323,7 +323,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -358,7 +358,7 @@ describe("CronTrigger Tests", () => {
 
       expect(result).toBeDefined();
       // Backend handles invalid cron expressions gracefully, returning success
-      expect(result.success).toBeTruthy();
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -375,7 +375,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -392,7 +392,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBeTruthy();
+            expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
     });
 
@@ -446,7 +446,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + minimal node
 
       const triggerStep = simulation.steps.find(
@@ -483,7 +483,7 @@ describe("CronTrigger Tests", () => {
         },
       });
 
-      expect(simulation.success).toBeTruthy();
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       const triggerStep = simulation.steps.find(
         (step) => step.id === cronTrigger.id
       );
