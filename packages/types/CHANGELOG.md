@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.5.2
+
+### Patch Changes
+
+- fa74495: Added ExecuteStatus and index to Execution.Step
+
 ## 2.5.1
 
 ### Patch Changes

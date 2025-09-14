@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.7.2
+
+### Patch Changes
+
+- fa74495: Added ExecuteStatus and index to Execution.Step
+- Updated dependencies [fa74495]
+  - @avaprotocol/types@2.5.2
+
 ## 2.7.1
 
 ### Patch Changes
