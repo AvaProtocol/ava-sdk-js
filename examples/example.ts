@@ -1348,15 +1348,87 @@ const main = async (cmd: string) => {
       });
       break;
     case "getExecution": {
-      const resultExecution = await client.getExecution(
-        commandArgs.args[0],
-        commandArgs.args[1]
-      );
+      const workflowId = commandArgs.args[0];
+      const executionId = commandArgs.args[1];
+      
+      if (!workflowId || !executionId) {
+        console.error("❌ Usage: yarn start getExecution <workflow-id> <execution-id>");
+        break;
+      }
 
-      console.log(
-        "getExecution response:\n",
-        util.inspect(resultExecution, { depth: null, colors: true })
-      );
+      // For getExecution, prefer API key authentication if available (allows cross-wallet access)
+      let executionClient = client;
+      
+      if (avsApiKey) {
+        console.log("🔑 Using API key authentication for execution access...");
+        
+        // Create a separate client for API key authentication
+        executionClient = new Client({
+          endpoint: config.AP_AVS_RPC,
+        });
+        
+        try {
+          // Use a dummy address for API key authentication (admin access)
+          const dummyAddress = "0x0000000000000000000000000000000000000000";
+          const { message } = await executionClient.getSignatureFormat(dummyAddress);
+          
+          const result = await executionClient.authWithAPIKey({
+            message,
+            apiKey: avsApiKey,
+          });
+          
+          executionClient.setAuthKey(result.authKey);
+          console.log("✅ API key authentication successful");
+        } catch (error) {
+          console.error("❌ API key authentication failed:", (error as Error).message);
+          console.error("   Possible causes:");
+          console.error("   1. API key is invalid or expired");
+          console.error("   2. API key is for a different environment (dev/sepolia/base)");
+          console.error("   3. API key doesn't have admin privileges");
+          console.error(`   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`);
+          break;
+        }
+      } else if (privateKey) {
+        console.log("🔑 Using signature-based authentication...");
+        
+        // Ensure we're authenticated with private key
+        if (!authKey) {
+          console.log("🔑 Authenticating with signature-based auth...");
+          const wallet = new ethers.Wallet(privateKey);
+          const eoaAddress = wallet.address;
+          
+          const { message } = await executionClient.getSignatureFormat(eoaAddress);
+          const signature = await generateSignature(message, privateKey);
+          
+          const result = await executionClient.authWithSignature({
+            message,
+            signature,
+          } as any);
+          
+          executionClient.setAuthKey(result.authKey);
+        }
+      } else {
+        console.error("❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided");
+        break;
+      }
+
+      try {
+        const resultExecution = await executionClient.getExecution(workflowId, executionId);
+
+        console.log(
+          "getExecution response:\n",
+          util.inspect(resultExecution, { depth: null, colors: true })
+        );
+      } catch (error: any) {
+        console.error("❌ Failed to get execution:", error.message || error);
+        console.error("   Possible causes:");
+        console.error("   1. Workflow or execution ID not found");
+        console.error("   2. You don't have permission to access this execution");
+        console.error("   3. Network connectivity issues");
+        if (error.code === 16) { // UNAUTHENTICATED
+          console.error("   4. Authentication failed - check your API key or private key");
+        }
+      }
       break;
     }
     case "examineWorkflow": {
