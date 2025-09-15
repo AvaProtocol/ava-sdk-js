@@ -284,10 +284,16 @@ async function getExecutions(
 ) {
   let workflowIds = [];
 
-  if (_.isEmpty(workflowIdsString)) {
-    const wallets = await client.getWallets();
+  // Use common authentication function with preference for API key (allows cross-wallet access)
+  const executionsClient = await getAuthenticatedClient({
+    strategy: 'prefer-api-key',
+    commandName: 'getExecutions'
+  });
 
-    const workflows = await client.getWorkflows(
+  if (_.isEmpty(workflowIdsString)) {
+    const wallets = await executionsClient.getWallets();
+
+    const workflows = await executionsClient.getWorkflows(
       _.map(wallets, (wallet: any) => wallet.address),
       {
         after: options.cursor,
@@ -310,7 +316,7 @@ async function getExecutions(
     workflowIds = _.split(workflowIdsString, ",");
   }
 
-  const result = await client.getExecutions(workflowIds, {
+  const result = await executionsClient.getExecutions(workflowIds, {
     after: options.cursor,
     limit: options.limit,
   });
@@ -1314,40 +1320,41 @@ const main = async (cmd: string) => {
         break;
       }
       
-      if (!privateKey) {
-        console.log("❌ TEST_PRIVATE_KEY is required for getWallet");
-        break;
-      }
-      
-      // Authenticate if not already done
-      if (!authKey) {
-        console.log("🔑 Authenticating with signature-based auth...");
-        const wallet = new ethers.Wallet(privateKey);
-        const eoaAddress = wallet.address;
+      try {
+        // Use common authentication function - getWallet typically needs private key for wallet creation
+        // but can also work with API key for admin access
+        const walletClient = await getAuthenticatedClient({
+          strategy: 'prefer-api-key',
+          commandName: 'getWallet'
+        });
         
-        const { message } = await client.getSignatureFormat(eoaAddress);
-        const signature = await generateSignature(message, privateKey);
-        
-        const result = await client.authWithSignature({
-          message,
-          signature,
-        } as any);
-        
-        client.setAuthKey(result.authKey);
-        authKey = result.authKey;
-        owner = eoaAddress;
-      }
-      
-      console.log(`📝 Creating/getting smart wallet with salt ${salt}...`);
-      const smartWalletAddress = await client.getWallet({
-        salt,
-        factoryAddress,
-      });
+        console.log(`📝 Creating/getting smart wallet with salt ${salt}...`);
+        const smartWalletAddress = await walletClient.getWallet({
+          salt,
+          factoryAddress,
+        });
 
-      console.log(
-        `✅ Smart wallet with salt ${salt} for ${owner}:\n`,
-        smartWalletAddress
-      );
+        // Get owner address for display
+        let displayOwner = "API key user";
+        if (privateKey) {
+          const wallet = new ethers.Wallet(privateKey);
+          displayOwner = wallet.address;
+        }
+
+        console.log(
+          `✅ Smart wallet with salt ${salt} for ${displayOwner}:\n`,
+          smartWalletAddress
+        );
+      } catch (error: any) {
+        console.error("❌ Failed to get/create wallet:", error.message || error);
+        console.error("   Possible causes:");
+        console.error("   1. Invalid salt or factory address");
+        console.error("   2. Network connectivity issues");
+        console.error("   3. Insufficient permissions for wallet creation");
+        if (error.code === 16) { // UNAUTHENTICATED
+          console.error("   4. Authentication failed - check your API key or private key");
+        }
+      }
       break;
     }
     case "schedule-monitor":
@@ -1446,12 +1453,24 @@ const main = async (cmd: string) => {
       break;
     }
 
-    case "getExecutions":
-      await getExecutions(commandArgs.args[0], {
-        cursor: commandArgs.args[1],
-        limit: _.toNumber(commandArgs.args[2]),
-      });
+    case "getExecutions": {
+      try {
+        await getExecutions(commandArgs.args[0], {
+          cursor: commandArgs.args[1],
+          limit: _.toNumber(commandArgs.args[2]),
+        });
+      } catch (error: any) {
+        console.error("❌ Failed to get executions:", error.message || error);
+        console.error("   Possible causes:");
+        console.error("   1. Workflow IDs not found");
+        console.error("   2. You don't have permission to access these executions");
+        console.error("   3. Network connectivity issues");
+        if (error.code === 16) { // UNAUTHENTICATED
+          console.error("   4. Authentication failed - check your API key or private key");
+        }
+      }
       break;
+    }
     case "getExecution": {
       const workflowId = commandArgs.args[0];
       const executionId = commandArgs.args[1];
