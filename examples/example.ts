@@ -78,6 +78,88 @@ async function generateSignature(
   return signature;
 }
 
+// Common authentication function that handles both API key and private key authentication
+type AuthStrategy = 'api-key-only' | 'private-key-only' | 'prefer-api-key';
+
+interface AuthOptions {
+  strategy: AuthStrategy;
+  targetAddress?: string; // Required for api-key authentication
+  commandName?: string; // For error messages
+}
+
+async function getAuthenticatedClient(options: AuthOptions): Promise<Client> {
+  const { strategy, targetAddress, commandName = 'command' } = options;
+  
+  // Create a new client for authentication
+  const authClient = new Client({
+    endpoint: config.AP_AVS_RPC,
+  });
+
+  // API key authentication
+  if ((strategy === 'api-key-only' || strategy === 'prefer-api-key') && avsApiKey) {
+    console.log(`🔑 Using API key authentication for ${commandName}...`);
+    
+    try {
+      // Use a dummy address for API key authentication (admin access)
+      const dummyAddress = targetAddress || "0x0000000000000000000000000000000000000000";
+      const { message } = await authClient.getSignatureFormat(dummyAddress);
+      
+      const result = await authClient.authWithAPIKey({
+        message,
+        apiKey: avsApiKey,
+      });
+      
+      authClient.setAuthKey(result.authKey);
+      console.log("✅ API key authentication successful");
+      return authClient;
+    } catch (error) {
+      console.error("❌ API key authentication failed:", (error as Error).message);
+      console.error("   Possible causes:");
+      console.error("   1. API key is invalid or expired");
+      console.error("   2. API key is for a different environment (dev/sepolia/base)");
+      console.error("   3. API key doesn't have admin privileges");
+      console.error(`   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`);
+      
+      // If this was api-key-only strategy, throw the error
+      if (strategy === 'api-key-only') {
+        throw error;
+      }
+      // For prefer-api-key strategy, continue to try private key auth below
+    }
+  }
+
+  // Private key authentication (fallback or primary)
+  if ((strategy === 'private-key-only' || strategy === 'prefer-api-key') && privateKey) {
+    console.log(`🔑 Using signature-based authentication for ${commandName}...`);
+    
+    const wallet = new ethers.Wallet(privateKey);
+    const eoaAddress = wallet.address;
+    
+    const { message } = await authClient.getSignatureFormat(eoaAddress);
+    const signature = await generateSignature(message, privateKey);
+    
+    const result = await authClient.authWithSignature({
+      message,
+      signature,
+    } as any);
+    
+    authClient.setAuthKey(result.authKey);
+    console.log("✅ Signature-based authentication successful");
+    return authClient;
+  }
+
+  // No valid authentication method available
+  const availableMethods = [];
+  if (avsApiKey) availableMethods.push("AVS_API_KEY");
+  if (privateKey) availableMethods.push("TEST_PRIVATE_KEY");
+  
+  const requiredMethods = strategy === 'api-key-only' ? ['AVS_API_KEY'] : 
+                         strategy === 'private-key-only' ? ['TEST_PRIVATE_KEY'] :
+                         ['AVS_API_KEY', 'TEST_PRIVATE_KEY'];
+  
+  throw new Error(`❌ Authentication failed for ${commandName}. Available: [${availableMethods.join(', ')}], Required: one of [${requiredMethods.join(', ')}]`);
+}
+
 async function generateApiToken(targetAddress?: string) {
   // Check if API key is available for admin access
   if (avsApiKey) {
@@ -1331,13 +1413,36 @@ const main = async (cmd: string) => {
     }
 
     case "getWorkflow": {
-      const taskId = commandArgs.args[0];
-      const result = await client.getWorkflow(taskId);
+      const workflowId = commandArgs.args[0];
+      
+      if (!workflowId) {
+        console.error("❌ Usage: yarn start getWorkflow <workflow-id>");
+        break;
+      }
 
-      console.log(
-        "getWorkflow response:\n",
-        util.inspect(result, { depth: null, colors: true })
-      );
+      try {
+        // Use common authentication function with preference for API key (allows cross-wallet access)
+        const workflowClient = await getAuthenticatedClient({
+          strategy: 'prefer-api-key',
+          commandName: 'getWorkflow'
+        });
+
+        const result = await workflowClient.getWorkflow(workflowId);
+
+        console.log(
+          "getWorkflow response:\n",
+          util.inspect(result, { depth: null, colors: true })
+        );
+      } catch (error: any) {
+        console.error("❌ Failed to get workflow:", error.message || error);
+        console.error("   Possible causes:");
+        console.error("   1. Workflow ID not found");
+        console.error("   2. You don't have permission to access this workflow");
+        console.error("   3. Network connectivity issues");
+        if (error.code === 16) { // UNAUTHENTICATED
+          console.error("   4. Authentication failed - check your API key or private key");
+        }
+      }
       break;
     }
 
@@ -1356,63 +1461,13 @@ const main = async (cmd: string) => {
         break;
       }
 
-      // For getExecution, prefer API key authentication if available (allows cross-wallet access)
-      let executionClient = client;
-      
-      if (avsApiKey) {
-        console.log("🔑 Using API key authentication for execution access...");
-        
-        // Create a separate client for API key authentication
-        executionClient = new Client({
-          endpoint: config.AP_AVS_RPC,
-        });
-        
-        try {
-          // Use a dummy address for API key authentication (admin access)
-          const dummyAddress = "0x0000000000000000000000000000000000000000";
-          const { message } = await executionClient.getSignatureFormat(dummyAddress);
-          
-          const result = await executionClient.authWithAPIKey({
-            message,
-            apiKey: avsApiKey,
-          });
-          
-          executionClient.setAuthKey(result.authKey);
-          console.log("✅ API key authentication successful");
-        } catch (error) {
-          console.error("❌ API key authentication failed:", (error as Error).message);
-          console.error("   Possible causes:");
-          console.error("   1. API key is invalid or expired");
-          console.error("   2. API key is for a different environment (dev/sepolia/base)");
-          console.error("   3. API key doesn't have admin privileges");
-          console.error(`   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`);
-          break;
-        }
-      } else if (privateKey) {
-        console.log("🔑 Using signature-based authentication...");
-        
-        // Ensure we're authenticated with private key
-        if (!authKey) {
-          console.log("🔑 Authenticating with signature-based auth...");
-          const wallet = new ethers.Wallet(privateKey);
-          const eoaAddress = wallet.address;
-          
-          const { message } = await executionClient.getSignatureFormat(eoaAddress);
-          const signature = await generateSignature(message, privateKey);
-          
-          const result = await executionClient.authWithSignature({
-            message,
-            signature,
-          } as any);
-          
-          executionClient.setAuthKey(result.authKey);
-        }
-      } else {
-        console.error("❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided");
-        break;
-      }
-
       try {
+        // Use common authentication function with preference for API key (allows cross-wallet access)
+        const executionClient = await getAuthenticatedClient({
+          strategy: 'prefer-api-key',
+          commandName: 'getExecution'
+        });
+
         const resultExecution = await executionClient.getExecution(workflowId, executionId);
 
         console.log(
