@@ -1,6 +1,6 @@
 {
   "name": "@avaprotocol/sdk-js",
-  "version": "2.7.2",
+  "version": "2.7.3",
   "description": "A JavaScript/TypeScript SDK designed to simplify integration with Ava Protocol's AVS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -31,7 +31,7 @@
     "prepare": "node ../../scripts/prepare-package.js"
   },
   "dependencies": {
-    "@avaprotocol/types": "^2.5.2",
+    "@avaprotocol/types": "^2.5.3",
     "@grpc/grpc-js": "^1.11.3",
     "@grpc/proto-loader": "^0.7.13",
     "dotenv": "^16.4.5",

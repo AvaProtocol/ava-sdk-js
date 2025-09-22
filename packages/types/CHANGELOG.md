@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.5.3
+
+### Patch Changes
+
+- f0d9b2c: Added status code and fixed test failures
+
 ## 2.5.2
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.7.3
+
+### Patch Changes
+
+- f0d9b2c: Added status code and fixed test failures
+- Updated dependencies [f0d9b2c]
+  - @avaprotocol/types@2.5.3
+
 ## 2.7.2
 
 ### Patch Changes
