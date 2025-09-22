@@ -6,7 +6,7 @@ import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
-import { WorkflowStatus, WorkflowProps } from "@avaprotocol/types";
+import { WorkflowStatus, WorkflowProps, InputVariables } from "@avaprotocol/types";
 import { convertJSValueToProtobuf } from "../utils";
 
 // Function to convert TaskStatus to string
@@ -41,7 +41,7 @@ class Workflow implements WorkflowProps {
   status?: WorkflowStatus;
   lastRanAt?: number;
   executionCount?: number;
-  inputVariables?: Record<string, any>;
+  inputVariables?: InputVariables;
 
   /**
    * Create an instance of Workflow from user inputs

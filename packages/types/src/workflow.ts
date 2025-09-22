@@ -2,6 +2,7 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import { TriggerType, WorkflowStatus, ExecutionStatus } from "./enums";
 import { TriggerProps } from "./trigger";
 import { NodeProps } from "./node";
+import { InputVariables } from "./shared";
 
 export type WorkflowTriggerDataProps =
   | { type: TriggerType.FixedTime; timestamp: number; timestampIso: string }
@@ -110,5 +111,5 @@ export type WorkflowProps = Omit<
   edges: EdgeProps[];
   lastRanAt?: number;
   executionCount?: number;
-  inputVariables?: Record<string, any>; // Input variables for workflow execution
+  inputVariables?: InputVariables; // Input variables for workflow execution
 };

@@ -39,7 +39,7 @@ export type TriggerDataProps = {
 };
 
 // Input variables type for workflow execution
-export type InputVariables = Record<string, any>;
+export type InputVariables = Record<string, unknown>;
 
 // MethodCall interface for enhanced event data formatting
 // Used by both triggers and nodes for contract interactions
