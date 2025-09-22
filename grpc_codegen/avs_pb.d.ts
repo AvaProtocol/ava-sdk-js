@@ -3243,6 +3243,8 @@ export class RunNodeWithInputsResp extends jspb.Message {
     clearExecutionContext(): void;
     getExecutionContext(): google_protobuf_struct_pb.Value | undefined;
     setExecutionContext(value?: google_protobuf_struct_pb.Value): RunNodeWithInputsResp;
+    getErrorCode(): ErrorCode;
+    setErrorCode(value: ErrorCode): RunNodeWithInputsResp;
 
     hasEthTransfer(): boolean;
     clearEthTransfer(): void;
@@ -3307,6 +3309,7 @@ export namespace RunNodeWithInputsResp {
         error: string,
         metadata?: google_protobuf_struct_pb.Value.AsObject,
         executionContext?: google_protobuf_struct_pb.Value.AsObject,
+        errorCode: ErrorCode,
         ethTransfer?: ETHTransferNode.Output.AsObject,
         graphql?: GraphQLQueryNode.Output.AsObject,
         contractRead?: ContractReadNode.Output.AsObject,
@@ -3378,6 +3381,8 @@ export class RunTriggerResp extends jspb.Message {
     clearExecutionContext(): void;
     getExecutionContext(): google_protobuf_struct_pb.Value | undefined;
     setExecutionContext(value?: google_protobuf_struct_pb.Value): RunTriggerResp;
+    getErrorCode(): ErrorCode;
+    setErrorCode(value: ErrorCode): RunTriggerResp;
 
     hasBlockTrigger(): boolean;
     clearBlockTrigger(): void;
@@ -3422,6 +3427,7 @@ export namespace RunTriggerResp {
         error: string,
         metadata?: google_protobuf_struct_pb.Value.AsObject,
         executionContext?: google_protobuf_struct_pb.Value.AsObject,
+        errorCode: ErrorCode,
         blockTrigger?: BlockTrigger.Output.AsObject,
         fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
         cronTrigger?: CronTrigger.Output.AsObject,

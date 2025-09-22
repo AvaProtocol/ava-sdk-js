@@ -129,13 +129,28 @@ describe("Execution Management Tests", () => {
         // Wait for all triggers to be submitted
         const triggerResults = await Promise.all(triggerPromises);
 
-        // Wait for executions to complete
-        await new Promise(resolve => setTimeout(resolve, 3000));
-
-        // Collect all executions and their indexes
+        // Wait for executions to complete with polling
         const executionsWithIndexes = [];
         for (let i = 0; i < triggerResults.length; i++) {
-          const execution = await client.getExecution(workflowId, triggerResults[i].executionId);
+          const executionId = triggerResults[i].executionId;
+          let execution;
+          let attempts = 0;
+          const maxAttempts = 10; // 10 attempts = 50 seconds max wait
+          const pollInterval = 5000; // Poll every 5 seconds
+          
+          // Poll for this specific execution
+          do {
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            attempts++;
+            
+            try {
+              execution = await client.getExecution(workflowId, executionId);
+              if (execution) break;
+            } catch (error) {
+              execution = null;
+            }
+          } while (!execution && attempts < maxAttempts);
+          
           expect(execution).toBeDefined();
           expect(typeof execution.index).toBe('number');
           executionsWithIndexes.push({

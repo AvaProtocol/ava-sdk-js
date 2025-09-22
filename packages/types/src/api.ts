@@ -237,6 +237,7 @@ export interface RunNodeWithInputsResponse {
   success: boolean;
   data: NodeOutputData;
   error?: string;
+  errorCode?: number;
   metadata?: Record<string, any> | any[];
   executionContext?: Record<string, any>;
 }
@@ -250,6 +251,7 @@ export interface RunTriggerResponse {
   success: boolean;
   data: TriggerOutputData;
   error?: string;
+  errorCode?: number;
   metadata?: Record<string, any> | any[];
   executionContext?: Record<string, any>;
 }

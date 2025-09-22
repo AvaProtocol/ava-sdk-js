@@ -82,11 +82,22 @@ describe("triggerWorkflow Tests", () => {
         isBlocking: false, // Don't block to avoid timeouts
       });
 
-      // Wait a bit for the execution to complete
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // The list should now contain one execution
-      const executions2 = await client.getExecutions([workflowId]);
+      // Wait for execution to complete with polling mechanism
+      let executions2;
+      let attempts = 0;
+      const maxAttempts = 10; // 10 attempts = 50 seconds max wait (operator needs ~26s)
+      const pollInterval = 5000; // Poll every 5 seconds
+      
+      do {
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        attempts++;
+        
+        try {
+          executions2 = await client.getExecutions([workflowId]);
+        } catch (error) {
+          executions2 = { items: [] };
+        }
+      } while (executions2.items.length === 0 && attempts < maxAttempts);
 
       // Verify that the execution is successfully triggered at block number + 5
       expect(Array.isArray(executions2.items)).toBe(true);

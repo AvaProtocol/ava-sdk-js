@@ -15,6 +15,7 @@ import {
   TriggerTypeConverter,
   AUTH_KEY_HEADER,
   DEFAULT_LIMIT,
+  ErrorCode,
   type WorkflowProps,
   type GetKeyResponse,
   type RequestOptions,
@@ -1327,6 +1328,7 @@ class Client extends BaseClient {
       return {
         success: false,
         error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
+        errorCode: ErrorCode.INVALID_REQUEST,
         data: null,
       };
     }
@@ -1360,6 +1362,7 @@ class Client extends BaseClient {
       success: result.getSuccess(),
       data: toCamelCaseKeys(NodeFactory.fromOutputData(result)),
       error: result.getError(),
+      errorCode: result.getErrorCode() || undefined,
       metadata: result.hasMetadata()
         ? toCamelCaseKeys(convertProtobufValueToJs(result.getMetadata()!))
         : undefined,
@@ -1417,6 +1420,7 @@ class Client extends BaseClient {
       success: result.getSuccess(),
       data: toCamelCaseKeys(TriggerFactory.fromOutputData(result)),
       error: result.getError(),
+      errorCode: result.getErrorCode() || undefined,
       metadata: toCamelCaseKeys(metadata),
       executionContext: result.hasExecutionContext()
         ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
@@ -1524,6 +1528,7 @@ export {
   NodeFactory,
   TriggerFactory,
   Secret,
+  ErrorCode,
   cleanGrpcErrorMessage,
 };
 

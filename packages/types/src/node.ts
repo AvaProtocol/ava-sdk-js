@@ -5,27 +5,23 @@ import { MethodCallType } from "./shared";
 
 // Node DataTypes
 export type ETHTransferNodeData = avs_pb.ETHTransferNode.Config.AsObject;
-// Custom ContractWrite data type with cleaner field names
 export interface ContractWriteNodeData {
   contractAddress: string;
   contractAbi: ContractAbi; // Contract ABI as array
   methodCalls: MethodCallType[]; // Required: Method calls with methodParams
 }
 
-// Custom ContractRead data type with cleaner field names
 export interface ContractReadNodeData {
   contractAddress: string;
   contractAbi: ContractAbi; // Contract ABI as array
   methodCalls: MethodCallType[]; // Required: Method calls with methodParams
 }
 
-// Custom CustomCode data type with cleaner field names
 export interface CustomCodeNodeData {
   lang: CustomCodeLang;
   source: string;
 }
 
-// Custom BranchNode data type with cleaner field names
 export interface BranchNodeData {
   conditions: Array<{
     id: string;
@@ -50,7 +46,6 @@ export type GraphQLQueryNodeData = {
 
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
 
-// Define individual runner types for better type discrimination
 type LoopRunnerConfig =
   | {
       type: "restApi";

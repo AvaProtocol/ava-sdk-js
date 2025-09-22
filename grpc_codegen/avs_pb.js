@@ -25894,6 +25894,7 @@ proto.aggregator.RunNodeWithInputsResp.toObject = function(includeInstance, msg)
     error: jspb.Message.getFieldWithDefault(msg, 3, ""),
     metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     executionContext: (f = msg.getExecutionContext()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    errorCode: jspb.Message.getFieldWithDefault(msg, 7, 0),
     ethTransfer: (f = msg.getEthTransfer()) && proto.aggregator.ETHTransferNode.Output.toObject(includeInstance, f),
     graphql: (f = msg.getGraphql()) && proto.aggregator.GraphQLQueryNode.Output.toObject(includeInstance, f),
     contractRead: (f = msg.getContractRead()) && proto.aggregator.ContractReadNode.Output.toObject(includeInstance, f),
@@ -25956,6 +25957,10 @@ proto.aggregator.RunNodeWithInputsResp.deserializeBinaryFromReader = function(ms
       var value = new google_protobuf_struct_pb.Value;
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setExecutionContext(value);
+      break;
+    case 7:
+      var value = /** @type {!proto.aggregator.ErrorCode} */ (reader.readEnum());
+      msg.setErrorCode(value);
       break;
     case 10:
       var value = new proto.aggregator.ETHTransferNode.Output;
@@ -26059,6 +26064,13 @@ proto.aggregator.RunNodeWithInputsResp.serializeBinaryToWriter = function(messag
       6,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getErrorCode();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      7,
+      f
     );
   }
   f = message.getEthTransfer();
@@ -26243,6 +26255,24 @@ proto.aggregator.RunNodeWithInputsResp.prototype.clearExecutionContext = functio
  */
 proto.aggregator.RunNodeWithInputsResp.prototype.hasExecutionContext = function() {
   return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional ErrorCode error_code = 7;
+ * @return {!proto.aggregator.ErrorCode}
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.getErrorCode = function() {
+  return /** @type {!proto.aggregator.ErrorCode} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.ErrorCode} value
+ * @return {!proto.aggregator.RunNodeWithInputsResp} returns this
+ */
+proto.aggregator.RunNodeWithInputsResp.prototype.setErrorCode = function(value) {
+  return jspb.Message.setProto3EnumField(this, 7, value);
 };
 
 
@@ -26840,6 +26870,7 @@ proto.aggregator.RunTriggerResp.toObject = function(includeInstance, msg) {
     error: jspb.Message.getFieldWithDefault(msg, 2, ""),
     metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     executionContext: (f = msg.getExecutionContext()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    errorCode: jspb.Message.getFieldWithDefault(msg, 6, 0),
     blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
     fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
     cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
@@ -26898,6 +26929,10 @@ proto.aggregator.RunTriggerResp.deserializeBinaryFromReader = function(msg, read
       var value = new google_protobuf_struct_pb.Value;
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setExecutionContext(value);
+      break;
+    case 6:
+      var value = /** @type {!proto.aggregator.ErrorCode} */ (reader.readEnum());
+      msg.setErrorCode(value);
       break;
     case 10:
       var value = new proto.aggregator.BlockTrigger.Output;
@@ -26981,6 +27016,13 @@ proto.aggregator.RunTriggerResp.serializeBinaryToWriter = function(message, writ
       5,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getErrorCode();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      6,
+      f
     );
   }
   f = message.getBlockTrigger();
@@ -27133,6 +27175,24 @@ proto.aggregator.RunTriggerResp.prototype.clearExecutionContext = function() {
  */
 proto.aggregator.RunTriggerResp.prototype.hasExecutionContext = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional ErrorCode error_code = 6;
+ * @return {!proto.aggregator.ErrorCode}
+ */
+proto.aggregator.RunTriggerResp.prototype.getErrorCode = function() {
+  return /** @type {!proto.aggregator.ErrorCode} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.ErrorCode} value
+ * @return {!proto.aggregator.RunTriggerResp} returns this
+ */
+proto.aggregator.RunTriggerResp.prototype.setErrorCode = function(value) {
+  return jspb.Message.setProto3EnumField(this, 6, value);
 };
 
 
