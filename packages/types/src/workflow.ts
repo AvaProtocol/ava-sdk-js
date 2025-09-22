@@ -98,6 +98,7 @@ export type WorkflowProps = Omit<
   | "edgesList"
   | "lastRanAt"
   | "executionCount"
+  | "inputVariablesMap"
 > & {
   id?: string;
   owner?: string;
@@ -109,4 +110,5 @@ export type WorkflowProps = Omit<
   edges: EdgeProps[];
   lastRanAt?: number;
   executionCount?: number;
+  inputVariables?: Record<string, any>; // Input variables for workflow execution
 };

@@ -7,6 +7,7 @@ import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
 import { WorkflowStatus, WorkflowProps } from "@avaprotocol/types";
+import { convertJSValueToProtobuf } from "../utils";
 
 // Function to convert TaskStatus to string
 export function convertStatusToString(
@@ -40,6 +41,7 @@ class Workflow implements WorkflowProps {
   status?: WorkflowStatus;
   lastRanAt?: number;
   executionCount?: number;
+  inputVariables?: Record<string, any>;
 
   /**
    * Create an instance of Workflow from user inputs
@@ -66,6 +68,7 @@ class Workflow implements WorkflowProps {
     this.status = props.status;
     this.completedAt = props.completedAt;
     this.lastRanAt = props.lastRanAt;
+    this.inputVariables = props.inputVariables;
   }
 
   /**
@@ -187,6 +190,14 @@ class Workflow implements WorkflowProps {
       request.setName(this.name);
     }
 
+    // Add input variables if provided
+    if (this.inputVariables) {
+      const inputVarsMap = request.getInputVariablesMap();
+      for (const [key, value] of Object.entries(this.inputVariables)) {
+        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+      }
+    }
+
     return request;
   }
 
@@ -210,6 +221,7 @@ class Workflow implements WorkflowProps {
       status: this.status,
       completedAt: this.completedAt,
       lastRanAt: this.lastRanAt,
+      inputVariables: this.inputVariables,
     };
   }
 }
