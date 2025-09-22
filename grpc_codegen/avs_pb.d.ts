@@ -1938,6 +1938,9 @@ export class Task extends jspb.Message {
     setEdgesList(value: Array<TaskEdge>): Task;
     addEdges(value?: TaskEdge, index?: number): TaskEdge;
 
+    getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearInputVariablesMap(): void;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Task.AsObject;
     static toObject(includeInstance: boolean, msg: Task): Task.AsObject;
@@ -1964,6 +1967,8 @@ export namespace Task {
         trigger?: TaskTrigger.AsObject,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
+
+        inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
     }
 }
 
@@ -1992,6 +1997,9 @@ export class CreateTaskReq extends jspb.Message {
     setEdgesList(value: Array<TaskEdge>): CreateTaskReq;
     addEdges(value?: TaskEdge, index?: number): TaskEdge;
 
+    getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearInputVariablesMap(): void;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): CreateTaskReq.AsObject;
     static toObject(includeInstance: boolean, msg: CreateTaskReq): CreateTaskReq.AsObject;
@@ -2012,6 +2020,8 @@ export namespace CreateTaskReq {
         name: string,
         nodesList: Array<TaskNode.AsObject>,
         edgesList: Array<TaskEdge.AsObject>,
+
+        inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
     }
 }
 

@@ -15764,7 +15764,8 @@ proto.aggregator.Task.toObject = function(includeInstance, msg) {
     nodesList: jspb.Message.toObjectList(msg.getNodesList(),
     proto.aggregator.TaskNode.toObject, includeInstance),
     edgesList: jspb.Message.toObjectList(msg.getEdgesList(),
-    proto.aggregator.TaskEdge.toObject, includeInstance)
+    proto.aggregator.TaskEdge.toObject, includeInstance),
+    inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
   if (includeInstance) {
@@ -15859,6 +15860,12 @@ proto.aggregator.Task.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.aggregator.TaskEdge;
       reader.readMessage(value,proto.aggregator.TaskEdge.deserializeBinaryFromReader);
       msg.addEdges(value);
+      break;
+    case 15:
+      var value = msg.getInputVariablesMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
+         });
       break;
     default:
       reader.skipField();
@@ -15989,6 +15996,10 @@ proto.aggregator.Task.serializeBinaryToWriter = function(message, writer) {
       f,
       proto.aggregator.TaskEdge.serializeBinaryToWriter
     );
+  }
+  f = message.getInputVariablesMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(15, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
   }
 };
 
@@ -16304,6 +16315,28 @@ proto.aggregator.Task.prototype.clearEdgesList = function() {
 };
 
 
+/**
+ * map<string, google.protobuf.Value> input_variables = 15;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.google.protobuf.Value>}
+ */
+proto.aggregator.Task.prototype.getInputVariablesMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.google.protobuf.Value>} */ (
+      jspb.Message.getMapField(this, 15, opt_noLazyCreate,
+      proto.google.protobuf.Value));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.Task} returns this
+ */
+proto.aggregator.Task.prototype.clearInputVariablesMap = function() {
+  this.getInputVariablesMap().clear();
+  return this;};
+
+
 
 /**
  * List of repeated fields within this message type.
@@ -16352,7 +16385,8 @@ proto.aggregator.CreateTaskReq.toObject = function(includeInstance, msg) {
     nodesList: jspb.Message.toObjectList(msg.getNodesList(),
     proto.aggregator.TaskNode.toObject, includeInstance),
     edgesList: jspb.Message.toObjectList(msg.getEdgesList(),
-    proto.aggregator.TaskEdge.toObject, includeInstance)
+    proto.aggregator.TaskEdge.toObject, includeInstance),
+    inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
   if (includeInstance) {
@@ -16423,6 +16457,12 @@ proto.aggregator.CreateTaskReq.deserializeBinaryFromReader = function(msg, reade
       var value = new proto.aggregator.TaskEdge;
       reader.readMessage(value,proto.aggregator.TaskEdge.deserializeBinaryFromReader);
       msg.addEdges(value);
+      break;
+    case 9:
+      var value = msg.getInputVariablesMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
+         });
       break;
     default:
       reader.skipField();
@@ -16511,6 +16551,10 @@ proto.aggregator.CreateTaskReq.serializeBinaryToWriter = function(message, write
       f,
       proto.aggregator.TaskEdge.serializeBinaryToWriter
     );
+  }
+  f = message.getInputVariablesMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(9, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
   }
 };
 
@@ -16716,6 +16760,28 @@ proto.aggregator.CreateTaskReq.prototype.addEdges = function(opt_value, opt_inde
 proto.aggregator.CreateTaskReq.prototype.clearEdgesList = function() {
   return this.setEdgesList([]);
 };
+
+
+/**
+ * map<string, google.protobuf.Value> input_variables = 9;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.google.protobuf.Value>}
+ */
+proto.aggregator.CreateTaskReq.prototype.getInputVariablesMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.google.protobuf.Value>} */ (
+      jspb.Message.getMapField(this, 9, opt_noLazyCreate,
+      proto.google.protobuf.Value));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.CreateTaskReq} returns this
+ */
+proto.aggregator.CreateTaskReq.prototype.clearInputVariablesMap = function() {
+  this.getInputVariablesMap().clear();
+  return this;};
 
 
 
