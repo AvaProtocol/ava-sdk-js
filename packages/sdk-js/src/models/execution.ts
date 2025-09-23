@@ -31,6 +31,7 @@ class Execution implements ExecutionProps {
   error: string;
   index: number;
   steps: Step[];
+  totalGasCost?: string;
 
   constructor(props: ExecutionProps) {
     this.id = props.id;
@@ -40,6 +41,7 @@ class Execution implements ExecutionProps {
     this.error = props.error;
     this.index = props.index;
     this.steps = props.steps.map(s => new Step(s));
+    this.totalGasCost = props.totalGasCost;
   }
 
 
@@ -56,6 +58,7 @@ class Execution implements ExecutionProps {
       error: this.error,
       index: this.index,
       steps: this.steps.map(step => step.toJson()),
+      ...(this.totalGasCost && { totalGasCost: this.totalGasCost }),
     };
   }
 
@@ -67,6 +70,7 @@ class Execution implements ExecutionProps {
       status: convertProtobufExecutionStatusToTypes(execution.getStatus()),
       error: execution.getError(),
       index: execution.getIndex(),
+      totalGasCost: execution.getTotalGasCost() || undefined,
       steps: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)) as StepProps[],

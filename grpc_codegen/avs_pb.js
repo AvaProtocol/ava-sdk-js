@@ -14114,6 +14114,7 @@ proto.aggregator.Execution.toObject = function(includeInstance, msg) {
     status: jspb.Message.getFieldWithDefault(msg, 4, 0),
     error: jspb.Message.getFieldWithDefault(msg, 5, ""),
     index: jspb.Message.getFieldWithDefault(msg, 6, 0),
+    totalGasCost: jspb.Message.getFieldWithDefault(msg, 30, ""),
     stepsList: jspb.Message.toObjectList(msg.getStepsList(),
     proto.aggregator.Execution.Step.toObject, includeInstance)
   };
@@ -14175,6 +14176,10 @@ proto.aggregator.Execution.deserializeBinaryFromReader = function(msg, reader) {
     case 6:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setIndex(value);
+      break;
+    case 30:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTotalGasCost(value);
       break;
     case 8:
       var value = new proto.aggregator.Execution.Step;
@@ -14249,6 +14254,13 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0) {
     writer.writeInt64(
       6,
+      f
+    );
+  }
+  f = message.getTotalGasCost();
+  if (f.length > 0) {
+    writer.writeString(
+      30,
       f
     );
   }
@@ -14350,6 +14362,9 @@ proto.aggregator.Execution.Step.toObject = function(includeInstance, msg) {
     config: (f = msg.getConfig()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     metadata: (f = msg.getMetadata()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     executionContext: (f = msg.getExecutionContext()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
+    gasUsed: jspb.Message.getFieldWithDefault(msg, 27, ""),
+    gasPrice: jspb.Message.getFieldWithDefault(msg, 28, ""),
+    totalGasCost: jspb.Message.getFieldWithDefault(msg, 29, ""),
     blockTrigger: (f = msg.getBlockTrigger()) && proto.aggregator.BlockTrigger.Output.toObject(includeInstance, f),
     fixedTimeTrigger: (f = msg.getFixedTimeTrigger()) && proto.aggregator.FixedTimeTrigger.Output.toObject(includeInstance, f),
     cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
@@ -14444,6 +14459,18 @@ proto.aggregator.Execution.Step.deserializeBinaryFromReader = function(msg, read
       var value = new google_protobuf_struct_pb.Value;
       reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
       msg.setExecutionContext(value);
+      break;
+    case 27:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setGasUsed(value);
+      break;
+    case 28:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setGasPrice(value);
+      break;
+    case 29:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setTotalGasCost(value);
       break;
     case 20:
       var value = new proto.aggregator.BlockTrigger.Output;
@@ -14623,6 +14650,27 @@ proto.aggregator.Execution.Step.serializeBinaryToWriter = function(message, writ
       26,
       f,
       google_protobuf_struct_pb.Value.serializeBinaryToWriter
+    );
+  }
+  f = message.getGasUsed();
+  if (f.length > 0) {
+    writer.writeString(
+      27,
+      f
+    );
+  }
+  f = message.getGasPrice();
+  if (f.length > 0) {
+    writer.writeString(
+      28,
+      f
+    );
+  }
+  f = message.getTotalGasCost();
+  if (f.length > 0) {
+    writer.writeString(
+      29,
+      f
     );
   }
   f = message.getBlockTrigger();
@@ -15007,6 +15055,60 @@ proto.aggregator.Execution.Step.prototype.clearExecutionContext = function() {
  */
 proto.aggregator.Execution.Step.prototype.hasExecutionContext = function() {
   return jspb.Message.getField(this, 26) != null;
+};
+
+
+/**
+ * optional string gas_used = 27;
+ * @return {string}
+ */
+proto.aggregator.Execution.Step.prototype.getGasUsed = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 27, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.setGasUsed = function(value) {
+  return jspb.Message.setProto3StringField(this, 27, value);
+};
+
+
+/**
+ * optional string gas_price = 28;
+ * @return {string}
+ */
+proto.aggregator.Execution.Step.prototype.getGasPrice = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 28, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.setGasPrice = function(value) {
+  return jspb.Message.setProto3StringField(this, 28, value);
+};
+
+
+/**
+ * optional string total_gas_cost = 29;
+ * @return {string}
+ */
+proto.aggregator.Execution.Step.prototype.getTotalGasCost = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 29, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.setTotalGasCost = function(value) {
+  return jspb.Message.setProto3StringField(this, 29, value);
 };
 
 
@@ -15669,6 +15771,24 @@ proto.aggregator.Execution.prototype.getIndex = function() {
  */
 proto.aggregator.Execution.prototype.setIndex = function(value) {
   return jspb.Message.setProto3IntField(this, 6, value);
+};
+
+
+/**
+ * optional string total_gas_cost = 30;
+ * @return {string}
+ */
+proto.aggregator.Execution.prototype.getTotalGasCost = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 30, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.Execution} returns this
+ */
+proto.aggregator.Execution.prototype.setTotalGasCost = function(value) {
+  return jspb.Message.setProto3StringField(this, 30, value);
 };
 
 

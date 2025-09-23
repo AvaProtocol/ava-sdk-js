@@ -212,6 +212,10 @@ export interface ExecutionStep {
   output?: unknown;
   startAt: number;
   endAt: number;
+  // Gas tracking fields for blockchain operations (ETH transfer, contract write)
+  gasUsed?: string;
+  gasPrice?: string;
+  totalGasCost?: string;
 }
 
 /**
