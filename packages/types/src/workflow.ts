@@ -74,16 +74,25 @@ export type StepProps = Omit<
   | "cronTrigger"
   | "eventTrigger"
   | "manualTrigger"
+  | "gasUsed"
+  | "gasPrice"
+  | "totalGasCost"
 > & {
   output: OutputDataProps;
   metadata?: any;
   executionContext?: any;
+  // Gas tracking fields for blockchain operations (ETH transfer, contract write)
+  gasUsed?: string;
+  gasPrice?: string;
+  totalGasCost?: string;
 };
 
 // Execution Props
-export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList" | "status"> & {
+export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList" | "status" | "totalGasCost"> & {
   steps: Array<StepProps>;
   status: ExecutionStatus;
+  // Total gas cost for the entire workflow execution (sum of all blockchain operations)
+  totalGasCost?: string;
 };
 
 // Workflow Props - depends on other types so defined last

@@ -20,6 +20,9 @@ class Step implements StepProps {
   endAt: number;
   metadata?: any;
   executionContext?: any;
+  gasUsed?: string;
+  gasPrice?: string;
+  totalGasCost?: string;
 
   constructor(props: StepProps) {
     this.id = props.id;
@@ -35,6 +38,9 @@ class Step implements StepProps {
     this.endAt = props.endAt;
     this.metadata = (props as any).metadata;
     this.executionContext = (props as any).executionContext;
+    this.gasUsed = props.gasUsed;
+    this.gasPrice = props.gasPrice;
+    this.totalGasCost = props.totalGasCost;
   }
 
   /**
@@ -56,6 +62,9 @@ class Step implements StepProps {
       endAt: this.endAt,
       metadata: this.metadata,
       executionContext: this.executionContext,
+      ...(this.gasUsed && { gasUsed: this.gasUsed }),
+      ...(this.gasPrice && { gasPrice: this.gasPrice }),
+      ...(this.totalGasCost && { totalGasCost: this.totalGasCost }),
     };
   }
 
@@ -246,6 +255,18 @@ class Step implements StepProps {
       typeof step.getEndAt === "function"
         ? step.getEndAt()
         : (step as any).endAt;
+    const getGasUsed = () =>
+      typeof step.getGasUsed === "function"
+        ? step.getGasUsed()
+        : (step as any).gasUsed;
+    const getGasPrice = () =>
+      typeof step.getGasPrice === "function"
+        ? step.getGasPrice()
+        : (step as any).gasPrice;
+    const getTotalGasCost = () =>
+      typeof step.getTotalGasCost === "function"
+        ? step.getTotalGasCost()
+        : (step as any).totalGasCost;
 
     // Extract step-level metadata if present (per protobuf: Execution.Step.metadata)
     let stepMetadata: any = undefined;
@@ -293,6 +314,9 @@ class Step implements StepProps {
       endAt: getEndAt(),
       metadata: stepMetadata,
       executionContext,
+      gasUsed: getGasUsed() || undefined,
+      gasPrice: getGasPrice() || undefined,
+      totalGasCost: getTotalGasCost() || undefined,
     } as any);
   }
 

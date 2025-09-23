@@ -1703,6 +1703,8 @@ export class Execution extends jspb.Message {
     setError(value: string): Execution;
     getIndex(): number;
     setIndex(value: number): Execution;
+    getTotalGasCost(): string;
+    setTotalGasCost(value: string): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
@@ -1726,6 +1728,7 @@ export namespace Execution {
         status: ExecutionStatus,
         error: string,
         index: number,
+        totalGasCost: string,
         stepsList: Array<Execution.Step.AsObject>,
     }
 
@@ -1762,6 +1765,12 @@ export namespace Execution {
         clearExecutionContext(): void;
         getExecutionContext(): google_protobuf_struct_pb.Value | undefined;
         setExecutionContext(value?: google_protobuf_struct_pb.Value): Step;
+        getGasUsed(): string;
+        setGasUsed(value: string): Step;
+        getGasPrice(): string;
+        setGasPrice(value: string): Step;
+        getTotalGasCost(): string;
+        setTotalGasCost(value: string): Step;
 
         hasBlockTrigger(): boolean;
         clearBlockTrigger(): void;
@@ -1861,6 +1870,9 @@ export namespace Execution {
             config?: google_protobuf_struct_pb.Value.AsObject,
             metadata?: google_protobuf_struct_pb.Value.AsObject,
             executionContext?: google_protobuf_struct_pb.Value.AsObject,
+            gasUsed: string,
+            gasPrice: string,
+            totalGasCost: string,
             blockTrigger?: BlockTrigger.Output.AsObject,
             fixedTimeTrigger?: FixedTimeTrigger.Output.AsObject,
             cronTrigger?: CronTrigger.Output.AsObject,
