@@ -54,8 +54,16 @@ import {
   type TriggerWorkflowResponse,
   type WithdrawFundsRequest,
   type WithdrawFundsResponse,
-  // Fee estimation types - temporarily removed due to branch sync issues
-  // TODO: Re-add when types package is synchronized with fee estimation changes
+  // Fee estimation types
+  type EstimateFeesRequest,
+  type EstimateFeesResponse,
+  type FeeAmount,
+  type GasFeeBreakdown,
+  type NodeGasFee,
+  type AutomationFee,
+  type AutomationFeeComponent,
+  type SmartWalletCreationFee,
+  type Discount
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -69,95 +77,6 @@ import {
   toCamelCaseKeys,
 } from "./utils";
 
-// Temporary local fee estimation types until types package is synchronized
-interface FeeAmount {
-  nativeTokenAmount: string;
-  nativeTokenSymbol: string;
-  usdAmount: string;
-  apTokenAmount: string;
-}
-
-interface NodeGasFee {
-  nodeId: string;
-  operationType: string;
-  methodName?: string;
-  gasUnits: string;
-  gasPrice: string;
-  totalCost: FeeAmount;
-  success: boolean;
-  error?: string;
-}
-
-interface GasFeeBreakdown {
-  nodeGasFees: NodeGasFee[];
-  totalGasCost: FeeAmount;
-  estimationAccurate: boolean;
-  estimationMethod: string;
-  averageGasPrice: string;
-  notes?: string[];
-}
-
-interface AutomationFeeComponent {
-  componentType: string;
-  fee: FeeAmount;
-  description?: string;
-}
-
-interface AutomationFee {
-  triggerType: string;
-  durationMinutes: number;
-  baseFee: FeeAmount;
-  executionFee: FeeAmount;
-  estimatedExecutions: number;
-  totalFee: FeeAmount;
-  breakdown: AutomationFeeComponent[];
-}
-
-interface SmartWalletCreationFee {
-  creationRequired: boolean;
-  walletAddress: string;
-  creationFee?: FeeAmount;
-  initialFunding?: FeeAmount;
-}
-
-interface Discount {
-  discountId: string;
-  discountType: string;
-  discountName: string;
-  appliesTo: string;
-  discountPercentage: number;
-  discountAmount: FeeAmount;
-  expiryDate?: string;
-  terms?: string;
-}
-
-interface EstimateFeesRequest {
-  trigger: any;
-  nodes: any[];
-  runner?: string;
-  inputVariables?: Record<string, any>;
-  createdAt: number;
-  expireAt: number;
-}
-
-interface EstimateFeesResponse {
-  success: boolean;
-  error?: string;
-  errorCode?: string;
-  gasFees?: GasFeeBreakdown;
-  automationFees?: AutomationFee;
-  creationFees?: SmartWalletCreationFee;
-  totalFees?: FeeAmount;
-  discounts?: Discount[];
-  totalDiscounts?: FeeAmount;
-  finalTotal?: FeeAmount;
-  estimatedAt?: number;
-  chainId?: string;
-  priceDataSource?: string;
-  priceDataAgeSeconds?: number;
-  warnings?: string[];
-  recommendations?: string[];
-}
 
 /**
  * Convert protobuf ExecutionStatus numeric value to meaningful string enum
