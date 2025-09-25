@@ -328,7 +328,9 @@ function formatFeeAmount(feeAmount: any): string {
  */
 function formatWeiAmount(weiString: string): string {
   const wei = BigInt(weiString);
-  const eth = Number(wei) / 1e18;
+  const ethInt = wei / BigInt(1e18);
+  const ethFrac = wei % BigInt(1e18);
+  const eth = Number(ethInt) + Number(ethFrac) / 1e18;
   
   if (eth < 0.0001) {
     return wei.toString() + ' wei';

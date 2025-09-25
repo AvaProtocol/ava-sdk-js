@@ -1612,14 +1612,11 @@ class Client extends BaseClient {
           operationType: operation.getOperationType(),
           methodName: operation.getMethodName() || undefined,
           gasUnits: operation.getGasUnits(),
-          gasPrice: "", // Not directly available in GasOperationFee
-          totalCost: operation.getFee() ? this.convertFeeAmount(operation.getFee()!) : {
-            nativeTokenAmount: "0",
-            nativeTokenSymbol: "ETH",
-            usdAmount: "0",
-            apTokenAmount: "0"
-          },
-          success: true, // Not available in protobuf, assume success
+          gasPrice: gasFees.getGasPriceGwei() || "", // Use parent gas price
+          totalCost: operation.getFee() ? this.convertFeeAmount(operation.getFee()!) : 
+            this.createZeroFeeAmount(result.getChainId()),
+          success: operation.getFee() ? 
+            (parseFloat(operation.getFee()!.getNativeTokenAmount()) > 0) : false, // Check if operation has valid gas cost
           error: undefined,
         })),
         totalGasCost: this.convertFeeAmount(gasFees.getTotalGasFees()!),
@@ -1639,18 +1636,14 @@ class Client extends BaseClient {
       const executionFee = automationFees.getExecutionFee();
       
       // For now, use baseFee as totalFee since the exact calculation isn't available
-      const totalFee = baseFee || {
-        getNativeTokenAmount: () => "0",
-        getNativeTokenSymbol: () => "ETH",
-        getUsdAmount: () => "0",
-        getApTokenAmount: () => "0"
-      } as any;
+      // If baseFee is not available, create a mock fee amount with proper chain detection
+      const totalFee = baseFee || this.createMockFeeAmount(result.getChainId());
 
       response.automationFees = {
         triggerType: automationFees.getTriggerType(),
         durationMinutes: automationFees.getDurationMinutes(),
-        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(),
-        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(),
+        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(result.getChainId()),
+        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(result.getChainId()),
         estimatedExecutions: automationFees.getEstimatedExecutions(),
         totalFee: this.convertFeeAmount(totalFee),
         breakdown: [], // Not available in current protobuf structure
@@ -1684,8 +1677,8 @@ class Client extends BaseClient {
     }
 
     // Convert discounts (using FeeDiscount type, not Discount)
-    response.discounts = result.getDiscountsList().map((discount) => ({
-      discountId: "", // Not available in FeeDiscount
+    response.discounts = result.getDiscountsList().map((discount, index) => ({
+      discountId: `auto-${index}`, // Synthesized unique ID since not available in FeeDiscount
       discountType: discount.getDiscountType(),
       discountName: discount.getDiscountName(),
       appliesTo: discount.getAppliesTo(),
@@ -1707,13 +1700,38 @@ class Client extends BaseClient {
   }
 
   /**
+   * Create a mock fee amount object that mimics protobuf FeeAmount interface
+   * @private
+   */
+  private createMockFeeAmount(chainId?: string): any {
+    const getNativeTokenSymbol = (chainId?: string): string => {
+      // All supported chains (Ethereum and Base) use ETH as native token
+      return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
+    };
+
+    return {
+      getNativeTokenAmount: () => "0",
+      getNativeTokenSymbol: () => getNativeTokenSymbol(chainId),
+      getUsdAmount: () => "0",
+      getApTokenAmount: () => "0"
+    };
+  }
+
+  /**
    * Create a zero fee amount
    * @private
    */
-  private createZeroFeeAmount(): FeeAmount {
+  private createZeroFeeAmount(chainId?: string): FeeAmount {
+    // Determine native token symbol based on chain ID
+    const getNativeTokenSymbol = (chainId?: string): string => {
+      // All supported chains (Ethereum and Base) use ETH as native token
+      // But could be extended for other chains in the future
+      return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
+    };
+
     return {
       nativeTokenAmount: "0",
-      nativeTokenSymbol: "ETH",
+      nativeTokenSymbol: getNativeTokenSymbol(chainId),
       usdAmount: "0",
       apTokenAmount: "0",
     };
