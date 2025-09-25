@@ -54,6 +54,16 @@ import {
   type TriggerWorkflowResponse,
   type WithdrawFundsRequest,
   type WithdrawFundsResponse,
+  // Fee estimation types
+  type EstimateFeesRequest,
+  type EstimateFeesResponse,
+  type FeeAmount,
+  type GasFeeBreakdown,
+  type NodeGasFee,
+  type AutomationFee,
+  type AutomationFeeComponent,
+  type SmartWalletCreationFee,
+  type Discount,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -1514,6 +1524,213 @@ class Client extends BaseClient {
       source: result.getSource() as TokenSource,
     };
   }
+
+  /**
+   * Get comprehensive fee estimation for workflow deployment
+   * Provides detailed breakdown of gas fees, automation fees, and smart wallet creation costs
+   * @param {EstimateFeesRequest} params - The fee estimation request parameters
+   * @param {TriggerProps} params.trigger - Trigger configuration for the workflow
+   * @param {NodeProps[]} params.nodes - Array of workflow nodes
+   * @param {string} [params.runner] - Runner address (smart wallet) - optional if in inputVariables
+   * @param {Record<string, any>} [params.inputVariables] - Input variables including workflowContext
+   * @param {number} params.createdAt - Workflow creation timestamp (milliseconds)
+   * @param {number} params.expireAt - Workflow expiration timestamp (milliseconds)
+   * @param {RequestOptions} options - Request options
+   * @returns {Promise<EstimateFeesResponse>} - Comprehensive fee breakdown with gas, automation, and creation costs
+   */
+  async estimateFees(
+    {
+      trigger,
+      nodes,
+      runner,
+      inputVariables = {},
+      createdAt,
+      expireAt,
+    }: EstimateFeesRequest,
+    options?: RequestOptions
+  ): Promise<EstimateFeesResponse> {
+    // Create the protobuf request
+    const request = new avs_pb.EstimateFeesReq();
+
+    // Convert trigger to protobuf
+    const triggerSdk = TriggerFactory.create(trigger as any);
+    request.setTrigger(triggerSdk.toRequest());
+
+    // Convert nodes to protobuf
+    const nodeMessages = nodes.map((node: any) => {
+      const nodeSdk = NodeFactory.create(node as any);
+      return nodeSdk.toRequest();
+    });
+    request.setNodesList(nodeMessages);
+
+    // Set runner if provided
+    if (runner) {
+      request.setRunner(runner);
+    }
+
+    // Set input variables
+    if (inputVariables && Object.keys(inputVariables).length > 0) {
+      const inputVarsMap = request.getInputVariablesMap();
+      for (const [key, value] of Object.entries(inputVariables)) {
+        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+      }
+    }
+
+    // Set timestamps
+    request.setCreatedAt(createdAt);
+    request.setExpireAt(expireAt);
+
+    // Send the request
+    const result = await this.sendGrpcRequest<
+      avs_pb.EstimateFeesResp,
+      avs_pb.EstimateFeesReq
+    >("estimateFees", request, options);
+
+    // Convert protobuf response to TypeScript interface
+    return this.convertEstimateFeesResponse(result);
+  }
+
+  /**
+   * Convert protobuf EstimateFeesResp to TypeScript EstimateFeesResponse
+   * @private
+   */
+  private convertEstimateFeesResponse(
+    result: avs_pb.EstimateFeesResp
+  ): EstimateFeesResponse {
+    const response: EstimateFeesResponse = {
+      success: result.getSuccess(),
+      error: result.getError() || undefined,
+      errorCode: result.getErrorCode().toString() || undefined,
+    };
+
+    // Convert gas fees if present
+    const gasFees = result.getGasFees();
+    if (gasFees) {
+      response.gasFees = {
+        nodeGasFees: gasFees.getOperationsList().map((operation) => ({
+          nodeId: operation.getNodeId(),
+          operationType: operation.getOperationType(),
+          methodName: operation.getMethodName() || undefined,
+          gasUnits: operation.getGasUnits(),
+          gasPrice: "", // Not directly available in GasOperationFee
+          totalCost: operation.getFee() ? this.convertFeeAmount(operation.getFee()!) : {
+            nativeTokenAmount: "0",
+            nativeTokenSymbol: "ETH",
+            usdAmount: "0",
+            apTokenAmount: "0"
+          },
+          success: true, // Not available in protobuf, assume success
+          error: undefined,
+        })),
+        totalGasCost: this.convertFeeAmount(gasFees.getTotalGasFees()!),
+        estimationAccurate: gasFees.getEstimationAccurate(),
+        estimationMethod: gasFees.getEstimationMethod(),
+        averageGasPrice: gasFees.getGasPriceGwei(),
+        notes: [], // Not available in current protobuf
+      };
+    }
+
+    // Convert automation fees if present
+    const automationFees = result.getAutomationFees();
+    if (automationFees) {
+      // Calculate total fee from base + monitoring + execution
+      const baseFee = automationFees.getBaseFee();
+      const monitoringFee = automationFees.getMonitoringFee();
+      const executionFee = automationFees.getExecutionFee();
+      
+      // For now, use baseFee as totalFee since the exact calculation isn't available
+      const totalFee = baseFee || {
+        getNativeTokenAmount: () => "0",
+        getNativeTokenSymbol: () => "ETH",
+        getUsdAmount: () => "0",
+        getApTokenAmount: () => "0"
+      } as any;
+
+      response.automationFees = {
+        triggerType: automationFees.getTriggerType(),
+        durationMinutes: automationFees.getDurationMinutes(),
+        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(),
+        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(),
+        estimatedExecutions: automationFees.getEstimatedExecutions(),
+        totalFee: this.convertFeeAmount(totalFee),
+        breakdown: [], // Not available in current protobuf structure
+      };
+    }
+
+    // Convert creation fees if present
+    const creationFees = result.getCreationFees();
+    if (creationFees) {
+      response.creationFees = {
+        creationRequired: creationFees.getCreationRequired(),
+        walletAddress: creationFees.getWalletAddress(),
+        creationFee: creationFees.getCreationFee()
+          ? this.convertFeeAmount(creationFees.getCreationFee()!)
+          : undefined,
+        initialFunding: creationFees.getInitialFunding()
+          ? this.convertFeeAmount(creationFees.getInitialFunding()!)
+          : undefined,
+      };
+    }
+
+    // Convert fee amounts
+    if (result.getTotalFees()) {
+      response.totalFees = this.convertFeeAmount(result.getTotalFees()!);
+    }
+    if (result.getTotalDiscounts()) {
+      response.totalDiscounts = this.convertFeeAmount(result.getTotalDiscounts()!);
+    }
+    if (result.getFinalTotal()) {
+      response.finalTotal = this.convertFeeAmount(result.getFinalTotal()!);
+    }
+
+    // Convert discounts (using FeeDiscount type, not Discount)
+    response.discounts = result.getDiscountsList().map((discount) => ({
+      discountId: "", // Not available in FeeDiscount
+      discountType: discount.getDiscountType(),
+      discountName: discount.getDiscountName(),
+      appliesTo: discount.getAppliesTo(),
+      discountPercentage: discount.getDiscountPercentage(),
+      discountAmount: this.convertFeeAmount(discount.getDiscountAmount()!),
+      expiryDate: discount.getExpiryDate() || undefined,
+      terms: discount.getTerms() || undefined,
+    }));
+
+    // Add metadata
+    response.estimatedAt = result.getEstimatedAt() || undefined;
+    response.chainId = result.getChainId() || undefined;
+    response.priceDataSource = result.getPriceDataSource() || undefined;
+    response.priceDataAgeSeconds = result.getPriceDataAgeSeconds() || undefined;
+    response.warnings = result.getWarningsList();
+    response.recommendations = result.getRecommendationsList();
+
+    return response;
+  }
+
+  /**
+   * Create a zero fee amount
+   * @private
+   */
+  private createZeroFeeAmount(): FeeAmount {
+    return {
+      nativeTokenAmount: "0",
+      nativeTokenSymbol: "ETH",
+      usdAmount: "0",
+      apTokenAmount: "0",
+    };
+  }
+
+  /**
+   * Convert protobuf FeeAmount to TypeScript FeeAmount
+   * @private
+   */
+  private convertFeeAmount(feeAmount: avs_pb.FeeAmount): FeeAmount {
+    return {
+      nativeTokenAmount: feeAmount.getNativeTokenAmount(),
+      nativeTokenSymbol: feeAmount.getNativeTokenSymbol(),
+      usdAmount: feeAmount.getUsdAmount(),
+      apTokenAmount: feeAmount.getApTokenAmount(),
+    };
+  }
 }
 
 export * from "./models/node/factory";
@@ -1540,6 +1757,19 @@ export type {
   TokenSource,
   WithdrawFundsRequest,
   WithdrawFundsResponse,
+} from "@avaprotocol/types";
+
+// Re-export fee estimation types for convenience
+export type {
+  EstimateFeesRequest,
+  EstimateFeesResponse,
+  FeeAmount,
+  GasFeeBreakdown,
+  NodeGasFee,
+  AutomationFee,
+  AutomationFeeComponent,
+  SmartWalletCreationFee,
+  Discount,
 } from "@avaprotocol/types";
 
 // Re-export timeout-related types and presets

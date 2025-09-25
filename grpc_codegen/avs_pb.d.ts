@@ -3506,6 +3506,372 @@ export namespace SimulateTaskReq {
     }
 }
 
+export class EstimateFeesReq extends jspb.Message { 
+
+    hasTrigger(): boolean;
+    clearTrigger(): void;
+    getTrigger(): TaskTrigger | undefined;
+    setTrigger(value?: TaskTrigger): EstimateFeesReq;
+    clearNodesList(): void;
+    getNodesList(): Array<TaskNode>;
+    setNodesList(value: Array<TaskNode>): EstimateFeesReq;
+    addNodes(value?: TaskNode, index?: number): TaskNode;
+    clearEdgesList(): void;
+    getEdgesList(): Array<TaskEdge>;
+    setEdgesList(value: Array<TaskEdge>): EstimateFeesReq;
+    addEdges(value?: TaskEdge, index?: number): TaskEdge;
+    getCreatedAt(): number;
+    setCreatedAt(value: number): EstimateFeesReq;
+    getExpireAt(): number;
+    setExpireAt(value: number): EstimateFeesReq;
+    getMaxExecution(): number;
+    setMaxExecution(value: number): EstimateFeesReq;
+    getRunner(): string;
+    setRunner(value: string): EstimateFeesReq;
+
+    getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearInputVariablesMap(): void;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EstimateFeesReq.AsObject;
+    static toObject(includeInstance: boolean, msg: EstimateFeesReq): EstimateFeesReq.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EstimateFeesReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EstimateFeesReq;
+    static deserializeBinaryFromReader(message: EstimateFeesReq, reader: jspb.BinaryReader): EstimateFeesReq;
+}
+
+export namespace EstimateFeesReq {
+    export type AsObject = {
+        trigger?: TaskTrigger.AsObject,
+        nodesList: Array<TaskNode.AsObject>,
+        edgesList: Array<TaskEdge.AsObject>,
+        createdAt: number,
+        expireAt: number,
+        maxExecution: number,
+        runner: string,
+
+        inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+    }
+}
+
+export class FeeAmount extends jspb.Message { 
+    getNativeTokenAmount(): string;
+    setNativeTokenAmount(value: string): FeeAmount;
+    getNativeTokenSymbol(): string;
+    setNativeTokenSymbol(value: string): FeeAmount;
+    getUsdAmount(): string;
+    setUsdAmount(value: string): FeeAmount;
+    getApTokenAmount(): string;
+    setApTokenAmount(value: string): FeeAmount;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): FeeAmount.AsObject;
+    static toObject(includeInstance: boolean, msg: FeeAmount): FeeAmount.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: FeeAmount, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): FeeAmount;
+    static deserializeBinaryFromReader(message: FeeAmount, reader: jspb.BinaryReader): FeeAmount;
+}
+
+export namespace FeeAmount {
+    export type AsObject = {
+        nativeTokenAmount: string,
+        nativeTokenSymbol: string,
+        usdAmount: string,
+        apTokenAmount: string,
+    }
+}
+
+export class GasFeeBreakdown extends jspb.Message { 
+
+    hasTotalGasFees(): boolean;
+    clearTotalGasFees(): void;
+    getTotalGasFees(): FeeAmount | undefined;
+    setTotalGasFees(value?: FeeAmount): GasFeeBreakdown;
+    clearOperationsList(): void;
+    getOperationsList(): Array<GasOperationFee>;
+    setOperationsList(value: Array<GasOperationFee>): GasFeeBreakdown;
+    addOperations(value?: GasOperationFee, index?: number): GasOperationFee;
+    getGasPriceGwei(): string;
+    setGasPriceGwei(value: string): GasFeeBreakdown;
+    getTotalGasUnits(): string;
+    setTotalGasUnits(value: string): GasFeeBreakdown;
+    getEstimationAccurate(): boolean;
+    setEstimationAccurate(value: boolean): GasFeeBreakdown;
+    getEstimationMethod(): string;
+    setEstimationMethod(value: string): GasFeeBreakdown;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GasFeeBreakdown.AsObject;
+    static toObject(includeInstance: boolean, msg: GasFeeBreakdown): GasFeeBreakdown.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GasFeeBreakdown, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GasFeeBreakdown;
+    static deserializeBinaryFromReader(message: GasFeeBreakdown, reader: jspb.BinaryReader): GasFeeBreakdown;
+}
+
+export namespace GasFeeBreakdown {
+    export type AsObject = {
+        totalGasFees?: FeeAmount.AsObject,
+        operationsList: Array<GasOperationFee.AsObject>,
+        gasPriceGwei: string,
+        totalGasUnits: string,
+        estimationAccurate: boolean,
+        estimationMethod: string,
+    }
+}
+
+export class GasOperationFee extends jspb.Message { 
+    getOperationType(): string;
+    setOperationType(value: string): GasOperationFee;
+    getNodeId(): string;
+    setNodeId(value: string): GasOperationFee;
+    getMethodName(): string;
+    setMethodName(value: string): GasOperationFee;
+
+    hasFee(): boolean;
+    clearFee(): void;
+    getFee(): FeeAmount | undefined;
+    setFee(value?: FeeAmount): GasOperationFee;
+    getGasUnits(): string;
+    setGasUnits(value: string): GasOperationFee;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): GasOperationFee.AsObject;
+    static toObject(includeInstance: boolean, msg: GasOperationFee): GasOperationFee.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: GasOperationFee, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): GasOperationFee;
+    static deserializeBinaryFromReader(message: GasOperationFee, reader: jspb.BinaryReader): GasOperationFee;
+}
+
+export namespace GasOperationFee {
+    export type AsObject = {
+        operationType: string,
+        nodeId: string,
+        methodName: string,
+        fee?: FeeAmount.AsObject,
+        gasUnits: string,
+    }
+}
+
+export class SmartWalletCreationFee extends jspb.Message { 
+    getCreationRequired(): boolean;
+    setCreationRequired(value: boolean): SmartWalletCreationFee;
+
+    hasCreationFee(): boolean;
+    clearCreationFee(): void;
+    getCreationFee(): FeeAmount | undefined;
+    setCreationFee(value?: FeeAmount): SmartWalletCreationFee;
+
+    hasInitialFunding(): boolean;
+    clearInitialFunding(): void;
+    getInitialFunding(): FeeAmount | undefined;
+    setInitialFunding(value?: FeeAmount): SmartWalletCreationFee;
+    getWalletAddress(): string;
+    setWalletAddress(value: string): SmartWalletCreationFee;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SmartWalletCreationFee.AsObject;
+    static toObject(includeInstance: boolean, msg: SmartWalletCreationFee): SmartWalletCreationFee.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SmartWalletCreationFee, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SmartWalletCreationFee;
+    static deserializeBinaryFromReader(message: SmartWalletCreationFee, reader: jspb.BinaryReader): SmartWalletCreationFee;
+}
+
+export namespace SmartWalletCreationFee {
+    export type AsObject = {
+        creationRequired: boolean,
+        creationFee?: FeeAmount.AsObject,
+        initialFunding?: FeeAmount.AsObject,
+        walletAddress: string,
+    }
+}
+
+export class AutomationFee extends jspb.Message { 
+
+    hasBaseFee(): boolean;
+    clearBaseFee(): void;
+    getBaseFee(): FeeAmount | undefined;
+    setBaseFee(value?: FeeAmount): AutomationFee;
+
+    hasMonitoringFee(): boolean;
+    clearMonitoringFee(): void;
+    getMonitoringFee(): FeeAmount | undefined;
+    setMonitoringFee(value?: FeeAmount): AutomationFee;
+
+    hasExecutionFee(): boolean;
+    clearExecutionFee(): void;
+    getExecutionFee(): FeeAmount | undefined;
+    setExecutionFee(value?: FeeAmount): AutomationFee;
+    getTriggerType(): string;
+    setTriggerType(value: string): AutomationFee;
+    getEstimatedExecutions(): number;
+    setEstimatedExecutions(value: number): AutomationFee;
+    getDurationMinutes(): number;
+    setDurationMinutes(value: number): AutomationFee;
+    getFeeCalculationMethod(): string;
+    setFeeCalculationMethod(value: string): AutomationFee;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): AutomationFee.AsObject;
+    static toObject(includeInstance: boolean, msg: AutomationFee): AutomationFee.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: AutomationFee, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): AutomationFee;
+    static deserializeBinaryFromReader(message: AutomationFee, reader: jspb.BinaryReader): AutomationFee;
+}
+
+export namespace AutomationFee {
+    export type AsObject = {
+        baseFee?: FeeAmount.AsObject,
+        monitoringFee?: FeeAmount.AsObject,
+        executionFee?: FeeAmount.AsObject,
+        triggerType: string,
+        estimatedExecutions: number,
+        durationMinutes: number,
+        feeCalculationMethod: string,
+    }
+}
+
+export class FeeDiscount extends jspb.Message { 
+    getDiscountType(): string;
+    setDiscountType(value: string): FeeDiscount;
+    getDiscountName(): string;
+    setDiscountName(value: string): FeeDiscount;
+    getAppliesTo(): string;
+    setAppliesTo(value: string): FeeDiscount;
+    getDiscountPercentage(): number;
+    setDiscountPercentage(value: number): FeeDiscount;
+
+    hasDiscountAmount(): boolean;
+    clearDiscountAmount(): void;
+    getDiscountAmount(): FeeAmount | undefined;
+    setDiscountAmount(value?: FeeAmount): FeeDiscount;
+    getExpiryDate(): string;
+    setExpiryDate(value: string): FeeDiscount;
+    getTerms(): string;
+    setTerms(value: string): FeeDiscount;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): FeeDiscount.AsObject;
+    static toObject(includeInstance: boolean, msg: FeeDiscount): FeeDiscount.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: FeeDiscount, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): FeeDiscount;
+    static deserializeBinaryFromReader(message: FeeDiscount, reader: jspb.BinaryReader): FeeDiscount;
+}
+
+export namespace FeeDiscount {
+    export type AsObject = {
+        discountType: string,
+        discountName: string,
+        appliesTo: string,
+        discountPercentage: number,
+        discountAmount?: FeeAmount.AsObject,
+        expiryDate: string,
+        terms: string,
+    }
+}
+
+export class EstimateFeesResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): EstimateFeesResp;
+    getError(): string;
+    setError(value: string): EstimateFeesResp;
+    getErrorCode(): ErrorCode;
+    setErrorCode(value: ErrorCode): EstimateFeesResp;
+
+    hasGasFees(): boolean;
+    clearGasFees(): void;
+    getGasFees(): GasFeeBreakdown | undefined;
+    setGasFees(value?: GasFeeBreakdown): EstimateFeesResp;
+
+    hasAutomationFees(): boolean;
+    clearAutomationFees(): void;
+    getAutomationFees(): AutomationFee | undefined;
+    setAutomationFees(value?: AutomationFee): EstimateFeesResp;
+
+    hasCreationFees(): boolean;
+    clearCreationFees(): void;
+    getCreationFees(): SmartWalletCreationFee | undefined;
+    setCreationFees(value?: SmartWalletCreationFee): EstimateFeesResp;
+
+    hasTotalFees(): boolean;
+    clearTotalFees(): void;
+    getTotalFees(): FeeAmount | undefined;
+    setTotalFees(value?: FeeAmount): EstimateFeesResp;
+    clearDiscountsList(): void;
+    getDiscountsList(): Array<FeeDiscount>;
+    setDiscountsList(value: Array<FeeDiscount>): EstimateFeesResp;
+    addDiscounts(value?: FeeDiscount, index?: number): FeeDiscount;
+
+    hasTotalDiscounts(): boolean;
+    clearTotalDiscounts(): void;
+    getTotalDiscounts(): FeeAmount | undefined;
+    setTotalDiscounts(value?: FeeAmount): EstimateFeesResp;
+
+    hasFinalTotal(): boolean;
+    clearFinalTotal(): void;
+    getFinalTotal(): FeeAmount | undefined;
+    setFinalTotal(value?: FeeAmount): EstimateFeesResp;
+    getEstimatedAt(): number;
+    setEstimatedAt(value: number): EstimateFeesResp;
+    getChainId(): string;
+    setChainId(value: string): EstimateFeesResp;
+    getPriceDataSource(): string;
+    setPriceDataSource(value: string): EstimateFeesResp;
+    getPriceDataAgeSeconds(): number;
+    setPriceDataAgeSeconds(value: number): EstimateFeesResp;
+    clearWarningsList(): void;
+    getWarningsList(): Array<string>;
+    setWarningsList(value: Array<string>): EstimateFeesResp;
+    addWarnings(value: string, index?: number): string;
+    clearRecommendationsList(): void;
+    getRecommendationsList(): Array<string>;
+    setRecommendationsList(value: Array<string>): EstimateFeesResp;
+    addRecommendations(value: string, index?: number): string;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): EstimateFeesResp.AsObject;
+    static toObject(includeInstance: boolean, msg: EstimateFeesResp): EstimateFeesResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: EstimateFeesResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): EstimateFeesResp;
+    static deserializeBinaryFromReader(message: EstimateFeesResp, reader: jspb.BinaryReader): EstimateFeesResp;
+}
+
+export namespace EstimateFeesResp {
+    export type AsObject = {
+        success: boolean,
+        error: string,
+        errorCode: ErrorCode,
+        gasFees?: GasFeeBreakdown.AsObject,
+        automationFees?: AutomationFee.AsObject,
+        creationFees?: SmartWalletCreationFee.AsObject,
+        totalFees?: FeeAmount.AsObject,
+        discountsList: Array<FeeDiscount.AsObject>,
+        totalDiscounts?: FeeAmount.AsObject,
+        finalTotal?: FeeAmount.AsObject,
+        estimatedAt: number,
+        chainId: string,
+        priceDataSource: string,
+        priceDataAgeSeconds: number,
+        warningsList: Array<string>,
+        recommendationsList: Array<string>,
+    }
+}
+
 export class EventCondition extends jspb.Message { 
     getFieldName(): string;
     setFieldName(value: string): EventCondition;

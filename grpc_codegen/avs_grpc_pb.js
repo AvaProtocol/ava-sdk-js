@@ -93,6 +93,28 @@ function deserialize_aggregator_DeleteTaskResp(buffer_arg) {
   return avs_pb.DeleteTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_EstimateFeesReq(arg) {
+  if (!(arg instanceof avs_pb.EstimateFeesReq)) {
+    throw new Error('Expected argument of type aggregator.EstimateFeesReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_EstimateFeesReq(buffer_arg) {
+  return avs_pb.EstimateFeesReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_EstimateFeesResp(arg) {
+  if (!(arg instanceof avs_pb.EstimateFeesResp)) {
+    throw new Error('Expected argument of type aggregator.EstimateFeesResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_EstimateFeesResp(buffer_arg) {
+  return avs_pb.EstimateFeesResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_Execution(arg) {
   if (!(arg instanceof avs_pb.Execution)) {
     throw new Error('Expected argument of type aggregator.Execution');
@@ -860,6 +882,20 @@ getTokenMetadata: {
     requestDeserialize: deserialize_aggregator_GetTokenMetadataReq,
     responseSerialize: serialize_aggregator_GetTokenMetadataResp,
     responseDeserialize: deserialize_aggregator_GetTokenMetadataResp,
+  },
+  // EstimateFees provides comprehensive fee estimation for workflow deployment
+// Includes gas costs, automation fees, smart wallet creation fees, and promotional discounts
+// Called before CreateTask to help users understand total costs
+estimateFees: {
+    path: '/aggregator.Aggregator/EstimateFees',
+    requestStream: false,
+    responseStream: false,
+    requestType: avs_pb.EstimateFeesReq,
+    responseType: avs_pb.EstimateFeesResp,
+    requestSerialize: serialize_aggregator_EstimateFeesReq,
+    requestDeserialize: deserialize_aggregator_EstimateFeesReq,
+    responseSerialize: serialize_aggregator_EstimateFeesResp,
+    responseDeserialize: deserialize_aggregator_EstimateFeesResp,
   },
 };
 

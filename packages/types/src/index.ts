@@ -20,5 +20,15 @@ export type {
   TriggerWorkflowResponse,
   ExecutionStep,
   WithdrawFundsRequest,
-  WithdrawFundsResponse
+  WithdrawFundsResponse,
+  // Fee estimation types
+  EstimateFeesRequest,
+  EstimateFeesResponse,
+  FeeAmount,
+  GasFeeBreakdown,
+  NodeGasFee,
+  AutomationFee,
+  AutomationFeeComponent,
+  SmartWalletCreationFee,
+  Discount
 } from "./api";
