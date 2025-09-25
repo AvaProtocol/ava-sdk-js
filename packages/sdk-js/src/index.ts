@@ -54,16 +54,8 @@ import {
   type TriggerWorkflowResponse,
   type WithdrawFundsRequest,
   type WithdrawFundsResponse,
-  // Fee estimation types
-  type EstimateFeesRequest,
-  type EstimateFeesResponse,
-  type FeeAmount,
-  type GasFeeBreakdown,
-  type NodeGasFee,
-  type AutomationFee,
-  type AutomationFeeComponent,
-  type SmartWalletCreationFee,
-  type Discount,
+  // Fee estimation types - temporarily removed due to branch sync issues
+  // TODO: Re-add when types package is synchronized with fee estimation changes
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -76,6 +68,96 @@ import {
   cleanGrpcErrorMessage,
   toCamelCaseKeys,
 } from "./utils";
+
+// Temporary local fee estimation types until types package is synchronized
+interface FeeAmount {
+  nativeTokenAmount: string;
+  nativeTokenSymbol: string;
+  usdAmount: string;
+  apTokenAmount: string;
+}
+
+interface NodeGasFee {
+  nodeId: string;
+  operationType: string;
+  methodName?: string;
+  gasUnits: string;
+  gasPrice: string;
+  totalCost: FeeAmount;
+  success: boolean;
+  error?: string;
+}
+
+interface GasFeeBreakdown {
+  nodeGasFees: NodeGasFee[];
+  totalGasCost: FeeAmount;
+  estimationAccurate: boolean;
+  estimationMethod: string;
+  averageGasPrice: string;
+  notes?: string[];
+}
+
+interface AutomationFeeComponent {
+  componentType: string;
+  fee: FeeAmount;
+  description?: string;
+}
+
+interface AutomationFee {
+  triggerType: string;
+  durationMinutes: number;
+  baseFee: FeeAmount;
+  executionFee: FeeAmount;
+  estimatedExecutions: number;
+  totalFee: FeeAmount;
+  breakdown: AutomationFeeComponent[];
+}
+
+interface SmartWalletCreationFee {
+  creationRequired: boolean;
+  walletAddress: string;
+  creationFee?: FeeAmount;
+  initialFunding?: FeeAmount;
+}
+
+interface Discount {
+  discountId: string;
+  discountType: string;
+  discountName: string;
+  appliesTo: string;
+  discountPercentage: number;
+  discountAmount: FeeAmount;
+  expiryDate?: string;
+  terms?: string;
+}
+
+interface EstimateFeesRequest {
+  trigger: any;
+  nodes: any[];
+  runner?: string;
+  inputVariables?: Record<string, any>;
+  createdAt: number;
+  expireAt: number;
+}
+
+interface EstimateFeesResponse {
+  success: boolean;
+  error?: string;
+  errorCode?: string;
+  gasFees?: GasFeeBreakdown;
+  automationFees?: AutomationFee;
+  creationFees?: SmartWalletCreationFee;
+  totalFees?: FeeAmount;
+  discounts?: Discount[];
+  totalDiscounts?: FeeAmount;
+  finalTotal?: FeeAmount;
+  estimatedAt?: number;
+  chainId?: string;
+  priceDataSource?: string;
+  priceDataAgeSeconds?: number;
+  warnings?: string[];
+  recommendations?: string[];
+}
 
 /**
  * Convert protobuf ExecutionStatus numeric value to meaningful string enum
@@ -1527,17 +1609,10 @@ class Client extends BaseClient {
 
   /**
    * Get comprehensive fee estimation for workflow deployment
-   * Provides detailed breakdown of gas fees, automation fees, and smart wallet creation costs
-   * @param {EstimateFeesRequest} params - The fee estimation request parameters
-   * @param {TriggerProps} params.trigger - Trigger configuration for the workflow
-   * @param {NodeProps[]} params.nodes - Array of workflow nodes
-   * @param {string} [params.runner] - Runner address (smart wallet) - optional if in inputVariables
-   * @param {Record<string, any>} [params.inputVariables] - Input variables including workflowContext
-   * @param {number} params.createdAt - Workflow creation timestamp (milliseconds)
-   * @param {number} params.expireAt - Workflow expiration timestamp (milliseconds)
-   * @param {RequestOptions} options - Request options
-   * @returns {Promise<EstimateFeesResponse>} - Comprehensive fee breakdown with gas, automation, and creation costs
+   * TEMPORARILY DISABLED: Fee estimation types are not synchronized between branches
+   * TODO: Re-enable when types package includes fee estimation types
    */
+  /*
   async estimateFees(
     {
       trigger,
@@ -1777,18 +1852,8 @@ export type {
   WithdrawFundsResponse,
 } from "@avaprotocol/types";
 
-// Re-export fee estimation types for convenience
-export type {
-  EstimateFeesRequest,
-  EstimateFeesResponse,
-  FeeAmount,
-  GasFeeBreakdown,
-  NodeGasFee,
-  AutomationFee,
-  AutomationFeeComponent,
-  SmartWalletCreationFee,
-  Discount,
-} from "@avaprotocol/types";
+// Re-export fee estimation types for convenience - temporarily disabled
+// TODO: Re-enable when types package is synchronized with fee estimation changes
 
 // Re-export timeout-related types and presets
 export {

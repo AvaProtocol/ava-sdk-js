@@ -218,6 +218,26 @@ The release script:
 
 Once a package is ready for a new version, we first publish a dev version and test it in local environment.
 
+#### Automated Dev Publishing (Recommended)
+
+```bash
+# Full automated dev publishing workflow
+npm run publish:dev
+
+# Preview what would be published without actually doing it
+npm run publish:dev:dry-run
+
+# Advanced options for specific scenarios
+npm run publish:dev -- --skip-tests    # Skip tests (faster but less safe)
+npm run publish:dev -- --skip-clean    # Skip dependency cleanup (faster)
+npm run publish:dev -- --types-only    # Only publish types (when SDK has compatibility issues)
+npm run publish:dev -- --help          # Show all available options
+```
+
+#### Manual Dev Publishing (Legacy)
+
+If you prefer manual control, you can still follow the individual steps:
+
 1. Run `yarn version --prerelease --preid dev` under either `packages/sdk-js` or `packages/types` to update the version in `package.json`.
 2. Run `npm publish --tag dev` under either `packages/sdk-js` or `packages/types` to publish the new dev version to NPM. Most importantly, this **bumps up version number** in `package.json` of `packages/types`.
 3. If the `types` package has a new version, since it is depended on by `sdk-js`, we need to make sure `sdk-js` can build with the new version.
@@ -226,6 +246,42 @@ Once a package is ready for a new version, we first publish a dev version and te
    2. Run `yarn install` under the root folder to re-install the dependencies. You should see a prompt asking the version of `@avaprotocol/types` to install. Choose the new version you just created in step 1.
    3. Run `yarn build` under the root folder to build all packages.
    4. Run `yarn run test` under the root folder to run all tests.
+
+#### Handling Build Order Issues
+
+When the types package has breaking changes (like removed exports), the SDK may fail to build after dependency updates. The script provides several solutions:
+
+**Option 1: Types-only publishing** (Recommended for breaking changes)
+```bash
+npm run publish:dev -- --types-only
+```
+This publishes only the types package, allowing you to fix SDK compatibility issues separately.
+
+**Option 2: Skip dependency cleanup** (When types haven't changed)
+```bash
+npm run publish:dev -- --skip-clean
+```
+This avoids updating dependencies, useful when you're only making SDK changes.
+
+**Option 3: Manual fix workflow**
+1. Run `npm run publish:dev` and let it fail at the build step
+2. Fix the SDK imports to match the new types exports
+3. Run `yarn build` to verify the fix
+4. Manually publish the SDK: `cd packages/sdk-js && npm publish --tag dev`
+
+#### Installing Dev Versions
+
+After publishing dev versions, you can install them in your projects:
+
+```bash
+# Install the latest dev version of the SDK
+npm install @avaprotocol/ava-sdk-js@dev
+npm install @avaprotocol/types@dev
+
+# Or install specific dev versions
+npm install @avaprotocol/ava-sdk-js@1.2.3-dev.0
+npm install @avaprotocol/types@1.2.3-dev.0
+```
 
 ### Publishing to NPM
 
