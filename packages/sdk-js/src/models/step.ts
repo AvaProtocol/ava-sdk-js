@@ -12,6 +12,7 @@ class Step implements StepProps {
   name: string;
   success: boolean;
   error: string;
+  errorCode: avs_pb.ErrorCode;
   log: string;
   inputsList: string[];
   config?: any;
@@ -30,6 +31,7 @@ class Step implements StepProps {
     this.name = props.name;
     this.success = props.success;
     this.error = props.error;
+    this.errorCode = props.errorCode;
     this.log = props.log;
     this.inputsList = props.inputsList;
     this.config = props.config;
@@ -54,6 +56,7 @@ class Step implements StepProps {
       name: this.name,
       success: this.success,
       error: this.error,
+      errorCode: this.errorCode,
       log: this.log,
       inputsList: this.inputsList,
       config: this.config,
@@ -241,6 +244,10 @@ class Step implements StepProps {
       typeof step.getError === "function"
         ? step.getError()
         : (step as any).error;
+    const getErrorCode = () =>
+      typeof step.getErrorCode === "function"
+        ? step.getErrorCode()
+        : (step as any).errorCode;
     const getLog = () =>
       typeof step.getLog === "function" ? step.getLog() : (step as any).log;
     const getInputsList = () =>
@@ -306,6 +313,7 @@ class Step implements StepProps {
       name: getName(),
       success: getSuccess(),
       error: getError(),
+      errorCode: getErrorCode(),
       log: getLog(),
       inputsList: getInputsList(),
       config: configData,

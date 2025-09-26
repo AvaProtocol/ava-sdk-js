@@ -1744,6 +1744,8 @@ export namespace Execution {
         setSuccess(value: boolean): Step;
         getError(): string;
         setError(value: string): Step;
+        getErrorCode(): ErrorCode;
+        setErrorCode(value: ErrorCode): Step;
         getLog(): string;
         setLog(value: string): Step;
         clearInputsList(): void;
@@ -1865,6 +1867,7 @@ export namespace Execution {
             name: string,
             success: boolean,
             error: string,
+            errorCode: ErrorCode,
             log: string,
             inputsList: Array<string>,
             config?: google_protobuf_struct_pb.Value.AsObject,
