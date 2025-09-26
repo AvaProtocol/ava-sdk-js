@@ -36,6 +36,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     runTrigger: IAggregatorService_IRunTrigger;
     simulateTask: IAggregatorService_ISimulateTask;
     getTokenMetadata: IAggregatorService_IGetTokenMetadata;
+    estimateFees: IAggregatorService_IEstimateFees;
 }
 
 interface IAggregatorService_IGetKey extends grpc.MethodDefinition<avs_pb.GetKeyReq, avs_pb.KeyResp> {
@@ -281,6 +282,15 @@ interface IAggregatorService_IGetTokenMetadata extends grpc.MethodDefinition<avs
     responseSerialize: grpc.serialize<avs_pb.GetTokenMetadataResp>;
     responseDeserialize: grpc.deserialize<avs_pb.GetTokenMetadataResp>;
 }
+interface IAggregatorService_IEstimateFees extends grpc.MethodDefinition<avs_pb.EstimateFeesReq, avs_pb.EstimateFeesResp> {
+    path: "/aggregator.Aggregator/EstimateFees";
+    requestStream: false;
+    responseStream: false;
+    requestSerialize: grpc.serialize<avs_pb.EstimateFeesReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.EstimateFeesReq>;
+    responseSerialize: grpc.serialize<avs_pb.EstimateFeesResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.EstimateFeesResp>;
+}
 
 export const AggregatorService: IAggregatorService;
 
@@ -312,6 +322,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     runTrigger: grpc.handleUnaryCall<avs_pb.RunTriggerReq, avs_pb.RunTriggerResp>;
     simulateTask: grpc.handleUnaryCall<avs_pb.SimulateTaskReq, avs_pb.Execution>;
     getTokenMetadata: grpc.handleUnaryCall<avs_pb.GetTokenMetadataReq, avs_pb.GetTokenMetadataResp>;
+    estimateFees: grpc.handleUnaryCall<avs_pb.EstimateFeesReq, avs_pb.EstimateFeesResp>;
 }
 
 export interface IAggregatorClient {
@@ -396,6 +407,9 @@ export interface IAggregatorClient {
     getTokenMetadata(request: avs_pb.GetTokenMetadataReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
     getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
     getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    estimateFees(request: avs_pb.EstimateFeesReq, callback: (error: grpc.ServiceError | null, response: avs_pb.EstimateFeesResp) => void): grpc.ClientUnaryCall;
+    estimateFees(request: avs_pb.EstimateFeesReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.EstimateFeesResp) => void): grpc.ClientUnaryCall;
+    estimateFees(request: avs_pb.EstimateFeesReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.EstimateFeesResp) => void): grpc.ClientUnaryCall;
 }
 
 export class AggregatorClient extends grpc.Client implements IAggregatorClient {
@@ -481,4 +495,7 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
     public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
     public getTokenMetadata(request: avs_pb.GetTokenMetadataReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.GetTokenMetadataResp) => void): grpc.ClientUnaryCall;
+    public estimateFees(request: avs_pb.EstimateFeesReq, callback: (error: grpc.ServiceError | null, response: avs_pb.EstimateFeesResp) => void): grpc.ClientUnaryCall;
+    public estimateFees(request: avs_pb.EstimateFeesReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.EstimateFeesResp) => void): grpc.ClientUnaryCall;
+    public estimateFees(request: avs_pb.EstimateFeesReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.EstimateFeesResp) => void): grpc.ClientUnaryCall;
 }

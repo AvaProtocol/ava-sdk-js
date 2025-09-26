@@ -10,7 +10,8 @@
     "types": ["google-protobuf"],
     "baseUrl": ".",
     "paths": {
-      "@/grpc_codegen/*": ["../../grpc_codegen/*"]
+      "@/grpc_codegen/*": ["../../grpc_codegen/*"],
+      "@avaprotocol/types": ["../types/src/index.ts"]
     },
     "outDir": "./dist",
     "rootDir": "./src",

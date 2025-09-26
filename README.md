@@ -218,6 +218,8 @@ The release script:
 
 Once a package is ready for a new version, we first publish a dev version and test it in local environment.
 
+#### Manual Dev Publishing
+
 1. Run `yarn version --prerelease --preid dev` under either `packages/sdk-js` or `packages/types` to update the version in `package.json`.
 2. Run `npm publish --tag dev` under either `packages/sdk-js` or `packages/types` to publish the new dev version to NPM. Most importantly, this **bumps up version number** in `package.json` of `packages/types`.
 3. If the `types` package has a new version, since it is depended on by `sdk-js`, we need to make sure `sdk-js` can build with the new version.
@@ -225,7 +227,6 @@ Once a package is ready for a new version, we first publish a dev version and te
    1. `yarn run clean` **at the root folder** to remove existing node_modules folder and yarn.lock file.
    2. Run `yarn install` under the root folder to re-install the dependencies. You should see a prompt asking the version of `@avaprotocol/types` to install. Choose the new version you just created in step 1.
    3. Run `yarn build` under the root folder to build all packages.
-   4. Run `yarn run test` under the root folder to run all tests.
 
 ### Publishing to NPM
 

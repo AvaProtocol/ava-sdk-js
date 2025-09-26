@@ -90,6 +90,15 @@ class Workflow implements WorkflowProps {
     const edges = _.map(obj.getEdgesList(), (edge) => Edge.fromResponse(edge));
 
 
+    // Convert inputVariables from protobuf map back to JavaScript object
+    const inputVariables: Record<string, any> = {};
+    const inputVarsMap = obj.getInputVariablesMap();
+    if (inputVarsMap && inputVarsMap.getLength() > 0) {
+      inputVarsMap.forEach((value, key) => {
+        inputVariables[key] = value.toJavaScript();
+      });
+    }
+
     const workflow = new Workflow({
       id: obj.getId(),
       owner: obj.getOwner(),
@@ -105,6 +114,7 @@ class Workflow implements WorkflowProps {
       status: convertStatusToString(obj.getStatus()),
       completedAt: obj.getCompletedAt(),
       lastRanAt: obj.getLastRanAt(),
+      inputVariables: Object.keys(inputVariables).length > 0 ? inputVariables : undefined,
     });
 
     return workflow;
@@ -119,6 +129,15 @@ class Workflow implements WorkflowProps {
 
     if (!trigger) {
       throw new Error("Trigger is undefined in fromListResponse()");
+    }
+
+    // Convert inputVariables from protobuf map back to JavaScript object
+    const inputVariables: Record<string, any> = {};
+    const inputVarsMap = obj.getInputVariablesMap();
+    if (inputVarsMap && inputVarsMap.getLength() > 0) {
+      inputVarsMap.forEach((value, key) => {
+        inputVariables[key] = value.toJavaScript();
+      });
     }
 
     return new Workflow({
@@ -136,6 +155,7 @@ class Workflow implements WorkflowProps {
       status: convertStatusToString(obj.getStatus()),
       name: obj.getName(),
       lastRanAt: obj.getLastRanAt(),
+      inputVariables: Object.keys(inputVariables).length > 0 ? inputVariables : undefined,
     });
   }
 

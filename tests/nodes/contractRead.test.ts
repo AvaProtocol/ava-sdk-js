@@ -1399,6 +1399,205 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     });
   });
 
+  describe("Native ETH Balance Tests", () => {
+    test("should retrieve native ETH balance using zero address", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const params = {
+        nodeType: NodeType.ContractRead,
+        nodeConfig: {
+          // Use zero address to indicate native ETH balance retrieval
+          contractAddress: "0x0000000000000000000000000000000000000000",
+          contractAbi: [
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "account",
+                  type: "address"
+                }
+              ],
+              name: "balanceOf",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256"
+                }
+              ],
+              stateMutability: "view",
+              type: "function"
+            }
+          ],
+          methodCalls: [
+            {
+              methodName: "balanceOf",
+              methodParams: ["{{settings.runner}}"] // Reference settings.runner
+            }
+          ]
+        },
+        inputVariables: {
+          workflowContext: {
+            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
+            chainId: null,
+            name: "Native ETH Balance Test",
+            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
+            eoaAddress: eoaAddress,
+            runner: wallet.address,
+            startAt: new Date(),
+            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            maxExecution: 0,
+            status: "draft",
+            completedAt: null,
+            lastRanAt: null,
+            executionCount: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          settings: {
+            runner: wallet.address, // Set runner in settings
+          },
+        },
+      };
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with native ETH balance ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with native ETH balance ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+
+      // Handle flattened object format (new design)
+      expect(typeof result.data).toBe("object");
+      expect(result.data).not.toBeNull();
+      expect(Array.isArray(result.data)).toBe(false);
+
+      // Verify the native ETH balance result
+      const data = result.data as Record<string, any>;
+      expect(data.balance).toBeDefined();
+      expect(data.balanceEth).toBeDefined();
+      expect(data.address).toBeDefined();
+
+      // Verify address matches (case-insensitive comparison)
+      expect(data.address.toLowerCase()).toBe(wallet.address.toLowerCase());
+
+      // Verify balance is a string (wei amount)
+      expect(typeof data.balance).toBe("string");
+      expect(data.balance).toMatch(/^\d+$/); // Should be numeric string
+
+      // Verify balanceEth is a string with decimal formatting
+      expect(typeof data.balanceEth).toBe("string");
+      expect(data.balanceEth).toMatch(/^\d+\.\d+$/); // Should contain decimal point
+
+      // Verify both values represent the same amount
+      const balanceWei = BigInt(data.balance);
+      const balanceEthFloat = parseFloat(data.balanceEth);
+      const expectedWei = BigInt(Math.floor(balanceEthFloat * 1e18));
+      
+      // Allow for small rounding differences in decimal conversion
+      const difference = balanceWei > expectedWei ? balanceWei - expectedWei : expectedWei - balanceWei;
+      expect(difference).toBeLessThan(BigInt(1e15)); // Less than 0.001 ETH difference
+
+      console.log(`✅ Native ETH Balance: ${data.balanceEth} ETH (${data.balance} wei) for ${data.address}`);
+    });
+
+    test("should simulate workflow with native ETH balance", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const contractReadNode = NodeFactory.create({
+        id: getNextId(),
+        name: "simulate_native_eth_balance",
+        type: NodeType.ContractRead,
+        data: {
+          contractAddress: "0x0000000000000000000000000000000000000000",
+          contractAbi: [
+            {
+              inputs: [
+                {
+                  internalType: "address",
+                  name: "account",
+                  type: "address"
+                }
+              ],
+              name: "balanceOf",
+              outputs: [
+                {
+                  internalType: "uint256",
+                  name: "",
+                  type: "uint256"
+                }
+              ],
+              stateMutability: "view",
+              type: "function"
+            }
+          ],
+          methodCalls: [
+            {
+              methodName: "balanceOf",
+              methodParams: [wallet.address] // Use direct address for simulateWorkflow
+            }
+          ]
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [
+        contractReadNode,
+      ]);
+
+      console.log(
+        "🚀 ~ simulateWorkflow with native ETH balance ~ workflowProps:",
+        util.inspect(workflowProps, { depth: null, colors: true })
+      );
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      console.log(
+        "🚀 ~ simulateWorkflow with native ETH balance ~ result:",
+        util.inspect(simulation, { depth: null, colors: true })
+      );
+
+      expect(simulation.status).toBe(ExecutionStatus.Success);
+      const contractReadStep = simulation.steps.find(
+        (step) => step.id === contractReadNode.id
+      );
+      expect(contractReadStep!.success).toBeTruthy();
+
+      const output = contractReadStep!.output as any;
+      expect(output).toBeDefined();
+
+      // Output should be a plain object containing native ETH balance data
+      expect(typeof output).toBe("object");
+      expect(output).not.toBeNull();
+      expect(Array.isArray(output)).toBe(false);
+
+      // Verify native ETH balance fields
+      expect(output.balance).toBeDefined();
+      expect(output.balanceEth).toBeDefined();
+      expect(output.address).toBeDefined();
+
+      // Verify address matches (case-insensitive)
+      expect(output.address.toLowerCase()).toBe(wallet.address.toLowerCase());
+
+      // Verify data types and formats
+      expect(typeof output.balance).toBe("string");
+      expect(typeof output.balanceEth).toBe("string");
+      expect(output.balance).toMatch(/^\d+$/);
+      expect(output.balanceEth).toMatch(/^\d+\.\d+$/);
+
+      console.log(`✅ Simulated Native ETH Balance: ${output.balanceEth} ETH (${output.balance} wei)`);
+    });
+  });
+
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
 const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });

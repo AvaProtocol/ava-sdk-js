@@ -54,6 +54,16 @@ import {
   type TriggerWorkflowResponse,
   type WithdrawFundsRequest,
   type WithdrawFundsResponse,
+  // Fee estimation types
+  type EstimateFeesRequest,
+  type EstimateFeesResponse,
+  type FeeAmount,
+  type GasFeeBreakdown,
+  type NodeGasFee,
+  type AutomationFee,
+  type AutomationFeeComponent,
+  type SmartWalletCreationFee,
+  type Discount
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -66,6 +76,7 @@ import {
   cleanGrpcErrorMessage,
   toCamelCaseKeys,
 } from "./utils";
+
 
 /**
  * Convert protobuf ExecutionStatus numeric value to meaningful string enum
@@ -1514,6 +1525,224 @@ class Client extends BaseClient {
       source: result.getSource() as TokenSource,
     };
   }
+
+  /**
+   * Get comprehensive fee estimation for workflow deployment
+   * TEMPORARILY DISABLED: Fee estimation types are not synchronized between branches
+   * TODO: Re-enable when types package includes fee estimation types
+   */
+  /*
+  async estimateFees(
+    {
+      trigger,
+      nodes,
+      runner,
+      inputVariables = {},
+      createdAt,
+      expireAt,
+    }: EstimateFeesRequest,
+    options?: RequestOptions
+  ): Promise<EstimateFeesResponse> {
+    // Create the protobuf request
+    const request = new avs_pb.EstimateFeesReq();
+
+    // Convert trigger to protobuf
+    const triggerSdk = TriggerFactory.create(trigger as any);
+    request.setTrigger(triggerSdk.toRequest());
+
+    // Convert nodes to protobuf
+    const nodeMessages = nodes.map((node: any) => {
+      const nodeSdk = NodeFactory.create(node as any);
+      return nodeSdk.toRequest();
+    });
+    request.setNodesList(nodeMessages);
+
+    // Set runner if provided
+    if (runner) {
+      request.setRunner(runner);
+    }
+
+    // Set input variables
+    if (inputVariables && Object.keys(inputVariables).length > 0) {
+      const inputVarsMap = request.getInputVariablesMap();
+      for (const [key, value] of Object.entries(inputVariables)) {
+        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+      }
+    }
+
+    // Set timestamps
+    request.setCreatedAt(createdAt);
+    request.setExpireAt(expireAt);
+
+    // Send the request
+    const result = await this.sendGrpcRequest<
+      avs_pb.EstimateFeesResp,
+      avs_pb.EstimateFeesReq
+    >("estimateFees", request, options);
+
+    // Convert protobuf response to TypeScript interface
+    return this.convertEstimateFeesResponse(result);
+  }
+
+  /**
+   * Convert protobuf EstimateFeesResp to TypeScript EstimateFeesResponse
+   * @private
+   */
+  private convertEstimateFeesResponse(
+    result: avs_pb.EstimateFeesResp
+  ): EstimateFeesResponse {
+    const response: EstimateFeesResponse = {
+      success: result.getSuccess(),
+      error: result.getError() || undefined,
+      errorCode: result.getErrorCode().toString() || undefined,
+    };
+
+    // Convert gas fees if present
+    const gasFees = result.getGasFees();
+    if (gasFees) {
+      response.gasFees = {
+        nodeGasFees: gasFees.getOperationsList().map((operation) => ({
+          nodeId: operation.getNodeId(),
+          operationType: operation.getOperationType(),
+          methodName: operation.getMethodName() || undefined,
+          gasUnits: operation.getGasUnits(),
+          gasPrice: gasFees.getGasPriceGwei() || "", // Use parent gas price
+          totalCost: operation.getFee() ? this.convertFeeAmount(operation.getFee()!) : 
+            this.createZeroFeeAmount(result.getChainId()),
+          success: operation.getFee() ? 
+            (parseFloat(operation.getFee()!.getNativeTokenAmount()) > 0) : false, // Check if operation has valid gas cost
+          error: undefined,
+        })),
+        totalGasCost: this.convertFeeAmount(gasFees.getTotalGasFees()!),
+        estimationAccurate: gasFees.getEstimationAccurate(),
+        estimationMethod: gasFees.getEstimationMethod(),
+        averageGasPrice: gasFees.getGasPriceGwei(),
+        notes: [], // Not available in current protobuf
+      };
+    }
+
+    // Convert automation fees if present
+    const automationFees = result.getAutomationFees();
+    if (automationFees) {
+      // Calculate total fee from base + monitoring + execution
+      const baseFee = automationFees.getBaseFee();
+      const monitoringFee = automationFees.getMonitoringFee();
+      const executionFee = automationFees.getExecutionFee();
+      
+      // For now, use baseFee as totalFee since the exact calculation isn't available
+      // If baseFee is not available, create a mock fee amount with proper chain detection
+      const totalFee = baseFee || this.createMockFeeAmount(result.getChainId());
+
+      response.automationFees = {
+        triggerType: automationFees.getTriggerType(),
+        durationMinutes: automationFees.getDurationMinutes(),
+        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(result.getChainId()),
+        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(result.getChainId()),
+        estimatedExecutions: automationFees.getEstimatedExecutions(),
+        totalFee: this.convertFeeAmount(totalFee),
+        breakdown: [], // Not available in current protobuf structure
+      };
+    }
+
+    // Convert creation fees if present
+    const creationFees = result.getCreationFees();
+    if (creationFees) {
+      response.creationFees = {
+        creationRequired: creationFees.getCreationRequired(),
+        walletAddress: creationFees.getWalletAddress(),
+        creationFee: creationFees.getCreationFee()
+          ? this.convertFeeAmount(creationFees.getCreationFee()!)
+          : undefined,
+        initialFunding: creationFees.getInitialFunding()
+          ? this.convertFeeAmount(creationFees.getInitialFunding()!)
+          : undefined,
+      };
+    }
+
+    // Convert fee amounts
+    if (result.getTotalFees()) {
+      response.totalFees = this.convertFeeAmount(result.getTotalFees()!);
+    }
+    if (result.getTotalDiscounts()) {
+      response.totalDiscounts = this.convertFeeAmount(result.getTotalDiscounts()!);
+    }
+    if (result.getFinalTotal()) {
+      response.finalTotal = this.convertFeeAmount(result.getFinalTotal()!);
+    }
+
+    // Convert discounts (using FeeDiscount type, not Discount)
+    response.discounts = result.getDiscountsList().map((discount, index) => ({
+      discountId: `auto-${index}`, // Synthesized unique ID since not available in FeeDiscount
+      discountType: discount.getDiscountType(),
+      discountName: discount.getDiscountName(),
+      appliesTo: discount.getAppliesTo(),
+      discountPercentage: discount.getDiscountPercentage(),
+      discountAmount: this.convertFeeAmount(discount.getDiscountAmount()!),
+      expiryDate: discount.getExpiryDate() || undefined,
+      terms: discount.getTerms() || undefined,
+    }));
+
+    // Add metadata
+    response.estimatedAt = result.getEstimatedAt() || undefined;
+    response.chainId = result.getChainId() || undefined;
+    response.priceDataSource = result.getPriceDataSource() || undefined;
+    response.priceDataAgeSeconds = result.getPriceDataAgeSeconds() || undefined;
+    response.warnings = result.getWarningsList();
+    response.recommendations = result.getRecommendationsList();
+
+    return response;
+  }
+
+  /**
+   * Create a mock fee amount object that mimics protobuf FeeAmount interface
+   * @private
+   */
+  private createMockFeeAmount(chainId?: string): any {
+    const getNativeTokenSymbol = (chainId?: string): string => {
+      // All supported chains (Ethereum and Base) use ETH as native token
+      return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
+    };
+
+    return {
+      getNativeTokenAmount: () => "0",
+      getNativeTokenSymbol: () => getNativeTokenSymbol(chainId),
+      getUsdAmount: () => "0",
+      getApTokenAmount: () => "0"
+    };
+  }
+
+  /**
+   * Create a zero fee amount
+   * @private
+   */
+  private createZeroFeeAmount(chainId?: string): FeeAmount {
+    // Determine native token symbol based on chain ID
+    const getNativeTokenSymbol = (chainId?: string): string => {
+      // All supported chains (Ethereum and Base) use ETH as native token
+      // But could be extended for other chains in the future
+      return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
+    };
+
+    return {
+      nativeTokenAmount: "0",
+      nativeTokenSymbol: getNativeTokenSymbol(chainId),
+      usdAmount: "0",
+      apTokenAmount: "0",
+    };
+  }
+
+  /**
+   * Convert protobuf FeeAmount to TypeScript FeeAmount
+   * @private
+   */
+  private convertFeeAmount(feeAmount: avs_pb.FeeAmount): FeeAmount {
+    return {
+      nativeTokenAmount: feeAmount.getNativeTokenAmount(),
+      nativeTokenSymbol: feeAmount.getNativeTokenSymbol(),
+      usdAmount: feeAmount.getUsdAmount(),
+      apTokenAmount: feeAmount.getApTokenAmount(),
+    };
+  }
 }
 
 export * from "./models/node/factory";
@@ -1541,6 +1770,9 @@ export type {
   WithdrawFundsRequest,
   WithdrawFundsResponse,
 } from "@avaprotocol/types";
+
+// Re-export fee estimation types for convenience - temporarily disabled
+// TODO: Re-enable when types package is synchronized with fee estimation changes
 
 // Re-export timeout-related types and presets
 export {
