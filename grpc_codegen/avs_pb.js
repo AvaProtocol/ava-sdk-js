@@ -14533,6 +14533,7 @@ proto.aggregator.Execution.Step.toObject = function(includeInstance, msg) {
     name: jspb.Message.getFieldWithDefault(msg, 18, ""),
     success: jspb.Message.getBooleanFieldWithDefault(msg, 2, false),
     error: jspb.Message.getFieldWithDefault(msg, 13, ""),
+    errorCode: jspb.Message.getFieldWithDefault(msg, 31, 0),
     log: jspb.Message.getFieldWithDefault(msg, 12, ""),
     inputsList: (f = jspb.Message.getRepeatedField(msg, 16)) == null ? undefined : f,
     config: (f = msg.getConfig()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
@@ -14612,6 +14613,10 @@ proto.aggregator.Execution.Step.deserializeBinaryFromReader = function(msg, read
     case 13:
       var value = /** @type {string} */ (reader.readString());
       msg.setError(value);
+      break;
+    case 31:
+      var value = /** @type {!proto.aggregator.ErrorCode} */ (reader.readEnum());
+      msg.setErrorCode(value);
       break;
     case 12:
       var value = /** @type {string} */ (reader.readString());
@@ -14787,6 +14792,13 @@ proto.aggregator.Execution.Step.serializeBinaryToWriter = function(message, writ
   if (f.length > 0) {
     writer.writeString(
       13,
+      f
+    );
+  }
+  f = message.getErrorCode();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      31,
       f
     );
   }
@@ -15065,6 +15077,24 @@ proto.aggregator.Execution.Step.prototype.getError = function() {
  */
 proto.aggregator.Execution.Step.prototype.setError = function(value) {
   return jspb.Message.setProto3StringField(this, 13, value);
+};
+
+
+/**
+ * optional ErrorCode error_code = 31;
+ * @return {!proto.aggregator.ErrorCode}
+ */
+proto.aggregator.Execution.Step.prototype.getErrorCode = function() {
+  return /** @type {!proto.aggregator.ErrorCode} */ (jspb.Message.getFieldWithDefault(this, 31, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.ErrorCode} value
+ * @return {!proto.aggregator.Execution.Step} returns this
+ */
+proto.aggregator.Execution.Step.prototype.setErrorCode = function(value) {
+  return jspb.Message.setProto3EnumField(this, 31, value);
 };
 
 
