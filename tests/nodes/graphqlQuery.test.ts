@@ -312,7 +312,7 @@ describe("GraphQL Query Node Tests", () => {
       // Should reject empty query
             expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.error).toContain("missing required configuration");
+      expect(result.error).toContain("url and query is required");
     });
   });
 
@@ -955,9 +955,7 @@ describe("GraphQL Query Node Tests", () => {
       // Should reject empty URL
             expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.error).toContain(
-        "missing required configuration: url and query"
-      );
+      expect(result.error).toContain("url and query is required");
     });
 
     test("should fail gracefully with network connection error from invalid domain", async () => {
