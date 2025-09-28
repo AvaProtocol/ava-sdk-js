@@ -34,7 +34,6 @@ interface RestApiResponse {
   data: any;
   url: string;
   success: boolean;
-  nodeId: string;
 }
 
 describe("RestAPI Node Tests", () => {
@@ -78,14 +77,18 @@ describe("RestAPI Node Tests", () => {
 
       expect(response.success).toBeTruthy();
       expect(response.error).toBe("");
-
-      if (response.data) {
-        const data = response.data as RestApiResponse;
-        expect(data.status).toBe(200);
-        expect(data.headers).toBeDefined();
-        expect(data.data).toBeDefined();
-        expect(data.url).toBe(MOCK_API_BASE_URL + "/get");
-      }
+      expect(response.data).toBeDefined();
+      expect(response.metadata).toBeDefined();
+      
+      // Data should contain only the actual response data
+      expect(response.data).toBeDefined();
+      
+      // Metadata should contain status, headers, etc.
+      const metadata = response.metadata as RestApiResponse;
+      expect(metadata.status).toBe(200);
+      expect(metadata.headers).toBeDefined();
+      expect(metadata.data).toBeDefined();
+      expect(metadata.url).toBe(MOCK_API_BASE_URL + "/get");
     });
 
     test("should handle REST API POST call", async () => {
@@ -106,12 +109,14 @@ describe("RestAPI Node Tests", () => {
       });
 
       expect(response.success).toBeTruthy();
-      if (response.data) {
-        const data = response.data as RestApiResponse;
-        expect(data.status).toBe(200);
-        // Mock API should return the posted data
-        expect(data.data).toBeDefined();
-      }
+      expect(response.data).toBeDefined();
+      expect(response.metadata).toBeDefined();
+      
+      // Metadata should contain status, headers, etc.
+      const metadata = response.metadata as RestApiResponse;
+      expect(metadata.status).toBe(200);
+      // Mock API should return the posted data
+      expect(metadata.data).toBeDefined();
     });
 
     test("should handle REST API error responses", async () => {
@@ -127,9 +132,15 @@ describe("RestAPI Node Tests", () => {
 
       expect(response.success).toBeFalsy(); // HTTP 404 should be categorized as failed
 
-      // NOTE: Backend currently doesn't populate detailed response data for failed runNodeWithInputs calls
-      // This is different from simulateWorkflow which does return full status information
-      expect(response.data).toEqual({}); // Empty object for failed requests via runNodeWithInputs
+      // Verify that failed requests now return full response data (consistent with simulateWorkflow)
+      expect(response.data).toBeDefined();
+      expect(response.metadata).toBeDefined();
+      
+      // Status, headers, etc. should be in metadata
+      const metadata = response.metadata as RestApiResponse;
+      expect(metadata.status).toBe(404);
+      expect(metadata.statusText).toBe("Not Found");
+      expect(metadata.success).toBeFalsy(); // Response-level success should also be false
     });
   });
 
@@ -164,10 +175,11 @@ describe("RestAPI Node Tests", () => {
       expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + REST API node
 
-      const restApiStep = simulation.steps.find(
-        (step) => step.id === restApiNode.id
-      );
-            expect(restApiStep!.success).toBeTruthy();
+        const restApiStep = simulation.steps.find(
+          (step) => step.id === restApiNode.id
+        );
+        expect(restApiStep).toBeDefined();
+        expect(restApiStep!.success).toBeTruthy();
 
       const output = restApiStep!.output as RestApiResponse;
       expect(output.status).toBe(200);
@@ -204,7 +216,8 @@ describe("RestAPI Node Tests", () => {
       const restApiStep = simulation.steps.find(
         (step) => step.id === restApiNode.id
       );
-            expect(restApiStep!.success).toBeFalsy(); // HTTP 500 should be categorized as failed
+      expect(restApiStep).toBeDefined();
+      expect(restApiStep!.success).toBeFalsy(); // HTTP 500 should be categorized as failed
 
       const output = restApiStep!.output as RestApiResponse;
       expect(output.status).toBe(500);
@@ -268,11 +281,8 @@ describe("RestAPI Node Tests", () => {
           (step) => step.id === restApiNode.id
         );
 
-        if (_.isUndefined(restApiStep)) {
-          throw new Error("No corresponding REST API step found.");
-        }
-
-        expect(restApiStep.success).toBeTruthy();
+        expect(restApiStep).toBeDefined();
+        expect(restApiStep!.success).toBeTruthy();
         const output = restApiStep.output as RestApiResponse;
         expect(output.status).toBe(200);
         expect(output.data).toBeDefined();
@@ -361,34 +371,33 @@ describe("RestAPI Node Tests", () => {
           (step) => step.id === restApiNode.id
         );
 
-        // Compare response formats
+        // Compare response formats - all should have the same structure
+        expect(directResponse.data).toBeDefined();
+        expect(directResponse.metadata).toBeDefined();
+        expect(simulatedStep).toBeDefined();
+        expect(simulatedStep!.output).toBeDefined();
+        expect(executedStep).toBeDefined();
+        expect(executedStep!.output).toBeDefined();
 
-        // All should have the same structure
-        if (directResponse.data) {
-          const directData = directResponse.data as RestApiResponse;
-          expect(directData.status).toBe(200);
-        }
-        expect(simulatedStep?.output).toBeDefined();
-        expect(executedStep?.output).toBeDefined();
-
-        const directOutput = directResponse.data as RestApiResponse;
+        // For runNodeWithInputs: status/headers are in metadata
+        const directMetadata = directResponse.metadata as RestApiResponse;
+        // For simulateWorkflow and deployed: status/headers are in output directly
         const simulatedOutput = simulatedStep!.output as RestApiResponse;
         const executedOutput = executedStep!.output as RestApiResponse;
 
         // Verify consistent structure
-        if (directOutput) {
-          expect(directOutput.status).toBe(simulatedOutput.status);
-          expect(simulatedOutput.status).toBe(executedOutput.status);
+        expect(directMetadata.status).toBe(200);
+        expect(directMetadata.status).toBe(simulatedOutput.status);
+        expect(simulatedOutput.status).toBe(executedOutput.status);
 
-          expect(directOutput.headers).toBeDefined();
-          expect(simulatedOutput.headers).toBeDefined();
-          expect(executedOutput.headers).toBeDefined();
+        expect(directMetadata.headers).toBeDefined();
+        expect(simulatedOutput.headers).toBeDefined();
+        expect(executedOutput.headers).toBeDefined();
 
-          // Mock API should return consistent data
-          expect(directOutput.data).toBeDefined();
-          expect(simulatedOutput.data).toBeDefined();
-          expect(executedOutput.data).toBeDefined();
-        }
+        // Mock API should return consistent data
+        expect(directMetadata.data).toBeDefined();
+        expect(simulatedOutput.data).toBeDefined();
+        expect(executedOutput.data).toBeDefined();
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -418,11 +427,12 @@ describe("RestAPI Node Tests", () => {
       expect(result.success).toBe(true);
       expect(result.error).toBe("");
       expect(result.data).toBeDefined();
-      if (result.data && typeof result.data === "object") {
-        const data = result.data as RestApiResponse;
-        expect(data.status).toBe(204);
-        expect(data.data).toBe("");
-      }
+      expect(result.metadata).toBeDefined();
+      
+      // Status should be in metadata
+      const metadata = result.metadata as RestApiResponse;
+      expect(metadata.status).toBe(204);
+      expect(metadata.data).toBe("");
     });
 
     test("should distinguish between empty data and server errors", async () => {
@@ -452,13 +462,18 @@ describe("RestAPI Node Tests", () => {
       expect(emptyResponse.success).toBeTruthy();
       expect(errorResponse.success).toBeFalsy();
 
-      if (emptyResponse.data && typeof emptyResponse.data === "object") {
-        const emptyData = emptyResponse.data as RestApiResponse;
-        expect(emptyData.status).toBe(204);
-        expect(emptyData.data).toBe("");
-      }
+      expect(emptyResponse.data).toBeDefined();
+      expect(emptyResponse.metadata).toBeDefined();
+      const emptyMetadata = emptyResponse.metadata as RestApiResponse;
+      expect(emptyMetadata.status).toBe(204);
+      expect(emptyMetadata.data).toBe("");
 
-      // Note: 500 responses now fail (success=false) and may not include detailed response data
+      // 500 responses now fail (success=false) but still include response data
+      expect(errorResponse.data).toBeDefined();
+      expect(errorResponse.metadata).toBeDefined();
+      const errorMetadata = errorResponse.metadata as RestApiResponse;
+      expect(errorMetadata.status).toBe(500);
+      expect(errorMetadata.statusText).toBe("Internal Server Error");
     });
   });
 });
