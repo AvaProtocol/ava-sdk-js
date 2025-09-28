@@ -2,10 +2,11 @@ import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {NodeType,
+import {
+  NodeType,
   RunNodeWithInputsResponse,
   TriggerType,
-  ExecutionStatus
+  ExecutionStatus,
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -121,9 +122,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         nodeConfig: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
-          methodCalls: [
-            { methodName: "latestRoundData", methodParams: [] },
-          ],
+          methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
         },
         inputVariables: {
           workflowContext: {
@@ -158,7 +157,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
 
       // Handle flattened object format (new design)
@@ -182,12 +181,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
         expect(data.latestRoundData.updatedAt).toBeDefined();
         expect(data.latestRoundData.answeredInRound).toBeDefined();
       }
-
-      
     });
 
     test("should read multiple methods from contract", async () => {
-
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -210,14 +206,13 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
+
       // Handle flattened object format (new design)
       expect(typeof result.data).toBe("object");
       expect(result.data).not.toBeNull();
       expect(Array.isArray(result.data)).toBe(false);
-      
 
       // Check that we got results for both methods in flattened format
       const data = result.data as Record<string, any>;
@@ -227,10 +222,14 @@ describeIfSepolia("ContractRead Node Tests", () => {
       // 🔍 TYPE CHECK: Verify ABI type improvements are working
       if (data.latestRoundData && typeof data.latestRoundData === "object") {
         const latestRoundData = data.latestRoundData as any;
-        if (latestRoundData.roundId) expect(typeof latestRoundData.roundId).toBe("string"); // uint80 -> string (large number)
-        if (latestRoundData.answer) expect(typeof latestRoundData.answer).toBe("string"); // int256 -> string (large number)
-        if (latestRoundData.startedAt) expect(typeof latestRoundData.startedAt).toBe("string"); // uint256 -> string (large number)
-        if (latestRoundData.updatedAt) expect(typeof latestRoundData.updatedAt).toBe("string"); // uint256 -> string (large number)
+        if (latestRoundData.roundId)
+          expect(typeof latestRoundData.roundId).toBe("string"); // uint80 -> string (large number)
+        if (latestRoundData.answer)
+          expect(typeof latestRoundData.answer).toBe("string"); // int256 -> string (large number)
+        if (latestRoundData.startedAt)
+          expect(typeof latestRoundData.startedAt).toBe("string"); // uint256 -> string (large number)
+        if (latestRoundData.updatedAt)
+          expect(typeof latestRoundData.updatedAt).toBe("string"); // uint256 -> string (large number)
         if (latestRoundData.answeredInRound)
           expect(typeof latestRoundData.answeredInRound).toBe("string"); // uint80 -> string (large number)
       }
@@ -291,7 +290,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       // This should either fail or return error results
     });
 
@@ -338,14 +337,13 @@ describeIfSepolia("ContractRead Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      
+
       // Handle flattened object format (new design)
       expect(typeof result.data).toBe("object");
       expect(result.data).not.toBeNull();
       expect(Array.isArray(result.data)).toBe(false);
-      
 
       // Check that we got results for the description method in flattened format
       const data = result.data as Record<string, any>;
@@ -358,7 +356,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting using applyToFields", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -413,7 +411,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       // success must reflect per-method metadata/receipt outcomes
 
       expect(result.success).toBe(true);
-      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
+      expect(result.success).toBe(
+        resultIndicatesAllWritesSuccessful(result as any)
+      );
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
 
@@ -469,18 +469,23 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       expect(latestRoundMetadata!.methodABI).toBeDefined();
 
       // Verify that metadata contains raw unformatted values
-      const rawLatestRoundData = latestRoundMetadata!.value as Record<string, unknown>;
+      const rawLatestRoundData = latestRoundMetadata!.value as Record<
+        string,
+        unknown
+      >;
       const rawAnswer = rawLatestRoundData.answer as string;
-      
+
       // Raw answer should be different from formatted answer (no decimal point in raw)
       expect(rawAnswer).not.toEqual(answer);
       expect(parseInt(rawAnswer)).toBeGreaterThan(0);
 
-      console.log(`✅ Decimal formatting applied: raw=${rawAnswer}, formatted=${answer}`);
+      console.log(
+        `✅ Decimal formatting applied: raw=${rawAnswer}, formatted=${answer}`
+      );
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-// USDC contract on Sepolia - test simplified applyToFields syntax
+      // USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -532,9 +537,10 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
         util.inspect(result, { depth: null, colors: true })
       );
 
-
       expect(result.success).toBe(true);
-      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
+      expect(result.success).toBe(
+        resultIndicatesAllWritesSuccessful(result as any)
+      );
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
 
@@ -564,7 +570,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       expect(parsedTotalSupply).toBeGreaterThan(0);
       expect(parsedTotalSupply).toBeLessThan(Number.MAX_SAFE_INTEGER);
 
-      console.log(`✅ USDC totalSupply formatted correctly: ${totalSupply} (${parsedTotalSupply})`);
+      console.log(
+        `✅ USDC totalSupply formatted correctly: ${totalSupply} (${parsedTotalSupply})`
+      );
 
       // Verify metadata structure (should be array of method results)
       expect(result.metadata).toBeDefined();
@@ -587,7 +595,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -632,7 +640,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-            expect(contractReadStep!.success).toBeTruthy();
+      expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
@@ -674,7 +682,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with contract read", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -714,11 +722,11 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-            expect(contractReadStep!.success).toBeTruthy();
+      expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      
+
       // Output is the data object directly; metadata is step-level
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
@@ -742,7 +750,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     });
 
     test("should simulate workflow with decimal formatting using applyToFields", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -787,11 +795,11 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-            expect(contractReadStep!.success).toBeTruthy();
+      expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      
+
       // Output is the data object directly; metadata is step-level
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
@@ -816,7 +824,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract read", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -901,7 +909,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
         const output = contractReadStep.output as any;
         expect(output).toBeDefined();
-        
+
         // Output is the data object directly; metadata is step-level
         expect(typeof output).toBe("object");
         expect(output).not.toBeNull();
@@ -920,7 +928,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     });
 
     test("should deploy and trigger workflow with applyToFields decimal formatting", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1012,7 +1020,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
         const output = contractReadStep.output as any;
         expect(output).toBeDefined();
-        
+
         // Output is the data object directly; metadata is step-level
         expect(typeof output).toBe("object");
         expect(output).not.toBeNull();
@@ -1057,13 +1065,15 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
 
       try {
-        const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+        const wallet = await client.getWallet({
+          salt: _.toString(saltIndex++),
+        });
 
         const contractReadConfig = {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
@@ -1197,7 +1207,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
         // Verify consistent structure
         const directOutput = directResponse.data; // runNodeWithInputs returns flattened data
-        
+
         // For simulateWorkflow/deployWorkflow, outputs are the data objects directly
         const simulatedOutput = simulatedStep?.output as any;
         const executedOutput = executedStep?.output as any;
@@ -1237,7 +1247,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
   describe("Error Handling Tests", () => {
     test("should handle non-existent method gracefully", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const methodName = "nonExistentMethod";
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1246,15 +1258,13 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
           contractAbi: [
             {
               inputs: [],
-              name: "nonExistentMethod",
+              name: methodName,
               outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
               stateMutability: "view",
               type: "function",
             },
           ],
-          methodCalls: [
-            { methodName: "nonExistentMethod", methodParams: [] },
-          ],
+          methodCalls: [{ methodName: methodName, methodParams: [] }],
         },
         inputVariables: {
           workflowContext: {
@@ -1285,9 +1295,21 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const result = await client.runNodeWithInputs(params);
 
       expect(result).toBeDefined();
-      // Backend fails the entire node execution for invalid method signatures
+      // Backend correctly fails for invalid method signatures
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
+      expect(result.errorCode).toBe(3000); // INVALID_REQUEST
+
+      // Should still return structured data with null value for the failed method
+      expect(result.data).toBeDefined();
+      expect(result.data[methodName]).toBe(null);
+
+      // Should include metadata with method-level error details
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(1);
+      expect(result.metadata[0].success).toBe(false);
+      expect(result.metadata[0].methodName).toBe(methodName);
     });
   });
 
@@ -1399,10 +1421,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     });
   });
 
-
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1455,7 +1476,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       );
 
       expect(result.success).toBe(true);
-      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
+      expect(result.success).toBe(
+        resultIndicatesAllWritesSuccessful(result as any)
+      );
       expect(result.data).toBeDefined();
       expect(result.metadata).toBeDefined();
 
@@ -1511,18 +1534,23 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       expect(latestRoundMetadata!.methodABI).toBeDefined();
 
       // Verify that metadata contains raw unformatted values
-      const rawLatestRoundData = latestRoundMetadata!.value as Record<string, unknown>;
+      const rawLatestRoundData = latestRoundMetadata!.value as Record<
+        string,
+        unknown
+      >;
       const rawAnswer = rawLatestRoundData.answer as string;
-      
+
       // Raw answer should be different from formatted answer (no decimal point in raw)
       expect(rawAnswer).not.toEqual(answer);
       expect(parseInt(rawAnswer)).toBeGreaterThan(0);
 
-      console.log(`✅ Decimal formatting applied: raw=${rawAnswer}, formatted=${answer}`);
+      console.log(
+        `✅ Decimal formatting applied: raw=${rawAnswer}, formatted=${answer}`
+      );
     });
 
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
-// USDC contract on Sepolia - test simplified applyToFields syntax
+      // USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
         nodeType: NodeType.ContractRead,
         nodeConfig: {
@@ -1575,7 +1603,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       );
 
       expect(result.success).toBe(true);
-      expect(result.success).toBe(resultIndicatesAllWritesSuccessful(result as any));
+      expect(result.success).toBe(
+        resultIndicatesAllWritesSuccessful(result as any)
+      );
       expect(result.data).toBeDefined();
       expect(typeof result.data).toBe("object");
 
@@ -1605,7 +1635,9 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       expect(parsedTotalSupply).toBeGreaterThan(0);
       expect(parsedTotalSupply).toBeLessThan(Number.MAX_SAFE_INTEGER);
 
-      console.log(`✅ USDC totalSupply formatted correctly: ${totalSupply} (${parsedTotalSupply})`);
+      console.log(
+        `✅ USDC totalSupply formatted correctly: ${totalSupply} (${parsedTotalSupply})`
+      );
 
       // Verify metadata structure (should be array of method results)
       expect(result.metadata).toBeDefined();
@@ -1628,7 +1660,7 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -1673,11 +1705,11 @@ const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const contractReadStep = simulation.steps.find(
         (step) => step.id === contractReadNode.id
       );
-            expect(contractReadStep!.success).toBeTruthy();
+      expect(contractReadStep!.success).toBeTruthy();
 
       const output = contractReadStep!.output as any;
       expect(output).toBeDefined();
-      
+
       // Output is the data object directly; metadata is step-level
       expect(typeof output).toBe("object");
       expect(output).not.toBeNull();
