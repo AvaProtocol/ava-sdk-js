@@ -585,7 +585,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const writeFail = stepIndicatesWriteFailure(
           contractWriteSimStep as any
         );
-        const expectedStatus = writeFail ? ExecutionStatus.PartialSuccess : ExecutionStatus.Success;
+        const expectedStatus = writeFail
+          ? ExecutionStatus.PartialSuccess
+          : ExecutionStatus.Success;
         expect(simulation.status).toBe(expectedStatus);
         expect(simulation.steps).toHaveLength(2); // trigger + contract write node
 
@@ -1052,6 +1054,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     test("should handle invalid method signature gracefully", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
+      const methodName = "nonExistentMethod";
+
       const params = {
         nodeType: NodeType.ContractWrite,
         nodeConfig: {
@@ -1059,13 +1063,13 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           contractAbi: [
             {
               inputs: [],
-              name: "nonExistentMethod",
+              name: methodName,
               outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
               stateMutability: "nonpayable",
               type: "function",
             },
           ],
-          methodCalls: [{ methodName: "nonExistentMethod", methodParams: [] }],
+          methodCalls: [{ methodName: methodName, methodParams: [] }],
         },
         inputVariables: {
           workflowContext: {
@@ -1100,30 +1104,22 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(typeof result.success).toBe("boolean");
+      expect(result).toBeDefined();
+      // Backend correctly fails for invalid method signatures
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.errorCode).toBe(3000); // INVALID_REQUEST
+
+      // Should still return structured data with empty object for the failed method
       expect(result.data).toBeDefined();
+      expect(result.data[methodName]).toEqual({});
 
-      // 🚀 NEW: Check new response structure with data and metadata at top level
-      expect(result.data).toBeDefined(); // Decoded event data
-      expect(result.metadata).toBeDefined(); // Method execution details
+      // Should include metadata with method-level error details
+      expect(result.metadata).toBeDefined();
       expect(Array.isArray(result.metadata)).toBe(true);
-      expect(result.metadata.length).toBe(params.nodeConfig.methodCalls.length);
-
-      // Since we're using Tenderly simulation, it might return success even for invalid methods
-      // The important thing is that we get a response with the correct structure
-      if (result.success && result.metadata && Array.isArray(result.metadata)) {
-        const errorResult = Array.isArray(result.metadata)
-          ? result.metadata.find(
-              (r: any) => r.methodName === "nonExistentMethod"
-            )
-          : undefined;
-        // Some backends may not include the failing method explicitly; only assert structure
-        if (errorResult) {
-          expect(errorResult.methodName).toBe("nonExistentMethod");
-        }
-        // Note: Tenderly simulation may return success=true even for invalid methods
-        // This is expected behavior when using simulation
-      }
+      expect(result.metadata.length).toBe(1);
+      expect(result.metadata[0].success).toBe(false);
+      expect(result.metadata[0].methodName).toBe(methodName);
     });
   });
 
@@ -1294,7 +1290,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const writeFail3 = stepIndicatesWriteFailure(
         contractWriteSimStep3 as any
       );
-      const expectedStatus = writeFail3 ? ExecutionStatus.PartialSuccess : ExecutionStatus.Success;
+      const expectedStatus = writeFail3
+        ? ExecutionStatus.PartialSuccess
+        : ExecutionStatus.Success;
       expect(simulation.status).toBe(expectedStatus);
       const contractWriteStep = simulation.steps.find(
         (step) => step.id === contractWriteNode.id
@@ -1430,7 +1428,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   describe("Event Priority Tests", () => {
     test("should prioritize Approval event data over boolean return values", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-      
+
       // Test constants
       const APPROVAL_AMOUNT = "10000"; // 0.01 USDC (6 decimals: 10000 = 0.01 USDC)
       const SPENDER_ADDRESS = "0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e"; // Uniswap router
@@ -1443,10 +1441,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "approve",
-              methodParams: [
-                SPENDER_ADDRESS,
-                APPROVAL_AMOUNT,
-              ],
+              methodParams: [SPENDER_ADDRESS, APPROVAL_AMOUNT],
             },
           ],
         },
@@ -1493,7 +1488,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
   describeIfSepolia("Real UserOp Transaction Debug Tests", () => {
     test("should test real UserOp with salt:0 (funded wallet)", async () => {
-
       // Use the default smart wallet (salt: 0) that is pre-funded
       const wallet = await client.getWallet({ salt: "0" });
 
