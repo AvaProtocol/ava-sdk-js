@@ -106,12 +106,12 @@ jobs:
           # Use envsubst to replace ${VAR} placeholders with actual environment variables
           envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
           
-        # Verify the config was generated (without showing secrets)
-        echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
-        echo "Config template placeholders replaced successfully"
-        echo ""
-        echo "=== Generated config structure (masking secrets) ==="
-        sed 's/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/[JWT_TOKEN_MASKED]/g; s/0x[a-fA-F0-9]\{64\}/[PRIVATE_KEY_MASKED]/g; s/SG\.[A-Za-z0-9_-]*/[SENDGRID_KEY_MASKED]/g' config/aggregator.runtime.yaml
+          # Verify the config was generated (without showing secrets)
+          echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
+          echo "Config template placeholders replaced successfully"
+          echo ""
+          echo "=== Generated config structure (masking secrets) ==="
+          sed 's/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/[JWT_TOKEN_MASKED]/g; s/0x[a-fA-F0-9]\{64\}/[PRIVATE_KEY_MASKED]/g; s/SG\.[A-Za-z0-9_-]*/[SENDGRID_KEY_MASKED]/g' config/aggregator.runtime.yaml
 
       - name: Run local AVS aggregator in Docker
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
