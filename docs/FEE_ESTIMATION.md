@@ -24,7 +24,7 @@ Currently supports:
 
 ```typescript
 import { Client } from '@avaprotocol/sdk-js';
-import type { EstimateFeesRequest } from '@avaprotocol/sdk-js';
+import type { EstimateFeesRequest } from '@avaprotocol/types';
 
 const client = new Client({
   endpoint: 'http://localhost:2206', // Your aggregator endpoint

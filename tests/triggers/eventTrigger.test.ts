@@ -1008,31 +1008,32 @@ describeIfSepolia("EventTrigger Tests", () => {
         return; // Skip test until backend implements methodParams processing
       }
 
-      // Check for decimal formatting
-      if (output.current && output.decimals) {
+      // Check for decimal formatting - NEW STRUCTURE: Event data nested under event name
+      const answerUpdatedOutput = output.AnswerUpdated as Record<string, unknown>;
+      if (answerUpdatedOutput && answerUpdatedOutput.current && answerUpdatedOutput.decimals) {
         // Verify decimal formatting data is present and valid
-        expect(output.current).toBeDefined();
-        expect(output.currentRaw).toBeDefined();
-        expect(output.decimals).toBeDefined();
+        expect(answerUpdatedOutput.current).toBeDefined();
+        expect(answerUpdatedOutput.currentRaw).toBeDefined();
+        expect(answerUpdatedOutput.decimals).toBeDefined();
 
         // Verify formatted value is a valid number string
-        expect(parseFloat(output.current)).not.toBeNaN();
+        expect(parseFloat(answerUpdatedOutput.current as string)).not.toBeNaN();
 
         // Verify raw value is a valid integer string
-        expect(parseInt(output.currentRaw)).not.toBeNaN();
+        expect(parseInt(answerUpdatedOutput.currentRaw as string)).not.toBeNaN();
 
         // Verify decimals is a reasonable number (typically 8 for Chainlink)
-        expect(output.decimals).toBeGreaterThan(0);
-        expect(output.decimals).toBeLessThanOrEqual(18);
+        expect(answerUpdatedOutput.decimals).toBeGreaterThan(0);
+        expect(answerUpdatedOutput.decimals).toBeLessThanOrEqual(18);
 
         // 🔍 TYPE CHECK: Verify ABI type improvements are working
-        expect(typeof output.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
-        expect(typeof output.current).toBe("string"); // current should be string (int256 -> string, then formatted)
-        expect(typeof output.currentRaw).toBe("string"); // raw value should be string
+        expect(typeof answerUpdatedOutput.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
+        expect(typeof answerUpdatedOutput.current).toBe("string"); // current should be string (int256 -> string, then formatted)
+        expect(typeof answerUpdatedOutput.currentRaw).toBe("string"); // raw value should be string
 
-        expect(output.decimals).toBe(8);
-        expect(output.current).toMatch(/^\d+\.\d+$/); // Should be decimal format (flexible decimal places)
-        expect(output.currentRaw).toMatch(/^\d+$/); // Should be raw number
+        expect(answerUpdatedOutput.decimals).toBe(8);
+        expect(answerUpdatedOutput.current).toMatch(/^\d+\.\d+$/); // Should be decimal format (flexible decimal places)
+        expect(answerUpdatedOutput.currentRaw).toMatch(/^\d+$/); // Should be raw number
       } else {
         console.log(
           "ℹ️  No decimal formatting found - this may be expected if no events match conditions"
@@ -1244,10 +1245,14 @@ describeIfSepolia("EventTrigger Tests", () => {
         expect(response.data).toBeDefined();
         const parsedData = response.data as Record<string, unknown>;
 
-        expect(typeof parsedData.current).toBe("string");
-        expect(typeof parsedData.roundId).toBe("string");
-        expect(typeof parsedData.updatedAt).toBe("string");
-        expect(parsedData.eventName).toBe("AnswerUpdated");
+        // NEW STRUCTURE: Event data is nested under event name
+        expect(parsedData.AnswerUpdated).toBeDefined();
+        const answerUpdatedData = parsedData.AnswerUpdated as Record<string, unknown>;
+        expect(typeof answerUpdatedData.current).toBe("string");
+        expect(typeof answerUpdatedData.roundId).toBe("string");
+        expect(typeof answerUpdatedData.updatedAt).toBe("string");
+        // eventName is no longer at top level, it's the key name
+        expect(parsedData.AnswerUpdated).toBeDefined();
 
         // Validate metadata structure (raw event log only)
         expect(response.metadata).toBeDefined();
@@ -1304,10 +1309,14 @@ describeIfSepolia("EventTrigger Tests", () => {
         string,
         unknown
       >;
-      expect(typeof simulateData.current).toBe("string");
-      expect(typeof simulateData.roundId).toBe("string");
-      expect(typeof simulateData.updatedAt).toBe("string");
-      expect(simulateData.eventName).toBe("AnswerUpdated");
+      // NEW STRUCTURE: Event data is nested under event name
+      expect(simulateData.AnswerUpdated).toBeDefined();
+      const simulateAnswerData = simulateData.AnswerUpdated as Record<string, unknown>;
+      expect(typeof simulateAnswerData.current).toBe("string");
+      expect(typeof simulateAnswerData.roundId).toBe("string");
+      expect(typeof simulateAnswerData.updatedAt).toBe("string");
+      // eventName is no longer at top level, it's the key name
+      expect(simulateData.AnswerUpdated).toBeDefined();
 
       expect(normalizedSimulateResponse.executionContext.chainId).toBe(
         11155111

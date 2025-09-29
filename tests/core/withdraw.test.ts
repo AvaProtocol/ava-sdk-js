@@ -5,10 +5,11 @@
 
 import util from "util";
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import { Client, TimeoutPresets } from "@avaprotocol/sdk-js";
+import { Client } from "@avaprotocol/sdk-js";
 import {
   WithdrawFundsRequest,
   WithdrawFundsResponse,
+  TimeoutPresets,
 } from "@avaprotocol/types";
 import {
   getAddress,

@@ -250,13 +250,15 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       ); // One method = one key
 
       // Validate that the transfer method returned proper event data
+      // NEW STRUCTURE: Events are nested under event names
       expect(result.data.transfer).toBeDefined();
-      expect(result.data.transfer.from).toBeDefined();
-      expect(result.data.transfer.to).toBeDefined();
-      expect(result.data.transfer.value).toBeDefined();
-      expect(result.data.transfer.from.toLowerCase()).toBe(expectedFrom);
-      expect(result.data.transfer.to.toLowerCase()).toBe(expectedTo);
-      expect(result.data.transfer.value).toBe(expectedValue);
+      expect(result.data.transfer.Transfer).toBeDefined(); // Transfer event nested under method
+      expect(result.data.transfer.Transfer.from).toBeDefined();
+      expect(result.data.transfer.Transfer.to).toBeDefined();
+      expect(result.data.transfer.Transfer.value).toBeDefined();
+      expect(result.data.transfer.Transfer.from.toLowerCase()).toBe(expectedFrom);
+      expect(result.data.transfer.Transfer.to.toLowerCase()).toBe(expectedTo);
+      expect(result.data.transfer.Transfer.value).toBe(expectedValue);
 
       // Validate that the receipt contains logs from the simulation
       expect(result.metadata!.length).toBeGreaterThan(0);
@@ -965,23 +967,25 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(typeof runNodeResponseData.transfer).toBe("object");
 
         // Only validate fields if they exist (Tenderly may not return logs consistently)
-        if (runNodeResponseData.transfer.from) {
-          expect(typeof runNodeResponseData.transfer.from).toBe("string");
-          expect(runNodeResponseData.transfer.from.toLowerCase()).toBe(
+        // NEW STRUCTURE: Events are nested under event names
+        const transferEvent = runNodeResponseData.transfer.Transfer;
+        if (transferEvent && transferEvent.from) {
+          expect(typeof transferEvent.from).toBe("string");
+          expect(transferEvent.from.toLowerCase()).toBe(
             expectedFrom
           );
         }
-        if (runNodeResponseData.transfer.to) {
-          expect(typeof runNodeResponseData.transfer.to).toBe("string");
-          expect(runNodeResponseData.transfer.to.toLowerCase()).toBe(
+        if (transferEvent && transferEvent.to) {
+          expect(typeof transferEvent.to).toBe("string");
+          expect(transferEvent.to.toLowerCase()).toBe(
             expectedTo
           );
         }
-        if (runNodeResponseData.transfer.value !== undefined) {
+        if (transferEvent && transferEvent.value !== undefined) {
           // Simulation may return actual transfer amount or 0 depending on wallet balance
-          expect(typeof runNodeResponseData.transfer.value).toBe("string");
+          expect(typeof transferEvent.value).toBe("string");
           expect(["0", "1", transferAmount]).toContain(
-            runNodeResponseData.transfer.value
+            transferEvent.value
           );
         }
 
@@ -990,16 +994,18 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(typeof simulatedOutput.transfer).toBe("object");
 
         // Validate transfer fields are properly populated
-        expect(simulatedOutput.transfer.from).toBeDefined();
-        expect(typeof simulatedOutput.transfer.from).toBe("string");
-        expect(simulatedOutput.transfer.from.toLowerCase()).toBe(expectedFrom);
+        // NEW STRUCTURE: Events are nested under event names
+        expect(simulatedOutput.transfer.Transfer).toBeDefined();
+        expect(simulatedOutput.transfer.Transfer.from).toBeDefined();
+        expect(typeof simulatedOutput.transfer.Transfer.from).toBe("string");
+        expect(simulatedOutput.transfer.Transfer.from.toLowerCase()).toBe(expectedFrom);
         
-        expect(simulatedOutput.transfer.to).toBeDefined();
-        expect(typeof simulatedOutput.transfer.to).toBe("string");
-        expect(simulatedOutput.transfer.to.toLowerCase()).toBe(expectedTo);
+        expect(simulatedOutput.transfer.Transfer.to).toBeDefined();
+        expect(typeof simulatedOutput.transfer.Transfer.to).toBe("string");
+        expect(simulatedOutput.transfer.Transfer.to.toLowerCase()).toBe(expectedTo);
         
-        expect(simulatedOutput.transfer.value).toBeDefined();
-        expect(simulatedOutput.transfer.value).toBe(expectedValue);
+        expect(simulatedOutput.transfer.Transfer.value).toBeDefined();
+        expect(simulatedOutput.transfer.Transfer.value).toBe(expectedValue);
 
         // Verify deployed workflow success - should be true since we're using salt "0" (funded wallet)
         expect(executedStep).toBeDefined();
@@ -1007,15 +1013,17 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
         // For deployed workflow (real transaction), verify the transfer data is populated
         // Real transactions should always have proper event logs and decoded data
+        // NEW STRUCTURE: Events are nested under event names
         const deployedOutput = executedStep!.output as any;
         expect(deployedOutput.transfer).toBeDefined();
-        expect(typeof deployedOutput.transfer.from).toBe("string");
+        expect(deployedOutput.transfer.Transfer).toBeDefined();
+        expect(typeof deployedOutput.transfer.Transfer.from).toBe("string");
         // Note: Real transaction uses smart wallet address as sender
-        expect(deployedOutput.transfer.to.toLowerCase()).toBe(expectedTo);
+        expect(deployedOutput.transfer.Transfer.to.toLowerCase()).toBe(expectedTo);
         // Deployed execution may return actual transfer amount or 0 depending on wallet balance
-        expect(typeof deployedOutput.transfer.value).toBe("string");
+        expect(typeof deployedOutput.transfer.Transfer.value).toBe("string");
         expect(["0", "1", transferAmount]).toContain(
-          deployedOutput.transfer.value
+          deployedOutput.transfer.Transfer.value
         );
       } finally {
         if (workflowId) {
@@ -1449,16 +1457,18 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // The Approval event contains owner, spender, value fields which are more useful than just output_0: true
 
       // Check that event data is included (owner, spender, value)
-      expect(result.data.approve).toHaveProperty("owner");
-      expect(result.data.approve).toHaveProperty("spender");
-      expect(result.data.approve).toHaveProperty("value");
+      // NEW STRUCTURE: Events are nested under event names
+      expect(result.data.approve.Approval).toBeDefined();
+      expect(result.data.approve.Approval).toHaveProperty("owner");
+      expect(result.data.approve.Approval).toHaveProperty("spender");
+      expect(result.data.approve.Approval).toHaveProperty("value");
 
       // Verify the event data matches our parameters
-      expect(result.data.approve.owner).toBe(wallet.address);
-      expect(result.data.approve.spender.toLowerCase()).toBe(
+      expect(result.data.approve.Approval.owner).toBe(wallet.address);
+      expect(result.data.approve.Approval.spender.toLowerCase()).toBe(
         SPENDER_ADDRESS.toLowerCase() // Case-insensitive address comparison
       );
-      expect(result.data.approve.value).toBe(APPROVAL_AMOUNT);
+      expect(result.data.approve.Approval.value).toBe(APPROVAL_AMOUNT);
     });
   });
 
