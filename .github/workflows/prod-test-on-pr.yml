@@ -14,7 +14,7 @@ on:
           - ethereum
           - base
           - base-sepolia
-          - soneium-minato
+          # - soneium-minato  # Disabled - no longer running tests on this network
 
 jobs:
   production-test:
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        env: [sepolia, ethereum, base, base-sepolia, soneium-minato]
+        env: [sepolia, ethereum, base, base-sepolia] # soneium-minato disabled
     environment: ${{ matrix.env }}
     env:
       CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
