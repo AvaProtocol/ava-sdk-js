@@ -7,6 +7,7 @@ import {
   RunNodeWithInputsResponse,
   TriggerType,
   ExecutionStatus,
+  ErrorCode,
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -1298,7 +1299,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
       // Backend correctly fails for invalid method signatures
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.errorCode).toBe(3000); // INVALID_REQUEST
+      expect(result.errorCode).toBe(ErrorCode.INVALID_REQUEST);
 
       // Should still return structured data with null value for the failed method
       expect(result.data).toBeDefined();

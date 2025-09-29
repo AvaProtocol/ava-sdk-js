@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType, ExecutionStatus } from "@avaprotocol/types";
+import { NodeType, TriggerType, ExecutionStatus, ErrorCode } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -253,12 +253,15 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // NEW STRUCTURE: Events are nested under event names
       expect(result.data.transfer).toBeDefined();
       expect(result.data.transfer.Transfer).toBeDefined(); // Transfer event nested under method
-      expect(result.data.transfer.Transfer.from).toBeDefined();
-      expect(result.data.transfer.Transfer.to).toBeDefined();
-      expect(result.data.transfer.Transfer.value).toBeDefined();
-      expect(result.data.transfer.Transfer.from.toLowerCase()).toBe(expectedFrom);
-      expect(result.data.transfer.Transfer.to.toLowerCase()).toBe(expectedTo);
-      expect(result.data.transfer.Transfer.value).toBe(expectedValue);
+      
+      // Use destructuring for better null safety and readability
+      const { from, to, value } = result.data.transfer.Transfer;
+      expect(from).toBeDefined();
+      expect(to).toBeDefined();
+      expect(value).toBeDefined();
+      expect(from.toLowerCase()).toBe(expectedFrom);
+      expect(to.toLowerCase()).toBe(expectedTo);
+      expect(value).toBe(expectedValue);
 
       // Validate that the receipt contains logs from the simulation
       expect(result.metadata!.length).toBeGreaterThan(0);
@@ -996,16 +999,19 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         // Validate transfer fields are properly populated
         // NEW STRUCTURE: Events are nested under event names
         expect(simulatedOutput.transfer.Transfer).toBeDefined();
-        expect(simulatedOutput.transfer.Transfer.from).toBeDefined();
-        expect(typeof simulatedOutput.transfer.Transfer.from).toBe("string");
-        expect(simulatedOutput.transfer.Transfer.from.toLowerCase()).toBe(expectedFrom);
         
-        expect(simulatedOutput.transfer.Transfer.to).toBeDefined();
-        expect(typeof simulatedOutput.transfer.Transfer.to).toBe("string");
-        expect(simulatedOutput.transfer.Transfer.to.toLowerCase()).toBe(expectedTo);
+        // Use destructuring for better null safety and readability
+        const { from: simFrom, to: simTo, value: simValue } = simulatedOutput.transfer.Transfer;
+        expect(simFrom).toBeDefined();
+        expect(typeof simFrom).toBe("string");
+        expect(simFrom.toLowerCase()).toBe(expectedFrom);
         
-        expect(simulatedOutput.transfer.Transfer.value).toBeDefined();
-        expect(simulatedOutput.transfer.Transfer.value).toBe(expectedValue);
+        expect(simTo).toBeDefined();
+        expect(typeof simTo).toBe("string");
+        expect(simTo.toLowerCase()).toBe(expectedTo);
+        
+        expect(simValue).toBeDefined();
+        expect(simValue).toBe(expectedValue);
 
         // Verify deployed workflow success - should be true since we're using salt "0" (funded wallet)
         expect(executedStep).toBeDefined();
@@ -1017,14 +1023,15 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const deployedOutput = executedStep!.output as any;
         expect(deployedOutput.transfer).toBeDefined();
         expect(deployedOutput.transfer.Transfer).toBeDefined();
-        expect(typeof deployedOutput.transfer.Transfer.from).toBe("string");
+        
+        // Use destructuring for better null safety and readability
+        const { from: deployedFrom, to: deployedTo, value: deployedValue } = deployedOutput.transfer.Transfer;
+        expect(typeof deployedFrom).toBe("string");
         // Note: Real transaction uses smart wallet address as sender
-        expect(deployedOutput.transfer.Transfer.to.toLowerCase()).toBe(expectedTo);
+        expect(deployedTo.toLowerCase()).toBe(expectedTo);
         // Deployed execution may return actual transfer amount or 0 depending on wallet balance
-        expect(typeof deployedOutput.transfer.Transfer.value).toBe("string");
-        expect(["0", "1", transferAmount]).toContain(
-          deployedOutput.transfer.Transfer.value
-        );
+        expect(typeof deployedValue).toBe("string");
+        expect(["0", "1", transferAmount]).toContain(deployedValue);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -1092,7 +1099,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Backend correctly fails for invalid method signatures
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.errorCode).toBe(3000); // INVALID_REQUEST
+      expect(result.errorCode).toBe(ErrorCode.INVALID_REQUEST);
 
       // Should still return structured data with empty object for the failed method
       expect(result.data).toBeDefined();
@@ -1459,16 +1466,19 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Check that event data is included (owner, spender, value)
       // NEW STRUCTURE: Events are nested under event names
       expect(result.data.approve.Approval).toBeDefined();
-      expect(result.data.approve.Approval).toHaveProperty("owner");
-      expect(result.data.approve.Approval).toHaveProperty("spender");
-      expect(result.data.approve.Approval).toHaveProperty("value");
+      
+      // Use destructuring for better null safety and readability
+      const { owner, spender, value: approvalValue } = result.data.approve.Approval;
+      expect(owner).toBeDefined();
+      expect(spender).toBeDefined();
+      expect(approvalValue).toBeDefined();
 
       // Verify the event data matches our parameters
-      expect(result.data.approve.Approval.owner).toBe(wallet.address);
-      expect(result.data.approve.Approval.spender.toLowerCase()).toBe(
+      expect(owner).toBe(wallet.address);
+      expect(spender.toLowerCase()).toBe(
         SPENDER_ADDRESS.toLowerCase() // Case-insensitive address comparison
       );
-      expect(result.data.approve.Approval.value).toBe(APPROVAL_AMOUNT);
+      expect(approvalValue).toBe(APPROVAL_AMOUNT);
     });
   });
 

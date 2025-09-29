@@ -12,7 +12,7 @@ class Step implements StepProps {
   name: string;
   success: boolean;
   error: string;
-  errorCode: avs_pb.ErrorCode;
+  errorCode: number;
   log: string;
   inputsList: string[];
   config?: any;
