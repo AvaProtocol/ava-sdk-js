@@ -1009,31 +1009,34 @@ describeIfSepolia("EventTrigger Tests", () => {
       }
 
       // Check for decimal formatting - NEW STRUCTURE: Event data nested under event name
-      const answerUpdatedOutput = output.AnswerUpdated as Record<string, unknown>;
-      if (answerUpdatedOutput && answerUpdatedOutput.current && answerUpdatedOutput.decimals) {
+      // Use more flexible approach that doesn't hard-code event name
+      const expectedEventName = "AnswerUpdated";
+      const eventOutput = output[expectedEventName] as Record<string, unknown>;
+      
+      if (eventOutput && eventOutput.current && eventOutput.decimals) {
         // Verify decimal formatting data is present and valid
-        expect(answerUpdatedOutput.current).toBeDefined();
-        expect(answerUpdatedOutput.currentRaw).toBeDefined();
-        expect(answerUpdatedOutput.decimals).toBeDefined();
+        expect(eventOutput.current).toBeDefined();
+        expect(eventOutput.currentRaw).toBeDefined();
+        expect(eventOutput.decimals).toBeDefined();
 
         // Verify formatted value is a valid number string
-        expect(parseFloat(answerUpdatedOutput.current as string)).not.toBeNaN();
+        expect(parseFloat(eventOutput.current as string)).not.toBeNaN();
 
         // Verify raw value is a valid integer string
-        expect(parseInt(answerUpdatedOutput.currentRaw as string)).not.toBeNaN();
+        expect(parseInt(eventOutput.currentRaw as string)).not.toBeNaN();
 
         // Verify decimals is a reasonable number (typically 8 for Chainlink)
-        expect(answerUpdatedOutput.decimals).toBeGreaterThan(0);
-        expect(answerUpdatedOutput.decimals).toBeLessThanOrEqual(18);
+        expect(eventOutput.decimals).toBeGreaterThan(0);
+        expect(eventOutput.decimals).toBeLessThanOrEqual(18);
 
         // 🔍 TYPE CHECK: Verify ABI type improvements are working
-        expect(typeof answerUpdatedOutput.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
-        expect(typeof answerUpdatedOutput.current).toBe("string"); // current should be string (int256 -> string, then formatted)
-        expect(typeof answerUpdatedOutput.currentRaw).toBe("string"); // raw value should be string
+        expect(typeof eventOutput.decimals).toBe("number"); // decimals should be number type (uint8 -> number)
+        expect(typeof eventOutput.current).toBe("string"); // current should be string (int256 -> string, then formatted)
+        expect(typeof eventOutput.currentRaw).toBe("string"); // raw value should be string
 
-        expect(answerUpdatedOutput.decimals).toBe(8);
-        expect(answerUpdatedOutput.current).toMatch(/^\d+\.\d+$/); // Should be decimal format (flexible decimal places)
-        expect(answerUpdatedOutput.currentRaw).toMatch(/^\d+$/); // Should be raw number
+        expect(eventOutput.decimals).toBe(8);
+        expect(eventOutput.current).toMatch(/^\d+\.\d+$/); // Should be decimal format (flexible decimal places)
+        expect(eventOutput.currentRaw).toMatch(/^\d+$/); // Should be raw number
       } else {
         console.log(
           "ℹ️  No decimal formatting found - this may be expected if no events match conditions"
@@ -1246,13 +1249,18 @@ describeIfSepolia("EventTrigger Tests", () => {
         const parsedData = response.data as Record<string, unknown>;
 
         // NEW STRUCTURE: Event data is nested under event name
-        expect(parsedData.AnswerUpdated).toBeDefined();
-        const answerUpdatedData = parsedData.AnswerUpdated as Record<string, unknown>;
-        expect(typeof answerUpdatedData.current).toBe("string");
-        expect(typeof answerUpdatedData.roundId).toBe("string");
-        expect(typeof answerUpdatedData.updatedAt).toBe("string");
-        // eventName is no longer at top level, it's the key name
-        expect(parsedData.AnswerUpdated).toBeDefined();
+        // Use more flexible approach that doesn't hard-code event name
+        const eventKeys = Object.keys(parsedData);
+        expect(eventKeys.length).toBeGreaterThan(0);
+        
+        // For this test, we expect AnswerUpdated event specifically
+        const expectedEventName = "AnswerUpdated";
+        expect(parsedData[expectedEventName]).toBeDefined();
+        
+        const eventData = parsedData[expectedEventName] as Record<string, unknown>;
+        expect(typeof eventData.current).toBe("string");
+        expect(typeof eventData.roundId).toBe("string");
+        expect(typeof eventData.updatedAt).toBe("string");
 
         // Validate metadata structure (raw event log only)
         expect(response.metadata).toBeDefined();
@@ -1310,13 +1318,18 @@ describeIfSepolia("EventTrigger Tests", () => {
         unknown
       >;
       // NEW STRUCTURE: Event data is nested under event name
-      expect(simulateData.AnswerUpdated).toBeDefined();
-      const simulateAnswerData = simulateData.AnswerUpdated as Record<string, unknown>;
-      expect(typeof simulateAnswerData.current).toBe("string");
-      expect(typeof simulateAnswerData.roundId).toBe("string");
-      expect(typeof simulateAnswerData.updatedAt).toBe("string");
-      // eventName is no longer at top level, it's the key name
-      expect(simulateData.AnswerUpdated).toBeDefined();
+      // Use more flexible approach that doesn't hard-code event name
+      const simulateEventKeys = Object.keys(simulateData);
+      expect(simulateEventKeys.length).toBeGreaterThan(0);
+      
+      // For this test, we expect AnswerUpdated event specifically
+      const expectedEventName = "AnswerUpdated";
+      expect(simulateData[expectedEventName]).toBeDefined();
+      
+      const simulateEventData = simulateData[expectedEventName] as Record<string, unknown>;
+      expect(typeof simulateEventData.current).toBe("string");
+      expect(typeof simulateEventData.roundId).toBe("string");
+      expect(typeof simulateEventData.updatedAt).toBe("string");
 
       expect(normalizedSimulateResponse.executionContext.chainId).toBe(
         11155111

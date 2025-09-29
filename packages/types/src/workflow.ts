@@ -86,7 +86,7 @@ export type StepProps = Omit<
   gasPrice?: string;
   totalGasCost?: string;
   // Error code for better client-side error handling
-  errorCode: avs_pb.ErrorCode;
+  errorCode: number;
 };
 
 // Execution Props
