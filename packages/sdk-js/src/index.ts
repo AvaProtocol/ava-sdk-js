@@ -54,16 +54,10 @@ import {
   type TriggerWorkflowResponse,
   type WithdrawFundsRequest,
   type WithdrawFundsResponse,
-  // Fee estimation types
+  // Fee estimation types (only those used internally by SDK)
   type EstimateFeesRequest,
   type EstimateFeesResponse,
-  type FeeAmount,
-  type GasFeeBreakdown,
-  type NodeGasFee,
-  type AutomationFee,
-  type AutomationFeeComponent,
-  type SmartWalletCreationFee,
-  type Discount
+  type FeeAmount
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -1528,10 +1522,11 @@ class Client extends BaseClient {
 
   /**
    * Get comprehensive fee estimation for workflow deployment
-   * TEMPORARILY DISABLED: Fee estimation types are not synchronized between branches
-   * TODO: Re-enable when types package includes fee estimation types
+   * 
+   * @param params - Fee estimation request parameters
+   * @param options - Optional request options (auth key, timeout)
+   * @returns Promise resolving to comprehensive fee breakdown
    */
-  /*
   async estimateFees(
     {
       trigger,
@@ -1608,7 +1603,7 @@ class Client extends BaseClient {
           gasUnits: operation.getGasUnits(),
           gasPrice: gasFees.getGasPriceGwei() || "", // Use parent gas price
           totalCost: operation.getFee() ? this.convertFeeAmount(operation.getFee()!) : 
-            this.createZeroFeeAmount(result.getChainId()),
+            this.createZeroFeeAmount(),
           success: operation.getFee() ? 
             (parseFloat(operation.getFee()!.getNativeTokenAmount()) > 0) : false, // Check if operation has valid gas cost
           error: undefined,
@@ -1624,20 +1619,19 @@ class Client extends BaseClient {
     // Convert automation fees if present
     const automationFees = result.getAutomationFees();
     if (automationFees) {
-      // Calculate total fee from base + monitoring + execution
+      // Calculate total fee from base + execution
       const baseFee = automationFees.getBaseFee();
-      const monitoringFee = automationFees.getMonitoringFee();
       const executionFee = automationFees.getExecutionFee();
       
       // For now, use baseFee as totalFee since the exact calculation isn't available
       // If baseFee is not available, create a mock fee amount with proper chain detection
-      const totalFee = baseFee || this.createMockFeeAmount(result.getChainId());
+      const totalFee = baseFee || this.createMockFeeAmount();
 
       response.automationFees = {
         triggerType: automationFees.getTriggerType(),
         durationMinutes: automationFees.getDurationMinutes(),
-        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(result.getChainId()),
-        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(result.getChainId()),
+        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(),
+        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(),
         estimatedExecutions: automationFees.getEstimatedExecutions(),
         totalFee: this.convertFeeAmount(totalFee),
         breakdown: [], // Not available in current protobuf structure
@@ -1697,15 +1691,15 @@ class Client extends BaseClient {
    * Create a mock fee amount object that mimics protobuf FeeAmount interface
    * @private
    */
-  private createMockFeeAmount(chainId?: string): any {
-    const getNativeTokenSymbol = (chainId?: string): string => {
+  private createMockFeeAmount(): any {
+    const getNativeTokenSymbol = (): string => {
       // All supported chains (Ethereum and Base) use ETH as native token
       return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
     };
 
     return {
       getNativeTokenAmount: () => "0",
-      getNativeTokenSymbol: () => getNativeTokenSymbol(chainId),
+      getNativeTokenSymbol: () => getNativeTokenSymbol(),
       getUsdAmount: () => "0",
       getApTokenAmount: () => "0"
     };
@@ -1715,9 +1709,9 @@ class Client extends BaseClient {
    * Create a zero fee amount
    * @private
    */
-  private createZeroFeeAmount(chainId?: string): FeeAmount {
+  private createZeroFeeAmount(): FeeAmount {
     // Determine native token symbol based on chain ID
-    const getNativeTokenSymbol = (chainId?: string): string => {
+    const getNativeTokenSymbol = (): string => {
       // All supported chains (Ethereum and Base) use ETH as native token
       // But could be extended for other chains in the future
       return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
@@ -1725,7 +1719,7 @@ class Client extends BaseClient {
 
     return {
       nativeTokenAmount: "0",
-      nativeTokenSymbol: getNativeTokenSymbol(chainId),
+      nativeTokenSymbol: getNativeTokenSymbol(),
       usdAmount: "0",
       apTokenAmount: "0",
     };
@@ -1761,22 +1755,5 @@ export {
   cleanGrpcErrorMessage,
 };
 
-// Re-export token types for convenience
-export type {
-  TokenMetadata,
-  GetTokenMetadataRequest,
-  GetTokenMetadataResponse,
-  TokenSource,
-  WithdrawFundsRequest,
-  WithdrawFundsResponse,
-} from "@avaprotocol/types";
-
-// Re-export fee estimation types for convenience - temporarily disabled
-// TODO: Re-enable when types package is synchronized with fee estimation changes
-
-// Re-export timeout-related types and presets
-export {
-  TimeoutPresets,
-  type TimeoutConfig,
-  type TimeoutError,
-} from "@avaprotocol/types";
+// Note: Types should be imported directly from @avaprotocol/types
+// This keeps the SDK lightweight and follows proper separation of concerns

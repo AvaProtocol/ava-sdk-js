@@ -7,13 +7,14 @@
  * to get comprehensive cost breakdowns before deploying workflows.
  */
 
-import { Client, TriggerType } from '../packages/sdk-js/src/index';
+import { Client } from '../packages/sdk-js/src/index';
 import type { 
+  TriggerType,
   EstimateFeesRequest,
   EstimateFeesResponse,
   TriggerProps,
   NodeProps 
-} from '../packages/sdk-js/src/index';
+} from '@avaprotocol/types';
 
 // Example configuration
 const AGGREGATOR_ENDPOINT = process.env.AGGREGATOR_ENDPOINT || 'http://localhost:2206';
