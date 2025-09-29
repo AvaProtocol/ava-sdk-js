@@ -37,6 +37,7 @@ jobs:
       
       # From dev environment variables
       BUNDLER_URL: ${{ vars.BUNDLER_URL }}
+      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -46,6 +47,12 @@ jobs:
         run: |
           echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
           echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "TEST_ENV: $TEST_ENV"
+          echo "AVS_API_KEY length: ${#AVS_API_KEY}"
+          echo "JWT_SECRET length: ${#JWT_SECRET}"
+          echo "ECDSA_PRIVATE_KEY length: ${#ECDSA_PRIVATE_KEY}"
+          echo "BUNDLER_URL: $BUNDLER_URL"
+          echo "TENDERLY_ACCESS_KEY length: ${#TENDERLY_ACCESS_KEY}"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
@@ -99,15 +106,27 @@ jobs:
           # Use envsubst to replace ${VAR} placeholders with actual environment variables
           envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
           
-          # Verify the config was generated (without showing secrets)
-          echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
-          echo "Config template placeholders replaced successfully"
+        # Verify the config was generated (without showing secrets)
+        echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
+        echo "Config template placeholders replaced successfully"
+        echo ""
+        echo "=== Generated config structure (masking secrets) ==="
+        sed 's/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/[JWT_TOKEN_MASKED]/g; s/0x[a-fA-F0-9]\{64\}/[PRIVATE_KEY_MASKED]/g; s/SG\.[A-Za-z0-9_-]*/[SENDGRID_KEY_MASKED]/g' config/aggregator.runtime.yaml
 
       - name: Run local AVS aggregator in Docker
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "Starting AVS aggregator with version: $DOCKER_IMAGE_TAG"
           docker compose up -d
+          
+          echo "Waiting for aggregator to start..."
+          sleep 10
+          
+          echo "=== Aggregator container status ==="
+          docker compose ps
+          
+          echo "=== Aggregator logs (last 50 lines) ==="
+          docker compose logs aggregator --tail=50
 
       - name: Use Node.js
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
@@ -123,10 +142,39 @@ jobs:
       - name: Ensure the aggregator is running
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
-          until curl --output /dev/null --silent --fail http://localhost:1323/up; do
-            printf '.'
-            sleep 5
+          echo "Waiting for aggregator to become ready..."
+          max_attempts=24  # 2 minutes total (24 * 5 seconds)
+          attempt=0
+          
+          while [ $attempt -lt $max_attempts ]; do
+            echo "Attempt $((attempt + 1))/$max_attempts: Testing aggregator health..."
+            
+            # Test if aggregator responds
+            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:1323/up; then
+              echo "✅ Aggregator is ready!"
+              curl -v http://localhost:1323/up
+              break
+            else
+              echo "❌ Aggregator not ready yet..."
+              echo "Container status:"
+              docker compose ps
+              echo "Recent aggregator logs:"
+              docker compose logs aggregator --tail=10
+              echo "Waiting 5 seconds..."
+              sleep 5
+            fi
+            
+            attempt=$((attempt + 1))
           done
+          
+          if [ $attempt -eq $max_attempts ]; then
+            echo "🚨 Aggregator failed to start after $((max_attempts * 5)) seconds"
+            echo "Final container status:"
+            docker compose ps
+            echo "Full aggregator logs:"
+            docker compose logs aggregator
+            exit 1
+          fi
 
       - name: Retrieve AVS API Key from the aggregator
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
