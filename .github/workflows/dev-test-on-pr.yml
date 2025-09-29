@@ -15,10 +15,28 @@ jobs:
     environment: dev
 
     env:
-      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
-      ENDPOINT: "localhost:2206"
+      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}  # Should be: ethereum-sepolia.core.chainstack.com/2504cb0765f0edf6c33d99095148006f
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+      TEST_ENV: "dev"
       DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }} # Or your preferred default for PRs
+      
+      # Aggregator configuration (mapped from your GitHub settings)
+      ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
+      CONTROLLER_PRIVATE_KEY: ${{ secrets.CONTROLLER_PRIVATE_KEY }}
+      AP_NOTIFY_BOT_TOKEN: ${{ secrets.AP_NOTIFY_BOT_TOKEN }}
+      MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
+      
+      # From repository variables
+      SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+      TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
+      TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
+      THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
+      SENDGRID_KEY: ${{ vars.SENDGRID_KEY }}
+      
+      # From dev environment variables
+      BUNDLER_URL: ${{ vars.BUNDLER_URL }}
 
     steps:
       - name: Checkout repository
@@ -26,8 +44,8 @@ jobs:
 
       - name: Debug environment variables
         run: |
-          echo "ENDPOINT: $ENDPOINT"
           echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
+          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
@@ -71,6 +89,20 @@ jobs:
           fi
         shell: bash
 
+      - name: Inject secrets into aggregator config
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: |
+          echo "Injecting secrets into aggregator configuration..."
+          echo "Chain endpoint: ${CHAIN_ENDPOINT}"
+          echo "Test environment: ${TEST_ENV}"
+          
+          # Use envsubst to replace ${VAR} placeholders with actual environment variables
+          envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
+          
+          # Verify the config was generated (without showing secrets)
+          echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
+          echo "Config template placeholders replaced successfully"
+
       - name: Run local AVS aggregator in Docker
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
@@ -101,7 +133,6 @@ jobs:
         id: setup-env
         run: |
           echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
-          echo "ENDPOINT=localhost:2206" >> $GITHUB_ENV
 
       - name: Print Required Environment Variables
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'

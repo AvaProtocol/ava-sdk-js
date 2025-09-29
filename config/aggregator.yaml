@@ -1,35 +1,42 @@
-# Dummy unsecure test key. do not deposit real fund to here
-# Wallet: 0x578B110b0a7c06e66b7B1a33C39635304aaF733c
-ecdsa_private_key: e0502ddd5a0d05ec7b5c22614a01c8ce783810edaa98e44cc82f5fa5a819aaa9
+environment: development
+db_path: /tmp/ap-avs/db-${TEST_ENV}
 
-eth_rpc_url: https://sepolia.gateway.tenderly.co/6PJfDJkrMGBl3f4MuyU5M
-eth_ws_url: wss://sepolia.gateway.tenderly.co/6PJfDJkrMGBl3f4MuyU5M
+# Runtime-generated config - secrets injected from GitHub environment
+ecdsa_private_key: ${ECDSA_PRIVATE_KEY}
+
+eth_rpc_url: https://${CHAIN_ENDPOINT}
+eth_ws_url: wss://${CHAIN_ENDPOINT}
 
 rpc_bind_address: "0.0.0.0:2206"
-http_bind_address: "0.0.0.0:8080"
+http_bind_address: "0.0.0.0:1323"
 
-avs_registry_coordinator_address: 0x90c6d6f2A78d5Ce22AB8631Ddb142C03AC87De7a
-operator_state_retriever_address: 0xb7bb920538e038DFFEfcB55caBf713652ED2031F
+avs_registry_coordinator_address: 0xcA95381802FD1398d5BF2D01243210cFb3a2b3BD
+operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
 
-etherscan_url: https://sepolia.etherscan.io
-eigenlayer_url: https://sepolia.eigenlayer.xyz
+jwt_secret: ${JWT_SECRET}
 
-environment: development
-db_path: /tmp/ap-avs/db
-
-# Random key for test, please do not use or copy/paste this to any prod env
-jwt_secret: "1b7db1c64236d92de3b3ed32e5d6bf56"
+# Optional services configuration
+server_name: "aggregator-${TEST_ENV}-ci"
+sentry_dsn: ${SENTRY_DSN}
 
 # account abstraction config
 # Sepolia
 smart_wallet:
-  eth_rpc_url: https://ethereum-sepolia.core.chainstack.com/2504cb0765f0edf6c33d99095148006f
-  eth_ws_url: wss://ethereum-sepolia.core.chainstack.com/2504cb0765f0edf6c33d99095148006f
-  bundler_url: https://bundler-sepolia.avaprotocol.org
+  eth_rpc_url: https://${CHAIN_ENDPOINT}
+  eth_ws_url: wss://${CHAIN_ENDPOINT}
+  bundler_url: ${BUNDLER_URL}
 
-  controller_private_key: 
+  controller_private_key: ${CONTROLLER_PRIVATE_KEY}
   max_wallets_per_owner: 2000
+
+# Optional services - will use environment variables if available
+tenderly_account: ${TENDERLY_ACCOUNT}
+tenderly_project: ${TENDERLY_PROJECT}
+tenderly_access_key: ${TENDERLY_ACCESS_KEY}
 
 macros:
   secrets:
-    ap_notify_bot_token: "<telegram-bot-token-if-using-telebot>"
+    ap_notify_bot_token: ${AP_NOTIFY_BOT_TOKEN}
+    sendgrid_key: ${SENDGRID_KEY}
+    thegraph_api_key: ${THEGRAPH_API_KEY}
+    moralis_api_key: ${MORALIS_API_KEY}

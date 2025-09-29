@@ -132,7 +132,6 @@ Required test environment variables:
 - `TEST_PRIVATE_KEY` - Ethereum private key for signature auth
 - `TEST_API_KEY` - Admin API key (generated automatically)
 - `CHAIN_ENDPOINT` - Ethereum RPC endpoint
-- `ENDPOINT` - AVS aggregator endpoint (localhost:2206 for local)
 
 ### gRPC Integration
 
