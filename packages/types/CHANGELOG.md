@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.6.0
+
+### Minor Changes
+
+- c74b912: Added fee estimation interface and gas cost to execution.step
+
 ## 2.5.4
 
 ### Patch Changes

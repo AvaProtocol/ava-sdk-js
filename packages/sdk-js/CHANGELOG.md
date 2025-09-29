@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.8.0
+
+### Minor Changes
+
+- c74b912: Added fee estimation interface and gas cost to execution.step
+
+### Patch Changes
+
+- Updated dependencies [c74b912]
+  - @avaprotocol/types@2.6.0
+
 ## 2.7.4
 
 ### Patch Changes
