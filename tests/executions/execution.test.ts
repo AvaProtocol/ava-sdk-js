@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
-import { TriggerType, ExecutionStatus, NodeType } from "@avaprotocol/types";
+import { TriggerType } from "@avaprotocol/types";
 import _ from "lodash";
 import {
   getAddress,
@@ -10,7 +10,6 @@ import {
   TIMEOUT_DURATION,
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
-import { executionHasWriteFailure } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
@@ -79,10 +78,13 @@ describe("Execution Management Tests", () => {
 
         // Verify each execution has the correct index
         for (let i = 0; i < executionIds.length; i++) {
-          const execution = await client.getExecution(workflowId, executionIds[i]);
+          const execution = await client.getExecution(
+            workflowId,
+            executionIds[i]
+          );
           expect(execution).toBeDefined();
           expect(execution.id).toEqual(executionIds[i]);
-          
+
           // The index should be 0-based: 0 for first run, 1 for second run, etc.
           expect(execution.index).toBe(i);
         }
@@ -102,7 +104,7 @@ describe("Execution Management Tests", () => {
         const workflowProps = createFromTemplate(wallet.address);
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
-          name: "blockTrigger", 
+          name: "blockTrigger",
           type: TriggerType.Block,
           data: { interval: 5 },
         });
@@ -137,34 +139,42 @@ describe("Execution Management Tests", () => {
           let attempts = 0;
           const maxAttempts = 10; // 10 attempts = 50 seconds max wait
           const pollInterval = 5000; // Poll every 5 seconds
-          
+
           // Poll for this specific execution
           do {
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            await new Promise((resolve) => setTimeout(resolve, pollInterval));
             attempts++;
-            
+
             try {
               execution = await client.getExecution(workflowId, executionId);
               if (execution) break;
             } catch (error) {
+              console.log(
+                `Polling attempt ${attempts}/${maxAttempts} for execution ${executionId}: ${error}`
+              );
               execution = null;
             }
           } while (!execution && attempts < maxAttempts);
-          
+
           expect(execution).toBeDefined();
-          expect(typeof execution.index).toBe('number');
+          expect(execution).not.toBeNull();
+          expect(execution!.id).toEqual(executionId);
+          expect(typeof execution!.index).toBe("number");
           executionsWithIndexes.push({
-            executionId: execution.id,
-            index: execution.index
+            executionId: execution!.id,
+            index: execution!.index,
           });
         }
 
+        // We expect exactly 2 executions to be found
+        expect(executionsWithIndexes.length).toBe(2);
+
         // Verify that indexes are unique and within expected range
-        const indexes = executionsWithIndexes.map(e => e.index);
+        const indexes = executionsWithIndexes.map((e) => e.index);
         const uniqueIndexes = [...new Set(indexes)];
         expect(uniqueIndexes.length).toBe(indexes.length); // All indexes should be unique
-        
-        // Indexes should be 0 and 1 (in any order)
+
+        // Indexes should be 0 and 1 (in any order) since we have exactly 2 executions
         expect(indexes.sort()).toEqual([0, 1]);
       } finally {
         if (workflowId) {
@@ -203,7 +213,10 @@ describe("Execution Management Tests", () => {
           isBlocking: true,
         });
 
-        const firstExecution = await client.getExecution(firstWorkflowId, firstTriggerResult.executionId);
+        const firstExecution = await client.getExecution(
+          firstWorkflowId,
+          firstTriggerResult.executionId
+        );
         expect(firstExecution.index).toBe(0);
 
         // Delete the first workflow
@@ -224,7 +237,10 @@ describe("Execution Management Tests", () => {
           isBlocking: true,
         });
 
-        const secondExecution = await client.getExecution(secondWorkflowId, secondTriggerResult.executionId);
+        const secondExecution = await client.getExecution(
+          secondWorkflowId,
+          secondTriggerResult.executionId
+        );
         // The index should reset to 0 for the new workflow instance
         expect(secondExecution.index).toBe(0);
       } finally {
@@ -275,19 +291,26 @@ describe("Execution Management Tests", () => {
         });
 
         // Get executions list and verify index field is present and correct
-        const executionsList = await client.getExecutions([workflowId], { limit: 10 });
-        
+        const executionsList = await client.getExecutions([workflowId], {
+          limit: 10,
+        });
+
         expect(executionsList.items).toBeDefined();
         expect(executionsList.items.length).toBe(2);
 
         // Sort by index to ensure correct order verification
-        const sortedExecutions = executionsList.items.sort((a: any, b: any) => a.index - b.index);
-        
+        const sortedExecutions = executionsList.items.sort(
+          (a, b) => a.index - b.index
+        );
+
         expect(sortedExecutions[0].index).toBe(0);
         expect(sortedExecutions[1].index).toBe(1);
-        
+
         // Verify these match the execution IDs from our triggers
-        const executionIds = [firstResult.executionId, secondResult.executionId];
+        const executionIds = [
+          firstResult.executionId,
+          secondResult.executionId,
+        ];
         expect(executionIds).toContain(sortedExecutions[0].id);
         expect(executionIds).toContain(sortedExecutions[1].id);
       } finally {
