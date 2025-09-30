@@ -71,6 +71,14 @@ function isTokenNameMatch(
     return true;
   }
 
+  // For USDC/USD Coin, accept both variants
+  if (
+    (expectedName === "USD Coin" && actualName === "USDC") ||
+    (expectedSymbol === "USDC" && actualName === "USDC")
+  ) {
+    return true;
+  }
+
   // For USDT/Tether USD, accept both variants
   if (
     (expectedName === "Tether USD" && actualName === "USDT") ||
