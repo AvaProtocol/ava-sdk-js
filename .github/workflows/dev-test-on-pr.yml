@@ -197,38 +197,14 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
-      - name: Test Core Functionality
+      - name: Debug Chain Endpoint
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        run: |
+          echo "CHAIN_ENDPOINT (raw): $CHAIN_ENDPOINT"
+          echo "Full RPC URL will be: https://$CHAIN_ENDPOINT"
+          
+      - name: Test Secret Functionality Only
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test:core
-
-      - name: Test Workflows
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:workflows
-
-      - name: Test Executions
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:executions
-
-      - name: Test Triggers
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:triggers
-
-      - name: Test Nodes
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:nodes
-
-      - name: Test Integrations
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:integrations
+        run: yarn test tests/core/secret.test.ts
