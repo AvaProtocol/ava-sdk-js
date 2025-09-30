@@ -30,7 +30,7 @@ export interface EventTriggerDataType {
       values?: string[];
     }>;
     maxEventsPerBlock?: number;
-    contractAbi: ContractAbi; // Contract ABI as array
+    contractAbi?: ContractAbi; // Contract ABI as array (optional)
     conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
     methodCalls?: MethodCallType[]; // Method calls for enhanced formatting (e.g., decimals)
   }>;
