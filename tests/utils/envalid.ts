@@ -202,7 +202,7 @@ export const getConfig = () => ({
   avsEndpoint: envConfig.avsEndpoint,
   avsApiKey: validatedEnv.AVS_API_KEY,
   chainId: envConfig.chainId,
-  chainEndpoint: validatedEnv.CHAIN_ENDPOINT,
+  chainEndpoint: `https://${validatedEnv.CHAIN_ENDPOINT}`,
   walletPrivateKey: validatedEnv.TEST_PRIVATE_KEY,
   // factoryAddress: FACTORY_ADDRESS, // Let aggregator use its default factory
   environment: validatedEnv.TEST_ENV,
