@@ -210,10 +210,13 @@ jobs:
           echo "Command: /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey"
           echo ""
           
-          echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey 2>&1)" >> $GITHUB_ENV
+          # Generate API key (suppress stderr warnings, only capture the JWT token)
+          API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey 2>/dev/null)
+          echo "AVS_API_KEY=$API_KEY" >> $GITHUB_ENV
           
           echo ""
           echo "✅ AVS API key generated and stored in GITHUB_ENV"
+          echo "API key length: ${#API_KEY} characters"
 
       - name: Print Required Environment Variables
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
