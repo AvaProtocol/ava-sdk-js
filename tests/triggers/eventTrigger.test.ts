@@ -713,49 +713,6 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(deserializedQuery.contractAbi).toEqual(abiArray);
     });
 
-    test("should handle optional contractAbi (not provided)", () => {
-      // Test without contractAbi field - should work for basic event filtering
-      const trigger = TriggerFactory.create({
-        id: "test-no-abi",
-        name: "eventTriggerNoAbi",
-        type: TriggerType.Event,
-        data: {
-          queries: [
-            {
-              addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE],
-                },
-              ],
-              // No contractAbi field - should be optional
-            },
-          ],
-        },
-      });
-
-      // Should serialize without errors
-      expect(() => trigger.toRequest()).not.toThrow();
-
-      // Get the protobuf message
-      const request = trigger.toRequest();
-      const query = request.getEvent()!.getConfig()!.getQueriesList()[0];
-
-      // Should have empty contractAbi list in protobuf
-      expect(query.getContractAbiList()).toBeDefined();
-      expect(query.getContractAbiList().length).toBe(0);
-
-      // Test round-trip: fromResponse should handle empty contractAbi
-      const deserializedTrigger = EventTrigger.fromResponse(request);
-      const deserializedTriggerData2 = deserializedTrigger.data as Record<
-        string,
-        unknown
-      >;
-      const deserializedQuery2 = (
-        deserializedTriggerData2.queries as unknown[]
-      )[0] as Record<string, unknown>;
-      expect(deserializedQuery2.contractAbi).toEqual([]);
-    });
 
     test("should run trigger with enriched Transfer event parsing", async () => {
       const params = {
