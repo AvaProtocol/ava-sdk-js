@@ -37,7 +37,7 @@ jobs:
       
       # From dev environment variables
       BUNDLER_URL: ${{ vars.BUNDLER_URL }}
-      AVS_API_KEY: ${{ secrets.AVS_API_KEY }}
+      # AVS_API_KEY is generated dynamically in "Retrieve AVS API Key from the aggregator" step
 
     steps:
       - name: Checkout repository
@@ -180,7 +180,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         id: setup-env
         run: |
-          echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --role=admin --subject=apikey)" >> $GITHUB_ENV
+          echo "Generating AVS API key using runtime config..."
+          echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey)" >> $GITHUB_ENV
+          echo "✅ AVS API key generated and stored in GITHUB_ENV"
 
       - name: Print Required Environment Variables
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
