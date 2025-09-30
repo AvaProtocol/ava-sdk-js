@@ -236,8 +236,7 @@ export const getBlockNumber = async (): Promise<number> => {
 };
 
 export const getChainId = async (): Promise<number> => {
-  const cfg = getConfig();
-  const provider = new ethers.JsonRpcProvider(cfg.chainEndpoint);
+  const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
   try {
     // Set a 5 second timeout for the connection
     const network = await Promise.race<ethers.Network>([
