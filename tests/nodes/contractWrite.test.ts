@@ -2,7 +2,12 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType, ExecutionStatus, ErrorCode } from "@avaprotocol/types";
+import {
+  NodeType,
+  TriggerType,
+  ExecutionStatus,
+  ErrorCode,
+} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -19,7 +24,7 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-const { tokens } = getConfig();
+const { tokens, chainId } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -195,22 +200,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
-            name: "Contract Write Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
+          settings: {
             runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -253,7 +245,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // NEW STRUCTURE: Events are nested under event names
       expect(result.data.transfer).toBeDefined();
       expect(result.data.transfer.Transfer).toBeDefined(); // Transfer event nested under method
-      
+
       // Use destructuring for better null safety and readability
       const { from, to, value } = result.data.transfer.Transfer;
       expect(from).toBeDefined();
@@ -290,7 +282,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(transferResult.receipt.transactionHash).toBeDefined();
 
       // Check that the receipt status matches the method success
-      expect(transferResult.success).toBe(transferResult.receipt.status === "0x1");
+      expect(transferResult.success).toBe(
+        transferResult.receipt.status === "0x1"
+      );
       if (transferResult.success) {
         expect(transferResult.receipt.status).toBe("0x1"); // Success
       } else {
@@ -322,9 +316,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -386,9 +380,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -439,9 +433,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -509,9 +503,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
       // 🚀 NEW: Check new response structure with data and metadata at top level
       expect(result.data).toBeDefined(); // Decoded event data
-      // For validation errors (missing workflowContext.eoaAddress), metadata is undefined
+      // For validation errors (missing settings), metadata is undefined
       expect(result.metadata).toBeUndefined(); // Method execution doesn't occur due to validation error
-      expect(result.error).toBe('workflowContext.eoaAddress is required for contractWrite');
+      expect(result.error).toBe(
+        "settings is required for contractWrite"
+      );
 
       // For validation errors, success should be false regardless of metadata state
       expect(result.success).toBeFalsy();
@@ -563,9 +559,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const simulation = await client.simulateWorkflow({
           ...client.createWorkflow(workflowProps).toJson(),
           inputVariables: {
-            workflowContext: {
-              eoaAddress,
+            settings: {
               runner: wallet.address,
+              chainId: parseInt(chainId),
             },
           },
         });
@@ -628,7 +624,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           )
           .toJson(),
         inputVariables: {
-          workflowContext: { eoaAddress, runner: wallet.address, chainId: 11155111 },
+          settings: {
+            runner: wallet.address,
+            chainId: parseInt(chainId),
+          },
         },
       });
 
@@ -793,7 +792,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: contractWriteConfig,
         inputVariables: {
-          workflowContext: { eoaAddress, runner: wallet.address, chainId: 11155111 },
+          settings: {
+            runner: wallet.address,
+            chainId: parseInt(chainId),
+          },
         },
       };
 
@@ -825,7 +827,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...wfSim.toJson(),
         inputVariables: {
-          workflowContext: { eoaAddress, runner: wallet.address, chainId: 11155111 },
+          settings: {
+            runner: wallet.address,
+            chainId: parseInt(chainId),
+          },
         },
       });
       console.log(
@@ -974,22 +979,16 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const transferEvent = runNodeResponseData.transfer.Transfer;
         if (transferEvent && transferEvent.from) {
           expect(typeof transferEvent.from).toBe("string");
-          expect(transferEvent.from.toLowerCase()).toBe(
-            expectedFrom
-          );
+          expect(transferEvent.from.toLowerCase()).toBe(expectedFrom);
         }
         if (transferEvent && transferEvent.to) {
           expect(typeof transferEvent.to).toBe("string");
-          expect(transferEvent.to.toLowerCase()).toBe(
-            expectedTo
-          );
+          expect(transferEvent.to.toLowerCase()).toBe(expectedTo);
         }
         if (transferEvent && transferEvent.value !== undefined) {
           // Simulation may return actual transfer amount or 0 depending on wallet balance
           expect(typeof transferEvent.value).toBe("string");
-          expect(["0", "1", transferAmount]).toContain(
-            transferEvent.value
-          );
+          expect(["0", "1", transferAmount]).toContain(transferEvent.value);
         }
 
         // For simulation workflow step - same conditional validation
@@ -999,17 +998,21 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         // Validate transfer fields are properly populated
         // NEW STRUCTURE: Events are nested under event names
         expect(simulatedOutput.transfer.Transfer).toBeDefined();
-        
+
         // Use destructuring for better null safety and readability
-        const { from: simFrom, to: simTo, value: simValue } = simulatedOutput.transfer.Transfer;
+        const {
+          from: simFrom,
+          to: simTo,
+          value: simValue,
+        } = simulatedOutput.transfer.Transfer;
         expect(simFrom).toBeDefined();
         expect(typeof simFrom).toBe("string");
         expect(simFrom.toLowerCase()).toBe(expectedFrom);
-        
+
         expect(simTo).toBeDefined();
         expect(typeof simTo).toBe("string");
         expect(simTo.toLowerCase()).toBe(expectedTo);
-        
+
         expect(simValue).toBeDefined();
         expect(simValue).toBe(expectedValue);
 
@@ -1023,9 +1026,13 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const deployedOutput = executedStep!.output as any;
         expect(deployedOutput.transfer).toBeDefined();
         expect(deployedOutput.transfer.Transfer).toBeDefined();
-        
+
         // Use destructuring for better null safety and readability
-        const { from: deployedFrom, to: deployedTo, value: deployedValue } = deployedOutput.transfer.Transfer;
+        const {
+          from: deployedFrom,
+          to: deployedTo,
+          value: deployedValue,
+        } = deployedOutput.transfer.Transfer;
         expect(typeof deployedFrom).toBe("string");
         // Note: Real transaction uses smart wallet address as sender
         expect(deployedTo.toLowerCase()).toBe(expectedTo);
@@ -1063,22 +1070,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [{ methodName: methodName, methodParams: [] }],
         },
         inputVariables: {
-          workflowContext: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
-            name: "Error Handling Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
+          settings: {
             runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -1189,22 +1183,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
-            name: "ApplyToFields Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
+          settings: {
             runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -1265,7 +1246,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...wfApply.toJson(),
         inputVariables: {
-          workflowContext: { eoaAddress, runner: wallet.address, chainId: 11155111 },
+          settings: {
+            runner: wallet.address,
+            chainId: parseInt(chainId),
+          },
         },
       });
 
@@ -1437,9 +1421,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chainId: parseInt(chainId),
           },
         },
       };
@@ -1466,9 +1450,13 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Check that event data is included (owner, spender, value)
       // NEW STRUCTURE: Events are nested under event names
       expect(result.data.approve.Approval).toBeDefined();
-      
+
       // Use destructuring for better null safety and readability
-      const { owner, spender, value: approvalValue } = result.data.approve.Approval;
+      const {
+        owner,
+        spender,
+        value: approvalValue,
+      } = result.data.approve.Approval;
       expect(owner).toBeDefined();
       expect(spender).toBeDefined();
       expect(approvalValue).toBeDefined();
@@ -1713,7 +1701,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     expect(thirdApproveCall.getMethodParamsList()).toEqual([]); // Should be empty array when no parameters
   });
 
-  test("should test real on-chain transaction with simple contract call (paymaster-sponsored, non-zero salt)", async () => {
+  test("should test real contract call with paymaster sponsoring unfunded wallet", async () => {
     // Use a fresh smart wallet (non-zero salt) so it has no ETH balance and should use the paymaster
     const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 

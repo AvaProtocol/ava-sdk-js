@@ -13,7 +13,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 describe("ErrorCode Consistency", () => {
   let eoaAddress: string;
@@ -50,7 +50,7 @@ describe("ErrorCode Consistency", () => {
       const inputVariables = {
         settings: {
           runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
-          chainId: 11155111,
+          chainId: parseInt(chainId),
           chain: "Sepolia",
         },
       };
@@ -110,7 +110,7 @@ describe("ErrorCode Consistency", () => {
         inputVariables: {
           settings: {
             runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
-            chainId: 11155111,
+            chainId: parseInt(chainId),
             chain: "Sepolia",
           },
         },
@@ -123,7 +123,7 @@ describe("ErrorCode Consistency", () => {
         inputVariables: {
           settings: {
             runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
-            chainId: 11155111,
+            chainId: parseInt(chainId),
             chain: "Sepolia",
           },
         },
@@ -197,7 +197,7 @@ describe("ErrorCode Consistency", () => {
         inputVariables: {
           settings: {
             runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
-            chainId: 11155111,
+            chainId: parseInt(chainId),
             chain: "Sepolia",
           },
         },

@@ -5,13 +5,46 @@ import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import _ from "lodash";
-import { getConfig, getEnvironment } from "./envalid";
+import { getConfig } from "./envalid";
 
 const config = getConfig();
 
-// Environment-based conditional describe function for Sepolia/dev tests
-const env = getEnvironment();
-export const describeIfSepolia = (env === "sepolia" || env === "dev") ? describe : describe.skip;
+// Chain ID constants for reliable chain detection
+export const CHAIN_IDS = {
+  ETHEREUM: 1,
+  SEPOLIA: 11155111,
+  BASE: 8453,
+  BASE_SEPOLIA: 84532,
+  BSC: 56,
+  BSC_TESTNET: 97,
+  SONEIUM: 1868,
+  SONEIUM_MINATO: 1946,
+} as const;
+
+// Dynamic chain detection functions for different networks
+export const describeIfChain = (targetChainId: number) => {
+  const currentChainId = parseInt(config.chainId);
+  
+  // Debug logging to understand what's happening
+  console.log(`[Chain Detection] Target: ${targetChainId}, Current: ${currentChainId}, Config chainId: "${config.chainId}"`);
+  
+  return currentChainId === targetChainId ? describe : describe.skip;
+};
+
+// Convenience functions for specific chains
+export const describeIfSepolia = describeIfChain(CHAIN_IDS.SEPOLIA);
+export const describeIfEthereum = describeIfChain(CHAIN_IDS.ETHEREUM);
+export const describeIfBase = describeIfChain(CHAIN_IDS.BASE);
+export const describeIfBaseSepolia = describeIfChain(CHAIN_IDS.BASE_SEPOLIA);
+
+// Helper function to get current chain info
+export const getCurrentChain = () => {
+  const currentChainId = parseInt(config.chainId);
+  const chainName =
+    Object.entries(CHAIN_IDS).find(([, id]) => id === currentChainId)?.[0] ||
+    "UNKNOWN";
+  return { chainId: currentChainId, chainName };
+};
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts

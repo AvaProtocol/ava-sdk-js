@@ -14,6 +14,8 @@ import {
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
+const { chainId } = getConfig();
+
 jest.setTimeout(45000);
 
 const createdIdMap: Map<string, boolean> = new Map();
@@ -1057,7 +1059,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           data: {
             // Sample Transfer event data that matches our trigger criteria
             blockNumber: 12345678,
-            chainId: 11155111,
+            chainId: parseInt(chainId),
             contractAddress: SEPOLIA_TOKEN_ADDRESSES[0],
             eventFound: true,
             eventSignature: TRANSFER_EVENT_SIGNATURE,
@@ -1385,7 +1387,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           data: {
             // Sample Transfer event data that matches our trigger criteria
             blockNumber: 12345678,
-            chainId: 11155111,
+            chainId: parseInt(chainId),
             contractAddress: SEPOLIA_TOKEN_ADDRESSES[0],
             eventFound: true,
             eventSignature: TRANSFER_EVENT_SIGNATURE,
