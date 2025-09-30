@@ -103,6 +103,9 @@ jobs:
           echo "Chain endpoint: ${CHAIN_ENDPOINT}"
           echo "Test environment: ${TEST_ENV}"
           
+          # Export all environment variables for envsubst
+          export CHAIN_ENDPOINT TEST_ENV ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY
+          
           # Use envsubst to replace ${VAR} placeholders with actual environment variables
           envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
           
@@ -112,6 +115,15 @@ jobs:
           echo ""
           echo "=== Generated config structure (masking secrets) ==="
           sed 's/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/[JWT_TOKEN_MASKED]/g; s/0x[a-fA-F0-9]\{64\}/[PRIVATE_KEY_MASKED]/g; s/SG\.[A-Za-z0-9_-]*/[SENDGRID_KEY_MASKED]/g' config/aggregator.runtime.yaml
+          echo ""
+          echo "=== Checking for unsubstituted variables ==="
+          if grep -q "\${.*}" config/aggregator.runtime.yaml; then
+            echo "❌ Found unsubstituted variables:"
+            grep "\${.*}" config/aggregator.runtime.yaml
+            echo "This may cause issues with the aggregator startup."
+          else
+            echo "✅ All variables appear to be substituted correctly."
+          fi
 
       - name: Run local AVS aggregator in Docker
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
