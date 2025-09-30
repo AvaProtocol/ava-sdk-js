@@ -25,7 +25,7 @@
     "test:executions": "dotenv -e .env.$TEST_ENV jest tests/executions/ --verbose --runInBand",
     "test:triggers": "dotenv -e .env.$TEST_ENV jest tests/triggers/ --verbose --runInBand",
     "test:nodes": "dotenv -e .env.$TEST_ENV jest tests/nodes/ --verbose --runInBand",
-    "test:integrations": "dotenv -e .env.$TEST_ENV jest tests/integrations/ --verbose --runInBand",
+    "test:templates": "dotenv -e .env.$TEST_ENV jest tests/templates/ --verbose --runInBand",
     "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "build:example": "tsup examples/example.ts --format cjs,esm --watch examples/",
     "release": "node scripts/release.js",

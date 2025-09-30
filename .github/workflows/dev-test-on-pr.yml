@@ -48,11 +48,6 @@ jobs:
           echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
           echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
           echo "TEST_ENV: $TEST_ENV"
-          echo "AVS_API_KEY length: ${#AVS_API_KEY}"
-          echo "JWT_SECRET length: ${#JWT_SECRET}"
-          echo "ECDSA_PRIVATE_KEY length: ${#ECDSA_PRIVATE_KEY}"
-          echo "BUNDLER_URL: $BUNDLER_URL"
-          echo "TENDERLY_ACCESS_KEY length: ${#TENDERLY_ACCESS_KEY}"
 
       - name: Check Source or Test Code Changes
         id: check_source_changes
@@ -129,10 +124,24 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "Starting AVS aggregator with version: $DOCKER_IMAGE_TAG"
+          
+          echo "=== Config files in ./config directory ==="
+          ls -lah config/
+          
+          echo "=== Verifying runtime config exists ==="
+          if [ -f config/aggregator.runtime.yaml ]; then
+            echo "✅ aggregator.runtime.yaml exists ($(wc -l < config/aggregator.runtime.yaml) lines)"
+          else
+            echo "❌ aggregator.runtime.yaml MISSING!"
+          fi
+          
           docker compose up -d
           
           echo "Waiting for aggregator to start..."
           sleep 10
+          
+          echo "=== Config files inside container ==="
+          docker compose exec aggregator ls -lah /app/config/
           
           echo "=== Aggregator container status ==="
           docker compose ps
@@ -192,8 +201,18 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         id: setup-env
         run: |
-          echo "Generating AVS API key using runtime config..."
-          echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey)" >> $GITHUB_ENV
+          echo "=== Available config files in container ==="
+          docker compose exec aggregator ls -lah /app/config/
+          
+          echo ""
+          echo "=== Generating AVS API key using runtime config ==="
+          echo "Config file: /app/config/aggregator.runtime.yaml"
+          echo "Command: /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey"
+          echo ""
+          
+          echo "AVS_API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey 2>&1)" >> $GITHUB_ENV
+          
+          echo ""
           echo "✅ AVS API key generated and stored in GITHUB_ENV"
 
       - name: Print Required Environment Variables
@@ -209,14 +228,38 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
-      - name: Debug Chain Endpoint
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          echo "CHAIN_ENDPOINT (raw): $CHAIN_ENDPOINT"
-          echo "Full RPC URL will be: https://$CHAIN_ENDPOINT"
-          
-      - name: Test Secret Functionality Only
+      - name: Test Core Functionality
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test tests/core/secret.test.ts
+        run: yarn test:core
+
+      - name: Test Workflows
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:workflows
+
+      - name: Test Executions
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:executions
+
+      - name: Test Triggers
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:triggers
+
+      - name: Test Nodes
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:nodes
+
+      - name: Test Templates
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:templates
