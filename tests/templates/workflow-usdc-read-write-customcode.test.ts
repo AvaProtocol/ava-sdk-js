@@ -18,7 +18,7 @@ import {
  * one read node is pruned/deduped and CustomCode throws due to missing input.
  */
 
-const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
+const { avsEndpoint, walletPrivateKey, tokens, chainId } = getConfig();
 
 // Set timeout to 180 seconds for all tests in this file (deployed workflows need more time)
 jest.setTimeout(TIMEOUT_DURATION * 3); // 3 * 60 seconds = 180 seconds
@@ -202,7 +202,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       inputVariables: {
         workflowContext: {
           name: workflowJson.name,
-          chainId: 11155111, // Sepolia chain ID for simulation
+          chainId: parseInt(chainId), // Dynamic chain ID from config
         }
       }
     });

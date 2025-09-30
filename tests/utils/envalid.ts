@@ -211,8 +211,5 @@ export const getConfig = () => ({
   factoryAddress: envConfig.factoryAddress,
 });
 
-// Export the environment for use in other files
-export const getEnvironment = () => validatedEnv.TEST_ENV;
-
 // Export the validation function for use in other files
 export const validateEnv = () => validatedEnv;

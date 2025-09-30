@@ -14,7 +14,7 @@ import {
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { tokens } = getConfig();
+const { tokens, chainId } = getConfig();
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
@@ -322,7 +322,7 @@ return message;`,
             blockTimestamp: Date.now(),
             // Raw blockchain log fields (still available)
             blockNumber: 12345678,
-            chainId: 11155111,
+            chainId: parseInt(chainId),
             address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
             data: "0x0000000000000000000000000000000000000000000000000000000005fd8220",
             topics: [
