@@ -202,7 +202,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -318,7 +318,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -382,7 +382,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -435,7 +435,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -626,7 +626,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -794,7 +794,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -829,7 +829,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -1072,7 +1072,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -1185,7 +1185,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -1248,7 +1248,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -1423,7 +1423,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             runner: wallet.address,
-            chainId: parseInt(chainId),
+            chain_id: parseInt(chainId),
           },
         },
       };
