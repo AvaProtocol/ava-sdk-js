@@ -148,7 +148,7 @@ export async function generateAuthPayloadWithApiKey(
 
     const { message } = await client.getSignatureFormat(address);
     return { message, apiKey };
-  } catch {
+  } catch (_error) {
     console.warn("GetSignatureFormat not available, using fallback format");
     const now = Date.now();
     const message = `Please sign the below text for ownership verification.
