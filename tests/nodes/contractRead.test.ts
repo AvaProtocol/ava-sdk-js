@@ -27,7 +27,7 @@ const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.ContractRead * SALT_BUCKET_SIZE;
@@ -126,9 +126,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "Contract Read Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
@@ -259,9 +259,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: "totalSupply", methodParams: [] }],
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "Invalid Contract Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
@@ -306,9 +306,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: "description", methodParams: [] }],
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "Description Method Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
@@ -377,9 +377,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "ApplyToFields Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
@@ -1086,9 +1086,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
         };
 
         const inputVariables = {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "Consistency Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
@@ -1268,9 +1268,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: methodName, methodParams: [] }],
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "Error Handling Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,
@@ -1444,9 +1444,9 @@ describeIfSepolia("ContractRead Node Tests", () => {
           ],
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "ApplyToFields Test",
             userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
             eoaAddress: eoaAddress,

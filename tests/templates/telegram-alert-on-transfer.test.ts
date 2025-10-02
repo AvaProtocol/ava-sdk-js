@@ -14,15 +14,12 @@ import {
   SALT_BUCKET_SIZE,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { tokens, chainId } = getConfig();
+const { tokens, chainId, avsEndpoint, walletPrivateKey } = getConfig();
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
-
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
@@ -433,9 +430,9 @@ return message;`,
       const simulationResult = await client.simulateWorkflow({
         ...workflow,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });

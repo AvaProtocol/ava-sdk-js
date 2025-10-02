@@ -132,16 +132,14 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           "const value = Number(result?.value);\n" +
           "const symbol = contractRead1?.data?.symbol;\n" +
           "const decimals = Number(contractRead2?.data?.decimals);\n" +
-          "let message = `Workflow: [${workflowContext.name}]\\n" +
-          "Wallet: ${sender}\\n" +
-          "`;\n" +
           "const amount = !isNaN(value) && !isNaN(decimals)\n" +
           "  ? value / 10 ** decimals\n" +
           "  : NaN;\n" +
+          "let message = '';\n" +
           "if (!isNaN(amount)) {\n" +
-          "  message += `You have ${methodName} ${amount} ${symbol} to ${recipient}.`;\n" +
+          "  message = `You have ${methodName} ${amount} ${symbol} from ${sender} to ${recipient}.`;\n" +
           "} else {\n" +
-          "  message += `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
+          "  message = `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
           "}\n" +
           "return message;",
       },
@@ -200,9 +198,9 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       nodes: workflowJson.nodes,
       edges: workflowJson.edges,
       inputVariables: {
-        workflowContext: {
+        settings: {
           name: workflowJson.name,
-          chainId: parseInt(chainId), // Dynamic chain ID from config
+          chain_id: parseInt(chainId), // Dynamic chain ID from config
         }
       }
     });
@@ -311,16 +309,14 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           "const value = Number(result?.value);\n" +
           "const symbol = contractRead1?.data?.symbol;\n" +
           "const decimals = Number(contractRead2?.data?.decimals);\n" +
-          "let message = `Workflow: [${workflowContext.name}]\\n" +
-          "Wallet: ${sender}\\n" +
-          "`;\n" +
           "const amount = !isNaN(value) && !isNaN(decimals)\n" +
           "  ? value / 10 ** decimals\n" +
           "  : NaN;\n" +
+          "let message = '';\n" +
           "if (!isNaN(amount)) {\n" +
-          "  message += `You have ${methodName} ${amount} ${symbol} to ${recipient}.`;\n" +
+          "  message = `You have ${methodName} ${amount} ${symbol} from ${sender} to ${recipient}.`;\n" +
           "} else {\n" +
-          "  message += `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
+          "  message = `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
           "}\n" +
           "return message;",
       },

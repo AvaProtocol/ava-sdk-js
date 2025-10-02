@@ -22,7 +22,7 @@ const MOCK_API_BASE_URL = MOCKED_API_ENDPOINT_AGGREGATOR;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.RestAPI * SALT_BUCKET_SIZE;
@@ -165,9 +165,9 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -206,9 +206,9 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -328,9 +328,9 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });

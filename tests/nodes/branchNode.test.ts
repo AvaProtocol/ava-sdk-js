@@ -17,7 +17,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.BranchNode * SALT_BUCKET_SIZE;
@@ -227,9 +227,9 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -267,9 +267,9 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -398,9 +398,9 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -517,9 +517,9 @@ describe("BranchNode Tests", () => {
       const simTrue = await client.simulateWorkflow({
         ...client.createWorkflow(wfTrue).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: await getAddress(walletPrivateKey),
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -583,9 +583,9 @@ describe("BranchNode Tests", () => {
       const simFalse = await client.simulateWorkflow({
         ...client.createWorkflow(wfFalse).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: await getAddress(walletPrivateKey),
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });

@@ -19,7 +19,7 @@ import util from "util";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 describe("Input Variables", () => {
   let eoaAddress: string;
@@ -158,8 +158,8 @@ describe("Input Variables", () => {
         amount: 1000000,
         recipient: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
         isEnabled: true,
-        workflowContext: {
-          eoaAddress,
+        settings: {
+          chain_id: parseInt(chainId),
         },
       };
 
@@ -263,8 +263,8 @@ describe("Input Variables", () => {
           recipient: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
           deadline: Math.floor(Date.now() / 1000) + 1800,
         },
-        workflowContext: {
-          eoaAddress,
+        settings: {
+          chain_id: parseInt(chainId),
         },
       };
 
@@ -391,8 +391,8 @@ describe("Input Variables", () => {
           slippage: 0.5,
           deadline: 1703123400,
         },
-        workflowContext: {
-          eoaAddress,
+        settings: {
+          chain_id: parseInt(chainId),
         },
       };
 

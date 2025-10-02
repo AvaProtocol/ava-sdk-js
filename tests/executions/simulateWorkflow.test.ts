@@ -13,7 +13,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 describe("SimulateWorkflow", () => {
   let eoaAddress: string;
@@ -75,9 +75,9 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -137,9 +137,9 @@ describe("SimulateWorkflow", () => {
         inputVariables: {
           name: "World",
           value: 42,
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -205,9 +205,9 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -347,9 +347,9 @@ describe("SimulateWorkflow", () => {
           nodes,
           edges,
           inputVariables: {
-            workflowContext: {
-              eoaAddress,
+            settings: {
               runner: wallet.address,
+              chain_id: parseInt(chainId),
             },
           },
         });
@@ -429,12 +429,10 @@ describe("SimulateWorkflow", () => {
                   triggerDataAccessible: !!triggerData,
                   triggerTimezone: triggerData?.timezone,
                   triggerPriority: triggerData?.priority,
-                  restApiOutputReceived: !!restApiOutput,
-                  currentContext: typeof workflowContext !== 'undefined'
+                  restApiOutputReceived: !!restApiOutput
                 },
                 status: "success",
                 timestamp: Date.now(),
-                // Configuration data can be included in the returned result
                 processingMode: "validation",
                 logLevel: "debug"
               };
@@ -462,9 +460,9 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -530,13 +528,10 @@ describe("SimulateWorkflow", () => {
                   message: "Can access trigger data correctly",
                   triggerDataAccessible: !!triggerData,
                   triggerEnvironment: triggerData?.environment,
-                  triggerVersion: triggerData?.version,
-                  currentContext: typeof workflowContext !== 'undefined',
-                  availableVariables: Object.keys(this || {})
+                  triggerVersion: triggerData?.version
                 },
                 status: "success",
                 timestamp: Date.now(),
-                // Configuration data can be included in the returned result
                 maxRetries: 5,
                 timeout: 60000,
                 enableLogging: true
@@ -560,9 +555,9 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });

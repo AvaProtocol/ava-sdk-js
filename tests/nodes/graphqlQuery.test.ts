@@ -23,7 +23,7 @@ import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.GraphQLQuery * SALT_BUCKET_SIZE;
@@ -138,22 +138,11 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-basic-id",
-            chainId: null,
+            chain_id: parseInt(chainId),
             name: "GraphQL Basic Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            user_id: "test-user",
           },
         },
       };
@@ -206,12 +195,12 @@ describe("GraphQL Query Node Tests", () => {
           },
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-variables-id",
             name: "GraphQL Variables Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -259,12 +248,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-error-id",
             name: "GraphQL Error Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -292,12 +281,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-empty-query-id",
             name: "GraphQL Empty Query Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -344,9 +333,9 @@ describe("GraphQL Query Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -429,9 +418,9 @@ describe("GraphQL Query Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -660,12 +649,12 @@ describe("GraphQL Query Node Tests", () => {
             variables: {},
           },
           inputVariables: {
-            workflowContext: {
+            settings: {
               id: "consistency-test-id",
               name: "GraphQL Consistency Test",
-              userId: "test-user",
-              eoaAddress: eoaAddress,
+              user_id: "test-user",
               runner: wallet.address,
+              chain_id: parseInt(chainId),
             },
           },
         };
@@ -689,9 +678,9 @@ describe("GraphQL Query Node Tests", () => {
         const simulation = await client.simulateWorkflow({
           ...client.createWorkflow(workflowProps).toJson(),
           inputVariables: {
-            workflowContext: {
-              eoaAddress,
+            settings: {
               runner: wallet.address,
+              chain_id: parseInt(chainId),
             },
           },
         });
@@ -803,12 +792,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-real-thegraph-id",
             name: "Real The Graph GraphQL Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -859,12 +848,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: endpoint.variables,
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-real-thegraph-variables-id",
             name: "Real The Graph GraphQL Test with Variables",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -907,12 +896,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-malformed-id",
             name: "GraphQL Malformed Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -940,12 +929,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-no-url-id",
             name: "GraphQL No URL Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
@@ -968,12 +957,12 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          workflowContext: {
+          settings: {
             id: "test-graphql-network-error-id",
             name: "GraphQL Network Error Test",
-            userId: "test-user",
-            eoaAddress: eoaAddress,
+            user_id: "test-user",
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };

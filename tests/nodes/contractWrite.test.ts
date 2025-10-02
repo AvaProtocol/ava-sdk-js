@@ -1799,4 +1799,380 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       throw error;
     }
   }, 180000); // 3 minutes for real blockchain transaction (deployment + confirmation)
+
+  describe("Template Variable Validation Tests", () => {
+    test("should reject hyphenated variable names in methodParams", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "transfer",
+              methodParams: [
+                "{{settings.recipient-address}}", // Hyphenated key - should be rejected
+                "100",
+              ],
+            },
+          ],
+        },
+        inputVariables: {
+          settings: {
+            runner: wallet.address,
+            chain_id: parseInt(chainId),
+            "recipient-address": TEST_SMART_WALLET_ADDRESS, // Hyphenated key
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should fail with clear error message about hyphenated variables
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain("undefined");
+      expect(result.error).toContain("template variable resolution failed");
+    });
+
+    test("should support mathematical expressions with hyphens", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "transfer",
+              methodParams: [
+                TEST_SMART_WALLET_ADDRESS,
+                "{{settings.base_amount - 10}}", // Mathematical expression with hyphen
+              ],
+            },
+          ],
+        },
+        inputVariables: {
+          settings: {
+            runner: wallet.address,
+            chain_id: parseInt(chainId),
+            base_amount: 100, // Will be: 100 - 10 = 90
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should succeed - mathematical expressions with hyphens are allowed
+      expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+    });
+
+    test("should handle tuple parameters with template variables (JSON array format)", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Uniswap V3 Pool quoter ABI with quoteExactInputSingle that takes a tuple
+      const QUOTER_ABI = [
+        {
+          inputs: [
+            {
+              components: [
+                { internalType: "address", name: "tokenIn", type: "address" },
+                { internalType: "address", name: "tokenOut", type: "address" },
+                { internalType: "uint256", name: "amountIn", type: "uint256" },
+                { internalType: "uint24", name: "fee", type: "uint24" },
+                {
+                  internalType: "uint160",
+                  name: "sqrtPriceLimitX96",
+                  type: "uint160",
+                },
+              ],
+              internalType: "struct IQuoter.QuoteExactInputSingleParams",
+              name: "params",
+              type: "tuple",
+            },
+          ],
+          name: "quoteExactInputSingle",
+          outputs: [
+            { internalType: "uint256", name: "amountOut", type: "uint256" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ];
+
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6", // Uniswap V3 Quoter
+          contractAbi: QUOTER_ABI,
+          methodCalls: [
+            {
+              methodName: "quoteExactInputSingle",
+              methodParams: [
+                // JSON array format for tuple
+                `["{{settings.pool_data.token0}}", "{{settings.pool_data.token1}}", "{{settings.amount}}", "{{settings.pool_data.fee}}", 0]`,
+              ],
+            },
+          ],
+        },
+        inputVariables: {
+          settings: {
+            runner: wallet.address,
+            chain_id: parseInt(chainId),
+            pool_data: {
+              token0: tokens.USDC.address,
+              token1: tokens.LINK.address,
+              fee: 3000,
+            },
+            amount: "1000000", // 1 USDC
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should succeed - tuple parameters with templates are supported
+      expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+    });
+
+    test("should handle tuple parameters with template variables (JSON object format)", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Same Uniswap V3 Pool quoter ABI
+      const QUOTER_ABI = [
+        {
+          inputs: [
+            {
+              components: [
+                { internalType: "address", name: "tokenIn", type: "address" },
+                { internalType: "address", name: "tokenOut", type: "address" },
+                { internalType: "uint256", name: "amountIn", type: "uint256" },
+                { internalType: "uint24", name: "fee", type: "uint24" },
+                {
+                  internalType: "uint160",
+                  name: "sqrtPriceLimitX96",
+                  type: "uint160",
+                },
+              ],
+              internalType: "struct IQuoter.QuoteExactInputSingleParams",
+              name: "params",
+              type: "tuple",
+            },
+          ],
+          name: "quoteExactInputSingle",
+          outputs: [
+            { internalType: "uint256", name: "amountOut", type: "uint256" },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ];
+
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6", // Uniswap V3 Quoter
+          contractAbi: QUOTER_ABI,
+          methodCalls: [
+            {
+              methodName: "quoteExactInputSingle",
+              methodParams: [
+                // JSON object format for tuple
+                `{"tokenIn": "{{settings.pool_data.token0}}", "tokenOut": "{{settings.pool_data.token1}}", "amountIn": "{{settings.amount}}", "fee": "{{settings.pool_data.fee}}", "sqrtPriceLimitX96": 0}`,
+              ],
+            },
+          ],
+        },
+        inputVariables: {
+          settings: {
+            runner: wallet.address,
+            chain_id: parseInt(chainId),
+            pool_data: {
+              token0: tokens.USDC.address,
+              token1: tokens.LINK.address,
+              fee: 3000,
+            },
+            amount: "1000000", // 1 USDC
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should succeed - tuple parameters with templates are supported
+      expect(typeof result.success).toBe("boolean");
+      expect(result.data).toBeDefined();
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+    });
+
+    test("should enforce snake_case for settings variables", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Test that camelCase chainId is NOT supported
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "transfer",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
+            },
+          ],
+        },
+        inputVariables: {
+          settings: {
+            runner: wallet.address,
+            chainId: parseInt(chainId), // camelCase - should fail
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should fail - chain_id (snake_case) is required
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain("chain_id");
+      expect(result.error).toContain("required");
+    });
+
+    test("should require settings object for contractWrite", async () => {
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "transfer",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
+            },
+          ],
+        },
+        inputVariables: {
+          // Missing settings - should fail
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should fail - settings is required
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain("settings");
+      expect(result.error).toContain("required");
+    });
+
+    test("should require runner in settings for contractWrite", async () => {
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "transfer",
+              methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
+            },
+          ],
+        },
+        inputVariables: {
+          settings: {
+            chain_id: parseInt(chainId),
+            // Missing runner - should fail
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should fail - runner is required
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain("runner");
+      expect(result.error).toContain("required");
+    });
+  });
 });

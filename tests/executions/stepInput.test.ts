@@ -22,7 +22,7 @@ import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 let saltIndex = SaltGlobal.StepInput * SALT_BUCKET_SIZE; // Reserve a distinct range for this suite
 
@@ -362,7 +362,6 @@ describe("Input Field Tests", () => {
               status: "processed_successfully",
               processedAt: new Date().toISOString(),
               triggerDataReceived: !!triggerData,
-              workflowContextAvailable: typeof workflowContext !== 'undefined',
               processingComplete: true,
               originalErrorFixed: "hasInput error no longer occurs"
             };
@@ -393,9 +392,9 @@ describe("Input Field Tests", () => {
           userToken: "test-token-123",
           environment: "production",
           debugMode: true,
-          workflowContext: {
-            eoaAddress: ownerAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -410,9 +409,9 @@ describe("Input Field Tests", () => {
         userToken: "test-token-123",
         environment: "production",
         debugMode: true,
-        workflowContext: {
-          eoaAddress: ownerAddress,
+        settings: {
           runner: wallet.address,
+          chain_id: parseInt(chainId),
         },
       },
     });
@@ -580,9 +579,9 @@ describe("Input Field Tests", () => {
         }),
       ],
       inputVariables: {
-        workflowContext: {
-          eoaAddress: ownerAddress,
+        settings: {
           runner: wallet.address,
+          chain_id: parseInt(chainId),
         },
       },
     });

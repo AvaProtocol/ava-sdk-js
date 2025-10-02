@@ -52,7 +52,7 @@ const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.LoopNode * SALT_BUCKET_SIZE; // Use a reserved bucket
@@ -525,9 +525,9 @@ describe("LoopNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...base.toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: TEST_SMART_WALLET_ADDRESS,
+            chain_id: parseInt(chainId),
           },
         },
       });
@@ -1923,9 +1923,9 @@ describe("LoopNode Tests", () => {
             "0x1111111111111111111111111111111111111111",
             "0x2222222222222222222222222222222222222222",
           ],
-          workflowContext: {
-            eoaAddress,
+          settings: {
             runner: wallet.address,
+            chain_id: parseInt(chainId),
           },
         },
       };
