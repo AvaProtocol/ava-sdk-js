@@ -45,6 +45,11 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       // No factory address - let aggregator use its default
     });
 
+    console.log("🔍 DEBUG - AVS Endpoint:", avsEndpoint);
+    console.log("🔍 DEBUG - Chain Endpoint:", process.env.CHAIN_ENDPOINT);
+    console.log("🔍 DEBUG - Bundler URL:", process.env.BUNDLER_URL);
+    console.log("🔍 DEBUG - Full Config:", JSON.stringify(getConfig(), null, 2));
+    
     console.log("Authenticating with signature ...");
     const { message } = await client.getSignatureFormat(eoaAddress);
     const signature = await generateSignature(message, walletPrivateKey);
@@ -62,6 +67,12 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       console.log("Wallet address:", wallet.address);
       console.log("EOA address:", eoaAddress);
+      console.log("🔍 DEBUG - About to call withdrawFunds with ETH");
+      console.log("🔍 DEBUG - AVS Endpoint:", avsEndpoint);
+      console.log("🔍 DEBUG - Chain Endpoint:", process.env.CHAIN_ENDPOINT);
+      console.log("🔍 DEBUG - Bundler URL:", process.env.BUNDLER_URL);
+      console.log("🔍 DEBUG - Timeout setting: SLOW (3 minutes)");
+      
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress, // Send back to EOA address
         amount: "1000000000000000", // 0.001 ETH in wei
@@ -118,6 +129,13 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
       const wallet = await client.getWallet({ salt });
+
+      console.log("🔍 DEBUG - About to call withdrawFunds with USDC");
+      console.log("🔍 DEBUG - AVS Endpoint:", avsEndpoint);
+      console.log("🔍 DEBUG - Chain Endpoint:", process.env.CHAIN_ENDPOINT);
+      console.log("🔍 DEBUG - Bundler URL:", process.env.BUNDLER_URL);
+      console.log("🔍 DEBUG - USDC Token Address:", tokens.USDC.address);
+      console.log("🔍 DEBUG - Timeout setting: default (30 seconds)");
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
