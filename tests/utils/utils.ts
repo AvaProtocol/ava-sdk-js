@@ -24,10 +24,6 @@ export const CHAIN_IDS = {
 // Dynamic chain detection functions for different networks
 export const describeIfChain = (targetChainId: number) => {
   const currentChainId = parseInt(config.chainId);
-  
-  // Debug logging to understand what's happening
-  console.log(`[Chain Detection] Target: ${targetChainId}, Current: ${currentChainId}, Config chainId: "${config.chainId}"`);
-  
   return currentChainId === targetChainId ? describe : describe.skip;
 };
 
