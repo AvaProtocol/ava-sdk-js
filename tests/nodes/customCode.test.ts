@@ -12,13 +12,14 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.CustomCode * SALT_BUCKET_SIZE;
@@ -497,10 +498,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -579,10 +577,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -798,10 +793,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -1026,10 +1018,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -1247,10 +1236,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

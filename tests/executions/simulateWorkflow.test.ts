@@ -8,12 +8,13 @@ import {
   getNextId,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("SimulateWorkflow", () => {
   let eoaAddress: string;
@@ -75,10 +76,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -137,10 +135,7 @@ describe("SimulateWorkflow", () => {
         inputVariables: {
           name: "World",
           value: 42,
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -205,10 +200,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -347,10 +339,7 @@ describe("SimulateWorkflow", () => {
           nodes,
           edges,
           inputVariables: {
-            settings: {
-              runner: wallet.address,
-              chain_id: parseInt(chainId),
-            },
+            settings: getSettings(wallet.address),
           },
         });
 
@@ -460,10 +449,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -555,10 +541,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

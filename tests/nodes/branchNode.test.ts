@@ -11,13 +11,14 @@ import {
   getBlockNumber,
   removeCreatedWorkflows,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.BranchNode * SALT_BUCKET_SIZE;
@@ -227,10 +228,7 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -267,10 +265,7 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -398,10 +393,7 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -517,10 +509,7 @@ describe("BranchNode Tests", () => {
       const simTrue = await client.simulateWorkflow({
         ...client.createWorkflow(wfTrue).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
       const stepIdsTrue = simTrue.steps.map((s: { id: string }) => s.id);
@@ -583,10 +572,7 @@ describe("BranchNode Tests", () => {
       const simFalse = await client.simulateWorkflow({
         ...client.createWorkflow(wfFalse).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
       const stepIdsFalse = simFalse.steps.map((s: { id: string }) => s.id);

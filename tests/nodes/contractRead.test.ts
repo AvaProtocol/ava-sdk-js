@@ -4,7 +4,6 @@ import util from "util";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import {
   NodeType,
-  RunNodeWithInputsResponse,
   TriggerType,
   ExecutionStatus,
   ErrorCode,
@@ -20,6 +19,7 @@ import {
   SALT_BUCKET_SIZE,
   resultIndicatesAllWritesSuccessful,
   describeIfSepolia,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -27,7 +27,7 @@ const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.ContractRead * SALT_BUCKET_SIZE;
@@ -126,23 +126,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
         },
         inputVariables: {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "Contract Read Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -259,23 +243,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: "totalSupply", methodParams: [] }],
         },
         inputVariables: {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "Invalid Contract Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -306,23 +274,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: "description", methodParams: [] }],
         },
         inputVariables: {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "Description Method Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -377,23 +329,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "ApplyToFields Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -1086,23 +1022,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
         };
 
         const inputVariables = {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "Consistency Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         };
 
         console.log(
@@ -1268,23 +1188,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           methodCalls: [{ methodName: methodName, methodParams: [] }],
         },
         inputVariables: {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "Error Handling Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -1444,23 +1348,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            id: "3b57f7cd-eda4-4d17-9c4c-fda35b548dbe",
-            chain_id: parseInt(chainId),
-            name: "ApplyToFields Test",
-            userId: "2f8ed075-3658-4a56-8003-e6e8207f8a2d",
-            eoaAddress: eoaAddress,
-            runner: wallet.address,
-            startAt: new Date(),
-            expiredAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            maxExecution: 0,
-            status: "draft",
-            completedAt: null,
-            lastRanAt: null,
-            executionCount: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 

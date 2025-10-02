@@ -6,7 +6,7 @@ import {
   NodeType,
   RunNodeWithInputsResponse,
   TriggerType,
-  ExecutionStatus
+  ExecutionStatus,
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -17,13 +17,14 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.GraphQLQuery * SALT_BUCKET_SIZE;
@@ -138,12 +139,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-basic-id",
-            chain_id: parseInt(chainId),
-            name: "GraphQL Basic Test",
-            user_id: "test-user",
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -162,8 +158,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Verify the response structure (should fail due to network but show GraphQL implementation works)
-            expect(typeof result.success).toBe("boolean");
-      
+      expect(typeof result.success).toBe("boolean");
 
       // The request should fail due to network (mock endpoint doesn't exist)
       // but this proves GraphQL node creation and execution pipeline is working
@@ -195,13 +190,7 @@ describe("GraphQL Query Node Tests", () => {
           },
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-variables-id",
-            name: "GraphQL Variables Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -219,7 +208,7 @@ describe("GraphQL Query Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(false); // Network error expected for mock endpoint
+      expect(result.success).toBe(false); // Network error expected for mock endpoint
       expect(result.error).toContain(
         "dial tcp: lookup mock-api.ap-aggregator.local: no such host"
       );
@@ -248,13 +237,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-error-id",
-            name: "GraphQL Error Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -266,7 +249,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should handle the error gracefully
-            expect(result.success).toBe(false);
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error.length).toBeGreaterThan(0);
     }, 15000);
@@ -281,13 +264,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-empty-query-id",
-            name: "GraphQL Empty Query Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -299,7 +276,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should reject empty query
-            expect(result.success).toBe(false);
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain("url and query is required");
     });
@@ -333,10 +310,7 @@ describe("GraphQL Query Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -352,7 +326,7 @@ describe("GraphQL Query Node Tests", () => {
       const graphqlStep = simulation.steps.find(
         (step) => step.id === graphqlNode.id
       );
-            expect(graphqlStep!.success).toBeTruthy(); // Must succeed with API key
+      expect(graphqlStep!.success).toBeTruthy(); // Must succeed with API key
       expect(graphqlStep!.error).toBe(""); // No error expected
 
       console.log("✅ The Graph GraphQL succeeded with API key authentication");
@@ -418,10 +392,7 @@ describe("GraphQL Query Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -434,7 +405,7 @@ describe("GraphQL Query Node Tests", () => {
       const graphqlStep = simulation.steps.find(
         (step) => step.id === graphqlNode.id
       );
-            expect(graphqlStep!.success).toBeTruthy(); // Should succeed with API key
+      expect(graphqlStep!.success).toBeTruthy(); // Should succeed with API key
       expect(graphqlStep!.error).toBe(""); // No error expected
 
       const output = graphqlStep!.output as any;
@@ -533,9 +504,7 @@ describe("GraphQL Query Node Tests", () => {
         );
         console.log("    - Workflow was deployed successfully");
         console.log("    - GraphQL step executed and retrieved real data");
-        console.log(
-          "    - The Graph API key authentication worked correctly"
-        );
+        console.log("    - The Graph API key authentication worked correctly");
       } finally {
         if (workflowId) {
           try {
@@ -603,7 +572,7 @@ describe("GraphQL Query Node Tests", () => {
           (step) => step.id === graphqlNode.id
         );
 
-                expect(graphqlStep!.success).toBeTruthy(); // Should succeed with The Graph API
+        expect(graphqlStep!.success).toBeTruthy(); // Should succeed with The Graph API
         expect(graphqlStep!.error).toBe(""); // No error expected
 
         const output = graphqlStep!.output as any;
@@ -617,9 +586,7 @@ describe("GraphQL Query Node Tests", () => {
         );
         console.log("    - Workflow was deployed successfully with variables");
         console.log("    - GraphQL step executed and retrieved real data");
-        console.log(
-          "    - The Graph API key authentication worked correctly"
-        );
+        console.log("    - The Graph API key authentication worked correctly");
       } finally {
         if (workflowId) {
           try {
@@ -649,13 +616,7 @@ describe("GraphQL Query Node Tests", () => {
             variables: {},
           },
           inputVariables: {
-            settings: {
-              id: "consistency-test-id",
-              name: "GraphQL Consistency Test",
-              user_id: "test-user",
-              runner: wallet.address,
-              chain_id: parseInt(chainId),
-            },
+            settings: getSettings(wallet.address),
           },
         };
 
@@ -678,10 +639,7 @@ describe("GraphQL Query Node Tests", () => {
         const simulation = await client.simulateWorkflow({
           ...client.createWorkflow(workflowProps).toJson(),
           inputVariables: {
-            settings: {
-              runner: wallet.address,
-              chain_id: parseInt(chainId),
-            },
+            settings: getSettings(wallet.address),
           },
         });
 
@@ -689,7 +647,7 @@ describe("GraphQL Query Node Tests", () => {
         const simGraphqlStep = simulation.steps.find(
           (step) => step.id === graphqlNode.id
         );
-                expect(simGraphqlStep!.success).toBeFalsy(); // Network error expected
+        expect(simGraphqlStep!.success).toBeFalsy(); // Network error expected
 
         // 3. Test deployed workflow execution
         const currentBlockNumber = await getBlockNumber();
@@ -725,7 +683,7 @@ describe("GraphQL Query Node Tests", () => {
           (step) => step.id === graphqlNode.id
         );
 
-                expect(deployedGraphqlStep!.success).toBeFalsy(); // Network error expected
+        expect(deployedGraphqlStep!.success).toBeFalsy(); // Network error expected
 
         // 4. Compare all three outputs for consistency
         const runNodeOutput = runNodeResult.data as any;
@@ -792,13 +750,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-real-thegraph-id",
-            name: "Real The Graph GraphQL Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -817,7 +769,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should succeed with real data
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       const data = result.data as Record<string, any>;
@@ -848,13 +800,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: endpoint.variables,
         },
         inputVariables: {
-          settings: {
-            id: "test-real-thegraph-variables-id",
-            name: "Real The Graph GraphQL Test with Variables",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -868,7 +814,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should succeed with real data
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
 
       const data = result.data as Record<string, any>;
@@ -896,13 +842,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-malformed-id",
-            name: "GraphQL Malformed Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -914,7 +854,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should handle HTTP 400 errors gracefully
-            expect(result.success).toBe(false);
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain("400"); // Should contain HTTP status code
     }, 15000);
@@ -929,20 +869,14 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-no-url-id",
-            name: "GraphQL No URL Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
       const result = await client.runNodeWithInputs(params);
 
       // Should reject empty URL
-            expect(result.success).toBe(false);
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toContain("url and query is required");
     });
@@ -957,13 +891,7 @@ describe("GraphQL Query Node Tests", () => {
           variables: {},
         },
         inputVariables: {
-          settings: {
-            id: "test-graphql-network-error-id",
-            name: "GraphQL Network Error Test",
-            user_id: "test-user",
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -975,7 +903,7 @@ describe("GraphQL Query Node Tests", () => {
       );
 
       // Should handle network errors gracefully
-            expect(result.success).toBe(false);
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).toMatch(/dial tcp|no such host|network/i); // Network error patterns
     }, 15000);

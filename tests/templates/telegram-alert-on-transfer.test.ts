@@ -12,9 +12,10 @@ import {
   TIMEOUT_DURATION,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { tokens, chainId, avsEndpoint, walletPrivateKey } = getConfig();
+const { tokens, avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
@@ -430,10 +431,7 @@ return message;`,
       const simulationResult = await client.simulateWorkflow({
         ...workflow,
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+        settings: getSettings(wallet.address),
         },
       });
 

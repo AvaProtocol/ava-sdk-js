@@ -42,6 +42,33 @@ export const getCurrentChain = () => {
   return { chainId: currentChainId, chainName };
 };
 
+// Convert chain ID to chain name (lowercase with hyphens for testnets)
+export const getChainNameFromId = (chainId: number): string => {
+  const chainMap: Record<number, string> = {
+    1: "ethereum",
+    11155111: "sepolia",
+    8453: "base",
+    84532: "base-sepolia",
+    56: "bsc",
+    97: "bsc-testnet",
+    1868: "soneium",
+    1946: "soneium-minato",
+  };
+  return chainMap[chainId] || `chain-${chainId}`;
+};
+
+// Helper to create minimal inputVariables.settings for workflows
+export const getSettings = (
+  runner: string
+): { runner: string; chain_id: number; chain: string } => {
+  const chainId = parseInt(config.chainId);
+  return {
+    runner,
+    chain_id: chainId,
+    chain: getChainNameFromId(chainId),
+  };
+};
+
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
 
@@ -121,7 +148,7 @@ export async function generateAuthPayloadWithApiKey(
 
     const { message } = await client.getSignatureFormat(address);
     return { message, apiKey };
-  } catch (error) {
+  } catch {
     console.warn("GetSignatureFormat not available, using fallback format");
     const now = Date.now();
     const message = `Please sign the below text for ownership verification.

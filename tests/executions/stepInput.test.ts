@@ -16,13 +16,14 @@ import {
   getNextId,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 let saltIndex = SaltGlobal.StepInput * SALT_BUCKET_SIZE; // Reserve a distinct range for this suite
 
@@ -392,10 +393,7 @@ describe("Input Field Tests", () => {
           userToken: "test-token-123",
           environment: "production",
           debugMode: true,
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
     }).not.toThrow();
@@ -409,10 +407,7 @@ describe("Input Field Tests", () => {
         userToken: "test-token-123",
         environment: "production",
         debugMode: true,
-        settings: {
-          runner: wallet.address,
-          chain_id: parseInt(chainId),
-        },
+        settings: getSettings(wallet.address),
       },
     });
 
@@ -579,10 +574,7 @@ describe("Input Field Tests", () => {
         }),
       ],
       inputVariables: {
-        settings: {
-          runner: wallet.address,
-          chain_id: parseInt(chainId),
-        },
+        settings: getSettings(wallet.address),
       },
     });
 

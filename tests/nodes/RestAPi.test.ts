@@ -12,6 +12,7 @@ import {
   getBlockNumber,
   TIMEOUT_DURATION,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
@@ -22,7 +23,7 @@ const MOCK_API_BASE_URL = MOCKED_API_ENDPOINT_AGGREGATOR;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
 let saltIndex = SaltGlobal.RestAPI * SALT_BUCKET_SIZE;
@@ -165,10 +166,7 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -206,10 +204,7 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -328,10 +323,7 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

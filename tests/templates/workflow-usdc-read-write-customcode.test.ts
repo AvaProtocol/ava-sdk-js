@@ -9,6 +9,7 @@ import {
   getNextId,
   TIMEOUT_DURATION,
   USDC_Implementation_ABI,
+  getSettings,
 } from "../utils/utils";
 
 /**
@@ -18,7 +19,7 @@ import {
  * one read node is pruned/deduped and CustomCode throws due to missing input.
  */
 
-const { avsEndpoint, walletPrivateKey, tokens, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
 
 // Set timeout to 180 seconds for all tests in this file (deployed workflows need more time)
 jest.setTimeout(TIMEOUT_DURATION * 3); // 3 * 60 seconds = 180 seconds
@@ -199,8 +200,8 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       edges: workflowJson.edges,
       inputVariables: {
         settings: {
+          ...getSettings(wallet.address),
           name: workflowJson.name,
-          chain_id: parseInt(chainId), // Dynamic chain ID from config
         }
       }
     });

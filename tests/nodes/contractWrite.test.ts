@@ -21,6 +21,7 @@ import {
   stepIndicatesWriteFailure,
   resultIndicatesAllWritesSuccessful,
   describeIfSepolia,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -200,10 +201,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -316,10 +314,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -380,10 +375,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -433,10 +425,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -559,10 +548,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         const simulation = await client.simulateWorkflow({
           ...client.createWorkflow(workflowProps).toJson(),
           inputVariables: {
-            settings: {
-              runner: wallet.address,
-              chainId: parseInt(chainId),
-            },
+            settings: getSettings(wallet.address),
           },
         });
 
@@ -624,10 +610,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           )
           .toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -792,10 +775,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         nodeType: NodeType.ContractWrite,
         nodeConfig: contractWriteConfig,
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -827,10 +807,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...wfSim.toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
       console.log(
@@ -1070,10 +1047,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [{ methodName: methodName, methodParams: [] }],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -1183,10 +1157,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -1246,10 +1217,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...wfApply.toJson(),
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -1421,10 +1389,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           ],
         },
         inputVariables: {
-          settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
-          },
+          settings: getSettings(wallet.address),
         },
       };
 
@@ -1821,8 +1786,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         },
         inputVariables: {
           settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
+            ...getSettings(wallet.address),
             "recipient-address": TEST_SMART_WALLET_ADDRESS, // Hyphenated key
           },
         },
@@ -1867,8 +1831,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         },
         inputVariables: {
           settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
+            ...getSettings(wallet.address),
             base_amount: 100, // Will be: 100 - 10 = 90
           },
         },
@@ -1943,8 +1906,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         },
         inputVariables: {
           settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
+            ...getSettings(wallet.address),
             pool_data: {
               token0: tokens.USDC.address,
               token1: tokens.LINK.address,
@@ -2024,8 +1986,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         },
         inputVariables: {
           settings: {
-            runner: wallet.address,
-            chain_id: parseInt(chainId),
+            ...getSettings(wallet.address),
             pool_data: {
               token0: tokens.USDC.address,
               token1: tokens.LINK.address,
