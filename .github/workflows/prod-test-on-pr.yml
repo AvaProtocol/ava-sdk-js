@@ -1,7 +1,7 @@
 name: Run Production Tests on PR
 
 on:
-  pull_request:
+  # pull_request:  # Disabled to prevent conflicts with dev-test-on-pr workflow
   workflow_dispatch:
     inputs:
       environment:
