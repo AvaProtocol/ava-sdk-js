@@ -12,6 +12,7 @@ import {
   getBlockNumber,
   TIMEOUT_DURATION,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
@@ -165,10 +166,7 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -206,10 +204,7 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -328,10 +323,7 @@ describe("RestAPI Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

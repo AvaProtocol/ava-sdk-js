@@ -11,6 +11,7 @@ import {
   getBlockNumber,
   removeCreatedWorkflows,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -227,10 +228,7 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -267,10 +265,7 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -398,10 +393,7 @@ describe("BranchNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -517,10 +509,7 @@ describe("BranchNode Tests", () => {
       const simTrue = await client.simulateWorkflow({
         ...client.createWorkflow(wfTrue).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
       const stepIdsTrue = simTrue.steps.map((s: { id: string }) => s.id);
@@ -583,10 +572,7 @@ describe("BranchNode Tests", () => {
       const simFalse = await client.simulateWorkflow({
         ...client.createWorkflow(wfFalse).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: await getAddress(walletPrivateKey),
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
       const stepIdsFalse = simFalse.steps.map((s: { id: string }) => s.id);

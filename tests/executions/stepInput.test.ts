@@ -16,6 +16,7 @@ import {
   getNextId,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
@@ -362,7 +363,6 @@ describe("Input Field Tests", () => {
               status: "processed_successfully",
               processedAt: new Date().toISOString(),
               triggerDataReceived: !!triggerData,
-              workflowContextAvailable: typeof workflowContext !== 'undefined',
               processingComplete: true,
               originalErrorFixed: "hasInput error no longer occurs"
             };
@@ -393,10 +393,7 @@ describe("Input Field Tests", () => {
           userToken: "test-token-123",
           environment: "production",
           debugMode: true,
-          workflowContext: {
-            eoaAddress: ownerAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
     }).not.toThrow();
@@ -410,10 +407,7 @@ describe("Input Field Tests", () => {
         userToken: "test-token-123",
         environment: "production",
         debugMode: true,
-        workflowContext: {
-          eoaAddress: ownerAddress,
-          runner: wallet.address,
-        },
+        settings: getSettings(wallet.address),
       },
     });
 
@@ -580,10 +574,7 @@ describe("Input Field Tests", () => {
         }),
       ],
       inputVariables: {
-        workflowContext: {
-          eoaAddress: ownerAddress,
-          runner: wallet.address,
-        },
+        settings: getSettings(wallet.address),
       },
     });
 

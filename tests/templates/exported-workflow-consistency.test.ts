@@ -19,7 +19,7 @@ import {
   getNextId,
 } from "../utils/utils";
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
+const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
 
 let client: Client;
 let eoaAddress: string;

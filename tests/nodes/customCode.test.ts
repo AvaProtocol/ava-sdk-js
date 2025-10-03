@@ -12,6 +12,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -497,10 +498,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -579,10 +577,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -798,10 +793,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -1026,10 +1018,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -1247,10 +1236,7 @@ describe("CustomCode Node Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

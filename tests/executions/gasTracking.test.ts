@@ -641,10 +641,13 @@ describeIfSepolia("Gas Tracking Tests", () => {
         ];
 
         const workflow = client.createWorkflow(workflowProps);
+        console.log("📝 [Multi-step Gas Test] Submitting workflow with ETH transfer + contract write...");
         workflowId = await client.submitWorkflow(workflow);
         createdIdMap.set(workflowId, true);
+        console.log(`✅ [Multi-step Gas Test] Workflow submitted: ${workflowId}`);
 
         // Trigger the workflow with blocking execution
+        console.log("🚀 [Multi-step Gas Test] Triggering workflow (blocking mode, may take up to 30s)...");
         const triggerResult = await client.triggerWorkflow({
           id: workflowId,
           triggerData: {
@@ -653,6 +656,7 @@ describeIfSepolia("Gas Tracking Tests", () => {
           },
           isBlocking: true,
         });
+        console.log(`✅ [Multi-step Gas Test] Trigger completed with status: ${triggerResult.status}`);
 
         // Accept both success and partialSuccess (operational issues may cause partial failures)
         expect([ExecutionStatus.Success, ExecutionStatus.PartialSuccess]).toContain(triggerResult.status);

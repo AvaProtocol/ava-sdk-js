@@ -47,6 +47,7 @@ jobs:
         run: |
           echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
           echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "BUNDLER_URL: $BUNDLER_URL"
           echo "TEST_ENV: $TEST_ENV"
 
       - name: Check Source or Test Code Changes

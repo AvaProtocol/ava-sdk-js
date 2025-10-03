@@ -62,6 +62,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       console.log("Wallet address:", wallet.address);
       console.log("EOA address:", eoaAddress);
+      
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress, // Send back to EOA address
         amount: "1000000000000000", // 0.001 ETH in wei
