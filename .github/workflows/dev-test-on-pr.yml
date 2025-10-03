@@ -47,6 +47,7 @@ jobs:
         run: |
           echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
           echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "BUNDLER_URL: $BUNDLER_URL"
           echo "TEST_ENV: $TEST_ENV"
 
       - name: Check Source or Test Code Changes
@@ -224,7 +225,6 @@ jobs:
           echo "=== Required Variables from envalid.ts ==="
           echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
           echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
-          echo "BUNDLER_URL: $BUNDLER_URL"
           echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
           echo "TEST_ENV: dev"
 
@@ -238,32 +238,32 @@ jobs:
           TEST_ENV: dev
         run: yarn test:core
 
-      # - name: Test Workflows
-      #   if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-      #   env:
-      #     TEST_ENV: dev
-      #   run: yarn test:workflows
+      - name: Test Workflows
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:workflows
 
-      # - name: Test Executions
-      #   if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-      #   env:
-      #     TEST_ENV: dev
-      #   run: yarn test:executions
+      - name: Test Executions
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:executions
 
-      # - name: Test Triggers
-      #   if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-      #   env:
-      #     TEST_ENV: dev
-      #   run: yarn test:triggers
+      - name: Test Triggers
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:triggers
 
-      # - name: Test Nodes
-      #   if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-      #   env:
-      #     TEST_ENV: dev
-      #   run: yarn test:nodes
+      - name: Test Nodes
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:nodes
 
-      # - name: Test Templates
-      #   if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-      #   env:
-      #     TEST_ENV: dev
-      #   run: yarn test:templates
+      - name: Test Templates
+        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+        env:
+          TEST_ENV: dev
+        run: yarn test:templates
