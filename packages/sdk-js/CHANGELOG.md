@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.8.1
+
+### Patch Changes
+
+- 7eb5023: Replace inputVariables workflowContext with settings, and fix dev test github actions
+- Updated dependencies [7eb5023]
+  - @avaprotocol/types@2.6.1
+
 ## 2.8.0
 
 ### Minor Changes

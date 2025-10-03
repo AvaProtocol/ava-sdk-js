@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.6.1
+
+### Patch Changes
+
+- 7eb5023: Replace inputVariables workflowContext with settings, and fix dev test github actions
+
 ## 2.6.0
 
 ### Minor Changes
