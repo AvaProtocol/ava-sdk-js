@@ -11,6 +11,7 @@ import {
   removeCreatedWorkflows,
   getBlockNumber,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -293,10 +294,7 @@ describe("BlockTrigger Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: coreAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -335,10 +333,7 @@ describe("BlockTrigger Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: coreAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -445,10 +440,7 @@ describe("BlockTrigger Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
-          workflowContext: {
-            eoaAddress: coreAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

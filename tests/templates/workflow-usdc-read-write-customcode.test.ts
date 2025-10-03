@@ -9,6 +9,7 @@ import {
   getNextId,
   TIMEOUT_DURATION,
   USDC_Implementation_ABI,
+  getSettings,
 } from "../utils/utils";
 
 /**
@@ -18,7 +19,7 @@ import {
  * one read node is pruned/deduped and CustomCode throws due to missing input.
  */
 
-const { avsEndpoint, walletPrivateKey, tokens, chainId } = getConfig();
+const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
 
 // Set timeout to 180 seconds for all tests in this file (deployed workflows need more time)
 jest.setTimeout(TIMEOUT_DURATION * 3); // 3 * 60 seconds = 180 seconds
@@ -132,16 +133,14 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           "const value = Number(result?.value);\n" +
           "const symbol = contractRead1?.data?.symbol;\n" +
           "const decimals = Number(contractRead2?.data?.decimals);\n" +
-          "let message = `Workflow: [${workflowContext.name}]\\n" +
-          "Wallet: ${sender}\\n" +
-          "`;\n" +
           "const amount = !isNaN(value) && !isNaN(decimals)\n" +
           "  ? value / 10 ** decimals\n" +
           "  : NaN;\n" +
+          "let message = '';\n" +
           "if (!isNaN(amount)) {\n" +
-          "  message += `You have ${methodName} ${amount} ${symbol} to ${recipient}.`;\n" +
+          "  message = `You have ${methodName} ${amount} ${symbol} from ${sender} to ${recipient}.`;\n" +
           "} else {\n" +
-          "  message += `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
+          "  message = `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
           "}\n" +
           "return message;",
       },
@@ -200,9 +199,9 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       nodes: workflowJson.nodes,
       edges: workflowJson.edges,
       inputVariables: {
-        workflowContext: {
+        settings: {
+          ...getSettings(wallet.address),
           name: workflowJson.name,
-          chainId: parseInt(chainId), // Dynamic chain ID from config
         }
       }
     });
@@ -311,16 +310,14 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           "const value = Number(result?.value);\n" +
           "const symbol = contractRead1?.data?.symbol;\n" +
           "const decimals = Number(contractRead2?.data?.decimals);\n" +
-          "let message = `Workflow: [${workflowContext.name}]\\n" +
-          "Wallet: ${sender}\\n" +
-          "`;\n" +
           "const amount = !isNaN(value) && !isNaN(decimals)\n" +
           "  ? value / 10 ** decimals\n" +
           "  : NaN;\n" +
+          "let message = '';\n" +
           "if (!isNaN(amount)) {\n" +
-          "  message += `You have ${methodName} ${amount} ${symbol} to ${recipient}.`;\n" +
+          "  message = `You have ${methodName} ${amount} ${symbol} from ${sender} to ${recipient}.`;\n" +
           "} else {\n" +
-          "  message += `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
+          "  message = `The ${methodName} of ${symbol} to ${recipient} has failed.`;\n" +
           "}\n" +
           "return message;",
       },

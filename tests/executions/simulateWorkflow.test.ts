@@ -8,6 +8,7 @@ import {
   getNextId,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
@@ -75,10 +76,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -137,10 +135,7 @@ describe("SimulateWorkflow", () => {
         inputVariables: {
           name: "World",
           value: 42,
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -205,10 +200,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -347,10 +339,7 @@ describe("SimulateWorkflow", () => {
           nodes,
           edges,
           inputVariables: {
-            workflowContext: {
-              eoaAddress,
-              runner: wallet.address,
-            },
+            settings: getSettings(wallet.address),
           },
         });
 
@@ -429,12 +418,10 @@ describe("SimulateWorkflow", () => {
                   triggerDataAccessible: !!triggerData,
                   triggerTimezone: triggerData?.timezone,
                   triggerPriority: triggerData?.priority,
-                  restApiOutputReceived: !!restApiOutput,
-                  currentContext: typeof workflowContext !== 'undefined'
+                  restApiOutputReceived: !!restApiOutput
                 },
                 status: "success",
                 timestamp: Date.now(),
-                // Configuration data can be included in the returned result
                 processingMode: "validation",
                 logLevel: "debug"
               };
@@ -462,10 +449,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -530,13 +514,10 @@ describe("SimulateWorkflow", () => {
                   message: "Can access trigger data correctly",
                   triggerDataAccessible: !!triggerData,
                   triggerEnvironment: triggerData?.environment,
-                  triggerVersion: triggerData?.version,
-                  currentContext: typeof workflowContext !== 'undefined',
-                  availableVariables: Object.keys(this || {})
+                  triggerVersion: triggerData?.version
                 },
                 status: "success",
                 timestamp: Date.now(),
-                // Configuration data can be included in the returned result
                 maxRetries: 5,
                 timeout: 60000,
                 enableLogging: true
@@ -560,10 +541,7 @@ describe("SimulateWorkflow", () => {
         nodes,
         edges,
         inputVariables: {
-          workflowContext: {
-            eoaAddress,
-            runner: wallet.address,
-          },
+          settings: getSettings(wallet.address),
         },
       });
 

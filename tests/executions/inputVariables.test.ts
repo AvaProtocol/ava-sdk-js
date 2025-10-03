@@ -13,6 +13,7 @@ import {
   getNextId,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import util from "util";
@@ -153,17 +154,15 @@ describe("Input Variables", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+
       const inputVariables = {
         userToken: "0x1234567890abcdef",
         amount: 1000000,
         recipient: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
         isEnabled: true,
-        workflowContext: {
-          eoaAddress,
-        },
+        settings: getSettings(wallet.address),
       };
-
-      await client.getWallet({ salt: String(saltIndex++) });
 
       const params = {
         trigger,
@@ -249,6 +248,8 @@ describe("Input Variables", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+
       const inputVariables = {
         swapConfig: {
           routerAddress: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
@@ -263,12 +264,8 @@ describe("Input Variables", () => {
           recipient: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
           deadline: Math.floor(Date.now() / 1000) + 1800,
         },
-        workflowContext: {
-          eoaAddress,
-        },
+        settings: getSettings(wallet.address),
       };
-
-      await client.getWallet({ salt: String(saltIndex++) });
 
       const params = {
         trigger,
@@ -375,6 +372,8 @@ describe("Input Variables", () => {
         },
       ];
 
+      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+
       const inputVariables = {
         tokenContract: "0xA0b86a33E6441e4EF45bAcfCaAd5C7f899342E38",
         transferAmount: "1000000",
@@ -391,12 +390,8 @@ describe("Input Variables", () => {
           slippage: 0.5,
           deadline: 1703123400,
         },
-        workflowContext: {
-          eoaAddress,
-        },
+        settings: getSettings(wallet.address),
       };
-
-      await client.getWallet({ salt: String(saltIndex++) });
 
       const params = {
         trigger,
