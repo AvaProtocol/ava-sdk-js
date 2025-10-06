@@ -16,6 +16,8 @@ import {
   AUTH_KEY_HEADER,
   DEFAULT_LIMIT,
   ErrorCode,
+  Lang,
+  LangConverter,
   type WorkflowProps,
   type GetKeyResponse,
   type RequestOptions,
@@ -1378,6 +1380,40 @@ class Client extends BaseClient {
   }
 
   /**
+   * Helper function to recursively convert Lang enum values to protobuf enums in nested objects
+   * @param {any} value - The value to process
+   * @returns {any} - The processed value with Lang enums converted
+   */
+  private convertLangEnumsInValue(value: any): any {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    // If it's an object, recursively process its properties
+    // We only convert 'lang' fields, not arbitrary strings
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      const result: any = {};
+      for (const [k, v] of Object.entries(value)) {
+        if (k === 'lang' && typeof v === 'string' && Object.values(Lang).includes(v as Lang)) {
+          // Only convert the 'lang' field specifically
+          result[k] = LangConverter.toProtobuf(v as Lang);
+        } else {
+          result[k] = this.convertLangEnumsInValue(v);
+        }
+      }
+      return result;
+    }
+
+    // If it's an array, recursively process its elements
+    if (Array.isArray(value)) {
+      return value.map((item) => this.convertLangEnumsInValue(item));
+    }
+
+    // Otherwise return as-is (including plain strings)
+    return value;
+  }
+
+  /**
    * Run a trigger for testing purposes
    * @param {RunTriggerRequest} params - The parameters for running the trigger
    * @param {string} params.triggerType - The type of the trigger (blockTrigger, cronTrigger, etc.)
@@ -1397,10 +1433,18 @@ class Client extends BaseClient {
       TriggerTypeGoConverter.fromGoString(triggerType);
     request.setTriggerType(protobufTriggerType);
 
-    // Set trigger configuration
+    // Set trigger configuration with Lang enum conversion
     const triggerConfigMap = request.getTriggerConfigMap();
     for (const [key, value] of Object.entries(triggerConfig)) {
-      triggerConfigMap.set(key, convertJSValueToProtobuf(value));
+      // Special handling for top-level 'lang' field
+      if (key === 'lang' && typeof value === 'string' && Object.values(Lang).includes(value as Lang)) {
+        const protobufLang = LangConverter.toProtobuf(value as Lang);
+        triggerConfigMap.set(key, convertJSValueToProtobuf(protobufLang));
+      } else {
+        // Convert Lang enums to protobuf enums recursively in nested objects
+        const convertedValue = this.convertLangEnumsInValue(value);
+        triggerConfigMap.set(key, convertJSValueToProtobuf(convertedValue));
+      }
     }
 
     // Send the request directly to the server

@@ -1,4 +1,4 @@
-import { NodeType, CustomCodeLang, LoopNodeProps } from "@avaprotocol/types";
+import { NodeType, LoopNodeProps, Lang } from "@avaprotocol/types";
 import { getNextId } from "../utils";
 
 export const loopNodeWithRestApiProps: LoopNodeProps = {
@@ -32,7 +32,7 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
     runner: {
       type: "customCode",
       config: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `const result = { processedValue: value, position: index }; return result;`,
       },
     },

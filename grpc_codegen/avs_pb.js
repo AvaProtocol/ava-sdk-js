@@ -6095,7 +6095,8 @@ proto.aggregator.ManualTrigger.Config.toObject = function(includeInstance, msg) 
   var f, obj = {
     data: (f = msg.getData()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f),
     headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
-    pathparamsMap: (f = msg.getPathparamsMap()) ? f.toObject(includeInstance, undefined) : []
+    pathparamsMap: (f = msg.getPathparamsMap()) ? f.toObject(includeInstance, undefined) : [],
+    lang: jspb.Message.getFieldWithDefault(msg, 4, 0)
   };
 
   if (includeInstance) {
@@ -6149,6 +6150,10 @@ proto.aggregator.ManualTrigger.Config.deserializeBinaryFromReader = function(msg
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readString, null, "", "");
          });
       break;
+    case 4:
+      var value = /** @type {!proto.aggregator.Lang} */ (reader.readEnum());
+      msg.setLang(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -6193,6 +6198,13 @@ proto.aggregator.ManualTrigger.Config.serializeBinaryToWriter = function(message
   f = message.getPathparamsMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeString);
+  }
+  f = message.getLang();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      4,
+      f
+    );
   }
 };
 
@@ -6276,6 +6288,24 @@ proto.aggregator.ManualTrigger.Config.prototype.getPathparamsMap = function(opt_
 proto.aggregator.ManualTrigger.Config.prototype.clearPathparamsMap = function() {
   this.getPathparamsMap().clear();
   return this;};
+
+
+/**
+ * optional Lang lang = 4;
+ * @return {!proto.aggregator.Lang}
+ */
+proto.aggregator.ManualTrigger.Config.prototype.getLang = function() {
+  return /** @type {!proto.aggregator.Lang} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/**
+ * @param {!proto.aggregator.Lang} value
+ * @return {!proto.aggregator.ManualTrigger.Config} returns this
+ */
+proto.aggregator.ManualTrigger.Config.prototype.setLang = function(value) {
+  return jspb.Message.setProto3EnumField(this, 4, value);
+};
 
 
 
@@ -31309,7 +31339,11 @@ proto.aggregator.ExecutionMode = {
  * @enum {number}
  */
 proto.aggregator.Lang = {
-  JAVASCRIPT: 0
+  LANG_UNSPECIFIED: 0,
+  LANG_JAVASCRIPT: 1,
+  LANG_JSON: 2,
+  LANG_GRAPHQL: 3,
+  LANG_HANDLEBARS: 4
 };
 
 /**

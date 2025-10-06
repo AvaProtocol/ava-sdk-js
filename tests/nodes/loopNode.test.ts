@@ -4,12 +4,12 @@ import _ from "lodash";
 import { Client, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
 import {
   NodeType,
-  CustomCodeLang,
   TriggerType,
   ExecutionMode,
   LoopNodeData,
   WorkflowProps,
   ExecutionStatus,
+  Lang,
 } from "@avaprotocol/types";
 import type { Edge } from "@avaprotocol/sdk-js";
 
@@ -72,7 +72,7 @@ describe("LoopNode Tests", () => {
     runner: {
       type: "customCode" as const,
       config: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `
           const _ = require('lodash');
           return {
@@ -110,7 +110,7 @@ describe("LoopNode Tests", () => {
     runner: {
       type: "customCode" as const,
       config: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: "return { processed: value, index: index };",
       },
     },
@@ -124,7 +124,7 @@ describe("LoopNode Tests", () => {
     runner: {
       type: "customCode" as const,
       config: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: "return { value: value, index: index, processed: true };",
       },
     },
@@ -138,7 +138,7 @@ describe("LoopNode Tests", () => {
     runner: {
       type: "customCode" as const,
       config: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `
           return {
             processedValue: value,
@@ -159,7 +159,7 @@ describe("LoopNode Tests", () => {
     runner: {
       type: "customCode" as const,
       config: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `
           const _ = require('lodash');
           return {
@@ -482,7 +482,7 @@ describe("LoopNode Tests", () => {
         name: "generate_loop_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
               return [
                 { name: "item1", value: 10 },
@@ -504,7 +504,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `
                   const _ = require('lodash');
                   return {
@@ -592,7 +592,7 @@ describe("LoopNode Tests", () => {
         name: "generate_url_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
               return [
                 "https://mock-api.ap-aggregator.local/get?test=1",
@@ -690,7 +690,7 @@ describe("LoopNode Tests", () => {
         name: "generate_contract_addresses",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return [
               USDC_SEPOLIA_ADDRESS,
@@ -796,7 +796,7 @@ describe("LoopNode Tests", () => {
         name: "generate_contract_write_params",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return [
               {
@@ -892,7 +892,7 @@ describe("LoopNode Tests", () => {
         name: "generate_test_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return [
               { name: "Alice", score: 85 },
@@ -914,7 +914,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `
                   const _ = require('lodash');
                   const grade = value.score >= 90 ? 'A' : 
@@ -1003,7 +1003,7 @@ describe("LoopNode Tests", () => {
         name: "generate_multi_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return [1, 2, 3];
             `,
@@ -1022,7 +1022,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `return { number: value, squared: value * value, index: index };`,
             },
           },
@@ -1089,7 +1089,7 @@ describe("LoopNode Tests", () => {
         name: "generate_contract_addresses",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return [
               USDC_SEPOLIA_ADDRESS,
@@ -1199,7 +1199,7 @@ describe("LoopNode Tests", () => {
         name: "generate_contract_write_params",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return [
               {
@@ -1321,7 +1321,7 @@ describe("LoopNode Tests", () => {
         runner: {
           type: "customCode",
           config: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `return value;`,
           },
         },
@@ -1357,7 +1357,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `return value;`,
             },
           },
@@ -1503,7 +1503,7 @@ describe("LoopNode Tests", () => {
             runner: {
               type: "customCode",
               config: {
-                lang: CustomCodeLang.JavaScript,
+                lang: Lang.JavaScript,
                 source: "return value;",
               },
             },
@@ -1607,7 +1607,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `throw new Error("Intentional test error");`,
             },
           },
@@ -1644,7 +1644,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `return { processed: item };`,
             },
           },
@@ -1697,7 +1697,7 @@ describe("LoopNode Tests", () => {
       name: "edge_case_data",
       type: NodeType.CustomCode,
       data: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `return [42];`,
       },
     });
@@ -1713,7 +1713,7 @@ describe("LoopNode Tests", () => {
         runner: {
           type: "customCode",
           config: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `return { value: value, index: index, processed: true };`,
           },
         },
@@ -1765,7 +1765,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `
                   // Simulate processing time to test sequential execution
                   await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay per item
@@ -1850,7 +1850,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `
                   return {
                     item: item,
@@ -2210,7 +2210,7 @@ describe("LoopNode Tests", () => {
         name: "generate_sequential_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `return [10, 20, 30];`,
         },
       });
@@ -2227,7 +2227,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `
                   return {
                     item: value,
@@ -2302,7 +2302,7 @@ describe("LoopNode Tests", () => {
         name: "generate_parallel_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `return [5, 15, 25];`,
         },
       });
@@ -2319,7 +2319,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: `
                   return {
                     item: value,

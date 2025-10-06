@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {NodeType, TriggerType, CustomCodeLang, ExecutionStatus} from "@avaprotocol/types";
+import {NodeType, TriggerType, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -161,7 +161,7 @@ describe("FilterNode Tests", () => {
         name: "generate_test_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const testArray = [
               { name: "Alice", age: 21 },
@@ -213,7 +213,7 @@ describe("FilterNode Tests", () => {
         name: "generate_complex_test_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const testArray = [
               { name: "Alice", age: 25 },
@@ -268,7 +268,7 @@ describe("FilterNode Tests", () => {
         name: "generate_test_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const testArray = [
               { name: "Alice", age: 21 },
@@ -376,7 +376,7 @@ describe("FilterNode Tests", () => {
         name: "consistency_data_gen",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const testArray = [
               { name: "Alice", age: 21 },

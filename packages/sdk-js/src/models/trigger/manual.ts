@@ -10,6 +10,8 @@ import {
   ManualTriggerProps,
   ManualTriggerDataType,
   TriggerProps,
+  Lang,
+  LangConverter,
 } from "@avaprotocol/types";
 
 class ManualTrigger extends Trigger {
@@ -36,10 +38,11 @@ class ManualTrigger extends Trigger {
       throw new Error("ManualTrigger data is required");
     }
 
-    // Extract data, headers, and pathParams from ManualTriggerDataType
+    // Extract data, headers, pathParams, and lang from ManualTriggerDataType
     let actualData: unknown = this.data;
     let headers: Record<string, string> = {};
     let pathParams: Record<string, string> = {};
+    let lang: Lang = Lang.JSON; // Default to JSON
 
     if (typeof this.data === 'object' && this.data !== null && !Array.isArray(this.data)) {
       const dataObj = this.data as Record<string, unknown>;
@@ -49,6 +52,7 @@ class ManualTrigger extends Trigger {
         actualData = dataObj.data;
         headers = (dataObj.headers as Record<string, string>) || {};
         pathParams = (dataObj.pathParams as Record<string, string>) || {};
+        lang = (dataObj.lang as Lang) || Lang.JSON;
       }
       // Otherwise, use this.data directly as the data content
     }
@@ -78,12 +82,17 @@ class ManualTrigger extends Trigger {
       });
     }
 
+    // Set the lang field (required by protobuf)
+    const langValue = LangConverter.toProtobuf(lang);
+    config.setLang(langValue);
+
     manualTrigger.setConfig(config);
 
     trigger.setManual(manualTrigger);
 
     return trigger;
   }
+
 
   static fromResponse(raw: avs_pb.TaskTrigger): ManualTrigger {
     const obj = raw.toObject() as unknown as TriggerProps;
@@ -95,6 +104,7 @@ class ManualTrigger extends Trigger {
       | Record<string, unknown>
       | unknown[]
       | null = null;
+    let lang: Lang = Lang.JSON; // Default
 
     const manualTrigger = raw.getManual();
     if (manualTrigger) {
@@ -110,16 +120,16 @@ class ManualTrigger extends Trigger {
             | unknown[]
             | null;
         }
+        // Extract lang field
+        lang = LangConverter.fromProtobuf(config.getLang());
       }
     }
 
-    
-
-
-    // Create ManualTriggerDataType structure with just the data
+    // Create ManualTriggerDataType structure with data and lang
     // Headers and pathParams are available in baseInput for execution step display
     const manualTriggerData: ManualTriggerDataType = {
       data: actualData,
+      lang: lang,
     };
 
     return new ManualTrigger({

@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, CustomCodeLang } from "@avaprotocol/types";
+import { TriggerType, NodeType } from "@avaprotocol/types";
 import util from "util";
 import { getConfig } from "../utils/envalid";
 import {
@@ -124,7 +124,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "code1",
       type: NodeType.CustomCode,
       data: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source:
           "const methodName = contractWrite1?.input?.methodCalls?.[0]?.methodName;\n" +
           "const result = contractWrite1?.data?.[methodName];\n" +
@@ -301,7 +301,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "code1",
       type: NodeType.CustomCode,
       data: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source:
           "const methodName = contractWrite1?.input?.methodCalls?.[0]?.methodName;\n" +
           "const result = contractWrite1?.data?.[methodName];\n" +

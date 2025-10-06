@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerType } from "./enums";
+import { TriggerType, Lang } from "./enums";
 import { ContractAbi } from "./abi";
 import { MethodCallType } from "./shared";
 
@@ -20,6 +20,7 @@ export interface ManualTriggerDataType {
   data: string | number | boolean | Record<string, unknown> | unknown[] | null;
   headers?: Record<string, string>;
   pathParams?: Record<string, string>;
+  lang?: Lang;
 }
 
 // Custom EventTrigger data type with cleaner field names

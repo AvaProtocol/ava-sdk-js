@@ -4,7 +4,7 @@ import {
   TriggerType, 
   ExecutionStatus, 
   NodeType, 
-  CustomCodeLang, 
+  
   ETHTransferNodeProps 
 } from "@avaprotocol/types";
 import _ from "lodash";
@@ -58,7 +58,7 @@ describe("Execution Partial Success Tests", () => {
         name: "successfulNode",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return { result: 'success' };", // This should succeed
         },
       };
@@ -68,7 +68,7 @@ describe("Execution Partial Success Tests", () => {
         name: "failingNode", 
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "throw new Error('Intentional failure for testing');", // This should fail
         },
       };
@@ -146,7 +146,7 @@ describe("Execution Partial Success Tests", () => {
         name: "successCustomCode",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return { message: 'Custom code executed successfully' };",
         },
       };
@@ -223,7 +223,7 @@ describe("Execution Partial Success Tests", () => {
         name: "firstSuccess",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return { step: 1, result: 'success' };",
         },
       };
@@ -233,7 +233,7 @@ describe("Execution Partial Success Tests", () => {
         name: "secondSuccess",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return { step: 2, result: 'success' };",
         },
       };
@@ -293,7 +293,7 @@ describe("Execution Partial Success Tests", () => {
         name: "firstFailure",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "throw new Error('First intentional failure');",
         },
       };
@@ -303,7 +303,7 @@ describe("Execution Partial Success Tests", () => {
         name: "secondFailure", 
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "throw new Error('Second intentional failure');",
         },
       };

@@ -13,6 +13,7 @@ import {
   NodeProps,
   ExecutionMode,
   ContractAbi,
+  Lang,
 } from "@avaprotocol/types";
 import { convertProtobufValueToJs } from "../../utils";
 
@@ -246,9 +247,9 @@ class LoopNode extends Node {
       }
 
       case "customCode": {
-        const codeConfig = config as Record<string, string>;
+        const codeConfig = config as Record<string, any>;
         const customCode = CustomCodeNode.createProtobufNode({
-          lang: codeConfig.lang,
+          lang: codeConfig.lang as Lang,
           source: codeConfig.source,
         });
         loopNode.setCustomCode(customCode);

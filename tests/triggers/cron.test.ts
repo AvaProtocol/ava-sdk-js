@@ -2,7 +2,6 @@ import util from "util";
 import _ from "lodash";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import {
-  CustomCodeLang,
   NodeType,
   TriggerType,
   ExecutionStatus,
@@ -559,7 +558,7 @@ describe("CronTrigger Tests", () => {
           name: "logExecution",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `
             return {
               executedAt: new Date().toISOString(),

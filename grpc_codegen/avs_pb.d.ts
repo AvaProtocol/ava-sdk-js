@@ -524,6 +524,8 @@ export namespace ManualTrigger {
 
         getPathparamsMap(): jspb.Map<string, string>;
         clearPathparamsMap(): void;
+        getLang(): Lang;
+        setLang(value: Lang): Config;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -542,6 +544,7 @@ export namespace ManualTrigger {
             headersMap: Array<[string, string]>,
 
             pathparamsMap: Array<[string, string]>,
+            lang: Lang,
         }
     }
 
@@ -3932,7 +3935,11 @@ export enum ExecutionMode {
 }
 
 export enum Lang {
-    JAVASCRIPT = 0,
+    LANG_UNSPECIFIED = 0,
+    LANG_JAVASCRIPT = 1,
+    LANG_JSON = 2,
+    LANG_GRAPHQL = 3,
+    LANG_HANDLEBARS = 4,
 }
 
 export enum ErrorCode {

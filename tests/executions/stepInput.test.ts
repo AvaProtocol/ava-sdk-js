@@ -3,7 +3,6 @@ import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
   NodeType,
-  CustomCodeLang,
   TriggerProps,
   ExecutionStatus,
 } from "@avaprotocol/types";
@@ -68,7 +67,7 @@ describe("Input Field Tests", () => {
       type: NodeType.CustomCode,
       data: {
         source: "return 'test'",
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
       },
     });
 
@@ -350,7 +349,7 @@ describe("Input Field Tests", () => {
         name: "process_user_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             // This is the type of workflow the original client was running
             // when they encountered the hasInput error during simulateWorkflow
@@ -514,7 +513,7 @@ describe("Input Field Tests", () => {
       name: "code0",
       type: NodeType.CustomCode,
       data: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `
             const _ = require("lodash");
             const dayjs = require("dayjs");

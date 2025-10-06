@@ -41,6 +41,51 @@ export enum ExecutionMode {
   Parallel = "parallel",
 }
 
+export enum Lang {
+  Unspecified = "unspecified",
+  JavaScript = "javascript",
+  JSON = "json",
+  GraphQL = "graphql",
+  Handlebars = "handlebars",
+}
+
+// Import protobuf types for converter
+import * as avs_pb from "@/grpc_codegen/avs_pb";
+
+// Lang converter functions
+export const LangConverter = {
+  toProtobuf: (lang: Lang): avs_pb.Lang => {
+    switch (lang) {
+      case Lang.JavaScript:
+        return avs_pb.Lang.LANG_JAVASCRIPT;
+      case Lang.JSON:
+        return avs_pb.Lang.LANG_JSON;
+      case Lang.GraphQL:
+        return avs_pb.Lang.LANG_GRAPHQL;
+      case Lang.Handlebars:
+        return avs_pb.Lang.LANG_HANDLEBARS;
+      case Lang.Unspecified:
+      default:
+        return avs_pb.Lang.LANG_UNSPECIFIED;
+    }
+  },
+  fromProtobuf: (lang: avs_pb.Lang): Lang => {
+    switch (lang) {
+      case avs_pb.Lang.LANG_JAVASCRIPT:
+        return Lang.JavaScript;
+      case avs_pb.Lang.LANG_JSON:
+        return Lang.JSON;
+      case avs_pb.Lang.LANG_GRAPHQL:
+        return Lang.GraphQL;
+      case avs_pb.Lang.LANG_HANDLEBARS:
+        return Lang.Handlebars;
+      case avs_pb.Lang.LANG_UNSPECIFIED:
+      default:
+        return Lang.Unspecified;
+    }
+  },
+};
+
 export enum ErrorCode {
   // Standard success - no error
   ERROR_CODE_UNSPECIFIED = 0,
