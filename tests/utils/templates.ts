@@ -10,7 +10,7 @@ import {
   WorkflowProps,
 } from "@avaprotocol/types";
 import { getNextId } from "./utils";
-import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
+import { NodeType, TriggerType, Lang } from "@avaprotocol/types";
 import { factoryProxyAbi } from "./abis";
 import { getConfig } from "./envalid";
 
@@ -114,7 +114,7 @@ const customCodeNodeProps: CustomCodeNodeProps = {
   name: "customCode",
   type: NodeType.CustomCode,
   data: {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return { foo: 'bar' };",
   },
 };
@@ -162,7 +162,7 @@ export const createFromTemplate = (
         name: "minimal_node",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return {};", // Minimal no-op code
         },
       } as CustomCodeNodeProps,

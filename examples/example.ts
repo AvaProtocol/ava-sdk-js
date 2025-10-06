@@ -10,7 +10,7 @@
  */
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType, CustomCodeLang } from "@avaprotocol/types";
+import { NodeType, TriggerType } from "@avaprotocol/types";
 
 import _ from "lodash";
 import { ethers } from "ethers";
@@ -1140,7 +1140,7 @@ export async function exampleWithInputFields() {
         name: "Process and Format Data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             // Access trigger input data
             const triggerConfig = dailyTrigger.input;

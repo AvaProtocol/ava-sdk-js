@@ -4,7 +4,6 @@ import {
   TriggerType,
   ExecutionStatus,
   NodeType,
-  CustomCodeLang,
 } from "@avaprotocol/types";
 import util from "util";
 import _ from "lodash";
@@ -338,7 +337,7 @@ describe("getExecution Tests", () => {
         name: "input_data_tester",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             // Access ManualTrigger input (config) and its data
             try {

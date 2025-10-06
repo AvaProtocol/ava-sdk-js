@@ -5,7 +5,6 @@ import {TriggerType,
   ExecutionMode,
   ManualTriggerDataType,
   LoopNodeData,
-  CustomCodeLang,
   ExecutionStatus
 } from "@avaprotocol/types";
 import { TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
@@ -96,7 +95,7 @@ describe("Exported Workflow Consistency Tests", () => {
         runner: {
           type: "customCode",
           config: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: "return value.key;",
           },
         },
@@ -208,7 +207,7 @@ describe("Exported Workflow Consistency Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: "return value.key;",
             },
           },
@@ -232,7 +231,7 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "code1",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return manualTrigger.data;",
         },
       };
@@ -375,7 +374,7 @@ describe("Exported Workflow Consistency Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: "return value.key;",
             },
           },
@@ -399,7 +398,7 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "code1",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return manualTrigger.data;",
         },
       };
@@ -948,7 +947,7 @@ describe("Exported Workflow Consistency Tests", () => {
           runner: {
             type: "customCode",
             config: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source:
                 "return { processed: value, timestamp: new Date().toISOString() };",
             },

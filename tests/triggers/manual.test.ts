@@ -12,10 +12,10 @@ import {
   TriggerType,
   WorkflowStatus,
   NodeType,
-  CustomCodeLang,
   ExecutionMode,
   ManualTriggerProps,
   ExecutionStatus,
+  Lang,
 } from "@avaprotocol/types";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
@@ -42,7 +42,10 @@ describe("ManualTrigger Tests", () => {
     id: "test-trigger-id",
     name: "manualTrigger",
     type: TriggerType.Manual,
-    data: { test: "minimal data" },
+    data: { 
+      data: { test: "minimal data" },
+      lang: Lang.JSON,
+    },
   };
 
   const userDataTriggerProps = {
@@ -50,10 +53,13 @@ describe("ManualTrigger Tests", () => {
     name: "manualTrigger",
     type: TriggerType.Manual,
     data: {
-      items: [
-        { name: "item1", address: "0xaaaa" },
-        { name: "item2", address: "0xbbbb" },
-      ],
+      data: {
+        items: [
+          { name: "item1", address: "0xaaaa" },
+          { name: "item2", address: "0xbbbb" },
+        ],
+      },
+      lang: Lang.JSON,
     },
   };
 
@@ -68,6 +74,7 @@ describe("ManualTrigger Tests", () => {
         Authorization: "Bearer token123",
       },
       pathParams: { userId: "123", apiVersion: "v1" },
+      lang: Lang.JSON,
     },
   };
 
@@ -75,19 +82,19 @@ describe("ManualTrigger Tests", () => {
     triggerType: TriggerType.Manual,
     triggerConfig: {
       data: { message: "Hello, World!" },
+      lang: Lang.JSON,
     },
   };
 
   const runTriggerWithHeadersProps = {
     triggerType: TriggerType.Manual,
     triggerConfig: {
-      data: {
-        data: { message: "Hello with headers!" },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer token123",
-        },
+      data: { message: "Hello with headers!" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer token123",
       },
+      lang: Lang.JSON,
     },
   };
 
@@ -137,6 +144,28 @@ describe("ManualTrigger Tests", () => {
       expect(trigger.toRequest().getType()).toBe(
         avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
       );
+    });
+
+    test("should succeed with lang field", () => {
+      const triggerWithLang = TriggerFactory.create({
+        id: "test-trigger-id",
+        name: "manualTrigger",
+        type: TriggerType.Manual,
+        data: {
+          data: { message: "Hello" },
+          lang: Lang.JSON,
+        },
+      });
+
+      expect(() => triggerWithLang.toRequest()).not.toThrow();
+      expect(triggerWithLang.toRequest().getType()).toBe(
+        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
+      );
+      
+      const manualTrigger = triggerWithLang.toRequest().getManual();
+      expect(manualTrigger).toBeDefined();
+      const config = manualTrigger!.getConfig();
+      expect(config!.getLang()).toBe(avs_pb.Lang.LANG_JSON);
     });
 
     test("should handle runTrigger with no data", async () => {
@@ -208,6 +237,7 @@ describe("ManualTrigger Tests", () => {
             userId: "123",
             apiVersion: "v1",
           },
+          lang: Lang.JSON,
         },
       };
 
@@ -245,6 +275,7 @@ describe("ManualTrigger Tests", () => {
             userId: "456",
             action: "update",
           },
+          lang: Lang.JSON,
         },
       };
 
@@ -278,6 +309,7 @@ describe("ManualTrigger Tests", () => {
               version: "1.0.0",
             },
           },
+          lang: Lang.JSON,
         },
       };
 
@@ -308,6 +340,7 @@ describe("ManualTrigger Tests", () => {
               { name: "item3", address: "0xcccc" },
             ],
           },
+          lang: Lang.JSON,
         },
       };
 
@@ -337,6 +370,7 @@ describe("ManualTrigger Tests", () => {
               { name: "item2", address: "0xbbbb" },
             ]),
           },
+          lang: Lang.JSON,
         },
       };
 
@@ -354,6 +388,56 @@ describe("ManualTrigger Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(runTriggerJsonStringProps.triggerConfig.data);
+    });
+
+    test("should handle runTrigger with lang field set to JSON", async () => {
+      const runTriggerWithLangProps = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: { message: "Hello with lang!" },
+          lang: Lang.JSON,
+        },
+      };
+
+      console.log(
+        "🚀 runTrigger with lang field input:",
+        util.inspect(runTriggerWithLangProps, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(runTriggerWithLangProps);
+
+      console.log(
+        "🚀 runTrigger with lang field result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(runTriggerWithLangProps.triggerConfig.data);
+    });
+
+    test("should handle runTrigger with lang field set to JavaScript", async () => {
+      const runTriggerWithJSLangProps = {
+        triggerType: TriggerType.Manual,
+        triggerConfig: {
+          data: { code: "return { result: 42 };" },
+          lang: Lang.JavaScript,
+        },
+      };
+
+      console.log(
+        "🚀 runTrigger with JavaScript lang input:",
+        util.inspect(runTriggerWithJSLangProps, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(runTriggerWithJSLangProps);
+
+      console.log(
+        "🚀 runTrigger with JavaScript lang result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(runTriggerWithJSLangProps.triggerConfig.data);
     });
   });
 
@@ -560,7 +644,10 @@ describe("ManualTrigger Tests", () => {
         id: defaultTriggerId,
         name: "deploy_manual_trigger_test",
         type: TriggerType.Manual,
-        data: userData,
+        data: {
+          data: userData,
+          lang: Lang.JSON,
+        },
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
@@ -622,7 +709,10 @@ describe("ManualTrigger Tests", () => {
         id: defaultTriggerId,
         name: "deploy_manual_trigger_no_data",
         type: TriggerType.Manual,
-        data: { message: "test deploy" }, // ManualTrigger now requires data
+        data: {
+          data: { message: "test deploy" },
+          lang: Lang.JSON,
+        },
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
@@ -699,6 +789,7 @@ describe("ManualTrigger Tests", () => {
           data: userData,
           headers: headers,
           pathParams: pathParams,
+          lang: Lang.JSON,
         },
       });
 
@@ -793,7 +884,7 @@ describe("ManualTrigger Tests", () => {
             type: runnerType,
             data: {
               config: {
-                lang: CustomCodeLang.JavaScript,
+                lang: Lang.JavaScript,
                 source: `return ${iteratorValueVar}.name + ${iteratorValueVar}.address;`,
               },
             },
@@ -813,6 +904,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: testData,
+          lang: Lang.JSON,
         },
       };
 
@@ -931,6 +1023,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: emptyData,
+          lang: Lang.JSON,
         },
       };
 
@@ -960,6 +1053,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: emptyArrayData,
+          lang: Lang.JSON,
         },
       };
 
@@ -992,6 +1086,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: arrayData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1002,20 +1097,23 @@ describe("ManualTrigger Tests", () => {
       expect(result.data).toEqual(arrayData);
     });
 
-    test("should accept string data (valid JSON primitive)", async () => {
+    test("should reject raw string data (not valid JSON)", async () => {
       const stringData = "Hello World";
 
       const params = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: stringData,
+          lang: Lang.JSON,
         },
       };
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(stringData);
+      // Raw unquoted strings are not valid JSON, so the API should reject them
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Data must be valid JSON");
+      expect(result.errorCode).toBe(3001);
     });
 
     test("should accept number data (valid JSON primitive)", async () => {
@@ -1025,6 +1123,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: numberData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1041,6 +1140,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: booleanData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1057,6 +1157,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: arrayData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1086,6 +1187,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: jsonObjectData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1113,6 +1215,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: jsonArrayData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1126,21 +1229,23 @@ describe("ManualTrigger Tests", () => {
       expect(result.data[0].name).toBe("item1");
     });
 
-    test("should preserve string types", async () => {
+    test("should reject raw string types (not valid JSON)", async () => {
       const stringData = "Hello, this is a test string!";
 
       const params = {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: stringData,
+          lang: Lang.JSON,
         },
       };
 
       const result = await client.runTrigger(params);
 
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(stringData);
-      expect(typeof result.data).toBe("string");
+      // Raw unquoted strings are not valid JSON, so the API should reject them
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Data must be valid JSON");
+      expect(result.errorCode).toBe(3001);
     });
 
     test("should preserve number types", async () => {
@@ -1150,6 +1255,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: numberData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1167,6 +1273,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: booleanData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1184,6 +1291,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: { value: null }, // null as a property value, not the entire data
+          lang: Lang.JSON,
         },
       };
 
@@ -1229,6 +1337,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: complexData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1256,6 +1365,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: jsonString,
+          lang: Lang.JSON,
         },
       };
 
@@ -1282,6 +1392,7 @@ describe("ManualTrigger Tests", () => {
         triggerType: TriggerType.Manual,
         triggerConfig: {
           data: mixedArrayData,
+          lang: Lang.JSON,
         },
       };
 
@@ -1306,6 +1417,7 @@ describe("ManualTrigger Tests", () => {
       type: TriggerType.Manual,
       data: {
         data: { test: "blocking execution" },
+        lang: Lang.JSON,
       },
     };
 
@@ -1320,7 +1432,7 @@ describe("ManualTrigger Tests", () => {
         name: "test_node",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return { message: 'blocking test completed' };",
         },
       },

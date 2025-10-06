@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {NodeType, TriggerType, CustomCodeLang, ExecutionStatus} from "@avaprotocol/types";
+import {NodeType, TriggerType, Lang, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -30,52 +30,52 @@ describe("CustomCode Node Tests", () => {
 
   // Define all node props at the beginning for consistency
   const returnNullProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return null;",
   };
 
   const returnEmptyObjectProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return {};",
   };
 
   const returnUndefinedProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return undefined;",
   };
 
   const returnEmptyArrayProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return [];",
   };
 
   const returnStringProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: 'return "hello world";',
   };
 
   const returnNumberProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return 42;",
   };
 
   const returnBooleanProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return true;",
   };
 
   const returnObjectProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: 'return { message: "hello", count: 42 };',
   };
 
   const returnArrayProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: "return [1, 2, 3, 4, 5];",
   };
 
   const accessInputVariablesProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: `
       return {
         inputData: inputData,
@@ -89,7 +89,7 @@ describe("CustomCode Node Tests", () => {
   };
 
   const complexObjectProps = {
-    lang: CustomCodeLang.JavaScript,
+    lang: Lang.JavaScript,
     source: `
       return {
         user: {
@@ -335,7 +335,7 @@ describe("CustomCode Node Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const inputValue = trigger.data.value;
             const multiplier = trigger.data.multiplier || 2;
@@ -368,7 +368,7 @@ describe("CustomCode Node Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const _ = require('lodash');
             const numbers = trigger.data.numbers;
@@ -405,7 +405,7 @@ describe("CustomCode Node Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const dayjs = require('dayjs');
             const inputDate = trigger.data.date;
@@ -443,7 +443,7 @@ describe("CustomCode Node Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             // This will cause an error
             const result = trigger.data.nonexistent.property;
@@ -475,7 +475,7 @@ describe("CustomCode Node Tests", () => {
         name: "simulate_custom_code_test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const _ = require('lodash');
             const { v4: uuidv4 } = require('uuid');
@@ -527,7 +527,7 @@ describe("CustomCode Node Tests", () => {
         name: "generate_complex_data",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return {
               items: [
@@ -546,7 +546,7 @@ describe("CustomCode Node Tests", () => {
         name: "simulate_complex_processing",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const _ = require('lodash');
             
@@ -605,7 +605,7 @@ describe("CustomCode Node Tests", () => {
         name: "deploy_custom_code_test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const _ = require('lodash');
             
@@ -706,7 +706,7 @@ describe("CustomCode Node Tests", () => {
       const triggerInterval = 5;
 
       const customCodeConfig = {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: `
           const _ = require('lodash');
           const { v4: uuidv4 } = require('uuid');
@@ -751,7 +751,7 @@ describe("CustomCode Node Tests", () => {
         name: "consistency_data_gen",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             return {
               testValue: 42,
@@ -766,7 +766,7 @@ describe("CustomCode Node Tests", () => {
         name: "consistency_test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const _ = require('lodash');
             const { v4: uuidv4 } = require('uuid');
@@ -922,7 +922,7 @@ describe("CustomCode Node Tests", () => {
         name: `${namePrefix}_null`,
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return null;",
         },
       };
@@ -932,7 +932,7 @@ describe("CustomCode Node Tests", () => {
         name: `${namePrefix}_empty_object`,
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return {};",
         },
       };
@@ -942,7 +942,7 @@ describe("CustomCode Node Tests", () => {
         name: `${namePrefix}_undefined`,
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return undefined;",
         },
       };
@@ -952,7 +952,7 @@ describe("CustomCode Node Tests", () => {
         name: `${namePrefix}_empty_array`,
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return [];",
         },
       };
@@ -962,7 +962,7 @@ describe("CustomCode Node Tests", () => {
         name: `${namePrefix}_number`,
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: "return 42;",
         },
       };
@@ -972,7 +972,7 @@ describe("CustomCode Node Tests", () => {
         name: `${namePrefix}_string`,
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: 'return "hello";',
         },
       };
@@ -1223,7 +1223,7 @@ describe("CustomCode Node Tests", () => {
         name: "manual_trigger_ref_test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `return ${triggerName}.data;`,
         },
       });
@@ -1273,7 +1273,7 @@ describe("CustomCode Node Tests", () => {
         name: "uuid_test",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `
             const { v4: uuidv4 } = require('uuid');
             const id = uuidv4();

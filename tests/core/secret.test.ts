@@ -6,7 +6,6 @@ import {
   NodeType,
   TriggerType,
   CustomCodeNodeProps,
-  CustomCodeLang,
 } from "@avaprotocol/types";
 import {
   getAddress,
@@ -104,7 +103,7 @@ describe("secret Tests", () => {
         name: "customCode",
         type: NodeType.CustomCode,
         data: {
-          lang: CustomCodeLang.JavaScript,
+          lang: Lang.JavaScript,
           source: `return '${testMessage}' + apContext.configVars['${secretName}']`,
         },
       };

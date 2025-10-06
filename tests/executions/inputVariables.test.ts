@@ -3,7 +3,6 @@ import { Client } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
   NodeType,
-  CustomCodeLang,
   ExecutionStatus,
 } from "@avaprotocol/types";
 import {
@@ -59,7 +58,7 @@ describe("Input Variables", () => {
             type: NodeType.CustomCode,
             name: "testNode",
             data: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: "return { userToken: userToken, amount: amount };",
             },
           },
@@ -96,7 +95,7 @@ describe("Input Variables", () => {
             type: NodeType.CustomCode,
             name: "simpleNode",
             data: {
-              lang: CustomCodeLang.JavaScript,
+              lang: Lang.JavaScript,
               source: "return { message: 'No input variables needed' };",
             },
           },
@@ -131,7 +130,7 @@ describe("Input Variables", () => {
           name: "inputVariableTest",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `
               // Test that input variables are accessible
               return {
@@ -224,7 +223,7 @@ describe("Input Variables", () => {
           name: "complexObjectTest",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `
               return {
                 routerAddress: swapConfig.routerAddress,
@@ -326,7 +325,7 @@ describe("Input Variables", () => {
           name: "usageExamples",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `
               // HOW TO REFERENCE INPUT VARIABLES IN NODES:
               

@@ -2,7 +2,6 @@ import util from "util";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {TriggerType,
   NodeType,
-  CustomCodeLang,
   WorkflowStatus,
   ExecutionStatus
 } from "@avaprotocol/types";
@@ -202,7 +201,7 @@ describe("Template: Telegram Alert on Transfer", () => {
       name: "code0",
       type: NodeType.CustomCode,
       data: {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
 
         // eslint-disable-next-line max-len
         source: `const _ = require("lodash");

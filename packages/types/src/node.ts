@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ExecutionMode } from "./enums";
+import { NodeType, ExecutionMode, Lang } from "./enums";
 import { ContractAbi } from "./abi";
 import { MethodCallType } from "./shared";
 
@@ -18,7 +18,7 @@ export interface ContractReadNodeData {
 }
 
 export interface CustomCodeNodeData {
-  lang: CustomCodeLang;
+  lang: Lang;
   source: string;
 }
 
@@ -53,7 +53,7 @@ type LoopRunnerConfig =
     }
   | {
       type: "customCode";
-      config: { lang: CustomCodeLang; source: string };
+      config: { lang: Lang; source: string };
     }
   | {
       type: "ethTransfer";
@@ -97,10 +97,6 @@ export type LoopNodeData = Omit<
 // Node Output Types
 export type RestAPINodeOutput = avs_pb.RestAPINode.Output.AsObject;
 
-// Language enum that exactly matches protobuf enum values
-export enum CustomCodeLang {
-  JavaScript = 0, // avs_pb.Lang.JAVASCRIPT
-}
 
 export type NodeData =
   | ETHTransferNodeData

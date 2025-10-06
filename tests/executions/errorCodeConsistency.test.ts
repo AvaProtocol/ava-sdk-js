@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, CustomCodeLang, ExecutionStatus } from "@avaprotocol/types";
+import { TriggerType, NodeType, ExecutionStatus } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -43,7 +43,7 @@ describe("ErrorCode Consistency", () => {
 
       // Test case: CustomCode node with empty source (should return MISSING_REQUIRED_FIELD error code)
       const nodeConfig = {
-        lang: CustomCodeLang.JavaScript,
+        lang: Lang.JavaScript,
         source: "", // Empty source should trigger MISSING_REQUIRED_FIELD error
       };
 
@@ -89,7 +89,7 @@ describe("ErrorCode Consistency", () => {
           name: "code1",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: "", // Empty source should trigger MISSING_REQUIRED_FIELD error
           },
         },
@@ -176,7 +176,7 @@ describe("ErrorCode Consistency", () => {
           name: "code1",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: "return { result: 'success' };", // Valid source
           },
         },

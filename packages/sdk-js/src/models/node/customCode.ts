@@ -3,9 +3,10 @@ import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
   NodeType,
   CustomCodeNodeData,
-  CustomCodeLang,
   CustomCodeNodeProps,
   NodeProps,
+  Lang,
+  LangConverter,
 } from "@avaprotocol/types";
 import {
   convertProtobufValueToJs,
@@ -20,20 +21,22 @@ class CustomCodeNode extends Node {
     super({ ...props, type: NodeType.CustomCode, data: props.data });
   }
 
+
   /**
    * Create a protobuf CustomCodeNode from config data
    * @param configData - The configuration data for the custom code node
    * @returns Configured avs_pb.CustomCodeNode
    */
   static createProtobufNode(configData: {
-    lang: CustomCodeLang | string | number;
+    lang: Lang;
     source: string;
   }): avs_pb.CustomCodeNode {
     const node = new avs_pb.CustomCodeNode();
     const config = new avs_pb.CustomCodeNode.Config();
 
-    // Set lang using enum value (cast to protobuf Lang type)
-    config.setLang(configData.lang as any);
+    // Convert lang to protobuf enum using centralized converter
+    const langValue = LangConverter.toProtobuf(configData.lang);
+    config.setLang(langValue);
     config.setSource(configData.source);
 
     node.setConfig(config);
@@ -44,12 +47,20 @@ class CustomCodeNode extends Node {
     // Convert the raw object to CustomCodeNodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
-    // Get the raw protobuf config and convert to our custom interface
-    const rawConfig = raw.getCustomCode()!.getConfig()!.toObject();
+    // Get the raw protobuf config
+    const customCodeNode = raw.getCustomCode();
+    if (!customCodeNode) {
+      throw new Error("CustomCode node data is missing");
+    }
+    
+    const config = customCodeNode.getConfig();
+    if (!config) {
+      throw new Error("CustomCode config is missing");
+    }
 
     const convertedConfig: CustomCodeNodeData = {
-      lang: rawConfig.lang as unknown as CustomCodeLang,
-      source: rawConfig.source,
+      lang: LangConverter.fromProtobuf(config.getLang()),
+      source: config.getSource(),
     };
 
     return new CustomCodeNode({

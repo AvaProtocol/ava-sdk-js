@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import {TriggerType, NodeType, CustomCodeLang, ExecutionStatus} from "@avaprotocol/types";
+import {TriggerType, NodeType, ExecutionStatus} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -55,7 +55,7 @@ describe("SimulateWorkflow", () => {
           name: "customCode",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source:
               "return { message: 'Task executed successfully', timestamp: Date.now() };",
           },
@@ -113,7 +113,7 @@ describe("SimulateWorkflow", () => {
           name: "customCode",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: "return { greeting: 'Hello World!', calculated: 42 * 2 };",
           },
         },
@@ -240,7 +240,7 @@ describe("SimulateWorkflow", () => {
           name: "customCode1",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: "return { step1: 'completed', data: 'from step 1' };",
           },
         },
@@ -249,7 +249,7 @@ describe("SimulateWorkflow", () => {
           name: "customCode2",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source:
               "return { step2: 'completed', previousData: manualTrigger.data };",
           },
@@ -318,7 +318,7 @@ describe("SimulateWorkflow", () => {
           name: "customCode",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: "throw new Error('Intentional error for testing');",
           },
         },
@@ -406,7 +406,7 @@ describe("SimulateWorkflow", () => {
           name: "input_processor",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `
               // Access trigger data and previous node output
               const triggerData = manualTrigger.data;
@@ -504,7 +504,7 @@ describe("SimulateWorkflow", () => {
           name: "data_processor",
           type: NodeType.CustomCode,
           data: {
-            lang: CustomCodeLang.JavaScript,
+            lang: Lang.JavaScript,
             source: `
               // Access trigger data which now contains environment and version
               const triggerData = manualTrigger.data;
