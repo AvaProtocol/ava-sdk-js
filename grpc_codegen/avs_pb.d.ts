@@ -1278,6 +1278,86 @@ export namespace CustomCodeNode {
 
 }
 
+export class BalanceNode extends jspb.Message { 
+
+    hasConfig(): boolean;
+    clearConfig(): void;
+    getConfig(): BalanceNode.Config | undefined;
+    setConfig(value?: BalanceNode.Config): BalanceNode;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): BalanceNode.AsObject;
+    static toObject(includeInstance: boolean, msg: BalanceNode): BalanceNode.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: BalanceNode, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): BalanceNode;
+    static deserializeBinaryFromReader(message: BalanceNode, reader: jspb.BinaryReader): BalanceNode;
+}
+
+export namespace BalanceNode {
+    export type AsObject = {
+        config?: BalanceNode.Config.AsObject,
+    }
+
+
+    export class Config extends jspb.Message { 
+        getAddress(): string;
+        setAddress(value: string): Config;
+        getChain(): string;
+        setChain(value: string): Config;
+        getIncludeSpam(): boolean;
+        setIncludeSpam(value: boolean): Config;
+        getIncludeZeroBalances(): boolean;
+        setIncludeZeroBalances(value: boolean): Config;
+        getMinUsdValue(): number;
+        setMinUsdValue(value: number): Config;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Config.AsObject;
+        static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Config, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Config;
+        static deserializeBinaryFromReader(message: Config, reader: jspb.BinaryReader): Config;
+    }
+
+    export namespace Config {
+        export type AsObject = {
+            address: string,
+            chain: string,
+            includeSpam: boolean,
+            includeZeroBalances: boolean,
+            minUsdValue: number,
+        }
+    }
+
+    export class Output extends jspb.Message { 
+
+        hasData(): boolean;
+        clearData(): void;
+        getData(): google_protobuf_struct_pb.Value | undefined;
+        setData(value?: google_protobuf_struct_pb.Value): Output;
+
+        serializeBinary(): Uint8Array;
+        toObject(includeInstance?: boolean): Output.AsObject;
+        static toObject(includeInstance: boolean, msg: Output): Output.AsObject;
+        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+        static serializeBinaryToWriter(message: Output, writer: jspb.BinaryWriter): void;
+        static deserializeBinary(bytes: Uint8Array): Output;
+        static deserializeBinaryFromReader(message: Output, reader: jspb.BinaryReader): Output;
+    }
+
+    export namespace Output {
+        export type AsObject = {
+            data?: google_protobuf_struct_pb.Value.AsObject,
+        }
+    }
+
+}
+
 export class BranchNode extends jspb.Message { 
 
     hasConfig(): boolean;
@@ -1650,6 +1730,11 @@ export class TaskNode extends jspb.Message {
     getCustomCode(): CustomCodeNode | undefined;
     setCustomCode(value?: CustomCodeNode): TaskNode;
 
+    hasBalance(): boolean;
+    clearBalance(): void;
+    getBalance(): BalanceNode | undefined;
+    setBalance(value?: BalanceNode): TaskNode;
+
     getTaskTypeCase(): TaskNode.TaskTypeCase;
 
     serializeBinary(): Uint8Array;
@@ -1676,6 +1761,7 @@ export namespace TaskNode {
         filter?: FilterNode.AsObject,
         loop?: LoopNode.AsObject,
         customCode?: CustomCodeNode.AsObject,
+        balance?: BalanceNode.AsObject,
     }
 
     export enum TaskTypeCase {
@@ -1689,6 +1775,7 @@ export namespace TaskNode {
         FILTER = 16,
         LOOP = 17,
         CUSTOM_CODE = 18,
+        BALANCE = 19,
     }
 
 }
@@ -1846,6 +1933,11 @@ export namespace Execution {
         clearLoop(): void;
         getLoop(): LoopNode.Output | undefined;
         setLoop(value?: LoopNode.Output): Step;
+
+        hasBalance(): boolean;
+        clearBalance(): void;
+        getBalance(): BalanceNode.Output | undefined;
+        setBalance(value?: BalanceNode.Output): Step;
         getStartAt(): number;
         setStartAt(value: number): Step;
         getEndAt(): number;
@@ -1893,6 +1985,7 @@ export namespace Execution {
             branch?: BranchNode.Output.AsObject,
             filter?: FilterNode.Output.AsObject,
             loop?: LoopNode.Output.AsObject,
+            balance?: BalanceNode.Output.AsObject,
             startAt: number,
             endAt: number,
         }
@@ -1913,6 +2006,7 @@ export namespace Execution {
             BRANCH = 9,
             FILTER = 10,
             LOOP = 11,
+            BALANCE = 30,
         }
 
     }
@@ -3319,6 +3413,11 @@ export class RunNodeWithInputsResp extends jspb.Message {
     getLoop(): LoopNode.Output | undefined;
     setLoop(value?: LoopNode.Output): RunNodeWithInputsResp;
 
+    hasBalance(): boolean;
+    clearBalance(): void;
+    getBalance(): BalanceNode.Output | undefined;
+    setBalance(value?: BalanceNode.Output): RunNodeWithInputsResp;
+
     getOutputDataCase(): RunNodeWithInputsResp.OutputDataCase;
 
     serializeBinary(): Uint8Array;
@@ -3347,6 +3446,7 @@ export namespace RunNodeWithInputsResp {
         branch?: BranchNode.Output.AsObject,
         filter?: FilterNode.Output.AsObject,
         loop?: LoopNode.Output.AsObject,
+        balance?: BalanceNode.Output.AsObject,
     }
 
     export enum OutputDataCase {
@@ -3360,6 +3460,7 @@ export namespace RunNodeWithInputsResp {
         BRANCH = 16,
         FILTER = 17,
         LOOP = 18,
+        BALANCE = 19,
     }
 
 }
@@ -3927,6 +4028,7 @@ export enum NodeType {
     NODE_TYPE_BRANCH = 7,
     NODE_TYPE_FILTER = 8,
     NODE_TYPE_LOOP = 9,
+    NODE_TYPE_BALANCE = 10,
 }
 
 export enum ExecutionMode {

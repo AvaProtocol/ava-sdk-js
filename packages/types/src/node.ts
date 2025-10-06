@@ -46,6 +46,14 @@ export type GraphQLQueryNodeData = {
 
 export type FilterNodeData = avs_pb.FilterNode.Config.AsObject;
 
+export interface BalanceNodeData {
+  address: string;
+  chain: string;
+  includeSpam?: boolean;
+  includeZeroBalances?: boolean;
+  minUsdValue?: number;
+}
+
 type LoopRunnerConfig =
   | {
       type: "restApi";
@@ -107,7 +115,8 @@ export type NodeData =
   | BranchNodeData
   | FilterNodeData
   | LoopNodeData
-  | CustomCodeNodeData;
+  | CustomCodeNodeData
+  | BalanceNodeData;
 
 export type NodeProps = Omit<
   avs_pb.TaskNode.AsObject,
@@ -120,6 +129,7 @@ export type NodeProps = Omit<
   | "filter"
   | "loop"
   | "customCode"
+  | "balance"
   | "type" // Exclude the protobuf type field to avoid conflict
   | "input" // ✨ Omit the protobuf input field
 > & {
@@ -138,6 +148,7 @@ export type CustomCodeNodeProps = NodeProps & { data: CustomCodeNodeData };
 export type GraphQLQueryNodeProps = NodeProps & { data: GraphQLQueryNodeData };
 export type BranchNodeProps = NodeProps & { data: BranchNodeData };
 export type FilterNodeProps = NodeProps & { data: FilterNodeData };
+export type BalanceNodeProps = NodeProps & { data: BalanceNodeData };
 export const NodeTypeConverter = {
   toProtobuf: (type: NodeType): avs_pb.NodeType => {
     switch (type) {
@@ -159,6 +170,8 @@ export const NodeTypeConverter = {
         return avs_pb.NodeType.NODE_TYPE_FILTER;
       case NodeType.Loop:
         return avs_pb.NodeType.NODE_TYPE_LOOP;
+      case NodeType.Balance:
+        return avs_pb.NodeType.NODE_TYPE_BALANCE;
       case NodeType.Unspecified:
       default:
         return avs_pb.NodeType.NODE_TYPE_UNSPECIFIED;
@@ -184,6 +197,8 @@ export const NodeTypeConverter = {
         return NodeType.Filter;
       case avs_pb.NodeType.NODE_TYPE_LOOP:
         return NodeType.Loop;
+      case avs_pb.NodeType.NODE_TYPE_BALANCE:
+        return NodeType.Balance;
       case avs_pb.NodeType.NODE_TYPE_UNSPECIFIED:
       default:
         return NodeType.Unspecified;
@@ -211,6 +226,8 @@ export const NodeTypeGoConverter = {
         return "filter";
       case avs_pb.NodeType.NODE_TYPE_LOOP:
         return "loop";
+      case avs_pb.NodeType.NODE_TYPE_BALANCE:
+        return "balance";
       case avs_pb.NodeType.NODE_TYPE_UNSPECIFIED:
       default:
         return "unspecified";
@@ -236,6 +253,8 @@ export const NodeTypeGoConverter = {
         return avs_pb.NodeType.NODE_TYPE_FILTER;
       case "loop":
         return avs_pb.NodeType.NODE_TYPE_LOOP;
+      case "balance":
+        return avs_pb.NodeType.NODE_TYPE_BALANCE;
       case "unspecified":
       default:
         return avs_pb.NodeType.NODE_TYPE_UNSPECIFIED;

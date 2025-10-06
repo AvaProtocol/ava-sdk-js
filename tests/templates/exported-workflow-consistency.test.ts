@@ -188,6 +188,7 @@ describe("Exported Workflow Consistency Tests", () => {
           data: testData,
           headers: { headerKey: "headerValue" },
           pathParams: { pathKey: "pathValue" },
+          lang: Lang.JSON, // Add lang field at the same level as data, headers, pathParams
         },
       };
 
@@ -300,9 +301,14 @@ describe("Exported Workflow Consistency Tests", () => {
       const triggerStep = simulation.steps.find(
         (s) => s.type === "manualTrigger"
       );
-            expect(triggerStep!.success).toBeTruthy();
+      expect(triggerStep!.success).toBeTruthy();
       expect(triggerStep!.config).toBeDefined();
-      expect(triggerStep!.config).toEqual(manualTriggerProps.data);
+      // The backend converts Lang enum to its numeric value (Lang.JSON = 2)
+      const expectedTriggerConfig = {
+        ...manualTriggerProps.data,
+        lang: 2, // Lang.JSON enum value
+      };
+      expect(triggerStep!.config).toEqual(expectedTriggerConfig);
       expect(triggerStep!.output).toEqual(testData);
 
       // Validate filter step
@@ -315,18 +321,18 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Validate loop step
       const loopStep = simulation.steps.find((s) => s.type === "loop");
-            expect(loopStep!.success).toBeTruthy();
+      expect(loopStep!.success).toBeTruthy();
 
       // Validate loop input - should use the new protobuf-compliant runner.config structure
       expect(loopStep!.config).toBeDefined();
-      // The backend converts lang enum to string in the config, and uses the new runner.config structure
+      // The backend converts lang enum to protobuf string name (e.g., "LANG_JAVASCRIPT")
       const expectedLoopConfig = {
         ...loopNodeProps.data,
         runner: {
           ...loopNodeProps.data.runner,
           config: {
             ...loopNodeProps.data.runner.config,
-            lang: "JavaScript", // Backend converts enum to string
+            lang: "LANG_JAVASCRIPT", // Backend returns protobuf enum string name
           },
         },
       };

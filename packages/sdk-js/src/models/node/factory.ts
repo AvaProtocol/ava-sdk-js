@@ -10,6 +10,7 @@ import ETHTransferNode from "./ethTransfer";
 import BranchNode from "./branch";
 import FilterNode from "./filter";
 import LoopNode from "./loop";
+import BalanceNode from "./balance";
 import { 
   NodeType,
   ContractWriteNodeData,
@@ -21,6 +22,7 @@ import {
   CustomCodeNodeData,
   FilterNodeData,
   LoopNodeData,
+  BalanceNodeData,
   NodeProps,
   ContractWriteNodeProps,
   ContractReadNodeProps,
@@ -30,7 +32,8 @@ import {
   RestAPINodeProps,
   CustomCodeNodeProps,
   FilterNodeProps,
-  LoopNodeProps
+  LoopNodeProps,
+  BalanceNodeProps
 } from "@avaprotocol/types";
 
 class NodeFactory {
@@ -54,6 +57,8 @@ class NodeFactory {
         return new FilterNode(props as FilterNodeProps);
       case NodeType.Loop:
         return new LoopNode(props as LoopNodeProps);
+      case NodeType.Balance:
+        return new BalanceNode(props as BalanceNodeProps);
       case NodeType.Unspecified:
         throw new Error("Cannot create node with unspecified type");
       default:
@@ -85,6 +90,8 @@ class NodeFactory {
         return FilterNode.fromResponse(raw);
       case !!raw.getLoop():
         return LoopNode.fromResponse(raw);
+      case !!raw.getBalance():
+        return BalanceNode.fromResponse(raw);
       default:
         throw new Error(`Unsupported node type: ${raw.getName()}`);
     }
@@ -113,6 +120,8 @@ class NodeFactory {
         return FilterNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.LOOP:
         return LoopNode.fromOutputData(outputData);
+      case avs_pb.RunNodeWithInputsResp.OutputDataCase.BALANCE:
+        return BalanceNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
       default:
         throw new Error(`Unsupported output data case: ${outputData.getOutputDataCase()}`);
@@ -134,6 +143,7 @@ export {
   CustomCodeNode,
   FilterNode,
   LoopNode,
+  BalanceNode,
 };
 
 // Data definitions of Node
@@ -147,6 +157,7 @@ export type {
   CustomCodeNodeData,
   FilterNodeData,
   LoopNodeData,
+  BalanceNodeData,
 };
 
 // Node Props definitions
@@ -161,4 +172,5 @@ export type {
   CustomCodeNodeProps,
   FilterNodeProps,
   LoopNodeProps,
+  BalanceNodeProps,
 };
