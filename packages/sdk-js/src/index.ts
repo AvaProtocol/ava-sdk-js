@@ -59,7 +59,7 @@ import {
   // Fee estimation types (only those used internally by SDK)
   type EstimateFeesRequest,
   type EstimateFeesResponse,
-  type FeeAmount
+  type FeeAmount,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -72,7 +72,6 @@ import {
   cleanGrpcErrorMessage,
   toCamelCaseKeys,
 } from "./utils";
-
 
 /**
  * Convert protobuf ExecutionStatus numeric value to meaningful string enum
@@ -1016,7 +1015,7 @@ class Client extends BaseClient {
       response.error = responseObject.error;
     }
     if (responseObject.stepsList && responseObject.stepsList.length > 0) {
-      response.steps = responseObject.stepsList.map(step => {
+      response.steps = responseObject.stepsList.map((step) => {
         // Extract output data from the appropriate oneof field
         let output: unknown = undefined;
         if (step.blockTrigger) output = step.blockTrigger;
@@ -1374,43 +1373,11 @@ class Client extends BaseClient {
         ? toCamelCaseKeys(convertProtobufValueToJs(result.getMetadata()!))
         : undefined,
       executionContext: result.hasExecutionContext()
-        ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
+        ? toCamelCaseKeys(
+            convertProtobufValueToJs(result.getExecutionContext()!)
+          )
         : undefined,
     };
-  }
-
-  /**
-   * Helper function to recursively convert Lang enum values to protobuf enums in nested objects
-   * @param {any} value - The value to process
-   * @returns {any} - The processed value with Lang enums converted
-   */
-  private convertLangEnumsInValue(value: any): any {
-    if (value === null || value === undefined) {
-      return value;
-    }
-
-    // If it's an object, recursively process its properties
-    // We only convert 'lang' fields, not arbitrary strings
-    if (typeof value === 'object' && !Array.isArray(value)) {
-      const result: any = {};
-      for (const [k, v] of Object.entries(value)) {
-        if (k === 'lang' && typeof v === 'string' && Object.values(Lang).includes(v as Lang)) {
-          // Only convert the 'lang' field specifically
-          result[k] = LangConverter.toProtobuf(v as Lang);
-        } else {
-          result[k] = this.convertLangEnumsInValue(v);
-        }
-      }
-      return result;
-    }
-
-    // If it's an array, recursively process its elements
-    if (Array.isArray(value)) {
-      return value.map((item) => this.convertLangEnumsInValue(item));
-    }
-
-    // Otherwise return as-is (including plain strings)
-    return value;
   }
 
   /**
@@ -1433,18 +1400,10 @@ class Client extends BaseClient {
       TriggerTypeGoConverter.fromGoString(triggerType);
     request.setTriggerType(protobufTriggerType);
 
-    // Set trigger configuration with Lang enum conversion
+    // Set trigger configuration
     const triggerConfigMap = request.getTriggerConfigMap();
     for (const [key, value] of Object.entries(triggerConfig)) {
-      // Special handling for top-level 'lang' field
-      if (key === 'lang' && typeof value === 'string' && Object.values(Lang).includes(value as Lang)) {
-        const protobufLang = LangConverter.toProtobuf(value as Lang);
-        triggerConfigMap.set(key, convertJSValueToProtobuf(protobufLang));
-      } else {
-        // Convert Lang enums to protobuf enums recursively in nested objects
-        const convertedValue = this.convertLangEnumsInValue(value);
-        triggerConfigMap.set(key, convertJSValueToProtobuf(convertedValue));
-      }
+      triggerConfigMap.set(key, convertJSValueToProtobuf(value));
     }
 
     // Send the request directly to the server
@@ -1472,7 +1431,9 @@ class Client extends BaseClient {
       errorCode: result.getErrorCode() || undefined,
       metadata: toCamelCaseKeys(metadata),
       executionContext: result.hasExecutionContext()
-        ? toCamelCaseKeys(convertProtobufValueToJs(result.getExecutionContext()!))
+        ? toCamelCaseKeys(
+            convertProtobufValueToJs(result.getExecutionContext()!)
+          )
         : undefined,
     };
   }
@@ -1566,7 +1527,7 @@ class Client extends BaseClient {
 
   /**
    * Get comprehensive fee estimation for workflow deployment
-   * 
+   *
    * @param params - Fee estimation request parameters
    * @param options - Optional request options (auth key, timeout)
    * @returns Promise resolving to comprehensive fee breakdown
@@ -1646,10 +1607,12 @@ class Client extends BaseClient {
           methodName: operation.getMethodName() || undefined,
           gasUnits: operation.getGasUnits(),
           gasPrice: gasFees.getGasPriceGwei() || "", // Use parent gas price
-          totalCost: operation.getFee() ? this.convertFeeAmount(operation.getFee()!) : 
-            this.createZeroFeeAmount(),
-          success: operation.getFee() ? 
-            (parseFloat(operation.getFee()!.getNativeTokenAmount()) > 0) : false, // Check if operation has valid gas cost
+          totalCost: operation.getFee()
+            ? this.convertFeeAmount(operation.getFee()!)
+            : this.createZeroFeeAmount(),
+          success: operation.getFee()
+            ? parseFloat(operation.getFee()!.getNativeTokenAmount()) > 0
+            : false, // Check if operation has valid gas cost
           error: undefined,
         })),
         totalGasCost: this.convertFeeAmount(gasFees.getTotalGasFees()!),
@@ -1666,7 +1629,7 @@ class Client extends BaseClient {
       // Calculate total fee from base + execution
       const baseFee = automationFees.getBaseFee();
       const executionFee = automationFees.getExecutionFee();
-      
+
       // For now, use baseFee as totalFee since the exact calculation isn't available
       // If baseFee is not available, create a mock fee amount with proper chain detection
       const totalFee = baseFee || this.createMockFeeAmount();
@@ -1674,8 +1637,12 @@ class Client extends BaseClient {
       response.automationFees = {
         triggerType: automationFees.getTriggerType(),
         durationMinutes: automationFees.getDurationMinutes(),
-        baseFee: baseFee ? this.convertFeeAmount(baseFee) : this.createZeroFeeAmount(),
-        executionFee: executionFee ? this.convertFeeAmount(executionFee) : this.createZeroFeeAmount(),
+        baseFee: baseFee
+          ? this.convertFeeAmount(baseFee)
+          : this.createZeroFeeAmount(),
+        executionFee: executionFee
+          ? this.convertFeeAmount(executionFee)
+          : this.createZeroFeeAmount(),
         estimatedExecutions: automationFees.getEstimatedExecutions(),
         totalFee: this.convertFeeAmount(totalFee),
         breakdown: [], // Not available in current protobuf structure
@@ -1702,7 +1669,9 @@ class Client extends BaseClient {
       response.totalFees = this.convertFeeAmount(result.getTotalFees()!);
     }
     if (result.getTotalDiscounts()) {
-      response.totalDiscounts = this.convertFeeAmount(result.getTotalDiscounts()!);
+      response.totalDiscounts = this.convertFeeAmount(
+        result.getTotalDiscounts()!
+      );
     }
     if (result.getFinalTotal()) {
       response.finalTotal = this.convertFeeAmount(result.getFinalTotal()!);
@@ -1745,7 +1714,7 @@ class Client extends BaseClient {
       getNativeTokenAmount: () => "0",
       getNativeTokenSymbol: () => getNativeTokenSymbol(),
       getUsdAmount: () => "0",
-      getApTokenAmount: () => "0"
+      getApTokenAmount: () => "0",
     };
   }
 
