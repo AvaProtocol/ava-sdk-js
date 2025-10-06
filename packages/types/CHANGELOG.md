@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.7.0
+
+### Minor Changes
+
+- bc5b6f6: Added BalanceNode and lang to ManualTrigger
+
 ## 2.6.1
 
 ### Patch Changes
