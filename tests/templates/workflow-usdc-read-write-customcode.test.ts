@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType } from "@avaprotocol/types";
+import { TriggerType, NodeType, Lang } from "@avaprotocol/types";
 import util from "util";
 import { getConfig } from "../utils/envalid";
 import {

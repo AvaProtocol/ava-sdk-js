@@ -4,7 +4,7 @@ import {
   TriggerType, 
   ExecutionStatus, 
   NodeType, 
-  
+  Lang,
   ETHTransferNodeProps 
 } from "@avaprotocol/types";
 import _ from "lodash";

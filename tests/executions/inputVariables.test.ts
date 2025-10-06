@@ -4,6 +4,7 @@ import {
   TriggerType,
   NodeType,
   ExecutionStatus,
+  Lang,
 } from "@avaprotocol/types";
 import {
   getAddress,

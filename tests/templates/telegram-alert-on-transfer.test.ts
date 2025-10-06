@@ -3,7 +3,8 @@ import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {TriggerType,
   NodeType,
   WorkflowStatus,
-  ExecutionStatus
+  ExecutionStatus,
+  Lang
 } from "@avaprotocol/types";
 import {
   getAddress,
