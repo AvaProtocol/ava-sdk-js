@@ -325,34 +325,26 @@ describeIfSepolia("BalanceNode Tests", () => {
       }
     });
 
-    test("should simulate workflow with balance node using template variables", async () => {
+    test("should simulate workflow with balance node using BlockTrigger", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
+      // Note: ManualTrigger does not support template variable references
+      // since there is no preceding trigger output to reference.
+      // Use hard-coded values for simulation with ManualTrigger.
       const balanceNode = NodeFactory.create({
         id: getNextId(),
-        name: "simulate_balance_with_variables",
+        name: "simulate_balance_block_trigger",
         type: NodeType.Balance,
         data: {
-          address: "{{trigger.walletAddress}}",
-          chain: "{{trigger.chainName}}",
+          address: TEST_ADDRESSES.vitalik,
+          chain: "sepolia",
         },
       });
 
       const workflowProps = createFromTemplate(wallet.address, [balanceNode]);
 
-      // Override trigger to provide input data
-      workflowProps.trigger = TriggerFactory.create({
-        id: defaultTriggerId,
-        name: "manualTrigger",
-        type: TriggerType.Manual,
-        data: {
-          walletAddress: TEST_ADDRESSES.vitalik,
-          chainName: "sepolia",
-        },
-      });
-
       console.log(
-        "🚀 ~ simulateWorkflow with template variables ~ workflowProps:",
+        "🚀 ~ simulateWorkflow with BlockTrigger ~ workflowProps:",
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
@@ -361,7 +353,7 @@ describeIfSepolia("BalanceNode Tests", () => {
       );
 
       console.log(
-        "🚀 ~ simulateWorkflow with template variables ~ result:",
+        "🚀 ~ simulateWorkflow with BlockTrigger ~ result:",
         util.inspect(simulation, { depth: null, colors: true })
       );
 
