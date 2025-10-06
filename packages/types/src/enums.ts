@@ -34,6 +34,7 @@ export enum NodeType {
   Branch = "branch",
   Filter = "filter",
   Loop = "loop",
+  Balance = "balance",
 }
 
 export enum ExecutionMode {

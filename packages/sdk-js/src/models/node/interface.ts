@@ -18,6 +18,7 @@ export function covertNodeTypeToString(
     [avs_pb.TaskNode.TaskTypeCase.FILTER]: NodeType.Filter,
     [avs_pb.TaskNode.TaskTypeCase.LOOP]: NodeType.Loop,
     [avs_pb.TaskNode.TaskTypeCase.CUSTOM_CODE]: NodeType.CustomCode,
+    [avs_pb.TaskNode.TaskTypeCase.BALANCE]: NodeType.Balance,
     [avs_pb.TaskNode.TaskTypeCase.TASK_TYPE_NOT_SET]: NodeType.Unspecified,
   };
 
