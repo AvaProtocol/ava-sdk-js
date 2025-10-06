@@ -306,7 +306,7 @@ describe("Exported Workflow Consistency Tests", () => {
       // The backend should preserve the Lang enum string value
       const expectedTriggerConfig = {
         ...manualTriggerProps.data,
-        lang: Lang.JSON,
+        lang: "LANG_JSON", // Backend returns protobuf enum string name
       };
       expect(triggerStep!.config).toEqual(expectedTriggerConfig);
       expect(triggerStep!.output).toEqual(testData);
