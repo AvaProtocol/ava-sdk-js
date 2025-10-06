@@ -161,6 +161,8 @@ export function convertProtobufNodeTypeToSdk(protobufType: string): string {
       return NodeType.Filter; // "filter"
     case "NODE_TYPE_LOOP":
       return NodeType.Loop; // "loop"
+    case "NODE_TYPE_BALANCE":
+      return NodeType.Balance; // "balance"
     case "NODE_TYPE_UNSPECIFIED":
       return NodeType.Unspecified; // "unspecified"
     default:

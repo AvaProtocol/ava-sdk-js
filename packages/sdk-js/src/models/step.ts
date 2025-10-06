@@ -167,6 +167,10 @@ class Step implements StepProps {
         return typeof step.getLoop === "function"
           ? step.getLoop()
           : (step as any).loop;
+      case avs_pb.Execution.Step.OutputDataCase.BALANCE:
+        return typeof step.getBalance === "function"
+          ? step.getBalance()
+          : (step as any).balance;
       default:
         return null;
     }
@@ -203,6 +207,7 @@ class Step implements StepProps {
     if (stepObj.branch) return avs_pb.Execution.Step.OutputDataCase.BRANCH;
     if (stepObj.filter) return avs_pb.Execution.Step.OutputDataCase.FILTER;
     if (stepObj.loop) return avs_pb.Execution.Step.OutputDataCase.LOOP;
+    if (stepObj.balance) return avs_pb.Execution.Step.OutputDataCase.BALANCE;
     return avs_pb.Execution.Step.OutputDataCase.OUTPUT_DATA_NOT_SET;
   }
 
