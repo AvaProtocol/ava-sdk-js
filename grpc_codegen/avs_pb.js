@@ -11647,7 +11647,7 @@ proto.aggregator.BalanceNode.Config.toObject = function(includeInstance, msg) {
     chain: jspb.Message.getFieldWithDefault(msg, 2, ""),
     includeSpam: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
     includeZeroBalances: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    minUsdValue: jspb.Message.getFloatingPointFieldWithDefault(msg, 5, 0.0)
+    minUsdValueCents: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -11701,8 +11701,8 @@ proto.aggregator.BalanceNode.Config.deserializeBinaryFromReader = function(msg, 
       msg.setIncludeZeroBalances(value);
       break;
     case 5:
-      var value = /** @type {number} */ (reader.readDouble());
-      msg.setMinUsdValue(value);
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setMinUsdValueCents(value);
       break;
     default:
       reader.skipField();
@@ -11761,9 +11761,9 @@ proto.aggregator.BalanceNode.Config.serializeBinaryToWriter = function(message, 
       f
     );
   }
-  f = message.getMinUsdValue();
-  if (f !== 0.0) {
-    writer.writeDouble(
+  f = message.getMinUsdValueCents();
+  if (f !== 0) {
+    writer.writeInt64(
       5,
       f
     );
@@ -11844,11 +11844,11 @@ proto.aggregator.BalanceNode.Config.prototype.setIncludeZeroBalances = function(
 
 
 /**
- * optional double min_usd_value = 5;
+ * optional int64 min_usd_value_cents = 5;
  * @return {number}
  */
-proto.aggregator.BalanceNode.Config.prototype.getMinUsdValue = function() {
-  return /** @type {number} */ (jspb.Message.getFloatingPointFieldWithDefault(this, 5, 0.0));
+proto.aggregator.BalanceNode.Config.prototype.getMinUsdValueCents = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
 };
 
 
@@ -11856,8 +11856,8 @@ proto.aggregator.BalanceNode.Config.prototype.getMinUsdValue = function() {
  * @param {number} value
  * @return {!proto.aggregator.BalanceNode.Config} returns this
  */
-proto.aggregator.BalanceNode.Config.prototype.setMinUsdValue = function(value) {
-  return jspb.Message.setProto3FloatField(this, 5, value);
+proto.aggregator.BalanceNode.Config.prototype.setMinUsdValueCents = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 

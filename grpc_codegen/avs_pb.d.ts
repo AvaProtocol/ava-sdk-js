@@ -1310,8 +1310,8 @@ export namespace BalanceNode {
         setIncludeSpam(value: boolean): Config;
         getIncludeZeroBalances(): boolean;
         setIncludeZeroBalances(value: boolean): Config;
-        getMinUsdValue(): number;
-        setMinUsdValue(value: number): Config;
+        getMinUsdValueCents(): number;
+        setMinUsdValueCents(value: number): Config;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -1329,7 +1329,7 @@ export namespace BalanceNode {
             chain: string,
             includeSpam: boolean,
             includeZeroBalances: boolean,
-            minUsdValue: number,
+            minUsdValueCents: number,
         }
     }
 
