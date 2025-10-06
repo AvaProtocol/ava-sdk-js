@@ -152,7 +152,7 @@ describe("Exported Workflow Consistency Tests", () => {
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
-          lang: 0, // JavaScript
+          lang: Lang.JavaScript,
           source: "return manualTrigger.data;",
         },
         inputVariables: {
@@ -303,10 +303,10 @@ describe("Exported Workflow Consistency Tests", () => {
       );
       expect(triggerStep!.success).toBeTruthy();
       expect(triggerStep!.config).toBeDefined();
-      // The backend converts Lang enum to its numeric value (Lang.JSON = 2)
+      // The backend should preserve the Lang enum string value
       const expectedTriggerConfig = {
         ...manualTriggerProps.data,
-        lang: 2, // Lang.JSON enum value
+        lang: Lang.JSON,
       };
       expect(triggerStep!.config).toEqual(expectedTriggerConfig);
       expect(triggerStep!.output).toEqual(testData);
