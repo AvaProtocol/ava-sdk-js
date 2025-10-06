@@ -2,7 +2,7 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {NodeType, TriggerType, ExecutionStatus} from "@avaprotocol/types";
+import {NodeType, TriggerType, ExecutionStatus, Lang} from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,

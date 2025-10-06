@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, ExecutionStatus } from "@avaprotocol/types";
+import { TriggerType, NodeType, ExecutionStatus, Lang } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,

@@ -6,6 +6,7 @@ import {
   NodeType,
   TriggerType,
   CustomCodeNodeProps,
+  Lang,
 } from "@avaprotocol/types";
 import {
   getAddress,

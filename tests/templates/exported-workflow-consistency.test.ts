@@ -5,7 +5,8 @@ import {TriggerType,
   ExecutionMode,
   ManualTriggerDataType,
   LoopNodeData,
-  ExecutionStatus
+  ExecutionStatus,
+  Lang
 } from "@avaprotocol/types";
 import { TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import _ from "lodash";
@@ -61,11 +62,10 @@ describe("Exported Workflow Consistency Tests", () => {
       const result = await client.runTrigger({
         triggerType: TriggerType.Manual,
         triggerConfig: {
-          data: {
-            data: testData,
-            headers: { headerKey: "headerValue" },
-            pathParams: { pathKey: "pathValue" },
-          },
+          data: testData,
+          headers: { headerKey: "headerValue" },
+          pathParams: { pathKey: "pathValue" },
+          lang: Lang.JSON,
         },
       });
 
@@ -74,12 +74,9 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(true);
-      expect(result.data).toEqual({
-        data: testData,
-        headers: { headerKey: "headerValue" },
-        pathParams: { pathKey: "pathValue" },
-      });
+      expect(result.success).toBe(true);
+      // runTrigger returns the data field directly, not wrapped in an object
+      expect(result.data).toEqual(testData);
     });
 
     test("should test LoopNode with CustomCode runner", async () => {
