@@ -36,7 +36,8 @@ class BalanceNode extends Node {
     }
     
     if (configData.minUsdValue !== undefined) {
-      config.setMinUsdValue(configData.minUsdValue);
+      // Convert dollars to cents for protobuf (validation happens on backend)
+      config.setMinUsdValueCents(Math.round(configData.minUsdValue * 100));
     }
 
     node.setConfig(config);
@@ -56,7 +57,7 @@ class BalanceNode extends Node {
       chain: protobufData.chain,
       includeSpam: protobufData.includeSpam,
       includeZeroBalances: protobufData.includeZeroBalances,
-      minUsdValue: protobufData.minUsdValue,
+      minUsdValue: protobufData.minUsdValueCents / 100,
     };
 
     return new BalanceNode({

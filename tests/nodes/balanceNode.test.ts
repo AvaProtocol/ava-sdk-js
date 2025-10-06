@@ -688,6 +688,38 @@ describeIfSepolia("BalanceNode Tests", () => {
       // The backend should handle invalid chains and return an error
       expect(typeof result.success).toBe("boolean");
     });
+
+    test("should reject negative minUsdValue from backend", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      const params = {
+        nodeType: NodeType.Balance,
+        nodeConfig: {
+          address: TEST_ADDRESSES.vitalik,
+          chain: "ethereum",
+          minUsdValue: -1.0, // Negative value - backend should reject
+        },
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      };
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with negative minUsdValue ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with negative minUsdValue ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(result).toBeDefined();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("minUsdValue must be non-negative");
+    });
   });
 
   describe("Protobuf Serialization Tests", () => {
@@ -718,7 +750,8 @@ describeIfSepolia("BalanceNode Tests", () => {
       expect(config!.getChain()).toBe("sepolia");
       expect(config!.getIncludeSpam()).toBe(false);
       expect(config!.getIncludeZeroBalances()).toBe(false);
-      expect(config!.getMinUsdValue()).toBe(1.0);
+      // minUsdValue of 1.0 dollars = 100 cents
+      expect(config!.getMinUsdValueCents()).toBe(100);
     });
   });
 });
