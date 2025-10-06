@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.9.0
+
+### Minor Changes
+
+- bc5b6f6: Added BalanceNode and lang to ManualTrigger
+
+### Patch Changes
+
+- Updated dependencies [bc5b6f6]
+  - @avaprotocol/types@2.7.0
+
 ## 2.8.1
 
 ### Patch Changes
