@@ -581,12 +581,12 @@ describe("BlockTrigger Tests", () => {
         // Test simulated step config
         expect(simulatedStep!.config).toBeDefined();
         expect(simulatedStep!.config).toHaveProperty("interval");
-        expect((simulatedStep!.config as any).interval).toBe("10"); // Should match the trigger interval
+        expect((simulatedStep!.config as any).interval).toBe(10); // Should match the trigger interval
 
         // Test executed step config
         expect(executedStep!.config).toBeDefined();
         expect(executedStep!.config).toHaveProperty("interval");
-        expect((executedStep!.config as any).interval).toBe("10"); // Should match the deployed trigger interval (same as simulation)
+        expect((executedStep!.config as any).interval).toBe(10); // Should match the deployed trigger interval (same as simulation)
 
         // Test step metadata
         expect(simulatedStep!.type).toBe("blockTrigger");
