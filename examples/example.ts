@@ -10,7 +10,7 @@
  */
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType } from "@avaprotocol/types";
+import { NodeType, TriggerType, Lang } from "@avaprotocol/types";
 
 import _ from "lodash";
 import { ethers } from "ethers";
