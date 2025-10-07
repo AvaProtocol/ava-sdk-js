@@ -26,18 +26,25 @@ class BalanceNode extends Node {
 
     config.setAddress(configData.address);
     config.setChain(configData.chain);
-    
+
     if (configData.includeSpam !== undefined) {
       config.setIncludeSpam(configData.includeSpam);
     }
-    
+
     if (configData.includeZeroBalances !== undefined) {
       config.setIncludeZeroBalances(configData.includeZeroBalances);
     }
-    
+
     if (configData.minUsdValue !== undefined) {
       // Convert dollars to cents for protobuf (validation happens on backend)
       config.setMinUsdValueCents(Math.round(configData.minUsdValue * 100));
+    }
+
+    if (
+      configData.tokenAddresses !== undefined &&
+      configData.tokenAddresses.length > 0
+    ) {
+      config.setTokenAddressesList(configData.tokenAddresses);
     }
 
     node.setConfig(config);
@@ -58,6 +65,7 @@ class BalanceNode extends Node {
       includeSpam: protobufData.includeSpam,
       includeZeroBalances: protobufData.includeZeroBalances,
       minUsdValue: protobufData.minUsdValueCents / 100,
+      tokenAddresses: protobufData.tokenAddressesList,
     };
 
     return new BalanceNode({
@@ -73,9 +81,7 @@ class BalanceNode extends Node {
     request.setId(this.id);
     request.setName(this.name);
 
-    const node = BalanceNode.createProtobufNode(
-      this.data as BalanceNodeData
-    );
+    const node = BalanceNode.createProtobufNode(this.data as BalanceNodeData);
 
     request.setBalance(node);
 
@@ -92,9 +98,9 @@ class BalanceNode extends Node {
     const dataValue = balanceOutput.getData();
     const balanceData = dataValue ? convertProtobufValueToJs(dataValue) : [];
 
-    return { data: balanceData };
+    // Return the array directly without wrapping
+    return balanceData;
   }
 }
 
 export default BalanceNode;
-

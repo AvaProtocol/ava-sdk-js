@@ -1312,6 +1312,10 @@ export namespace BalanceNode {
         setIncludeZeroBalances(value: boolean): Config;
         getMinUsdValueCents(): number;
         setMinUsdValueCents(value: number): Config;
+        clearTokenAddressesList(): void;
+        getTokenAddressesList(): Array<string>;
+        setTokenAddressesList(value: Array<string>): Config;
+        addTokenAddresses(value: string, index?: number): string;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -1330,6 +1334,7 @@ export namespace BalanceNode {
             includeSpam: boolean,
             includeZeroBalances: boolean,
             minUsdValueCents: number,
+            tokenAddressesList: Array<string>,
         }
     }
 
