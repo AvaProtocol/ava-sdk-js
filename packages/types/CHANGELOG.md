@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.7.1
+
+### Patch Changes
+
+- 4aeb505: Added token_addresses to BalanceNode
+
 ## 2.7.0
 
 ### Minor Changes
