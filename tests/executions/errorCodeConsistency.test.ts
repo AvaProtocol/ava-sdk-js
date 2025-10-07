@@ -8,12 +8,18 @@ import {
   getNextId,
   SaltGlobal,
   SALT_BUCKET_SIZE,
+  getCurrentChain,
+  getChainNameFromId,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
 const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+
+// Get current chain information
+const currentChain = getCurrentChain();
+const currentChainName = getChainNameFromId(currentChain.chainId);
 
 describe("ErrorCode Consistency", () => {
   let eoaAddress: string;
@@ -51,7 +57,7 @@ describe("ErrorCode Consistency", () => {
         settings: {
           runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
           chainId: parseInt(chainId),
-          chain: "Sepolia",
+          chain: currentChainName,
         },
       };
 
@@ -111,7 +117,7 @@ describe("ErrorCode Consistency", () => {
           settings: {
             runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
             chainId: parseInt(chainId),
-            chain: "Sepolia",
+            chain: currentChainName,
           },
         },
       });
@@ -124,7 +130,7 @@ describe("ErrorCode Consistency", () => {
           settings: {
             runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
             chainId: parseInt(chainId),
-            chain: "Sepolia",
+            chain: currentChainName,
           },
         },
       });
@@ -198,7 +204,7 @@ describe("ErrorCode Consistency", () => {
           settings: {
             runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
             chainId: parseInt(chainId),
-            chain: "Sepolia",
+            chain: currentChainName,
           },
         },
       });
