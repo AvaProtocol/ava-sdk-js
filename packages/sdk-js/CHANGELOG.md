@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.9.1
+
+### Patch Changes
+
+- 4aeb505: Added token_addresses to BalanceNode
+- Updated dependencies [4aeb505]
+  - @avaprotocol/types@2.7.1
+
 ## 2.9.0
 
 ### Minor Changes
