@@ -52,6 +52,7 @@ export interface BalanceNodeData {
   includeSpam?: boolean;
   includeZeroBalances?: boolean;
   minUsdValue?: number;
+  tokenAddresses?: string[];
 }
 
 type LoopRunnerConfig =

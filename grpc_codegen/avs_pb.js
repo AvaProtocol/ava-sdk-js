@@ -1154,7 +1154,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.aggregator.BalanceNode.Config = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.aggregator.BalanceNode.Config.repeatedFields_, null);
 };
 goog.inherits(proto.aggregator.BalanceNode.Config, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -11612,6 +11612,13 @@ proto.aggregator.BalanceNode.serializeBinaryToWriter = function(message, writer)
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.aggregator.BalanceNode.Config.repeatedFields_ = [6];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -11647,7 +11654,8 @@ proto.aggregator.BalanceNode.Config.toObject = function(includeInstance, msg) {
     chain: jspb.Message.getFieldWithDefault(msg, 2, ""),
     includeSpam: jspb.Message.getBooleanFieldWithDefault(msg, 3, false),
     includeZeroBalances: jspb.Message.getBooleanFieldWithDefault(msg, 4, false),
-    minUsdValueCents: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    minUsdValueCents: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    tokenAddressesList: (f = jspb.Message.getRepeatedField(msg, 6)) == null ? undefined : f
   };
 
   if (includeInstance) {
@@ -11703,6 +11711,10 @@ proto.aggregator.BalanceNode.Config.deserializeBinaryFromReader = function(msg, 
     case 5:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setMinUsdValueCents(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.addTokenAddresses(value);
       break;
     default:
       reader.skipField();
@@ -11765,6 +11777,13 @@ proto.aggregator.BalanceNode.Config.serializeBinaryToWriter = function(message, 
   if (f !== 0) {
     writer.writeInt64(
       5,
+      f
+    );
+  }
+  f = message.getTokenAddressesList();
+  if (f.length > 0) {
+    writer.writeRepeatedString(
+      6,
       f
     );
   }
@@ -11858,6 +11877,43 @@ proto.aggregator.BalanceNode.Config.prototype.getMinUsdValueCents = function() {
  */
 proto.aggregator.BalanceNode.Config.prototype.setMinUsdValueCents = function(value) {
   return jspb.Message.setProto3IntField(this, 5, value);
+};
+
+
+/**
+ * repeated string token_addresses = 6;
+ * @return {!Array<string>}
+ */
+proto.aggregator.BalanceNode.Config.prototype.getTokenAddressesList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 6));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.aggregator.BalanceNode.Config} returns this
+ */
+proto.aggregator.BalanceNode.Config.prototype.setTokenAddressesList = function(value) {
+  return jspb.Message.setField(this, 6, value || []);
+};
+
+
+/**
+ * @param {string} value
+ * @param {number=} opt_index
+ * @return {!proto.aggregator.BalanceNode.Config} returns this
+ */
+proto.aggregator.BalanceNode.Config.prototype.addTokenAddresses = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 6, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.aggregator.BalanceNode.Config} returns this
+ */
+proto.aggregator.BalanceNode.Config.prototype.clearTokenAddressesList = function() {
+  return this.setTokenAddressesList([]);
 };
 
 

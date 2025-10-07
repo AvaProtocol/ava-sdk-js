@@ -7,27 +7,6 @@
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz#63430d04bd8c5e74f8d7d049338f1cd9d4f02069"
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
-"@avaprotocol/sdk-js@^2.3.13-dev.1":
-  version "2.7.4"
-  resolved "https://registry.yarnpkg.com/@avaprotocol/sdk-js/-/sdk-js-2.7.4.tgz#ca969ab5aa82ff06d5716b85417886783471be70"
-  integrity sha512-Nr8mrcQXFJlmKNEOFaVkoVTamM3ixXB/dudj/qxXMH0ym6i1SwOCTsqjibzvZ/IOjbIjOH7B8GznS9y6fnhSgw==
-  dependencies:
-    "@avaprotocol/types" "^2.5.4"
-    "@grpc/grpc-js" "^1.11.3"
-    "@grpc/proto-loader" "^0.7.13"
-    dotenv "^16.4.5"
-    ethers "^6.13.2"
-    google-protobuf "3.19.4"
-    id128 "^1.6.6"
-    lodash "^4.17.21"
-
-"@avaprotocol/types@^2.2.10", "@avaprotocol/types@^2.5.4":
-  version "2.5.4"
-  resolved "https://registry.yarnpkg.com/@avaprotocol/types/-/types-2.5.4.tgz#9859eca9167d89e8b4a050cbfc4aa85099a20796"
-  integrity sha512-zPqHBC2TLQPHdI2O5zvpjzOMLfQL47uvJkcTTDPocIGiI10G3dJkN9HnG4ZyWcAeCFd9MLLCsHrnQbNM56T2ZA==
-  dependencies:
-    typescript "^5.4.2"
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.27.1":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.27.1.tgz#200f715e66d52a23b221a9435534a91cc13ad5be"
