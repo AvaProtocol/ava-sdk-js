@@ -1,12 +1,13 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import util from "util";
-import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import {
-  NodeType,
-  TriggerType,
-  ExecutionStatus,
-} from "@avaprotocol/types";
+  Client,
+  TriggerFactory,
+  NodeFactory,
+  BalanceNode,
+} from "@avaprotocol/sdk-js";
+import { NodeType, TriggerType, ExecutionStatus } from "@avaprotocol/types";
 import {
   getAddress,
   generateSignature,
@@ -18,9 +19,18 @@ import {
   SALT_BUCKET_SIZE,
   describeIfSepolia,
   getSettings,
+  getCurrentChain,
+  getChainNameFromId,
 } from "../utils/utils";
-import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
+import { defaultTriggerId, createFromTemplate } from "../utils/templates";
+
+// Get token constants for the current environment
+const { tokens } = getConfig();
+
+// Get current chain information
+const currentChain = getCurrentChain();
+const currentChainName = getChainNameFromId(currentChain.chainId);
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -69,7 +79,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         nodeType: NodeType.Balance,
         nodeConfig: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
         },
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -90,27 +100,25 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-
-      // The result should be an object with a data field containing array of tokens
       expect(typeof result.data).toBe("object");
       expect(result.data).not.toBeNull();
       expect(result.data).toHaveProperty("data");
       expect(Array.isArray(result.data.data)).toBe(true);
 
       // Each token should have the expected structure
-      if (result.data.data.length > 0) {
-        const token = result.data.data[0];
-        expect(token).toHaveProperty("symbol");
-        expect(token).toHaveProperty("name");
-        expect(token).toHaveProperty("balance");
-        expect(token).toHaveProperty("balanceFormatted");
-        expect(token).toHaveProperty("decimals");
-        
-        // Native tokens should not have tokenAddress
-        // ERC20 tokens should have tokenAddress
-        if (token.symbol !== "ETH") {
-          expect(token).toHaveProperty("tokenAddress");
-        }
+      // We expect at least some tokens for Vitalik's address
+      expect(result.data.data.length).toBeGreaterThan(0);
+      const token = result.data.data[0];
+      expect(token).toHaveProperty("symbol");
+      expect(token).toHaveProperty("name");
+      expect(token).toHaveProperty("balance");
+      expect(token).toHaveProperty("balanceFormatted");
+      expect(token).toHaveProperty("decimals");
+
+      // Native tokens should not have tokenAddress
+      // ERC20 tokens should have tokenAddress
+      if (token.symbol !== "ETH") {
+        expect(token).toHaveProperty("tokenAddress");
       }
     });
 
@@ -121,7 +129,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         nodeType: NodeType.Balance,
         nodeConfig: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
           includeSpam: false,
           includeZeroBalances: false,
         },
@@ -144,15 +152,14 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.data).toHaveProperty("data");
-      expect(Array.isArray(result.data.data)).toBe(true);
+      expect(Array.isArray(result.data)).toBe(true);
 
       // Verify that no zero balances are included
-      if (result.data.data.length > 0) {
-        result.data.data.forEach((token: any) => {
-          expect(parseFloat(token.balanceFormatted)).toBeGreaterThan(0);
-        });
-      }
+      // We expect at least some non-zero balance tokens for Vitalik's address
+      expect(result.data.length).toBeGreaterThan(0);
+      result.data.forEach((token: any) => {
+        expect(parseFloat(token.balanceFormatted)).toBeGreaterThan(0);
+      });
     });
 
     test("should retrieve balance with minimum USD value filter", async () => {
@@ -162,7 +169,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         nodeType: NodeType.Balance,
         nodeConfig: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
           minUsdValue: 1.0, // Only include tokens worth at least $1
         },
         inputVariables: {
@@ -184,23 +191,23 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.data).toHaveProperty("data");
-      expect(Array.isArray(result.data.data)).toBe(true);
+      expect(Array.isArray(result.data)).toBe(true);
 
       // Verify that all tokens meet the minimum USD value requirement
-      if (result.data.data.length > 0) {
-        result.data.data.forEach((token: any) => {
-          if (token.usdValue) {
-            expect(parseFloat(token.usdValue)).toBeGreaterThanOrEqual(1.0);
-          }
-        });
-      }
+      // We expect at least some tokens with USD value >= $1.00 for Vitalik's address
+      expect(result.data.length).toBeGreaterThan(0);
+      result.data.forEach((token: any) => {
+        if (token.usdValue) {
+          expect(parseFloat(token.usdValue)).toBeGreaterThanOrEqual(1.0);
+        }
+      });
     });
 
-    test("should support different chain identifiers (ethereum, eth, 1)", async () => {
+    test("should support different chain identifiers (name, short name, id)", async () => {
       const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
 
-      const chains = ["ethereum", "eth", "1"];
+      // Test different formats for the current chain
+      const chains = [currentChainName, currentChain.chainName.toLowerCase(), currentChain.chainId.toString()];
 
       for (const chain of chains) {
         const params = {
@@ -228,8 +235,7 @@ describeIfSepolia("BalanceNode Tests", () => {
 
         expect(typeof result.success).toBe("boolean");
         expect(result.data).toBeDefined();
-        expect(result.data).toHaveProperty("data");
-        expect(Array.isArray(result.data.data)).toBe(true);
+        expect(Array.isArray(result.data)).toBe(true);
       }
     });
 
@@ -245,7 +251,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         inputVariables: {
           settings: getSettings(wallet.address),
           walletAddress: TEST_ADDRESSES.vitalik,
-          chainName: "sepolia",
+          chainName: currentChainName,
         },
       };
 
@@ -263,8 +269,7 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.data).toHaveProperty("data");
-      expect(Array.isArray(result.data.data)).toBe(true);
+      expect(Array.isArray(result.data)).toBe(true);
     });
   });
 
@@ -278,7 +283,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         type: NodeType.Balance,
         data: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
           includeSpam: false,
           includeZeroBalances: false,
         },
@@ -315,14 +320,14 @@ describeIfSepolia("BalanceNode Tests", () => {
       expect(Array.isArray(output)).toBe(true);
 
       // Each token should have the expected structure
-      if (output.length > 0) {
-        const token = output[0];
-        expect(token).toHaveProperty("symbol");
-        expect(token).toHaveProperty("name");
-        expect(token).toHaveProperty("balance");
-        expect(token).toHaveProperty("balanceFormatted");
-        expect(token).toHaveProperty("decimals");
-      }
+      // We expect at least some tokens for Vitalik's address
+      expect(output.length).toBeGreaterThan(0);
+      const token = output[0];
+      expect(token).toHaveProperty("symbol");
+      expect(token).toHaveProperty("name");
+      expect(token).toHaveProperty("balance");
+      expect(token).toHaveProperty("balanceFormatted");
+      expect(token).toHaveProperty("decimals");
     });
 
     test("should simulate workflow with balance node using BlockTrigger", async () => {
@@ -337,7 +342,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         type: NodeType.Balance,
         data: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
         },
       });
 
@@ -383,14 +388,12 @@ describeIfSepolia("BalanceNode Tests", () => {
           type: NodeType.Balance,
           data: {
             address: TEST_ADDRESSES.vitalik,
-            chain: "sepolia",
+            chain: currentChainName,
             includeZeroBalances: false,
           },
         });
 
-        const workflowProps = createFromTemplate(wallet.address, [
-          balanceNode,
-        ]);
+        const workflowProps = createFromTemplate(wallet.address, [balanceNode]);
 
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
@@ -456,13 +459,13 @@ describeIfSepolia("BalanceNode Tests", () => {
         expect(Array.isArray(output)).toBe(true);
 
         // Verify structure of the output
-        if (output.length > 0) {
-          const token = output[0];
-          expect(token).toHaveProperty("symbol");
-          expect(token).toHaveProperty("name");
-          expect(token).toHaveProperty("balance");
-          expect(token).toHaveProperty("balanceFormatted");
-        }
+        // We expect at least some tokens for Vitalik's address
+        expect(output.length).toBeGreaterThan(0);
+        const token = output[0];
+        expect(token).toHaveProperty("symbol");
+        expect(token).toHaveProperty("name");
+        expect(token).toHaveProperty("balance");
+        expect(token).toHaveProperty("balanceFormatted");
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -482,7 +485,7 @@ describeIfSepolia("BalanceNode Tests", () => {
       try {
         const balanceConfig = {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
           includeZeroBalances: false,
         };
 
@@ -521,9 +524,7 @@ describeIfSepolia("BalanceNode Tests", () => {
           data: balanceConfig,
         });
 
-        const workflowProps = createFromTemplate(wallet.address, [
-          balanceNode,
-        ]);
+        const workflowProps = createFromTemplate(wallet.address, [balanceNode]);
 
         console.log(
           "🚀 ~ simulateWorkflow consistency test ~ workflowProps:",
@@ -592,31 +593,33 @@ describeIfSepolia("BalanceNode Tests", () => {
         expect(executedStep!.success).toBeTruthy();
 
         // Verify consistent structure
-        const directOutput = directResponse.data; // runNodeWithInputs returns { data: [...] }
+        const directOutput = directResponse.data; // runNodeWithInputs now returns [...] directly
         const simulatedOutput = simulatedStep?.output as any; // simulateWorkflow returns [...]
         const executedOutput = executedStep?.output as any; // deployed workflow returns [...]
 
         // Check that all outputs are arrays
-        expect(directOutput).toHaveProperty("data");
-        expect(Array.isArray(directOutput.data)).toBe(true);
+        expect(Array.isArray(directOutput)).toBe(true);
         expect(Array.isArray(simulatedOutput)).toBe(true);
         expect(Array.isArray(executedOutput)).toBe(true);
 
         // Check that all arrays have similar structure
-        if (directOutput.data.length > 0 && simulatedOutput.length > 0 && executedOutput.length > 0) {
-          const directToken = directOutput.data[0];
-          const simulatedToken = simulatedOutput[0];
-          const executedToken = executedOutput[0];
+        // We expect at least some tokens to be returned for Vitalik's address
+        expect(directOutput.length).toBeGreaterThan(0);
+        expect(simulatedOutput.length).toBeGreaterThan(0);
+        expect(executedOutput.length).toBeGreaterThan(0);
 
-          // All should have the same keys
-          const directKeys = Object.keys(directToken).sort();
-          const simulatedKeys = Object.keys(simulatedToken).sort();
-          const executedKeys = Object.keys(executedToken).sort();
+        const directToken = directOutput[0];
+        const simulatedToken = simulatedOutput[0];
+        const executedToken = executedOutput[0];
 
-          // The keys should be consistent across all three methods
-          expect(simulatedKeys).toEqual(executedKeys);
-          expect(directKeys).toEqual(simulatedKeys);
-        }
+        // All should have the same keys
+        const directKeys = Object.keys(directToken).sort();
+        const simulatedKeys = Object.keys(simulatedToken).sort();
+        const executedKeys = Object.keys(executedToken).sort();
+
+        // The keys should be consistent across all three methods
+        expect(simulatedKeys).toEqual(executedKeys);
+        expect(directKeys).toEqual(simulatedKeys);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -634,7 +637,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         nodeType: NodeType.Balance,
         nodeConfig: {
           address: "invalid-address",
-          chain: "sepolia",
+          chain: currentChainName,
         },
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -696,7 +699,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         nodeType: NodeType.Balance,
         nodeConfig: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "ethereum",
+          chain: currentChainName,
           minUsdValue: -1.0, // Negative value - backend should reject
         },
         inputVariables: {
@@ -730,7 +733,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         type: NodeType.Balance,
         data: {
           address: TEST_ADDRESSES.vitalik,
-          chain: "sepolia",
+          chain: currentChainName,
           includeSpam: false,
           includeZeroBalances: false,
           minUsdValue: 1.0,
@@ -747,12 +750,91 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       // Check configuration fields
       expect(config!.getAddress()).toBe(TEST_ADDRESSES.vitalik);
-      expect(config!.getChain()).toBe("sepolia");
+      expect(config!.getChain()).toBe(currentChainName);
       expect(config!.getIncludeSpam()).toBe(false);
       expect(config!.getIncludeZeroBalances()).toBe(false);
       // minUsdValue of 1.0 dollars = 100 cents
       expect(config!.getMinUsdValueCents()).toBe(100);
     });
+
+    test("should properly serialize tokenAddresses in protobuf", () => {
+      const balanceNode = BalanceNode.createProtobufNode({
+        address: "0x1234567890123456789012345678901234567890",
+        chain: currentChainName,
+        includeSpam: false,
+        includeZeroBalances: false,
+        minUsdValue: 1.0,
+        tokenAddresses: [
+          tokens.USDC.address,
+          tokens.LINK.address,
+        ],
+      });
+
+      const config = balanceNode.getConfig();
+      expect(config).toBeDefined();
+      expect(config!.getAddress()).toBe(
+        "0x1234567890123456789012345678901234567890"
+      );
+      expect(config!.getChain()).toBe(currentChainName);
+      expect(config!.getIncludeSpam()).toBe(false);
+      expect(config!.getIncludeZeroBalances()).toBe(false);
+      expect(config!.getMinUsdValueCents()).toBe(100);
+      expect(config!.getTokenAddressesList()).toEqual([
+        tokens.USDC.address,
+        tokens.LINK.address,
+      ]);
+    });
+
+    test("should support tokenAddresses parameter for specific token filtering", async () => {
+      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+
+      // Test with specific token addresses (USDC and LINK on current chain)
+      const params = {
+        nodeType: NodeType.Balance,
+        nodeConfig: {
+          address: TEST_ADDRESSES.vitalik,
+          chain: currentChainName,
+          tokenAddresses: [
+            tokens.USDC.address, // USDC on current chain
+            tokens.LINK.address, // LINK on current chain
+          ],
+        },
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      };
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with tokenAddresses ~ params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "🚀 ~ runNodeWithInputs with tokenAddresses ~ result:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(typeof result.success).toBe("boolean");
+      if (result.success) {
+        expect(result.data).toBeDefined();
+        expect(Array.isArray(result.data)).toBe(true);
+
+        // Should only return tokens that match the specified addresses
+        const returnedTokens = result.data as any[];
+        // We expect at least some tokens to be returned (either native ETH or the specified tokens)
+        expect(returnedTokens.length).toBeGreaterThan(0);
+        for (const token of returnedTokens) {
+          if (token.tokenAddress) {
+            // Non-native tokens should be one of our specified addresses
+            expect([
+              tokens.USDC.address,
+              tokens.LINK.address,
+            ]).toContain(token.tokenAddress);
+          }
+        }
+      }
+    });
   });
 });
-
