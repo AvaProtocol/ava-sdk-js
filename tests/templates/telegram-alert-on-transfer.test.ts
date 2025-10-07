@@ -13,9 +13,15 @@ import {
   SaltGlobal,
   SALT_BUCKET_SIZE,
   getSettings,
+  getCurrentChain,
+  getChainNameFromId,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens, avsEndpoint, walletPrivateKey, chainId } = getConfig();
+
+// Get current chain information
+const currentChain = getCurrentChain();
+const currentChainName = getChainNameFromId(currentChain.chainId);
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
@@ -333,7 +339,7 @@ return message;`,
           },
           input: {
             address: testWalletAddress,
-            chainName: "Sepolia",
+            chainName: currentChainName,
             tokens: [{ symbol: "USDC", name: "USD Coin", decimals: 6 }],
           },
         },
