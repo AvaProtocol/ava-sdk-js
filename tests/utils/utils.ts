@@ -119,6 +119,7 @@ export const SaltGlobal = {
   Withdraw: 34,
   ExecutionIndex: 35,
   Balance: 36,
+  RunNodeWithInputs: 37,
 };
 
 // Get wallet address from private key

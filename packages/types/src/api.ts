@@ -146,6 +146,7 @@ export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
   inputVariables?: Record<string, any>;
+  isSimulated?: boolean; // Optional: If true (or unset), use simulation; if explicitly false, execute real UserOp. When unset, backend defaults to true (simulation mode).
 }
 
 /**
