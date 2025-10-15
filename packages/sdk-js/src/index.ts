@@ -1314,11 +1314,12 @@ class Client extends BaseClient {
    * @param {string} params.nodeType - The type of the node (restApi, customCode, etc.)
    * @param {Record<string, any>} params.nodeConfig - The configuration for the node
    * @param {Record<string, any>} params.inputVariables - Variables to pass to the node
+   * @param {boolean} params.isSimulated - Optional: If true (or unset), use simulation; if explicitly false, execute real UserOp
    * @param {RequestOptions} options - Request options
    * @returns {Promise<RunNodeWithInputsResponse>} - The response from running the node
    */
   async runNodeWithInputs(
-    { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
+    { nodeType, nodeConfig, inputVariables = {}, isSimulated }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
     // Reject trigger types - they should use the runTrigger method instead
@@ -1356,6 +1357,12 @@ class Client extends BaseClient {
       for (const [key, value] of Object.entries(inputVariables)) {
         inputVarsMap.set(key, convertJSValueToProtobuf(value));
       }
+    }
+
+    // Only set isSimulated if explicitly provided (optional field in protobuf)
+    // When unset, the backend defaults to true (simulation mode)
+    if (isSimulated !== undefined) {
+      request.setIsSimulated(isSimulated);
     }
 
     // Send the request directly to the server

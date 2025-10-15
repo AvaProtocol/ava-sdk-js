@@ -3335,6 +3335,11 @@ export class RunNodeWithInputsReq extends jspb.Message {
     getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
     clearInputVariablesMap(): void;
 
+    hasIsSimulated(): boolean;
+    clearIsSimulated(): void;
+    getIsSimulated(): boolean | undefined;
+    setIsSimulated(value: boolean): RunNodeWithInputsReq;
+
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): RunNodeWithInputsReq.AsObject;
     static toObject(includeInstance: boolean, msg: RunNodeWithInputsReq): RunNodeWithInputsReq.AsObject;
@@ -3352,6 +3357,7 @@ export namespace RunNodeWithInputsReq {
         nodeConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
 
         inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+        isSimulated?: boolean,
     }
 }
 
