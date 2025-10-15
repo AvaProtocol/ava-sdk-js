@@ -1,6 +1,15 @@
-# Publish Scripts
+# Scripts Directory
 
-This directory contains automated scripts to simplify the package publishing process for the ava-sdk-js monorepo.
+This directory contains utility scripts for the ava-sdk-js project.
+
+## Subdirectories
+
+### `aa/` - Smart Wallet (Account Abstraction) Scripts
+Scripts for managing ERC-4337 smart wallets, including nonce management, UserOp cancellation, and balance checks. See [`aa/README.md`](aa/README.md) for details.
+
+## Publish Scripts
+
+This section contains automated scripts to simplify the package publishing process for the ava-sdk-js monorepo.
 
 ## Quick Start
 
