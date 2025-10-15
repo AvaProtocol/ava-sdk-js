@@ -87,16 +87,24 @@ async function checkAllowances(smartWalletAddress: string, rpcUrl: string) {
     console.log(`   Balance (formatted): ${balanceFormatted} USDC`);
     console.log();
 
-    // 2. Check ERC-20 allowance: USDC -> Permit2
-    console.log("2. ERC-20 Allowance (USDC -> Permit2):");
+    // 2. Check DIRECT ERC-20 allowance: USDC -> SwapRouter
+    console.log("2. ERC-20 Allowance (USDC -> SwapRouter) [DIRECT]:");
+    const allowanceToSwapRouter = await usdcContract.allowance(smartWalletAddress, SWAPROUTER_ADDRESS);
+    const swapRouterAllowanceFormatted = ethers.formatUnits(allowanceToSwapRouter, 6);
+    console.log(`   Allowance: ${allowanceToSwapRouter.toString()}`);
+    console.log(`   Allowance (formatted): ${swapRouterAllowanceFormatted} USDC`);
+    console.log();
+
+    // 3. Check ERC-20 allowance: USDC -> Permit2
+    console.log("3. ERC-20 Allowance (USDC -> Permit2) [FOR PERMIT2 FLOW]:");
     const allowanceToPermit2 = await usdcContract.allowance(smartWalletAddress, PERMIT2_ADDRESS);
     const allowanceFormatted = ethers.formatUnits(allowanceToPermit2, 6);
     console.log(`   Allowance: ${allowanceToPermit2.toString()}`);
     console.log(`   Allowance (formatted): ${allowanceFormatted} USDC`);
     console.log();
 
-    // 3. Check Permit2 allowance: Permit2 -> SwapRouter
-    console.log("3. Permit2 Allowance (Permit2 -> SwapRouter):");
+    // 4. Check Permit2 allowance: Permit2 -> SwapRouter
+    console.log("4. Permit2 Allowance (Permit2 -> SwapRouter) [FOR PERMIT2 FLOW]:");
     const permit2Allowance = await permit2Contract.allowance(
       smartWalletAddress,
       USDC_ADDRESS,
@@ -113,35 +121,35 @@ async function checkAllowances(smartWalletAddress: string, rpcUrl: string) {
     console.log(`   Nonce: ${permit2Allowance.nonce.toString()}`);
     console.log();
 
-    // 4. Analysis
+    // 5. Analysis
     console.log("=== Analysis ===");
     
+    const hasDirectAllowance = allowanceToSwapRouter > 0;
     const hasERC20Allowance = allowanceToPermit2 > 0;
     const hasPermit2Allowance = permit2Allowance.amount > 0;
     const isExpired = Number(permit2Allowance.expiration) < Math.floor(Date.now() / 1000);
     
-    console.log(`✅ ERC-20 Allowance (USDC -> Permit2): ${hasERC20Allowance ? 'SET' : 'NOT SET'}`);
-    console.log(`✅ Permit2 Allowance (Permit2 -> SwapRouter): ${hasPermit2Allowance ? 'SET' : 'NOT SET'}`);
+    console.log(`✅ DIRECT ERC-20 Allowance (USDC -> SwapRouter): ${hasDirectAllowance ? 'SET (' + swapRouterAllowanceFormatted + ' USDC)' : 'NOT SET'}`);
+    console.log(`   Permit2 Flow - ERC-20 Allowance (USDC -> Permit2): ${hasERC20Allowance ? 'SET (' + allowanceFormatted + ' USDC)' : 'NOT SET'}`);
+    console.log(`   Permit2 Flow - Permit2 Allowance: ${hasPermit2Allowance ? 'SET (' + permit2AmountFormatted + ' USDC)' : 'NOT SET'}`);
     
     if (hasPermit2Allowance) {
-      console.log(`⏰ Permit2 Allowance Expired: ${isExpired ? 'YES' : 'NO'}`);
+      console.log(`   Permit2 Expiration: ${isExpired ? '⏰ EXPIRED' : '✅ Valid until ' + expirationDate.toISOString()}`);
     }
     
     console.log();
     
-    if (!hasERC20Allowance) {
-      console.log("❌ ISSUE: ERC-20 allowance to Permit2 is not set!");
-      console.log("   Solution: Call USDC.approve(Permit2, amount)");
-    } else if (!hasPermit2Allowance) {
-      console.log("❌ ISSUE: Permit2 allowance to SwapRouter is not set!");
-      console.log("   Solution: Call Permit2.approve(token, spender, amount, deadline)");
-      console.log("   This is likely why your swap is failing with STF error!");
-    } else if (isExpired) {
-      console.log("❌ ISSUE: Permit2 allowance has expired!");
-      console.log("   Solution: Call Permit2.approve() again with new deadline");
+    if (!hasDirectAllowance) {
+      console.log("❌ ISSUE: Direct USDC -> SwapRouter allowance is NOT SET!");
+      console.log("   This is why your swap is failing with STF error!");
+      console.log("   Solution: Call USDC.approve(SwapRouter, amount)");
+      console.log("   Example: USDC.approve('0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E', '1000000')");
     } else {
-      console.log("✅ All allowances are properly set!");
-      console.log("   If swap still fails, check pool liquidity or other issues.");
+      console.log("✅ Direct allowance is SET - swap should work!");
+      console.log("   If swap still fails, check:");
+      console.log("   - Pool liquidity");
+      console.log("   - Slippage settings");
+      console.log("   - Token balances");
     }
 
     return {
