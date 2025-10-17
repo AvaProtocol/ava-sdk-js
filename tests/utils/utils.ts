@@ -276,40 +276,44 @@ export const getNextId = (): string => UlidMonotonic.generate().toCanonical();
 export const getBlockNumber = async (): Promise<number> => {
   const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
   try {
-    // Set a 5 second timeout for the connection
+    // Set a 15 second timeout for the connection (increased from 5s to handle slower RPC endpoints)
     const blockNumber = await Promise.race<number>([
       provider.getBlockNumber(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Provider connection timeout")), 5000)
+        setTimeout(() => reject(new Error("Provider connection timeout after 15s")), 15000)
       ),
     ]);
     return blockNumber;
   } catch (error: unknown) {
+    const errorMessage = (error as { message?: string })?.message || "Unknown error";
     throw new Error(
-      `Failed to get block number: ${
-        (error as { message?: string })?.message || "Unknown error"
-      }`
+      `Failed to get block number from ${config.chainEndpoint}: ${errorMessage}`
     );
+  } finally {
+    // Clean up provider connection
+    provider.destroy();
   }
 };
 
 export const getChainId = async (): Promise<number> => {
   const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
   try {
-    // Set a 5 second timeout for the connection
+    // Set a 15 second timeout for the connection (increased from 5s to handle slower RPC endpoints)
     const network = await Promise.race<ethers.Network>([
       provider.getNetwork(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Provider connection timeout")), 5000)
+        setTimeout(() => reject(new Error("Provider connection timeout after 15s")), 15000)
       ),
     ]);
     return Number(network.chainId);
   } catch (error: unknown) {
+    const errorMessage = (error as { message?: string })?.message || "Unknown error";
     throw new Error(
-      `Failed to get chain ID: ${
-        (error as { message?: string })?.message || "Unknown error"
-      }`
+      `Failed to get chain ID from ${config.chainEndpoint}: ${errorMessage}`
     );
+  } finally {
+    // Clean up provider connection
+    provider.destroy();
   }
 };
 

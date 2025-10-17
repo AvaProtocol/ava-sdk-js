@@ -835,7 +835,6 @@ describeIfSepolia("BalanceNode Tests", () => {
         expect(result.data).toBeDefined();
         expect(typeof result.data).toBe("object");
         expect(result.data).not.toBeNull();
-        expect(result.data).toHaveProperty("data");
         expect(Array.isArray(result.data)).toBe(true);
 
         // Should only return tokens that match the specified addresses
