@@ -15,7 +15,8 @@
     "start:sepolia": "ts-node example.ts -t sepolia",
     "start:base": "ts-node example.ts -t base",
     "start:base-sepolia": "ts-node example.ts -t base-sepolia",
-    "start:ethereum": "ts-node example.ts -t ethereum"
+    "start:ethereum": "ts-node example.ts -t ethereum",
+    "check-allowances": "ts-node get-unipswapv3-allowance.ts"
   },
   "dependencies": {
     "@avaprotocol/sdk-js": "file:../packages/sdk-js",
