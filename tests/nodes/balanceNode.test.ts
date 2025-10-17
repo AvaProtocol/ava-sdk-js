@@ -844,10 +844,12 @@ describeIfSepolia("BalanceNode Tests", () => {
         for (const token of returnedTokens) {
           if (token.tokenAddress) {
             // Non-native tokens should be one of our specified addresses
-            expect([
-              tokens.USDC.address,
-              tokens.LINK.address,
-            ]).toContain(token.tokenAddress);
+            // Use case-insensitive comparison since Ethereum addresses are case-insensitive
+            const expectedAddresses = [
+              tokens.USDC.address.toLowerCase(),
+              tokens.LINK.address.toLowerCase(),
+            ];
+            expect(expectedAddresses).toContain(token.tokenAddress.toLowerCase());
           }
         }
       }
