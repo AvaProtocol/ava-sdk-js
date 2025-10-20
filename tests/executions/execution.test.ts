@@ -153,7 +153,7 @@ describe("Execution Management Tests", () => {
               attempts++;
               try {
                 status = await client.getExecutionStatus(workflowId, executionId);
-                console.log(`Status poll ${attempts}/${maxAttempts} for ${executionId}: ${ExecutionStatus[status] ?? status}`);
+                console.log(`Status poll ${attempts}/${maxAttempts} for ${executionId}: ${status}`);
                 if (status !== ExecutionStatus.Pending) break;
               } catch (err) {
                 console.log(`Status poll ${attempts}/${maxAttempts} for ${executionId} failed: ${err}`);
@@ -239,7 +239,7 @@ describe("Execution Management Tests", () => {
 
           // Fetch all executions and verify indexing
           const executions = await Promise.all(
-            executionIds.map(id => client.getExecution(workflowId, id))
+            executionIds.map(id => client.getExecution(workflowId!, id))
           );
 
           const indexes = executions.map(exec => exec.index!).sort((a, b) => a - b);
@@ -333,9 +333,7 @@ describe("Execution Management Tests", () => {
           console.log(`First getExecutionStatus call returned:`, {
             rawValue: status1,
             type: typeof status1,
-            enumName: ExecutionStatus[status1],
-            expectedPending: ExecutionStatus.Pending,
-            pendingEnumName: ExecutionStatus[ExecutionStatus.Pending]
+            expectedPending: ExecutionStatus.Pending
           });
           
           expect(status1).toBeDefined();
@@ -347,8 +345,7 @@ describe("Execution Management Tests", () => {
           const status2 = await client.getExecutionStatus(workflowId, triggerResult.executionId);
           console.log(`Second getExecutionStatus call returned:`, {
             rawValue: status2,
-            type: typeof status2,
-            enumName: ExecutionStatus[status2]
+            type: typeof status2
           });
           
           expect(status2).toBe('pending');
@@ -362,8 +359,7 @@ describe("Execution Management Tests", () => {
             id: execution1.id,
             status: {
               rawValue: execution1.status,
-              type: typeof execution1.status,
-              enumName: ExecutionStatus[execution1.status]
+              type: typeof execution1.status
             },
             index: {
               rawValue: execution1.index,
@@ -382,8 +378,7 @@ describe("Execution Management Tests", () => {
           console.log(`Second getExecution call returned:`, {
             id: execution2.id,
             status: {
-              rawValue: execution2.status,
-              enumName: ExecutionStatus[execution2.status]
+              rawValue: execution2.status
             },
             index: {
               rawValue: execution2.index,
@@ -397,12 +392,12 @@ describe("Execution Management Tests", () => {
           expect(execution2.index).toBe(execution1.index); // Index should be stable
           
           console.log(`✅ Execution ID remains stable: ${triggerResult.executionId}`);
-          console.log(`✅ Status immediately available: ${ExecutionStatus[status1]} (${status1})`);
+          console.log(`✅ Status immediately available: ${status1}`);
           console.log(`✅ Index pre-assigned and stable: ${execution1.index}`);
           
           // Now wait for the execution to complete and verify stability persists
           console.log('Waiting for execution to complete...');
-          let finalStatus: string;
+          let finalStatus: string = 'pending';
           let attempts = 0;
           const maxAttempts = 30; // 30 attempts × 2 seconds = 60 seconds max
           
