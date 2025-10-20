@@ -150,7 +150,7 @@ export async function generateAuthPayloadWithApiKey(
 
     const { message } = await client.getSignatureFormat(address);
     return { message, apiKey };
-  } catch (_error) {
+  } catch {
     console.warn("GetSignatureFormat not available, using fallback format");
     const now = Date.now();
     const message = `Please sign the below text for ownership verification.
@@ -289,9 +289,6 @@ export const getBlockNumber = async (): Promise<number> => {
     throw new Error(
       `Failed to get block number from ${config.chainEndpoint}: ${errorMessage}`
     );
-  } finally {
-    // Clean up provider connection
-    provider.destroy();
   }
 };
 
@@ -311,9 +308,6 @@ export const getChainId = async (): Promise<number> => {
     throw new Error(
       `Failed to get chain ID from ${config.chainEndpoint}: ${errorMessage}`
     );
-  } finally {
-    // Clean up provider connection
-    provider.destroy();
   }
 };
 
