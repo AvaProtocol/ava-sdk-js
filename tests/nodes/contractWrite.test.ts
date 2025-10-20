@@ -1442,7 +1442,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
       console.log("🚀 Testing Real UserOp Transactions");
       console.log("Smart Wallet Address:", wallet.address);
-      console.log("EOA Address:", eoaAddress);
       console.log("Using default smart wallet (salt: 0)");
 
       // Note: Smart wallet address is dynamically generated based on EOA + salt + factory
@@ -1674,7 +1673,6 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       "🚀 Testing Real On-Chain Transaction (paymaster-sponsored, unfunded wallet)"
     );
     console.log("Smart Wallet Address:", wallet.address);
-    console.log("EOA Address:", eoaAddress);
     console.log(
       "💰 Testing simple contract call that should succeed via paymaster sponsorship..."
     );
