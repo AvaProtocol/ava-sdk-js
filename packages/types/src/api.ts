@@ -146,45 +146,46 @@ export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
   inputVariables?: Record<string, any>;
-  isSimulated?: boolean; // Optional: If true (or unset), use simulation; if explicitly false, execute real UserOp. When unset, backend defaults to true (simulation mode).
+  isSimulated?: boolean; // Optional. IMPORTANT: In protobuf/JS, when unset, getIsSimulated() returns false, making it indistinguishable from explicitly false.
+  // To distinguish "unset" (default: simulate) from "explicit false", callers MUST check presence (e.g., hasIsSimulated()) rather than value alone. When unset, backend defaults to true (simulation mode).
 }
 
 /**
  * Comprehensive type for node output data that handles all possible return types
- * 
+ *
  * This type represents the actual data returned by nodes after execution.
  * The data can be:
  * - Primitive values (string, number, boolean, null) - especially from CustomCode nodes
  * - Objects (Record<string, any>) - from REST API responses, structured data
  * - Arrays (any[]) - from Filter nodes, loop results, etc.
  * - null - for empty results (protobuf limitation: cannot be undefined)
- * 
+ *
  * Note: Due to protobuf limitations, undefined is not supported and will be converted to null.
  * This type is designed to be compatible with the existing OutputDataProps type used in workflow executions.
  */
-export type NodeOutputData = 
-  | string 
-  | number 
-  | boolean 
+export type NodeOutputData =
+  | string
+  | number
+  | boolean
   | null
   | Record<string, any>
   | any[];
 
 /**
  * Enhanced response type for triggerWorkflow that includes workflowId and optional execution fields
- * 
+ *
  * When isBlocking = false:
  * - executionId: string - ID of the execution
  * - status: ExecutionStatus - Will be "pending"
  * - workflowId: string - ID of the workflow
  * - startAt: number - Timestamp when execution started (milliseconds)
- * 
+ *
  * When isBlocking = true:
  * - All fields from non-blocking mode plus:
  * - endAt: number - Timestamp when execution ended (milliseconds)
  * - error?: string - Error message if execution failed
  * - steps: ExecutionStep[] - Array of execution steps (same as getExecution response)
- * 
+ *
  * Note: The success field was removed from TriggerTaskResp protobuf.
  * Use status field to determine execution outcome ("success", "failed", "completed", etc.)
  */
@@ -221,20 +222,20 @@ export interface ExecutionStep {
 
 /**
  * Comprehensive type for trigger output data that handles all possible return types
- * 
+ *
  * This type represents the actual data returned by triggers after execution.
  * The data can be:
  * - Primitive values (string, number, boolean, null) - from various trigger types
  * - Objects (Record<string, any>) - from structured trigger data
  * - null - for empty results (protobuf limitation: cannot be undefined)
- * 
+ *
  * Note: Due to protobuf limitations, undefined is not supported and will be converted to null.
  * This type is designed to be compatible with the existing OutputDataProps type used in workflow executions.
  */
-export type TriggerOutputData = 
-  | string 
-  | number 
-  | boolean 
+export type TriggerOutputData =
+  | string
+  | number
+  | boolean
   | null
   | Record<string, any>;
 
@@ -322,14 +323,14 @@ export interface EstimateFeesResponse {
   error?: string;
   /** Error code if estimation failed */
   errorCode?: string;
-  
+
   /** Gas fees for blockchain operations */
   gasFees?: GasFeeBreakdown;
   /** Automation/monitoring fees based on trigger type */
   automationFees?: AutomationFee;
   /** Smart wallet creation fees (if needed) */
   creationFees?: SmartWalletCreationFee;
-  
+
   /** Total fees before discounts */
   totalFees?: FeeAmount;
   /** Applied discounts */
@@ -338,7 +339,7 @@ export interface EstimateFeesResponse {
   totalDiscounts?: FeeAmount;
   /** Final total after discounts */
   finalTotal?: FeeAmount;
-  
+
   /** When the estimation was performed (milliseconds) */
   estimatedAt?: number;
   /** Chain ID where the workflow will be deployed */
@@ -347,7 +348,7 @@ export interface EstimateFeesResponse {
   priceDataSource?: string;
   /** Age of price data in seconds */
   priceDataAgeSeconds?: number;
-  
+
   /** Warnings about estimation accuracy */
   warnings?: string[];
   /** Recommendations for cost optimization */

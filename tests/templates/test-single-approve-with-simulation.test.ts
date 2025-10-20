@@ -419,19 +419,18 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       "Approve result (real execution):",
       util.inspect(approveResult, { depth: 3 })
     );
-    // Note: This might fail if the wallet doesn't have enough balance or permissions
-    // We'll check both success and failure cases
+    
+    // Test should be deterministic - assert specific execution context properties
     expect(approveResult).toBeDefined();
-    if (approveResult.success) {
-      expect(approveResult.data).toBeDefined();
-      console.log("✅ Real execution succeeded!");
-    } else {
-      console.log(
-        "⚠️ Real execution failed (expected if no balance):",
-        approveResult.error
-      );
-      expect(approveResult.error).toBeDefined();
-    }
+    expect(approveResult.executionContext).toBeDefined();
+    expect(approveResult.executionContext.isSimulated).toBe(false);
+    expect(approveResult.executionContext.provider).toBeDefined();
+    
+    // Real execution should succeed if wallet has sufficient balance and permissions
+    // If it fails, it should be due to specific, identifiable reasons
+    expect(approveResult.success).toBe(true);
+    expect(approveResult.data).toBeDefined();
+    console.log("✅ Real execution succeeded!");
   });
 
   test("runNodeWithInputs - contractWrite (approve + swap) - real execution validates approval persistence", async () => {

@@ -9,14 +9,15 @@ This script checks both ERC-20 and Permit2 allowances for Uniswap V3 swaps on Se
 yarn check-allowances 0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e
 
 # Or with different environment
-ts-node get-unipswapv3-allowance.ts 0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e
+ts-node get-uniswapv3-allowance.ts 0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e
 ```
 
 ## What it checks
 
 1. **USDC Balance** - Shows current USDC balance in the smart wallet
-2. **ERC-20 Allowance** - USDC allowance to Permit2 contract
-3. **Permit2 Allowance** - Permit2's internal allowance to SwapRouter
+2. **ERC-20 Allowance (USDC -> Permit2)** - USDC allowance to Permit2 contract
+3. **ERC-20 Allowance (USDC -> SwapRouter)** - USDC allowance directly to the SwapRouter contract
+4. **Permit2 Allowance (Permit2 -> SwapRouter)** - Permit2's internal allowance to SwapRouter
 
 ## Contract Addresses (Sepolia)
 
