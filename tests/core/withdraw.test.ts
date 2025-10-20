@@ -14,19 +14,16 @@ import {
 import {
   getAddress,
   generateSignature,
-  SaltGlobal,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
   describeIfSepolia,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
+import { ethers } from "ethers";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in this file
 
-let saltIndex = SaltGlobal.Withdraw * SALT_BUCKET_SIZE;
-
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
+const { avsEndpoint, walletPrivateKey, tokens, chainEndpoint } = getConfig();
 
 describeIfSepolia("Withdraw Funds Tests", () => {
   let client: Client;
@@ -63,6 +60,10 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       console.log("Wallet address:", wallet.address);
       console.log("EOA address:", eoaAddress);
       
+      // Get initial balances for verification
+      const provider = new ethers.JsonRpcProvider(chainEndpoint);
+      const initialRecipientBalance = await provider.getBalance(eoaAddress);
+      
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress, // Send back to EOA address
         amount: "1000000000000000", // 0.001 ETH in wei
@@ -95,6 +96,28 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       if (response.submittedAt) {
         expect(typeof response.submittedAt).toBe("number");
       }
+
+      // Wait for the on-chain transaction to be mined (or poll balance as fallback)
+      if (response.transactionHash) {
+        const receipt = await provider.waitForTransaction(response.transactionHash);
+        expect(receipt).toBeTruthy();
+      }
+
+      // Verify recipient actually received the funds (poll up to 30s as RPC balance can lag)
+      const expectedDelta = BigInt(withdrawRequest.amount);
+      let finalRecipientBalance = await provider.getBalance(eoaAddress);
+      let balanceIncrease = finalRecipientBalance - initialRecipientBalance;
+      const deadline = Date.now() + 30000; // 30s
+      while (balanceIncrease < expectedDelta && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        finalRecipientBalance = await provider.getBalance(eoaAddress);
+        balanceIncrease = finalRecipientBalance - initialRecipientBalance;
+      }
+
+      expect(balanceIncrease).toBe(expectedDelta);
+      console.log(`✅ Recipient balance increased by ${balanceIncrease} wei (expected: ${withdrawRequest.amount} wei)`);
+      
+      await provider.destroy();
 
       console.log("ETH withdrawal response:", {
         success: response.success,
@@ -417,6 +440,120 @@ describeIfSepolia("Withdraw Funds Tests", () => {
           submittedAt: response.submittedAt,
         },
       });
+    });
+  });
+
+  describe("Paymaster Reimbursement Verification", () => {
+    test("should verify paymaster receives reimbursement on successful withdrawal", async () => {
+      const wallet = await client.getWallet({ salt: "0" });
+      const paymasterAddress = "0xd856f532F7C032e6b30d76F19187F25A068D6d92";
+
+      // Get initial balances
+      const provider = new ethers.JsonRpcProvider(chainEndpoint);
+
+      const initialWalletBalance = await provider.getBalance(wallet.address);
+      const initialPaymasterBalance = await provider.getBalance(paymasterAddress);
+      const initialRecipientBalance = await provider.getBalance(eoaAddress);
+
+      console.log("\nInitial Balances:");
+      console.log(
+        `  Wallet: ${initialWalletBalance} wei (${Number(initialWalletBalance) / 1e18} ETH)`
+      );
+      console.log(
+        `  Paymaster: ${initialPaymasterBalance} wei (${Number(initialPaymasterBalance) / 1e18} ETH)`
+      );
+      console.log(
+        `  Recipient: ${initialRecipientBalance} wei (${Number(initialRecipientBalance) / 1e18} ETH)`
+      );
+
+      // Perform withdrawal
+      const withdrawalAmount = "2000000000000000"; // 0.002 ETH
+      const withdrawRequest: WithdrawFundsRequest = {
+        recipientAddress: eoaAddress,
+        amount: withdrawalAmount,
+        token: "ETH",
+        smartWalletAddress: wallet.address,
+      };
+
+      const response = await client.withdrawFunds(withdrawRequest, {
+        timeout: TimeoutPresets.SLOW,
+      });
+
+      expect(response.success).toBeTruthy();
+      expect(response.transactionHash).toBeDefined();
+
+      console.log("\nWithdrawal Transaction:", response.transactionHash);
+
+      // Wait a bit for balance updates to propagate
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Get final balances
+      const finalWalletBalance = await provider.getBalance(wallet.address);
+      const finalPaymasterBalance = await provider.getBalance(paymasterAddress);
+      const finalRecipientBalance = await provider.getBalance(eoaAddress);
+
+      console.log("\nFinal Balances:");
+      console.log(
+        `  Wallet: ${finalWalletBalance} wei (${Number(finalWalletBalance) / 1e18} ETH)`
+      );
+      console.log(
+        `  Paymaster: ${finalPaymasterBalance} wei (${Number(finalPaymasterBalance) / 1e18} ETH)`
+      );
+      console.log(
+        `  Recipient: ${finalRecipientBalance} wei (${Number(finalRecipientBalance) / 1e18} ETH)`
+      );
+
+      // Calculate changes
+      const walletChange = finalWalletBalance - initialWalletBalance;
+      const paymasterChange = finalPaymasterBalance - initialPaymasterBalance;
+      const recipientChange = finalRecipientBalance - initialRecipientBalance;
+
+      console.log("\nBalance Changes:");
+      console.log(
+        `  Wallet: ${walletChange} wei (${Number(walletChange) / 1e18} ETH)`
+      );
+      console.log(
+        `  Paymaster: ${paymasterChange} wei (${Number(paymasterChange) / 1e18} ETH)`
+      );
+      console.log(
+        `  Recipient: ${recipientChange} wei (${Number(recipientChange) / 1e18} ETH)`
+      );
+
+      // Verify reimbursement occurred
+      // Wallet should have decreased by: withdrawal amount + reimbursement amount
+      // Paymaster should have INCREASED (received reimbursement)
+      // Recipient should have increased by withdrawal amount
+
+      expect(walletChange < 0n).toBeTruthy(); // Wallet decreased (sent ETH + reimbursement)
+      expect(paymasterChange > 0n).toBeTruthy(); // Paymaster increased (received reimbursement)
+      expect(recipientChange).toBe(BigInt(withdrawalAmount)); // Recipient received exact withdrawal amount
+
+      // Verify wallet paid more than just the withdrawal (paid withdrawal + reimbursement)
+      const walletDecrease = -walletChange;
+      expect(walletDecrease > BigInt(withdrawalAmount)).toBeTruthy();
+
+      console.log("\n✅ Reimbursement Verification:");
+      console.log(`  Wallet paid: ${walletDecrease} wei (withdrawal + reimbursement)`);
+      console.log(`  Paymaster received: ${paymasterChange} wei (reimbursement)`);
+      console.log(`  Recipient received: ${recipientChange} wei (withdrawal)`);
+      console.log(
+        `  Extra paid by wallet: ${walletDecrease - BigInt(withdrawalAmount)} wei (reimbursement)`
+      );
+
+      // Verify reimbursement is approximately 0.003 ETH (with some tolerance for gas price fluctuations)
+      const expectedReimbursement = 3000000024000000n; // From logs: 0.003000 ETH
+      const tolerance = expectedReimbursement / 10n; // 10% tolerance
+
+      // Paymaster should receive approximately the expected reimbursement
+      expect(paymasterChange).toBeGreaterThan(expectedReimbursement - tolerance);
+      expect(paymasterChange).toBeLessThan(expectedReimbursement + tolerance);
+
+      console.log(
+        `  Expected reimbursement: ~${expectedReimbursement} wei (±10% tolerance)`
+      );
+      console.log(`  Actual reimbursement: ${paymasterChange} wei ✅`);
+
+      await provider.destroy();
     });
   });
 });
