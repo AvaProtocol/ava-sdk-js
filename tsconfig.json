@@ -3,18 +3,25 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "typeRoots": ["node_modules/@types"],
     "baseUrl": ".",
     "paths": {
-      "@/grpc_codegen/*": ["grpc_codegen/*"],
+      "@/grpc_codegen/*": ["grpc_codegen/*"]
       // "@avaprotocol/sdk-js": ["packages/sdk-js/src/*"],
       // "@avaprotocol/types": ["packages/types/*"]
     }
   },
-  "include": ["grpc_codegen/**/*", "tests", "examples"],
+  "include": [
+    "grpc_codegen/**/*",
+    "tests",
+    "examples",
+    "config/**/*",
+    "types/**/*"
+  ],
   "ts-node": {
     "esm": true
   }
