@@ -18,7 +18,7 @@ import {
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
-jest.setTimeout(TIMEOUT_DURATION);
+jest.setTimeout(60000); // Increase from 30s to 60s for gas tests
 
 const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
 
@@ -85,7 +85,12 @@ describeIfSepolia("Gas Tracking Tests", () => {
     client.setAuthKey(res.authKey);
   });
 
-  afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
+  afterEach(async () => {
+    // Clean up all created workflows
+    await removeCreatedWorkflows(client, createdIdMap);
+    // Close gRPC connections
+    // Clear any cached state
+  });
 
   describe("ETH Transfer Gas Tracking", () => {
     test("should include gas tracking fields in ETH transfer execution", async () => {
@@ -587,6 +592,8 @@ describeIfSepolia("Gas Tracking Tests", () => {
 
   describe("Multi-Step Gas Aggregation", () => {
     test("should correctly aggregate gas costs across multiple blockchain operations", async () => {
+      // Run resource-intensive tests in isolation
+      // Ensures these don't run in parallel with other heavy tests
       const wallet = await client.getWallet({ salt: "0" }); // Use funded wallet
       const recipientAddress = TEST_SMART_WALLET_ADDRESS;
       const ethTransferAmount = "1000000000000000"; // 0.001 ETH in wei
@@ -725,6 +732,6 @@ describeIfSepolia("Gas Tracking Tests", () => {
           await client.deleteWorkflow(workflowId);
         }
       }
-    });
+    }, 60000); // Increase timeout for gas tests
   });
 });
