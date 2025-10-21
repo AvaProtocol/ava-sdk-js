@@ -81,6 +81,10 @@ export const TEST_SMART_WALLET_ADDRESS =
 export const MOCK_FAILURE_ADDRESS =
   "0x0000000000000000000000000000000000000001"; // Mock address for failure tests
 
+// Funded smart wallet salt for integration tests
+// This wallet is pre-funded with ETH and USDC using the newest smart wallet implementation
+export const FUNDED_WALLET_SALT = "2";
+
 // Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
 export const SaltGlobal = {
   Auth: 0,
@@ -136,6 +140,19 @@ export async function generateSignature(
   const wallet = new ethers.Wallet(privateKey);
   const signature = await wallet.signMessage(message);
   return signature;
+}
+
+/**
+ * Get a smart wallet with balance (ETH and USDC) for testing transactions.
+ * Uses salt "2" which is pre-funded with the newest smart wallet implementation.
+ * 
+ * @param client - Authenticated Client instance
+ * @returns Smart wallet object with address and balance
+ */
+export async function getSmartWalletWithBalance(client: Client) {
+  const wallet = await client.getWallet({ salt: FUNDED_WALLET_SALT });
+  console.log(`Smart Wallet (salt:${FUNDED_WALLET_SALT}):`, wallet.address);
+  return wallet;
 }
 
 // Helper function to generate api key message
