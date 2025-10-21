@@ -331,11 +331,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     expect(quoteResult.data).toBeDefined();
   });
 
-  test("runNodeWithInputs - contractWrite (approve) - real execution mode", async () => {
-    console.log(
-      "Testing runNodeWithInputs with contractWrite (approve) - real execution mode..."
-    );
-
+  test("runNodeWithInputs - contractWrite Approve in real execution mode", async () => {
     // Test balance node with real execution
     const balanceResult = await client.runNodeWithInputs({
       nodeType: "balance",
@@ -394,13 +390,13 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       "Approve result (real execution):",
       util.inspect(approveResult, { depth: 3 })
     );
-    
+
     // Test should be deterministic - assert specific execution context properties
     expect(approveResult).toBeDefined();
     expect(approveResult.executionContext).toBeDefined();
     expect(approveResult.executionContext.isSimulated).toBe(false);
     expect(approveResult.executionContext.provider).toBeDefined();
-    
+
     // Real execution should succeed if wallet has sufficient balance and permissions
     // If it fails, it should be due to specific, identifiable reasons
     expect(approveResult.success).toBe(true);
@@ -408,9 +404,9 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     console.log("✅ Real execution succeeded!");
   });
 
-  test("runNodeWithInputs - contractWrite (approve + swap) - real execution validates approval persistence", async () => {
+  test("runNodeWithInputs - contractWrite real execution validates approval persistence", async () => {
     console.log(
-      "\nTesting runNodeWithInputs with contractWrite (approve + swap) - real execution validates approval persistence on Sepolia...\n"
+      "\nTesting runNodeWithInputs with contractWrite real execution validates approval persistence on Sepolia...\n"
     );
 
     // Step 0: Use authenticated user's salt:0 smart wallet address (already derived in beforeAll)
