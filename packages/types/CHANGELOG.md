@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.7.2
+
+### Patch Changes
+
+- 80aba7a: Added isSimulated parameter to runNodeWithInputs
+
 ## 2.7.1
 
 ### Patch Changes

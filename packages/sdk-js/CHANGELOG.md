@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.9.2
+
+### Patch Changes
+
+- 80aba7a: Added isSimulated parameter to runNodeWithInputs
+- Updated dependencies [80aba7a]
+  - @avaprotocol/types@2.7.2
+
 ## 2.9.1
 
 ### Patch Changes
