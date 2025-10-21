@@ -47,6 +47,7 @@ jest.setTimeout(TIMEOUT_DURATION * 4);
 let client: Client;
 let eoaAddress: string;
 let smartWalletAddress: string;
+const saltValue = "2";
 
 beforeAll(async () => {
   eoaAddress = await getAddress(walletPrivateKey);
@@ -58,7 +59,7 @@ beforeAll(async () => {
   client.setAuthKey(res.authKey);
 
   // Derive smart wallet address (salt:0) immediately after authentication
-  const wallet = await client.getWallet({ salt: "0" });
+  const wallet = await client.getWallet({ salt: saltValue });
   smartWalletAddress = wallet.address;
 });
 
@@ -410,15 +411,20 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     );
 
     // Step 0: Use authenticated user's salt:0 smart wallet address (already derived in beforeAll)
-    console.log("📍 Authenticated User (EOA):", eoaAddress);
-    console.log("📍 Smart Wallet (salt:0):", smartWalletAddress);
-    console.log("📍 Chain: Sepolia (11155111)");
-    console.log("📍 USDC:", workflowConfig.settings.uniswapv3_pool.token1.id);
     console.log(
-      "📍 SwapRouter:",
+      "Authenticated User (EOA):",
+      eoaAddress,
+      `\nSmart Wallet (salt:${saltValue}):`,
+      smartWalletAddress
+    );
+
+    console.log("Chain: Sepolia (11155111)");
+    console.log("USDC:", workflowConfig.settings.uniswapv3_pool.token1.id);
+    console.log(
+      "SwapRouter:",
       workflowConfig.settings.uniswapv3_contracts.swapRouter02
     );
-    console.log("📍 Amount: 1 USDC (1000000)\n");
+    console.log("Amount: 1 USDC (1000000)\n");
 
     // Step 1: Check initial balance
     console.log("Step 1: Checking initial balance...");
@@ -510,7 +516,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
           {
             methodName: "exactInputSingle",
             methodParams: [
-              '["{{settings.uniswapv3_pool.token1.id}}", "{{settings.uniswapv3_pool.token0.id}}", "{{settings.uniswapv3_pool.feeTier}}", "{{settings.runner}}", "{{swap_amount}}", "1", "0"]',
+              '["{{settings.uniswapv3_pool.token1.id}}", "{{settings.uniswapv3_pool.token0.id}}", "{{settings.uniswapv3_pool.feeTier}}", "{{settings.runner}}", "{{settings.amount}}", "1", "0"]',
             ],
           },
         ],
@@ -520,6 +526,8 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
         settings: {
           runner: workflowConfig.settings.runner,
           chain_id: 11155111,
+          uniswapv3_pool: workflowConfig.settings.uniswapv3_pool,
+          amount: swapAmount,
         },
       },
       isSimulated: false, // REAL EXECUTION
@@ -697,7 +705,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       "    Use REAL EXECUTION instead (see 'runNodeWithInputs - contractWrite (approve + swap) - real execution validates approval persistence').\n"
     );
 
-    console.log("📍 Smart Wallet:", smartWalletAddress);
+    console.log("Smart Wallet:", smartWalletAddress);
 
     const testSwapAmount = "10000"; // 0.01 USDC
 
