@@ -8,6 +8,7 @@ import {
   generateSignature,
   getNextId,
   TIMEOUT_DURATION,
+  getSmartWalletWithBalance,
 } from "../utils/utils";
 
 /**
@@ -47,7 +48,6 @@ jest.setTimeout(TIMEOUT_DURATION * 4);
 let client: Client;
 let eoaAddress: string;
 let smartWalletAddress: string;
-const saltValue = "2";
 
 beforeAll(async () => {
   eoaAddress = await getAddress(walletPrivateKey);
@@ -58,8 +58,8 @@ beforeAll(async () => {
   const res = await client.authWithSignature({ message, signature });
   client.setAuthKey(res.authKey);
 
-  // Derive smart wallet address (salt:0) immediately after authentication
-  const wallet = await client.getWallet({ salt: saltValue });
+  // Derive smart wallet address using centralized funded wallet (newest implementation)
+  const wallet = await getSmartWalletWithBalance(client);
   smartWalletAddress = wallet.address;
 });
 
@@ -410,11 +410,11 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       "\nTesting runNodeWithInputs with contractWrite real execution validates approval persistence on Sepolia...\n"
     );
 
-    // Step 0: Use authenticated user's salt:0 smart wallet address (already derived in beforeAll)
+    // Step 0: Use authenticated user's funded smart wallet address (already derived in beforeAll)
     console.log(
       "Authenticated User (EOA):",
       eoaAddress,
-      `\nSmart Wallet (salt:${saltValue}):`,
+      "\nSmart Wallet:",
       smartWalletAddress
     );
 
