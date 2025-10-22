@@ -1,40 +1,28 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import {TriggerType, NodeType, ExecutionStatus, Lang} from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  TriggerType,
+  NodeType,
+  ExecutionStatus,
+  Lang,
+} from "@avaprotocol/types";
+import {
   TIMEOUT_DURATION,
   getNextId,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 describe("SimulateWorkflow", () => {
-  let eoaAddress: string;
   let client: Client;
-  let saltIndex = SaltGlobal.SimulateWorkflow * SALT_BUCKET_SIZE;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   describe("Manual Trigger with Custom Code", () => {
@@ -70,7 +58,7 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
@@ -127,7 +115,7 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
@@ -194,7 +182,7 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
@@ -333,7 +321,7 @@ describe("SimulateWorkflow", () => {
       ];
 
       try {
-        const wallet = await client.getWallet({ salt: String(saltIndex++) });
+        const wallet = await getSmartWallet(client);
         const result = await client.simulateWorkflow({
           trigger,
           nodes,
@@ -362,9 +350,7 @@ describe("SimulateWorkflow", () => {
       } catch (error: unknown) {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();
-        expect((error as Error).message).toContain(
-          "partialSuccess"
-        );
+        expect((error as Error).message).toContain("partialSuccess");
       }
     });
   });
@@ -443,7 +429,7 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
@@ -535,7 +521,7 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const result = await client.simulateWorkflow({
         trigger,
         nodes,

@@ -2,43 +2,23 @@ import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import {
-  getAddress,
-  generateSignature,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate } from "../utils/templates";
 import { WorkflowStatus } from "@avaprotocol/types";
-import { getConfig } from "../utils/envalid";
-
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.CancelWorkflow * SALT_BUCKET_SIZE;
 
 describe("cancelWorkflow Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    const eoaAddress = await getAddress(walletPrivateKey);
-    console.log("Owner wallet address:", eoaAddress);
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   test("should cancel task when authenticated with signature", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {

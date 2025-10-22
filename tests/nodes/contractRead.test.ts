@@ -9,17 +9,16 @@ import {
   ErrorCode,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  SALT_BUCKET_SIZE,
   resultIndicatesAllWritesSuccessful,
   describeIfSepolia,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -27,10 +26,7 @@ const { tokens } = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.ContractRead * SALT_BUCKET_SIZE;
 
 // Sepolia Chainlink ETH/USD Price Feed Oracle
 const SEPOLIA_ORACLE_CONFIG = {
@@ -92,31 +88,17 @@ const SEPOLIA_ORACLE_CONFIG = {
 
 describeIfSepolia("ContractRead Node Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   describe("runNodeWithInputs Tests", () => {
     test("should read latest round data from Chainlink oracle", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -225,7 +207,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should handle invalid contract address", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -264,7 +246,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should read oracle description method", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -309,7 +291,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should apply decimal formatting using applyToFields", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -532,7 +514,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -619,7 +601,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with contract read", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -687,7 +669,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should simulate workflow with decimal formatting using applyToFields", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),
@@ -761,7 +743,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract read", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -865,7 +847,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with applyToFields decimal formatting", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1002,15 +984,12 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
 
       try {
-        const wallet = await client.getWallet({
-          salt: _.toString(saltIndex++),
-        });
+        const wallet = await getSmartWallet(client);
 
         const contractReadConfig = {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
@@ -1168,7 +1147,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle non-existent method gracefully", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const methodName = "nonExistentMethod";
 
@@ -1328,7 +1307,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
   describe("ApplyToFields Decimal Formatting Tests", () => {
     test("should apply decimal formatting with dot notation applyToFields for Chainlink oracle", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractRead,
@@ -1549,7 +1528,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const contractReadNode = NodeFactory.create({
         id: getNextId(),

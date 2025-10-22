@@ -1,49 +1,34 @@
-import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {NodeType, TriggerType, ExecutionStatus, Lang} from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  NodeType,
+  TriggerType,
+  ExecutionStatus,
+  Lang,
+} from "@avaprotocol/types";
+import {
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   getBlockNumber,
   removeCreatedWorkflows,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.FilterNode * SALT_BUCKET_SIZE;
 
 describe("FilterNode Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -65,10 +50,10 @@ describe("FilterNode Tests", () => {
         },
       });
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
+
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(2);
     });
@@ -89,10 +74,10 @@ describe("FilterNode Tests", () => {
         },
       });
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
+
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(1);
     });
@@ -113,10 +98,10 @@ describe("FilterNode Tests", () => {
         },
       });
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
+
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(2);
     });
@@ -142,10 +127,10 @@ describe("FilterNode Tests", () => {
         },
       });
 
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      
+
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data.length).toBe(2);
     });
@@ -153,7 +138,7 @@ describe("FilterNode Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with filter node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a CustomCode node that generates test data
       const dataNode = NodeFactory.create({
@@ -205,7 +190,7 @@ describe("FilterNode Tests", () => {
     });
 
     test("should simulate workflow with complex filter expression", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a CustomCode node that generates test data
       const dataNode = NodeFactory.create({
@@ -258,7 +243,7 @@ describe("FilterNode Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with filter node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -345,7 +330,7 @@ describe("FilterNode Tests", () => {
 
   describe("Filter Expression Consistency Tests", () => {
     test("should return consistent filter results across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 

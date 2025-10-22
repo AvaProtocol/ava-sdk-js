@@ -1,53 +1,34 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
-import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import { 
-  TriggerType, 
-  ExecutionStatus, 
-  NodeType, 
-  Lang,
-  ETHTransferNodeProps 
-} from "@avaprotocol/types";
-import _ from "lodash";
+import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import {
-  getAddress,
-  generateSignature,
+  TriggerType,
+  ExecutionStatus,
+  NodeType,
+  Lang,
+  ETHTransferNodeProps,
+} from "@avaprotocol/types";
+import {
   getBlockNumber,
-  SaltGlobal,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
   MOCK_FAILURE_ADDRESS,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.ExecutionIndex * SALT_BUCKET_SIZE + 100; // Offset to avoid conflicts
-
 describe("Execution Partial Success Tests", () => {
-  let ownerAddress: string;
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(ownerAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   test("should return PartialSuccess status when some nodes succeed and others fail", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -65,7 +46,7 @@ describe("Execution Partial Success Tests", () => {
 
       const failureNode = {
         id: "failure-node-" + Date.now(),
-        name: "failingNode", 
+        name: "failingNode",
         type: NodeType.CustomCode,
         data: {
           lang: Lang.JavaScript,
@@ -73,7 +54,10 @@ describe("Execution Partial Success Tests", () => {
         },
       };
 
-      const workflowProps = createFromTemplate(wallet.address, [successNode, failureNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        successNode,
+        failureNode,
+      ]);
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -94,37 +78,47 @@ describe("Execution Partial Success Tests", () => {
         isBlocking: true,
       });
 
-      const execution = await client.getExecution(workflowId, triggerResult.executionId);
-      
+      const execution = await client.getExecution(
+        workflowId,
+        triggerResult.executionId
+      );
+
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
-      
+
       // The overall execution should show partial success
       // Note: This might be "failed" initially if the system doesn't yet implement PartialSuccess
       // The test will help verify when the feature is implemented
-      const executionStatus = await client.getExecutionStatus(workflowId, triggerResult.executionId);
-      
+      const executionStatus = await client.getExecutionStatus(
+        workflowId,
+        triggerResult.executionId
+      );
+
       // Check steps individual success/failure status
       expect(execution.steps.length).toBeGreaterThanOrEqual(3); // Trigger + 2 nodes
-      
-      const successStep = execution.steps.find(step => step.name === "successfulNode");
-      const failureStep = execution.steps.find(step => step.name === "failingNode");
-      
+
+      const successStep = execution.steps.find(
+        (step) => step.name === "successfulNode"
+      );
+      const failureStep = execution.steps.find(
+        (step) => step.name === "failingNode"
+      );
+
       expect(successStep).toBeDefined();
       expect(failureStep).toBeDefined();
-      
+
       if (successStep && failureStep) {
         expect(successStep.success).toBe(true);
         expect(failureStep.success).toBe(false);
         expect(failureStep.error).toBeTruthy();
-        
+
         // When PartialSuccess is implemented, this should be PartialSuccess
         // For now, it might be Failed, Success, or Unspecified depending on current implementation
         expect([
           ExecutionStatus.PartialSuccess,
           ExecutionStatus.Failed,
           ExecutionStatus.Success,
-          ExecutionStatus.Unspecified
+          ExecutionStatus.Unspecified,
         ]).toContain(executionStatus);
       }
     } finally {
@@ -135,7 +129,7 @@ describe("Execution Partial Success Tests", () => {
   });
 
   test("should return PartialSuccess when ETH transfer fails but other nodes succeed", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -162,7 +156,10 @@ describe("Execution Partial Success Tests", () => {
         },
       };
 
-      const workflowProps = createFromTemplate(wallet.address, [successNode, failingEthTransfer]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        successNode,
+        failingEthTransfer,
+      ]);
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -183,25 +180,35 @@ describe("Execution Partial Success Tests", () => {
         isBlocking: true,
       });
 
-      const execution = await client.getExecution(workflowId, triggerResult.executionId);
-      const executionStatus = await client.getExecutionStatus(workflowId, triggerResult.executionId);
-      
+      const execution = await client.getExecution(
+        workflowId,
+        triggerResult.executionId
+      );
+      const executionStatus = await client.getExecutionStatus(
+        workflowId,
+        triggerResult.executionId
+      );
+
       expect(execution.steps.length).toBeGreaterThanOrEqual(3); // Trigger + 2 nodes
-      
-      const successStep = execution.steps.find(step => step.name === "successCustomCode");
-      const ethTransferStep = execution.steps.find(step => step.name === "failingETHTransfer");
-      
+
+      const successStep = execution.steps.find(
+        (step) => step.name === "successCustomCode"
+      );
+      const ethTransferStep = execution.steps.find(
+        (step) => step.name === "failingETHTransfer"
+      );
+
       if (successStep && ethTransferStep) {
         expect(successStep.success).toBe(true);
         expect(ethTransferStep.success).toBe(false);
         expect(ethTransferStep.error).toBeTruthy();
-        
+
         // Should be PartialSuccess when feature is implemented
         expect([
           ExecutionStatus.PartialSuccess,
           ExecutionStatus.Failed,
           ExecutionStatus.Success,
-          ExecutionStatus.Unspecified
+          ExecutionStatus.Unspecified,
         ]).toContain(executionStatus);
       }
     } finally {
@@ -212,7 +219,7 @@ describe("Execution Partial Success Tests", () => {
   });
 
   test("should return Completed status when all steps succeed (not PartialSuccess)", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -238,7 +245,10 @@ describe("Execution Partial Success Tests", () => {
         },
       };
 
-      const workflowProps = createFromTemplate(wallet.address, [firstSuccessNode, secondSuccessNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        firstSuccessNode,
+        secondSuccessNode,
+      ]);
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -259,18 +269,26 @@ describe("Execution Partial Success Tests", () => {
         isBlocking: true,
       });
 
-      const execution = await client.getExecution(workflowId, triggerResult.executionId);
-      const executionStatus = await client.getExecutionStatus(workflowId, triggerResult.executionId);
-      
+      const execution = await client.getExecution(
+        workflowId,
+        triggerResult.executionId
+      );
+      const executionStatus = await client.getExecutionStatus(
+        workflowId,
+        triggerResult.executionId
+      );
+
       expect(execution.steps.length).toBeGreaterThanOrEqual(3); // Trigger + 2 nodes
-      
+
       // All steps should succeed
-      const allNonTriggerSteps = execution.steps.filter(step => step.type !== TriggerType.Block);
-      allNonTriggerSteps.forEach(step => {
+      const allNonTriggerSteps = execution.steps.filter(
+        (step) => step.type !== TriggerType.Block
+      );
+      allNonTriggerSteps.forEach((step) => {
         expect(step.success).toBe(true);
         expect(step.error).toBeFalsy();
       });
-      
+
       // Should be Success, not PartialSuccess when all succeed
       expect(executionStatus).toBe(ExecutionStatus.Success);
       expect(executionStatus).not.toBe(ExecutionStatus.PartialSuccess);
@@ -282,7 +300,7 @@ describe("Execution Partial Success Tests", () => {
   });
 
   test("should return PartialSuccess status when all nodes fail but trigger succeeds", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -300,7 +318,7 @@ describe("Execution Partial Success Tests", () => {
 
       const secondFailureNode = {
         id: "failure-2-" + Date.now(),
-        name: "secondFailure", 
+        name: "secondFailure",
         type: NodeType.CustomCode,
         data: {
           lang: Lang.JavaScript,
@@ -308,7 +326,10 @@ describe("Execution Partial Success Tests", () => {
         },
       };
 
-      const workflowProps = createFromTemplate(wallet.address, [firstFailureNode, secondFailureNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        firstFailureNode,
+        secondFailureNode,
+      ]);
       workflowProps.trigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "blockTrigger",
@@ -329,16 +350,24 @@ describe("Execution Partial Success Tests", () => {
         isBlocking: true,
       });
 
-      const execution = await client.getExecution(workflowId, triggerResult.executionId);
-      const executionStatus = await client.getExecutionStatus(workflowId, triggerResult.executionId);
-      
+      const execution = await client.getExecution(
+        workflowId,
+        triggerResult.executionId
+      );
+      const executionStatus = await client.getExecutionStatus(
+        workflowId,
+        triggerResult.executionId
+      );
+
       // All non-trigger steps should fail
-      const allNonTriggerSteps = execution.steps.filter(step => step.type !== TriggerType.Block);
-      allNonTriggerSteps.forEach(step => {
+      const allNonTriggerSteps = execution.steps.filter(
+        (step) => step.type !== TriggerType.Block
+      );
+      allNonTriggerSteps.forEach((step) => {
         expect(step.success).toBe(false);
         expect(step.error).toBeTruthy();
       });
-      
+
       // Should be PartialSuccess when all nodes fail but trigger succeeds
       expect(executionStatus).toBe(ExecutionStatus.PartialSuccess);
     } finally {

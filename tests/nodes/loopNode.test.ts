@@ -35,16 +35,15 @@ interface RunNodeResponseData {
 }
 
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  TEST_SMART_WALLET_ADDRESS,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getSmartWalletWithBalance,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -54,14 +53,11 @@ const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.LoopNode * SALT_BUCKET_SIZE; // Use a reserved bucket
 
 describe("LoopNode Tests", () => {
-  let eoaAddress: string;
   let client: Client;
+  let fundedSmartWalletAddress: string;
 
   // Define all node props at the beginning for consistency
   const customCodeLoopProps = {
@@ -175,20 +171,12 @@ describe("LoopNode Tests", () => {
   };
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
+    client = getClient();
+    await authenticateClient(client);
 
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    // Get the funded smart wallet address
+    const wallet = await getSmartWalletWithBalance(client);
+    fundedSmartWalletAddress = wallet.address;
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -403,6 +391,8 @@ describe("LoopNode Tests", () => {
     });
 
     test("should process loop with ContractWrite runner using runNodeWithInputs", async () => {
+      const methodName = "approve";
+      const methodParams = ["{{value.spender}}", "{{value.amount}}"];
       const params = {
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -413,7 +403,7 @@ describe("LoopNode Tests", () => {
           runner: {
             type: "contractWrite",
             config: {
-              contractAddress: "{{value.contractAddress}}",
+              contractAddress: USDC_SEPOLIA_ADDRESS,
               contractAbi: [
                 {
                   inputs: [
@@ -429,8 +419,8 @@ describe("LoopNode Tests", () => {
               ],
               methodCalls: [
                 {
-                  methodName: "approve",
-                  methodParams: ["{{value.spender}}", "{{value.amount}}"],
+                  methodName: methodName,
+                  methodParams: methodParams,
                 },
               ],
             },
@@ -439,16 +429,15 @@ describe("LoopNode Tests", () => {
         inputVariables: {
           writeParams: [
             {
-              contractAddress: "0x1111111111111111111111111111111111111111",
-              spender: TEST_SMART_WALLET_ADDRESS,
-              amount: "10",
+              spender: fundedSmartWalletAddress,
+              amount: "0",
             },
             {
-              contractAddress: "0x2222222222222222222222222222222222222222",
-              spender: TEST_SMART_WALLET_ADDRESS,
-              amount: "10",
+              spender: "0x0000000000000000000000000000000000000001",
+              amount: "0",
             },
           ],
+          settings: getSettings(fundedSmartWalletAddress),
         },
       };
 
@@ -464,17 +453,23 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
 
-      // Note: The test may fail due to contract validation or network issues,
-      // but the important part is that the backend now supports contractWrite as a loop runner
+      // Expect format: data: [ { approve: true }, { approve: true } ]
+      const iterations = result.data as Array<Record<string, unknown>>;
+      expect(iterations.length).toBe(methodParams.length);
+      iterations.forEach((iteration) => {
+        expect(iteration).toHaveProperty(methodName);
+        expect((iteration as Record<string, unknown>)[methodName]).toBe(true); // Expect {approve: true}
+      });
     });
   });
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with Loop node using CustomCode runner", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node
       const dataNode = NodeFactory.create({
@@ -533,7 +528,7 @@ describe("LoopNode Tests", () => {
       const simulation = await client.simulateWorkflow({
         ...base.toJson(),
         inputVariables: {
-          settings: getSettings(TEST_SMART_WALLET_ADDRESS),
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -584,7 +579,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should simulate workflow with Loop node using REST API runner", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node for URLs
       const dataNode = NodeFactory.create({
@@ -682,7 +677,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should simulate workflow with Loop node using ContractRead runner", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node for contract addresses
       const dataNode = NodeFactory.create({
@@ -788,7 +783,12 @@ describe("LoopNode Tests", () => {
     });
 
     test("should simulate workflow with Loop node using ContractWrite runner", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      // Note: ContractWrite operations in simulation may fail due to:
+      // - Smart wallet validation (needs proper balance/setup)
+      // - Bundler/tenderly simulation limitations
+      // This test verifies the data flow is correct, even if execution partially fails
+
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node for contract write params
       const dataNode = NodeFactory.create({
@@ -801,12 +801,12 @@ describe("LoopNode Tests", () => {
             return [
               {
                 contractAddress: "0x1111111111111111111111111111111111111111",
-                spender: TEST_SMART_WALLET_ADDRESS,
+                spender: "${fundedSmartWalletAddress}",
                 amount: "10"
               },
               {
                 contractAddress: "0x2222222222222222222222222222222222222222",
-                spender: TEST_SMART_WALLET_ADDRESS, 
+                spender: "${fundedSmartWalletAddress}", 
                 amount: "10"
               }
             ];
@@ -839,6 +839,16 @@ describe("LoopNode Tests", () => {
                   stateMutability: "nonpayable",
                   type: "function",
                 },
+                {
+                  anonymous: false,
+                  inputs: [
+                    { indexed: true, name: "owner", type: "address" },
+                    { indexed: true, name: "spender", type: "address" },
+                    { indexed: false, name: "value", type: "uint256" },
+                  ],
+                  name: "Approval",
+                  type: "event",
+                },
               ],
               methodCalls: [
                 {
@@ -861,28 +871,59 @@ describe("LoopNode Tests", () => {
         util.inspect(workflowProps, { depth: null, colors: true })
       );
 
-      const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
-      );
+      const base = client.createWorkflow(workflowProps);
+      const simulation = await client.simulateWorkflow({
+        ...base.toJson(),
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      });
 
       console.log(
         "simulateWorkflow ContractWrite loop response:",
         util.inspect(simulation, { depth: null, colors: true })
       );
 
+      // Accept both success and partialSuccess (contract write operations may fail in simulation)
+      expect([
+        ExecutionStatus.Success,
+        ExecutionStatus.PartialSuccess,
+      ]).toContain(simulation.status);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
+
+      // The KEY fix: Verify the data generation node succeeded (smartWalletAddress is now properly injected)
+      const dataStep = simulation.steps.find((step) => step.id === dataNode.id);
+      expect(dataStep).toBeDefined();
+      expect(dataStep!.success).toBeTruthy();
+      expect(dataStep!.output).toBeDefined();
+      expect(Array.isArray(dataStep!.output)).toBe(true);
+
+      // Verify the generated data has the correct structure
+      const generatedData = dataStep!.output as Array<{
+        contractAddress: string;
+        spender: string;
+        amount: string;
+      }>;
+      expect(generatedData).toHaveLength(2);
+      expect(generatedData[0]).toHaveProperty("contractAddress");
+      expect(generatedData[0]).toHaveProperty("spender");
+      expect(generatedData[0]).toHaveProperty("amount");
 
       const loopStep = simulation.steps.find((step) => step.id === loopNode.id);
       expect(loopStep).toBeDefined();
 
-      // Note: The test may fail due to contract validation or network issues,
-      // but the important part is that the backend now supports contractWrite as a loop runner
+      // Loop step may fail in simulation due to smart wallet/bundler limitations, but that's okay
+      console.log(
+        `Loop step status: ${
+          loopStep!.success ? "SUCCESS" : "FAILED (expected in simulation)"
+        }`
+      );
     });
   });
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with Loop node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -993,7 +1034,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should deploy and trigger workflow with multiple Loop node types", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -1079,7 +1120,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should deploy and trigger workflow with Loop node using ContractRead runner", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -1189,12 +1230,12 @@ describe("LoopNode Tests", () => {
     });
 
     test("should deploy and trigger workflow with Loop node using ContractWrite runner", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
       // Create a data generation node for contract write params
-      const dataNode = NodeFactory.create({
+      const codeNode = NodeFactory.create({
         id: getNextId(),
         name: "generate_contract_write_params",
         type: NodeType.CustomCode,
@@ -1204,12 +1245,12 @@ describe("LoopNode Tests", () => {
             return [
               {
                 contractAddress: "0x1111111111111111111111111111111111111111",
-                spender: TEST_SMART_WALLET_ADDRESS,
+                spender: "${fundedSmartWalletAddress}",
                 amount: "10"
               },
               {
                 contractAddress: "0x2222222222222222222222222222222222222222",
-                spender: TEST_SMART_WALLET_ADDRESS, 
+                spender: "${fundedSmartWalletAddress}", 
                 amount: "10"
               }
             ];
@@ -1222,7 +1263,7 @@ describe("LoopNode Tests", () => {
         name: "deploy_contract_write_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputNodeName: codeNode.id,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -1255,7 +1296,7 @@ describe("LoopNode Tests", () => {
       });
 
       const workflowProps = createFromTemplate(wallet.address, [
-        dataNode,
+        codeNode,
         loopNode,
       ]);
 
@@ -1312,7 +1353,7 @@ describe("LoopNode Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const loopConfig = {
         inputNodeName: "manualTrigger",
@@ -1471,7 +1512,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should handle client workflow with parallel loop execution consistently", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       let workflowId: string | undefined;
 
       try {
@@ -1677,7 +1718,7 @@ describe("LoopNode Tests", () => {
   });
 
   test("should handle edge cases consistently across all methods", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
 
     // Test with single item array using predefined props
     const inputVariables = {
@@ -1887,7 +1928,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should force sequential mode for ContractWrite operations", async () => {
-      const wallet = await client.getWallet({ salt: "0" });
+      const wallet = await getSmartWalletWithBalance(client);
       const params = {
         nodeType: NodeType.Loop,
         nodeConfig: {
@@ -2202,7 +2243,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should simulate workflow with sequential execution mode", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node
       const dataNode = NodeFactory.create({
@@ -2294,7 +2335,7 @@ describe("LoopNode Tests", () => {
     });
 
     test("should simulate workflow with parallel execution mode", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node
       const dataNode = NodeFactory.create({

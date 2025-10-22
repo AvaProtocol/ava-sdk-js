@@ -4,28 +4,22 @@ import util from "util";
 import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import {TriggerType, ExecutionStatus} from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.BlockTrigger * SALT_BUCKET_SIZE;
 
 describe("BlockTrigger Tests", () => {
   let client: Client;
-  let coreAddress: string;
   let currentBlockNumber: number;
 
   // Define trigger props at the beginning
@@ -106,21 +100,8 @@ describe("BlockTrigger Tests", () => {
   };
 
   beforeAll(async () => {
-    coreAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(coreAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
 
     currentBlockNumber = await getBlockNumber();
   });
@@ -277,7 +258,7 @@ describe("BlockTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with block trigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const blockTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -316,7 +297,7 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should simulate workflow with different block intervals", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const blockTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -347,7 +328,7 @@ describe("BlockTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with block trigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const triggerInterval = 5;
 
       const blockTrigger = TriggerFactory.create({
@@ -411,7 +392,7 @@ describe("BlockTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across trigger methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const triggerInterval = 10;
 
       const blockTriggerConfig = {
@@ -616,7 +597,7 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should handle block trigger template variable resolution", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const blockTrigger = TriggerFactory.create({
         id: defaultTriggerId,
         name: "block_trigger_template_test",

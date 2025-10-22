@@ -1,15 +1,14 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
-import _ from "lodash";
 import util from "util";
 import { Client, TriggerFactory, EventTrigger } from "@avaprotocol/sdk-js";
 import {TriggerType, EventConditionType, ExecutionStatus} from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
-  SaltGlobal,
   removeCreatedWorkflows,
-  SALT_BUCKET_SIZE,
   describeIfSepolia,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
+  getEOAAddress,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -19,8 +18,6 @@ const { chainId } = getConfig();
 jest.setTimeout(45000);
 
 const createdIdMap: Map<string, boolean> = new Map();
-
-let saltIndex = SaltGlobal.EventTrigger * SALT_BUCKET_SIZE;
 
 const SEPOLIA_TOKEN_ADDRESSES = [
   "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Sepolia
@@ -186,24 +183,9 @@ describeIfSepolia("EventTrigger Tests", () => {
   };
 
   beforeAll(async () => {
-    // Load real configuration for integration tests
-    const { avsEndpoint, walletPrivateKey } = getConfig();
-
-    coreAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(coreAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    coreAddress = await getEOAAddress();
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -819,7 +801,7 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow without contractAbi or methodCalls", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const eventTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -858,7 +840,7 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with single event query", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const eventTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -893,7 +875,7 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should simulate workflow with event trigger and method calls", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         id: defaultTriggerId,
@@ -1006,7 +988,7 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const eventTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -1131,7 +1113,7 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent AnswerUpdated event format across all execution modes", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Define oracle event trigger configuration with proper AnswerUpdated event ABI
       const oracleEventConfig = {
@@ -1316,7 +1298,7 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should return consistent response format across trigger methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const eventTriggerConfig = {
         queries: [
@@ -1795,7 +1777,7 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
 
     test("should maintain empty data consistency across execution methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Use a definitely non-existent contract to ensure consistent null results
       const eventTriggerConfig = {

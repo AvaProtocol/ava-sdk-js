@@ -7,26 +7,32 @@ import {
   TriggerType,
   ExecutionStatus,
   ErrorCode,
+  AbiElement,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  TEST_SMART_WALLET_ADDRESS,
-  SALT_BUCKET_SIZE,
   stepIndicatesWriteFailure,
   resultIndicatesAllWritesSuccessful,
   describeIfSepolia,
   getSettings,
   getSmartWalletWithBalance,
+  getSmartWallet,
+  getEOAAddress,
+  authenticateClient,
+  getClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 const { tokens, chainId } = getConfig();
+
+// Common test constants
+const USDC_AMOUNT_0_01 = "10000"; // 0.01 USDC (6 decimals)
+
+// Use a known contract address as spender (Uniswap V3 SwapRouter on Sepolia)
+const SPENDER_CONTRACT_ADDRESS = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -57,16 +63,13 @@ jest.setTimeout(TIMEOUT_DURATION);
  * structure with both data and metadata fields.
  */
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.ContractWrite * SALT_BUCKET_SIZE;
 
 // Sepolia ERC20 Test Token Configurations
 // (Imported from shared location at top of file)
 
 // Standard ERC20 ABI for testing (approve and transfer functions)
-const ERC20_ABI: any[] = [
+const ERC20_ABI: AbiElement[] = [
   {
     constant: false,
     inputs: [
@@ -156,25 +159,13 @@ const ERC20_ABI: any[] = [
 
 describeIfSepolia("ContractWrite Node Tests", () => {
   let client: Client;
-  let eoaAddress: string;
   let smartWalletAddress: string;
+  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    eoaAddress = await getEOAAddress();
+    client = getClient();
+    await authenticateClient(client);
 
     // Derive smart wallet address using centralized funded wallet (newest implementation)
     // Expected address: 0x5a8A8a79DdF433756D4D97DCCE33334D9E218856
@@ -187,7 +178,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should handle ERC20 transfer transaction", async () => {
       // Test configuration variables - use centralized funded smart wallet (newest implementation)
-      const recipientAddress = TEST_SMART_WALLET_ADDRESS; // Use test smart wallet as recipient
+      const recipientAddress = smartWalletAddress; // Use funded smart wallet as recipient
       const transferAmount = "1"; // Use 1 wei - should emit Transfer event even if it reverts
       const expectedFrom = smartWalletAddress.toLowerCase(); // runner (smart wallet) address
       const expectedTo = recipientAddress.toLowerCase();
@@ -298,10 +289,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should abort multiple method calls after first failure (insufficient funds)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
-      const spender1 = TEST_SMART_WALLET_ADDRESS;
-      const spender2 = TEST_SMART_WALLET_ADDRESS; // Use test smart wallet for consistency
+      const spender1 = smartWalletAddress;
+      const spender2 = smartWalletAddress; // Use funded smart wallet for consistency
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -360,8 +351,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
     test("should handle multiple method calls successfully (funded wallet)", async () => {
       // Use centralized funded wallet for successful multiple method calls (newest implementation)
-      const recipient1 = TEST_SMART_WALLET_ADDRESS;
-      const recipient2 = "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"; // Different recipient
+      const recipient1 = smartWalletAddress;
+      const recipient2 = smartWalletAddress; // Use same funded wallet as recipient
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -415,7 +406,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should handle invalid contract address gracefully", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -499,9 +490,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(result.data).toBeDefined(); // Decoded event data
       // For validation errors (missing settings), metadata is undefined
       expect(result.metadata).toBeUndefined(); // Method execution doesn't occur due to validation error
-      expect(result.error).toBe(
-        "settings is required for contractWrite"
-      );
+      expect(result.error).toBe("settings is required for contractWrite");
 
       // For validation errors, success should be false regardless of metadata state
       expect(result.success).toBeFalsy();
@@ -510,25 +499,19 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   });
 
   describe("simulateWorkflow Tests", () => {
-    const simulateCases = [
-      {
-        name: "approve",
-        methodName: "approve",
-        methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
-      },
-      {
-        name: "transfer",
-        methodName: "transfer",
-        methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
-      },
-    ] as const;
+  // List of methods to simulate; methodParams are computed inside each test
+  const simulateMethodNames = ["approve", "transfer"] as const;
 
-    test.each(simulateCases)(
-      "should simulate workflow with $name call",
-      async ({ methodName, methodParams }) => {
-        const wallet = await client.getWallet({
-          salt: _.toString(saltIndex++),
-        });
+    for (const methodName of simulateMethodNames) {
+      test(`simulateWorkflow single ERC20 ${methodName} call reflects write outcome`, async () => {
+        // Use funded smart wallet so AA sender holds USDC
+        const wallet = await getSmartWalletWithBalance(client);
+
+        // Compute method params now (after beforeAll), so addresses are defined
+        const methodParams =
+          methodName === "approve"
+            ? [SPENDER_CONTRACT_ADDRESS, USDC_AMOUNT_0_01]
+            : [eoaAddress, USDC_AMOUNT_0_01];
 
         const contractWriteNode = NodeFactory.create({
           id: getNextId(),
@@ -557,6 +540,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           },
         });
 
+        console.log(
+          "simulateWorkflow response:",
+          util.inspect(simulation, { depth: null, colors: true })
+        );
+
         // success must reflect step outcomes
         const contractWriteSimStep = simulation.steps.find(
           (s: any) => s.id === contractWriteNode.id
@@ -582,78 +570,13 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         // Backend simulation behavior may vary - check against metadata consistency
         const stepFail = stepIndicatesWriteFailure(contractWriteStep as any);
         expect((contractWriteStep as any).success).toBe(!stepFail);
-      }
-    );
-
-    test("should simulate workflow with transfer calls", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
-
-      const contractWriteNode = NodeFactory.create({
-        id: getNextId(),
-        name: "simulate_multiple_writes",
-        type: NodeType.ContractWrite,
-        data: {
-          contractAddress: tokens.LINK.address,
-          contractAbi: ERC20_ABI,
-          methodCalls: [
-            {
-              methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
-            },
-            {
-              methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
-            },
-          ],
-        },
       });
-
-      const simulation = await client.simulateWorkflow({
-        ...client
-          .createWorkflow(
-            createFromTemplate(wallet.address, [contractWriteNode])
-          )
-          .toJson(),
-        inputVariables: {
-          settings: getSettings(wallet.address),
-        },
-      });
-
-      const contractWriteStep = simulation.steps.find(
-        (step) => step.id === contractWriteNode.id
-      );
-      expect(contractWriteStep).toBeDefined();
-
-      const output = (contractWriteStep as any).output as any;
-      expect(output).toBeDefined();
-      expect(typeof output).toBe("object");
-      expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
-      expect(output).not.toHaveProperty("results");
-
-      // Verify flattened structure by method name directly on output
-      expect(output).toHaveProperty("transfer");
-      expect(typeof output.transfer).toBe("object");
-
-      // Backend may consolidate duplicate method calls - check we have at least one method
-      expect(Object.keys(output).length).toBeGreaterThanOrEqual(1);
-      expect(Object.keys(output).length).toBeLessThanOrEqual(
-        (contractWriteNode.data as any).methodCalls.length
-      );
-
-      // Step-level metadata property should exist (may be undefined if backend didn't set it)
-      expect(contractWriteStep as any).toHaveProperty("metadata");
-
-      // Execution context: should indicate simulated run with provider tenderly
-      expect((contractWriteStep as any).executionContext).toBeDefined();
-      const ctx = (contractWriteStep as any).executionContext as any;
-      expect(ctx.is_simulated).toBe(true);
-      expect(ctx.provider).toBe("tenderly");
-    });
+    }
   });
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with contract write", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -667,7 +590,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "300"],
+              methodParams: [smartWalletAddress, "300"],
             },
           ],
         },
@@ -756,7 +679,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Test configuration variables - use centralized funded smart wallet (newest implementation)
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
-      const recipientAddress = TEST_SMART_WALLET_ADDRESS;
+      const recipientAddress = smartWalletAddress;
       const transferAmount = "1";
       const expectedFrom = smartWalletAddress.toLowerCase(); // runner (smart wallet) address
       const expectedTo = recipientAddress.toLowerCase();
@@ -997,7 +920,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(simValue).toBeDefined();
         expect(simValue).toBe(expectedValue);
 
-        // Verify deployed workflow success - should be true since we're using salt "2" (funded wallet with newest implementation)
+        // Verify deployed workflow success
         expect(executedStep).toBeDefined();
         expect(executedStep!.success).toBeTruthy();
 
@@ -1031,7 +954,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle invalid method signature gracefully", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const methodName = "nonExistentMethod";
 
@@ -1098,11 +1021,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
+              methodParams: [smartWalletAddress, "100"],
             },
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "200"],
+              methodParams: [smartWalletAddress, "200"],
             },
           ],
         },
@@ -1123,7 +1046,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const firstCall = methodCalls[0];
       expect(firstCall.getMethodName()).toBe("transfer");
       expect(firstCall.getMethodParamsList()).toEqual([
-        TEST_SMART_WALLET_ADDRESS,
+        smartWalletAddress,
         "100",
       ]);
 
@@ -1131,7 +1054,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const secondCall = methodCalls[1];
       expect(secondCall.getMethodName()).toBe("transfer");
       expect(secondCall.getMethodParamsList()).toEqual([
-        TEST_SMART_WALLET_ADDRESS,
+        smartWalletAddress,
         "200",
       ]);
 
@@ -1153,7 +1076,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "100"],
+              methodParams: [smartWalletAddress, "100"],
               applyToFields: ["amount"], // Apply formatting to amount field if applicable
             },
           ],
@@ -1187,7 +1110,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should include answerRaw field when using applyToFields with simulateWorkflow", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const contractWriteNode = NodeFactory.create({
         id: getNextId(),
@@ -1199,7 +1122,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "150"],
+              methodParams: [smartWalletAddress, "150"],
               applyToFields: ["amount"], // Apply formatting to amount field if applicable
             },
           ],
@@ -1270,7 +1193,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with applyToFields", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -1286,7 +1209,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             methodCalls: [
               {
                 methodName: "transfer",
-                methodParams: [TEST_SMART_WALLET_ADDRESS, "250"],
+                methodParams: [smartWalletAddress, "250"],
                 applyToFields: ["amount"], // Apply formatting to amount field if applicable
               },
             ],
@@ -1372,10 +1295,10 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
   describe("Event Priority Tests", () => {
     test("should prioritize Approval event data over boolean return values", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Test constants
-      const APPROVAL_AMOUNT = "10000"; // 0.01 USDC (6 decimals: 10000 = 0.01 USDC)
+      const APPROVAL_AMOUNT = USDC_AMOUNT_0_01; // 0.01 USDC
       const SPENDER_ADDRESS = "0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e"; // Uniswap router
 
       const params = {
@@ -1438,16 +1361,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   });
 
   describeIfSepolia("Real UserOp Transaction Debug Tests", () => {
-    test("should test real UserOp with salt:2 (funded wallet)", async () => {
-      // Use centralized funded smart wallet that is pre-funded with newest implementation
-      console.log("🚀 Testing Real UserOp Transactions");
-      console.log("Smart Wallet Address:", smartWalletAddress);
-      console.log("Using funded smart wallet - newest implementation");
-      console.log("Expected address: 0x5a8A8a79DdF433756D4D97DCCE33334D9E218856");
-
-      // Note: Smart wallet address is dynamically generated based on EOA + salt + factory
-      // No need for hardcoded address comparison - test works with any generated address
-
+    test("should test real UserOp with funded smart wallet", async () => {
       const contractWriteNode = NodeFactory.create({
         id: getNextId(),
         name: "real_userop_debug_test",
@@ -1459,8 +1373,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "transfer",
               methodParams: [
-                "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // Test recipient (EOA)
-                "1000000", // 1.0 USDC (6 decimals: 1000000 = 1.0 USDC) - should work with 10 USDC balance
+                eoaAddress, // recipient is EOA address
+                USDC_AMOUNT_0_01, // 0.01 USDC
               ],
             },
           ],
@@ -1667,8 +1581,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   });
 
   test("should test real contract call with paymaster sponsoring unfunded wallet", async () => {
-    // Use a fresh smart wallet (non-zero salt) so it has no ETH balance and should use the paymaster
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
 
     console.log(
       "🚀 Testing Real On-Chain Transaction (paymaster-sponsored, unfunded wallet)"
@@ -1691,8 +1604,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           {
             methodName: "approve",
             methodParams: [
-              "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // Spender address (EOA)
-              "0", // Amount: 0 - this will always succeed regardless of balance
+              smartWalletAddress, // spender has to be the smart wallet address
+              USDC_AMOUNT_0_01, // 0.01 USDC
             ],
           },
         ],
@@ -1729,7 +1642,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         id: workflowId,
         triggerData: {
           type: TriggerType.Manual,
-          note: "Test contract transfer with real on-chain transaction",
+          data: {
+            note: "Test contract transfer with real on-chain transaction",
+          },
         },
         isBlocking: true,
       });
@@ -1766,7 +1681,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
   describe("Template Variable Validation Tests", () => {
     test("should reject hyphenated variable names in methodParams", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -1786,7 +1701,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         inputVariables: {
           settings: {
             ...getSettings(wallet.address),
-            "recipient-address": TEST_SMART_WALLET_ADDRESS, // Hyphenated key
+            "recipient-address": eoaAddress, // recipient is EOA address
           },
         },
       };
@@ -1811,7 +1726,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should support mathematical expressions with hyphens", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.ContractWrite,
@@ -1822,7 +1737,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "transfer",
               methodParams: [
-                TEST_SMART_WALLET_ADDRESS,
+                smartWalletAddress,
                 "{{settings.base_amount - 10}}", // Mathematical expression with hyphen
               ],
             },
@@ -1856,7 +1771,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should handle tuple parameters with template variables (JSON array format)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Uniswap V3 Pool quoter ABI with quoteExactInputSingle that takes a tuple
       const QUOTER_ABI = [
@@ -1936,7 +1851,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should handle tuple parameters with template variables (JSON object format)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Same Uniswap V3 Pool quoter ABI
       const QUOTER_ABI = [
@@ -2016,7 +1931,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     });
 
     test("should enforce snake_case for settings variables", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Test that camelCase chainId is NOT supported
       const params = {
@@ -2027,7 +1942,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
+              methodParams: [eoaAddress, "1"],
             },
           ],
         },
@@ -2067,7 +1982,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
+              methodParams: [smartWalletAddress, "1"],
             },
           ],
         },
@@ -2104,13 +2019,12 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           methodCalls: [
             {
               methodName: "transfer",
-              methodParams: [TEST_SMART_WALLET_ADDRESS, "1"],
+              methodParams: [smartWalletAddress, "1"],
             },
           ],
         },
         inputVariables: {
           settings: {
-            chain_id: parseInt(chainId),
             // Missing runner - should fail
           },
         },

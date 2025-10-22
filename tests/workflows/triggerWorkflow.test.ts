@@ -5,49 +5,29 @@ import {
   WorkflowStatus,
   ExecutionStatus,
 } from "@avaprotocol/types";
-import _ from "lodash";
 import {
-  getAddress,
-  generateSignature,
   cleanupWorkflows,
   getBlockNumber,
-  SaltGlobal,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
-let saltIndex = SaltGlobal.TriggerWorkflow * SALT_BUCKET_SIZE;
-
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
 
 describe("triggerWorkflow Tests", () => {
-  let ownerAddress: string;
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(walletPrivateKey);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(ownerAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   test("trigger for block type should succeed", async () => {
     const interval = 5;
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -113,7 +93,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("trigger for cron type should succeed", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     await cleanupWorkflows(client, wallet.address);
     const epoch = Math.floor(Date.now() / 1000);
 
@@ -166,7 +146,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("trigger for fixed time type should succeed", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const epoch = Math.floor(Date.now() / 1000);
 
     const trigger = TriggerFactory.create({
@@ -216,7 +196,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("trigger for event type should succeed", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -283,7 +263,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("trigger return correct execution id in blocking mode", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     await cleanupWorkflows(client, wallet.address);
     const epoch = Math.floor(Date.now() / 1000);
 
@@ -333,7 +313,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("trigger async return id and pending status", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     await cleanupWorkflows(client, wallet.address);
     const epoch = Math.floor(Date.now() / 1000);
 
@@ -370,7 +350,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("should throw trigger an non-existent workflow Id", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
 
     await expect(
@@ -387,7 +367,7 @@ describe("triggerWorkflow Tests", () => {
 
   test("should throw error when triggering a completed block workflow", async () => {
     const interval = 5;
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({
@@ -438,7 +418,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("should throw error when triggering a completed cron workflow", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const epoch = Math.floor(Date.now() / 1000);
 
     const trigger = TriggerFactory.create({
@@ -491,7 +471,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("should throw error when triggering a completed fixed time workflow", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const epoch = Math.floor(Date.now() / 1000);
 
     const trigger = TriggerFactory.create({
@@ -544,7 +524,7 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("should throw error when triggering a completed event workflow", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
 
     const trigger = TriggerFactory.create({

@@ -6,50 +6,31 @@ import {
   NodeType,
   Lang,
 } from "@avaprotocol/types";
-import util from "util";
-import _ from "lodash";
+
 import {
-  getAddress,
-  generateSignature,
   getBlockNumber,
-  SaltGlobal,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  executionHasWriteFailure,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
-import { executionHasWriteFailure } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.GetExecution * SALT_BUCKET_SIZE;
-
 describe("getExecution Tests", () => {
-  let ownerAddress: string;
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(ownerAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   // This test verifies that after a workflow is triggered,
   // the specific execution can be fetched using the workflowId and the executionId from the trigger response.
   test("should retrieve a specific execution by ID after triggering it", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -134,7 +115,7 @@ describe("getExecution Tests", () => {
   test("should throw error when using a valid workflow ID but a non-existent execution ID", async () => {
     // This test checks that an error is thrown if a valid workflow ID is used
     // but the specified execution ID does not exist for that workflow.
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -159,7 +140,7 @@ describe("getExecution Tests", () => {
   // This test verifies that a cron-triggered workflow execution can be fetched,
   // and its status is correctly reported as FINISHED after a blocking trigger.
   test("should retrieve execution with correct status after triggering workflow (cron based)", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const epoch = Math.floor(Date.now() / 1000);
     let workflowId: string | undefined;
 
@@ -227,7 +208,7 @@ describe("getExecution Tests", () => {
   // This test ensures that an execution ID obtained from the getExecutions() list
   // can be used to successfully fetch the details of that specific execution.s
   test("should retrieve execution by ID obtained from getExecutions list", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -306,7 +287,7 @@ describe("getExecution Tests", () => {
   });
 
   test("should verify ManualTrigger input config is accessible and propagates via data to subsequent nodes", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 

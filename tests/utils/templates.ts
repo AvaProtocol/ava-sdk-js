@@ -8,10 +8,12 @@ import {
   GraphQLQueryNodeProps,
   BranchNodeProps,
   WorkflowProps,
+  NodeType,
+  TriggerType,
+  Lang,
+  AbiElement,
 } from "@avaprotocol/types";
 import { getNextId } from "./utils";
-import { NodeType, TriggerType, Lang } from "@avaprotocol/types";
-import { factoryProxyAbi } from "./abis";
 import { getConfig } from "./envalid";
 
 export const defaultTriggerId = getNextId();
@@ -26,57 +28,64 @@ export const ethTransferNodeProps: ETHTransferNodeProps = {
   },
 };
 
-//  Write to the proxy of our factory contract 0xB99BC2E399e06CddCF5E725c0ea341E8f0322834
-// {
-//   "chainId": 11155111,
-//   "data": "0x5fbfb9cf000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c7880000000000000000000000000000000000000000000000000000000000000000",
-//   "from": "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788",
-//   "gas": "0x77258",
-//   "gasPrice": "0x2a1f99",
-//   "nonce": "0x8",
-//   "to": "0xB99BC2E399e06CddCF5E725c0ea341E8f0322834"
-// }
+// Simple ERC20 ABI for template usage
+const ERC20_MINIMAL_ABI: AbiElement[] = [
+  {
+    inputs: [{ name: "_owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "balance", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
 export const createContractWriteNodeProps = async (
-  owner: string,
-  salt: string
+  owner: string
 ): Promise<ContractWriteNodeProps> => {
+  const { tokens } = getConfig();
   return {
     id: getNextId(),
-    name: "create account",
+    name: "approve_token",
     type: NodeType.ContractWrite,
     data: {
-      contractAddress: getConfig().factoryAddress,
-      contractAbi: factoryProxyAbi,
+      contractAddress: tokens.USDC.address,
+      contractAbi: ERC20_MINIMAL_ABI,
       methodCalls: [
         {
-          methodName: "createAccount",
-          methodParams: [salt],
+          methodName: "approve",
+          methodParams: [owner, "0"],
         },
       ],
     },
   };
 };
 
-export const createContractReadNodeProps = async (
-  owner: string,
-  salt: string
-): Promise<ContractReadNodeProps> => {
-  return {
-    id: getNextId(),
-    name: "get account address",
-    type: NodeType.ContractRead,
-    data: {
-      contractAddress: getConfig().factoryAddress,
-      contractAbi: factoryProxyAbi,
-      methodCalls: [
-        {
-          methodName: "getAddress",
-          methodParams: [salt],
-        },
-      ],
-    },
+export const createContractReadNodeProps =
+  async (): Promise<ContractReadNodeProps> => {
+    const { tokens } = getConfig();
+    return {
+      id: getNextId(),
+      name: "get_token_name",
+      type: NodeType.ContractRead,
+      data: {
+        contractAddress: tokens.USDC.address,
+        contractAbi: ERC20_MINIMAL_ABI,
+        methodCalls: [
+          {
+            methodName: "name",
+            methodParams: [],
+          },
+        ],
+      },
+    };
   };
-};
 
 const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   id: getNextId(),

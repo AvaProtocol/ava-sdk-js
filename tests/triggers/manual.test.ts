@@ -10,7 +10,6 @@ import {
 } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
-  WorkflowStatus,
   NodeType,
   ExecutionMode,
   ManualTriggerProps,
@@ -19,30 +18,27 @@ import {
 } from "@avaprotocol/types";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import {
-  getAddress,
-  generateSignature,
-  SaltGlobal,
   removeCreatedWorkflows,
   getNextId,
+  getSmartWallet,
+  authenticateClient,
+  getClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(45000);
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CreateWorkflow * 8000;
 
 describe("ManualTrigger Tests", () => {
   let client: Client;
-  let coreAddress: string;
 
   // Define trigger props at the beginning
   const minimalTriggerProps = {
     id: "test-trigger-id",
     name: "manualTrigger",
     type: TriggerType.Manual,
-    data: { 
+    data: {
       data: { test: "minimal data" },
       lang: Lang.JSON,
     },
@@ -99,24 +95,8 @@ describe("ManualTrigger Tests", () => {
   };
 
   beforeAll(async () => {
-    // Load real configuration for integration tests
-    const { avsEndpoint, walletPrivateKey } = getConfig();
-
-    coreAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(coreAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -161,7 +141,7 @@ describe("ManualTrigger Tests", () => {
       expect(triggerWithLang.toRequest().getType()).toBe(
         avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
       );
-      
+
       const manualTrigger = triggerWithLang.toRequest().getManual();
       expect(manualTrigger).toBeDefined();
       const config = manualTrigger!.getConfig();
@@ -443,7 +423,7 @@ describe("ManualTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with manual trigger and minimal data", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -484,7 +464,7 @@ describe("ManualTrigger Tests", () => {
     });
 
     test("should simulate workflow with manual trigger and user data", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const triggerName = "simulate_manual_trigger_with_data";
 
       const userData = {
@@ -555,7 +535,7 @@ describe("ManualTrigger Tests", () => {
     });
 
     test("should simulate workflow with manual trigger including headers and pathParams", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const triggerName = "simulate_manual_trigger";
 
       const data = { message: "Hello webhook!" };
@@ -631,7 +611,7 @@ describe("ManualTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with manual trigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const userData = {
         testItems: [
@@ -703,7 +683,7 @@ describe("ManualTrigger Tests", () => {
     });
 
     test("should deploy and trigger workflow with manual trigger (minimal data)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const manualTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -769,7 +749,7 @@ describe("ManualTrigger Tests", () => {
     });
 
     test("should deploy and trigger workflow with webhook headers and pathParams", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const userData = { message: "Deploy webhook test" };
       const headers: Record<string, string> = {
@@ -851,7 +831,7 @@ describe("ManualTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should maintain consistent response format across runTrigger and simulateWorkflow", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const testData = [
         { name: "consistency_item1", address: "0xaaaa" },
@@ -1424,7 +1404,7 @@ describe("ManualTrigger Tests", () => {
     const manualTrigger = TriggerFactory.create(manualTriggerProps);
 
     // Create workflow with a simple custom code node
-    const wallet = await client.getWallet({ salt: String(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const nodeId = getNextId();
     const workflowProps = createFromTemplate(wallet.address, [
       {
@@ -1437,7 +1417,7 @@ describe("ManualTrigger Tests", () => {
         },
       },
     ]);
-    
+
     // Override trigger and fix the edge to use the correct trigger ID
     workflowProps.trigger = manualTrigger;
     workflowProps.edges = [

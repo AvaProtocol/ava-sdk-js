@@ -2,45 +2,24 @@ import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import {
-  getAddress,
-  generateSignature,
   compareResults,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
-
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.GetWorkflow * SALT_BUCKET_SIZE;
 
 describe("Workflow Management Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    console.log("Owner wallet address:", eoaAddress);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   describe("getWorkflow Tests", () => {
     test("should get workflow when authenticated with signature", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       let workflowId: string | undefined;
 
       try {
@@ -77,7 +56,7 @@ describe("Workflow Management Tests", () => {
   describe("getWorkflows Tests", () => {
     test("should list tasks when authenticated with signature", async () => {
       const workflowName = "test 123";
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       let workflowId: string | undefined;
 
       try {
@@ -108,8 +87,7 @@ describe("Workflow Management Tests", () => {
       const countFirstPage = 1;
 
       // Isolated test of this account
-      const salt = _.toString(saltIndex++);
-      const wallet = await client.getWallet({ salt });
+      const wallet = await getSmartWallet(client);
       const workflowIds: string[] = [];
 
       try {
@@ -190,7 +168,7 @@ describe("Workflow Management Tests", () => {
       const totalCount = 4;
       const pageSize = 2;
 
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const workflowIds: string[] = [];
 
       try {
@@ -207,7 +185,7 @@ describe("Workflow Management Tests", () => {
         const firstPage = await client.getWorkflows([wallet.address], {
           limit: pageSize,
         });
-        
+
         expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
         expect(firstPage.pageInfo.endCursor).toBeTruthy();
         expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
@@ -223,7 +201,7 @@ describe("Workflow Management Tests", () => {
         // Verify no overlap between pages
         const firstPageIds = firstPage.items.map((item) => item.id);
         const secondPageIds = secondPage.items.map((item) => item.id);
-        
+
         const overlap = firstPageIds.filter((id) => secondPageIds.includes(id));
         expect(overlap.length).toBe(0);
 
@@ -245,7 +223,7 @@ describe("Workflow Management Tests", () => {
       const totalCount = 4;
       const pageSize = 2;
 
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const workflowIds: string[] = [];
 
       try {
@@ -262,7 +240,7 @@ describe("Workflow Management Tests", () => {
         const allWorkflows = await client.getWorkflows([wallet.address], {
           limit: totalCount,
         });
-        
+
         expect(allWorkflows.items.length).toBe(totalCount);
 
         // Use the second item's cursor as a reference point
@@ -293,7 +271,7 @@ describe("Workflow Management Tests", () => {
     });
 
     test("should handle empty results gracefully", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const res = await client.getWorkflows([wallet.address]);
       expect(Array.isArray(res.items)).toBe(true);
@@ -303,7 +281,7 @@ describe("Workflow Management Tests", () => {
     });
 
     test("should filter workflows by status", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const workflowIds: string[] = [];
 
       try {
@@ -317,8 +295,10 @@ describe("Workflow Management Tests", () => {
         const res = await client.getWorkflows([wallet.address]);
         expect(Array.isArray(res.items)).toBe(true);
         expect(res.items.length).toBeGreaterThanOrEqual(1);
-        
-        const createdWorkflow = res.items.find((task) => task.id === workflowId);
+
+        const createdWorkflow = res.items.find(
+          (task) => task.id === workflowId
+        );
         expect(createdWorkflow?.status).toBeTruthy();
       } finally {
         // Clean up all created workflows
@@ -328,4 +308,4 @@ describe("Workflow Management Tests", () => {
       }
     });
   });
-}); 
+});

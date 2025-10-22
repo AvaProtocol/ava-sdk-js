@@ -3,43 +3,23 @@ import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import { TriggerType } from "@avaprotocol/types";
 import _ from "lodash";
 import {
-  getAddress,
-  generateSignature,
   getBlockNumber,
-  SaltGlobal,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 // Set a default timeout of 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
 
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.GetExecutions * SALT_BUCKET_SIZE;
-
 describe("getExecutions Tests", () => {
-  let ownerAddress: string;
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(walletPrivateKey);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(ownerAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   test("options.limit returns the correct number of executions", async () => {
@@ -54,7 +34,7 @@ describe("getExecutions Tests", () => {
       );
     }
 
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const startBlockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -132,7 +112,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("should throw error with an invalid limit", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -170,7 +150,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("getExecutionCount returns correct count for single workflow", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
 
@@ -208,7 +188,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("getExecutionCount returns correct count for multiple workflows", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     const workflowIds: string[] = [];
 
@@ -271,7 +251,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("getExecutionCount returns 0 for workflow with no executions", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -298,7 +278,7 @@ describe("getExecutions Tests", () => {
     const totalCount = 4;
     const pageSize = 2;
 
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
     const executionIds: string[] = [];
@@ -366,7 +346,7 @@ describe("getExecutions Tests", () => {
     const totalCount = 4;
     const pageSize = 2;
 
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
     const executionIds: string[] = [];
@@ -432,7 +412,7 @@ describe("getExecutions Tests", () => {
   });
 
   test("should throw error with invalid before/after parameters", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {

@@ -4,12 +4,14 @@ import { TriggerType, NodeType, Lang } from "@avaprotocol/types";
 import util from "util";
 import { getConfig } from "../utils/envalid";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
   USDC_Implementation_ABI,
   getSettings,
+  getClient,
+  authenticateClient,
+  getSmartWalletWithBalance,
+  getEOAAddress,
 } from "../utils/utils";
 
 /**
@@ -19,28 +21,24 @@ import {
  * one read node is pruned/deduped and CustomCode throws due to missing input.
  */
 
-const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
+const { tokens } = getConfig();
 
 // Set timeout to 180 seconds for all tests in this file (deployed workflows need more time)
 jest.setTimeout(TIMEOUT_DURATION * 3); // 3 * 60 seconds = 180 seconds
 
 let client: Client;
 let eoaAddress: string;
+let fundedSmartWalletAddress: string;
 
 beforeAll(async () => {
-  eoaAddress = await getAddress(walletPrivateKey);
-
-  client = new Client({ endpoint: avsEndpoint });
-  const { message } = await client.getSignatureFormat(eoaAddress);
-  const signature = await generateSignature(message, walletPrivateKey);
-  const res = await client.authWithSignature({ message, signature });
-  client.setAuthKey(res.authKey);
+  client = getClient();
+  eoaAddress = await getEOAAddress();
+  fundedSmartWalletAddress = (await getSmartWalletWithBalance(client)).address;
+  await authenticateClient(client);
 });
 
 describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)", () => {
   test("simulate workflow end-to-end", async () => {
-    const wallet = await client.getWallet({ salt: "0" });
-
     // Use Cron trigger to match the deployed workflow
     const trigger = TriggerFactory.create({
       id: "timeTrigger",
@@ -182,7 +180,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
     ];
 
     const workflow = client.createWorkflow({
-      smartWalletAddress: wallet.address,
+      smartWalletAddress: fundedSmartWalletAddress,
       trigger,
       nodes: [contractWrite1, contractRead1, contractRead2, code1, telegram1],
       edges,
@@ -200,10 +198,10 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       edges: workflowJson.edges,
       inputVariables: {
         settings: {
-          ...getSettings(wallet.address),
+          ...getSettings(fundedSmartWalletAddress),
           name: workflowJson.name,
-        }
-      }
+        },
+      },
     });
 
     console.log(
@@ -384,7 +382,6 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           triggerData: {
             type: TriggerType.Cron,
             timestamp: Date.now(),
-            timestampIso: new Date().toISOString(),
           },
           isBlocking: true,
         },
@@ -418,20 +415,20 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
         "🧩 code1 step detail:",
         util.inspect(
           {
-            name: codeStep.name,
-            success: codeStep.success,
-            error: codeStep.error,
-            inputsList: codeStep.inputsList,
-            hasOutput: !!codeStep.output,
+            name: codeStep?.name,
+            success: codeStep?.success,
+            error: codeStep?.error,
+            inputsList: codeStep?.inputsList,
+            hasOutput: !!codeStep?.output,
           },
           { depth: null, colors: true }
         )
       );
       // Critical: inputsList must include contractRead2 reference
-      expect(codeStep.inputsList || []).toContain("contractRead2.data");
+      expect(codeStep?.inputsList || []).toContain("contractRead2.data");
 
       // And custom code should not fail due to missing reference
-      expect(codeStep.success).toBeTruthy();
+      expect(codeStep?.success).toBeTruthy();
     } finally {
       if (workflowId) {
         try {

@@ -9,18 +9,17 @@ import {
 } from "@avaprotocol/sdk-js";
 import { NodeType, TriggerType, ExecutionStatus } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  SALT_BUCKET_SIZE,
   describeIfSepolia,
   getSettings,
   getCurrentChain,
   getChainNameFromId,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
@@ -34,10 +33,7 @@ const currentChainName = getChainNameFromId(currentChain.chainId);
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.Balance * SALT_BUCKET_SIZE;
 
 // Test wallet addresses for balance queries
 const TEST_ADDRESSES = {
@@ -49,31 +45,17 @@ const TEST_ADDRESSES = {
 
 describeIfSepolia("BalanceNode Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   describe("runNodeWithInputs Tests", () => {
     test("should retrieve balance for an address on Sepolia", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.Balance,
@@ -122,7 +104,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should retrieve balance with filters (includeSpam=false, includeZeroBalances=false)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.Balance,
@@ -164,7 +146,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should retrieve balance with minimum USD value filter", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Note: Sepolia testnet tokens typically don't have USD pricing data from Moralis
       // This test verifies that the filtering mechanism works, even if it returns empty results
@@ -216,7 +198,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should support different chain identifiers (name, short name, id)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Test different formats for the current chain
       const chains = [currentChainName, currentChain.chainName.toLowerCase(), currentChain.chainId.toString()];
@@ -252,7 +234,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should use template variables for address and chain", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.Balance,
@@ -289,7 +271,7 @@ describeIfSepolia("BalanceNode Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with balance node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const balanceNode = NodeFactory.create({
         id: getNextId(),
@@ -345,7 +327,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should simulate workflow with balance node using BlockTrigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Note: ManualTrigger does not support template variable references
       // since there is no preceding trigger output to reference.
@@ -390,7 +372,7 @@ describeIfSepolia("BalanceNode Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with balance node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -491,7 +473,7 @@ describeIfSepolia("BalanceNode Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -645,7 +627,7 @@ describeIfSepolia("BalanceNode Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should handle invalid address gracefully", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.Balance,
@@ -676,7 +658,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should handle invalid chain gracefully", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.Balance,
@@ -707,7 +689,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should reject negative minUsdValue from backend", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const params = {
         nodeType: NodeType.Balance,
@@ -800,7 +782,7 @@ describeIfSepolia("BalanceNode Tests", () => {
     });
 
     test("should support tokenAddresses parameter for specific token filtering", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Test with specific token addresses (USDC and LINK on current chain)
       const params = {

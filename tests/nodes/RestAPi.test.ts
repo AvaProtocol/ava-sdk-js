@@ -4,17 +4,15 @@ import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import {NodeType, TriggerType, ExecutionStatus} from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
-import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
@@ -23,10 +21,7 @@ const MOCK_API_BASE_URL = MOCKED_API_ENDPOINT_AGGREGATOR;
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.RestAPI * SALT_BUCKET_SIZE;
 
 interface RestApiResponse {
   status: number;
@@ -39,22 +34,10 @@ interface RestApiResponse {
 
 describe("RestAPI Node Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -147,7 +130,7 @@ describe("RestAPI Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with successful REST API call", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const restApiNode = NodeFactory.create({
         id: getNextId(),
@@ -185,7 +168,7 @@ describe("RestAPI Node Tests", () => {
     });
 
     test("should simulate workflow with REST API error", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const restApiNode = NodeFactory.create({
         id: getNextId(),
@@ -224,7 +207,7 @@ describe("RestAPI Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with REST API call", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -292,7 +275,7 @@ describe("RestAPI Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 

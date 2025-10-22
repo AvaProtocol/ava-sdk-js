@@ -77,8 +77,6 @@ export interface GetSecretsOptions extends RequestOptions {
   includeDescription?: boolean; // Include description field
 }
 export interface SecretOptions extends RequestOptions {
-  name: string;
-  value: string;
   workflowId?: string;
   orgId?: string;
 }

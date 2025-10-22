@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { describe, beforeAll, expect, it } from "@jest/globals";
-import { Client, TriggerFactory, Step } from "@avaprotocol/sdk-js";
+import { Client, TriggerFactory } from "@avaprotocol/sdk-js";
 import {
   GetSecretsOptions,
   NodeType,
@@ -9,32 +9,26 @@ import {
   Lang,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
-  SaltGlobal,
   removeCreatedWorkflows,
   removeCreatedSecrets,
   cleanupSecrets,
   getBlockNumber,
   TIMEOUT_DURATION,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 
 // Note: Helper functions for waiting for secrets removed due to server-side
 // eventual consistency issues. Tests now focus on API call success rather than
 // immediate visibility in getSecrets() responses.
-import { getConfig } from "../utils/envalid";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
 const createdSecretMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.Secrets * SALT_BUCKET_SIZE;
 const privateKey2 =
   "0x9c04bbac1942c5398ef520d66936523db8e489ef59fc33e8e66bb13664b45293";
 
@@ -43,36 +37,13 @@ describe("secret Tests", () => {
   let client2: Client;
 
   beforeAll(async () => {
-    const eoaAddress = await getAddress(walletPrivateKey);
+    // Initialize the client with test credentials
+    client = getClient();
+    await authenticateClient(client);
 
     // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
-
-    const eoaAddress2 = await getAddress(privateKey2);
-
-    // Initialize the client with test credentials
-    client2 = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message: message2 } = await client2.getSignatureFormat(eoaAddress2);
-    const signature2 = await generateSignature(message2, privateKey2);
-    const res2 = await client2.authWithSignature({
-      message: message2,
-      signature: signature2,
-    });
-
-    client2.setAuthKey(res2.authKey);
+    client2 = getClient();
+    authenticateClient(client2, privateKey2);
 
     // Clean up any existing secrets before starting tests
     await cleanupSecrets(client);
@@ -97,7 +68,7 @@ describe("secret Tests", () => {
 
       expect(result.success).toBeTruthy();
 
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const customCodeNodeProps: CustomCodeNodeProps = {
         id: getNextId(),
@@ -140,14 +111,14 @@ describe("secret Tests", () => {
         isBlocking: true,
       });
 
-      let executions = await client.getExecutions([workflowId], {
+      const executions = await client.getExecutions([workflowId], {
         limit: 1,
       });
 
       // Find the execution step that contains the secret value
       expect(executions.items.length).toBe(1);
 
-      const matchStep: Step | undefined = _.find(
+      const matchStep = _.find(
         _.first(executions.items)?.steps,
         (step) => step.id === customCodeNodeProps.id
       );
@@ -366,7 +337,6 @@ describe("secret Tests", () => {
 
       // Only test pagination if there are actually more items
       if (!firstPage.pageInfo.hasNextPage) {
-
         return;
       }
 

@@ -2,31 +2,30 @@ import util from "util";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
-import {NodeType, TriggerType, Lang, ExecutionStatus} from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  NodeType,
+  TriggerType,
+  Lang,
+  ExecutionStatus,
+} from "@avaprotocol/types";
+import {
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CustomCode * SALT_BUCKET_SIZE;
 
 describe("CustomCode Node Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   // Define all node props at the beginning for consistency
   const returnNullProps = {
@@ -117,21 +116,8 @@ describe("CustomCode Node Tests", () => {
   };
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -330,8 +316,6 @@ describe("CustomCode Node Tests", () => {
 
   describe("runNodeWithInputs Tests", () => {
     test("should execute simple JavaScript code with input variables", async () => {
-      
-
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -357,14 +341,11 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toBe(30);
-      
     });
 
     test("should execute JavaScript with lodash module", async () => {
-      
-
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -388,20 +369,15 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-
-
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       const data = result.data as any;
       expect(data).toBeDefined();
       expect(data.sum).toBe(21);
       expect(data.max).toBe(6);
-      
     });
 
     test("should execute JavaScript with date manipulation", async () => {
-      
-
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -426,20 +402,15 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-
-
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
       const data = result.data as any;
       expect(data).toBeDefined();
       expect(data.formatted).toBe("2023-12-25");
       expect(data.addDays).toBe("2024-01-01");
-      
     });
 
     test("should handle error in custom code execution", async () => {
-      
-
       const result = await client.runNodeWithInputs({
         nodeType: NodeType.CustomCode,
         nodeConfig: {
@@ -459,16 +430,14 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-
-
-            expect(typeof result.success).toBe("boolean");
+      expect(typeof result.success).toBe("boolean");
       // Expect this to fail or handle the error gracefully
     });
   });
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with custom code execution", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const customCodeNode = NodeFactory.create({
         id: getNextId(),
@@ -493,8 +462,6 @@ describe("CustomCode Node Tests", () => {
         customCodeNode,
       ]);
 
-      
-
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
@@ -502,15 +469,13 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-
-
       expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(2); // trigger + custom code node
 
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
-            expect(customCodeStep!.success).toBeTruthy();
+      expect(customCodeStep!.success).toBeTruthy();
 
       const output = customCodeStep!.output as any;
       expect(output.processedData).toEqual([2, 4, 6]);
@@ -519,7 +484,7 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("should simulate workflow with complex data processing", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create a data generation node to provide the items that the CustomCode expects
       const dataNode = NodeFactory.create({
@@ -590,13 +555,13 @@ describe("CustomCode Node Tests", () => {
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
-            expect(customCodeStep!.success).toBeTruthy();
+      expect(customCodeStep!.success).toBeTruthy();
     });
   });
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with custom code", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -634,8 +599,6 @@ describe("CustomCode Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      
-
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
@@ -652,8 +615,10 @@ describe("CustomCode Node Tests", () => {
           isBlocking: true,
         });
 
-
-        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
+        console.log(
+          "Trigger result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -701,7 +666,7 @@ describe("CustomCode Node Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -837,21 +802,21 @@ describe("CustomCode Node Tests", () => {
         expect(directResponse.data).toBeDefined();
         expect(simulatedStep?.output).toBeDefined();
         expect(executedStep?.output).toBeDefined();
-        
+
         // All outputs should have consistent structure (excluding dynamic fields)
         const directData = directResponse.data;
         const simulatedData = simulatedStep?.output;
         const executedData = executedStep?.output;
-        
+
         // Verify structure and static content match
         expect(directData.computedValue).toBe(simulatedData.computedValue);
         expect(directData.status).toBe(simulatedData.status);
         expect(directData.inputReceived).toEqual(simulatedData.inputReceived);
-        
+
         expect(simulatedData.computedValue).toBe(executedData.computedValue);
         expect(simulatedData.status).toBe(executedData.status);
         expect(simulatedData.inputReceived).toEqual(executedData.inputReceived);
-        
+
         // Verify dynamic fields exist but don't compare values
         expect(directData.executionTime).toBeDefined();
         expect(directData.processingId).toBeDefined();
@@ -988,7 +953,7 @@ describe("CustomCode Node Tests", () => {
     };
 
     test("should handle all empty data types in simulateWorkflow", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Create nodes testing all empty data return types
       const nodeParams = createEmptyDataNodes("simulate");
@@ -1013,8 +978,6 @@ describe("CustomCode Node Tests", () => {
         stringNode,
       ]);
 
-      
-
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
         inputVariables: {
@@ -1033,38 +996,38 @@ describe("CustomCode Node Tests", () => {
 
       // Verify each node returns expected values
       const nullStep = simulation.steps.find((step) => step.id === nullNode.id);
-            expect(nullStep!.success).toBeTruthy();
+      expect(nullStep!.success).toBeTruthy();
       expect(nullStep!.output).toBeNull();
 
       const emptyObjectStep = simulation.steps.find(
         (step) => step.id === emptyObjectNode.id
       );
-            expect(emptyObjectStep!.success).toBeTruthy();
+      expect(emptyObjectStep!.success).toBeTruthy();
       expect(emptyObjectStep!.output).toEqual({});
 
       const undefinedStep = simulation.steps.find(
         (step) => step.id === undefinedNode.id
       );
-            expect(undefinedStep!.success).toBeTruthy();
+      expect(undefinedStep!.success).toBeTruthy();
       // Note: undefined becomes null in protobuf conversion
       expect(undefinedStep!.output).toBeNull();
 
       const emptyArrayStep = simulation.steps.find(
         (step) => step.id === emptyArrayNode.id
       );
-            expect(emptyArrayStep!.success).toBeTruthy();
+      expect(emptyArrayStep!.success).toBeTruthy();
       expect(emptyArrayStep!.output).toEqual([]);
 
       const numberStep = simulation.steps.find(
         (step) => step.id === numberNode.id
       );
-            expect(numberStep!.success).toBeTruthy();
+      expect(numberStep!.success).toBeTruthy();
       expect(numberStep!.output).toBe(42);
 
       const stringStep = simulation.steps.find(
         (step) => step.id === stringNode.id
       );
-            expect(stringStep!.success).toBeTruthy();
+      expect(stringStep!.success).toBeTruthy();
       expect(stringStep!.output).toBe("hello");
 
       console.log(
@@ -1073,7 +1036,7 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("should handle all empty data types in submit and trigger workflow", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -1108,8 +1071,6 @@ describe("CustomCode Node Tests", () => {
         data: { interval: triggerInterval },
       });
 
-      
-
       let workflowId: string | undefined;
       try {
         // Deploy workflow
@@ -1128,7 +1089,10 @@ describe("CustomCode Node Tests", () => {
           isBlocking: true,
         });
 
-        console.log("Trigger result:", util.inspect(triggerResult, { depth: null, colors: true }));
+        console.log(
+          "Trigger result:",
+          util.inspect(triggerResult, { depth: null, colors: true })
+        );
 
         // Get execution results
         const executions = await client.getExecutions([workflowId], {
@@ -1151,38 +1115,38 @@ describe("CustomCode Node Tests", () => {
         const nullStep = execution.steps.find(
           (step) => step.id === nullNode.id
         );
-                expect(nullStep!.success).toBeTruthy();
+        expect(nullStep!.success).toBeTruthy();
         expect(nullStep!.output).toBeNull();
 
         const emptyObjectStep = execution.steps.find(
           (step) => step.id === emptyObjectNode.id
         );
-                expect(emptyObjectStep!.success).toBeTruthy();
+        expect(emptyObjectStep!.success).toBeTruthy();
         expect(emptyObjectStep!.output).toEqual({});
 
         const undefinedStep = execution.steps.find(
           (step) => step.id === undefinedNode.id
         );
-                expect(undefinedStep!.success).toBeTruthy();
+        expect(undefinedStep!.success).toBeTruthy();
         // Note: undefined becomes null in protobuf conversion
         expect(undefinedStep!.output).toBeNull();
 
         const emptyArrayStep = execution.steps.find(
           (step) => step.id === emptyArrayNode.id
         );
-                expect(emptyArrayStep!.success).toBeTruthy();
+        expect(emptyArrayStep!.success).toBeTruthy();
         expect(emptyArrayStep!.output).toEqual([]);
 
         const numberStep = execution.steps.find(
           (step) => step.id === numberNode.id
         );
-                expect(numberStep!.success).toBeTruthy();
+        expect(numberStep!.success).toBeTruthy();
         expect(numberStep!.output).toBe(42);
 
         const stringStep = execution.steps.find(
           (step) => step.id === stringNode.id
         );
-                expect(stringStep!.success).toBeTruthy();
+        expect(stringStep!.success).toBeTruthy();
         expect(stringStep!.output).toBe("hello");
 
         console.log(
@@ -1199,7 +1163,7 @@ describe("CustomCode Node Tests", () => {
 
   describe("Trigger Data Reference Tests", () => {
     test("should return direct data when referencing manual trigger data", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const triggerName = "manual_trigger_data_test";
 
       const userData = {
@@ -1228,10 +1192,10 @@ describe("CustomCode Node Tests", () => {
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [customCodeNode]);
+      const workflowProps = createFromTemplate(wallet.address, [
+        customCodeNode,
+      ]);
       workflowProps.trigger = manualTrigger;
-
-      
 
       const simulation = await client.simulateWorkflow({
         ...client.createWorkflow(workflowProps).toJson(),
@@ -1251,7 +1215,7 @@ describe("CustomCode Node Tests", () => {
       const customCodeStep = simulation.steps.find(
         (step) => step.id === customCodeNode.id
       );
-            expect(customCodeStep!.success).toBeTruthy();
+      expect(customCodeStep!.success).toBeTruthy();
 
       // CustomCode returns the trigger data directly, not wrapped in additional data field
       expect(customCodeStep!.output).toEqual(userData);
@@ -1264,7 +1228,7 @@ describe("CustomCode Node Tests", () => {
 
   describe("Module Import Tests", () => {
     test("should support uuid module import", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
