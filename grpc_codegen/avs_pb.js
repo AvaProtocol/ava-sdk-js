@@ -7656,7 +7656,8 @@ proto.aggregator.ContractWriteNode.Config.toObject = function(includeInstance, m
     contractAbiList: jspb.Message.toObjectList(msg.getContractAbiList(),
     google_protobuf_struct_pb.Value.toObject, includeInstance),
     methodCallsList: jspb.Message.toObjectList(msg.getMethodCallsList(),
-    proto.aggregator.ContractWriteNode.MethodCall.toObject, includeInstance)
+    proto.aggregator.ContractWriteNode.MethodCall.toObject, includeInstance),
+    isSimulated: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
   };
 
   if (includeInstance) {
@@ -7710,6 +7711,10 @@ proto.aggregator.ContractWriteNode.Config.deserializeBinaryFromReader = function
       var value = new proto.aggregator.ContractWriteNode.MethodCall;
       reader.readMessage(value,proto.aggregator.ContractWriteNode.MethodCall.deserializeBinaryFromReader);
       msg.addMethodCalls(value);
+      break;
+    case 5:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIsSimulated(value);
       break;
     default:
       reader.skipField();
@@ -7768,6 +7773,13 @@ proto.aggregator.ContractWriteNode.Config.serializeBinaryToWriter = function(mes
       4,
       f,
       proto.aggregator.ContractWriteNode.MethodCall.serializeBinaryToWriter
+    );
+  }
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 5));
+  if (f != null) {
+    writer.writeBool(
+      5,
+      f
     );
   }
 };
@@ -7882,6 +7894,42 @@ proto.aggregator.ContractWriteNode.Config.prototype.addMethodCalls = function(op
  */
 proto.aggregator.ContractWriteNode.Config.prototype.clearMethodCallsList = function() {
   return this.setMethodCallsList([]);
+};
+
+
+/**
+ * optional bool is_simulated = 5;
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.getIsSimulated = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 5, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.setIsSimulated = function(value) {
+  return jspb.Message.setField(this, 5, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.clearIsSimulated = function() {
+  return jspb.Message.setField(this, 5, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.hasIsSimulated = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 
@@ -26863,8 +26911,7 @@ proto.aggregator.RunNodeWithInputsReq.toObject = function(includeInstance, msg) 
   var f, obj = {
     nodeType: jspb.Message.getFieldWithDefault(msg, 1, 0),
     nodeConfigMap: (f = msg.getNodeConfigMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : [],
-    inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : [],
-    isSimulated: jspb.Message.getBooleanFieldWithDefault(msg, 4, false)
+    inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
   if (includeInstance) {
@@ -26917,10 +26964,6 @@ proto.aggregator.RunNodeWithInputsReq.deserializeBinaryFromReader = function(msg
         jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
          });
       break;
-    case 4:
-      var value = /** @type {boolean} */ (reader.readBool());
-      msg.setIsSimulated(value);
-      break;
     default:
       reader.skipField();
       break;
@@ -26964,13 +27007,6 @@ proto.aggregator.RunNodeWithInputsReq.serializeBinaryToWriter = function(message
   f = message.getInputVariablesMap(true);
   if (f && f.getLength() > 0) {
     f.serializeBinary(3, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
-  }
-  f = /** @type {boolean} */ (jspb.Message.getField(message, 4));
-  if (f != null) {
-    writer.writeBool(
-      4,
-      f
-    );
   }
 };
 
@@ -27035,42 +27071,6 @@ proto.aggregator.RunNodeWithInputsReq.prototype.getInputVariablesMap = function(
 proto.aggregator.RunNodeWithInputsReq.prototype.clearInputVariablesMap = function() {
   this.getInputVariablesMap().clear();
   return this;};
-
-
-/**
- * optional bool is_simulated = 4;
- * @return {boolean}
- */
-proto.aggregator.RunNodeWithInputsReq.prototype.getIsSimulated = function() {
-  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 4, false));
-};
-
-
-/**
- * @param {boolean} value
- * @return {!proto.aggregator.RunNodeWithInputsReq} returns this
- */
-proto.aggregator.RunNodeWithInputsReq.prototype.setIsSimulated = function(value) {
-  return jspb.Message.setField(this, 4, value);
-};
-
-
-/**
- * Clears the field making it undefined.
- * @return {!proto.aggregator.RunNodeWithInputsReq} returns this
- */
-proto.aggregator.RunNodeWithInputsReq.prototype.clearIsSimulated = function() {
-  return jspb.Message.setField(this, 4, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.aggregator.RunNodeWithInputsReq.prototype.hasIsSimulated = function() {
-  return jspb.Message.getField(this, 4) != null;
-};
 
 
 

@@ -749,6 +749,11 @@ export namespace ContractWriteNode {
         setMethodCallsList(value: Array<ContractWriteNode.MethodCall>): Config;
         addMethodCalls(value?: ContractWriteNode.MethodCall, index?: number): ContractWriteNode.MethodCall;
 
+        hasIsSimulated(): boolean;
+        clearIsSimulated(): void;
+        getIsSimulated(): boolean | undefined;
+        setIsSimulated(value: boolean): Config;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
         static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
@@ -765,6 +770,7 @@ export namespace ContractWriteNode {
             callData: string,
             contractAbiList: Array<google_protobuf_struct_pb.Value.AsObject>,
             methodCallsList: Array<ContractWriteNode.MethodCall.AsObject>,
+            isSimulated?: boolean,
         }
     }
 
@@ -3335,11 +3341,6 @@ export class RunNodeWithInputsReq extends jspb.Message {
     getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
     clearInputVariablesMap(): void;
 
-    hasIsSimulated(): boolean;
-    clearIsSimulated(): void;
-    getIsSimulated(): boolean | undefined;
-    setIsSimulated(value: boolean): RunNodeWithInputsReq;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): RunNodeWithInputsReq.AsObject;
     static toObject(includeInstance: boolean, msg: RunNodeWithInputsReq): RunNodeWithInputsReq.AsObject;
@@ -3357,7 +3358,6 @@ export namespace RunNodeWithInputsReq {
         nodeConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
 
         inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
-        isSimulated?: boolean,
     }
 }
 
