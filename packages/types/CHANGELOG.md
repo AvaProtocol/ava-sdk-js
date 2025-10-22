@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.7.3
+
+### Patch Changes
+
+- 6d542b4: Moved isSimulated from the runNodeWithInputs top-level to inside ContractWrite nodeConfig
+
 ## 2.7.2
 
 ### Patch Changes
