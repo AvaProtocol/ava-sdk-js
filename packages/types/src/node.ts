@@ -9,6 +9,7 @@ export interface ContractWriteNodeData {
   contractAddress: string;
   contractAbi: ContractAbi; // Contract ABI as array
   methodCalls: MethodCallType[]; // Required: Method calls with methodParams
+  isSimulated?: boolean; // Optional: If true (or unset), use simulation; if explicitly false, execute real UserOp
 }
 
 export interface ContractReadNodeData {
@@ -82,6 +83,7 @@ type LoopRunnerConfig =
         contractAddress: string;
         contractAbi: ContractAbi;
         methodCalls: MethodCallType[];
+        isSimulated?: boolean;
       };
     }
   | {

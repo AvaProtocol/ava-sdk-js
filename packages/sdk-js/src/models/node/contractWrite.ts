@@ -56,6 +56,12 @@ class ContractWriteNode extends Node {
       config.addMethodCalls(methodCallMsg);
     });
 
+    // Set isSimulated only if explicitly provided (optional field in protobuf)
+    // When unset, the backend defaults to true (simulation mode)
+    if (configData.isSimulated !== undefined) {
+      config.setIsSimulated(configData.isSimulated);
+    }
+
     node.setConfig(config);
     return node;
   }
@@ -81,6 +87,8 @@ class ContractWriteNode extends Node {
           // callData is optional, only include if present
           ...(call.callData && { callData: call.callData }),
         })) || [],
+      // Include isSimulated if present in protobuf
+      ...(protobufData.isSimulated !== undefined && { isSimulated: protobufData.isSimulated }),
     };
 
     return new ContractWriteNode({

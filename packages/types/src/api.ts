@@ -144,8 +144,6 @@ export interface RunNodeWithInputsRequest {
   nodeType: string;
   nodeConfig: Record<string, any>;
   inputVariables?: Record<string, any>;
-  isSimulated?: boolean; // Optional. IMPORTANT: In protobuf/JS, when unset, getIsSimulated() returns false, making it indistinguishable from explicitly false.
-  // To distinguish "unset" (default: simulate) from "explicit false", callers MUST check presence (e.g., hasIsSimulated()) rather than value alone. When unset, backend defaults to true (simulation mode).
 }
 
 /**
