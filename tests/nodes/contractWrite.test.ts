@@ -8,6 +8,7 @@ import {
   ExecutionStatus,
   ErrorCode,
   AbiElement,
+  TimeoutPresets,
 } from "@avaprotocol/types";
 import {
   getNextId,
@@ -176,6 +177,96 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   describe("runNodeWithInputs Tests", () => {
+    test("should handle approve with isSimulated: false using empty balance smart wallet", async () => {
+      // Test the new backend logic that allows wallets with 0 ETH balance to succeed
+      // via paymaster sponsorship without requiring gas reimbursement
+      // Uses approve with 0 amount to test real on-chain transaction (isSimulated: false)
+      // Expected behavior: success: true, data: { approve: {} }, with real transaction receipt
+
+      const params = {
+        nodeType: NodeType.ContractWrite,
+        nodeConfig: {
+          contractAddress: tokens.USDC.address,
+          contractAbi: ERC20_ABI,
+          methodCalls: [
+            {
+              methodName: "approve",
+              methodParams: [
+                "0x000000000022D473030F116dDEE9F6B43aC78BA3", // Permit2 contract
+                "0", // 0 amount approval
+              ],
+            },
+          ],
+          isSimulated: false, // Explicitly set to false for real transaction attempt
+        },
+        inputVariables: {
+          settings: getSettings(smartWalletAddress),
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runNodeWithInputs(params, {
+        timeout: TimeoutPresets.SLOW, // 2 minute timeout for real blockchain transaction
+      });
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // With the new logic, empty ETH balance should return success: true
+      // The new backend feature allows wallets with 0 ETH balance to succeed
+      // via paymaster sponsorship without requiring gas reimbursement
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(typeof result.data).toBe("object");
+
+      // Verify the approve method is present in the response
+      expect(result.data).toHaveProperty("approve");
+      expect(typeof result.data.approve).toBe("object");
+      
+      // Because the ABI includes the Approval event and the receipt contains an Approval log,
+      // the event data takes priority over the boolean return value.
+      // Expected structure: { owner, spender, value }
+      expect(result.data.approve).toHaveProperty("owner");
+      expect(result.data.approve).toHaveProperty("spender");
+      expect(result.data.approve).toHaveProperty("value");
+      
+      // Verify the event field values
+      expect(result.data.approve.owner).toBe(smartWalletAddress);
+      expect(result.data.approve.spender).toBe("0x000000000022D473030F116dDEE9F6B43aC78BA3");
+      expect(result.data.approve.value).toBe("0");
+
+      // Verify error is empty string
+      expect(result.error).toBe("");
+      expect(result.errorCode).toBeUndefined();
+
+      // Verify metadata structure
+      expect(result.metadata).toBeDefined();
+      expect(Array.isArray(result.metadata)).toBe(true);
+      expect(result.metadata.length).toBe(1);
+
+      // Check the metadata for the approve call
+      const approveMetadata = result.metadata[0];
+      expect(approveMetadata.methodName).toBe("approve");
+      expect(approveMetadata.success).toBe(true);
+      expect(approveMetadata.receipt).toBeDefined();
+      expect(approveMetadata.receipt.transactionHash).toBeDefined();
+      expect(approveMetadata.receipt.status).toBe("0x1");
+      expect(approveMetadata.blockNumber).toBeDefined();
+
+      // Verify executionContext
+      expect(result.executionContext).toBeDefined();
+      expect(result.executionContext.chainId).toBeDefined();
+      expect(typeof result.executionContext.chainId).toBe("number");
+      expect(result.executionContext.isSimulated).toBeNull();
+      expect(result.executionContext.provider).toBe("chain_rpc");
+    }, 120000); // 2 minute timeout for real blockchain transaction
+
     test("should handle ERC20 transfer transaction", async () => {
       // Test configuration variables - use centralized funded smart wallet (newest implementation)
       const recipientAddress = smartWalletAddress; // Use funded smart wallet as recipient
