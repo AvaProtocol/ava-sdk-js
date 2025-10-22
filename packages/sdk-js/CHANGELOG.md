@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.9.3
+
+### Patch Changes
+
+- 6d542b4: Moved isSimulated from the runNodeWithInputs top-level to inside ContractWrite nodeConfig
+- Updated dependencies [6d542b4]
+  - @avaprotocol/types@2.7.3
+
 ## 2.9.2
 
 ### Patch Changes
