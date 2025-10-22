@@ -1,79 +1,40 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType } from "@avaprotocol/types";
+import { TriggerType, NodeType, AbiElement } from "@avaprotocol/types";
 import util from "util";
-import { getConfig } from "../utils/envalid";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
   getSmartWalletWithBalance,
+  getClient,
+  authenticateClient,
+  getChainNameFromId,
 } from "../utils/utils";
-
-/**
- * Test the isSimulated parameter functionality with a Uniswap V3 workflow
- *
- * ALIGNED WITH GO TESTS:
- * - EigenLayer-AVS/core/taskengine/execute_sequential_contract_writes_test.go
- * - EigenLayer-AVS/core/taskengine/execute_uniswap_approval_test.go
- *
- * Configuration (matches Go test constants):
- * - Chain: Sepolia (11155111)
- * - USDC: 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
- * - WETH: 0xfff9976782d46cc05630d1f6ebab18b2324d6b14
- * - SwapRouter: 0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E
- * - QuoterV2: 0xEd1f6473345F45b75f8179591dd5bA1888cf2FB3
- * - Fee Tier: 500 (0.05%) - SEPOLIA_FEE_TIER
- * - Swap Amount: 10000 (0.01 USDC) - SEPOLIA_SWAP_AMOUNT
- *
- * Test Coverage:
- * 1. Individual node tests (simulation mode)
- * 2. Individual node tests (real execution mode)
- * 3. Complete approve + swap workflow (real execution on Sepolia)
- * 4. Approval amount validation (equal vs higher approval)
- * 5. Simulation vs real execution comparison
- * 6. Mixed simulation modes in workflow
- *
- * Critical Validation (from Go tests):
- * - Approval EQUAL to swap amount = FAILS (Uniswap takes fees)
- * - Approval HIGHER than swap amount = SUCCEEDS
- */
-
-const { avsEndpoint, walletPrivateKey } = getConfig();
+import { getConfig } from "../utils/envalid";
+const { chainId } = getConfig();
 
 // Set timeout to 240 seconds for this test suite
 jest.setTimeout(TIMEOUT_DURATION * 4);
 
 let client: Client;
-let eoaAddress: string;
 let smartWalletAddress: string;
 
 beforeAll(async () => {
-  eoaAddress = await getAddress(walletPrivateKey);
-
-  client = new Client({ endpoint: avsEndpoint });
-  const { message } = await client.getSignatureFormat(eoaAddress);
-  const signature = await generateSignature(message, walletPrivateKey);
-  const res = await client.authWithSignature({ message, signature });
-  client.setAuthKey(res.authKey);
-
-  // Derive smart wallet address using centralized funded wallet (newest implementation)
-  const wallet = await getSmartWalletWithBalance(client);
-  smartWalletAddress = wallet.address;
+  client = getClient();
+  await authenticateClient(client);
+  const smartWallet = await getSmartWalletWithBalance(client);
+  smartWalletAddress = smartWallet.address;
 });
 
 describe("Templates - Test Single Approve with Simulation Parameter", () => {
   const workflowConfig = {
     name: "Test Single Approve with max",
-    chainId: 11155111,
+    chainId: parseInt(chainId),
     settings: {
-      chain: "Sepolia",
+      chain: getChainNameFromId(parseInt(chainId)),
       amount: "10000", // 0.01 USDC (6 decimals) - matches Go test for repeated testing
-      get runner() {
-        return smartWalletAddress;
-      }, // Getter: returns smart wallet from salt:0
-      chain_id: 11155111,
+      runner: smartWalletAddress,
+      chain_id: parseInt(chainId),
       uniswapv3_pool: {
         id: "0xee8027d8430344ba3419f844ba858ac7f1a92095",
         token0: {
@@ -94,7 +55,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     },
   };
 
-  const USDC_ABI = [
+  const USDC_ABI: AbiElement[] = [
     {
       name: "approve",
       type: "function" as const,
@@ -245,10 +206,6 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
   ];
 
   test("runNodeWithInputs - contractRead (quoteExactInputSingle) - default simulation mode", async () => {
-    console.log(
-      "Testing runNodeWithInputs with contractRead (quoteExactInputSingle) - default simulation mode..."
-    );
-
     // Test balance node with simulation (default)
     const balanceResult = await client.runNodeWithInputs({
       nodeType: "balance",
@@ -406,19 +363,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
   });
 
   test("runNodeWithInputs - contractWrite real execution validates approval persistence", async () => {
-    console.log(
-      "\nTesting runNodeWithInputs with contractWrite real execution validates approval persistence on Sepolia...\n"
-    );
-
-    // Step 0: Use authenticated user's funded smart wallet address (already derived in beforeAll)
-    console.log(
-      "Authenticated User (EOA):",
-      eoaAddress,
-      "\nSmart Wallet:",
-      smartWalletAddress
-    );
-
-    console.log("Chain: Sepolia (11155111)");
+    console.log("Chain:",workflowConfig.settings.chain);
     console.log("USDC:", workflowConfig.settings.uniswapv3_pool.token1.id);
     console.log(
       "SwapRouter:",
@@ -566,10 +511,6 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
   });
 
   test("runNodeWithInputs - contractWrite (approve) - simulation vs real execution comparison", async () => {
-    console.log(
-      "Testing runNodeWithInputs with contractWrite (approve) - comparing simulation vs real execution..."
-    );
-
     // Test the same balance node call with both modes
     const nodeConfig = {
       address: workflowConfig.settings.runner,
@@ -619,10 +560,6 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
   });
 
   test("runNodeWithInputs - contractWrite (approve) - explicit isSimulated parameter behavior", async () => {
-    console.log(
-      "Testing runNodeWithInputs with contractWrite (approve) - validating explicit isSimulated parameter behavior..."
-    );
-
     const contractWriteConfig = {
       contractAddress: workflowConfig.settings.uniswapv3_pool.token1.id,
       contractAbi: USDC_ABI,

@@ -1,23 +1,24 @@
 import util from "util";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import {TriggerType,
+import {
+  TriggerType,
   NodeType,
   WorkflowStatus,
   ExecutionStatus,
-  Lang
+  Lang,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  getEOAAddress,
+  authenticateClient,
   TIMEOUT_DURATION,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
   getSettings,
   getCurrentChain,
   getChainNameFromId,
+  getSmartWallet,
+  getClient,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { tokens, avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { tokens, chainId } = getConfig();
 
 // Get current chain information
 const currentChain = getCurrentChain();
@@ -31,9 +32,7 @@ jest.setTimeout(TIMEOUT_DURATION);
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
   let eoaAddress: string;
-  let testWalletAddress: string;
   const createdWorkflowIds: string[] = [];
-  let saltIndex = SaltGlobal.TelegramTemplate * SALT_BUCKET_SIZE; // Reserved bucket for this suite
 
   // Real client data for USDC transfer monitoring
   const REAL_WALLET_ADDRESS = "0xB3Fb744d8B811B4fb19586cdbEc821b4aAFbEEe7";
@@ -53,22 +52,9 @@ describe("Template: Telegram Alert on Transfer", () => {
   };
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    testWalletAddress = await getAddress(walletPrivateKey);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    eoaAddress = await getEOAAddress();
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterAll(async () => {
@@ -97,7 +83,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             addresses: [USDC_CONTRACT_ADDRESS],
             topics: [
               {
-                values: [TRANSFER_TOPIC, testWalletAddress, ""],
+                values: [TRANSFER_TOPIC, eoaAddress, ""],
               },
             ],
             maxEventsPerBlock: 100,
@@ -148,7 +134,7 @@ describe("Template: Telegram Alert on Transfer", () => {
             addresses: [USDC_CONTRACT_ADDRESS],
             topics: [
               {
-                values: [TRANSFER_TOPIC, "", testWalletAddress],
+                values: [TRANSFER_TOPIC, "", eoaAddress],
               },
             ],
             maxEventsPerBlock: 100,
@@ -286,18 +272,16 @@ return message;`,
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(typeof result.success).toBe("boolean");
-      
+      expect(typeof result.success).toBe("boolean");
 
       // For event triggers, no matching events is a valid outcome
       expect(result.success).toBe(true);
 
-      // In test environment, we might get mock event data or null
-      // Both are valid outcomes for this test
+      // TODO: double check the event trigger response and fix this test
       if (result.data === null) {
         console.log(
           "ℹ️  No Transfer events found for address (expected):",
-          testWalletAddress
+          eoaAddress
         );
       } else {
         // If we get mock data, verify it has the expected structured event data
@@ -320,7 +304,7 @@ return message;`,
           data: {
             // Structured fields created by backend event parsing with applyToFields
             fromAddress: "0x1234567890123456789012345678901234567890",
-            toAddress: testWalletAddress,
+            toAddress: eoaAddress,
             value: "100.5", // Decimal-formatted value (applyToFields: ["Transfer.value"])
             tokenSymbol: "USDC",
             blockTimestamp: Date.now(),
@@ -332,13 +316,13 @@ return message;`,
             topics: [
               "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
               "0x0000000000000000000000001234567890123456789012345678901234567890",
-              `0x000000000000000000000000${testWalletAddress.slice(2)}`,
+              `0x000000000000000000000000${eoaAddress.slice(2)}`,
             ],
             transactionHash:
               "0x000000000000000000000000000000000000000000000000185331f3d274a668",
           },
           input: {
-            address: testWalletAddress,
+            address: eoaAddress,
             chainName: currentChainName,
             tokens: [{ symbol: "USDC", name: "USD Coin", decimals: 6 }],
           },
@@ -374,9 +358,9 @@ return message;`,
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(typeof result.data).toBe("string");
-      expect(result.data).toContain("⬇️ Received"); // Should be "Received" since to === testWalletAddress
+      expect(result.data).toContain("⬇️ Received"); // Should be "Received" since to === eoaAddress
       expect(result.data).toContain("USDC");
       expect(result.data).toContain("100.5"); // Exact match since we're using pre-formatted value
       expect(result.data).toContain("Sepolia"); // Should include chain name
@@ -433,11 +417,11 @@ return message;`,
       };
 
       const workflow = client.createWorkflow(workflowProps);
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const simulationResult = await client.simulateWorkflow({
         ...workflow,
         inputVariables: {
-        settings: getSettings(wallet.address),
+          settings: getSettings(wallet.address),
         },
       });
 
@@ -470,7 +454,7 @@ return message;`,
 
       // CRITICAL: Validate that the CustomCode execution succeeds with structured event trigger data
       expect(customCodeStep.success).toBeTruthy();
-            expect(typeof customCodeStep.output).toBe("string");
+      expect(typeof customCodeStep.output).toBe("string");
     });
   });
 
@@ -481,10 +465,7 @@ return message;`,
       const telegramNode = createTelegramNode();
       const edges = createWorkflowEdges();
 
-      // Get a test wallet using numeric salt
-      const wallet = await client.getWallet({
-        salt: (12000 + (Date.now() % 1000)).toString(),
-      });
+      const wallet = await getSmartWallet(client);
 
       const workflowData = {
         smartWalletAddress: wallet.address,
@@ -530,9 +511,7 @@ return message;`,
       const telegramNode = createTelegramNode();
       const edges = createWorkflowEdges();
 
-      const wallet = await client.getWallet({
-        salt: (13000 + (Date.now() % 1000)).toString(),
-      });
+      const wallet = await getSmartWallet(client);
 
       const workflowData = {
         smartWalletAddress: wallet.address,
@@ -574,7 +553,9 @@ return message;`,
       expect(savedTelegramNode).toBeDefined();
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((savedTelegramNode!.data as any).url).toContain("mock-api.ap-aggregator.local/post");
+      expect((savedTelegramNode!.data as any).url).toContain(
+        "mock-api.ap-aggregator.local/post"
+      );
     });
   });
 });

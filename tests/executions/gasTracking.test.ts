@@ -1,32 +1,26 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
-import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
 import Edge from "../../packages/sdk-js/src/models/edge";
-import { NodeType, TriggerType, ExecutionStatus } from "@avaprotocol/types";
+import { NodeType, TriggerType, ExecutionStatus, ExecutionMode, ContractAbi } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
-  TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
-  getBlockNumber,
-  TEST_SMART_WALLET_ADDRESS,
-  SALT_BUCKET_SIZE,
   describeIfSepolia,
+  getSmartWalletWithBalance,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(60000); // Increase from 30s to 60s for gas tests
 
-const { avsEndpoint, walletPrivateKey, tokens } = getConfig();
+const { tokens } = getConfig();
 
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.ContractWrite * SALT_BUCKET_SIZE + 1000; // Offset to avoid conflicts
 
 // Standard ERC20 ABI for testing (transfer function)
-const ERC20_ABI: any[] = [
+const ERC20_ABI: ContractAbi = [
   {
     constant: false,
     inputs: [
@@ -65,24 +59,15 @@ const ERC20_ABI: any[] = [
 
 describeIfSepolia("Gas Tracking Tests", () => {
   let client: Client;
-  let eoaAddress: string;
+  let smartWalletAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
+    
+    // Get the funded smart wallet address
+    const wallet = await getSmartWalletWithBalance(client);
+    smartWalletAddress = wallet.address;
   });
 
   afterEach(async () => {
@@ -94,14 +79,13 @@ describeIfSepolia("Gas Tracking Tests", () => {
 
   describe("ETH Transfer Gas Tracking", () => {
     test("should include gas tracking fields in ETH transfer execution", async () => {
-      const wallet = await client.getWallet({ salt: "0" }); // Use funded wallet
-      const recipientAddress = TEST_SMART_WALLET_ADDRESS;
+      const recipientAddress = smartWalletAddress;
       const transferAmount = "1000000000000000"; // 0.001 ETH in wei
       let workflowId: string | undefined;
 
       try {
         // Create workflow with ETH transfer node
-        const workflowProps = createFromTemplate(wallet.address);
+        const workflowProps = createFromTemplate(smartWalletAddress);
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
           name: "manualTrigger",
@@ -169,14 +153,14 @@ describeIfSepolia("Gas Tracking Tests", () => {
             expect(typeof ethTransferStep.totalGasCost).toBe("string");
 
             // Values should be parseable as numbers and non-negative
-            expect(parseInt(ethTransferStep.gasUsed)).toBeGreaterThan(0);
-            expect(parseInt(ethTransferStep.gasPrice)).toBeGreaterThan(0);
-            expect(parseInt(ethTransferStep.totalGasCost)).toBeGreaterThan(0);
+            expect(parseInt(ethTransferStep.gasUsed!)).toBeGreaterThan(0);
+            expect(parseInt(ethTransferStep.gasPrice!)).toBeGreaterThan(0);
+            expect(parseInt(ethTransferStep.totalGasCost!)).toBeGreaterThan(0);
 
             // Total gas cost should equal gasUsed * gasPrice
             const expectedTotalCost =
-              BigInt(ethTransferStep.gasUsed) * BigInt(ethTransferStep.gasPrice);
-            expect(BigInt(ethTransferStep.totalGasCost)).toBe(expectedTotalCost);
+              BigInt(ethTransferStep.gasUsed!) * BigInt(ethTransferStep.gasPrice!);
+            expect(BigInt(ethTransferStep.totalGasCost!)).toBe(expectedTotalCost);
           } else {
             console.log("ETH transfer step found but gas tracking data missing (operation may have failed early)");
           }
@@ -209,14 +193,13 @@ describeIfSepolia("Gas Tracking Tests", () => {
 
   describe("Contract Write Gas Tracking", () => {
     test("should include gas tracking fields in contract write execution", async () => {
-      const wallet = await client.getWallet({ salt: "0" }); // Use funded wallet
-      const recipientAddress = TEST_SMART_WALLET_ADDRESS;
+      const recipientAddress = smartWalletAddress;
       const transferAmount = "1"; // 1 wei to minimize balance issues
       let workflowId: string | undefined;
 
       try {
         // Create workflow with contract write node
-        const workflowProps = createFromTemplate(wallet.address);
+        const workflowProps = createFromTemplate(smartWalletAddress);
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
           name: "manualTrigger",
@@ -287,21 +270,21 @@ describeIfSepolia("Gas Tracking Tests", () => {
           expect(typeof contractWriteStep.totalGasCost).toBe("string");
 
           // Values should be parseable as numbers and non-negative
-          expect(parseInt(contractWriteStep.gasUsed)).toBeGreaterThan(0);
-          expect(parseInt(contractWriteStep.gasPrice)).toBeGreaterThan(0);
-          expect(parseInt(contractWriteStep.totalGasCost)).toBeGreaterThan(0);
+          expect(parseInt(contractWriteStep.gasUsed!)).toBeGreaterThan(0);
+          expect(parseInt(contractWriteStep.gasPrice!)).toBeGreaterThan(0);
+          expect(parseInt(contractWriteStep.totalGasCost!)).toBeGreaterThan(0);
 
           // Total gas cost should equal gasUsed * gasPrice
           const expectedTotalCost =
-            BigInt(contractWriteStep.gasUsed) * BigInt(contractWriteStep.gasPrice);
-          expect(BigInt(contractWriteStep.totalGasCost)).toBe(expectedTotalCost);
+            BigInt(contractWriteStep.gasUsed!) * BigInt(contractWriteStep.gasPrice!);
+          expect(BigInt(contractWriteStep.totalGasCost!)).toBe(expectedTotalCost);
 
           // Get the full execution details to validate execution-level gas cost
           const execution = await client.getExecution(workflowId, triggerResult.executionId);
           expect(execution).toBeDefined();
           expect(execution.totalGasCost).toBeDefined();
           expect(typeof execution.totalGasCost).toBe("string");
-          expect(parseInt(execution.totalGasCost)).toBeGreaterThan(0);
+          expect(parseInt(execution.totalGasCost!)).toBeGreaterThan(0);
 
           // Execution total gas cost should match step total for single contract write
           expect(execution.totalGasCost).toBe(contractWriteStep.totalGasCost);
@@ -333,14 +316,13 @@ describeIfSepolia("Gas Tracking Tests", () => {
 
   describe("Loop Node Gas Tracking", () => {
     test("should aggregate gas costs for loop node with ETH transfer runner", async () => {
-      const wallet = await client.getWallet({ salt: "0" }); // Use funded wallet
-      const recipients = [TEST_SMART_WALLET_ADDRESS, "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"];
+      const recipients = [smartWalletAddress, smartWalletAddress];
       const transferAmount = "1000000000000000"; // 0.001 ETH in wei
       let workflowId: string | undefined;
 
       try {
         // Create workflow with manual trigger providing array data
-        const workflowProps = createFromTemplate(wallet.address);
+        const workflowProps = createFromTemplate(smartWalletAddress);
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
           name: "manualTrigger",
@@ -361,7 +343,7 @@ describeIfSepolia("Gas Tracking Tests", () => {
               inputNodeName: "manualTrigger",
               iterVal: "recipient",
               iterKey: "index",
-              executionMode: "sequential", // ETH transfers always run sequentially
+              executionMode: ExecutionMode.Sequential, // ETH transfers always run sequentially
               runner: {
                 type: "ethTransfer",
                 config: {
@@ -418,14 +400,14 @@ describeIfSepolia("Gas Tracking Tests", () => {
             expect(typeof loopStep.totalGasCost).toBe("string");
 
             // Values should be parseable as numbers and non-negative
-            expect(parseInt(loopStep.gasUsed)).toBeGreaterThan(0);
-            expect(parseInt(loopStep.gasPrice)).toBeGreaterThan(0);
-            expect(parseInt(loopStep.totalGasCost)).toBeGreaterThan(0);
+            expect(parseInt(loopStep.gasUsed!)).toBeGreaterThan(0);
+            expect(parseInt(loopStep.gasPrice!)).toBeGreaterThan(0);
+            expect(parseInt(loopStep.totalGasCost!)).toBeGreaterThan(0);
 
             // Loop gas cost should be higher than single transfer since it runs multiple iterations
             // (Note: This assumes the loop ran multiple iterations)
             const singleTransferGasEstimate = 21000; // Basic ETH transfer gas limit
-            expect(parseInt(loopStep.gasUsed)).toBeGreaterThan(singleTransferGasEstimate);
+            expect(parseInt(loopStep.gasUsed!)).toBeGreaterThan(singleTransferGasEstimate);
           } else {
             console.log("Loop step found but gas data missing - loop may have failed before execution");
           }
@@ -459,14 +441,14 @@ describeIfSepolia("Gas Tracking Tests", () => {
     });
 
     test("should aggregate gas costs for loop node with contract write runner", async () => {
-      const wallet = await client.getWallet({ salt: "0" }); // Use funded wallet
-      const recipients = [TEST_SMART_WALLET_ADDRESS, "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"];
+
+      const recipients = [smartWalletAddress, "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"];
       const transferAmount = "0"; // 0 tokens to avoid balance issues
       let workflowId: string | undefined;
 
       try {
         // Create workflow with manual trigger providing array data
-        const workflowProps = createFromTemplate(wallet.address);
+        const workflowProps = createFromTemplate(smartWalletAddress);
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
           name: "manualTrigger",
@@ -487,7 +469,7 @@ describeIfSepolia("Gas Tracking Tests", () => {
               inputNodeName: "manualTrigger",
               iterVal: "recipient",
               iterKey: "index",
-              executionMode: "sequential", // Contract writes always run sequentially
+              executionMode: ExecutionMode.Sequential, // Contract writes always run sequentially
               runner: {
                 type: "contractWrite",
                 config: {
@@ -550,13 +532,13 @@ describeIfSepolia("Gas Tracking Tests", () => {
             expect(typeof loopStep.totalGasCost).toBe("string");
 
             // Values should be parseable as numbers and non-negative
-            expect(parseInt(loopStep.gasUsed)).toBeGreaterThan(0);
-            expect(parseInt(loopStep.gasPrice)).toBeGreaterThan(0);
-            expect(parseInt(loopStep.totalGasCost)).toBeGreaterThan(0);
+            expect(parseInt(loopStep.gasUsed!)).toBeGreaterThan(0);
+            expect(parseInt(loopStep.gasPrice!)).toBeGreaterThan(0);
+            expect(parseInt(loopStep.totalGasCost!)).toBeGreaterThan(0);
 
             // Loop gas cost should be higher than single contract call since it runs multiple iterations
             const singleContractCallGasEstimate = 50000; // Typical ERC20 transfer gas usage
-            expect(parseInt(loopStep.gasUsed)).toBeGreaterThan(singleContractCallGasEstimate);
+            expect(parseInt(loopStep.gasUsed!)).toBeGreaterThan(singleContractCallGasEstimate);
           } else {
             console.log("Loop step found but gas data missing - loop may have failed before execution");
           }
@@ -592,17 +574,14 @@ describeIfSepolia("Gas Tracking Tests", () => {
 
   describe("Multi-Step Gas Aggregation", () => {
     test("should correctly aggregate gas costs across multiple blockchain operations", async () => {
-      // Run resource-intensive tests in isolation
-      // Ensures these don't run in parallel with other heavy tests
-      const wallet = await client.getWallet({ salt: "0" }); // Use funded wallet
-      const recipientAddress = TEST_SMART_WALLET_ADDRESS;
+      const recipientAddress = smartWalletAddress;
       const ethTransferAmount = "1000000000000000"; // 0.001 ETH in wei
       const tokenTransferAmount = "0"; // 0 tokens to avoid balance issues
       let workflowId: string | undefined;
 
       try {
         // Create workflow with multiple blockchain operations
-        const workflowProps = createFromTemplate(wallet.address);
+        const workflowProps = createFromTemplate(smartWalletAddress);
         workflowProps.trigger = TriggerFactory.create({
           id: defaultTriggerId,
           name: "manualTrigger",
@@ -695,9 +674,9 @@ describeIfSepolia("Gas Tracking Tests", () => {
           expect(step.gasUsed).toBeDefined();
           expect(step.gasPrice).toBeDefined();
           expect(step.totalGasCost).toBeDefined();
-          expect(parseInt(step.gasUsed)).toBeGreaterThan(0);
-          expect(parseInt(step.gasPrice)).toBeGreaterThan(0);
-          expect(parseInt(step.totalGasCost)).toBeGreaterThan(0);
+          expect(parseInt(step.gasUsed!)).toBeGreaterThan(0);
+          expect(parseInt(step.gasPrice!)).toBeGreaterThan(0);
+          expect(parseInt(step.totalGasCost!)).toBeGreaterThan(0);
         });
 
         // Get the full execution details to validate execution-level gas cost aggregation
@@ -711,14 +690,14 @@ describeIfSepolia("Gas Tracking Tests", () => {
           // If we have multiple successful steps, validate aggregation
           if (successfulSteps.length > 1) {
             const totalStepCosts = successfulSteps.reduce(
-              (sum, step) => sum + BigInt(step.totalGasCost), 
+              (sum, step) => sum + BigInt(step.totalGasCost!), 
               BigInt(0)
             );
-            expect(BigInt(execution.totalGasCost)).toBe(totalStepCosts);
+            expect(BigInt(execution.totalGasCost!)).toBe(totalStepCosts);
             
             // Execution total should be greater than any individual step
             successfulSteps.forEach((step) => {
-              expect(parseInt(execution.totalGasCost)).toBeGreaterThan(parseInt(step.totalGasCost));
+              expect(parseInt(execution.totalGasCost!)).toBeGreaterThan(parseInt(step.totalGasCost!));
             });
           } else if (successfulSteps.length === 1) {
             // For single successful step, execution total should match step total

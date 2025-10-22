@@ -2,44 +2,27 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import { NodeType } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   TIMEOUT_DURATION,
   getSettings,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
-import { getConfig } from "../utils/envalid";
 import util from "util";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 describe("RunNodeWithInputs", () => {
-  let eoaAddress: string;
   let client: Client;
-  let saltIndex = SaltGlobal.RunNodeWithInputs * SALT_BUCKET_SIZE;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   describe("isSimulated parameter behavior", () => {
     test("should ignore isSimulated parameter for read-only operations", async () => {
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       
       const nodeConfig = {
         address: wallet.address,
@@ -81,7 +64,7 @@ describe("RunNodeWithInputs", () => {
 
   describe("ContractWrite with isSimulated parameter", () => {
     test("should use Tenderly simulation when isSimulated is true", async () => {
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       
       // USDC contract on Sepolia
       const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
@@ -140,7 +123,7 @@ describe("RunNodeWithInputs", () => {
     });
 
     test("should attempt real UserOp execution when isSimulated is false", async () => {
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       
       // USDC contract on Sepolia
       const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";

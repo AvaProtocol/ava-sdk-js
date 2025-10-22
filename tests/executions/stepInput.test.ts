@@ -8,48 +8,29 @@ import {
   Lang,
 } from "@avaprotocol/types";
 import util from "util";
-import _ from "lodash";
 import {
-  getAddress,
-  generateSignature,
   TIMEOUT_DURATION,
   getNextId,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
-import { getConfig } from "../utils/envalid";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.StepInput * SALT_BUCKET_SIZE; // Reserve a distinct range for this suite
-
 describe("Input Field Tests", () => {
-  let ownerAddress: string;
   let client: Client;
 
   beforeAll(async () => {
-    ownerAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(ownerAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   // Test to verify validation is working
   test("should reject workflow with invalid node name", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
     // Create a trigger with valid name
     const validTrigger = TriggerFactory.create({
@@ -98,7 +79,7 @@ describe("Input Field Tests", () => {
   });
 
   test("should show input data for both trigger and node in execution steps using comprehensive manual trigger config", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     const triggerName = "ManualTriggerWithInput";
@@ -383,7 +364,7 @@ describe("Input Field Tests", () => {
 
     // This is the EXACT call that was failing for the original client
     // The error would occur when simulateWorkflow processes the execution steps
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
     let result;
     expect(async () => {
       result = await client.simulateWorkflow({
@@ -473,7 +454,7 @@ describe("Input Field Tests", () => {
   });
 
   test("should handle EventTrigger input field correctly (reproducing server-side input nil issue)", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
     const eventTrigger = TriggerFactory.create({
       id: getNextId(),
       name: "event_trigger_with_input",

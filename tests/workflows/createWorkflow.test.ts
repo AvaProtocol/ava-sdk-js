@@ -9,13 +9,13 @@ import {
 } from "@avaprotocol/sdk-js";
 import { NodeType, WorkflowStatus, TriggerType } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   compareResults,
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
+  getEOAAddress,
 } from "../utils/utils";
 
 import {
@@ -23,39 +23,21 @@ import {
   MultiNodeWithBranch,
   defaultTriggerId,
 } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 // Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
-
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
-let saltIndex = SaltGlobal.CreateWorkflow * SALT_BUCKET_SIZE;
 
 describe("createWorkflow Tests", () => {
   let eoaAddress: string;
   let client: Client;
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    eoaAddress = await getEOAAddress();
+    client = getClient();
+    await authenticateClient(client);
   });
 
   test("should create a task when authenticated with signature", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -86,7 +68,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create cron trigger", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -112,7 +94,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create fixed time trigger", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -138,7 +120,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create event trigger", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -248,7 +230,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create event trigger with topic matching", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -315,7 +297,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create block trigger", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     try {
@@ -346,7 +328,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("create complex task with multi nodes and edge", async () => {
-    const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+    const wallet = await getSmartWallet(client);
 
     const workflowData = {
       ...MultiNodeWithBranch,

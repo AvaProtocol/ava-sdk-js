@@ -1,48 +1,34 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import _ from "lodash";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { NodeType, TriggerType, ExecutionStatus } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  NodeType,
+  TriggerType,
+  ExecutionStatus,
+  Lang,
+} from "@avaprotocol/types";
+import {
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   getBlockNumber,
   removeCreatedWorkflows,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  authenticateClient,
+  getClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.BranchNode * SALT_BUCKET_SIZE;
 
 describe("BranchNode Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -205,7 +191,7 @@ describe("BranchNode Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with branch node condition evaluation", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const branchNode = NodeFactory.create({
         id: getNextId(),
@@ -242,7 +228,7 @@ describe("BranchNode Tests", () => {
     });
 
     test("should simulate workflow with false condition", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const branchNode = NodeFactory.create({
         id: getNextId(),
@@ -279,7 +265,7 @@ describe("BranchNode Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with branch node", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -351,7 +337,7 @@ describe("BranchNode Tests", () => {
 
   describe("Condition Evaluation Consistency Tests", () => {
     test("should return consistent condition evaluation across all three methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -452,7 +438,7 @@ describe("BranchNode Tests", () => {
   // --- New gating tests ---
   describe("Branch gating of successors", () => {
     test("simulateWorkflow: true -> NodeA only; false -> NodeB only", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Case 1: condition true -> NodeA
       const branchTrue = NodeFactory.create({
@@ -470,13 +456,13 @@ describe("BranchNode Tests", () => {
         id: getNextId(),
         name: "NodeA_T",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { a: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { a: 1 }" },
       });
       const nodeBT = NodeFactory.create({
         id: getNextId(),
         name: "NodeB_T",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { b: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { b: 1 }" },
       });
       const triggerT = TriggerFactory.create({
         id: defaultTriggerId,
@@ -501,11 +487,14 @@ describe("BranchNode Tests", () => {
           target: nodeBT.id,
         }),
       ];
-      const wfTrue = {
-        trigger: triggerT,
-        nodes: [branchTrue, nodeAT, nodeBT],
-        edges: edgesT,
-      };
+      const wfTrue = createFromTemplate(wallet.address, [
+        branchTrue,
+        nodeAT,
+        nodeBT,
+      ]);
+      wfTrue.trigger = triggerT;
+      wfTrue.edges = edgesT;
+
       const simTrue = await client.simulateWorkflow({
         ...client.createWorkflow(wfTrue).toJson(),
         inputVariables: {
@@ -533,13 +522,13 @@ describe("BranchNode Tests", () => {
         id: getNextId(),
         name: "NodeA_F",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { a: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { a: 1 }" },
       });
       const nodeBF = NodeFactory.create({
         id: getNextId(),
         name: "NodeB_F",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { b: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { b: 1 }" },
       });
       const triggerF = TriggerFactory.create({
         id: defaultTriggerId,
@@ -564,11 +553,14 @@ describe("BranchNode Tests", () => {
           target: nodeBF.id,
         }),
       ];
-      const wfFalse = {
-        trigger: triggerF,
-        nodes: [branchFalse, nodeAF, nodeBF],
-        edges: edgesF,
-      };
+      const wfFalse = createFromTemplate(wallet.address, [
+        branchFalse,
+        nodeAF,
+        nodeBF,
+      ]);
+      wfFalse.trigger = triggerF;
+      wfFalse.edges = edgesF;
+
       const simFalse = await client.simulateWorkflow({
         ...client.createWorkflow(wfFalse).toJson(),
         inputVariables: {
@@ -582,6 +574,7 @@ describe("BranchNode Tests", () => {
     });
 
     test("deployed workflow: true -> NodeA only; false -> NodeB only", async () => {
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 4;
 
@@ -601,13 +594,13 @@ describe("BranchNode Tests", () => {
         id: getNextId(),
         name: "NodeA_true",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { a: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { a: 1 }" },
       });
       const nodeBTD = NodeFactory.create({
         id: getNextId(),
         name: "NodeB_true",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { b: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { b: 1 }" },
       });
       const triggerDeploy = TriggerFactory.create({
         id: defaultTriggerId,
@@ -632,11 +625,13 @@ describe("BranchNode Tests", () => {
           target: nodeBTD.id,
         }),
       ];
-      const wfTrue = {
-        trigger: triggerDeploy,
-        nodes: [branchT, nodeATD, nodeBTD],
-        edges: edgesDT,
-      };
+      const wfTrue = createFromTemplate(wallet.address, [
+        branchT,
+        nodeATD,
+        nodeBTD,
+      ]);
+      wfTrue.trigger = triggerDeploy;
+      wfTrue.edges = edgesDT;
 
       let wfIdTrue: string | undefined;
       try {
@@ -682,13 +677,13 @@ describe("BranchNode Tests", () => {
         id: getNextId(),
         name: "NodeA_false",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { a: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { a: 1 }" },
       });
       const nodeBFD = NodeFactory.create({
         id: getNextId(),
         name: "NodeB_false",
         type: NodeType.CustomCode,
-        data: { lang: 0, source: "return { b: 1 }" },
+        data: { lang: Lang.JavaScript, source: "return { b: 1 }" },
       });
       const edgesDF = [
         new Edge({
@@ -707,11 +702,14 @@ describe("BranchNode Tests", () => {
           target: nodeBFD.id,
         }),
       ];
-      const wfFalse = {
-        trigger: triggerDeploy,
-        nodes: [branchF, nodeAFD, nodeBFD],
-        edges: edgesDF,
-      };
+
+      const wfFalse = createFromTemplate(wallet.address, [
+        branchF,
+        nodeAFD,
+        nodeBFD,
+      ]);
+      wfFalse.trigger = triggerDeploy;
+      wfFalse.edges = edgesDF;
 
       let wfIdFalse: string | undefined;
       try {

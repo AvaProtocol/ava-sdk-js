@@ -8,27 +8,21 @@ import {
   Lang,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  authenticateClient,
+  getClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.CronTrigger * SALT_BUCKET_SIZE;
 
 describe("CronTrigger Tests", () => {
   let client: Client;
-  let coreAddress: string;
 
   // Define trigger props at the beginning
   const missingSchedulesTriggerProps = {
@@ -138,21 +132,8 @@ describe("CronTrigger Tests", () => {
   };
 
   beforeAll(async () => {
-    coreAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(coreAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
@@ -423,7 +404,7 @@ describe("CronTrigger Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should simulate workflow with cron trigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const cronTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -462,7 +443,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("should simulate workflow with complex cron schedule", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const cronTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -493,7 +474,7 @@ describe("CronTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with cron trigger", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const epoch = Math.floor(Date.now() / 1000);
 
       const cronTrigger = TriggerFactory.create({
@@ -546,12 +527,13 @@ describe("CronTrigger Tests", () => {
       async () => {
         // Skip E2E test in CI environments since it requires operator infrastructure
         if (process.env.CI) {
-          console.log("⏭️  Skipping E2E test in CI environment (requires operator setup)");
+          console.log(
+            "⏭️  Skipping E2E test in CI environment (requires operator setup)"
+          );
           return;
         }
-        const wallet = await client.getWallet({
-          salt: _.toString(saltIndex++),
-        });
+
+        const wallet = await getSmartWallet(client);
 
         // Create a simple custom code node for verification
         const customCodeNode = {
@@ -596,7 +578,9 @@ describe("CronTrigger Tests", () => {
         createdIdMap.set(workflowId, true);
 
         console.log(`✅ Workflow deployed: ${workflowId}`);
-        console.log("⏳ Waiting for operator to trigger workflow automatically...");
+        console.log(
+          "⏳ Waiting for operator to trigger workflow automatically..."
+        );
         console.log("📋 Expected: 2 executions within ~3 minutes");
 
         // Wait for executions to happen (automatic triggering)
@@ -683,7 +667,7 @@ describe("CronTrigger Tests", () => {
 
   describe("Response Format Consistency Tests", () => {
     test("should return consistent response format across trigger methods", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const epoch = Math.floor(Date.now() / 1000);
 
       const cronTriggerConfig = {

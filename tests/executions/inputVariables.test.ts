@@ -7,40 +7,23 @@ import {
   Lang,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   TIMEOUT_DURATION,
   getNextId,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
-import { getConfig } from "../utils/envalid";
 import util from "util";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 describe("Input Variables", () => {
-  let eoaAddress: string;
   let client: Client;
-  let saltIndex = SaltGlobal.SimulateWorkflow * SALT_BUCKET_SIZE;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   describe("Workflow Creation with Input Variables", () => {
@@ -154,7 +137,7 @@ describe("Input Variables", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const inputVariables = {
         userToken: "0x1234567890abcdef",
@@ -248,7 +231,7 @@ describe("Input Variables", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const inputVariables = {
         swapConfig: {
@@ -372,7 +355,7 @@ describe("Input Variables", () => {
         },
       ];
 
-      const wallet = await client.getWallet({ salt: String(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const inputVariables = {
         tokenContract: "0xA0b86a33E6441e4EF45bAcfCaAd5C7f899342E38",

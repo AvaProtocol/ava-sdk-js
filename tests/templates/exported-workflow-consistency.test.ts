@@ -1,46 +1,28 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import {TriggerType,
+import {
+  TriggerType,
   NodeType,
   ExecutionMode,
   ManualTriggerDataType,
   LoopNodeData,
   ExecutionStatus,
-  Lang
+  Lang,
 } from "@avaprotocol/types";
 import { TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import _ from "lodash";
 import util from "util";
-import { getConfig } from "../utils/envalid";
 import {
-  getAddress,
-  generateSignature,
-  SaltGlobal,
   getNextId,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
-
 let client: Client;
-let eoaAddress: string;
-let saltIndex = SaltGlobal.CreateWorkflow * 1000 + 800; // Use a different range
 
 beforeAll(async () => {
-  eoaAddress = await getAddress(walletPrivateKey);
-
-  client = new Client({
-    endpoint: avsEndpoint,
-  });
-
-  const { message } = await client.getSignatureFormat(eoaAddress);
-  const signature = await generateSignature(message, walletPrivateKey);
-  const res = await client.authWithSignature({
-    message: message,
-    signature: signature,
-  });
-
-  client.setAuthKey(res.authKey);
-  console.log("✅ Client authenticated successfully");
+  client = getClient();
+  await authenticateClient(client);
 });
 
 describe("Exported Workflow Consistency Tests", () => {
@@ -118,7 +100,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data).toEqual(["value1", "value2"]); // Should return array of key values
     });
@@ -142,7 +124,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toEqual([{ key: "value1" }]); // FilterNode now returns array of filtered items
     });
 
@@ -167,7 +149,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-            expect(result.success).toBe(true);
+      expect(result.success).toBe(true);
       expect(result.data).toEqual(inputData); // Should return the trigger data
     });
   });
@@ -177,7 +159,7 @@ describe("Exported Workflow Consistency Tests", () => {
       // Define shared test data object for both input and verification
       const testData = [{ key: "value1" }, { key: "value2" }];
 
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Define ManualTrigger props
       const manualTriggerProps = {
@@ -288,7 +270,7 @@ describe("Exported Workflow Consistency Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-            expect(simulation.status).toBe(ExecutionStatus.Success);
+      expect(simulation.status).toBe(ExecutionStatus.Success);
       expect(simulation.steps).toHaveLength(4); // Trigger + 3 nodes
 
       // Comprehensive validation of input and output fields for each step
@@ -313,7 +295,7 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Validate filter step
       const filterStep = simulation.steps.find((s) => s.type === "filter");
-            expect(filterStep!.success).toBeTruthy();
+      expect(filterStep!.success).toBeTruthy();
       expect(filterStep!.config).toBeDefined();
       expect(filterStep!.config).toEqual(filterNodeProps.data);
       expect(filterStep!.output).toEqual([{ key: "value1" }]);
@@ -350,7 +332,7 @@ describe("Exported Workflow Consistency Tests", () => {
       // Define shared test data object for both input and verification
       const testData = [{ key: "value1" }, { key: "value2" }];
 
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Define ManualTrigger props
       const manualTriggerProps = {
@@ -565,7 +547,7 @@ describe("Exported Workflow Consistency Tests", () => {
       });
 
       // Method 2: simulateWorkflow
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const manualTrigger = TriggerFactory.create({
         id: "manualTrigger",
         name: "manualTrigger",
@@ -697,7 +679,7 @@ describe("Exported Workflow Consistency Tests", () => {
       });
 
       // Method 2: simulateWorkflow
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const manualTrigger = TriggerFactory.create({
         id: "manualTrigger",
         name: "manualTrigger",
@@ -815,7 +797,7 @@ describe("Exported Workflow Consistency Tests", () => {
       });
 
       // Method 2: simulateWorkflow
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const manualTrigger = TriggerFactory.create({
         id: "manualTrigger",
         name: "manualTrigger",
@@ -925,7 +907,7 @@ describe("Exported Workflow Consistency Tests", () => {
   describe("Input Field Validation", () => {
     test("should validate that execution steps contain proper input field data", async () => {
       const testData = [{ key: "value1" }, { key: "value2" }];
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       const manualTrigger = TriggerFactory.create({
         id: "manualTrigger",

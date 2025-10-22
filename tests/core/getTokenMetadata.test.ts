@@ -5,11 +5,8 @@ import type {
   GetTokenMetadataResponse,
   TokenMetadata,
 } from "@avaprotocol/types";
-import { getAddress, generateSignature } from "../utils/utils";
+import { authenticateClient, getClient } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-
-// Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey } = getConfig();
 
 // Use chain-specific tokens from getConfig(); if none, skip chain-specific tests
 const TOKENS = getConfig().tokens as Record<string, any>;
@@ -125,22 +122,9 @@ describeOrSkip("getTokenMetadata Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    const eoaAddress = await getAddress(walletPrivateKey);
-    console.log("\nOwner wallet address:", eoaAddress);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    console.log("Authenticating with signature ...");
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    // Initialize and authenticate the client
+    client = getClient();
+    await authenticateClient(client);
   });
 
   // Test each token with flexible assertions
@@ -207,7 +191,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
     for (const address of invalidAddresses) {
       const response = await client.getTokenMetadata({ address });
-            expect(typeof response.found).toBe("boolean");
+      expect(typeof response.found).toBe("boolean");
       expect(typeof response.source).toBe("string");
 
       if (response.found) {
@@ -232,7 +216,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
 
     const duration = Date.now() - startTime;
     expect(duration).toBeLessThan(10000); // Reasonable time limit
-        expect(typeof response.found).toBe("boolean");
+    expect(typeof response.found).toBe("boolean");
   });
 
   // Skip the chain-specific tests if no tokens are available

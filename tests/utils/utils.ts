@@ -1,5 +1,5 @@
 import { Client, Workflow, Step } from "@avaprotocol/sdk-js";
-import { WorkflowProps, StepProps } from "@avaprotocol/types";
+import { WorkflowProps, StepProps, AbiElement } from "@avaprotocol/types";
 import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 
 import { ethers } from "ethers";
@@ -75,15 +75,16 @@ export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
 // Salt bucket size per suite to ensure total salts < 2000
 export const SALT_BUCKET_SIZE = 20;
 
-// Test addresses
-export const TEST_SMART_WALLET_ADDRESS =
-  "0x6C6244dFd5d0bA3230B6600bFA380f0bB4E8AC49"; // User's test smart wallet with ETH and USDC on Sepolia
 export const MOCK_FAILURE_ADDRESS =
   "0x0000000000000000000000000000000000000001"; // Mock address for failure tests
 
 // Funded smart wallet salt for integration tests
 // This wallet is pre-funded with ETH and USDC using the newest smart wallet implementation
 export const FUNDED_WALLET_SALT = "2";
+
+// Salt counter map to track unique wallet generation per test suite
+// Key: SaltGlobal enum value, Value: current counter for that suite
+const saltCounters = new Map<number, number>();
 
 // Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
 export const SaltGlobal = {
@@ -126,10 +127,106 @@ export const SaltGlobal = {
   RunNodeWithInputs: 37,
 };
 
-// Get wallet address from private key
-export async function getAddress(privateKey: string): Promise<string> {
-  const wallet = new ethers.Wallet(privateKey);
+// Mapping from test file names to their starting salt index
+// This allows auto-detection of salt range based on the calling test file
+// Each file gets SALT_BUCKET_SIZE (20) unique salts
+const fileToStartIndex: Record<string, number> = {
+  // Core tests (0-19)
+  "auth.test.ts": 0,
+  // Workflow tests (20-239)
+  "cancelWorkflow.test.ts": 20,
+  "secret.test.ts": 40,
+  "deleteWorkflow.test.ts": 60,
+  "getExecutions.test.ts": 80,
+  "wallet.test.ts": 100,
+  "getWorkflow.test.ts": 140,
+  "workflow.test.ts": 160,
+  "triggerWorkflow.test.ts": 200,
+  "createWorkflow.test.ts": 220,
+  "getExecution.test.ts": 260,
+  "simulateWorkflow.test.ts": 300,
+  // Node tests (380-739)
+  "branchNode.test.ts": 380,
+  "cron.test.ts": 400,
+  "block.test.ts": 420,
+  "graphqlQuery.test.ts": 440,
+  "RestAPi.test.ts": 460,
+  "filterNode.test.ts": 480,
+  "customCode.test.ts": 500,
+  "contractRead.test.ts": 520,
+  "contractWrite.test.ts": 540,
+  "stepInput.test.ts": 560,
+  "loopNode.test.ts": 640,
+  "balanceNode.test.ts": 720,
+  // Template tests (580-599)
+  "telegram-alert-on-transfer.test.ts": 580,
+  "exported-workflow-consistency.test.ts": 660,
+  // Trigger tests (600-639)
+  "eventTrigger.test.ts": 600,
+  "manual.test.ts": 620,
+  // Execution tests (680-719)
+  "withdraw.test.ts": 680,
+  "execution.test.ts": 700,
+  "runNodeWithInputs.test.ts": 740,
+  "inputVariables.test.ts": 220, // Shares with createWorkflow
+  "partialSuccess.test.ts": 700, // Shares with execution
+  "gasTracking.test.ts": 540, // Shares with contractWrite
+};
+
+/**
+ * Get the EOA (Externally Owned Account) address for testing.
+ * Uses the TEST_PRIVATE_KEY from environment configuration.
+ *
+ * @returns EOA wallet address
+ *
+ * @example
+ * const eoaAddress = await getEOAAddress();
+ * // Returns the address derived from TEST_PRIVATE_KEY
+ */
+export async function getEOAAddress(privateKey?: string): Promise<string> {
+  const wallet = new ethers.Wallet(privateKey || config.walletPrivateKey);
   return wallet.address;
+}
+
+/**
+ * Create a new Client instance with the AVS endpoint from configuration.
+ * The client is not authenticated by default - call authenticateClient() separately.
+ *
+ * @returns A new Client instance configured with the AVS endpoint
+ *
+ * @example
+ * const client = getClient();
+ * await authenticateClient(client);
+ */
+export function getClient(): Client {
+  return new Client({
+    endpoint: config.avsEndpoint,
+  });
+}
+
+/**
+ * Authenticate a client with signature using the test private key.
+ * Handles the entire authentication flow: getSignatureFormat → sign → authWithSignature.
+ *
+ * @param client - Client instance to authenticate
+ * @returns Authenticated client with authKey set
+ *
+ * @example
+ * const client = new Client({ endpoint: avsEndpoint });
+ * await authenticateClient(client);
+ * // Client is now authenticated and ready to use
+ */
+export async function authenticateClient(
+  client: Client,
+  privateKey?: string
+): Promise<void> {
+  const signingKey = privateKey || config.walletPrivateKey;
+  const eoaAddress = await getEOAAddress(signingKey);
+
+  const { message } = await client.getSignatureFormat(eoaAddress);
+  const signature = await generateSignature(message, signingKey);
+  const res = await client.authWithSignature({ message, signature });
+  client.setAuthKey(res.authKey);
 }
 
 // Generate a signed message from a private key
@@ -145,7 +242,7 @@ export async function generateSignature(
 /**
  * Get a smart wallet with balance (ETH and USDC) for testing transactions.
  * Uses salt "2" which is pre-funded with the newest smart wallet implementation.
- * 
+ *
  * @param client - Authenticated Client instance
  * @returns Smart wallet object with address and balance
  */
@@ -153,6 +250,141 @@ export async function getSmartWalletWithBalance(client: Client) {
   const wallet = await client.getWallet({ salt: FUNDED_WALLET_SALT });
   console.log(`Smart Wallet (salt:${FUNDED_WALLET_SALT}):`, wallet.address);
   return wallet;
+}
+
+/**
+ * Auto-detect the starting salt index from the calling test file path.
+ * Uses Error stack trace to determine which test file is calling this function.
+ *
+ * @returns The starting salt index for the calling file
+ * @throws Error if the calling file cannot be determined or is not mapped
+ */
+function detectStartIndexFromCaller(): number {
+  const stack = new Error().stack || "";
+  const stackLines = stack.split("\n");
+
+  // Find the first stack frame that's in a test file (not in utils.ts)
+  for (const line of stackLines) {
+    // Match file paths in stack trace (handles both Unix and Windows paths)
+    const match = line.match(/([^/\\]+\.test\.[tj]s)/);
+    if (match) {
+      const filename = match[1];
+      const startIndex = fileToStartIndex[filename];
+
+      if (startIndex !== undefined) {
+        return startIndex;
+      }
+
+      throw new Error(
+        `Unable to auto-detect salt index for test file: ${filename}. ` +
+          `Please add it to fileToStartIndex map in utils.ts or pass startIndex explicitly.`
+      );
+    }
+  }
+
+  throw new Error(
+    "Unable to auto-detect salt index from call stack. " +
+      "Please pass startIndex explicitly as the second parameter."
+  );
+}
+
+/**
+ * Get a unique smart wallet for testing (unfunded, fresh wallet).
+ * Automatically manages salt counters per test file.
+ *
+ * **Auto-detection**: If called from a test file, automatically detects the starting salt index
+ * from the file name (e.g., contractWrite.test.ts → starts at 540).
+ *
+ * Each file gets SALT_BUCKET_SIZE (20) unique wallets (e.g., 540-559 for contractWrite.test.ts).
+ *
+ * @param client - Authenticated Client instance
+ * @param options - Optional configuration:
+ *   - `startIndex`: Override auto-detected start index
+ *   - `saltValue`: Use a specific salt value (bypasses auto-increment)
+ *   - `authKey`: Use a specific authKey (overrides client.authKey)
+ * @returns Smart wallet object with unique address
+ *
+ * @example
+ * // Auto-detection (recommended):
+ * const wallet1 = await getSmartWallet(client);
+ * const wallet2 = await getSmartWallet(client);
+ * // If called from contractWrite.test.ts → uses salts 540, 541, etc.
+ *
+ * @example
+ * // Explicit start index:
+ * const wallet = await getSmartWallet(client, { startIndex: 540 });
+ *
+ * @example
+ * // Custom salt value:
+ * const wallet = await getSmartWallet(client, { saltValue: "123" });
+ *
+ * @example
+ * // With custom authKey:
+ * const wallet = await getSmartWallet(client, { authKey: customAuthKey });
+ */
+export async function getSmartWallet(
+  client: Client,
+  options?: {
+    startIndex?: number;
+    saltValue?: string;
+    authKey?: string;
+  }
+) {
+  let salt: string;
+
+  // If saltValue is provided, use it directly
+  if (options?.saltValue) {
+    salt = options.saltValue;
+  } else {
+    // Auto-detect start index from calling file if not provided
+    const resolvedStartIndex =
+      options?.startIndex ?? detectStartIndexFromCaller();
+
+    // Initialize counter for this test file if not exists
+    if (!saltCounters.has(resolvedStartIndex)) {
+      saltCounters.set(resolvedStartIndex, resolvedStartIndex);
+    }
+
+    // Get current index and increment
+    const currentIndex = saltCounters.get(resolvedStartIndex)!;
+    const nextIndex = currentIndex + 1;
+
+    // Validate we haven't exceeded the bucket size
+    const maxIndex = resolvedStartIndex + SALT_BUCKET_SIZE;
+    if (nextIndex >= maxIndex) {
+      throw new Error(
+        `Salt bucket overflow for test file starting at ${resolvedStartIndex}. ` +
+          `Max ${SALT_BUCKET_SIZE} wallets per file (${resolvedStartIndex} to ${
+            maxIndex - 1
+          })`
+      );
+    }
+
+    saltCounters.set(resolvedStartIndex, nextIndex);
+    salt = _.toString(currentIndex);
+  }
+
+  // Get wallet with optional authKey
+  const wallet = options?.authKey
+    ? await client.getWallet({ salt }, { authKey: options.authKey })
+    : await client.getWallet({ salt });
+
+  return wallet;
+}
+
+/**
+ * Reset salt counters for a specific test file or all files.
+ * Useful for test isolation or cleanup between test runs.
+ *
+ * @param startIndex - Optional. If provided, resets only that file's counter.
+ *                     If undefined, resets all counters.
+ */
+export function resetSaltCounters(startIndex?: number) {
+  if (startIndex !== undefined) {
+    saltCounters.delete(startIndex);
+  } else {
+    saltCounters.clear();
+  }
 }
 
 // Helper function to generate api key message
@@ -297,12 +529,16 @@ export const getBlockNumber = async (): Promise<number> => {
     const blockNumber = await Promise.race<number>([
       provider.getBlockNumber(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Provider connection timeout after 15s")), 15000)
+        setTimeout(
+          () => reject(new Error("Provider connection timeout after 15s")),
+          15000
+        )
       ),
     ]);
     return blockNumber;
   } catch (error: unknown) {
-    const errorMessage = (error as { message?: string })?.message || "Unknown error";
+    const errorMessage =
+      (error as { message?: string })?.message || "Unknown error";
     throw new Error(
       `Failed to get block number from ${config.chainEndpoint}: ${errorMessage}`
     );
@@ -316,12 +552,16 @@ export const getChainId = async (): Promise<number> => {
     const network = await Promise.race<ethers.Network>([
       provider.getNetwork(),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Provider connection timeout after 15s")), 15000)
+        setTimeout(
+          () => reject(new Error("Provider connection timeout after 15s")),
+          15000
+        )
       ),
     ]);
     return Number(network.chainId);
   } catch (error: unknown) {
-    const errorMessage = (error as { message?: string })?.message || "Unknown error";
+    const errorMessage =
+      (error as { message?: string })?.message || "Unknown error";
     throw new Error(
       `Failed to get chain ID from ${config.chainEndpoint}: ${errorMessage}`
     );
@@ -486,7 +726,7 @@ export const cleanupSecrets = async (client: Client) => {
   }
 };
 
-export const USDC_Implementation_ABI = [
+export const USDC_Implementation_ABI: AbiElement[] = [
   {
     name: "Approval",
     type: "event",

@@ -9,25 +9,20 @@ import {
   ExecutionStatus,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
   getNextId,
   TIMEOUT_DURATION,
-  SaltGlobal,
   removeCreatedWorkflows,
   getBlockNumber,
-  SALT_BUCKET_SIZE,
   getSettings,
+  getSmartWallet,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
-import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey } = getConfig();
-
 const createdIdMap: Map<string, boolean> = new Map();
-let saltIndex = SaltGlobal.GraphQLQuery * SALT_BUCKET_SIZE;
 
 /**
  * ⚠️  IMPORTANT: This test file is EXCLUSIVELY for testing gateway.thegraph.com GraphQL API
@@ -104,31 +99,17 @@ const GRAPHQL_ENDPOINTS = {
 
 describe("GraphQL Query Node Tests", () => {
   let client: Client;
-  let eoaAddress: string;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   describe("runNodeWithInputs Tests", () => {
     test("should fail runNodeWithInputs with network error from mock endpoint", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_ENDPOINT;
 
       const params = {
@@ -177,7 +158,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000); // 15 second timeout for network request
 
     test("should fail runNodeWithInputs with variables and return network error", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_WITH_VARIABLES;
 
       const params = {
@@ -226,7 +207,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should fail runNodeWithInputs gracefully with invalid domain endpoint", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const endpoint = GRAPHQL_ENDPOINTS.INVALID_ENDPOINT;
 
       const params = {
@@ -255,7 +236,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should fail runNodeWithInputs gracefully with empty query configuration", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -284,7 +265,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("should successfully simulate workflow with The Graph GraphQL query", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Use the constant for success case (real The Graph with API key)
       const endpoint = THEGRAPH_UNISWAP_V3_QUERY;
@@ -366,7 +347,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should successfully simulate workflow with The Graph GraphQL variables", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
 
       // Use the constant for success case with variables (real The Graph with API key)
       const endpoint = THEGRAPH_UNISWAP_V3_WITH_VARIABLES;
@@ -419,7 +400,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should successfully deploy and trigger workflow with The Graph GraphQL query", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -518,7 +499,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 30000); // 30 second timeout for full deployment and execution
 
     test("should successfully deploy and trigger workflow with The Graph GraphQL variables", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       let workflowId: string | undefined;
@@ -603,7 +584,7 @@ describe("GraphQL Query Node Tests", () => {
   describe("Response Format Consistency Tests", () => {
     test("should return consistent error format across all execution methods with mock endpoint", async () => {
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_ENDPOINT;
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       let workflowId: string | undefined;
 
       try {
@@ -739,7 +720,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("Real GraphQL Success Tests", () => {
     test("should successfully query The Graph Uniswap V3 API", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const endpoint = THEGRAPH_UNISWAP_V3_QUERY;
 
       const params = {
@@ -789,7 +770,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 30000); // 30 second timeout for real network requests
 
     test("should successfully query The Graph Uniswap V3 API with variables", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const endpoint = THEGRAPH_UNISWAP_V3_WITH_VARIABLES;
 
       const params = {
@@ -833,7 +814,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("Error Handling Tests", () => {
     test("should fail gracefully with GraphQL server error (400 Bad Request)", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -860,7 +841,7 @@ describe("GraphQL Query Node Tests", () => {
     }, 15000);
 
     test("should fail gracefully with missing URL configuration error", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {
@@ -882,7 +863,7 @@ describe("GraphQL Query Node Tests", () => {
     });
 
     test("should fail gracefully with network connection error from invalid domain", async () => {
-      const wallet = await client.getWallet({ salt: _.toString(saltIndex++) });
+      const wallet = await getSmartWallet(client);
       const params = {
         nodeType: NodeType.GraphQLQuery,
         nodeConfig: {

@@ -12,10 +12,11 @@ import {
   TimeoutPresets,
 } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  getEOAAddress,
   TIMEOUT_DURATION,
   describeIfSepolia,
+  getClient,
+  authenticateClient,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { ethers } from "ethers";
@@ -23,33 +24,16 @@ import { ethers } from "ethers";
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in this file
 
 // Get environment variables from envalid config
-const { avsEndpoint, walletPrivateKey, tokens, chainEndpoint } = getConfig();
+const { tokens, chainEndpoint } = getConfig();
 
 describeIfSepolia("Withdraw Funds Tests", () => {
   let client: Client;
   let eoaAddress: string;
 
-  // NOTE: These tests use salt=0 for consistent wallet addresses that can be pre-funded
-  // This is required for real blockchain tests that need funded smart wallets
-
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    console.log("EOA address:", eoaAddress);
-
-    // Initialize the client with test credentials
-    client = new Client({
-      endpoint: avsEndpoint,
-      // No factory address - let aggregator use its default
-    });
-
-    console.log("Authenticating with signature ...");
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-    client.setAuthKey(res.authKey);
+    eoaAddress = await getEOAAddress();
+    client = getClient();
+    await authenticateClient(client);
   });
 
   describe("withdrawFunds Basic Tests", () => {
@@ -258,7 +242,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       const wallet = await client.getWallet({ salt });
 
       // Generate a deterministic test address different from eoaAddress
-      const differentRecipient = await getAddress(
+      const differentRecipient = await getEOAAddress(
         "0x0000000000000000000000000000000000000000000000000000000000000001"
       );
 
@@ -607,7 +591,9 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         response.transactionHash!
       );
       expect(txReceipt2).toBeTruthy();
-      const txDetails = await provider.getTransaction(response.transactionHash!);
+      const txDetails = await provider.getTransaction(
+        response.transactionHash!
+      );
       expect(txDetails).toBeTruthy();
 
       const gasUsed = BigInt(txReceipt2!.gasUsed.toString());

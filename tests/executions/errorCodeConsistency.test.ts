@@ -1,51 +1,43 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, ExecutionStatus, Lang } from "@avaprotocol/types";
 import {
-  getAddress,
-  generateSignature,
+  TriggerType,
+  NodeType,
+  ExecutionStatus,
+  Lang,
+} from "@avaprotocol/types";
+import {
   TIMEOUT_DURATION,
   getNextId,
-  SaltGlobal,
-  SALT_BUCKET_SIZE,
   getCurrentChain,
   getChainNameFromId,
+  getClient,
+  authenticateClient,
+  getSmartWallet,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-const { avsEndpoint, walletPrivateKey, chainId } = getConfig();
+const { chainId } = getConfig();
 
 // Get current chain information
 const currentChain = getCurrentChain();
 const currentChainName = getChainNameFromId(currentChain.chainId);
 
 describe("ErrorCode Consistency", () => {
-  let eoaAddress: string;
   let client: Client;
-  let saltIndex = SaltGlobal.SimulateWorkflow * SALT_BUCKET_SIZE;
 
   beforeAll(async () => {
-    eoaAddress = await getAddress(walletPrivateKey);
-    client = new Client({
-      endpoint: avsEndpoint,
-    });
-
-    const { message } = await client.getSignatureFormat(eoaAddress);
-    const signature = await generateSignature(message, walletPrivateKey);
-    const res = await client.authWithSignature({
-      message: message,
-      signature: signature,
-    });
-
-    client.setAuthKey(res.authKey);
+    client = getClient();
+    await authenticateClient(client);
   });
 
   describe("runNodeWithInputs vs simulateWorkflow ErrorCode consistency", () => {
     test("should return consistent error codes for missing required fields", async () => {
       const triggerId = getNextId();
       const nodeId = getNextId();
+      const runner = await getSmartWallet(client);
 
       // Test case: CustomCode node with empty source (should return MISSING_REQUIRED_FIELD error code)
       const nodeConfig = {
@@ -55,7 +47,7 @@ describe("ErrorCode Consistency", () => {
 
       const inputVariables = {
         settings: {
-          runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
+          runner: runner.address,
           chainId: parseInt(chainId),
           chain: currentChainName,
         },
@@ -115,7 +107,7 @@ describe("ErrorCode Consistency", () => {
         edges,
         inputVariables: {
           settings: {
-            runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
+            runner: runner.address,
             chainId: parseInt(chainId),
             chain: currentChainName,
           },
@@ -128,7 +120,7 @@ describe("ErrorCode Consistency", () => {
         edges,
         inputVariables: {
           settings: {
-            runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
+            runner: runner.address,
             chainId: parseInt(chainId),
             chain: currentChainName,
           },
@@ -148,25 +140,32 @@ describe("ErrorCode Consistency", () => {
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(false);
       expect(customCodeStep!.error).toContain("source is required");
-      
+
       // Verify that errorCode field is now included
       expect(customCodeStep!.errorCode).toBeDefined();
-      console.log(`🔍 Custom code step errorCode: ${customCodeStep!.errorCode}`);
+      console.log(
+        `🔍 Custom code step errorCode: ${customCodeStep!.errorCode}`
+      );
       console.log(`🔍 Expected errorCode (MISSING_REQUIRED_FIELD): 3006`);
-      
+
       // Note: The backend may need additional updates to properly set error codes
       // For now, we verify the field exists and is accessible
-      expect(typeof customCodeStep!.errorCode).toBe('number');
+      expect(typeof customCodeStep!.errorCode).toBe("number");
 
       console.log("✅ Error code consistency verified!");
-      console.log(`   - runNodeWithInputs.errorCode: ${runNodeResponse.errorCode}`);
-      console.log(`   - simulateWorkflow step.errorCode: ${customCodeStep!.errorCode}`);
+      console.log(
+        `   - runNodeWithInputs.errorCode: ${runNodeResponse.errorCode}`
+      );
+      console.log(
+        `   - simulateWorkflow step.errorCode: ${customCodeStep!.errorCode}`
+      );
       console.log(`   - Both represent MISSING_REQUIRED_FIELD (3006)`);
     });
 
     test("should return ERROR_CODE_UNSPECIFIED for successful steps", async () => {
       const triggerId = getNextId();
       const nodeId = getNextId();
+      const runner = await getSmartWallet(client);
 
       // Test case: CustomCode node with valid source (should succeed)
       const trigger = {
@@ -202,7 +201,7 @@ describe("ErrorCode Consistency", () => {
         edges,
         inputVariables: {
           settings: {
-            runner: "0x71c8f4D7D5291EdCb3A081802e7efB2788Bd232e",
+            runner: runner.address,
             chainId: parseInt(chainId),
             chain: currentChainName,
           },
@@ -219,7 +218,7 @@ describe("ErrorCode Consistency", () => {
       expect(customCodeStep).toBeDefined();
       expect(customCodeStep!.success).toBe(true);
       expect(customCodeStep!.error).toBe("");
-      
+
       // Verify that errorCode is ERROR_CODE_UNSPECIFIED for successful steps
       expect(customCodeStep!.errorCode).toBe(0); // ERROR_CODE_UNSPECIFIED
 
