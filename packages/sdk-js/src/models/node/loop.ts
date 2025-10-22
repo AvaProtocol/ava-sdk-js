@@ -194,6 +194,7 @@ class LoopNode extends Node {
               methodParams: call.methodParams || [],
               ...(call.callData && { callData: call.callData }),
             })) || [],
+          ...(writeConfig.isSimulated !== undefined && { isSimulated: writeConfig.isSimulated as boolean }),
         });
         loopNode.setContractWrite(contractWrite);
         break;
