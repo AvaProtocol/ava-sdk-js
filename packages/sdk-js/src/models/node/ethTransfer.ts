@@ -6,7 +6,7 @@ import {
   ETHTransferNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf, convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { destination, amount }
 
