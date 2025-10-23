@@ -328,12 +328,15 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       ); // One method = one key
 
       // Validate that the transfer method returned proper event data
-      // NEW STRUCTURE: Events are nested under event names
+      // STRUCTURE: Events are flattened (not nested under event names)
       expect(result.data.transfer).toBeDefined();
-      expect(result.data.transfer.Transfer).toBeDefined(); // Transfer event nested under method
+      // Events are flattened directly under the method name
+      expect(result.data.transfer.from).toBeDefined();
+      expect(result.data.transfer.to).toBeDefined();
+      expect(result.data.transfer.value).toBeDefined();
 
       // Use destructuring for better null safety and readability
-      const { from, to, value } = result.data.transfer.Transfer;
+      const { from, to, value } = result.data.transfer;
       expect(from).toBeDefined();
       expect(to).toBeDefined();
       expect(value).toBeDefined();
@@ -991,15 +994,18 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(typeof simulatedOutput.transfer).toBe("object");
 
         // Validate transfer fields are properly populated
-        // NEW STRUCTURE: Events are nested under event names
-        expect(simulatedOutput.transfer.Transfer).toBeDefined();
+        // STRUCTURE: Events are flattened (not nested under event names)
+        expect(simulatedOutput.transfer).toBeDefined();
+        expect(simulatedOutput.transfer.from).toBeDefined();
+        expect(simulatedOutput.transfer.to).toBeDefined();
+        expect(simulatedOutput.transfer.value).toBeDefined();
 
         // Use destructuring for better null safety and readability
         const {
           from: simFrom,
           to: simTo,
           value: simValue,
-        } = simulatedOutput.transfer.Transfer;
+        } = simulatedOutput.transfer;
         expect(simFrom).toBeDefined();
         expect(typeof simFrom).toBe("string");
         expect(simFrom.toLowerCase()).toBe(expectedFrom);
@@ -1017,17 +1023,19 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
         // For deployed workflow (real transaction), verify the transfer data is populated
         // Real transactions should always have proper event logs and decoded data
-        // NEW STRUCTURE: Events are nested under event names
+        // STRUCTURE: Events are flattened (not nested under event names)
         const deployedOutput = executedStep!.output as any;
         expect(deployedOutput.transfer).toBeDefined();
-        expect(deployedOutput.transfer.Transfer).toBeDefined();
+        expect(deployedOutput.transfer.from).toBeDefined();
+        expect(deployedOutput.transfer.to).toBeDefined();
+        expect(deployedOutput.transfer.value).toBeDefined();
 
         // Use destructuring for better null safety and readability
         const {
           from: deployedFrom,
           to: deployedTo,
           value: deployedValue,
-        } = deployedOutput.transfer.Transfer;
+        } = deployedOutput.transfer;
         expect(typeof deployedFrom).toBe("string");
         // Note: Real transaction uses smart wallet address as sender
         expect(deployedTo.toLowerCase()).toBe(expectedTo);
@@ -1429,15 +1437,17 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // The Approval event contains owner, spender, value fields which are more useful than just output_0: true
 
       // Check that event data is included (owner, spender, value)
-      // NEW STRUCTURE: Events are nested under event names
-      expect(result.data.approve.Approval).toBeDefined();
+      // STRUCTURE: Events are flattened (not nested under event names)
+      expect(result.data.approve.owner).toBeDefined();
+      expect(result.data.approve.spender).toBeDefined();
+      expect(result.data.approve.value).toBeDefined();
 
       // Use destructuring for better null safety and readability
       const {
         owner,
         spender,
         value: approvalValue,
-      } = result.data.approve.Approval;
+      } = result.data.approve;
       expect(owner).toBeDefined();
       expect(spender).toBeDefined();
       expect(approvalValue).toBeDefined();
