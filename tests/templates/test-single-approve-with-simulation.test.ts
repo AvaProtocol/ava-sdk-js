@@ -430,9 +430,9 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     // The aggregator should handle confirmation internally, but adding a small delay
     // to ensure RPC nodes have propagated the state
     console.log(
-      "\n⏰ Waiting 10 seconds for approval confirmation and RPC propagation..."
+      "\n⏰ Waiting 3 seconds for approval confirmation and RPC propagation..."
     );
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     // Step 3: Execute Swap (REAL EXECUTION)
     console.log("\nStep 3: Executing Uniswap V3 swap (REAL EXECUTION)...");
