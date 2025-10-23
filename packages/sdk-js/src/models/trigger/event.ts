@@ -44,13 +44,9 @@ import { convertProtobufValueToJs } from "../../utils";
 //   {
 //     addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
 //     topics: [
-//       {
-//         values: [
-//           "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-//           null,
-//           "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788"
-//         ]
-//       }
+//       "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // [0] event signature
+//       null, // [1] FROM address (wildcard - any sender)
+//       "0x000000000000000000000000c60e71bd0f2e6d8832fea1a2d56091c48493c788" // [2] TO address
 //     ]
 //   }
 // ]
@@ -89,21 +85,14 @@ class EventTrigger extends Trigger {
         query.setAddressesList(queryData.addresses);
       }
 
-      // Set topics if provided
+      // Set topics if provided - flat array format
       if (queryData.topics && queryData.topics.length > 0) {
-        const topicsMessages = queryData.topics.map((topicData) => {
-          const topics = new avs_pb.EventTrigger.Topics();
-          if (topicData.values) {
-            // Convert null values to empty strings for protobuf compatibility
-            // null represents "any value" wildcards in EVM log filtering
-            const processedValues = topicData.values.map((value) =>
-              value === null ? "" : value
-            );
-            topics.setValuesList(processedValues);
-          }
-          return topics;
-        });
-        query.setTopicsList(topicsMessages);
+        // Convert null values to empty strings for protobuf compatibility
+        // null represents "any value" wildcards in EVM log filtering
+        const processedTopics = queryData.topics.map((value) =>
+          value === null ? "" : value
+        );
+        query.setTopicsList(processedTopics);
       }
 
       // Set maxEventsPerBlock if provided
@@ -195,7 +184,7 @@ class EventTrigger extends Trigger {
           config.getQueriesList().forEach((query) => {
             const queryData: EventTriggerDataType["queries"][0] = {
               addresses: [],
-              topics: [],
+              topics: [], // Flat array of topic strings
               contractAbi: [], // Add the required contractAbi field
             };
 
@@ -204,14 +193,13 @@ class EventTrigger extends Trigger {
               queryData.addresses = query.getAddressesList();
             }
 
-            // Extract topics
+            // Extract topics - now a flat array
             if (query.getTopicsList && query.getTopicsList().length > 0) {
-              queryData.topics = query.getTopicsList().map((topics) => ({
-                // Don't convert empty strings back to null - preserve the original values
-                // The backend may legitimately use empty strings, and we shouldn't assume
-                // they were originally null values from the client
-                values: topics.getValuesList() || [],
-              })) as EventTriggerDataType["queries"][0]["topics"];
+              // Convert empty strings back to null for JavaScript compatibility
+              // Empty strings represent wildcards in the protobuf representation
+              queryData.topics = query.getTopicsList().map((topic) =>
+                topic === "" ? null : topic
+              );
             }
 
             // Extract maxEventsPerBlock

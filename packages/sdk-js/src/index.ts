@@ -902,6 +902,14 @@ class Client extends BaseClient {
     request.setTriggerType(TriggerTypeConverter.toProtobuf(triggerData.type));
     request.setIsBlocking(isBlocking);
 
+    // Set input variables (maps to trigger_input in protobuf)
+    if (triggerData.inputVariables) {
+      const triggerInputMap = request.getTriggerInputMap();
+      for (const [key, value] of Object.entries(triggerData.inputVariables)) {
+        triggerInputMap.set(key, convertJSValueToProtobuf(value));
+      }
+    }
+
     // Set the appropriate trigger output based on type
     switch (triggerData.type) {
       case TriggerType.FixedTime: {
@@ -1385,11 +1393,12 @@ class Client extends BaseClient {
    * @param {RunTriggerRequest} params - The parameters for running the trigger
    * @param {string} params.triggerType - The type of the trigger (blockTrigger, cronTrigger, etc.)
    * @param {Record<string, any>} params.triggerConfig - The configuration for the trigger
+   * @param {Record<string, any>} params.inputVariables - Optional input variables for template resolution
    * @param {RequestOptions} options - Request options
    * @returns {Promise<RunTriggerResponse>} - The response from running the trigger
    */
   async runTrigger(
-    { triggerType, triggerConfig }: RunTriggerRequest,
+    { triggerType, triggerConfig, inputVariables }: RunTriggerRequest,
     options?: RequestOptions
   ): Promise<RunTriggerResponse> {
     // Create the request
@@ -1404,6 +1413,14 @@ class Client extends BaseClient {
     const triggerConfigMap = request.getTriggerConfigMap();
     for (const [key, value] of Object.entries(triggerConfig)) {
       triggerConfigMap.set(key, convertJSValueToProtobuf(value));
+    }
+
+    // Set input variables (maps to trigger_input in protobuf)
+    if (inputVariables) {
+      const triggerInputMap = request.getTriggerInputMap();
+      for (const [key, value] of Object.entries(inputVariables)) {
+        triggerInputMap.set(key, convertJSValueToProtobuf(value));
+      }
     }
 
     // Send the request directly to the server

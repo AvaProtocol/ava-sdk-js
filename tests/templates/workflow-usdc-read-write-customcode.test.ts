@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, Lang } from "@avaprotocol/types";
+import { TriggerType, NodeType, Lang, TimeoutPresets } from "@avaprotocol/types";
 import util from "util";
 import { getConfig } from "../utils/envalid";
 import {
@@ -385,9 +385,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           },
           isBlocking: true,
         },
-        {
-          timeout: { timeout: TIMEOUT_DURATION * 3, retries: 0, retryDelay: 0 }, // 180 seconds
-        }
+        TimeoutPresets.SLOW // 2 minute timeout for complex workflows
       );
       expect(exec).toBeDefined();
 
