@@ -263,8 +263,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(result.executionContext).toBeDefined();
       expect(result.executionContext.chainId).toBeDefined();
       expect(typeof result.executionContext.chainId).toBe("number");
-      expect(result.executionContext.isSimulated).toBeNull();
-      expect(result.executionContext.provider).toBe("chain_rpc");
+      expect(result.executionContext.isSimulated).toBe(false); // Real transaction, not simulated
+      expect(result.executionContext.provider).toBe("bundler"); // Goes through bundler for UserOp
     }, 120000); // 2 minute timeout for real blockchain transaction
 
     test("should handle ERC20 transfer transaction", async () => {
