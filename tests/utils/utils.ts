@@ -168,6 +168,7 @@ const fileToStartIndex: Record<string, number> = {
   "withdraw.test.ts": 680,
   "execution.test.ts": 700,
   "runNodeWithInputs.test.ts": 740,
+  "errorCodeConsistency.test.ts": 760,
   "inputVariables.test.ts": 220, // Shares with createWorkflow
   "partialSuccess.test.ts": 700, // Shares with execution
   "gasTracking.test.ts": 540, // Shares with contractWrite

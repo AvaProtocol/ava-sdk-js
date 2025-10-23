@@ -6,14 +6,17 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  getEOAAddress,
 } from "../utils/utils";
 import { createFromTemplate } from "../utils/templates";
 
 describe("Workflow Management Tests", () => {
   let client: Client;
+  let eoaAddress: string;
 
   beforeAll(async () => {
     client = getClient();
+    eoaAddress = await getEOAAddress();
     await authenticateClient(client);
   });
 
