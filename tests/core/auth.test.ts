@@ -32,7 +32,7 @@ describe("Authentication Tests", () => {
 
   describe("Authenticated with client.authKey", () => {
     beforeAll(async () => {
-      authenticateClient(client);
+      await authenticateClient(client);
     });
 
     test("getWallet works with client.authKey", async () => {
