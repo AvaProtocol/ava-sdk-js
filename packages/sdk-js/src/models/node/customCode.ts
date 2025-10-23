@@ -8,11 +8,7 @@ import {
   Lang,
   LangConverter,
 } from "@avaprotocol/types";
-import {
-  convertProtobufValueToJs,
-  convertInputToProtobuf,
-  extractInputFromProtobuf,
-} from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { lang: number, source: string }
 
@@ -20,7 +16,6 @@ class CustomCodeNode extends Node {
   constructor(props: CustomCodeNodeProps) {
     super({ ...props, type: NodeType.CustomCode, data: props.data });
   }
-
 
   /**
    * Create a protobuf CustomCodeNode from config data
@@ -52,7 +47,7 @@ class CustomCodeNode extends Node {
     if (!customCodeNode) {
       throw new Error("CustomCode node data is missing");
     }
-    
+
     const config = customCodeNode.getConfig();
     if (!config) {
       throw new Error("CustomCode config is missing");

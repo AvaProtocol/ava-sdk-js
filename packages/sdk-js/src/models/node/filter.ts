@@ -6,8 +6,6 @@ import {
   FilterNodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertInputToProtobuf, extractInputFromProtobuf } from "../../utils";
-import { Value } from "google-protobuf/google/protobuf/struct_pb";
 
 // Required props for constructor: id, name, type and data: { expression, inputNodeName }
 
@@ -46,7 +44,7 @@ class FilterNode extends Node {
 
   static fromOutputData(outputData: avs_pb.RunNodeWithInputsResp): unknown[] {
     const filterOutput = outputData.getFilter();
-    
+
     if (!filterOutput) {
       throw new Error("FilterNode output data is missing");
     }
