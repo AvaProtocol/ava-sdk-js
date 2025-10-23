@@ -50,6 +50,7 @@ export const ENV_CONFIGS: Record<
     chainEndpoint?: string | null;
     tokens: TokenMap;
     oracles: OracleMap;
+    paymasterAddress: string;
   }
 > = (Object.keys(chains) as Environment[]).reduce((acc, key) => {
   const c = chains[key];
@@ -59,6 +60,7 @@ export const ENV_CONFIGS: Record<
     chainEndpoint: c.chainEndpoint,
     tokens: c.tokens || {},
     oracles: c.oracles || {},
+    paymasterAddress: "0xd856f532F7C032e6b30d76F19187F25A068D6d92", // Consistent across all chains
   };
   return acc;
 }, {} as Record<Environment, {
@@ -67,6 +69,7 @@ export const ENV_CONFIGS: Record<
   chainEndpoint?: string | null;
   tokens: TokenMap;
   oracles: OracleMap;
+  paymasterAddress: string;
 }>);
 
 // 1. Load base .env file first (for common variables like TEST_PRIVATE_KEY)
@@ -146,6 +149,7 @@ export const getConfig = () => ({
   environment: validatedEnv.TEST_ENV,
   tokens: envConfig.tokens,
   oracles: envConfig.oracles,
+  paymasterAddress: envConfig.paymasterAddress,
 });
 
 // Export the validation function for use in other files
