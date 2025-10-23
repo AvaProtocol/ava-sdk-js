@@ -2681,6 +2681,9 @@ export class TriggerTaskReq extends jspb.Message {
     getIsBlocking(): boolean;
     setIsBlocking(value: boolean): TriggerTaskReq;
 
+    getTriggerInputMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
+    clearTriggerInputMap(): void;
+
     getTriggerOutputCase(): TriggerTaskReq.TriggerOutputCase;
 
     serializeBinary(): Uint8Array;
@@ -2703,6 +2706,8 @@ export namespace TriggerTaskReq {
         eventTrigger?: EventTrigger.Output.AsObject,
         manualTrigger?: ManualTrigger.Output.AsObject,
         isBlocking: boolean,
+
+        triggerInputMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
     }
 
     export enum TriggerOutputCase {
