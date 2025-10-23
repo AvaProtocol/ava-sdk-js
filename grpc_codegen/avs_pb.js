@@ -21766,7 +21766,8 @@ proto.aggregator.TriggerTaskReq.toObject = function(includeInstance, msg) {
     cronTrigger: (f = msg.getCronTrigger()) && proto.aggregator.CronTrigger.Output.toObject(includeInstance, f),
     eventTrigger: (f = msg.getEventTrigger()) && proto.aggregator.EventTrigger.Output.toObject(includeInstance, f),
     manualTrigger: (f = msg.getManualTrigger()) && proto.aggregator.ManualTrigger.Output.toObject(includeInstance, f),
-    isBlocking: jspb.Message.getBooleanFieldWithDefault(msg, 8, false)
+    isBlocking: jspb.Message.getBooleanFieldWithDefault(msg, 8, false),
+    triggerInputMap: (f = msg.getTriggerInputMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
   if (includeInstance) {
@@ -21839,6 +21840,12 @@ proto.aggregator.TriggerTaskReq.deserializeBinaryFromReader = function(msg, read
     case 8:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setIsBlocking(value);
+      break;
+    case 9:
+      var value = msg.getTriggerInputMap();
+      reader.readMessage(value, function(message, reader) {
+        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
+         });
       break;
     default:
       reader.skipField();
@@ -21929,6 +21936,10 @@ proto.aggregator.TriggerTaskReq.serializeBinaryToWriter = function(message, writ
       8,
       f
     );
+  }
+  f = message.getTriggerInputMap(true);
+  if (f && f.getLength() > 0) {
+    f.serializeBinary(9, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
   }
 };
 
@@ -22170,6 +22181,28 @@ proto.aggregator.TriggerTaskReq.prototype.getIsBlocking = function() {
 proto.aggregator.TriggerTaskReq.prototype.setIsBlocking = function(value) {
   return jspb.Message.setProto3BooleanField(this, 8, value);
 };
+
+
+/**
+ * map<string, google.protobuf.Value> trigger_input = 9;
+ * @param {boolean=} opt_noLazyCreate Do not create the map if
+ * empty, instead returning `undefined`
+ * @return {!jspb.Map<string,!proto.google.protobuf.Value>}
+ */
+proto.aggregator.TriggerTaskReq.prototype.getTriggerInputMap = function(opt_noLazyCreate) {
+  return /** @type {!jspb.Map<string,!proto.google.protobuf.Value>} */ (
+      jspb.Message.getMapField(this, 9, opt_noLazyCreate,
+      proto.google.protobuf.Value));
+};
+
+
+/**
+ * Clears values from the map. The map will be non-null.
+ * @return {!proto.aggregator.TriggerTaskReq} returns this
+ */
+proto.aggregator.TriggerTaskReq.prototype.clearTriggerInputMap = function() {
+  this.getTriggerInputMap().clear();
+  return this;};
 
 
 
