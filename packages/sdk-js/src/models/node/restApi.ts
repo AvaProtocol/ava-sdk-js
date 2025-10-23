@@ -6,11 +6,7 @@ import {
   RestAPINodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import {
-  convertProtobufValueToJs,
-  convertInputToProtobuf,
-  extractInputFromProtobuf,
-} from "../../utils";
+import { convertProtobufValueToJs } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
 

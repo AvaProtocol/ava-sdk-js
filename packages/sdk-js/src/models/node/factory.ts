@@ -123,6 +123,9 @@ class NodeFactory {
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.BALANCE:
         return BalanceNode.fromOutputData(outputData);
       case avs_pb.RunNodeWithInputsResp.OutputDataCase.OUTPUT_DATA_NOT_SET:
+        // Some node types may not return output data (e.g., FilterNode with no matches)
+        // Return null to indicate no output data
+        return null;
       default:
         throw new Error(`Unsupported output data case: ${outputData.getOutputDataCase()}`);
     }
