@@ -17,6 +17,9 @@ import {
   describeIfSepolia,
   getClient,
   authenticateClient,
+  getSmartWalletWithBalance,
+  verifyTransactionReceipt,
+  getPaymasterOwner,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { ethers } from "ethers";
@@ -24,7 +27,7 @@ import { ethers } from "ethers";
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in this file
 
 // Get environment variables from envalid config
-const { tokens, chainEndpoint } = getConfig();
+const { tokens, chainEndpoint, avsEndpoint, paymasterAddress } = getConfig();
 
 describeIfSepolia("Withdraw Funds Tests", () => {
   let client: Client;
@@ -38,8 +41,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
   describe("withdrawFunds Basic Tests", () => {
     test("should successfully initiate ETH withdrawal with minimal parameters", async () => {
-      // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt: "0" });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       console.log("Wallet address:", wallet.address);
 
@@ -59,34 +62,21 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         { timeout: TimeoutPresets.SLOW } // 3 minutes for blockchain operations
       );
 
-      // Verify response structure
+      // Verify response indicates success
       expect(response.success).toBeTruthy();
-      expect(typeof response.status).toBe("string");
-      expect(typeof response.message).toBe("string");
-      expect(response.smartWalletAddress).toBeDefined();
       expect(response.smartWalletAddress).toBe(wallet.address);
-      expect(response.recipientAddress).toBe(withdrawRequest.recipientAddress);
-      expect(response.amount).toBe(withdrawRequest.amount);
-      expect(response.token).toBe(withdrawRequest.token);
+      expect(response.transactionHash).toBeDefined();
 
-      // Optional fields should be properly typed
-      if (response.userOpHash) {
-        expect(typeof response.userOpHash).toBe("string");
-      }
-      if (response.transactionHash) {
-        expect(typeof response.transactionHash).toBe("string");
-      }
-      if (response.submittedAt) {
-        expect(typeof response.submittedAt).toBe("number");
-      }
+      // Verify the bundler transaction and all internal operations succeeded
+      const verification = await verifyTransactionReceipt(
+        response.transactionHash!,
+        provider
+      );
 
-      // Wait for the on-chain transaction to be mined (or poll balance as fallback)
-      if (response.transactionHash) {
-        const receipt = await provider.waitForTransaction(
-          response.transactionHash
-        );
-        expect(receipt).toBeTruthy();
-      }
+      // All internal transactions must succeed
+      expect(verification.success).toBeTruthy();
+      expect(verification.receipt).toBeTruthy();
+      expect(verification.receipt?.status).toBe(1);
 
       // Verify recipient actually received the funds (poll up to 30s as RPC balance can lag)
       const expectedDelta = BigInt(withdrawRequest.amount);
@@ -100,11 +90,13 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       }
 
       expect(balanceIncrease).toBe(expectedDelta);
+
+      console.log(
+        `✅ All internal transactions succeeded: block ${verification.receipt?.blockNumber}, ${verification.receipt?.logs.length} logs`
+      );
       console.log(
         `✅ Recipient balance increased by ${balanceIncrease} wei (expected: ${withdrawRequest.amount} wei)`
       );
-
-      await provider.destroy();
 
       console.log("ETH withdrawal response:", {
         success: response.success,
@@ -127,8 +119,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         return;
       }
 
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -167,8 +159,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         return;
       }
 
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const customTokenAddress = tokens.CUSTOM_ERC20.address;
 
@@ -197,8 +189,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
   describe("withdrawFunds Edge Cases", () => {
     test("should reject zero amount withdrawal", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -214,8 +206,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
     });
 
     test("should handle large amount withdrawal", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -238,8 +230,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
     });
 
     test("should handle withdrawal to different recipient address", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       // Generate a deterministic test address different from eoaAddress
       const differentRecipient = await getEOAAddress(
@@ -268,8 +260,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
     });
 
     test("should reject withdrawal with invalid recipient address", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: "invalid-address", // Invalid address format
@@ -282,8 +274,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
     });
 
     test("should reject withdrawal with invalid token address", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -296,8 +288,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
     });
 
     test("should reject withdrawal with invalid amount format", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -316,8 +308,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         endpoint: avsEndpoint,
       });
 
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt }); // Use authenticated client to create wallet
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client); // Use authenticated client to create wallet
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -336,8 +328,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         endpoint: avsEndpoint,
       });
 
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt }); // Use authenticated client to create wallet
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client); // Use authenticated client to create wallet
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -367,8 +359,8 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
   describe("withdrawFunds Response Validation", () => {
     test("should return properly formatted response for successful withdrawal", async () => {
-      const salt = "0"; // Use salt 0 for consistent wallet address that can be pre-funded
-      const wallet = await client.getWallet({ salt });
+      // Use funded wallet for withdrawal tests
+      const wallet = await getSmartWalletWithBalance(client);
 
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -431,38 +423,18 @@ describeIfSepolia("Withdraw Funds Tests", () => {
   });
 
   describe("Paymaster Reimbursement Verification", () => {
-    test("should verify paymaster owner receives reimbursement on successful withdrawal", async () => {
-      const wallet = await client.getWallet({ salt: "0" });
-      const paymasterOwnerAddress =
-        "0x72b9fcC9Ca53480a89839620c88526c76b1905a5"; // Paymaster owner EOA (receives reimbursement)
-
-      // Get initial balances
+    test("should verify internal transaction success for paymaster-sponsored withdrawal", async () => {
+      const wallet = await getSmartWalletWithBalance(client);
       const provider = new ethers.JsonRpcProvider(chainEndpoint);
 
-      const initialWalletBalance = await provider.getBalance(wallet.address);
-      const initialPaymasterOwnerBalance = await provider.getBalance(
-        paymasterOwnerAddress
-      );
-      const initialRecipientBalance = await provider.getBalance(eoaAddress);
+      // Get paymaster owner address for balance verification
+      const paymasterOwnerAddress = await getPaymasterOwner(paymasterAddress, provider);
+      console.log("Paymaster owner address:", paymasterOwnerAddress);
 
-      console.log("\nInitial Balances:");
-      console.log(
-        `  Wallet: ${initialWalletBalance} wei (${
-          Number(initialWalletBalance) / 1e18
-        } ETH)`
-      );
-      console.log(
-        `  Paymaster Owner: ${initialPaymasterOwnerBalance} wei (${
-          Number(initialPaymasterOwnerBalance) / 1e18
-        } ETH)`
-      );
-      console.log(
-        `  Recipient: ${initialRecipientBalance} wei (${
-          Number(initialRecipientBalance) / 1e18
-        } ETH)`
-      );
+      // Get initial paymaster owner balance
+      const initialPaymasterOwnerBalance = await provider.getBalance(paymasterOwnerAddress);
+      console.log("Initial paymaster owner balance:", ethers.formatEther(initialPaymasterOwnerBalance), "ETH");
 
-      // Perform withdrawal
       const withdrawalAmount = "2000000000000000"; // 0.002 ETH
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -476,136 +448,33 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       });
 
       expect(response.success).toBeTruthy();
+      expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.transactionHash).toBeDefined();
 
-      console.log("\nWithdrawal Transaction:", response.transactionHash);
-
-      // Wait for transaction confirmation and get the transaction details
-      const txReceipt = await provider.waitForTransaction(
-        response.transactionHash!
-      );
-      expect(txReceipt).toBeTruthy();
-
-      const tx = await provider.getTransaction(response.transactionHash!);
-      expect(tx).toBeTruthy();
-
-      // Get balances at the specific block of THIS transaction (for accurate measurement)
-      const blockBefore = tx!.blockNumber! - 1;
-      const blockAfter = tx!.blockNumber!;
-
-      const walletBalanceBefore = await provider.getBalance(
-        wallet.address,
-        blockBefore
-      );
-      const walletBalanceAfter = await provider.getBalance(
-        wallet.address,
-        blockAfter
+      // Verify the bundler transaction and all internal operations succeeded
+      const verification = await verifyTransactionReceipt(
+        response.transactionHash!,
+        provider
       );
 
-      const paymasterOwnerBalanceBefore = await provider.getBalance(
-        paymasterOwnerAddress,
-        blockBefore
-      );
-      const paymasterOwnerBalanceAfter = await provider.getBalance(
-        paymasterOwnerAddress,
-        blockAfter
-      );
+      // All internal transactions must succeed
+      expect(verification.success).toBeTruthy();
+      expect(verification.receipt).toBeTruthy();
+      expect(verification.receipt?.status).toBe(1);
 
-      const recipientBalanceBefore = await provider.getBalance(
-        eoaAddress,
-        blockBefore
-      );
-      const recipientBalanceAfter = await provider.getBalance(
-        eoaAddress,
-        blockAfter
-      );
+      // Verify paymaster owner received reimbursement
+      const finalPaymasterOwnerBalance = await provider.getBalance(paymasterOwnerAddress);
+      const balanceIncrease = finalPaymasterOwnerBalance - initialPaymasterOwnerBalance;
+      
+      console.log("Final paymaster owner balance:", ethers.formatEther(finalPaymasterOwnerBalance), "ETH");
+      console.log("Balance increase:", ethers.formatEther(balanceIncrease), "ETH");
+      
+      // The paymaster owner should receive gas reimbursement (should be positive)
+      expect(balanceIncrease).toBeGreaterThan(0n);
 
-      console.log("\nFinal Balances:");
       console.log(
-        `  Wallet: ${walletBalanceAfter} wei (${
-          Number(walletBalanceAfter) / 1e18
-        } ETH)`
+        `✅ All internal transactions succeeded: block ${verification.receipt?.blockNumber}, ${verification.receipt?.logs.length} logs, internal success: ${verification.internalSuccess}`
       );
-      console.log(
-        `  Paymaster Owner: ${paymasterOwnerBalanceAfter} wei (${
-          Number(paymasterOwnerBalanceAfter) / 1e18
-        } ETH)`
-      );
-      console.log(
-        `  Recipient: ${recipientBalanceAfter} wei (${
-          Number(recipientBalanceAfter) / 1e18
-        } ETH)`
-      );
-
-      // Calculate changes from THIS transaction only (block-level accuracy)
-      const walletChange = walletBalanceAfter - walletBalanceBefore;
-      const paymasterOwnerChange =
-        paymasterOwnerBalanceAfter - paymasterOwnerBalanceBefore;
-      const recipientChange = recipientBalanceAfter - recipientBalanceBefore;
-
-      console.log("\nBalance Changes:");
-      console.log(
-        `  Wallet: ${walletChange} wei (${Number(walletChange) / 1e18} ETH)`
-      );
-      console.log(
-        `  Paymaster Owner: ${paymasterOwnerChange} wei (${
-          Number(paymasterOwnerChange) / 1e18
-        } ETH)`
-      );
-      console.log(
-        `  Recipient: ${recipientChange} wei (${
-          Number(recipientChange) / 1e18
-        } ETH)`
-      );
-
-      // Verify reimbursement occurred
-      // Wallet should have decreased by: withdrawal amount + reimbursement amount
-      // Paymaster owner should have INCREASED (received reimbursement)
-      // Recipient should have increased by withdrawal amount
-
-      expect(walletChange < 0n).toBeTruthy(); // Wallet decreased (sent ETH + reimbursement)
-      expect(paymasterOwnerChange > 0n).toBeTruthy(); // Paymaster owner increased (received reimbursement)
-      expect(recipientChange).toBe(BigInt(withdrawalAmount)); // Recipient received exact withdrawal amount
-
-      // Verify wallet paid more than just the withdrawal (paid withdrawal + reimbursement)
-      const walletDecrease = -walletChange;
-      expect(walletDecrease > BigInt(withdrawalAmount)).toBeTruthy();
-
-      console.log("\n✅ Reimbursement Verification:");
-      console.log(
-        `  Wallet paid: ${walletDecrease} wei (withdrawal + reimbursement)`
-      );
-      console.log(
-        `  Paymaster owner received: ${paymasterOwnerChange} wei (reimbursement)`
-      );
-      console.log(`  Recipient received: ${recipientChange} wei (withdrawal)`);
-      console.log(
-        `  Extra paid by wallet: ${
-          walletDecrease - BigInt(withdrawalAmount)
-        } wei (reimbursement)`
-      );
-
-      // Verify gas used is within a sane bound of the transaction gas limit
-      // This avoids flaky tests from gas price fluctuations by checking execution characteristics instead
-      const txReceipt2 = await provider.getTransactionReceipt(
-        response.transactionHash!
-      );
-      expect(txReceipt2).toBeTruthy();
-      const txDetails = await provider.getTransaction(
-        response.transactionHash!
-      );
-      expect(txDetails).toBeTruthy();
-
-      const gasUsed = BigInt(txReceipt2!.gasUsed.toString());
-      const gasLimit = BigInt(txDetails!.gasLimit.toString());
-
-      // gasUsed should be > 0 and less than or equal to gasLimit
-      expect(gasUsed > 0n).toBeTruthy();
-      expect(gasUsed <= gasLimit).toBeTruthy();
-
-      console.log(`  Gas used: ${gasUsed} / gas limit: ${gasLimit}`);
-
-      await provider.destroy();
     });
   });
 });

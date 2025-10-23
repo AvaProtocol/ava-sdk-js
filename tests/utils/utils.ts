@@ -1634,3 +1634,141 @@ export const USDC_Implementation_ABI: AbiElement[] = [
     stateMutability: "pure",
   },
 ];
+
+/**
+ * Get the owner address of a paymaster contract
+ * @param paymasterAddress - The paymaster contract address
+ * @param provider - Ethers provider instance
+ * @returns The owner address
+ */
+export async function getPaymasterOwner(
+  paymasterAddress: string,
+  provider: ethers.JsonRpcProvider
+): Promise<string> {
+  // Paymaster owner() function ABI
+  const ownerAbi = ["function owner() view returns (address)"];
+  const paymasterContract = new ethers.Contract(paymasterAddress, ownerAbi, provider);
+  return await paymasterContract.owner();
+}
+
+/**
+ * Verify a bundler transaction receipt to ensure all internal operations succeeded.
+ * For ERC-4337 UserOperations, this checks:
+ * - Transaction receipt status is 1 (outer transaction success)
+ * - UserOperationEvent success field is true (internal operation success)
+ * - No UserOperationRevertReason events (indicates UserOp failure)
+ *
+ * @param transactionHash - The transaction hash to verify
+ * @param provider - Ethers provider instance
+ * @returns Object with success status, receipt, and any error details
+ */
+export async function verifyTransactionReceipt(
+  transactionHash: string,
+  provider: ethers.JsonRpcProvider
+): Promise<{
+  success: boolean;
+  receipt: ethers.TransactionReceipt | null;
+  error?: string;
+  revertReason?: string;
+  internalSuccess?: boolean;
+}> {
+  try {
+    // Get the transaction receipt
+    const receipt = await provider.getTransactionReceipt(transactionHash);
+
+    if (!receipt) {
+      return {
+        success: false,
+        receipt: null,
+        error: "Transaction receipt not found",
+      };
+    }
+
+    // Check basic receipt status (outer transaction)
+    if (receipt.status !== 1) {
+      return {
+        success: false,
+        receipt,
+        error: `Outer transaction failed with status ${receipt.status}`,
+      };
+    }
+
+    // ERC-4337 Event signatures
+    // UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)
+    const userOpEventTopic =
+      "0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f";
+
+    // UserOperationRevertReason(bytes32 indexed userOpHash, address indexed sender, uint256 nonce, bytes revertReason)
+    const userOpRevertReasonTopic =
+      "0x1c4fada7374c0a9ee8841fc38afe82932dc0f8e69012e927f061a8bae611a201"; // keccak256("UserOperationRevertReason(bytes32,address,uint256,bytes)")
+
+    // Check for UserOperationRevertReason event first
+    const revertReasonLog = receipt.logs.find(
+      (log) => log.topics[0] === userOpRevertReasonTopic
+    );
+
+    if (revertReasonLog) {
+      let revertReason = "UserOperation reverted";
+      const data = revertReasonLog.data;
+      if (data && data.length > 2) {
+        revertReason = `UserOperation reverted: ${data.slice(0, 66)}...`;
+      }
+
+      return {
+        success: false,
+        receipt,
+        error: "UserOperation reverted within bundler transaction",
+        revertReason,
+        internalSuccess: false,
+      };
+    }
+
+    // Check UserOperationEvent for internal transaction success
+    const userOpEventLog = receipt.logs.find(
+      (log) => log.topics[0] === userOpEventTopic
+    );
+
+    if (userOpEventLog) {
+      // Decode the success field from the event data
+      // Event data structure: nonce (uint256, 32 bytes), success (bool, 32 bytes), actualGasCost (uint256, 32 bytes), actualGasUsed (uint256, 32 bytes)
+      const data = userOpEventLog.data;
+
+      if (data && data.length >= 66) {
+        // Skip first 2 chars (0x), then skip nonce (64 chars), get success (64 chars)
+        const successHex = data.slice(2 + 64, 2 + 64 + 64);
+        const internalSuccess = BigInt("0x" + successHex) === 1n;
+
+        if (!internalSuccess) {
+          return {
+            success: false,
+            receipt,
+            error:
+              "Internal UserOperation failed (success=false in UserOperationEvent)",
+            internalSuccess: false,
+          };
+        }
+
+        return {
+          success: true,
+          receipt,
+          internalSuccess: true,
+        };
+      }
+    }
+
+    // No UserOperation events found - might be a direct transaction or different type
+    // In this case, we rely on receipt.status
+    return {
+      success: true,
+      receipt,
+    };
+  } catch (error: unknown) {
+    const errorMessage =
+      (error as { message?: string })?.message || "Unknown error";
+    return {
+      success: false,
+      receipt: null,
+      error: `Failed to verify transaction: ${errorMessage}`,
+    };
+  }
+}
