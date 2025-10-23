@@ -45,7 +45,8 @@ type OracleMap = Record<string, OracleDef>;
 export const ENV_CONFIGS: Record<
   Environment,
   {
-    avsEndpoint: string;
+    aggregatorEndpoint: string;
+    operatorEndpoint: string;
     chainId: string;
     chainEndpoint?: string | null;
     tokens: TokenMap;
@@ -55,7 +56,8 @@ export const ENV_CONFIGS: Record<
 > = (Object.keys(chains) as Environment[]).reduce((acc, key) => {
   const c = chains[key];
   acc[key] = {
-    avsEndpoint: c.avsEndpoint,
+    aggregatorEndpoint: c.avsEndpoint, // Rename for clarity
+    operatorEndpoint: "localhost:9010", // Operator node API endpoint
     chainId: c.chainId,
     chainEndpoint: c.chainEndpoint,
     tokens: c.tokens || {},
@@ -64,7 +66,8 @@ export const ENV_CONFIGS: Record<
   };
   return acc;
 }, {} as Record<Environment, {
-  avsEndpoint: string;
+  aggregatorEndpoint: string;
+  operatorEndpoint: string;
   chainId: string;
   chainEndpoint?: string | null;
   tokens: TokenMap;
@@ -83,7 +86,13 @@ if (process.env.TEST_ENV) {
 // Print environment variables for debugging
 const testEnv = process.env.TEST_ENV || "dev";
 const tempConfig = chains[testEnv as Environment];
-console.log("Test config:", { env: testEnv, chainId: tempConfig?.chainId || "NOT SET", avsEndpoint: tempConfig?.avsEndpoint || "NOT SET", chainEndpoint: tempConfig?.chainEndpoint || "NOT SET" });
+console.log("Test config:", { 
+  env: testEnv, 
+  chainId: tempConfig?.chainId || "NOT SET", 
+  aggregatorEndpoint: tempConfig?.avsEndpoint || "NOT SET", 
+  operatorEndpoint: "localhost:9010",
+  chainEndpoint: tempConfig?.chainEndpoint || "NOT SET" 
+});
 
 // Define the config type
 // NOTE: Config type was unused; removed to satisfy linter
@@ -140,7 +149,8 @@ if (!chainEndpointHost) {
 
 // Export the configuration
 export const getConfig = () => ({
-  avsEndpoint: envConfig.avsEndpoint,
+  aggregatorEndpoint: envConfig.aggregatorEndpoint,
+  operatorEndpoint: envConfig.operatorEndpoint,
   avsApiKey: validatedEnv.AVS_API_KEY,
   chainId: envConfig.chainId,
   chainEndpoint: chainEndpointHost ? `https://${chainEndpointHost}` : undefined,

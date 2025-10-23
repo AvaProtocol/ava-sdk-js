@@ -90,6 +90,7 @@ describe("RunNodeWithInputs", () => {
             methodParams: [swapRouterAddress, "1000000"], // 1 USDC (6 decimals)
           },
         ],
+        isSimulated: true, // Simulation mode - uses Tenderly
       };
 
       const params = {
@@ -98,7 +99,6 @@ describe("RunNodeWithInputs", () => {
         inputVariables: {
           settings: getSettings(wallet.address),
         },
-        isSimulated: true, // Simulation mode - uses Tenderly
       };
 
       console.log(
@@ -149,6 +149,7 @@ describe("RunNodeWithInputs", () => {
             methodParams: [swapRouterAddress, "1000000"], // 1 USDC (6 decimals)
           },
         ],
+        isSimulated: false, // Real execution - attempts to send UserOp to bundler
       };
 
       const params = {
@@ -157,7 +158,6 @@ describe("RunNodeWithInputs", () => {
         inputVariables: {
           settings: getSettings(wallet.address),
         },
-        isSimulated: false, // Real execution - attempts to send UserOp to bundler
       };
 
       console.log(
