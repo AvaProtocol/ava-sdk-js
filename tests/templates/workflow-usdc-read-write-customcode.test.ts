@@ -32,9 +32,9 @@ let fundedSmartWalletAddress: string;
 
 beforeAll(async () => {
   client = getClient();
+  await authenticateClient(client);
   eoaAddress = await getEOAAddress();
   fundedSmartWalletAddress = (await getSmartWalletWithBalance(client)).address;
-  await authenticateClient(client);
 });
 
 describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)", () => {

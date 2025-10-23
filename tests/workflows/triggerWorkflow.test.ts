@@ -132,11 +132,11 @@ describe("triggerWorkflow Tests", () => {
     // Wait a bit for the execution to complete
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // The list should now contain one execution, the id from manual trigger should matched
+    // The list should now contain one execution, verify the execution ID matches
     const executions2 = await client.getExecutions([workflowId]);
-    expect(executions2.items[0].id).toEqual(result.executionId);
     expect(Array.isArray(executions2.items)).toBe(true);
     expect(executions2.items.length).toEqual(1);
+    expect(executions2.items[0].id).toEqual(result.executionId);
 
     const workflow = await client.getWorkflow(workflowId);
     expect(workflow.executionCount).toEqual(1);
