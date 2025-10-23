@@ -54,11 +54,6 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log(
-        "runNodeWithInputs server response:",
-        util.inspect(response, { depth: null, colors: true })
-      );
-
       expect(response.success).toBeTruthy();
       expect(response.error).toBe("");
       expect(response.data).toBeDefined();
@@ -394,10 +389,6 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      console.log(
-        "REST API 204 response:",
-        util.inspect(result, { depth: null, colors: true })
-      );
 
       expect(result.success).toBe(true);
       expect(result.error).toBe("");
