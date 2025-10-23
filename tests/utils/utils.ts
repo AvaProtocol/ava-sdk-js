@@ -190,6 +190,30 @@ export async function getEOAAddress(privateKey?: string): Promise<string> {
 }
 
 /**
+ * Check if a string is a template variable in the format {{variable.path}}.
+ * Template variables are used for dynamic value substitution in workflows.
+ *
+ * @param value - The string to validate as a template variable
+ * @returns true if the string matches the template variable pattern, false otherwise
+ *
+ * @example
+ * isTemplateVariable("{{settings.runner}}") // true
+ * isTemplateVariable("{{workflow.id}}") // true
+ * isTemplateVariable("{{execution.input}}") // true
+ * isTemplateVariable("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb") // false
+ * isTemplateVariable("normal string") // false
+ * isTemplateVariable("") // false
+ * isTemplateVariable(null) // false
+ */
+export function isTemplateVariable(value: string): boolean {
+  // Match template variable pattern: {{anything}}
+  // More strict: {{word.word}} or {{word.word.word}} etc.
+  const templateVarPattern =
+    /^\{\{[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)+\}\}$/;
+  return templateVarPattern.test(value);
+}
+
+/**
  * Create a new Client instance with the AVS endpoint from configuration.
  * The client is not authenticated by default - call authenticateClient() separately.
  *

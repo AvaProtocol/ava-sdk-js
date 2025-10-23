@@ -31,6 +31,12 @@ const staticChains: Record<string, Omit<ChainDef, "rpcUrl">> = {
     chainEndpoint: null,
     explorerApiBaseUrl: null,
     tokens: {
+      ETH: {
+        address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18,
+      },
       USDC: {
         address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
         name: "USD Coin",
@@ -45,8 +51,14 @@ const staticChains: Record<string, Omit<ChainDef, "rpcUrl">> = {
       },
     },
     oracles: {
-      "BTC / USD": { pair: "BTC / USD", address: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43" },
-      "ETH / USD": { pair: "ETH / USD", address: "0x694AA1769357215DE4FAC081bf1f309aDC325306" },
+      "BTC / USD": {
+        pair: "BTC / USD",
+        address: "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
+      },
+      "ETH / USD": {
+        pair: "ETH / USD",
+        address: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+      },
     },
   },
   sepolia: {
@@ -55,10 +67,31 @@ const staticChains: Record<string, Omit<ChainDef, "rpcUrl">> = {
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api-sepolia.etherscan.io/api",
     tokens: {
-      USDC: { address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", name: "USD Coin", symbol: "USDC", decimals: 6 },
-      LINK: { address: "0x779877a7b0d9e8603169ddbd7836e478b4624789", name: "ChainLink Token", symbol: "LINK", decimals: 18 },
+      ETH: {
+        address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      USDC: {
+        address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+      },
+      LINK: {
+        address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
+        name: "ChainLink Token",
+        symbol: "LINK",
+        decimals: 18,
+      },
     },
-    oracles: { "ETH / USD": { pair: "ETH / USD", address: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419" } },
+    oracles: {
+      "ETH / USD": {
+        pair: "ETH / USD",
+        address: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+      },
+    },
   },
   "base-sepolia": {
     avsEndpoint: "aggregator-base-sepolia.avaprotocol.org:3206",
@@ -137,5 +170,3 @@ export function getChains(): Record<string, ChainDef> {
   }
   return out;
 }
-
-

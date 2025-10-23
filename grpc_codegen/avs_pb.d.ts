@@ -342,9 +342,9 @@ export namespace EventTrigger {
         setAddressesList(value: Array<string>): Query;
         addAddresses(value: string, index?: number): string;
         clearTopicsList(): void;
-        getTopicsList(): Array<EventTrigger.Topics>;
-        setTopicsList(value: Array<EventTrigger.Topics>): Query;
-        addTopics(value?: EventTrigger.Topics, index?: number): EventTrigger.Topics;
+        getTopicsList(): Array<string>;
+        setTopicsList(value: Array<string>): Query;
+        addTopics(value: string, index?: number): string;
 
         hasMaxEventsPerBlock(): boolean;
         clearMaxEventsPerBlock(): void;
@@ -376,7 +376,7 @@ export namespace EventTrigger {
     export namespace Query {
         export type AsObject = {
             addressesList: Array<string>,
-            topicsList: Array<EventTrigger.Topics.AsObject>,
+            topicsList: Array<string>,
             maxEventsPerBlock?: number,
             contractAbiList: Array<google_protobuf_struct_pb.Value.AsObject>,
             conditionsList: Array<EventCondition.AsObject>,
@@ -417,28 +417,6 @@ export namespace EventTrigger {
             callData?: string,
             applyToFieldsList: Array<string>,
             methodParamsList: Array<string>,
-        }
-    }
-
-    export class Topics extends jspb.Message { 
-        clearValuesList(): void;
-        getValuesList(): Array<string>;
-        setValuesList(value: Array<string>): Topics;
-        addValues(value: string, index?: number): string;
-
-        serializeBinary(): Uint8Array;
-        toObject(includeInstance?: boolean): Topics.AsObject;
-        static toObject(includeInstance: boolean, msg: Topics): Topics.AsObject;
-        static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-        static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-        static serializeBinaryToWriter(message: Topics, writer: jspb.BinaryWriter): void;
-        static deserializeBinary(bytes: Uint8Array): Topics;
-        static deserializeBinaryFromReader(message: Topics, reader: jspb.BinaryReader): Topics;
-    }
-
-    export namespace Topics {
-        export type AsObject = {
-            valuesList: Array<string>,
         }
     }
 

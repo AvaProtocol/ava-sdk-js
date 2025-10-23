@@ -27,9 +27,7 @@ export interface ManualTriggerDataType {
 export interface EventTriggerDataType {
   queries: Array<{
     addresses?: string[];
-    topics?: Array<{
-      values?: string[];
-    }>;
+    topics?: (string | null)[]; // Flat array: [signature, from, to, ...]. Use null for wildcards.
     maxEventsPerBlock?: number;
     contractAbi?: ContractAbi; // Contract ABI as array (optional)
     conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data

@@ -27,13 +27,14 @@ beforeAll(async () => {
 });
 
 describe("Templates - Test Single Approve with Simulation Parameter", () => {
-  const workflowConfig = {
+  // Function to get workflow config with properly initialized smartWalletAddress
+  const getWorkflowConfig = () => ({
     name: "Test Single Approve with max",
     chainId: parseInt(chainId),
     settings: {
       chain: getChainNameFromId(parseInt(chainId)),
       amount: "10000", // 0.01 USDC (6 decimals) - matches Go test for repeated testing
-      runner: smartWalletAddress,
+      runner: smartWalletAddress, // Now properly initialized after beforeAll
       chain_id: parseInt(chainId),
       uniswapv3_pool: {
         id: "0xee8027d8430344ba3419f844ba858ac7f1a92095",
@@ -53,32 +54,93 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
         swapRouter02: "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
       },
     },
-  };
+  });
 
   const USDC_ABI: AbiElement[] = [
     {
+      constant: false,
+      inputs: [
+        { name: "_spender", type: "address" },
+        { name: "_value", type: "uint256" },
+      ],
       name: "approve",
-      type: "function" as const,
+      outputs: [{ name: "", type: "bool" }],
+      payable: false,
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      constant: false,
+      inputs: [
+        { name: "_to", type: "address" },
+        { name: "_value", type: "uint256" },
+      ],
+      name: "transfer",
+      outputs: [{ name: "", type: "bool" }],
+      payable: false,
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      constant: true,
+      inputs: [{ name: "_owner", type: "address" }],
+      name: "balanceOf",
+      outputs: [{ name: "balance", type: "uint256" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      constant: true,
+      inputs: [],
+      name: "name",
+      outputs: [{ name: "", type: "string" }],
+      stateMutability: "view",
+      type: "function",
+    },
+    // --- ERC20 events ---
+    {
+      anonymous: false,
       inputs: [
         {
+          indexed: true,
+          name: "owner",
+          type: "address",
+        },
+        {
+          indexed: true,
           name: "spender",
           type: "address",
-          internalType: "address",
         },
         {
+          indexed: false,
           name: "value",
           type: "uint256",
-          internalType: "uint256",
         },
       ],
-      outputs: [
+      name: "Approval",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
         {
-          name: "",
-          type: "bool",
-          internalType: "bool",
+          indexed: true,
+          name: "from",
+          type: "address",
+        },
+        {
+          indexed: true,
+          name: "to",
+          type: "address",
+        },
+        {
+          indexed: false,
+          name: "value",
+          type: "uint256",
         },
       ],
-      stateMutability: "nonpayable",
+      name: "Transfer",
+      type: "event",
     },
   ];
 
@@ -210,12 +272,12 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const balanceResult = await client.runNodeWithInputs({
       nodeType: "balance",
       nodeConfig: {
-        address: workflowConfig.settings.runner,
-        chain: workflowConfig.settings.chain,
+        address: getWorkflowConfig().settings.runner,
+        chain: getWorkflowConfig().settings.chain,
         tokenAddresses: [
           "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
-          workflowConfig.settings.uniswapv3_pool.token0.id,
-          workflowConfig.settings.uniswapv3_pool.token1.id,
+          getWorkflowConfig().settings.uniswapv3_pool.token0.id,
+          getWorkflowConfig().settings.uniswapv3_pool.token1.id,
         ],
       },
     });
@@ -234,13 +296,13 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const approveResult = await client.runNodeWithInputs({
       nodeType: "contractWrite",
       nodeConfig: {
-        contractAddress: workflowConfig.settings.uniswapv3_pool.token1.id,
+        contractAddress: getWorkflowConfig().settings.uniswapv3_pool.token1.id,
         contractAbi: USDC_ABI,
         methodCalls: [
           {
             methodName: "approve",
             methodParams: [
-              workflowConfig.settings.uniswapv3_contracts.swapRouter02,
+              getWorkflowConfig().settings.uniswapv3_contracts.swapRouter02,
               "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
             ],
           },
@@ -249,7 +311,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
         gasLimit: "44909",
       },
       inputVariables: {
-        settings: workflowConfig.settings,
+        settings: getWorkflowConfig().settings,
       },
       // isSimulated not specified, should default to true
     });
@@ -265,7 +327,8 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const quoteResult = await client.runNodeWithInputs({
       nodeType: "contractRead",
       nodeConfig: {
-        contractAddress: workflowConfig.settings.uniswapv3_contracts.quoterV2,
+        contractAddress:
+          getWorkflowConfig().settings.uniswapv3_contracts.quoterV2,
         contractAbi: QUOTER_ABI,
         methodCalls: [
           {
@@ -277,7 +340,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
         ],
       },
       inputVariables: {
-        settings: workflowConfig.settings,
+        settings: getWorkflowConfig().settings,
       },
     });
 
@@ -289,85 +352,12 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     expect(quoteResult.data).toBeDefined();
   });
 
-  test("runNodeWithInputs - contractWrite Approve in real execution mode", async () => {
-    // Test balance node with real execution
-    const balanceResult = await client.runNodeWithInputs({
-      nodeType: "balance",
-      nodeConfig: {
-        address: workflowConfig.settings.runner,
-        chain: workflowConfig.settings.chain,
-        tokenAddresses: [
-          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
-          workflowConfig.settings.uniswapv3_pool.token0.id,
-          workflowConfig.settings.uniswapv3_pool.token1.id,
-        ],
-      },
-      isSimulated: false, // Explicitly set to false for real execution
-    });
-
-    console.log(
-      "Balance result (real):",
-      util.inspect(balanceResult, { depth: 3 })
-    );
-    expect(balanceResult.success).toBe(true);
-    expect(balanceResult.data).toBeDefined();
-
-    // NOTE: Oracle node type doesn't exist - skipping oracle test
-    // Price feeds would typically be implemented via contractRead to Chainlink or REST API calls
-
-    // Test contractWrite (approve) with real execution - should be more cautious
-    // This will actually attempt to execute the transaction!
-    console.warn(
-      "WARNING: The next test will attempt real blockchain execution!"
-    );
-
-    const approveResult = await client.runNodeWithInputs({
-      nodeType: "contractWrite",
-      nodeConfig: {
-        contractAddress: workflowConfig.settings.uniswapv3_pool.token1.id,
-        contractAbi: USDC_ABI,
-        methodCalls: [
-          {
-            methodName: "approve",
-            methodParams: [
-              workflowConfig.settings.uniswapv3_contracts.swapRouter02,
-              "1000000", // Use a smaller amount for testing
-            ],
-          },
-        ],
-        value: "0",
-        gasLimit: "44909",
-      },
-      inputVariables: {
-        settings: workflowConfig.settings,
-      },
-      isSimulated: false, // Real execution
-    });
-
-    console.log(
-      "Approve result (real execution):",
-      util.inspect(approveResult, { depth: 3 })
-    );
-
-    // Test should be deterministic - assert specific execution context properties
-    expect(approveResult).toBeDefined();
-    expect(approveResult.executionContext).toBeDefined();
-    expect(approveResult.executionContext.isSimulated).toBe(false);
-    expect(approveResult.executionContext.provider).toBeDefined();
-
-    // Real execution should succeed if wallet has sufficient balance and permissions
-    // If it fails, it should be due to specific, identifiable reasons
-    expect(approveResult.success).toBe(true);
-    expect(approveResult.data).toBeDefined();
-    console.log("✅ Real execution succeeded!");
-  });
-
   test("runNodeWithInputs - contractWrite real execution validates approval persistence", async () => {
-    console.log("Chain:",workflowConfig.settings.chain);
-    console.log("USDC:", workflowConfig.settings.uniswapv3_pool.token1.id);
+    console.log("Chain:", getWorkflowConfig().settings.chain);
+    console.log("USDC:", getWorkflowConfig().settings.uniswapv3_pool.token1.id);
     console.log(
       "SwapRouter:",
-      workflowConfig.settings.uniswapv3_contracts.swapRouter02
+      getWorkflowConfig().settings.uniswapv3_contracts.swapRouter02
     );
     console.log("Amount: 1 USDC (1000000)\n");
 
@@ -376,13 +366,13 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const initialBalanceResult = await client.runNodeWithInputs({
       nodeType: "balance",
       nodeConfig: {
-        address: workflowConfig.settings.runner,
+        address: getWorkflowConfig().settings.runner,
         chain: "sepolia",
         tokenAddresses: [
-          workflowConfig.settings.uniswapv3_pool.token1.id, // USDC
+          getWorkflowConfig().settings.uniswapv3_pool.token1.id, // USDC
         ],
+        isSimulated: false,
       },
-      isSimulated: false,
     });
 
     console.log(
@@ -406,27 +396,27 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const approveResult = await client.runNodeWithInputs({
       nodeType: "contractWrite",
       nodeConfig: {
-        contractAddress: workflowConfig.settings.uniswapv3_pool.token1.id,
+        contractAddress: getWorkflowConfig().settings.uniswapv3_pool.token1.id,
         contractAbi: USDC_ABI,
         methodCalls: [
           {
             methodName: "approve",
             methodParams: [
-              workflowConfig.settings.uniswapv3_contracts.swapRouter02,
+              getWorkflowConfig().settings.uniswapv3_contracts.swapRouter02,
               approvalAmount, // Use higher approval to cover fees
             ],
           },
         ],
         value: "0",
         gasLimit: "44909",
+        isSimulated: false, // REAL EXECUTION - must be in nodeConfig
       },
       inputVariables: {
         settings: {
-          runner: workflowConfig.settings.runner,
+          runner: getWorkflowConfig().settings.runner,
           chain_id: 11155111,
         },
       },
-      isSimulated: false, // REAL EXECUTION
     });
 
     console.log("Approve result:", util.inspect(approveResult, { depth: 4 }));
@@ -448,14 +438,16 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     console.log("\nStep 3: Executing Uniswap V3 swap (REAL EXECUTION)...");
     console.log(`   Swapping ${swapAmount} USDC for WETH`);
     console.log(
-      `   Fee Tier: ${workflowConfig.settings.uniswapv3_pool.feeTier} (0.05%)`
+      `   Fee Tier: ${
+        getWorkflowConfig().settings.uniswapv3_pool.feeTier
+      } (0.05%)`
     );
 
     const swapResult = await client.runNodeWithInputs({
       nodeType: "contractWrite",
       nodeConfig: {
         contractAddress:
-          workflowConfig.settings.uniswapv3_contracts.swapRouter02,
+          getWorkflowConfig().settings.uniswapv3_contracts.swapRouter02,
         contractAbi: SWAPROUTER_ABI,
         methodCalls: [
           {
@@ -466,16 +458,16 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
           },
         ],
         value: "0",
+        isSimulated: false, // REAL EXECUTION - must be in nodeConfig
       },
       inputVariables: {
         settings: {
-          runner: workflowConfig.settings.runner,
+          runner: getWorkflowConfig().settings.runner,
           chain_id: 11155111,
-          uniswapv3_pool: workflowConfig.settings.uniswapv3_pool,
+          uniswapv3_pool: getWorkflowConfig().settings.uniswapv3_pool,
           amount: swapAmount,
         },
       },
-      isSimulated: false, // REAL EXECUTION
     });
 
     console.log("\n🎯 SWAP RESULT:", util.inspect(swapResult, { depth: 4 }));
@@ -483,7 +475,6 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     // Test must fail if swap fails - be deterministic
     expect(swapResult.success).toBe(true);
     expect(swapResult.data).toBeDefined();
-    console.log("✅ ✅ ✅ SWAP SUCCEEDED! ✅ ✅ ✅");
     console.log(
       "🎉 Complete approve + swap workflow completed successfully on Sepolia!"
     );
@@ -493,14 +484,13 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const finalBalanceResult = await client.runNodeWithInputs({
       nodeType: "balance",
       nodeConfig: {
-        address: workflowConfig.settings.runner,
+        address: getWorkflowConfig().settings.runner,
         chain: "sepolia",
         tokenAddresses: [
-          workflowConfig.settings.uniswapv3_pool.token0.id, // WETH
-          workflowConfig.settings.uniswapv3_pool.token1.id, // USDC
+          getWorkflowConfig().settings.uniswapv3_pool.token0.id, // WETH
+          getWorkflowConfig().settings.uniswapv3_pool.token1.id, // USDC
         ],
       },
-      isSimulated: false,
     });
 
     console.log(
@@ -513,26 +503,24 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
   test("runNodeWithInputs - contractWrite (approve) - simulation vs real execution comparison", async () => {
     // Test the same balance node call with both modes
     const nodeConfig = {
-      address: workflowConfig.settings.runner,
-      chain: workflowConfig.settings.chain,
+      address: getWorkflowConfig().settings.runner,
+      chain: getWorkflowConfig().settings.chain,
       tokenAddresses: [
         "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
-        workflowConfig.settings.uniswapv3_pool.token1.id, // USDC
+        getWorkflowConfig().settings.uniswapv3_pool.token1.id, // USDC
       ],
     };
 
-    // Simulation mode
+    // Simulation mode (balance nodes always query real data, no simulation)
     const simulationResult = await client.runNodeWithInputs({
       nodeType: "balance",
       nodeConfig,
-      isSimulated: true,
     });
 
-    // Real execution mode
+    // Real execution mode (same as simulation for balance nodes)
     const realResult = await client.runNodeWithInputs({
       nodeType: "balance",
       nodeConfig,
-      isSimulated: false,
     });
 
     console.log(
@@ -561,13 +549,13 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
 
   test("runNodeWithInputs - contractWrite (approve) - explicit isSimulated parameter behavior", async () => {
     const contractWriteConfig = {
-      contractAddress: workflowConfig.settings.uniswapv3_pool.token1.id,
+      contractAddress: getWorkflowConfig().settings.uniswapv3_pool.token1.id,
       contractAbi: USDC_ABI,
       methodCalls: [
         {
           methodName: "approve",
           methodParams: [
-            workflowConfig.settings.uniswapv3_contracts.swapRouter02,
+            getWorkflowConfig().settings.uniswapv3_contracts.swapRouter02,
             "1000000",
           ],
         },
@@ -579,11 +567,10 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     // Test with explicit simulation=true
     const simulatedResult = await client.runNodeWithInputs({
       nodeType: "contractWrite",
-      nodeConfig: contractWriteConfig,
+      nodeConfig: { ...contractWriteConfig, isSimulated: true },
       inputVariables: {
-        settings: workflowConfig.settings,
+        settings: getWorkflowConfig().settings,
       },
-      isSimulated: true,
     });
 
     console.log(
@@ -595,11 +582,10 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     // Test with explicit simulation=false (real execution)
     const realResult = await client.runNodeWithInputs({
       nodeType: "contractWrite",
-      nodeConfig: contractWriteConfig,
+      nodeConfig: { ...contractWriteConfig, isSimulated: false },
       inputVariables: {
-        settings: workflowConfig.settings,
+        settings: getWorkflowConfig().settings,
       },
-      isSimulated: false,
     });
 
     console.log(
@@ -731,7 +717,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const equalExecution = await client.simulateWorkflow({
       ...equalWorkflow.toJson(),
       inputVariables: {
-        settings: workflowConfig.settings,
+        settings: getWorkflowConfig().settings,
         approval_amount: testSwapAmount,
         test_swap_amount: testSwapAmount,
       },
@@ -784,7 +770,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     const higherExecution = await client.simulateWorkflow({
       ...higherWorkflow.toJson(),
       inputVariables: {
-        settings: workflowConfig.settings,
+        settings: getWorkflowConfig().settings,
         approval_amount: higherApprovalAmount,
         test_swap_amount: testSwapAmount,
       },

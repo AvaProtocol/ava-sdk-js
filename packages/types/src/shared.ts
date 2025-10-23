@@ -36,6 +36,7 @@ export type TriggerDataProps = {
   data?: string | number | boolean | Record<string, unknown> | unknown[] | null;
   headers?: Record<string, string>;
   pathParams?: Record<string, string>;
+  inputVariables?: Record<string, unknown>;
 };
 
 // Input variables type for workflow execution

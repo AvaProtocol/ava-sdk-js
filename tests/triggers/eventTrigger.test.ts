@@ -1,29 +1,31 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import util from "util";
+import { isAddress } from "ethers";
 import { Client, TriggerFactory, EventTrigger } from "@avaprotocol/sdk-js";
-import {TriggerType, EventConditionType, ExecutionStatus} from "@avaprotocol/types";
+import {
+  TriggerType,
+  EventConditionType,
+  ExecutionStatus,
+} from "@avaprotocol/types";
 import {
   removeCreatedWorkflows,
   describeIfSepolia,
   getSmartWallet,
+  getSmartWalletWithBalance,
   getClient,
   authenticateClient,
   getEOAAddress,
+  isTemplateVariable,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-
-const { chainId } = getConfig();
+const { chainId, tokens } = getConfig();
 
 jest.setTimeout(45000);
 
 const createdIdMap: Map<string, boolean> = new Map();
 
-const SEPOLIA_TOKEN_ADDRESSES = [
-  "0x779877A7B0D9E8603169DdbD7836e478b4624789", // LINK on Sepolia
-  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // UNI on Sepolia
-  "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6", // WETH on Sepolia
-];
+const SEPOLIA_TOKEN_ADDRESSES = [tokens?.ETH?.address, tokens?.USDC?.address];
 
 // Chainlink Price Feed Aggregator address on Sepolia (ETH/USD)
 const CHAINLINK_ETH_USD_SEPOLIA = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
@@ -75,36 +77,42 @@ function padAddressForTopic(address: string): string {
   return "0x" + cleanAddress.toLowerCase().padStart(64, "0");
 }
 
-// Helper function to create basic event trigger config (without enrichment)
+/**
+ *
+ * @param walletAddress - The wallet address to monitor for transfer events
+ * @param contractAddresses - The contract addresses to monitor for transfer events
+ * @returns The event trigger config
+ */
 function createEventTriggerConfig(
-  coreAddress: string,
-  contractAddresses: string[] = SEPOLIA_TOKEN_ADDRESSES
+  walletAddress: string,
+  contractAddresses: string[]
 ) {
+  // Only pad addresses that are NOT template variables
+  // Template variables will be resolved server-side and should not be padded client-side
+  let addressToMonitor: string;
+
+  if (isTemplateVariable(walletAddress)) {
+    // Template variable - leave as-is for server-side resolution
+    addressToMonitor = walletAddress;
+  } else if (isAddress(walletAddress)) {
+    // Valid Ethereum address - pad it for topic filtering
+    addressToMonitor = padAddressForTopic(walletAddress);
+  } else {
+    // Invalid input - throw descriptive error
+    throw new Error(
+      `Invalid walletAddress: "${walletAddress}". Must be either a valid Ethereum address or a template variable (e.g., {{settings.runner}})`
+    );
+  }
+
   return {
     queries: [
       {
         addresses: contractAddresses,
-        topics: [
-          {
-            values: [
-              TRANSFER_EVENT_SIGNATURE,
-              padAddressForTopic(coreAddress),
-              null,
-            ], // Transfer from coreAddress
-          },
-        ],
+        topics: [TRANSFER_EVENT_SIGNATURE, addressToMonitor, null], // Transfer from walletAddress
       },
       {
         addresses: contractAddresses,
-        topics: [
-          {
-            values: [
-              TRANSFER_EVENT_SIGNATURE,
-              null,
-              padAddressForTopic(coreAddress),
-            ], // Transfer to coreAddress
-          },
-        ],
+        topics: [TRANSFER_EVENT_SIGNATURE, null, addressToMonitor], // Transfer to walletAddress
       },
     ],
   };
@@ -128,7 +136,7 @@ function createChainlinkPriceConditionConfig(
     queries: [
       {
         addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-        topics: [{ values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE] }],
+        topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
         contractAbi: CHAINLINK_AGGREGATOR_ABI,
         conditions: conditions,
         maxEventsPerBlock: 5,
@@ -139,22 +147,7 @@ function createChainlinkPriceConditionConfig(
 
 describeIfSepolia("EventTrigger Tests", () => {
   let client: Client;
-  let coreAddress: string;
-
-  // Define trigger props at the beginning
-  const basicEventTriggerProps = {
-    id: "test-trigger-id",
-    name: "eventTrigger",
-    type: TriggerType.Event,
-    data: {
-      queries: [
-        {
-          addresses: SEPOLIA_TOKEN_ADDRESSES,
-          topics: [{ values: [TRANSFER_EVENT_SIGNATURE] }],
-        },
-      ],
-    },
-  };
+  let eoaAddress: string;
 
   const undefinedDataTriggerProps = {
     id: "test-trigger-id",
@@ -170,20 +163,8 @@ describeIfSepolia("EventTrigger Tests", () => {
     data: null as any,
   };
 
-  const runTriggerBasicProps = {
-    triggerType: TriggerType.Event,
-    triggerConfig: {
-      queries: [
-        {
-          addresses: SEPOLIA_TOKEN_ADDRESSES,
-          topics: [{ values: [TRANSFER_EVENT_SIGNATURE] }],
-        },
-      ],
-    },
-  };
-
   beforeAll(async () => {
-    coreAddress = await getEOAAddress();
+    eoaAddress = await getEOAAddress();
     client = getClient();
     await authenticateClient(client);
   });
@@ -246,11 +227,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: ["0xA0b86a33E6441e6067ec0da4Cc2C8ae77d85e7b1"],
               topics: [
-                {
-                  values: [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                  ],
-                },
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
               ],
             },
           ],
@@ -275,11 +252,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: [],
               topics: [
-                {
-                  values: [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-                  ],
-                },
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
               ],
             },
           ],
@@ -329,20 +302,16 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
     });
 
-    // Transfer event tests - defined as individual tests to access coreAddress after initialization
-    test("should run trigger for Transfer events: from core address", async () => {
+    // Transfer event tests - defined as individual tests to access eoaAddress after initialization
+    test("should run trigger for Transfer events from eoa address", async () => {
       const triggerConfig = {
         queries: [
           {
             addresses: SEPOLIA_TOKEN_ADDRESSES,
             topics: [
-              {
-                values: [
-                  TRANSFER_EVENT_SIGNATURE,
-                  padAddressForTopic(coreAddress),
-                  null,
-                ],
-              },
+              TRANSFER_EVENT_SIGNATURE,
+              padAddressForTopic(eoaAddress),
+              null,
             ],
           },
         ],
@@ -365,19 +334,15 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
     });
 
-    test("should run trigger for Transfer events: to core address", async () => {
+    test("should run trigger for Transfer events to eoa address", async () => {
       const triggerConfig = {
         queries: [
           {
             addresses: SEPOLIA_TOKEN_ADDRESSES,
             topics: [
-              {
-                values: [
-                  TRANSFER_EVENT_SIGNATURE,
-                  null,
-                  padAddressForTopic(coreAddress),
-                ],
-              },
+              TRANSFER_EVENT_SIGNATURE,
+              null,
+              padAddressForTopic(eoaAddress),
             ],
           },
         ],
@@ -400,8 +365,8 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
     });
 
-    test("should run trigger for Transfer events: multiple queries (from/to)", async () => {
-      const triggerConfig = createEventTriggerConfig(coreAddress);
+    test("should run trigger for Transfer events with multiple queries", async () => {
+      const triggerConfig = createEventTriggerConfig(eoaAddress, SEPOLIA_TOKEN_ADDRESSES);
 
       const params = { triggerType: TriggerType.Event, triggerConfig };
       console.log(
@@ -473,11 +438,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [
-                {
-                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
-                },
-              ],
+              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
               contractAbi: CHAINLINK_AGGREGATOR_ABI,
               conditions: conditions,
               maxEventsPerBlock: 3,
@@ -526,11 +487,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [
-                {
-                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
-                },
-              ],
+              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
               contractAbi: CHAINLINK_AGGREGATOR_ABI,
               conditions: originalConditions,
               maxEventsPerBlock: 5,
@@ -609,9 +566,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
               topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE],
-                },
+                TRANSFER_EVENT_SIGNATURE,
               ],
               contractAbi: JSON.stringify(abiArray) as any, // Force string type
             },
@@ -664,9 +619,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
               topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE],
-                },
+                TRANSFER_EVENT_SIGNATURE,
               ],
               contractAbi: abiArray, // Pass as array
             },
@@ -697,7 +650,6 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(deserializedQuery.contractAbi).toEqual(abiArray);
     });
 
-
     test("should run trigger with enriched Transfer event parsing", async () => {
       const params = {
         triggerType: TriggerType.Event,
@@ -707,15 +659,11 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: ["0x779877A7B0D9E8603169DdbD7836e478b4624789"], // Sample token contract
               topics: [
-                {
-                  values: [
-                    TRANSFER_EVENT_SIGNATURE,
-                    null, // Any from address
-                    padAddressForTopic(
-                      "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788"
-                    ), // Specific to address
-                  ],
-                },
+                TRANSFER_EVENT_SIGNATURE,
+                null, // Any from address
+                padAddressForTopic(
+                  "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788"
+                ), // Specific to address
               ],
               contractAbi: [
                 {
@@ -807,7 +755,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         id: defaultTriggerId,
         name: "simulate_event_trigger_test",
         type: TriggerType.Event,
-        data: createEventTriggerConfig(coreAddress),
+        data: createEventTriggerConfig(eoaAddress, SEPOLIA_TOKEN_ADDRESSES),
       });
 
       const workflowProps = createFromTemplate(wallet.address, []);
@@ -850,11 +798,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE, coreAddress, null], // Only FROM events
-                },
-              ],
+              topics: [TRANSFER_EVENT_SIGNATURE, eoaAddress, null], // Only FROM events
             },
           ],
         },
@@ -885,11 +829,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [
-                {
-                  values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
-                },
-              ],
+              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
               contractAbi: CHAINLINK_AGGREGATOR_ABI,
               methodCalls: [
                 {
@@ -953,7 +893,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       // Use more flexible approach that doesn't hard-code event name
       const expectedEventName = "AnswerUpdated";
       const eventOutput = output[expectedEventName] as Record<string, unknown>;
-      
+
       if (eventOutput && eventOutput.current && eventOutput.decimals) {
         // Verify decimal formatting data is present and valid
         expect(eventOutput.current).toBeDefined();
@@ -988,7 +928,7 @@ describeIfSepolia("EventTrigger Tests", () => {
 
   describe("Deploy Workflow + Trigger Tests", () => {
     test("should deploy and trigger workflow with event trigger", async () => {
-      const wallet = await getSmartWallet(client);
+      const smartWallet = await getSmartWallet(client);
 
       const eventTrigger = TriggerFactory.create({
         id: defaultTriggerId,
@@ -998,17 +938,13 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE, null, coreAddress], // Transfer to coreAddress
-                },
-              ],
+              topics: [TRANSFER_EVENT_SIGNATURE, null, eoaAddress], // Transfer to eoaAddress
             },
           ],
         },
       });
 
-      const workflowProps = createFromTemplate(wallet.address, []);
+      const workflowProps = createFromTemplate(smartWallet.address, []);
       workflowProps.trigger = eventTrigger;
 
       let workflowId: string | undefined;
@@ -1019,7 +955,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         );
 
         // Verify deployment was successful
-        const workflowsResult = await client.getWorkflows([wallet.address]);
+        const workflowsResult = await client.getWorkflows([smartWallet.address]);
         const deployedWorkflow = workflowsResult.items.find(
           (w) => w.id === workflowId
         );
@@ -1057,7 +993,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             transactionHash:
               "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
             from: "0x1234567890123456789012345678901234567890",
-            to: coreAddress,
+            to: eoaAddress,
             value: "1000000000000000000", // 1 ETH in wei
           },
         };
@@ -1111,6 +1047,101 @@ describeIfSepolia("EventTrigger Tests", () => {
     });
   });
 
+  describe("Template Variable Resolution Tests", () => {
+    test("should resolve template variables in addresses and topics", async () => {
+      const smartWallet = await getSmartWalletWithBalance(client); // The wallet to monitor for transfer events
+
+      const monitoringWalletAddress = "{{settings.runner}}"; // smartwallet.address
+      const erc20TokenAddresses = [
+        tokens?.ETH?.address,
+        "{{settings.uniswapv3_pool.token1.id}}", // Template variable for USDC
+      ];
+
+      const triggerConfig = createEventTriggerConfig(
+        monitoringWalletAddress,
+        erc20TokenAddresses
+      );
+
+      const params = {
+        triggerType: TriggerType.Event,
+        triggerConfig: triggerConfig,
+        inputVariables: {
+          settings: {
+            name: "Template Variable Resolution Test",
+            runner: smartWallet.address,
+            chain_id: parseInt(chainId),
+            uniswapv3_pool: {
+              token1: {
+                id: tokens?.USDC?.address,
+                symbol: "USDC",
+              },
+              feeTier: "3000",
+            },
+          },
+        },
+      };
+
+      console.log(
+        "🚀 ~ runTrigger with template variables ~ input params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+
+      const result = await client.runTrigger(params);
+
+      console.log(
+        "runTrigger template resolution response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      // Should succeed - template resolution happens server-side
+      expect(result.success).toBe(true);
+      expect(result.error).toBe("");
+
+      // Verify response structure
+      expect(result.data).toBeDefined();
+      expect(result.data?.topics).toBeInstanceOf(Array);
+      expect(result.data?.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
+
+      // Key verification: the tokenContract (erc20 token contract) in the response matches any of those in trigger config
+      expect(
+        result.data?.tokenContract.toLowerCase() ===
+          tokens?.USDC?.address?.toLowerCase() ||
+          result.data?.tokenContract.toLowerCase() ===
+            tokens?.ETH?.address?.toLowerCase()
+      ).toBe(true);
+
+      // Key verification: either the from or to in Transfer event equals to the padded wallet for monitoring
+      console.log(
+        "result.data.topics[1]:",
+        result.data?.topics[1].toLowerCase()
+      );
+      console.log(
+        "result.data.topics[2]:",
+        result.data?.topics[2].toLowerCase()
+      );
+      console.log(
+        "padAddressForTopic(smartWallet.address):",
+        padAddressForTopic(smartWallet.address).toLowerCase()
+      );
+
+      expect(
+        result.data?.topics[1].toLowerCase() ===
+          padAddressForTopic(smartWallet.address).toLowerCase() ||
+          result.data?.topics[2].toLowerCase() ===
+            padAddressForTopic(smartWallet.address).toLowerCase()
+      ).toBe(true);
+
+      // The server should have resolved:
+      // - {{settings.uniswapv3_pool.token1.id}} → USDC_ADDRESS
+      // - {{settings.runner}} → smartWallet.address
+
+      // Verify metadata contains transfer transaction receipt
+      expect(result.metadata).toBeDefined();
+      expect(result.metadata).toHaveProperty("address");
+      expect(result.metadata).toHaveProperty("data");
+    });
+  });
+
   describe("Response Format Consistency Tests", () => {
     test("should return consistent AnswerUpdated event format across all execution modes", async () => {
       const wallet = await getSmartWallet(client);
@@ -1120,7 +1151,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         queries: [
           {
             addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-            topics: [{ values: [CHAINLINK_ANSWER_UPDATED_SIGNATURE] }],
+            topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
             contractAbi: [
               {
                 anonymous: false,
@@ -1193,12 +1224,15 @@ describeIfSepolia("EventTrigger Tests", () => {
         // Use more flexible approach that doesn't hard-code event name
         const eventKeys = Object.keys(parsedData);
         expect(eventKeys.length).toBeGreaterThan(0);
-        
+
         // For this test, we expect AnswerUpdated event specifically
         const expectedEventName = "AnswerUpdated";
         expect(parsedData[expectedEventName]).toBeDefined();
-        
-        const eventData = parsedData[expectedEventName] as Record<string, unknown>;
+
+        const eventData = parsedData[expectedEventName] as Record<
+          string,
+          unknown
+        >;
         expect(typeof eventData.current).toBe("string");
         expect(typeof eventData.roundId).toBe("string");
         expect(typeof eventData.updatedAt).toBe("string");
@@ -1262,12 +1296,15 @@ describeIfSepolia("EventTrigger Tests", () => {
       // Use more flexible approach that doesn't hard-code event name
       const simulateEventKeys = Object.keys(simulateData);
       expect(simulateEventKeys.length).toBeGreaterThan(0);
-      
+
       // For this test, we expect AnswerUpdated event specifically
       const expectedEventName = "AnswerUpdated";
       expect(simulateData[expectedEventName]).toBeDefined();
-      
-      const simulateEventData = simulateData[expectedEventName] as Record<string, unknown>;
+
+      const simulateEventData = simulateData[expectedEventName] as Record<
+        string,
+        unknown
+      >;
       expect(typeof simulateEventData.current).toBe("string");
       expect(typeof simulateEventData.roundId).toBe("string");
       expect(typeof simulateEventData.updatedAt).toBe("string");
@@ -1304,11 +1341,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         queries: [
           {
             addresses: [SEPOLIA_TOKEN_ADDRESSES[0]], // Use single contract for consistency
-            topics: [
-              {
-                values: [TRANSFER_EVENT_SIGNATURE, null, null], // Any Transfer event
-              },
-            ],
+            topics: [TRANSFER_EVENT_SIGNATURE, null, null], // Any Transfer event
           },
         ],
       };
@@ -1385,7 +1418,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             transactionHash:
               "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
             from: "0x1234567890123456789012345678901234567890",
-            to: coreAddress,
+            to: eoaAddress,
             value: "1000000000000000000", // 1 ETH in wei
           },
         };
@@ -1602,11 +1635,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: [], // Empty array - monitor all contracts
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE, null, null],
-                },
-              ],
+              topics: [TRANSFER_EVENT_SIGNATURE, null, null],
             },
           ],
         },
@@ -1636,13 +1665,9 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
               topics: [
-                {
-                  values: [
-                    TRANSFER_EVENT_SIGNATURE,
-                    "0x0000000000000000000000000000000000000000", // From zero address (minting)
-                    null,
-                  ],
-                },
+                TRANSFER_EVENT_SIGNATURE,
+                "0x0000000000000000000000000000000000000000", // From zero address (minting)
+                null,
               ],
             },
           ],
@@ -1683,11 +1708,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE, null, null],
-                },
-              ],
+              topics: [TRANSFER_EVENT_SIGNATURE, null, null],
             },
           ],
         },
@@ -1721,11 +1742,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: [], // Empty array - monitor all contracts
-              topics: [
-                {
-                  values: [TRANSFER_EVENT_SIGNATURE, null, null],
-                },
-              ],
+              topics: [TRANSFER_EVENT_SIGNATURE, null, null],
             },
           ],
         },
@@ -1785,11 +1802,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         queries: [
           {
             addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
-            topics: [
-              {
-                values: [TRANSFER_EVENT_SIGNATURE, null, null],
-              },
-            ],
+            topics: [TRANSFER_EVENT_SIGNATURE, null, null],
           },
         ],
       };
@@ -1837,11 +1850,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
-              topics: [
-                {
-                  values: ["invalid_topic_format"], // Invalid topic format
-                },
-              ],
+              topics: ["invalid_topic_format"], // Invalid topic format
             },
           ],
         },
@@ -1872,11 +1881,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         queries: [
           {
             addresses: ["0x1234567890123456789012345678901234567890"],
-            topics: [
-              {
-                values: [TRANSFER_EVENT_SIGNATURE, null, null],
-              },
-            ],
+            topics: [TRANSFER_EVENT_SIGNATURE, null, null],
           },
         ],
       };
@@ -1970,11 +1975,7 @@ describeIfSepolia("EventTrigger Tests", () => {
         queries: [
           {
             addresses: ["0x1234567890123456789012345678901234567890"],
-            topics: [
-              {
-                values: [TRANSFER_EVENT_SIGNATURE],
-              },
-            ],
+            topics: [TRANSFER_EVENT_SIGNATURE],
           },
         ],
       };
@@ -2030,11 +2031,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: ["0x694AA1769357215DE4FAC081bf1f309aDC325306"],
               topics: [
-                {
-                  values: [
-                    "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
-                  ],
-                },
+                "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
               ],
               contractAbi: CHAINLINK_AGGREGATOR_ABI,
               methodCalls: [
@@ -2077,11 +2074,7 @@ describeIfSepolia("EventTrigger Tests", () => {
             {
               addresses: ["0x694AA1769357215DE4FAC081bf1f309aDC325306"],
               topics: [
-                {
-                  values: [
-                    "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
-                  ],
-                },
+                "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f",
               ],
               contractAbi: CHAINLINK_AGGREGATOR_ABI,
               conditions: [
