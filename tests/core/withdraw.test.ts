@@ -27,7 +27,7 @@ import { ethers } from "ethers";
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in this file
 
 // Get environment variables from envalid config
-const { tokens, chainEndpoint, avsEndpoint, paymasterAddress } = getConfig();
+const { tokens, chainEndpoint, aggregatorEndpoint, paymasterAddress } = getConfig();
 
 describeIfSepolia("Withdraw Funds Tests", () => {
   let client: Client;
@@ -305,7 +305,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
   describe("withdrawFunds Authentication Tests", () => {
     test("should reject withdrawal request without authentication", async () => {
       const unauthenticatedClient = new Client({
-        endpoint: avsEndpoint,
+        endpoint: aggregatorEndpoint,
       });
 
       // Use funded wallet for withdrawal tests
@@ -325,7 +325,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
     test("should work with request-level auth key", async () => {
       const unauthenticatedClient = new Client({
-        endpoint: avsEndpoint,
+        endpoint: aggregatorEndpoint,
       });
 
       // Use funded wallet for withdrawal tests

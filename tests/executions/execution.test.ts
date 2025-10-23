@@ -7,15 +7,27 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  checkOperatorHealth,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
+import { getConfig } from "../utils/envalid";
 
 jest.setTimeout(TIMEOUT_DURATION);
+
+// Get configuration
+const { operatorEndpoint } = getConfig();
 
 describe("Execution Management Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
+    // Check if operator is running before running any tests
+    const isOperatorHealthy = await checkOperatorHealth(operatorEndpoint);
+    if (!isOperatorHealthy) {
+      throw new Error(`❌ Operator is not running at ${operatorEndpoint}. Please start the operator with: make operator-sepolia`);
+    }
+    console.log(`✅ Operator is running at ${operatorEndpoint}`);
+
     client = getClient();
     await authenticateClient(client);
   });

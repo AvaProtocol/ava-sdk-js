@@ -200,7 +200,7 @@ export async function getEOAAddress(privateKey?: string): Promise<string> {
  */
 export function getClient(): Client {
   return new Client({
-    endpoint: config.avsEndpoint,
+    endpoint: config.aggregatorEndpoint,
   });
 }
 
@@ -212,7 +212,7 @@ export function getClient(): Client {
  * @returns Authenticated client with authKey set
  *
  * @example
- * const client = new Client({ endpoint: avsEndpoint });
+ * const client = new Client({ endpoint: aggregatorEndpoint });
  * await authenticateClient(client);
  * // Client is now authenticated and ready to use
  */
@@ -394,7 +394,7 @@ export async function generateAuthPayloadWithApiKey(
 ): Promise<GetKeyRequestApiKey> {
   try {
     const client = new Client({
-      endpoint: config.avsEndpoint,
+      endpoint: config.aggregatorEndpoint,
     });
 
     const { message } = await client.getSignatureFormat(address);
@@ -1636,6 +1636,51 @@ export const USDC_Implementation_ABI: AbiElement[] = [
 ];
 
 /**
+ * Check if the operator is running and healthy
+ * @param operatorEndpoint - The operator endpoint (e.g., "localhost:9010")
+ * @returns Promise<boolean> - true if operator is healthy, false otherwise
+ */
+export async function checkOperatorHealth(
+  operatorEndpoint: string
+): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    // Try to connect to the operator port - if it's open, the operator is running
+    await fetch(`http://${operatorEndpoint}/`, {
+      method: "GET",
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    // If we get any response (even 404), the operator is running
+    return true;
+  } catch (error) {
+    console.log(`❌ Operator health check failed: ${error}`);
+    return false;
+  }
+}
+
+/**
+ * Decorator function to skip tests that require operator if operator is not running
+ * @param operatorEndpoint - The operator endpoint to check
+ * @returns Jest test decorator
+ */
+export function describeIfOperatorRunning(operatorEndpoint: string) {
+  return async (name: string, fn: () => void | Promise<void>) => {
+    const isOperatorHealthy = await checkOperatorHealth(operatorEndpoint);
+    if (isOperatorHealthy) {
+      console.log(`✅ Operator is running - executing test: ${name}`);
+      return describe(name, fn);
+    } else {
+      console.log(`⚠️  Operator is not running - skipping test: ${name}`);
+      return describe.skip(name, fn);
+    }
+  };
+}
+
+/**
  * Get the owner address of a paymaster contract
  * @param paymasterAddress - The paymaster contract address
  * @param provider - Ethers provider instance
@@ -1647,7 +1692,11 @@ export async function getPaymasterOwner(
 ): Promise<string> {
   // Paymaster owner() function ABI
   const ownerAbi = ["function owner() view returns (address)"];
-  const paymasterContract = new ethers.Contract(paymasterAddress, ownerAbi, provider);
+  const paymasterContract = new ethers.Contract(
+    paymasterAddress,
+    ownerAbi,
+    provider
+  );
   return await paymasterContract.owner();
 }
 
