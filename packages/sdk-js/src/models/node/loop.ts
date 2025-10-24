@@ -179,7 +179,7 @@ class LoopNode extends Node {
 
       case "contractWrite": {
         const writeConfig = config as Record<string, unknown>;
-        const contractWrite = ContractWriteNode.createProtobufNode({
+        const contractWriteData: any = {
           contractAddress: writeConfig.contractAddress as string,
           contractAbi: writeConfig.contractAbi as ContractAbi,
           methodCalls:
@@ -194,8 +194,14 @@ class LoopNode extends Node {
               methodParams: call.methodParams || [],
               ...(call.callData && { callData: call.callData }),
             })) || [],
-          ...(writeConfig.isSimulated !== undefined && { isSimulated: writeConfig.isSimulated as boolean }),
-        });
+        };
+
+        // Include isSimulated if present
+        if (writeConfig.isSimulated !== undefined) {
+          contractWriteData.isSimulated = writeConfig.isSimulated as boolean;
+        }
+
+        const contractWrite = ContractWriteNode.createProtobufNode(contractWriteData);
         loopNode.setContractWrite(contractWrite);
         break;
       }

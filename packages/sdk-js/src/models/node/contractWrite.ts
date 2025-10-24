@@ -87,9 +87,12 @@ class ContractWriteNode extends Node {
           // callData is optional, only include if present
           ...(call.callData && { callData: call.callData }),
         })) || [],
-      // Include isSimulated if present in protobuf
-      ...(protobufData.isSimulated !== undefined && { isSimulated: protobufData.isSimulated }),
     };
+
+    // Include isSimulated if present in protobuf
+    if (protobufData.isSimulated !== undefined) {
+      data.isSimulated = protobufData.isSimulated;
+    }
 
     return new ContractWriteNode({
       ...obj,
