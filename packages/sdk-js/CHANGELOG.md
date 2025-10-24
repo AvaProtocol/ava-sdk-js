@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.10.0
+
+### Minor Changes
+
+- 2e75ba5: feat: update event trigger interface with topics string array, null values, and response field name change
+
+### Patch Changes
+
+- Updated dependencies [2e75ba5]
+  - @avaprotocol/types@2.8.0
+
 ## 2.9.3
 
 ### Patch Changes
