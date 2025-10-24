@@ -16,6 +16,7 @@ import {
   authenticateClient,
   getEOAAddress,
   isTemplateVariable,
+  padAddressForTopic,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -64,18 +65,6 @@ const CHAINLINK_AGGREGATOR_ABI = [
     type: "event",
   },
 ];
-
-const ZERO_TOPIC_ADDRESS = "0x" + "0".repeat(64);
-
-// Helper function to pad addresses to 32 bytes for topics
-function padAddressForTopic(address: string): string {
-  // Remove 0x prefix if present, then pad to 64 hex characters (32 bytes)
-  if (!address) {
-    return ZERO_TOPIC_ADDRESS;
-  }
-  const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
-  return "0x" + cleanAddress.toLowerCase().padStart(64, "0");
-}
 
 /**
  *
@@ -797,7 +786,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [TRANSFER_EVENT_SIGNATURE, eoaAddress, null], // Only FROM events
+              topics: [TRANSFER_EVENT_SIGNATURE, padAddressForTopic(eoaAddress), null], // Only FROM events
             },
           ],
         },
@@ -937,7 +926,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [TRANSFER_EVENT_SIGNATURE, null, eoaAddress], // Transfer to eoaAddress
+              topics: [TRANSFER_EVENT_SIGNATURE, null, padAddressForTopic(eoaAddress)], // Transfer to eoaAddress
             },
           ],
         },

@@ -30,7 +30,7 @@ describe("Input Field Tests", () => {
 
   // Test to verify validation is working
   test("should reject workflow with invalid node name", async () => {
-      const wallet = await getSmartWallet(client);
+    const wallet = await getSmartWallet(client);
 
     // Create a trigger with valid name
     const validTrigger = TriggerFactory.create({
@@ -79,7 +79,7 @@ describe("Input Field Tests", () => {
   });
 
   test("should show input data for both trigger and node in execution steps using comprehensive manual trigger config", async () => {
-      const wallet = await getSmartWallet(client);
+    const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
     const triggerName = "ManualTriggerWithInput";
@@ -364,7 +364,7 @@ describe("Input Field Tests", () => {
 
     // This is the EXACT call that was failing for the original client
     // The error would occur when simulateWorkflow processes the execution steps
-      const wallet = await getSmartWallet(client);
+    const wallet = await getSmartWallet(client);
     let result;
     expect(async () => {
       result = await client.simulateWorkflow({
@@ -454,7 +454,7 @@ describe("Input Field Tests", () => {
   });
 
   test("should handle EventTrigger input field correctly (reproducing server-side input nil issue)", async () => {
-      const wallet = await getSmartWallet(client);
+    const wallet = await getSmartWallet(client);
     const eventTrigger = TriggerFactory.create({
       id: getNextId(),
       name: "event_trigger_with_input",
@@ -614,6 +614,6 @@ describe("Input Field Tests", () => {
     expect(output.inputChainId).toBe(11155111);
     expect(output.inputTokensCount).toBe(1);
 
-        expect(typeof output.message).toBe("string");
+    expect(typeof output.message).toBe("string");
   });
 });

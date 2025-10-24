@@ -16,6 +16,7 @@ import {
   getChainNameFromId,
   getSmartWallet,
   getClient,
+  padAddressForTopic,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens, chainId } = getConfig();
@@ -81,7 +82,7 @@ describe("Template: Telegram Alert on Transfer", () => {
           {
             // Query 1: Outgoing transfers (wallet address === from)
             addresses: [USDC_CONTRACT_ADDRESS],
-            topics: [TRANSFER_TOPIC, eoaAddress, null],
+            topics: [TRANSFER_TOPIC, padAddressForTopic(eoaAddress), null],
             maxEventsPerBlock: 100,
             contractAbi: [
               {
@@ -128,7 +129,7 @@ describe("Template: Telegram Alert on Transfer", () => {
           {
             // Query 2: Incoming transfers (wallet address === to)
             addresses: [USDC_CONTRACT_ADDRESS],
-            topics: [TRANSFER_TOPIC, null, eoaAddress],
+            topics: [TRANSFER_TOPIC, null, padAddressForTopic(eoaAddress)],
             maxEventsPerBlock: 100,
             contractAbi: [
               {

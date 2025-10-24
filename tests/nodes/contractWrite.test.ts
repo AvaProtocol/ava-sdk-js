@@ -328,9 +328,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       ); // One method = one key
 
       // Validate that the transfer method returned proper event data
-      // STRUCTURE: Events are flattened (not nested under event names)
       expect(result.data.transfer).toBeDefined();
-      // Events are flattened directly under the method name
       expect(result.data.transfer.from).toBeDefined();
       expect(result.data.transfer.to).toBeDefined();
       expect(result.data.transfer.value).toBeDefined();
@@ -993,8 +991,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(simulatedOutput.transfer).toBeDefined();
         expect(typeof simulatedOutput.transfer).toBe("object");
 
-        // Validate transfer fields are properly populated
-        // STRUCTURE: Events are flattened (not nested under event names)
+        // Validate transfer fields are properly populated (flattened structure)
         expect(simulatedOutput.transfer).toBeDefined();
         expect(simulatedOutput.transfer.from).toBeDefined();
         expect(simulatedOutput.transfer.to).toBeDefined();
@@ -1022,8 +1019,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(executedStep!.success).toBeTruthy();
 
         // For deployed workflow (real transaction), verify the transfer data is populated
-        // Real transactions should always have proper event logs and decoded data
-        // STRUCTURE: Events are flattened (not nested under event names)
+        // Real transactions should always have proper event logs and decoded data (flattened structure)
         const deployedOutput = executedStep!.output as any;
         expect(deployedOutput.transfer).toBeDefined();
         expect(deployedOutput.transfer.from).toBeDefined();
@@ -1436,8 +1432,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // For approve methods, events take priority over return values (more descriptive)
       // The Approval event contains owner, spender, value fields which are more useful than just output_0: true
 
-      // Check that event data is included (owner, spender, value)
-      // STRUCTURE: Events are flattened (not nested under event names)
+      // Check that event data is included (owner, spender, value) in flattened structure
       expect(result.data.approve.owner).toBeDefined();
       expect(result.data.approve.spender).toBeDefined();
       expect(result.data.approve.value).toBeDefined();
