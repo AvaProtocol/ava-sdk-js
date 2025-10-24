@@ -26,22 +26,6 @@ export AVS_API_KEY=<your_api_key>
 - **TEST_PRIVATE_KEY**: Can only access wallets derived from that specific private key. Good for personal use.
 - **AVS_API_KEY**: Admin access that can query any wallet address. Required for cross-wallet operations.
 
-### For Base Chain specifically:
-You can create environment-specific `.env` files **in the root directory** (same level as `package.json`):
-
-```bash
-# .env.base (for Base mainnet) - place in root directory
-AVS_API_KEY=your_api_key_here
-CHAIN_ENDPOINT=https://base-mainnet.core.chainstack.com/your_endpoint
-
-# .env.base-sepolia (for Base testnet) - place in root directory
-AVS_API_KEY=your_api_key_here  
-CHAIN_ENDPOINT=https://base-sepolia.core.chainstack.com/your_endpoint
-
-# .env (base file) - place in root directory  
-TEST_PRIVATE_KEY=your_private_key_here  # Optional, for fallback
-```
-
 **Important**: These `.env` files should be in the **root directory** of the project (same level as `package.json`), not in the `examples/` folder.
 
 ## Targeting Different Networks
