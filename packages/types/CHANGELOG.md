@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.8.0
+
+### Minor Changes
+
+- 2e75ba5: feat: update event trigger interface with topics string array, null values, and response field name change
+
 ## 2.7.3
 
 ### Patch Changes
