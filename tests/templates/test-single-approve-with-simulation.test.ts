@@ -485,7 +485,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       nodeType: "balance",
       nodeConfig: {
         address: getWorkflowConfig().settings.runner,
-        chain: "sepolia",
+        chain: getWorkflowConfig().settings.chain,
         tokenAddresses: [
           getWorkflowConfig().settings.uniswapv3_pool.token0.id, // WETH
           getWorkflowConfig().settings.uniswapv3_pool.token1.id, // USDC

@@ -214,6 +214,29 @@ export function isTemplateVariable(value: string): boolean {
 }
 
 /**
+ * Pad an Ethereum address to 32 bytes for use in event topic filtering.
+ * Ethereum event topics for indexed address parameters must be 32 bytes (64 hex characters).
+ *
+ * @param address - The Ethereum address to pad (with or without 0x prefix)
+ * @returns Padded address as 32-byte hex string (0x + 64 hex chars)
+ *
+ * @example
+ * padAddressForTopic("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb")
+ * // Returns: "0x000000000000000000000000742d35cc6634c0532925a3b844bc9e7595f0beb"
+ *
+ * @example
+ * padAddressForTopic("")
+ * // Returns: "0x0000000000000000000000000000000000000000000000000000000000000000"
+ */
+export function padAddressForTopic(address: string): string {
+  if (!address) {
+    return "0x" + "0".repeat(64);
+  }
+  const cleanAddress = address.startsWith("0x") ? address.slice(2) : address;
+  return "0x" + cleanAddress.toLowerCase().padStart(64, "0");
+}
+
+/**
  * Create a new Client instance with the AVS endpoint from configuration.
  * The client is not authenticated by default - call authenticateClient() separately.
  *
