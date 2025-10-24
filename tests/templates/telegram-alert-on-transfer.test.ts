@@ -81,11 +81,7 @@ describe("Template: Telegram Alert on Transfer", () => {
           {
             // Query 1: Outgoing transfers (wallet address === from)
             addresses: [USDC_CONTRACT_ADDRESS],
-            topics: [
-              {
-                values: [TRANSFER_TOPIC, eoaAddress, ""],
-              },
-            ],
+            topics: [TRANSFER_TOPIC, eoaAddress, null],
             maxEventsPerBlock: 100,
             contractAbi: [
               {
@@ -132,11 +128,7 @@ describe("Template: Telegram Alert on Transfer", () => {
           {
             // Query 2: Incoming transfers (wallet address === to)
             addresses: [USDC_CONTRACT_ADDRESS],
-            topics: [
-              {
-                values: [TRANSFER_TOPIC, "", eoaAddress],
-              },
-            ],
+            topics: [TRANSFER_TOPIC, null, eoaAddress],
             maxEventsPerBlock: 100,
             contractAbi: [
               {
@@ -274,16 +266,16 @@ return message;`,
 
       expect(typeof result.success).toBe("boolean");
 
-      // For event triggers, no matching events is a valid outcome
-      expect(result.success).toBe(true);
-
-      // TODO: double check the event trigger response and fix this test
+      // For event triggers, no matching events means success: false with data: null
+      // This is expected behavior for historical search with no results
       if (result.data === null) {
         console.log(
           "ℹ️  No Transfer events found for address (expected):",
           eoaAddress
         );
+        expect(result.success).toBe(false);
       } else {
+        expect(result.success).toBe(true);
         // If we get mock data, verify it has the expected structured event data
         expect(result.data).toHaveProperty("blockNumber");
         expect(result.data).toHaveProperty("walletAddress"); // Changed from "address" to "walletAddress"

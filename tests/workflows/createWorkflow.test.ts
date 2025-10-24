@@ -195,13 +195,9 @@ describe("createWorkflow Tests", () => {
                 "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
               ], // WETH and USDC
               topics: [
-                {
-                  values: [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
-                    "", // Any from address
-                    wallet.address, // To specific wallet address
-                  ],
-                },
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
+                null, // Any from address (wildcard)
+                wallet.address, // To specific wallet address
               ],
               maxEventsPerBlock: 100,
               contractAbi: [], // Backend now adds this field
@@ -262,13 +258,9 @@ describe("createWorkflow Tests", () => {
                 "0x3e622317f8c93f7328350cf0b56d9ed4c620c5d6",
               ], // USDT and DAI
               topics: [
-                {
-                  values: [
-                    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
-                    "", // Any from address
-                    "0x06DBb141d8275d9eDb8a7446F037D20E215188ff", // To specific address
-                  ],
-                },
+                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
+                null, // Any from address (wildcard)
+                "0x06DBb141d8275d9eDb8a7446F037D20E215188ff", // To specific address
               ],
               maxEventsPerBlock: 100,
               contractAbi: [], // Backend now adds this field

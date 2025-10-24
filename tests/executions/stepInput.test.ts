@@ -465,26 +465,18 @@ describe("Input Field Tests", () => {
             type: "event",
             addresses: ["0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
             topics: [
-              {
-                values: [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-                  "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // from address
-                  null, // to address (any)
-                ],
-              },
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
+              "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // from address
+              null, // to address (any)
             ],
           },
           {
             type: "event",
             addresses: ["0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"],
             topics: [
-              {
-                values: [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-                  null, // from address (any)
-                  "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // to address
-                ],
-              },
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
+              null, // from address (any)
+              "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788", // to address
             ],
           },
         ],

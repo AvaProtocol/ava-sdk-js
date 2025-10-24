@@ -748,7 +748,7 @@ async function scheduleSweep(owner: string, token: string, target: string) {
               {
                 values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
-                  "", // Any from address
+                  null, // Any from address
                   target, // The wallet to monitor here
                 ],
               },
@@ -951,7 +951,7 @@ async function scheduleMonitorTransfer(
               {
                 values: [
                   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event
-                  "", // Any from address
+                  null, // Any from address
                   target, // The wallet to monitor here
                 ],
               },
