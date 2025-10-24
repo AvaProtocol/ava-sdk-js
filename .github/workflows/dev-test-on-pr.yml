@@ -15,11 +15,11 @@ jobs:
     environment: dev
 
     env:
-      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}  # Should be: ethereum-sepolia.core.chainstack.com/2504cb0765f0edf6c33d99095148006f
+      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_ENV: "dev"
       DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }} # Or your preferred default for PRs
-      
+
       # Aggregator configuration (mapped from your GitHub settings)
       ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
@@ -27,14 +27,14 @@ jobs:
       CONTROLLER_PRIVATE_KEY: ${{ secrets.CONTROLLER_PRIVATE_KEY }}
       AP_NOTIFY_BOT_TOKEN: ${{ secrets.AP_NOTIFY_BOT_TOKEN }}
       MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
-      
+
       # From repository variables
       SENTRY_DSN: ${{ vars.SENTRY_DSN }}
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
       SENDGRID_KEY: ${{ vars.SENDGRID_KEY }}
-      
+
       # From dev environment variables
       BUNDLER_URL: ${{ vars.BUNDLER_URL }}
       # AVS_API_KEY is generated dynamically in "Retrieve AVS API Key from the aggregator" step
@@ -98,13 +98,13 @@ jobs:
           echo "Injecting secrets into aggregator configuration..."
           echo "Chain endpoint: ${CHAIN_ENDPOINT}"
           echo "Test environment: ${TEST_ENV}"
-          
+
           # Export all environment variables for envsubst
           export CHAIN_ENDPOINT TEST_ENV ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY
-          
+
           # Use envsubst to replace ${VAR} placeholders with actual environment variables
           envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
-          
+
           # Verify the config was generated (without showing secrets)
           echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
           echo "Config template placeholders replaced successfully"
@@ -125,28 +125,28 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "Starting AVS aggregator with version: $DOCKER_IMAGE_TAG"
-          
+
           echo "=== Config files in ./config directory ==="
           ls -lah config/
-          
+
           echo "=== Verifying runtime config exists ==="
           if [ -f config/aggregator.runtime.yaml ]; then
             echo "✅ aggregator.runtime.yaml exists ($(wc -l < config/aggregator.runtime.yaml) lines)"
           else
             echo "❌ aggregator.runtime.yaml MISSING!"
           fi
-          
+
           docker compose up -d
-          
+
           echo "Waiting for aggregator to start..."
           sleep 10
-          
+
           echo "=== Config files inside container ==="
           docker compose exec aggregator ls -lah /app/config/
-          
+
           echo "=== Aggregator container status ==="
           docker compose ps
-          
+
           echo "=== Aggregator logs (last 50 lines) ==="
           docker compose logs aggregator --tail=50
 
@@ -167,7 +167,7 @@ jobs:
           echo "Waiting for aggregator to become ready..."
           max_attempts=24  # 2 minutes total (24 * 5 seconds)
           attempt=0
-          
+
           while [ $attempt -lt $max_attempts ]; do
             echo "Attempt $((attempt + 1))/$max_attempts: Testing aggregator health..."
             
@@ -188,7 +188,7 @@ jobs:
             
             attempt=$((attempt + 1))
           done
-          
+
           if [ $attempt -eq $max_attempts ]; then
             echo "🚨 Aggregator failed to start after $((max_attempts * 5)) seconds"
             echo "Final container status:"
@@ -204,17 +204,17 @@ jobs:
         run: |
           echo "=== Available config files in container ==="
           docker compose exec aggregator ls -lah /app/config/
-          
+
           echo ""
           echo "=== Generating AVS API key using runtime config ==="
           echo "Config file: /app/config/aggregator.runtime.yaml"
           echo "Command: /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey"
           echo ""
-          
+
           # Generate API key (suppress stderr warnings, only capture the JWT token)
           API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey 2>/dev/null)
           echo "AVS_API_KEY=$API_KEY" >> $GITHUB_ENV
-          
+
           echo ""
           echo "✅ AVS API key generated and stored in GITHUB_ENV"
           echo "API key length: ${#API_KEY} characters"
