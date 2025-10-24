@@ -208,13 +208,9 @@ describe("triggerWorkflow Tests", () => {
           {
             addresses: [], // Listen to all contracts
             topics: [
-              {
-                values: [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-                  null, // Any FROM address
-                  wallet.address.toLowerCase(), // TO this specific wallet
-                ],
-              },
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
+              null, // Any FROM address
+              wallet.address.toLowerCase(), // TO this specific wallet
             ],
             maxEventsPerBlock: 100,
           },
@@ -536,13 +532,9 @@ describe("triggerWorkflow Tests", () => {
           {
             addresses: [], // Listen to all contracts
             topics: [
-              {
-                values: [
-                  "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
-                  null, // Any FROM address
-                  wallet.address.toLowerCase(), // TO this specific wallet
-                ],
-              },
+              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer event signature
+              null, // Any FROM address
+              wallet.address.toLowerCase(), // TO this specific wallet
             ],
             maxEventsPerBlock: 100,
           },

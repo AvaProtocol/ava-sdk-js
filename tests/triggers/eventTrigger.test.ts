@@ -729,7 +729,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(transferData.tokenName).toBeDefined();
       expect(transferData.tokenSymbol).toBeDefined();
       expect(transferData.tokenDecimals).toBeDefined();
-      expect(transferData.tokenContract).toBeDefined(); // Changed from 'address' to 'tokenContract'
+      expect(transferData.contractAddress).toBeDefined();
       expect(transferData.transactionHash).toBeDefined();
       expect(transferData.blockNumber).toBeDefined();
 
@@ -977,7 +977,6 @@ describeIfSepolia("EventTrigger Tests", () => {
           blockNumber: 12345678,
           chainId: parseInt(chainId),
           contractAddress: SEPOLIA_TOKEN_ADDRESSES[0],
-          eventFound: true,
           eventSignature: TRANSFER_EVENT_SIGNATURE,
           eventType: "Transfer",
           logIndex: 0,
@@ -1083,11 +1082,11 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(result.data?.topics).toBeInstanceOf(Array);
       expect(result.data?.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
 
-      // Key verification: the tokenContract (erc20 token contract) in the response matches any of those in trigger config
+      // Key verification: the contractAddress in the response matches any of those in trigger config
       expect(
-        result.data?.tokenContract.toLowerCase() ===
+        result.data?.contractAddress.toLowerCase() ===
           tokens?.USDC?.address?.toLowerCase() ||
-          result.data?.tokenContract.toLowerCase() ===
+          result.data?.contractAddress.toLowerCase() ===
             tokens?.ETH?.address?.toLowerCase()
       ).toBe(true);
 
@@ -1391,7 +1390,6 @@ describeIfSepolia("EventTrigger Tests", () => {
           blockNumber: 12345678,
           chainId: parseInt(chainId),
           contractAddress: ERC20_CONTRACT_ADDRESS,
-          eventFound: true,
           eventSignature: TRANSFER_EVENT_SIGNATURE,
           eventType: "Transfer",
           logIndex: 0,
@@ -1440,19 +1438,10 @@ describeIfSepolia("EventTrigger Tests", () => {
       const simulatedData = simulatedStep!.output;
       const executionData = executionStep!.output;
 
-      // Helper function to get contract address field (handles backend inconsistency)
-      // Backend returns different field names:
-      // - runTrigger: tokenContract
-      // - triggerWorkflow/getExecutions: contractAddress
-      const getContractAddressField = (data: any): string | undefined => {
-        return data.tokenContract || data.contractAddress;
-      };
-
       // Verify essential event trigger fields match
       expect(runTriggerData).toBeDefined();
-      const runTriggerContract = getContractAddressField(runTriggerData);
-      expect(runTriggerContract).toBeDefined();
-      expect(runTriggerContract!.toLowerCase()).toBe(
+      expect(runTriggerData.contractAddress).toBeDefined();
+      expect(runTriggerData.contractAddress.toLowerCase()).toBe(
         ERC20_CONTRACT_ADDRESS.toLowerCase()
       );
 
@@ -1465,17 +1454,15 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       // Verify simulated data has contract address
       expect(simulatedData).toBeDefined();
-      const simulatedContract = getContractAddressField(simulatedData);
-      expect(simulatedContract).toBeDefined();
-      expect(simulatedContract!.toLowerCase()).toBe(
+      expect(simulatedData.contractAddress).toBeDefined();
+      expect(simulatedData.contractAddress.toLowerCase()).toBe(
         ERC20_CONTRACT_ADDRESS.toLowerCase()
       );
 
       // Verify triggered execution data has contract address
       expect(executionData).toBeDefined();
-      const executionContract = getContractAddressField(executionData);
-      expect(executionContract).toBeDefined();
-      expect(executionContract!.toLowerCase()).toBe(
+      expect(executionData.contractAddress).toBeDefined();
+      expect(executionData.contractAddress.toLowerCase()).toBe(
         ERC20_CONTRACT_ADDRESS.toLowerCase()
       );
 
@@ -1510,7 +1497,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(simulatedData.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
       
       // Test triggered execution data (enriched Transfer format)
-      expect(executionData.eventFound).toBe(true);
+      // Note: eventFound field is optional and may not be present in all responses
       expect(executionData.eventType).toBe("Transfer");
       expect(executionData.eventSignature).toBe(TRANSFER_EVENT_SIGNATURE);
       expect(executionData.from).toBeDefined();

@@ -919,11 +919,8 @@ class Client extends BaseClient {
           timestamp: fixedTimeData.timestamp,
           timestampIso: fixedTimeData.timestampIso,
         };
-        const dataValue = new google_protobuf_struct_pb.Value();
-        dataValue.setStructValue(
-          google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData)
-        );
-        fixedTimeOutput.setData(dataValue);
+        const protobufValue = convertJSValueToProtobuf(triggerOutputData);
+        fixedTimeOutput.setData(protobufValue);
         request.setFixedTimeTrigger(fixedTimeOutput);
         break;
       }
@@ -934,11 +931,8 @@ class Client extends BaseClient {
           timestamp: cronData.timestamp,
           timestampIso: cronData.timestampIso,
         };
-        const dataValue = new google_protobuf_struct_pb.Value();
-        dataValue.setStructValue(
-          google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData)
-        );
-        cronOutput.setData(dataValue);
+        const protobufValue = convertJSValueToProtobuf(triggerOutputData);
+        cronOutput.setData(protobufValue);
         request.setCronTrigger(cronOutput);
         break;
       }
@@ -954,11 +948,8 @@ class Client extends BaseClient {
           gasLimit: blockData.gasLimit || 0,
           gasUsed: blockData.gasUsed || 0,
         };
-        const dataValue = new google_protobuf_struct_pb.Value();
-        dataValue.setStructValue(
-          google_protobuf_struct_pb.Struct.fromJavaScript(triggerOutputData)
-        );
-        blockOutput.setData(dataValue);
+        const protobufValue = convertJSValueToProtobuf(triggerOutputData);
+        blockOutput.setData(protobufValue);
         request.setBlockTrigger(blockOutput);
         break;
       }
