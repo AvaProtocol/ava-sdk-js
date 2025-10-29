@@ -17,6 +17,9 @@ import {
   authenticateClient,
 } from "../utils/utils";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
+import { getConfig } from "../utils/envalid";
+
+const config = getConfig();
 
 jest.setTimeout(TIMEOUT_DURATION);
 
@@ -515,7 +518,7 @@ describe("Input Field Tests", () => {
             // Use simulation data
             const tokenSymbol = "USDC"; // Default for simulation
             const blockNumber = eventData.blockNumber || "Unknown";
-            const chainId = eventData.chainId || 11155111; // Default to Sepolia chain ID
+            const chainId = eventData.chainId || parseInt(config.chainId);
             
             // Mock input data for testing (since EventTrigger simulation doesn't provide it)
             const mockAddress = "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788";
@@ -611,7 +614,7 @@ describe("Input Field Tests", () => {
     expect(output.inputAddress).toBe(
       "0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788"
     );
-    expect(output.inputChainId).toBe(11155111);
+    expect(output.inputChainId).toBe(parseInt(config.chainId));
     expect(output.inputTokensCount).toBe(1);
 
     expect(typeof output.message).toBe("string");

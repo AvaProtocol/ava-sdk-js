@@ -113,12 +113,16 @@ describe("GraphQL Query Node Tests", () => {
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_ENDPOINT;
 
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: endpoint.url,
           query: endpoint.query,
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -162,14 +166,18 @@ describe("GraphQL Query Node Tests", () => {
       const endpoint = GRAPHQL_ENDPOINTS.MOCK_WITH_VARIABLES;
 
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: endpoint.url,
           query: endpoint.query,
           variables: {
             first: endpoint.variables.first,
           },
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -211,12 +219,16 @@ describe("GraphQL Query Node Tests", () => {
       const endpoint = GRAPHQL_ENDPOINTS.INVALID_ENDPOINT;
 
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: endpoint.url,
           query: endpoint.query,
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -238,12 +250,16 @@ describe("GraphQL Query Node Tests", () => {
     test("should fail runNodeWithInputs gracefully with empty query configuration", async () => {
       const wallet = await getSmartWallet(client);
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: GRAPHQL_ENDPOINTS.MOCK_ENDPOINT.url,
           query: "", // Empty query should be rejected
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -590,12 +606,16 @@ describe("GraphQL Query Node Tests", () => {
       try {
         // 1. Test runNodeWithInputs
         const runNodeParams = {
-          nodeType: NodeType.GraphQLQuery,
-          nodeConfig: {
+          node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
             url: endpoint.url,
             query: endpoint.query,
             variables: {},
-          },
+          }},
+
           inputVariables: {
             settings: getSettings(wallet.address),
           },
@@ -724,12 +744,16 @@ describe("GraphQL Query Node Tests", () => {
       const endpoint = THEGRAPH_UNISWAP_V3_QUERY;
 
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: endpoint.url,
           query: endpoint.query,
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -774,12 +798,16 @@ describe("GraphQL Query Node Tests", () => {
       const endpoint = THEGRAPH_UNISWAP_V3_WITH_VARIABLES;
 
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: endpoint.url,
           query: endpoint.query,
           variables: endpoint.variables,
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -816,12 +844,16 @@ describe("GraphQL Query Node Tests", () => {
     test("should fail gracefully with GraphQL server error (400 Bad Request)", async () => {
       const wallet = await getSmartWallet(client);
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: GRAPHQL_ENDPOINTS.MOCK_ERROR_400.url, // Use mock API that returns 400 error
           query: GRAPHQL_ENDPOINTS.MOCK_ERROR_400.query,
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -843,12 +875,16 @@ describe("GraphQL Query Node Tests", () => {
     test("should fail gracefully with missing URL configuration error", async () => {
       const wallet = await getSmartWallet(client);
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: "", // Empty URL should be rejected
           query: "query { test }",
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -865,12 +901,16 @@ describe("GraphQL Query Node Tests", () => {
     test("should fail gracefully with network connection error from invalid domain", async () => {
       const wallet = await getSmartWallet(client);
       const params = {
-        nodeType: NodeType.GraphQLQuery,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "graph_qlquery_test",
+          type: NodeType.GraphQLQuery,
+          data: {
           url: GRAPHQL_ENDPOINTS.INVALID_ENDPOINT.url, // Invalid domain that doesn't exist
           query: GRAPHQL_ENDPOINTS.INVALID_ENDPOINT.query,
           variables: {},
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },

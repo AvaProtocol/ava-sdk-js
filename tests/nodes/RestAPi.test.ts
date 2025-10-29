@@ -44,11 +44,15 @@ describe("RestAPI Node Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should handle successful REST API GET call", async () => {
       const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/get",
           method: "GET",
           headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+        }
         },
         inputVariables: {},
       });
@@ -73,8 +77,11 @@ describe("RestAPI Node Tests", () => {
       const postData = { test: "data", timestamp: Date.now() };
 
       const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/post",
           method: "POST",
           body: JSON.stringify(postData),
@@ -82,6 +89,7 @@ describe("RestAPI Node Tests", () => {
             "Content-Type": "application/json",
             "User-Agent": "AvaProtocol-SDK-Test",
           },
+        }
         },
         inputVariables: {},
       });
@@ -99,11 +107,15 @@ describe("RestAPI Node Tests", () => {
 
     test("should handle REST API error responses", async () => {
       const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/status/404",
           method: "GET",
           headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+        }
         },
         inputVariables: {},
       });
@@ -380,12 +392,16 @@ describe("RestAPI Node Tests", () => {
   describe("Options Field Tests", () => {
     test("should handle options field via runNodeWithInputs", async () => {
       const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/get",
           method: "GET",
           headers: { "User-Agent": "AvaProtocol-SDK-Test" },
           options: { summarize: true, maxTokens: 100 },
+        }
         },
         inputVariables: {},
       });
@@ -542,11 +558,15 @@ describe("RestAPI Node Tests", () => {
   describe("Empty Data Handling Tests", () => {
     test("should handle 204 No Content responses", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/status/204", // Mock API endpoint
           method: "GET",
           headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+        }
         },
         inputVariables: {},
       });
@@ -566,22 +586,30 @@ describe("RestAPI Node Tests", () => {
     test("should distinguish between empty data and server errors", async () => {
       // Test 204 No Content (empty but successful)
       const emptyResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/status/204",
           method: "GET",
           headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+        }
         },
         inputVariables: {},
       });
 
       // Test 500 Internal Server Error
       const errorResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "rest_api_test",
+          type: NodeType.RestAPI,
+          data: {
           url: MOCK_API_BASE_URL + "/status/500",
           method: "GET",
           headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+        }
         },
         inputVariables: {},
       });

@@ -323,8 +323,12 @@ return message;`,
       };
 
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: customCodeNode.data,
+        node: {
+          id: getNextId(),
+          name: "custom_code_telegram_test",
+          type: NodeType.CustomCode,
+          data: customCodeNode.data,
+        },
         inputVariables: inputVariables,
       });
 
@@ -375,8 +379,12 @@ return message;`,
       };
 
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: telegramNode.data,
+        node: {
+          id: getNextId(),
+          name: "rest_api_telegram_test",
+          type: NodeType.RestAPI,
+          data: telegramNode.data,
+        },
         inputVariables: inputVariables,
       });
 

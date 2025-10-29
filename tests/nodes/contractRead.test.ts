@@ -101,12 +101,16 @@ describeIfSepolia("ContractRead Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -152,12 +156,16 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
     test("should read multiple methods from contract", async () => {
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: SEPOLIA_ORACLE_CONFIG.methodCalls,
-        },
+        }},
+
         inputVariables: {},
       };
 
@@ -210,8 +218,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: "0x1234567890123456789012345678901234567890",
           contractAbi: [
             {
@@ -223,7 +234,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
             },
           ],
           methodCalls: [{ methodName: "totalSupply", methodParams: [] }],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -249,12 +261,16 @@ describeIfSepolia("ContractRead Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [{ methodName: "description", methodParams: [] }],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -294,8 +310,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
@@ -309,7 +328,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
               methodParams: [], // latestRoundData()
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -406,8 +426,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
       // USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: tokens?.USDC?.address, // USDC should be available in Sepolia/dev environment
           contractAbi: [
             {
@@ -440,7 +463,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
               methodParams: [],
             },
           ],
-        },
+        }},
+
         inputVariables: {},
       };
 
@@ -1011,7 +1035,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
         // Test 1: runNodeWithInputs
         const directParams = {
           nodeType: NodeType.ContractRead,
-          nodeConfig: contractReadConfig,
+          nodeConfig: contractReadConfig},
+
           inputVariables: inputVariables,
         };
 
@@ -1152,8 +1177,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
       const methodName = "nonExistentMethod";
 
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: [
             {
@@ -1165,7 +1193,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
             },
           ],
           methodCalls: [{ methodName: methodName, methodParams: [] }],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -1310,8 +1339,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: SEPOLIA_ORACLE_CONFIG.contractAddress,
           contractAbi: SEPOLIA_ORACLE_CONFIG.contractAbi,
           methodCalls: [
@@ -1325,7 +1357,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
               methodParams: [], // latestRoundData()
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -1420,8 +1453,11 @@ describeIfSepolia("ContractRead Node Tests", () => {
     test("should apply decimal formatting with simplified applyToFields syntax for USDC token", async () => {
       // USDC contract on Sepolia - test simplified applyToFields syntax
       const params = {
-        nodeType: NodeType.ContractRead,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_read_test",
+          type: NodeType.ContractRead,
+          data: {
           contractAddress: tokens?.USDC?.address, // USDC should be available in Sepolia/dev environment
           contractAbi: [
             {
@@ -1454,7 +1490,8 @@ describeIfSepolia("ContractRead Node Tests", () => {
               methodParams: [],
             },
           ],
-        },
+        }},
+
         inputVariables: {},
       };
 

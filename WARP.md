@@ -202,3 +202,70 @@ After updating the AVS repository's `.proto` file:
 3. Update SDK code to handle new/changed fields
 4. Update tests to cover new functionality
 
+### runNodeWithInputs API Structure
+The `runNodeWithInputs` API uses the same node structure as `simulateWorkflow` for consistency:
+
+**Correct structure** (matches `simulateWorkflow` pattern):
+```typescript
+await client.runNodeWithInputs({
+  node: {
+    id: "node-id",
+    name: "nodeName",
+    type: NodeType.ContractWrite,
+    data: { /* node-specific config */ }
+  },
+  inputVariables: { /* input data */ }
+});
+```
+
+**Incorrect structure** (old API, deprecated):
+```typescript
+// ❌ DO NOT USE - this is deprecated
+await client.runNodeWithInputs({
+  nodeType: NodeType.ContractWrite,
+  nodeConfig: { /* node-specific config */ },
+  inputVariables: { /* input data */ }
+});
+```
+
+**Migration status**: ✅ **COMPLETED** - All test files have been migrated to the new API structure.
+
+**Migrated files** (13 total):
+- ✅ `runNodeWithInputs.test.ts`
+- ✅ `branchNode.test.ts` (5 occurrences)
+- ✅ `customCode.test.ts` (4 occurrences)
+- ✅ `RestAPi.test.ts` (7 occurrences)
+- ✅ `filterNode.test.ts` (4 occurrences)
+- ✅ `exported-workflow-consistency.test.ts` (5 occurrences)
+- ✅ `contractWrite.test.ts` (17 occurrences)
+- ✅ `graphqlQuery.test.ts` (10 occurrences)
+- ✅ `balanceNode.test.ts` (10 occurrences)
+- ✅ `loopNode.test.ts` (17 occurrences)
+- ✅ `contractRead.test.ts` (10 occurrences)
+- ✅ `telegram-alert-on-transfer.test.ts` (2 occurrences)
+- ✅ `errorCodeConsistency.test.ts` (1 occurrence)
+- ✅ `test-single-approve-with-simulation.test.ts` (handled automatically)
+
+**Total**: ~92 occurrences converted across all test files
+
+**Manual conversion template**:
+```typescript
+// Before:
+const result = await client.runNodeWithInputs({
+  nodeType: NodeType.ContractWrite,
+  nodeConfig: { /* config */ },
+  inputVariables: { /* vars */ }
+});
+
+// After:
+const result = await client.runNodeWithInputs({
+  node: {
+    id: getNextId(),
+    name: "descriptive_name",
+    type: NodeType.ContractWrite,
+    data: { /* config */ }
+  },
+  inputVariables: { /* vars */ }
+});
+```
+

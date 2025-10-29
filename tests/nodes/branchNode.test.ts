@@ -36,16 +36,20 @@ describe("BranchNode Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should evaluate timestamp comparison with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Branch,
-        nodeConfig: {
-          conditions: [
-            {
-              id: "condition1",
-              type: "if",
-              expression: "{{ trigger.data.timestamp > 0 }}",
-            },
-            { id: "condition2", type: "else", expression: "" },
-          ],
+        node: {
+          id: getNextId(),
+          name: "branch_timestamp_test",
+          type: NodeType.Branch,
+          data: {
+            conditions: [
+              {
+                id: "condition1",
+                type: "if",
+                expression: "{{ trigger.data.timestamp > 0 }}",
+              },
+              { id: "condition2", type: "else", expression: "" },
+            ],
+          },
         },
         inputVariables: {
           trigger: {
@@ -73,16 +77,20 @@ describe("BranchNode Tests", () => {
 
     test("should evaluate status string comparison with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Branch,
-        nodeConfig: {
-          conditions: [
-            {
-              id: "condition1",
-              type: "if",
-              expression: '{{ trigger.data.status === "ready" }}',
-            },
-            { id: "condition2", type: "else", expression: "" },
-          ],
+        node: {
+          id: getNextId(),
+          name: "branch_status_test",
+          type: NodeType.Branch,
+          data: {
+            conditions: [
+              {
+                id: "condition1",
+                type: "if",
+                expression: '{{ trigger.data.status === "ready" }}',
+              },
+              { id: "condition2", type: "else", expression: "" },
+            ],
+          },
         },
         inputVariables: {
           trigger: {
@@ -110,16 +118,20 @@ describe("BranchNode Tests", () => {
 
     test("should evaluate nested object property access with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Branch,
-        nodeConfig: {
-          conditions: [
-            {
-              id: "condition1",
-              type: "if",
-              expression: '{{ trigger.data.user.role === "admin" }}',
-            },
-            { id: "condition2", type: "else", expression: "" },
-          ],
+        node: {
+          id: getNextId(),
+          name: "branch_nested_test",
+          type: NodeType.Branch,
+          data: {
+            conditions: [
+              {
+                id: "condition1",
+                type: "if",
+                expression: '{{ trigger.data.user.role === "admin" }}',
+              },
+              { id: "condition2", type: "else", expression: "" },
+            ],
+          },
         },
         inputVariables: {
           trigger: {
@@ -149,17 +161,21 @@ describe("BranchNode Tests", () => {
 
     test("should evaluate complex logical expression with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Branch,
-        nodeConfig: {
-          conditions: [
-            {
-              id: "condition1",
-              type: "if",
-              expression:
-                '{{ trigger.data.status === "ready" && trigger.data.user.age >= 18 }}',
-            },
-            { id: "condition2", type: "else", expression: "" },
-          ],
+        node: {
+          id: getNextId(),
+          name: "branch_complex_test",
+          type: NodeType.Branch,
+          data: {
+            conditions: [
+              {
+                id: "condition1",
+                type: "if",
+                expression:
+                  '{{ trigger.data.status === "ready" && trigger.data.user.age >= 18 }}',
+              },
+              { id: "condition2", type: "else", expression: "" },
+            ],
+          },
         },
         inputVariables: {
           trigger: {
@@ -362,8 +378,12 @@ describe("BranchNode Tests", () => {
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.Branch,
-        nodeConfig: branchConfig,
+        node: {
+          id: getNextId(),
+          name: "consistency_direct_test",
+          type: NodeType.Branch,
+          data: branchConfig,
+        },
         inputVariables: inputVariables,
       });
 
