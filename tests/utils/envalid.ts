@@ -124,6 +124,7 @@ const validatedEnv = cleanEnv(
     AVS_API_KEY: process.env.AVS_API_KEY,
     TEST_PRIVATE_KEY: process.env.TEST_PRIVATE_KEY,
     TEST_ENV: env,
+    SENDGRID_KEY: process.env.SENDGRID_KEY,
   },
   {
     AVS_API_KEY: str({ desc: "AVS API Key" }),
@@ -132,6 +133,7 @@ const validatedEnv = cleanEnv(
       desc: "Test environment",
       default: "dev",
     }),
+    SENDGRID_KEY: str({ desc: "SendGrid API Key", default: "" }),
   }
 );
 
@@ -160,6 +162,7 @@ export const getConfig = () => ({
   tokens: envConfig.tokens,
   oracles: envConfig.oracles,
   paymasterAddress: envConfig.paymasterAddress,
+  sendgridKey: validatedEnv.SENDGRID_KEY,
 });
 
 // Export the validation function for use in other files
