@@ -1,15 +1,9 @@
 import { cleanEnv, str, makeValidator } from "envalid";
 import dotenv from "dotenv";
 // Use single-source chain config
-import { getChains } from "../../config/chains";
+import { getChains, type ChainDef } from "../../config/chains";
 const CHAINS = getChains();
-const chains = CHAINS as Record<string, {
-  avsEndpoint: string;
-  chainId: string;
-  chainEndpoint: string | null;
-  tokens?: TokenMap;
-  oracles?: OracleMap;
-}>;
+const chains = CHAINS as Record<string, ChainDef>;
 
 // Define allowed environment values
 const ALLOWED_ENVIRONMENTS = [
@@ -42,6 +36,13 @@ type TokenMap = Record<string, TokenDef>;
 type OracleMap = Record<string, OracleDef>;
 
 // Environment-specific configurations derived from shared chains.json
+// For 'dev' environment, use sepolia's configuration
+const getChainConfig = (env: Environment) => {
+  // Map dev to sepolia since they share the same chain configuration
+  const chainKey = env === "dev" ? "sepolia" : env;
+  return chains[chainKey];
+};
+
 export const ENV_CONFIGS: Record<
   Environment,
   {
@@ -53,10 +54,15 @@ export const ENV_CONFIGS: Record<
     oracles: OracleMap;
     paymasterAddress: string;
   }
-> = (Object.keys(chains) as Environment[]).reduce((acc, key) => {
-  const c = chains[key];
-  acc[key] = {
-    aggregatorEndpoint: c.avsEndpoint, // Rename for clarity
+> = (ALLOWED_ENVIRONMENTS as readonly string[]).reduce((acc, key) => {
+  const env = key as Environment;
+  const c = getChainConfig(env);
+  if (!c) {
+    throw new Error(`Chain configuration not found for environment: ${env}`);
+  }
+  acc[env] = {
+    // For dev environment, use localhost aggregator endpoint for local development
+    aggregatorEndpoint: env === "dev" ? "localhost:2206" : c.avsEndpoint,
     operatorEndpoint: "localhost:9010", // Operator node API endpoint
     chainId: c.chainId,
     chainEndpoint: c.chainEndpoint,
@@ -85,7 +91,9 @@ if (process.env.TEST_ENV) {
 
 // Print environment variables for debugging
 const testEnv = process.env.TEST_ENV || "dev";
-const tempConfig = chains[testEnv as Environment];
+// For dev environment, use sepolia's chain configuration
+const chainKey = testEnv === "dev" ? "sepolia" : testEnv;
+const tempConfig = chains[chainKey];
 console.log("Test config:", { 
   env: testEnv, 
   chainId: tempConfig?.chainId || "NOT SET", 
@@ -150,20 +158,28 @@ if (!chainEndpointHost) {
 }
 
 // Export the configuration
-export const getConfig = () => ({
-  aggregatorEndpoint: envConfig.aggregatorEndpoint,
-  operatorEndpoint: envConfig.operatorEndpoint,
-  avsApiKey: validatedEnv.AVS_API_KEY,
-  chainId: envConfig.chainId,
-  chainEndpoint: chainEndpointHost ? `https://${chainEndpointHost}` : undefined,
-  walletPrivateKey: validatedEnv.TEST_PRIVATE_KEY,
-  // factoryAddress: FACTORY_ADDRESS, // Let aggregator use its default factory
-  environment: validatedEnv.TEST_ENV,
-  tokens: envConfig.tokens,
-  oracles: envConfig.oracles,
-  paymasterAddress: envConfig.paymasterAddress,
-  sendgridKey: validatedEnv.SENDGRID_KEY,
-});
+export const getConfig = () => {
+  // For dev environment, use sepolia's chain configuration
+  const chainKey = validatedEnv.TEST_ENV === "dev" ? "sepolia" : validatedEnv.TEST_ENV;
+  const currentChain = chains[chainKey];
+
+  return {
+    aggregatorEndpoint: envConfig.aggregatorEndpoint,
+    operatorEndpoint: envConfig.operatorEndpoint,
+    avsApiKey: validatedEnv.AVS_API_KEY,
+    chainId: envConfig.chainId,
+    chainEndpoint: chainEndpointHost ? `https://${chainEndpointHost}` : undefined,
+    walletPrivateKey: validatedEnv.TEST_PRIVATE_KEY,
+    // factoryAddress: FACTORY_ADDRESS, // Let aggregator use its default factory
+    environment: validatedEnv.TEST_ENV,
+    tokens: envConfig.tokens,
+    oracles: envConfig.oracles,
+    paymasterAddress: envConfig.paymasterAddress,
+    sendgridKey: validatedEnv.SENDGRID_KEY,
+    uniswapV3Contracts: currentChain?.uniswapV3Contracts,
+    uniswapV3Pools: currentChain?.uniswapV3Pools,
+  };
+};
 
 // Export the validation function for use in other files
 export const validateEnv = () => validatedEnv;
