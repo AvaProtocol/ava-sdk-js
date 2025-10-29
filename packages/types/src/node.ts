@@ -10,8 +10,8 @@ export interface ContractWriteNodeData {
   contractAbi: ContractAbi; // Contract ABI as array
   methodCalls: MethodCallType[]; // Required: Method calls with methodParams
   isSimulated?: boolean; // Optional: If true (or unset), use simulation; if explicitly false, execute real UserOp
-  gasLimit?: string; // Optional: Gas limit for the transaction (not in protobuf schema but supported via nodeConfig)
-  value?: string; // Optional: ETH value to send with the transaction (not in protobuf schema but supported via nodeConfig)
+  gasLimit?: string; // Optional: Custom gas limit for the transaction (in wei as string)
+  value?: string; // Optional: ETH value to send with the transaction (in wei as string)
 }
 
 export interface ContractReadNodeData {

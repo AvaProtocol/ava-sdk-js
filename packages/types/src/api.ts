@@ -141,8 +141,7 @@ export interface GetExecutionStatsOptions extends RequestOptions {
 }
 
 export interface RunNodeWithInputsRequest {
-  nodeType: string;
-  nodeConfig: Record<string, any>;
+  node: NodeProps; // Complete node definition matching simulateWorkflow pattern
   inputVariables?: Record<string, any>;
 }
 

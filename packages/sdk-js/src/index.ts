@@ -1310,51 +1310,26 @@ class Client extends BaseClient {
   /**
    * Run a node with inputs for testing purposes
    * @param {RunNodeWithInputsRequest} params - The parameters for running the node
-   * @param {string} params.nodeType - The type of the node (restApi, customCode, etc.)
-   * @param {Record<string, any>} params.nodeConfig - The configuration for the node
-   * @param {Record<string, any>} params.inputVariables - Variables to pass to the node
+   * @param {NodeProps} params.node - Complete node definition (id, name, type, data)
+   * @param {Record<string, any>} params.inputVariables - Variables to pass to the node (settings, data from previous nodes, etc.)
    * @param {RequestOptions} options - Request options
    * @returns {Promise<RunNodeWithInputsResponse>} - The response from running the node
    */
   async runNodeWithInputs(
-    { nodeType, nodeConfig, inputVariables = {} }: RunNodeWithInputsRequest,
+    { node, inputVariables = {} }: RunNodeWithInputsRequest,
     options?: RequestOptions
   ): Promise<RunNodeWithInputsResponse> {
-    // Reject trigger types - they should use the runTrigger method instead
-    const triggerTypes = [
-      TriggerType.Block,
-      TriggerType.FixedTime,
-      TriggerType.Cron,
-      TriggerType.Event,
-      TriggerType.Manual,
-    ];
-
-    if (triggerTypes.includes(nodeType as TriggerType)) {
-      return {
-        success: false,
-        error: `Trigger type "${nodeType}" should use the runTrigger() method instead of runNodeWithInputs()`,
-        errorCode: ErrorCode.INVALID_REQUEST,
-        data: null,
-      };
-    }
-
-    // Create the request
+    // Create the request - following the same pattern as simulateWorkflow
     const request = new avs_pb.RunNodeWithInputsReq();
+    
+    // Use the same factory pattern as simulateWorkflow: create SDK node, then call toRequest()
+    const nodeSdk = NodeFactory.create(node as any);
+    request.setNode(nodeSdk.toRequest());
 
-    // Convert string nodeType to protobuf enum for regular nodes
-    const protobufNodeType = NodeTypeGoConverter.fromGoString(nodeType);
-    request.setNodeType(protobufNodeType);
-
-    const nodeConfigMap = request.getNodeConfigMap();
-    for (const [key, value] of Object.entries(nodeConfig)) {
-      nodeConfigMap.set(key, convertJSValueToProtobuf(value));
-    }
-
-    if (inputVariables && Object.keys(inputVariables).length > 0) {
-      const inputVarsMap = request.getInputVariablesMap();
-      for (const [key, value] of Object.entries(inputVariables)) {
-        inputVarsMap.set(key, convertJSValueToProtobuf(value));
-      }
+    // Set input variables (no longer mixing config in here)
+    const inputVarsMap = request.getInputVariablesMap();
+    for (const [key, value] of Object.entries(inputVariables)) {
+      inputVarsMap.set(key, convertJSValueToProtobuf(value));
     }
 
     // Send the request directly to the server

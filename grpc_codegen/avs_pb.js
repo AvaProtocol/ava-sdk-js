@@ -7475,7 +7475,9 @@ proto.aggregator.ContractWriteNode.Config.toObject = function(includeInstance, m
     google_protobuf_struct_pb.Value.toObject, includeInstance),
     methodCallsList: jspb.Message.toObjectList(msg.getMethodCallsList(),
     proto.aggregator.ContractWriteNode.MethodCall.toObject, includeInstance),
-    isSimulated: jspb.Message.getBooleanFieldWithDefault(msg, 5, false)
+    isSimulated: jspb.Message.getBooleanFieldWithDefault(msg, 5, false),
+    value: jspb.Message.getFieldWithDefault(msg, 6, ""),
+    gasLimit: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
   if (includeInstance) {
@@ -7533,6 +7535,14 @@ proto.aggregator.ContractWriteNode.Config.deserializeBinaryFromReader = function
     case 5:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setIsSimulated(value);
+      break;
+    case 6:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setValue(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setGasLimit(value);
       break;
     default:
       reader.skipField();
@@ -7597,6 +7607,20 @@ proto.aggregator.ContractWriteNode.Config.serializeBinaryToWriter = function(mes
   if (f != null) {
     writer.writeBool(
       5,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 6));
+  if (f != null) {
+    writer.writeString(
+      6,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 7));
+  if (f != null) {
+    writer.writeString(
+      7,
       f
     );
   }
@@ -7748,6 +7772,78 @@ proto.aggregator.ContractWriteNode.Config.prototype.clearIsSimulated = function(
  */
 proto.aggregator.ContractWriteNode.Config.prototype.hasIsSimulated = function() {
   return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional string value = 6;
+ * @return {string}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.getValue = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.setValue = function(value) {
+  return jspb.Message.setField(this, 6, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.clearValue = function() {
+  return jspb.Message.setField(this, 6, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.hasValue = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional string gas_limit = 7;
+ * @return {string}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.getGasLimit = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.setGasLimit = function(value) {
+  return jspb.Message.setField(this, 7, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.ContractWriteNode.Config} returns this
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.clearGasLimit = function() {
+  return jspb.Message.setField(this, 7, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.ContractWriteNode.Config.prototype.hasGasLimit = function() {
+  return jspb.Message.getField(this, 7) != null;
 };
 
 
@@ -26811,8 +26907,7 @@ proto.aggregator.RunNodeWithInputsReq.prototype.toObject = function(opt_includeI
  */
 proto.aggregator.RunNodeWithInputsReq.toObject = function(includeInstance, msg) {
   var f, obj = {
-    nodeType: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    nodeConfigMap: (f = msg.getNodeConfigMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : [],
+    node: (f = msg.getNode()) && proto.aggregator.TaskNode.toObject(includeInstance, f),
     inputVariablesMap: (f = msg.getInputVariablesMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
@@ -26851,14 +26946,9 @@ proto.aggregator.RunNodeWithInputsReq.deserializeBinaryFromReader = function(msg
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.aggregator.NodeType} */ (reader.readEnum());
-      msg.setNodeType(value);
-      break;
-    case 2:
-      var value = msg.getNodeConfigMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
-         });
+      var value = new proto.aggregator.TaskNode;
+      reader.readMessage(value,proto.aggregator.TaskNode.deserializeBinaryFromReader);
+      msg.setNode(value);
       break;
     case 3:
       var value = msg.getInputVariablesMap();
@@ -26895,16 +26985,13 @@ proto.aggregator.RunNodeWithInputsReq.prototype.serializeBinary = function() {
  */
 proto.aggregator.RunNodeWithInputsReq.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getNodeType();
-  if (f !== 0.0) {
-    writer.writeEnum(
+  f = message.getNode();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      proto.aggregator.TaskNode.serializeBinaryToWriter
     );
-  }
-  f = message.getNodeConfigMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
   }
   f = message.getInputVariablesMap(true);
   if (f && f.getLength() > 0) {
@@ -26914,43 +27001,40 @@ proto.aggregator.RunNodeWithInputsReq.serializeBinaryToWriter = function(message
 
 
 /**
- * optional NodeType node_type = 1;
- * @return {!proto.aggregator.NodeType}
+ * optional TaskNode node = 1;
+ * @return {?proto.aggregator.TaskNode}
  */
-proto.aggregator.RunNodeWithInputsReq.prototype.getNodeType = function() {
-  return /** @type {!proto.aggregator.NodeType} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.RunNodeWithInputsReq.prototype.getNode = function() {
+  return /** @type{?proto.aggregator.TaskNode} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.TaskNode, 1));
 };
 
 
 /**
- * @param {!proto.aggregator.NodeType} value
+ * @param {?proto.aggregator.TaskNode|undefined} value
+ * @return {!proto.aggregator.RunNodeWithInputsReq} returns this
+*/
+proto.aggregator.RunNodeWithInputsReq.prototype.setNode = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.RunNodeWithInputsReq} returns this
  */
-proto.aggregator.RunNodeWithInputsReq.prototype.setNodeType = function(value) {
-  return jspb.Message.setProto3EnumField(this, 1, value);
+proto.aggregator.RunNodeWithInputsReq.prototype.clearNode = function() {
+  return this.setNode(undefined);
 };
 
 
 /**
- * map<string, google.protobuf.Value> node_config = 2;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<string,!proto.google.protobuf.Value>}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.RunNodeWithInputsReq.prototype.getNodeConfigMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<string,!proto.google.protobuf.Value>} */ (
-      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
-      proto.google.protobuf.Value));
+proto.aggregator.RunNodeWithInputsReq.prototype.hasNode = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
-
-
-/**
- * Clears values from the map. The map will be non-null.
- * @return {!proto.aggregator.RunNodeWithInputsReq} returns this
- */
-proto.aggregator.RunNodeWithInputsReq.prototype.clearNodeConfigMap = function() {
-  this.getNodeConfigMap().clear();
-  return this;};
 
 
 /**
