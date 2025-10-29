@@ -106,6 +106,7 @@ class ContractWriteNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_CONTRACT_WRITE);
 
     const node = ContractWriteNode.createProtobufNode(
       this.data as ContractWriteNodeData

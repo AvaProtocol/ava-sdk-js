@@ -42,6 +42,7 @@ class BranchNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_BRANCH);
 
     const node = new avs_pb.BranchNode();
     const config = new avs_pb.BranchNode.Config();

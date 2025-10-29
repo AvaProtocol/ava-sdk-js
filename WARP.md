@@ -175,6 +175,7 @@ The SDK supports three timeout presets:
 - Docker environment replicates production setup
 - Salt-based test isolation prevents conflicts
 - Cleanup workflows in `finally` blocks
+- **Test Assertions**: All test assertions must be deterministic and fail explicitly on errors. Never use conditional checks that allow tests to pass when they should fail (e.g., `if (result.success) { expect(...) }` is forbidden - tests must always validate the expected outcome)
 
 ### Node.js Version Requirements
 - **Runtime**: Node.js >= 20.18.0

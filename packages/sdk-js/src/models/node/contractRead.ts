@@ -97,6 +97,7 @@ class ContractReadNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_CONTRACT_READ);
 
     const node = ContractReadNode.createProtobufNode(
       this.data as ContractReadNodeData

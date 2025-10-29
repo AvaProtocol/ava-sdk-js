@@ -74,6 +74,7 @@ class GraphQLQueryNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_GRAPHQL_QUERY);
 
     const node = GraphQLQueryNode.createProtobufNode(
       this.data as GraphQLQueryNodeData

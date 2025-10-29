@@ -123,6 +123,7 @@ class LoopNode extends Node {
 
     node.setId(this.id);
     node.setName(this.name);
+    node.setType(avs_pb.NodeType.NODE_TYPE_LOOP);
 
     const data = this.data as LoopNodeData;
 
