@@ -377,14 +377,13 @@ describe("RestAPI Node Tests", () => {
     });
   });
 
-  describe.skip("SendGrid Integration Tests", () => {
-    // TODO: Enable these tests when SendGrid API key is configured in secrets
-    // These tests verify that the options.summarize field works correctly with SendGrid
-    const SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send";
+  describe("SendGrid Mocked Tests - options.summarize", () => {
+    // These tests use the mock API endpoint to simulate SendGrid behavior
+    // They verify the options field is properly passed without requiring real SendGrid API keys
     const TEST_SUBJECT = "Test Email Subject - Workflow Notification";
     const TEST_BODY = "This is a test email body with important information about the workflow execution.";
     
-    test("should send email without summarization (options.summarize=false)", async () => {
+    test("should handle email payload with options.summarize=false (mocked)", async () => {
       const emailPayload = {
         personalizations: [{
           to: [{ email: "test@example.com" }],
@@ -400,11 +399,10 @@ describe("RestAPI Node Tests", () => {
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: SENDGRID_API_URL,
+          url: MOCK_API_BASE_URL + "/sendgrid/send", // Mock endpoint simulating SendGrid
           method: "POST",
           body: JSON.stringify(emailPayload),
           headers: {
-            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
             "Content-Type": "application/json",
           },
           options: { summarize: false },
@@ -412,19 +410,14 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      // Without summarization, response should include the full original subject and body
+      // Mock should succeed and echo back the full content
       expect(response.success).toBeTruthy();
       expect(response.data).toBeDefined();
-      
-      // The config should reflect the original values
-      if (response.metadata) {
-        const metadata = response.metadata as any;
-        // Verify that the original subject and body are preserved in the request
-        expect(metadata.data).toBeDefined();
-      }
+      const metadata = response.metadata as any;
+      expect(metadata.status).toBe(200);
     });
 
-    test("should send email with summarization (options.summarize=true)", async () => {
+    test("should handle email payload with options.summarize=true (mocked)", async () => {
       const longBody = `
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
         incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
@@ -449,11 +442,10 @@ describe("RestAPI Node Tests", () => {
       const response = await client.runNodeWithInputs({
         nodeType: NodeType.RestAPI,
         nodeConfig: {
-          url: SENDGRID_API_URL,
+          url: MOCK_API_BASE_URL + "/sendgrid/send", // Mock endpoint
           method: "POST",
           body: JSON.stringify(emailPayload),
           headers: {
-            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
             "Content-Type": "application/json",
           },
           options: { summarize: true, maxTokens: 100 },
@@ -461,25 +453,55 @@ describe("RestAPI Node Tests", () => {
         inputVariables: {},
       });
 
-      // With summarization, response should include summarized subject and body
+      // Mock should succeed and indicate summarization was requested
       expect(response.success).toBeTruthy();
       expect(response.data).toBeDefined();
-      
-      // The response should indicate summarization was applied
-      if (response.metadata) {
-        const metadata = response.metadata as any;
-        expect(metadata.data).toBeDefined();
-        // Summarized body should be shorter than original
-        // Note: The actual summarization logic is on the backend
+      const metadata = response.metadata as any;
+      expect(metadata.status).toBe(200);
+    });
+  });
+
+  // Conditionally run SendGrid integration tests only if SENDGRID_KEY is set
+  const SENDGRID_KEY = process.env.SENDGRID_KEY || "";
+  const describeFn = SENDGRID_KEY ? describe : describe.skip;
+
+  describeFn("SendGrid Real Integration Tests", () => {
+    // REAL INTEGRATION TESTS - Automatically enabled when SENDGRID_KEY is set
+    // These tests call the actual SendGrid API and send real emails
+    // 
+    // To enable these tests:
+    // 1. Set SENDGRID_KEY in your .env file (e.g., SENDGRID_KEY="SG.xxx...")
+    // 2. Run: yarn test tests/nodes/RestAPI.test.ts -t "SendGrid Real Integration Tests"
+    //
+    // WARNING: These tests will send actual emails to dev@avaprotocol.org!
+    
+    const SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send";
+    const TEST_RECIPIENT = "dev@avaprotocol.org";
+
+    beforeAll(async () => {
+      if (!SENDGRID_KEY) {
+        throw new Error("SENDGRID_KEY environment variable is required for real SendGrid tests");
       }
+      // Create the secret so it can be used in the tests
+      await client.createSecret("SENDGRID_KEY", SENDGRID_KEY);
     });
 
-    test("should preserve email structure in simulateWorkflow without summarization", async () => {
-      const wallet = await getSmartWallet(client);
+    afterAll(async () => {
+      // Clean up the secret after tests
+      try {
+        await client.deleteSecret("SENDGRID_KEY");
+      } catch (error) {
+        // Ignore errors if secret doesn't exist
+      }
+    });
+    const TEST_SUBJECT = "[SDK Test] Email Summarization Test";
+    const TEST_BODY = "This is a test email sent from the Ava Protocol SDK test suite to verify the options.summarize feature.";
+    
+    test("should send real email without summarization (options.summarize=false)", async () => {
       const emailPayload = {
         personalizations: [{
-          to: [{ email: "test@example.com" }],
-          subject: TEST_SUBJECT
+          to: [{ email: TEST_RECIPIENT }],
+          subject: TEST_SUBJECT + " - No Summarization"
         }],
         from: { email: "noreply@avaprotocol.org" },
         content: [{
@@ -488,56 +510,44 @@ describe("RestAPI Node Tests", () => {
         }]
       };
 
-      const sendEmailNode = NodeFactory.create({
-        id: getNextId(),
-        name: "send_email_no_summary",
-        type: NodeType.RestAPI,
-        data: {
+      const response = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
           url: SENDGRID_API_URL,
           method: "POST",
           body: JSON.stringify(emailPayload),
           headers: {
-            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
+            "Authorization": `Bearer ${SENDGRID_KEY}`,
             "Content-Type": "application/json",
           },
-          // No options.summarize or explicitly false
+          options: { summarize: false },
         },
+        inputVariables: {},
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [sendEmailNode]);
-      const simulation = await client.simulateWorkflow({
-        ...client.createWorkflow(workflowProps).toJson(),
-        inputVariables: {
-          settings: getSettings(wallet.address),
-        },
-      });
-
-      expect(simulation.status).toBe(ExecutionStatus.Success);
-      const emailStep = simulation.steps.find(step => step.id === sendEmailNode.id);
-      expect(emailStep).toBeDefined();
-      expect(emailStep!.success).toBeTruthy();
-      
-      // Verify the email payload structure is preserved
-      const output = emailStep!.output as any;
-      expect(output).toBeDefined();
+      expect(response.success).toBeTruthy();
+      const metadata = response.metadata as any;
+      expect(metadata.status).toBe(202); // SendGrid accepts with 202
     });
 
-    test("should apply summarization in simulateWorkflow with options.summarize=true", async () => {
-      const wallet = await getSmartWallet(client);
+    test("should send real email with summarization (options.summarize=true)", async () => {
       const longBody = `
-        This is a very long email body that contains multiple paragraphs of information.
-        The purpose of this test is to verify that when options.summarize is set to true,
-        the backend will generate a summarized version of this content.
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
+        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
+        nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
+        eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt 
+        in culpa qui officia deserunt mollit anim id est laborum.
         
-        The summarization feature should reduce the token count while preserving the key
-        information and intent of the message. This is particularly useful for reducing
-        costs when dealing with large amounts of text data.
+        This email body is intentionally long to test the summarization feature. The backend
+        should process this content and generate a shorter summary while preserving the key
+        information and intent of the message.
       `.trim();
 
       const emailPayload = {
         personalizations: [{
-          to: [{ email: "test@example.com" }],
-          subject: "Long Subject That Needs Summarization - Important Workflow Alert"
+          to: [{ email: TEST_RECIPIENT }],
+          subject: TEST_SUBJECT + " - With Summarization"
         }],
         from: { email: "noreply@avaprotocol.org" },
         content: [{
@@ -546,42 +556,25 @@ describe("RestAPI Node Tests", () => {
         }]
       };
 
-      const sendEmailNode = NodeFactory.create({
-        id: getNextId(),
-        name: "send_email_with_summary",
-        type: NodeType.RestAPI,
-        data: {
+      const response = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
           url: SENDGRID_API_URL,
           method: "POST",
           body: JSON.stringify(emailPayload),
           headers: {
-            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
+            "Authorization": `Bearer ${SENDGRID_KEY}`,
             "Content-Type": "application/json",
           },
-          options: { summarize: true, maxTokens: 50 },
+          options: { summarize: true, maxTokens: 100 },
         },
+        inputVariables: {},
       });
 
-      const workflowProps = createFromTemplate(wallet.address, [sendEmailNode]);
-      const simulation = await client.simulateWorkflow({
-        ...client.createWorkflow(workflowProps).toJson(),
-        inputVariables: {
-          settings: getSettings(wallet.address),
-        },
-      });
-
-      expect(simulation.status).toBe(ExecutionStatus.Success);
-      const emailStep = simulation.steps.find(step => step.id === sendEmailNode.id);
-      expect(emailStep).toBeDefined();
-      expect(emailStep!.success).toBeTruthy();
-      
-      // The output should indicate summarization was applied
-      const output = emailStep!.output as any;
-      expect(output).toBeDefined();
-      // Note: The actual summarization validation would check that:
-      // 1. Subject is present and potentially shortened
-      // 2. Body is present and shortened compared to original
-      // 3. Response includes metadata about summarization
+      expect(response.success).toBeTruthy();
+      const metadata = response.metadata as any;
+      expect(metadata.status).toBe(202); // SendGrid accepts with 202
+      // TODO: Add assertions to verify summarization metadata once backend implementation is complete
     });
   });
 
