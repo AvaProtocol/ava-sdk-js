@@ -7,6 +7,8 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  getCurrentChain,
+  getChainNameFromId,
 } from "../utils/utils";
 import util from "util";
 
@@ -23,21 +25,24 @@ describe("RunNodeWithInputs", () => {
   describe("isSimulated parameter behavior", () => {
     test("should ignore isSimulated parameter for read-only operations", async () => {
       const wallet = await getSmartWallet(client);
+      const { chainId } = getCurrentChain();
+      const chainName = getChainNameFromId(chainId);
       
-      const nodeConfig = {
-        address: wallet.address,
-        chain: "11155111", // Sepolia
-        includeSpam: false,
-        includeZeroBalances: false,
-      };
-
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig,
+        node: {
+          id: "balance-test",
+          name: "checkBalance",
+          type: NodeType.Balance,
+          data: {
+            address: wallet.address,
+            chain: chainName,
+            includeSpam: false,
+            includeZeroBalances: false,
+          },
+        },
         inputVariables: {
           settings: getSettings(wallet.address),
         },
-        isSimulated: true, // Set to true, but read-only operations always use RPC
       };
 
       console.log(
@@ -70,32 +75,34 @@ describe("RunNodeWithInputs", () => {
       const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
       const swapRouterAddress = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E"; // Uniswap SwapRouter
       
-      const nodeConfig = {
-        contractAddress: usdcAddress,
-        contractAbi: [
-          {
-            name: "approve",
-            type: "function",
-            inputs: [
-              { name: "spender", type: "address" },
-              { name: "value", type: "uint256" },
-            ],
-            outputs: [{ name: "", type: "bool" }],
-            stateMutability: "nonpayable",
-          },
-        ],
-        methodCalls: [
-          {
-            methodName: "approve",
-            methodParams: [swapRouterAddress, "1000000"], // 1 USDC (6 decimals)
-          },
-        ],
-        isSimulated: true, // Simulation mode - uses Tenderly
-      };
-
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig,
+        node: {
+          id: "contract-write-test",
+          name: "approve",
+          type: NodeType.ContractWrite,
+          data: {
+            contractAddress: usdcAddress,
+            contractAbi: [
+              {
+                name: "approve",
+                type: "function",
+                inputs: [
+                  { name: "spender", type: "address" },
+                  { name: "value", type: "uint256" },
+                ],
+                outputs: [{ name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+              },
+            ],
+            methodCalls: [
+              {
+                methodName: "approve",
+                methodParams: [swapRouterAddress, "1000000"], // 1 USDC (6 decimals)
+              },
+            ],
+            isSimulated: true, // Simulation mode - uses Tenderly
+          },
+        },
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -129,32 +136,34 @@ describe("RunNodeWithInputs", () => {
       const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
       const swapRouterAddress = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E"; // Uniswap SwapRouter
       
-      const nodeConfig = {
-        contractAddress: usdcAddress,
-        contractAbi: [
-          {
-            name: "approve",
-            type: "function",
-            inputs: [
-              { name: "spender", type: "address" },
-              { name: "value", type: "uint256" },
-            ],
-            outputs: [{ name: "", type: "bool" }],
-            stateMutability: "nonpayable",
-          },
-        ],
-        methodCalls: [
-          {
-            methodName: "approve",
-            methodParams: [swapRouterAddress, "1000000"], // 1 USDC (6 decimals)
-          },
-        ],
-        isSimulated: false, // Real execution - attempts to send UserOp to bundler
-      };
-
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig,
+        node: {
+          id: "contract-write-real-test",
+          name: "approve",
+          type: NodeType.ContractWrite,
+          data: {
+            contractAddress: usdcAddress,
+            contractAbi: [
+              {
+                name: "approve",
+                type: "function",
+                inputs: [
+                  { name: "spender", type: "address" },
+                  { name: "value", type: "uint256" },
+                ],
+                outputs: [{ name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+              },
+            ],
+            methodCalls: [
+              {
+                methodName: "approve",
+                methodParams: [swapRouterAddress, "1000000"], // 1 USDC (6 decimals)
+              },
+            ],
+            isSimulated: false, // Real execution - attempts to send UserOp to bundler
+          },
+        },
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -173,17 +182,9 @@ describe("RunNodeWithInputs", () => {
       );
 
       expect(result).toBeDefined();
-      
-      // Real execution may succeed or fail depending on wallet balance and state
-      // We just validate the response structure and that it attempted real execution
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(result.executionContext).toBeDefined();
-        expect(result.executionContext.isSimulated).toBe(false);
-      } else {
-        // If it fails (likely due to wallet not deployed), it should have an error
-        expect(result.error).toBeDefined();
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.executionContext).toBeDefined();
     });
   });
 });

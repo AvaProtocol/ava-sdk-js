@@ -86,6 +86,7 @@ class RestAPINode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_REST_API);
 
     const nodeData = RestAPINode.createProtobufNode(
       this.data as RestAPINodeData

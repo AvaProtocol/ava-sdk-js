@@ -80,6 +80,7 @@ class BalanceNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_BALANCE);
 
     const node = BalanceNode.createProtobufNode(this.data as BalanceNodeData);
 

@@ -55,6 +55,7 @@ class ETHTransferNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_ETH_TRANSFER);
 
     const node = ETHTransferNode.createProtobufNode(
       this.data as ETHTransferNodeData

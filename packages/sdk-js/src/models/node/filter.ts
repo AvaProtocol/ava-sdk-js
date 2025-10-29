@@ -30,6 +30,7 @@ class FilterNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_FILTER);
 
     const node = new avs_pb.FilterNode();
 

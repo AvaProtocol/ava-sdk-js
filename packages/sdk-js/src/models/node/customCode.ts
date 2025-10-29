@@ -70,6 +70,7 @@ class CustomCodeNode extends Node {
 
     request.setId(this.id);
     request.setName(this.name);
+    request.setType(avs_pb.NodeType.NODE_TYPE_CUSTOM_CODE);
 
     const node = CustomCodeNode.createProtobufNode(
       this.data as CustomCodeNodeData
