@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.10.1
+
+### Patch Changes
+
+- b85409c: fix: add options field support to RestAPINode
+- Updated dependencies [b85409c]
+  - @avaprotocol/types@2.8.1
+
 ## 2.10.0
 
 ### Minor Changes
