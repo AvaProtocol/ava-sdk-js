@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.8.1
+
+### Patch Changes
+
+- b85409c: fix: add options field support to RestAPINode
+
 ## 2.8.0
 
 ### Minor Changes
