@@ -732,6 +732,16 @@ export namespace ContractWriteNode {
         getIsSimulated(): boolean | undefined;
         setIsSimulated(value: boolean): Config;
 
+        hasValue(): boolean;
+        clearValue(): void;
+        getValue(): string | undefined;
+        setValue(value: string): Config;
+
+        hasGasLimit(): boolean;
+        clearGasLimit(): void;
+        getGasLimit(): string | undefined;
+        setGasLimit(value: string): Config;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
         static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
@@ -749,6 +759,8 @@ export namespace ContractWriteNode {
             contractAbiList: Array<google_protobuf_struct_pb.Value.AsObject>,
             methodCallsList: Array<ContractWriteNode.MethodCall.AsObject>,
             isSimulated?: boolean,
+            value?: string,
+            gasLimit?: string,
         }
     }
 
@@ -3321,11 +3333,11 @@ export namespace GetExecutionStatsResp {
 }
 
 export class RunNodeWithInputsReq extends jspb.Message { 
-    getNodeType(): NodeType;
-    setNodeType(value: NodeType): RunNodeWithInputsReq;
 
-    getNodeConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
-    clearNodeConfigMap(): void;
+    hasNode(): boolean;
+    clearNode(): void;
+    getNode(): TaskNode | undefined;
+    setNode(value?: TaskNode): RunNodeWithInputsReq;
 
     getInputVariablesMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
     clearInputVariablesMap(): void;
@@ -3342,9 +3354,7 @@ export class RunNodeWithInputsReq extends jspb.Message {
 
 export namespace RunNodeWithInputsReq {
     export type AsObject = {
-        nodeType: NodeType,
-
-        nodeConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+        node?: TaskNode.AsObject,
 
         inputVariablesMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
     }
