@@ -10525,7 +10525,8 @@ proto.aggregator.RestAPINode.Config.toObject = function(includeInstance, msg) {
     url: jspb.Message.getFieldWithDefault(msg, 1, ""),
     headersMap: (f = msg.getHeadersMap()) ? f.toObject(includeInstance, undefined) : [],
     body: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    method: jspb.Message.getFieldWithDefault(msg, 4, "")
+    method: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    options: (f = msg.getOptions()) && google_protobuf_struct_pb.Value.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -10580,6 +10581,11 @@ proto.aggregator.RestAPINode.Config.deserializeBinaryFromReader = function(msg, 
       var value = /** @type {string} */ (reader.readString());
       msg.setMethod(value);
       break;
+    case 5:
+      var value = new google_protobuf_struct_pb.Value;
+      reader.readMessage(value,google_protobuf_struct_pb.Value.deserializeBinaryFromReader);
+      msg.setOptions(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -10632,6 +10638,14 @@ proto.aggregator.RestAPINode.Config.serializeBinaryToWriter = function(message, 
     writer.writeString(
       4,
       f
+    );
+  }
+  f = message.getOptions();
+  if (f != null) {
+    writer.writeMessage(
+      5,
+      f,
+      google_protobuf_struct_pb.Value.serializeBinaryToWriter
     );
   }
 };
@@ -10710,6 +10724,43 @@ proto.aggregator.RestAPINode.Config.prototype.getMethod = function() {
  */
 proto.aggregator.RestAPINode.Config.prototype.setMethod = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional google.protobuf.Value options = 5;
+ * @return {?proto.google.protobuf.Value}
+ */
+proto.aggregator.RestAPINode.Config.prototype.getOptions = function() {
+  return /** @type{?proto.google.protobuf.Value} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Value, 5));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Value|undefined} value
+ * @return {!proto.aggregator.RestAPINode.Config} returns this
+*/
+proto.aggregator.RestAPINode.Config.prototype.setOptions = function(value) {
+  return jspb.Message.setWrapperField(this, 5, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.RestAPINode.Config} returns this
+ */
+proto.aggregator.RestAPINode.Config.prototype.clearOptions = function() {
+  return this.setOptions(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.RestAPINode.Config.prototype.hasOptions = function() {
+  return jspb.Message.getField(this, 5) != null;
 };
 
 

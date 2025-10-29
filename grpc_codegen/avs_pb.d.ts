@@ -1146,6 +1146,11 @@ export namespace RestAPINode {
         getMethod(): string;
         setMethod(value: string): Config;
 
+        hasOptions(): boolean;
+        clearOptions(): void;
+        getOptions(): google_protobuf_struct_pb.Value | undefined;
+        setOptions(value?: google_protobuf_struct_pb.Value): Config;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
         static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
@@ -1163,6 +1168,7 @@ export namespace RestAPINode {
             headersMap: Array<[string, string]>,
             body: string,
             method: string,
+            options?: google_protobuf_struct_pb.Value.AsObject,
         }
     }
 
