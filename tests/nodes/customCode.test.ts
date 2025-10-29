@@ -317,14 +317,18 @@ describe("CustomCode Node Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should execute simple JavaScript code with input variables", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "custom_code_test",
+          type: NodeType.CustomCode,
+          data: {
           lang: Lang.JavaScript,
           source: `
             const inputValue = trigger.data.value;
             const multiplier = trigger.data.multiplier || 2;
             return inputValue * multiplier;
           `,
+        }
         },
         inputVariables: {
           trigger: {
@@ -347,8 +351,11 @@ describe("CustomCode Node Tests", () => {
 
     test("should execute JavaScript with lodash module", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "custom_code_test",
+          type: NodeType.CustomCode,
+          data: {
           lang: Lang.JavaScript,
           source: `
             const _ = require('lodash');
@@ -359,6 +366,7 @@ describe("CustomCode Node Tests", () => {
               grouped: _.groupBy(numbers, n => n % 2 === 0 ? 'even' : 'odd')
             };
           `,
+        }
         },
         inputVariables: {
           trigger: {
@@ -379,8 +387,11 @@ describe("CustomCode Node Tests", () => {
 
     test("should execute JavaScript with date manipulation", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "custom_code_test",
+          type: NodeType.CustomCode,
+          data: {
           lang: Lang.JavaScript,
           source: `
             const dayjs = require('dayjs');
@@ -392,6 +403,7 @@ describe("CustomCode Node Tests", () => {
               dayOfWeek: date.format('dddd')
             };
           `,
+        }
         },
         inputVariables: {
           trigger: {
@@ -412,14 +424,18 @@ describe("CustomCode Node Tests", () => {
 
     test("should handle error in custom code execution", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "custom_code_test",
+          type: NodeType.CustomCode,
+          data: {
           lang: Lang.JavaScript,
           source: `
             // This will cause an error
             const result = trigger.data.nonexistent.property;
             return result;
           `,
+        }
         },
         inputVariables: {
           trigger: {

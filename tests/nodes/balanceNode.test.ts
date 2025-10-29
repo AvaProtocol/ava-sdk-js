@@ -58,11 +58,15 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: TEST_ADDRESSES.vitalik,
           chain: currentChainName,
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -107,13 +111,17 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: TEST_ADDRESSES.vitalik,
           chain: currentChainName,
           includeSpam: false,
           includeZeroBalances: false,
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -151,12 +159,16 @@ describeIfSepolia("BalanceNode Tests", () => {
       // Note: Sepolia testnet tokens typically don't have USD pricing data from Moralis
       // This test verifies that the filtering mechanism works, even if it returns empty results
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: TEST_ADDRESSES.vitalik,
           chain: currentChainName,
           minUsdValue: 1.0, // Only include tokens worth at least $1
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -205,11 +217,15 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       for (const chain of chains) {
         const params = {
-          nodeType: NodeType.Balance,
-          nodeConfig: {
+          node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
             address: TEST_ADDRESSES.vitalik,
             chain: chain,
-          },
+          }},
+
           inputVariables: {
             settings: getSettings(wallet.address),
           },
@@ -237,11 +253,15 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: "{{walletAddress}}",
           chain: "{{chainName}}",
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
           walletAddress: TEST_ADDRESSES.vitalik,
@@ -496,7 +516,8 @@ describeIfSepolia("BalanceNode Tests", () => {
         // Test 1: runNodeWithInputs
         const directParams = {
           nodeType: NodeType.Balance,
-          nodeConfig: balanceConfig,
+          nodeConfig: balanceConfig},
+
           inputVariables: inputVariables,
         };
 
@@ -630,11 +651,15 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: "invalid-address",
           chain: currentChainName,
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -661,11 +686,15 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: TEST_ADDRESSES.vitalik,
           chain: "invalid-chain",
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -692,12 +721,16 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: TEST_ADDRESSES.vitalik,
           chain: currentChainName,
           minUsdValue: -1.0, // Negative value - backend should reject
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -786,15 +819,19 @@ describeIfSepolia("BalanceNode Tests", () => {
 
       // Test with specific token addresses (USDC and LINK on current chain)
       const params = {
-        nodeType: NodeType.Balance,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "balance_test",
+          type: NodeType.Balance,
+          data: {
           address: TEST_ADDRESSES.vitalik,
           chain: currentChainName,
           tokenAddresses: [
             tokens.USDC.address, // USDC on current chain
             tokens.LINK.address, // LINK on current chain
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -812,27 +849,25 @@ describeIfSepolia("BalanceNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(typeof result.success).toBe("boolean");
-      if (result.success) {
-        expect(result.data).toBeDefined();
-        expect(typeof result.data).toBe("object");
-        expect(result.data).not.toBeNull();
-        expect(Array.isArray(result.data)).toBe(true);
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(typeof result.data).toBe("object");
+      expect(result.data).not.toBeNull();
+      expect(Array.isArray(result.data)).toBe(true);
 
-        // Should only return tokens that match the specified addresses
-        const returnedTokens = result.data as any[];
-        // We expect at least some tokens to be returned (either native ETH or the specified tokens)
-        expect(returnedTokens.length).toBeGreaterThan(0);
-        for (const token of returnedTokens) {
-          if (token.tokenAddress) {
-            // Non-native tokens should be one of our specified addresses
-            // Use case-insensitive comparison since Ethereum addresses are case-insensitive
-            const expectedAddresses = [
-              tokens.USDC.address.toLowerCase(),
-              tokens.LINK.address.toLowerCase(),
-            ];
-            expect(expectedAddresses).toContain(token.tokenAddress.toLowerCase());
-          }
+      // Should only return tokens that match the specified addresses
+      const returnedTokens = result.data as any[];
+      // We expect at least some tokens to be returned (either native ETH or the specified tokens)
+      expect(returnedTokens.length).toBeGreaterThan(0);
+      for (const token of returnedTokens) {
+        if (token.tokenAddress) {
+          // Non-native tokens should be one of our specified addresses
+          // Use case-insensitive comparison since Ethereum addresses are case-insensitive
+          const expectedAddresses = [
+            tokens.USDC.address.toLowerCase(),
+            tokens.LINK.address.toLowerCase(),
+          ];
+          expect(expectedAddresses).toContain(token.tokenAddress.toLowerCase());
         }
       }
     });

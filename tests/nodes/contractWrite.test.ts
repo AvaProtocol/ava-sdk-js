@@ -184,8 +184,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Expected behavior: success: true, data: { approve: {} }, with real transaction receipt
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -198,7 +201,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             },
           ],
           isSimulated: false, // Explicitly set to false for real transaction attempt
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(smartWalletAddress),
         },
@@ -277,8 +281,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const expectedMethodName = "transfer";
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -287,7 +294,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [recipientAddress, transferAmount],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(smartWalletAddress),
         },
@@ -372,12 +380,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(transferResult.success).toBe(
         transferResult.receipt.status === "0x1"
       );
-      if (transferResult.success) {
-        expect(transferResult.receipt.status).toBe("0x1"); // Success
-      } else {
-        expect(transferResult.receipt.status).toBe("0x0"); // Failure
-        expect(transferResult.error).toBeDefined(); // Should have error message
-      }
+      expect(transferResult.receipt.status).toBe("0x1"); // Success
+      expect(transferResult.success).toBe(true);
     });
 
     test("should abort multiple method calls after first failure (insufficient funds)", async () => {
@@ -387,8 +391,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const spender2 = smartWalletAddress; // Use funded smart wallet for consistency
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.LINK.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -401,7 +408,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [spender2, "75"],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -447,8 +455,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const recipient2 = smartWalletAddress; // Use same funded wallet as recipient
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address, // USDC contract
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -461,7 +472,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [recipient2, "0"], // Transfer 0 to avoid balance issues
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(smartWalletAddress),
         },
@@ -501,8 +513,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: "0x0000000000000000000000000000000000000000", // Zero address
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -511,7 +526,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: ["0x0000000000000000000000000000000000000001", "0"],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -549,8 +565,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
     test("should handle malformed call data gracefully", async () => {
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -559,7 +578,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: ["invalid_address", "invalid_amount"], // Invalid parameters
             },
           ],
-        },
+        }},
+
         inputVariables: {},
       };
 
@@ -792,7 +812,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Test 1: runNodeWithInputs
       const runNodeWithInputsParams = {
         nodeType: NodeType.ContractWrite,
-        nodeConfig: contractWriteConfig,
+        nodeConfig: contractWriteConfig},
+
         inputVariables: {
           settings: getSettings(smartWalletAddress),
         },
@@ -1054,8 +1075,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const methodName = "nonExistentMethod";
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: [
             {
@@ -1067,7 +1091,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             },
           ],
           methodCalls: [{ methodName: methodName, methodParams: [] }],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -1164,8 +1189,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Note: For contract write, applyToFields might not be as relevant as for contract read
       // But we'll test it for consistency with the contract read tests
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -1175,7 +1203,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               applyToFields: ["amount"], // Apply formatting to amount field if applicable
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(smartWalletAddress),
         },
@@ -1397,8 +1426,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const SPENDER_ADDRESS = "0x3bfa4769fb09eefc5a80d6e87c3b9c650f7ae48e"; // Uniswap router
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -1407,7 +1439,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [SPENDER_ADDRESS, APPROVAL_AMOUNT],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: getSettings(wallet.address),
         },
@@ -1780,8 +1813,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -1793,7 +1829,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               ],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: {
             ...getSettings(wallet.address),
@@ -1825,8 +1862,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -1838,7 +1878,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               ],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: {
             ...getSettings(wallet.address),
@@ -1900,8 +1941,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       ];
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6", // Uniswap V3 Quoter
           contractAbi: QUOTER_ABI,
           methodCalls: [
@@ -1913,7 +1957,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               ],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: {
             ...getSettings(wallet.address),
@@ -1980,8 +2025,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       ];
 
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6", // Uniswap V3 Quoter
           contractAbi: QUOTER_ABI,
           methodCalls: [
@@ -1993,7 +2041,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               ],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: {
             ...getSettings(wallet.address),
@@ -2031,8 +2080,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
       // Test that camelCase chainId is NOT supported
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -2041,7 +2093,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [eoaAddress, "1"],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: {
             runner: wallet.address,
@@ -2071,8 +2124,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
     test("should require settings object for contractWrite", async () => {
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -2081,7 +2137,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [smartWalletAddress, "1"],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           // Missing settings - should fail
         },
@@ -2108,8 +2165,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
     test("should require runner in settings for contractWrite", async () => {
       const params = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "contract_write_test",
+          type: NodeType.ContractWrite,
+          data: {
           contractAddress: tokens.USDC.address,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -2118,7 +2178,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
               methodParams: [smartWalletAddress, "1"],
             },
           ],
-        },
+        }},
+
         inputVariables: {
           settings: {
             // Missing runner - should fail

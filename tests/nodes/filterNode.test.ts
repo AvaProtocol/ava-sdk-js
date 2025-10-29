@@ -36,10 +36,14 @@ describe("FilterNode Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should filter adults only with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "filter_test",
+          type: NodeType.Filter,
+          data: {
           expression: "value.age >= 18",
           inputNodeName: "testArray",
+        }
         },
         inputVariables: {
           testArray: [
@@ -60,10 +64,14 @@ describe("FilterNode Tests", () => {
 
     test("should filter minors with preprocessing", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "filter_test",
+          type: NodeType.Filter,
+          data: {
           expression: "value.age < 18",
           inputNodeName: "testArray",
+        }
         },
         inputVariables: {
           testArray: [
@@ -84,10 +92,14 @@ describe("FilterNode Tests", () => {
 
     test("should filter by name starting with A", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "filter_test",
+          type: NodeType.Filter,
+          data: {
           expression: 'value.name.startsWith("A")',
           inputNodeName: "testArray",
+        }
         },
         inputVariables: {
           testArray: [
@@ -108,10 +120,14 @@ describe("FilterNode Tests", () => {
 
     test("should filter with trigger data reference", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "filter_test",
+          type: NodeType.Filter,
+          data: {
           expression: "value.age >= trigger.data.minAge",
           inputNodeName: "testArray",
+        }
         },
         inputVariables: {
           testArray: [

@@ -185,7 +185,8 @@ describe("LoopNode Tests", () => {
     test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: customCodeLoopProps,
+        nodeConfig: customCodeLoopProps},
+
         inputVariables: {
           testArray: [1, 2, 3, 4, 5],
         },
@@ -223,7 +224,8 @@ describe("LoopNode Tests", () => {
     test("should process loop with REST API runner using runNodeWithInputs", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: restApiLoopProps,
+        nodeConfig: restApiLoopProps},
+
         inputVariables: {
           urlArray: [
             "https://mock-api.ap-aggregator.local/get?test=1",
@@ -263,7 +265,8 @@ describe("LoopNode Tests", () => {
     test("should handle empty array input", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: emptyArrayLoopProps,
+        nodeConfig: emptyArrayLoopProps},
+
         inputVariables: {
           emptyArray: [],
         },
@@ -292,7 +295,8 @@ describe("LoopNode Tests", () => {
     test("should handle complex object array", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: complexDataLoopProps,
+        nodeConfig: complexDataLoopProps},
+
         inputVariables: {
           complexArray: [
             { id: "a1", name: "Alice", value: 10 },
@@ -334,8 +338,11 @@ describe("LoopNode Tests", () => {
 
     test("should process loop with ContractRead runner using runNodeWithInputs", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "contractAddresses",
           iterVal: "value",
           iterKey: "index",
@@ -362,7 +369,8 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        },
+        }},
+
         inputVariables: {
           contractAddresses: [
             "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
@@ -394,8 +402,11 @@ describe("LoopNode Tests", () => {
       const methodName = "approve";
       const methodParams = ["{{value.spender}}", "{{value.amount}}"];
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "writeParams",
           iterVal: "value",
           iterKey: "index",
@@ -425,7 +436,8 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        },
+        }},
+
         inputVariables: {
           writeParams: [
             {
@@ -1382,7 +1394,8 @@ describe("LoopNode Tests", () => {
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
         nodeType: NodeType.Loop,
-        nodeConfig: loopConfig,
+        nodeConfig: loopConfig},
+
         inputVariables: inputVariables,
       });
 
@@ -1554,7 +1567,8 @@ describe("LoopNode Tests", () => {
         // Test runNodeWithInputs
         const directResponse = await client.runNodeWithInputs({
           nodeType: "loop",
-          nodeConfig: loopNode.data,
+          nodeConfig: loopNode.data},
+
           inputVariables: {
             [manualTrigger.name]: [
               { key: "key", amount: 1 },
@@ -1640,8 +1654,11 @@ describe("LoopNode Tests", () => {
   describe("Error Handling Tests", () => {
     test("should handle invalid runner configuration gracefully", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "testArray",
           iterVal: "value",
           iterKey: "index",
@@ -1652,7 +1669,8 @@ describe("LoopNode Tests", () => {
               source: `throw new Error("Intentional test error");`,
             },
           },
-        },
+        }},
+
         inputVariables: {
           testArray: [1, 2, 3],
         },
@@ -1667,18 +1685,17 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(typeof result.success).toBe("boolean");
-
-      // Should either fail the execution or contain error information
-      if (!result.success) {
-        expect(result.error).toBeDefined();
-      }
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
     });
 
     test("should handle missing source array gracefully", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "nonExistentArray",
           iterVal: "value",
           iterKey: "index",
@@ -1689,7 +1706,8 @@ describe("LoopNode Tests", () => {
               source: `return { processed: item };`,
             },
           },
-        },
+        }},
+
         inputVariables: {
           existingArray: [1, 2, 3], // Different from sourceId
         },
@@ -1704,16 +1722,13 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(typeof result.success).toBe("boolean");
-
-      // Should handle missing source gracefully
-      if (result.success && result.data) {
-        const responseData = result.data as RunNodeResponseData;
-        expect(responseData.data).toBeDefined();
-        expect(Array.isArray(responseData.data)).toBe(true);
-        // Should be empty or handle gracefully
-        expect(responseData.data.length).toBe(0);
-      }
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      const responseData = result.data as RunNodeResponseData;
+      expect(responseData.data).toBeDefined();
+      expect(Array.isArray(responseData.data)).toBe(true);
+      // Should be empty or handle gracefully
+      expect(responseData.data.length).toBe(0);
     });
   });
 
@@ -1728,7 +1743,8 @@ describe("LoopNode Tests", () => {
     // Test 1: runNodeWithInputs
     const directResponse = await client.runNodeWithInputs({
       nodeType: NodeType.Loop,
-      nodeConfig: singleItemLoopProps,
+      nodeConfig: singleItemLoopProps},
+
       inputVariables: inputVariables,
     });
 
@@ -1778,27 +1794,29 @@ describe("LoopNode Tests", () => {
     expect(simulatedStep!.success).toBeTruthy();
 
     const directOutput = directResponse.data as RunNodeResponseData;
-    if (directOutput.data && Array.isArray(directOutput.data)) {
-      expect(directOutput.data.length).toBe(1);
-      expect(directOutput.data[0].value).toBe(42);
-      expect(directOutput.data[0].index).toBe(0);
-      expect(directOutput.data[0].processed).toBe(true);
-    }
+    expect(directOutput.data).toBeDefined();
+    expect(Array.isArray(directOutput.data)).toBe(true);
+    expect(directOutput.data.length).toBe(1);
+    expect(directOutput.data[0].value).toBe(42);
+    expect(directOutput.data[0].index).toBe(0);
+    expect(directOutput.data[0].processed).toBe(true);
 
     const simulatedOutput = simulatedStep!.output as ProcessedLoopItem[];
-    if (Array.isArray(simulatedOutput)) {
-      expect(simulatedOutput.length).toBe(1);
-      expect(simulatedOutput[0].value).toBe(42);
-      expect(simulatedOutput[0].index).toBe(0);
-      expect(simulatedOutput[0].processed).toBe(true);
-    }
+    expect(Array.isArray(simulatedOutput)).toBe(true);
+    expect(simulatedOutput.length).toBe(1);
+    expect(simulatedOutput[0].value).toBe(42);
+    expect(simulatedOutput[0].index).toBe(0);
+    expect(simulatedOutput[0].processed).toBe(true);
   });
 
   describe("Execution Mode Tests", () => {
     test("should support sequential execution mode with timing verification", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "testArray",
           iterVal: "value",
           iterKey: "index",
@@ -1819,7 +1837,8 @@ describe("LoopNode Tests", () => {
                 `,
             },
           },
-        },
+        }},
+
         inputVariables: {
           testArray: [1, 2, 3, 4],
         },
@@ -1850,7 +1869,8 @@ describe("LoopNode Tests", () => {
     test("should support parallel execution mode with timing verification", async () => {
       const params = {
         nodeType: NodeType.Loop,
-        nodeConfig: parallelExecutionProps,
+        nodeConfig: parallelExecutionProps},
+
         inputVariables: {
           parallelArray: [1, 2, 3, 4],
         },
@@ -1882,8 +1902,11 @@ describe("LoopNode Tests", () => {
 
     test("should default to sequential execution mode when not specified", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "testArray",
           iterVal: "value",
           iterKey: "index",
@@ -1901,7 +1924,8 @@ describe("LoopNode Tests", () => {
                 `,
             },
           },
-        },
+        }},
+
         inputVariables: {
           testArray: [1, 2, 3],
         },
@@ -1930,8 +1954,11 @@ describe("LoopNode Tests", () => {
     test("should force sequential mode for ContractWrite operations", async () => {
       const wallet = await getSmartWalletWithBalance(client);
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "addressArray",
           iterVal: "value",
           iterKey: "index",
@@ -1963,7 +1990,8 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        },
+        }},
+
         inputVariables: {
           addressArray: [
             "0x1111111111111111111111111111111111111111",
@@ -1988,8 +2016,11 @@ describe("LoopNode Tests", () => {
 
     test("should execute contract read operations with loop runner", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "contractAddresses",
           iterVal: "value",
           iterKey: "index",
@@ -2031,7 +2062,8 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        },
+        }},
+
         inputVariables: {
           contractAddresses: [
             USDC_SEPOLIA_ADDRESS, // Real USDC contract on Sepolia
@@ -2091,8 +2123,11 @@ describe("LoopNode Tests", () => {
 
     test("should return flattened data format for contract_read runner in loop", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "contractAddresses",
           iterVal: "value",
           iterKey: "index",
@@ -2133,7 +2168,8 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        },
+        }},
+
         inputVariables: {
           contractAddresses: [
             "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)

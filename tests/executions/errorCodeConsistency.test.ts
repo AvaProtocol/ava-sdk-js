@@ -54,17 +54,19 @@ describe("ErrorCode Consistency", () => {
       };
 
       // Test 1: runNodeWithInputs (should return errorCode directly)
-      console.log("🚀 ~ runNodeWithInputs.params:", {
-        nodeType: NodeType.CustomCode,
-        nodeConfig,
+      const runNodeParams = {
+        node: {
+          id: getNextId(),
+          name: "empty_source_test",
+          type: NodeType.CustomCode,
+          data: nodeConfig,
+        },
         inputVariables,
-      });
+      };
+      
+      console.log("🚀 ~ runNodeWithInputs.params:", runNodeParams);
 
-      const runNodeResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig,
-        inputVariables,
-      });
+      const runNodeResponse = await client.runNodeWithInputs(runNodeParams);
 
       console.log("runNodeWithInputs.server response:", runNodeResponse);
 

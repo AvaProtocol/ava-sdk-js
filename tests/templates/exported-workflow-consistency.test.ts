@@ -109,10 +109,14 @@ describe("Exported Workflow Consistency Tests", () => {
       const inputData = [{ key: "value1" }, { key: "value2" }];
 
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "filter_test",
+          type: NodeType.Filter,
+          data: {
           inputNodeName: "manualTrigger",
           expression: 'value.key === "value1"',
+        }
         },
         inputVariables: {
           manualTrigger: inputData,
@@ -132,10 +136,14 @@ describe("Exported Workflow Consistency Tests", () => {
       const inputData = [{ key: "value1" }, { key: "value2" }];
 
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "custom_code_test",
+          type: NodeType.CustomCode,
+          data: {
           lang: Lang.JavaScript,
           source: "return manualTrigger.data;",
+        }
         },
         inputVariables: {
           manualTrigger: {
@@ -527,8 +535,11 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Method 1: runNodeWithInputs
       const directResult = await client.runNodeWithInputs({
-        nodeType: NodeType.Loop,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: {
           inputNodeName: "manualTrigger",
           iterVal: "value",
           iterKey: "index",
@@ -540,6 +551,7 @@ describe("Exported Workflow Consistency Tests", () => {
               source: "return value;",
             },
           },
+        }
         },
         inputVariables: {
           manualTrigger: testData,
@@ -668,10 +680,14 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Method 1: runNodeWithInputs
       const directResult = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "filter_test",
+          type: NodeType.Filter,
+          data: {
           inputNodeName: "manualTrigger",
           expression: 'value.key === "value1"',
+        }
         },
         inputVariables: {
           manualTrigger: testData,
@@ -784,10 +800,14 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Method 1: runNodeWithInputs
       const directResult = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: {
+        node: {
+          id: getNextId(),
+          name: "custom_code_test",
+          type: NodeType.CustomCode,
+          data: {
           lang: 0,
           source: "return manualTrigger.data;",
+        }
         },
         inputVariables: {
           manualTrigger: {
