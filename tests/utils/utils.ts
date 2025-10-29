@@ -161,6 +161,7 @@ const fileToStartIndex: Record<string, number> = {
   // Template tests (580-599)
   "telegram-alert-on-transfer.test.ts": 580,
   "exported-workflow-consistency.test.ts": 660,
+  "unipswapv3_stoploss.test.ts": 780,
   // Trigger tests (600-639)
   "eventTrigger.test.ts": 600,
   "manual.test.ts": 620,
