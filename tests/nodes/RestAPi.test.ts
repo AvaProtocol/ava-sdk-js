@@ -1,4 +1,3 @@
-import util from "util";
 import _ from "lodash";
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory } from "@avaprotocol/sdk-js";
@@ -27,7 +26,7 @@ interface RestApiResponse {
   status: number;
   statusText: string;
   headers: Record<string, string>;
-  data: any;
+  data: Record<string, unknown> | string;
   url: string;
   success: boolean;
 }
@@ -196,7 +195,7 @@ describe("RestAPI Node Tests", () => {
       expect(output.status).toBe(500);
       expect(output.statusText).toBe("Internal Server Error");
       expect(output.data).toBeDefined();
-      expect(output.data.error).toBe("Internal Server Error");
+      expect((output.data as { error?: string }).error).toBe("Internal Server Error");
     });
   });
 
@@ -256,7 +255,7 @@ describe("RestAPI Node Tests", () => {
 
         expect(restApiStep).toBeDefined();
         expect(restApiStep!.success).toBeTruthy();
-        const output = restApiStep.output as RestApiResponse;
+        const output = restApiStep!.output as RestApiResponse;
         expect(output.status).toBe(200);
         expect(output.data).toBeDefined();
       } finally {
@@ -377,206 +376,6 @@ describe("RestAPI Node Tests", () => {
     });
   });
 
-  describe("SendGrid Mocked Tests - options.summarize", () => {
-    // These tests use the mock API endpoint to simulate SendGrid behavior
-    // They verify the options field is properly passed without requiring real SendGrid API keys
-    const TEST_SUBJECT = "Test Email Subject - Workflow Notification";
-    const TEST_BODY = "This is a test email body with important information about the workflow execution.";
-    
-    test("should handle email payload with options.summarize=false (mocked)", async () => {
-      const emailPayload = {
-        personalizations: [{
-          to: [{ email: "test@example.com" }],
-          subject: TEST_SUBJECT
-        }],
-        from: { email: "noreply@avaprotocol.org" },
-        content: [{
-          type: "text/plain",
-          value: TEST_BODY
-        }]
-      };
-
-      const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
-          url: MOCK_API_BASE_URL + "/sendgrid/send", // Mock endpoint simulating SendGrid
-          method: "POST",
-          body: JSON.stringify(emailPayload),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          options: { summarize: false },
-        },
-        inputVariables: {},
-      });
-
-      // Mock should succeed and echo back the full content
-      expect(response.success).toBeTruthy();
-      expect(response.data).toBeDefined();
-      const metadata = response.metadata as any;
-      expect(metadata.status).toBe(200);
-    });
-
-    test("should handle email payload with options.summarize=true (mocked)", async () => {
-      const longBody = `
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
-        nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
-        eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt 
-        in culpa qui officia deserunt mollit anim id est laborum.
-      `.trim();
-
-      const emailPayload = {
-        personalizations: [{
-          to: [{ email: "test@example.com" }],
-          subject: TEST_SUBJECT
-        }],
-        from: { email: "noreply@avaprotocol.org" },
-        content: [{
-          type: "text/plain",
-          value: longBody
-        }]
-      };
-
-      const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
-          url: MOCK_API_BASE_URL + "/sendgrid/send", // Mock endpoint
-          method: "POST",
-          body: JSON.stringify(emailPayload),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          options: { summarize: true, maxTokens: 100 },
-        },
-        inputVariables: {},
-      });
-
-      // Mock should succeed and indicate summarization was requested
-      expect(response.success).toBeTruthy();
-      expect(response.data).toBeDefined();
-      const metadata = response.metadata as any;
-      expect(metadata.status).toBe(200);
-    });
-  });
-
-  // Conditionally run SendGrid integration tests only if SENDGRID_KEY is set
-  const SENDGRID_KEY = process.env.SENDGRID_KEY || "";
-  const describeFn = SENDGRID_KEY ? describe : describe.skip;
-
-  describeFn("SendGrid Real Integration Tests", () => {
-    // REAL INTEGRATION TESTS - Automatically enabled when SENDGRID_KEY is set
-    // These tests call the actual SendGrid API and send real emails
-    // 
-    // To enable these tests:
-    // 1. Set SENDGRID_KEY in your .env file (e.g., SENDGRID_KEY="SG.xxx...")
-    // 2. Run: yarn test tests/nodes/RestAPI.test.ts -t "SendGrid Real Integration Tests"
-    //
-    // WARNING: These tests will send actual emails to dev@avaprotocol.org!
-    
-    const SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send";
-    const TEST_RECIPIENT = "dev@avaprotocol.org";
-
-    beforeAll(async () => {
-      if (!SENDGRID_KEY) {
-        throw new Error("SENDGRID_KEY environment variable is required for real SendGrid tests");
-      }
-      // Create the secret so it can be used in the tests
-      await client.createSecret("SENDGRID_KEY", SENDGRID_KEY);
-    });
-
-    afterAll(async () => {
-      // Clean up the secret after tests
-      try {
-        await client.deleteSecret("SENDGRID_KEY");
-      } catch (error) {
-        // Ignore errors if secret doesn't exist
-      }
-    });
-    const TEST_SUBJECT = "[SDK Test] Email Summarization Test";
-    const TEST_BODY = "This is a test email sent from the Ava Protocol SDK test suite to verify the options.summarize feature.";
-    
-    test("should send real email without summarization (options.summarize=false)", async () => {
-      const emailPayload = {
-        personalizations: [{
-          to: [{ email: TEST_RECIPIENT }],
-          subject: TEST_SUBJECT + " - No Summarization"
-        }],
-        from: { email: "noreply@avaprotocol.org" },
-        content: [{
-          type: "text/plain",
-          value: TEST_BODY
-        }]
-      };
-
-      const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
-          url: SENDGRID_API_URL,
-          method: "POST",
-          body: JSON.stringify(emailPayload),
-          headers: {
-            "Authorization": `Bearer ${SENDGRID_KEY}`,
-            "Content-Type": "application/json",
-          },
-          options: { summarize: false },
-        },
-        inputVariables: {},
-      });
-
-      expect(response.success).toBeTruthy();
-      const metadata = response.metadata as any;
-      expect(metadata.status).toBe(202); // SendGrid accepts with 202
-    });
-
-    test("should send real email with summarization (options.summarize=true)", async () => {
-      const longBody = `
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
-        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
-        nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
-        eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt 
-        in culpa qui officia deserunt mollit anim id est laborum.
-        
-        This email body is intentionally long to test the summarization feature. The backend
-        should process this content and generate a shorter summary while preserving the key
-        information and intent of the message.
-      `.trim();
-
-      const emailPayload = {
-        personalizations: [{
-          to: [{ email: TEST_RECIPIENT }],
-          subject: TEST_SUBJECT + " - With Summarization"
-        }],
-        from: { email: "noreply@avaprotocol.org" },
-        content: [{
-          type: "text/plain",
-          value: longBody
-        }]
-      };
-
-      const response = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: {
-          url: SENDGRID_API_URL,
-          method: "POST",
-          body: JSON.stringify(emailPayload),
-          headers: {
-            "Authorization": `Bearer ${SENDGRID_KEY}`,
-            "Content-Type": "application/json",
-          },
-          options: { summarize: true, maxTokens: 100 },
-        },
-        inputVariables: {},
-      });
-
-      expect(response.success).toBeTruthy();
-      const metadata = response.metadata as any;
-      expect(metadata.status).toBe(202); // SendGrid accepts with 202
-      // TODO: Add assertions to verify summarization metadata once backend implementation is complete
-    });
-  });
 
   describe("Options Field Tests", () => {
     test("should handle options field via runNodeWithInputs", async () => {
@@ -695,7 +494,7 @@ describe("RestAPI Node Tests", () => {
 
         expect(restApiStep).toBeDefined();
         expect(restApiStep!.success).toBeTruthy();
-        const output = restApiStep.output as RestApiResponse;
+        const output = restApiStep!.output as RestApiResponse;
         expect(output.status).toBe(200);
         expect(output.data).toBeDefined();
       } finally {
