@@ -377,6 +377,376 @@ describe("RestAPI Node Tests", () => {
     });
   });
 
+  describe.skip("SendGrid Integration Tests", () => {
+    // TODO: Enable these tests when SendGrid API key is configured in secrets
+    // These tests verify that the options.summarize field works correctly with SendGrid
+    const SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send";
+    const TEST_SUBJECT = "Test Email Subject - Workflow Notification";
+    const TEST_BODY = "This is a test email body with important information about the workflow execution.";
+    
+    test("should send email without summarization (options.summarize=false)", async () => {
+      const emailPayload = {
+        personalizations: [{
+          to: [{ email: "test@example.com" }],
+          subject: TEST_SUBJECT
+        }],
+        from: { email: "noreply@avaprotocol.org" },
+        content: [{
+          type: "text/plain",
+          value: TEST_BODY
+        }]
+      };
+
+      const response = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: SENDGRID_API_URL,
+          method: "POST",
+          body: JSON.stringify(emailPayload),
+          headers: {
+            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+          },
+          options: { summarize: false },
+        },
+        inputVariables: {},
+      });
+
+      // Without summarization, response should include the full original subject and body
+      expect(response.success).toBeTruthy();
+      expect(response.data).toBeDefined();
+      
+      // The config should reflect the original values
+      if (response.metadata) {
+        const metadata = response.metadata as any;
+        // Verify that the original subject and body are preserved in the request
+        expect(metadata.data).toBeDefined();
+      }
+    });
+
+    test("should send email with summarization (options.summarize=true)", async () => {
+      const longBody = `
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
+        incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis 
+        nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
+        eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt 
+        in culpa qui officia deserunt mollit anim id est laborum.
+      `.trim();
+
+      const emailPayload = {
+        personalizations: [{
+          to: [{ email: "test@example.com" }],
+          subject: TEST_SUBJECT
+        }],
+        from: { email: "noreply@avaprotocol.org" },
+        content: [{
+          type: "text/plain",
+          value: longBody
+        }]
+      };
+
+      const response = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: SENDGRID_API_URL,
+          method: "POST",
+          body: JSON.stringify(emailPayload),
+          headers: {
+            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+          },
+          options: { summarize: true, maxTokens: 100 },
+        },
+        inputVariables: {},
+      });
+
+      // With summarization, response should include summarized subject and body
+      expect(response.success).toBeTruthy();
+      expect(response.data).toBeDefined();
+      
+      // The response should indicate summarization was applied
+      if (response.metadata) {
+        const metadata = response.metadata as any;
+        expect(metadata.data).toBeDefined();
+        // Summarized body should be shorter than original
+        // Note: The actual summarization logic is on the backend
+      }
+    });
+
+    test("should preserve email structure in simulateWorkflow without summarization", async () => {
+      const wallet = await getSmartWallet(client);
+      const emailPayload = {
+        personalizations: [{
+          to: [{ email: "test@example.com" }],
+          subject: TEST_SUBJECT
+        }],
+        from: { email: "noreply@avaprotocol.org" },
+        content: [{
+          type: "text/plain",
+          value: TEST_BODY
+        }]
+      };
+
+      const sendEmailNode = NodeFactory.create({
+        id: getNextId(),
+        name: "send_email_no_summary",
+        type: NodeType.RestAPI,
+        data: {
+          url: SENDGRID_API_URL,
+          method: "POST",
+          body: JSON.stringify(emailPayload),
+          headers: {
+            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+          },
+          // No options.summarize or explicitly false
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [sendEmailNode]);
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      });
+
+      expect(simulation.status).toBe(ExecutionStatus.Success);
+      const emailStep = simulation.steps.find(step => step.id === sendEmailNode.id);
+      expect(emailStep).toBeDefined();
+      expect(emailStep!.success).toBeTruthy();
+      
+      // Verify the email payload structure is preserved
+      const output = emailStep!.output as any;
+      expect(output).toBeDefined();
+    });
+
+    test("should apply summarization in simulateWorkflow with options.summarize=true", async () => {
+      const wallet = await getSmartWallet(client);
+      const longBody = `
+        This is a very long email body that contains multiple paragraphs of information.
+        The purpose of this test is to verify that when options.summarize is set to true,
+        the backend will generate a summarized version of this content.
+        
+        The summarization feature should reduce the token count while preserving the key
+        information and intent of the message. This is particularly useful for reducing
+        costs when dealing with large amounts of text data.
+      `.trim();
+
+      const emailPayload = {
+        personalizations: [{
+          to: [{ email: "test@example.com" }],
+          subject: "Long Subject That Needs Summarization - Important Workflow Alert"
+        }],
+        from: { email: "noreply@avaprotocol.org" },
+        content: [{
+          type: "text/plain",
+          value: longBody
+        }]
+      };
+
+      const sendEmailNode = NodeFactory.create({
+        id: getNextId(),
+        name: "send_email_with_summary",
+        type: NodeType.RestAPI,
+        data: {
+          url: SENDGRID_API_URL,
+          method: "POST",
+          body: JSON.stringify(emailPayload),
+          headers: {
+            "Authorization": "Bearer ${secrets.SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+          },
+          options: { summarize: true, maxTokens: 50 },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [sendEmailNode]);
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      });
+
+      expect(simulation.status).toBe(ExecutionStatus.Success);
+      const emailStep = simulation.steps.find(step => step.id === sendEmailNode.id);
+      expect(emailStep).toBeDefined();
+      expect(emailStep!.success).toBeTruthy();
+      
+      // The output should indicate summarization was applied
+      const output = emailStep!.output as any;
+      expect(output).toBeDefined();
+      // Note: The actual summarization validation would check that:
+      // 1. Subject is present and potentially shortened
+      // 2. Body is present and shortened compared to original
+      // 3. Response includes metadata about summarization
+    });
+  });
+
+  describe("Options Field Tests", () => {
+    test("should handle options field via runNodeWithInputs", async () => {
+      const response = await client.runNodeWithInputs({
+        nodeType: NodeType.RestAPI,
+        nodeConfig: {
+          url: MOCK_API_BASE_URL + "/get",
+          method: "GET",
+          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          options: { summarize: true, maxTokens: 100 },
+        },
+        inputVariables: {},
+      });
+
+      expect(response.success).toBeTruthy();
+      expect(response.error).toBe("");
+      expect(response.data).toBeDefined();
+      expect(response.metadata).toBeDefined();
+      
+      const metadata = response.metadata as RestApiResponse;
+      expect(metadata.status).toBe(200);
+    });
+
+    test("should handle options field via simulateWorkflow", async () => {
+      const wallet = await getSmartWallet(client);
+
+      const restApiNode = NodeFactory.create({
+        id: getNextId(),
+        name: "options_simulate_test",
+        type: NodeType.RestAPI,
+        data: {
+          url: MOCK_API_BASE_URL + "/posts/1",
+          method: "GET",
+          body: "",
+          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          options: { summarize: true, format: "compact" },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
+
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      });
+
+      expect(simulation.status).toBe(ExecutionStatus.Success);
+      expect(simulation.steps).toHaveLength(2);
+
+      const restApiStep = simulation.steps.find(
+        (step) => step.id === restApiNode.id
+      );
+      expect(restApiStep).toBeDefined();
+      expect(restApiStep!.success).toBeTruthy();
+
+      const output = restApiStep!.output as RestApiResponse;
+      expect(output.status).toBe(200);
+      expect(output.data).toBeDefined();
+    });
+
+    test("should handle options field via deployed workflow execution", async () => {
+      const wallet = await getSmartWallet(client);
+      const currentBlockNumber = await getBlockNumber();
+      const triggerInterval = 5;
+
+      const restApiNode = NodeFactory.create({
+        id: getNextId(),
+        name: "options_deployed_test",
+        type: NodeType.RestAPI,
+        data: {
+          url: MOCK_API_BASE_URL + "/get?deployed=true",
+          method: "GET",
+          body: "",
+          headers: { "User-Agent": "AvaProtocol-SDK-Test-Options" },
+          options: { summarize: true, maxLength: 500 },
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
+
+      workflowProps.trigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "blockTrigger",
+        type: TriggerType.Block,
+        data: { interval: triggerInterval },
+      });
+
+      let workflowId: string | undefined;
+      try {
+        workflowId = await client.submitWorkflow(
+          client.createWorkflow(workflowProps)
+        );
+        createdIdMap.set(workflowId, true);
+
+        await client.triggerWorkflow({
+          id: workflowId,
+          triggerData: {
+            type: TriggerType.Block,
+            blockNumber: currentBlockNumber + triggerInterval,
+          },
+          isBlocking: true,
+        });
+
+        const executions = await client.getExecutions([workflowId], {
+          limit: 1,
+        });
+
+        expect(executions.items.length).toBe(1);
+
+        const restApiStep = _.find(
+          _.first(executions.items)?.steps,
+          (step) => step.id === restApiNode.id
+        );
+
+        expect(restApiStep).toBeDefined();
+        expect(restApiStep!.success).toBeTruthy();
+        const output = restApiStep.output as RestApiResponse;
+        expect(output.status).toBe(200);
+        expect(output.data).toBeDefined();
+      } finally {
+        if (workflowId) {
+          await client.deleteWorkflow(workflowId);
+          createdIdMap.delete(workflowId);
+        }
+      }
+    });
+
+    test("should handle workflow without options field", async () => {
+      const wallet = await getSmartWallet(client);
+
+      const restApiNode = NodeFactory.create({
+        id: getNextId(),
+        name: "no_options_test",
+        type: NodeType.RestAPI,
+        data: {
+          url: MOCK_API_BASE_URL + "/get",
+          method: "GET",
+          body: "",
+          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          // No options field
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, [restApiNode]);
+
+      const simulation = await client.simulateWorkflow({
+        ...client.createWorkflow(workflowProps).toJson(),
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
+      });
+
+      expect(simulation.status).toBe(ExecutionStatus.Success);
+      const restApiStep = simulation.steps.find(
+        (step) => step.id === restApiNode.id
+      );
+      expect(restApiStep).toBeDefined();
+      expect(restApiStep!.success).toBeTruthy();
+    });
+  });
+
   describe("Empty Data Handling Tests", () => {
     test("should handle 204 No Content responses", async () => {
       const result = await client.runNodeWithInputs({

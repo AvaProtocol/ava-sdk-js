@@ -37,6 +37,7 @@ export interface RestAPINodeData {
   headers: Record<string, string>;
   body: string;
   method: string;
+  options?: Record<string, unknown>; // Generic options bag for backend features (e.g., { "summarize": true })
 }
 
 export type GraphQLQueryNodeData = {

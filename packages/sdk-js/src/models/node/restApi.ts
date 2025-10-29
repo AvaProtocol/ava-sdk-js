@@ -6,7 +6,7 @@ import {
   RestAPINodeProps,
   NodeProps,
 } from "@avaprotocol/types";
-import { convertProtobufValueToJs } from "../../utils";
+import { convertProtobufValueToJs, convertJSValueToProtobuf } from "../../utils";
 
 // Required props for constructor: id, name, type and data: { url, method, headersMap, body }
 
@@ -25,6 +25,7 @@ class RestAPINode extends Node {
     method: string;
     body?: string;
     headers?: Record<string, string>;
+    options?: Record<string, unknown>;
   }): avs_pb.RestAPINode {
     const node = new avs_pb.RestAPINode();
     const config = new avs_pb.RestAPINode.Config();
@@ -40,6 +41,10 @@ class RestAPINode extends Node {
       });
     }
 
+    if (configData.options) {
+      config.setOptions(convertJSValueToProtobuf(configData.options));
+    }
+
     node.setConfig(config);
     return node;
   }
@@ -48,20 +53,29 @@ class RestAPINode extends Node {
     // Convert the raw object to RestAPINodeProps, which should keep name and id
     const obj = raw.toObject() as unknown as NodeProps;
 
+    const config = raw.getRestApi()!.getConfig()!;
+
     return new RestAPINode({
       ...obj,
       type: NodeType.RestAPI,
       data: {
-        url: raw.getRestApi()!.getConfig()!.getUrl(),
-        method: raw.getRestApi()!.getConfig()!.getMethod(),
-        body: raw.getRestApi()!.getConfig()!.getBody(),
+        url: config.getUrl(),
+        method: config.getMethod(),
+        body: config.getBody(),
         headers: (() => {
-          const headersMap = raw.getRestApi()!.getConfig()!.getHeadersMap();
+          const headersMap = config.getHeadersMap();
           const headers: Record<string, string> = {};
           headersMap.forEach((value: string, key: string) => {
             headers[key] = value;
           });
           return headers;
+        })(),
+        options: (() => {
+          const optionsProto = config.getOptions();
+          if (optionsProto) {
+            return convertProtobufValueToJs(optionsProto) as Record<string, unknown>;
+          }
+          return undefined;
         })(),
       } as RestAPINodeData,
     });
