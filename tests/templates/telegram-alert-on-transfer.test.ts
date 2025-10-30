@@ -257,8 +257,7 @@ return message;`,
       const eventTrigger = createEventTrigger();
 
       const result = await client.runTrigger({
-        triggerType: TriggerType.Event,
-        triggerConfig: eventTrigger.data as Record<string, unknown>,
+        trigger: eventTrigger,
       });
 
       console.log(

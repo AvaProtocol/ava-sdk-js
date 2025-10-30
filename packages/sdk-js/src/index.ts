@@ -1357,36 +1357,26 @@ class Client extends BaseClient {
   /**
    * Run a trigger for testing purposes
    * @param {RunTriggerRequest} params - The parameters for running the trigger
-   * @param {string} params.triggerType - The type of the trigger (blockTrigger, cronTrigger, etc.)
-   * @param {Record<string, any>} params.triggerConfig - The configuration for the trigger
-   * @param {Record<string, any>} params.inputVariables - Optional input variables for template resolution
+   * @param {TriggerProps} params.trigger - Complete trigger definition (id, name, type, data)
+   * @param {Record<string, any>} params.triggerInput - Optional input variables for template resolution
    * @param {RequestOptions} options - Request options
    * @returns {Promise<RunTriggerResponse>} - The response from running the trigger
    */
   async runTrigger(
-    { triggerType, triggerConfig, inputVariables }: RunTriggerRequest,
+    { trigger, triggerInput = {} }: RunTriggerRequest,
     options?: RequestOptions
   ): Promise<RunTriggerResponse> {
-    // Create the request
+    // Create the request - following the same pattern as simulateWorkflow
     const request = new avs_pb.RunTriggerReq();
+    
+    // Use the same factory pattern as simulateWorkflow: create SDK trigger, then call toRequest()
+    const triggerSdk = TriggerFactory.create(trigger as any);
+    request.setTrigger(triggerSdk.toRequest());
 
-    // Convert string triggerType to protobuf enum
-    const protobufTriggerType =
-      TriggerTypeGoConverter.fromGoString(triggerType);
-    request.setTriggerType(protobufTriggerType);
-
-    // Set trigger configuration
-    const triggerConfigMap = request.getTriggerConfigMap();
-    for (const [key, value] of Object.entries(triggerConfig)) {
-      triggerConfigMap.set(key, convertJSValueToProtobuf(value));
-    }
-
-    // Set input variables (maps to trigger_input in protobuf)
-    if (inputVariables) {
-      const triggerInputMap = request.getTriggerInputMap();
-      for (const [key, value] of Object.entries(inputVariables)) {
-        triggerInputMap.set(key, convertJSValueToProtobuf(value));
-      }
+    // Set trigger input variables
+    const triggerInputMap = request.getTriggerInputMap();
+    for (const [key, value] of Object.entries(triggerInput)) {
+      triggerInputMap.set(key, convertJSValueToProtobuf(value));
     }
 
     // Send the request directly to the server
@@ -1395,24 +1385,14 @@ class Client extends BaseClient {
       avs_pb.RunTriggerReq
     >("runTrigger", request, options);
 
-    // Convert metadata from protobuf Value to JavaScript object
-    let metadata: any = undefined;
-    const metadataValue = result.getMetadata();
-    if (metadataValue) {
-      try {
-        metadata = convertProtobufValueToJs(metadataValue);
-      } catch (error) {
-        console.warn("Failed to convert metadata from protobuf Value:", error);
-        metadata = metadataValue; // fallback to raw value
-      }
-    }
-
     return {
       success: result.getSuccess(),
       data: toCamelCaseKeys(TriggerFactory.fromOutputData(result)),
       error: result.getError(),
       errorCode: result.getErrorCode() || undefined,
-      metadata: toCamelCaseKeys(metadata),
+      metadata: result.hasMetadata()
+        ? toCamelCaseKeys(convertProtobufValueToJs(result.getMetadata()!))
+        : undefined,
       executionContext: result.hasExecutionContext()
         ? toCamelCaseKeys(
             convertProtobufValueToJs(result.getExecutionContext()!)

@@ -244,9 +244,8 @@ export interface RunNodeWithInputsResponse {
 }
 
 export interface RunTriggerRequest {
-  triggerType: string;
-  triggerConfig: Record<string, any>;
-  inputVariables?: Record<string, any>;
+  trigger: TriggerProps;
+  triggerInput?: Record<string, any>;
 }
 
 export interface RunTriggerResponse {
