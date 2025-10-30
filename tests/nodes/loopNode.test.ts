@@ -10,6 +10,7 @@ import {
   WorkflowProps,
   ExecutionStatus,
   Lang,
+  LoopRunnerType,
 } from "@avaprotocol/types";
 import type { Edge } from "@avaprotocol/sdk-js";
 
@@ -66,7 +67,7 @@ describe("LoopNode Tests", () => {
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
     runner: {
-      type: "customCode" as const,
+      type: LoopRunnerType.CustomCode,
       config: {
         lang: Lang.JavaScript,
         source: `
@@ -88,7 +89,7 @@ describe("LoopNode Tests", () => {
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
     runner: {
-      type: "restApi" as const,
+      type: LoopRunnerType.RestAPI,
       config: {
         url: "{{value}}",
         method: "GET",
@@ -104,7 +105,7 @@ describe("LoopNode Tests", () => {
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
     runner: {
-      type: "customCode" as const,
+      type: LoopRunnerType.CustomCode,
       config: {
         lang: Lang.JavaScript,
         source: "return { processed: value, index: index };",
@@ -118,7 +119,7 @@ describe("LoopNode Tests", () => {
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
     runner: {
-      type: "customCode" as const,
+      type: LoopRunnerType.CustomCode,
       config: {
         lang: Lang.JavaScript,
         source: "return { value: value, index: index, processed: true };",
@@ -132,7 +133,7 @@ describe("LoopNode Tests", () => {
     iterKey: "index",
     executionMode: ExecutionMode.Parallel,
     runner: {
-      type: "customCode" as const,
+      type: LoopRunnerType.CustomCode,
       config: {
         lang: Lang.JavaScript,
         source: `
@@ -153,7 +154,7 @@ describe("LoopNode Tests", () => {
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
     runner: {
-      type: "customCode" as const,
+      type: LoopRunnerType.CustomCode,
       config: {
         lang: Lang.JavaScript,
         source: `
@@ -360,7 +361,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractRead",
+            type: LoopRunnerType.ContractRead,
             config: {
               contractAddress: "{{value}}",
               contractAbi: [
@@ -424,7 +425,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractWrite",
+            type: LoopRunnerType.ContractWrite,
             config: {
               contractAddress: USDC_SEPOLIA_ADDRESS,
               contractAbi: [
@@ -521,7 +522,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `
@@ -630,7 +631,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "restApi",
+            type: LoopRunnerType.RestAPI,
             config: {
               url: "{{value}}",
               method: "GET",
@@ -729,7 +730,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractRead",
+            type: LoopRunnerType.ContractRead,
             config: {
               contractAddress: "{{value}}",
               contractAbi: [
@@ -848,7 +849,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractWrite",
+            type: LoopRunnerType.ContractWrite,
             config: {
               contractAddress: "{{value.contractAddress}}",
               contractAbi: [
@@ -977,7 +978,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `
@@ -1085,7 +1086,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `return { number: value, squared: value * value, index: index };`,
@@ -1174,7 +1175,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractRead",
+            type: LoopRunnerType.ContractRead,
             config: {
               contractAddress: "{{value}}",
               contractAbi: [
@@ -1292,7 +1293,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractWrite",
+            type: LoopRunnerType.ContractWrite,
             config: {
               contractAddress: "{{value.contractAddress}}",
               contractAbi: [
@@ -1384,7 +1385,7 @@ describe("LoopNode Tests", () => {
         iterVal: "value",
         iterKey: "index",
         runner: {
-          type: "customCode",
+          type: LoopRunnerType.CustomCode,
           config: {
             lang: Lang.JavaScript,
             source: `return value;`,
@@ -1405,9 +1406,12 @@ describe("LoopNode Tests", () => {
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.Loop,
-        nodeConfig: loopConfig},
-
+        node: {
+          id: getNextId(),
+          name: "consistency_test",
+          type: NodeType.Loop,
+          data: loopConfig,
+        },
         inputVariables: inputVariables,
       });
 
@@ -1421,7 +1425,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `return value;`,
@@ -1578,9 +1582,12 @@ describe("LoopNode Tests", () => {
 
         // Test runNodeWithInputs
         const directResponse = await client.runNodeWithInputs({
-          nodeType: "loop",
-          nodeConfig: loopNode.data},
-
+          node: {
+            id: loopNode.id,
+            name: loopNode.name,
+            type: loopNode.type,
+            data: loopNode.data,
+          },
           inputVariables: {
             [manualTrigger.name]: [
               { key: "key", amount: 1 },
@@ -1675,7 +1682,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `throw new Error("Intentional test error");`,
@@ -1712,7 +1719,7 @@ describe("LoopNode Tests", () => {
           iterVal: "value",
           iterKey: "index",
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `return { processed: item };`,
@@ -1734,13 +1741,10 @@ describe("LoopNode Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-      const responseData = result.data as RunNodeResponseData;
-      expect(responseData.data).toBeDefined();
-      expect(Array.isArray(responseData.data)).toBe(true);
-      // Should be empty or handle gracefully
-      expect(responseData.data.length).toBe(0);
+      // Backend correctly returns error when input variable is missing
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain("not found");
     });
   });
 
@@ -1754,9 +1758,12 @@ describe("LoopNode Tests", () => {
 
     // Test 1: runNodeWithInputs
     const directResponse = await client.runNodeWithInputs({
-      nodeType: NodeType.Loop,
-      nodeConfig: singleItemLoopProps},
-
+      node: {
+        id: getNextId(),
+        name: "edge_case_single_item",
+        type: NodeType.Loop,
+        data: singleItemLoopProps,
+      },
       inputVariables: inputVariables,
     });
 
@@ -1805,13 +1812,13 @@ describe("LoopNode Tests", () => {
     expect(directResponse.success).toBeTruthy();
     expect(simulatedStep!.success).toBeTruthy();
 
-    const directOutput = directResponse.data as RunNodeResponseData;
-    expect(directOutput.data).toBeDefined();
-    expect(Array.isArray(directOutput.data)).toBe(true);
-    expect(directOutput.data.length).toBe(1);
-    expect(directOutput.data[0].value).toBe(42);
-    expect(directOutput.data[0].index).toBe(0);
-    expect(directOutput.data[0].processed).toBe(true);
+    // runNodeWithInputs returns data directly as array, not wrapped in RunNodeResponseData
+    expect(directResponse.data).toBeDefined();
+    expect(Array.isArray(directResponse.data)).toBe(true);
+    expect(directResponse.data.length).toBe(1);
+    expect(directResponse.data[0].value).toBe(42);
+    expect(directResponse.data[0].index).toBe(0);
+    expect(directResponse.data[0].processed).toBe(true);
 
     const simulatedOutput = simulatedStep!.output as ProcessedLoopItem[];
     expect(Array.isArray(simulatedOutput)).toBe(true);
@@ -1834,7 +1841,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `
@@ -1880,9 +1887,12 @@ describe("LoopNode Tests", () => {
 
     test("should support parallel execution mode with timing verification", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: parallelExecutionProps},
-
+        node: {
+          id: getNextId(),
+          name: "parallel_execution_test",
+          type: NodeType.Loop,
+          data: parallelExecutionProps,
+        },
         inputVariables: {
           parallelArray: [1, 2, 3, 4],
         },
@@ -1924,7 +1934,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           // executionMode not specified - should default to sequential
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `
@@ -1976,10 +1986,10 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Parallel, // Requested parallel but should be forced to sequential
           runner: {
-            type: "contractWrite",
+            type: LoopRunnerType.ContractWrite,
             config: {
               contractAddress: "{{value}}",
-              contractAbi: JSON.stringify([
+              contractAbi: [
                 {
                   constant: false,
                   inputs: [
@@ -1992,12 +2002,11 @@ describe("LoopNode Tests", () => {
                   stateMutability: "nonpayable",
                   type: "function",
                 },
-              ]),
+              ],
               methodCalls: [
                 {
                   methodName: "approve",
-                  callData:
-                    "0x095ea7b3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001",
+                  methodParams: ["0x0000000000000000000000000000000000000000", "1"],
                 },
               ],
             },
@@ -2038,7 +2047,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Parallel, // Contract reads can run in parallel
           runner: {
-            type: "contractRead",
+            type: LoopRunnerType.ContractRead,
             config: {
               contractAddress: "{{value}}",
               contractAbi: [
@@ -2145,7 +2154,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "contractRead",
+            type: LoopRunnerType.ContractRead,
             config: {
               contractAddress: "{{value}}",
               contractAbi: [
@@ -2314,7 +2323,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `
@@ -2406,7 +2415,7 @@ describe("LoopNode Tests", () => {
           iterKey: "index",
           executionMode: ExecutionMode.Parallel,
           runner: {
-            type: "customCode",
+            type: LoopRunnerType.CustomCode,
             config: {
               lang: Lang.JavaScript,
               source: `

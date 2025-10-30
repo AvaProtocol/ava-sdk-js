@@ -1,5 +1,5 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { NodeType, ExecutionMode, Lang } from "./enums";
+import { NodeType, ExecutionMode, Lang, LoopRunnerType } from "./enums";
 import { ContractAbi } from "./abi";
 import { MethodCallType } from "./shared";
 
@@ -61,19 +61,19 @@ export interface BalanceNodeData {
 
 type LoopRunnerConfig =
   | {
-      type: "restApi";
+      type: LoopRunnerType.RestAPI;
       config: avs_pb.RestAPINode.Config.AsObject;
     }
   | {
-      type: "customCode";
+      type: LoopRunnerType.CustomCode;
       config: { lang: Lang; source: string };
     }
   | {
-      type: "ethTransfer";
+      type: LoopRunnerType.EthTransfer;
       config: avs_pb.ETHTransferNode.Config.AsObject;
     }
   | {
-      type: "contractRead";
+      type: LoopRunnerType.ContractRead;
       config: {
         contractAddress: string;
         contractAbi: ContractAbi;
@@ -81,7 +81,7 @@ type LoopRunnerConfig =
       };
     }
   | {
-      type: "contractWrite";
+      type: LoopRunnerType.ContractWrite;
       config: {
         contractAddress: string;
         contractAbi: ContractAbi;
@@ -90,11 +90,11 @@ type LoopRunnerConfig =
       };
     }
   | {
-      type: "graphqlQuery";
+      type: LoopRunnerType.GraphQLQuery;
       config: avs_pb.GraphQLQueryNode.Config.AsObject;
     }
   | {
-      type: "filter";
+      type: LoopRunnerType.Filter;
       config: avs_pb.FilterNode.Config.AsObject;
     };
 
