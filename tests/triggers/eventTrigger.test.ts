@@ -1216,14 +1216,14 @@ describeIfSepolia("EventTrigger Tests", () => {
         expect(typeof metadata.blockNumber).toBe("number");
         expect(typeof metadata.transactionHash).toBe("string");
         expect(typeof metadata.data).toBe("string");
-        expect(metadata.chainId).toBe(parseInt(config.chainId));
+        expect(metadata.chainId).toBe(parseInt(chainId));
 
         // Ensure NO executionContext in metadata
         expect(metadata.executionContext).toBeUndefined();
 
         // Validate executionContext structure
         expect(response.executionContext).toBeDefined();
-        expect(response.executionContext.chainId).toBe(parseInt(config.chainId));
+        expect(response.executionContext.chainId).toBe(parseInt(chainId));
         expect(response.executionContext.isSimulated).toBe(true);
         expect(response.executionContext.provider).toBe("tenderly");
         expect(Object.keys(response.executionContext)).toHaveLength(3);
@@ -1279,7 +1279,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(typeof simulateEventData.updatedAt).toBe("string");
 
       expect(normalizedSimulateResponse.executionContext.chainId).toBe(
-        parseInt(config.chainId)
+        parseInt(chainId)
       );
       expect(normalizedSimulateResponse.executionContext.isSimulated).toBe(
         true

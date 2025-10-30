@@ -515,9 +515,12 @@ describeIfSepolia("BalanceNode Tests", () => {
 
         // Test 1: runNodeWithInputs
         const directParams = {
-          nodeType: NodeType.Balance,
-          nodeConfig: balanceConfig},
-
+          node: {
+            id: getNextId(),
+            name: "consistency_test",
+            type: NodeType.Balance,
+            data: balanceConfig,
+          },
           inputVariables: inputVariables,
         };
 

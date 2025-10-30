@@ -295,8 +295,12 @@ describe("RestAPI Node Tests", () => {
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.RestAPI,
-        nodeConfig: restApiConfig,
+        node: {
+          id: getNextId(),
+          name: "rest_api_consistency_test",
+          type: NodeType.RestAPI,
+          data: restApiConfig,
+        },
         inputVariables: {},
       });
 

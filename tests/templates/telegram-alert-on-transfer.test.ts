@@ -17,6 +17,7 @@ import {
   getSmartWallet,
   getClient,
   padAddressForTopic,
+  getNextId,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens, chainId } = getConfig();
