@@ -11,6 +11,7 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  getNextId,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 
@@ -79,25 +80,41 @@ describe("BlockTrigger Tests", () => {
     data: null as any,
   };
 
-  const runTriggerSmallProps = {
-    triggerType: "blockTrigger" as const,
-    triggerConfig: { interval: 5 },
-  };
+  const runTriggerSmallProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 5 },
+    },
+  });
 
-  const runTriggerMediumProps = {
-    triggerType: "blockTrigger" as const,
-    triggerConfig: { interval: 25 },
-  };
+  const runTriggerMediumProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 25 },
+    },
+  });
 
-  const runTriggerLargeProps = {
-    triggerType: "blockTrigger" as const,
-    triggerConfig: { interval: 100 },
-  };
+  const runTriggerLargeProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 100 },
+    },
+  });
 
-  const runTriggerSingleProps = {
-    triggerType: "blockTrigger" as const,
-    triggerConfig: { interval: 1 },
-  };
+  const runTriggerSingleProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 1 },
+    },
+  });
 
   beforeAll(async () => {
     client = getClient();
@@ -180,12 +197,13 @@ describe("BlockTrigger Tests", () => {
 
   describe("runTrigger Tests", () => {
     test("should run trigger with small interval", async () => {
+      const props = runTriggerSmallProps();
       console.log(
         "🚀 runTrigger small interval input:",
-        util.inspect(runTriggerSmallProps, { depth: null, colors: true })
+        util.inspect(props, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerSmallProps);
+      const result = await client.runTrigger(props);
 
       console.log(
         "🚀 runTrigger small interval result:",
@@ -199,12 +217,13 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should run trigger with medium interval", async () => {
+      const props = runTriggerMediumProps();
       console.log(
         "🚀 runTrigger medium interval input:",
-        util.inspect(runTriggerMediumProps, { depth: null, colors: true })
+        util.inspect(props, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerMediumProps);
+      const result = await client.runTrigger(props);
 
       console.log(
         "🚀 runTrigger medium interval result:",
@@ -218,12 +237,13 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should run trigger with large interval", async () => {
+      const props = runTriggerLargeProps();
       console.log(
         "🚀 runTrigger large interval input:",
-        util.inspect(runTriggerLargeProps, { depth: null, colors: true })
+        util.inspect(props, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerLargeProps);
+      const result = await client.runTrigger(props);
 
       console.log(
         "🚀 runTrigger large interval result:",
@@ -237,12 +257,13 @@ describe("BlockTrigger Tests", () => {
     });
 
     test("should run trigger with single block interval", async () => {
+      const props = runTriggerSingleProps();
       console.log(
         "🚀 runTrigger single block input:",
-        util.inspect(runTriggerSingleProps, { depth: null, colors: true })
+        util.inspect(props, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerSingleProps);
+      const result = await client.runTrigger(props);
 
       console.log(
         "🚀 runTrigger single block result:",
@@ -403,8 +424,12 @@ describe("BlockTrigger Tests", () => {
 
       // Test 1: runTrigger
       const directResponse = await client.runTrigger({
-        triggerType: "blockTrigger",
-        triggerConfig: blockTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "blockTrigger",
+          type: TriggerType.Block,
+          data: blockTriggerConfig,
+        },
       });
 
       // Test 2: simulateWorkflow
@@ -625,8 +650,12 @@ describe("BlockTrigger Tests", () => {
       const blockTriggerConfig = { interval: 15 };
 
       const directResponse = await client.runTrigger({
-        triggerType: TriggerType.Block,
-        triggerConfig: blockTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "blockTrigger",
+          type: TriggerType.Block,
+          data: blockTriggerConfig,
+        },
       });
 
       expect(directResponse.success).toBeTruthy();
@@ -676,8 +705,12 @@ describe("BlockTrigger Tests", () => {
       const blockTriggerConfig = { interval: 1 };
 
       const response = await client.runTrigger({
-        triggerType: TriggerType.Block,
-        triggerConfig: blockTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "blockTrigger",
+          type: TriggerType.Block,
+          data: blockTriggerConfig,
+        },
       });
 
       console.log(
@@ -694,8 +727,12 @@ describe("BlockTrigger Tests", () => {
       const blockTriggerConfig = { interval: 999999 };
 
       const response = await client.runTrigger({
-        triggerType: TriggerType.Block,
-        triggerConfig: blockTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "blockTrigger",
+          type: TriggerType.Block,
+          data: blockTriggerConfig,
+        },
       });
 
       console.log(

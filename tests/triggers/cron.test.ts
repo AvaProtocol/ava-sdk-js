@@ -14,6 +14,7 @@ import {
   getSmartWallet,
   authenticateClient,
   getClient,
+  getNextId,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 
@@ -81,55 +82,95 @@ describe("CronTrigger Tests", () => {
     data: null as any,
   };
 
-  const runTriggerDailyProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "0 0 * * *" }, // Daily at midnight
-  };
+  const runTriggerDailyProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["0 0 * * *"] }, // Daily at midnight
+    },
+  });
 
-  const runTriggerHourlyProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "0 * * * *" }, // Every hour
-  };
+  const runTriggerHourlyProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["0 * * * *"] }, // Every hour
+    },
+  });
 
-  const runTrigger15MinProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "*/15 * * * *" }, // Every 15 minutes
-  };
+  const runTrigger15MinProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["*/15 * * * *"] }, // Every 15 minutes
+    },
+  });
 
-  const runTriggerComplexProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "0 9 * * 1-5" }, // Weekdays at 9 AM
-  };
+  const runTriggerComplexProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["0 9 * * 1-5"] }, // Weekdays at 9 AM
+    },
+  });
 
-  const runTriggerMinuteProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "*/5 * * * *" }, // Every 5 minutes
-  };
+  const runTriggerMinuteProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["*/5 * * * *"] }, // Every 5 minutes
+    },
+  });
 
-  const runTriggerWeeklyProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "0 0 * * MON" }, // Every Monday at midnight
-  };
+  const runTriggerWeeklyProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["0 0 * * MON"] }, // Every Monday at midnight
+    },
+  });
 
-  const runTriggerStandardProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "0 0 * * *" }, // Daily at midnight
-  };
+  const runTriggerStandardProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["0 0 * * *"] }, // Daily at midnight
+    },
+  });
 
-  const runTriggerInvalidProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "invalid-cron-expression" },
-  };
+  const runTriggerInvalidProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["invalid-cron-expression"] },
+    },
+  });
 
-  const runTriggerComplexTimeProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "0 0,12 1 */2 *" }, // Twice daily on 1st of every other month
-  };
+  const runTriggerComplexTimeProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["0 0,12 1 */2 *"] }, // Twice daily on 1st of every other month
+    },
+  });
 
-  const runTriggerStepValuesProps = {
-    triggerType: "cronTrigger" as const,
-    triggerConfig: { expression: "*/10 */2 * * *" }, // Every 10 minutes, every 2 hours
-  };
+  const runTriggerStepValuesProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "cronTrigger",
+      type: TriggerType.Cron,
+      data: { schedules: ["*/10 */2 * * *"] }, // Every 10 minutes, every 2 hours
+    },
+  });
 
   beforeAll(async () => {
     client = getClient();
@@ -218,7 +259,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerDailyProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerDailyProps);
+      const result = await client.runTrigger(runTriggerDailyProps());
 
       console.log(
         "🚀 runTrigger daily schedule result:",
@@ -235,7 +276,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerHourlyProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerHourlyProps);
+      const result = await client.runTrigger(runTriggerHourlyProps());
 
       console.log(
         "🚀 runTrigger hourly schedule result:",
@@ -252,7 +293,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTrigger15MinProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTrigger15MinProps);
+      const result = await client.runTrigger(runTrigger15MinProps());
 
       console.log(
         "🚀 runTrigger 15 minutes schedule result:",
@@ -269,7 +310,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerComplexProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerComplexProps);
+      const result = await client.runTrigger(runTriggerComplexProps());
 
       console.log(
         "🚀 runTrigger complex schedule result:",
@@ -286,7 +327,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerMinuteProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerMinuteProps);
+      const result = await client.runTrigger(runTriggerMinuteProps());
 
       console.log(
         "🚀 runTrigger minute-based schedule result:",
@@ -303,7 +344,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerWeeklyProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerWeeklyProps);
+      const result = await client.runTrigger(runTriggerWeeklyProps());
 
       console.log(
         "🚀 runTrigger weekly schedule result:",
@@ -320,7 +361,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerStandardProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerStandardProps);
+      const result = await client.runTrigger(runTriggerStandardProps());
 
       console.log(
         "🚀 runTrigger standard cron result:",
@@ -336,7 +377,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerInvalidProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerInvalidProps);
+      const result = await client.runTrigger(runTriggerInvalidProps());
 
       console.log(
         "🚀 runTrigger invalid cron result:",
@@ -355,7 +396,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerComplexTimeProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerComplexTimeProps);
+      const result = await client.runTrigger(runTriggerComplexTimeProps());
 
       console.log(
         "🚀 runTrigger complex time specifications result:",
@@ -372,7 +413,7 @@ describe("CronTrigger Tests", () => {
         util.inspect(runTriggerStepValuesProps, { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerStepValuesProps);
+      const result = await client.runTrigger(runTriggerStepValuesProps());
 
       console.log(
         "🚀 runTrigger step values result:",
@@ -676,8 +717,14 @@ describe("CronTrigger Tests", () => {
 
       // Test 1: runTrigger
       const directResponse = await client.runTrigger({
-        triggerType: "cronTrigger",
-        triggerConfig: cronTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "cronTrigger",
+          type: TriggerType.Cron,
+          data: {
+            schedules: [cronTriggerConfig.expression], // Convert expression to schedules array
+          },
+        },
       });
 
       // Test 2: simulateWorkflow
