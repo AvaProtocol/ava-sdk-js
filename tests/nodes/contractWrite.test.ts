@@ -1548,14 +1548,17 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         // Trigger the workflow manually
         console.log("🚀 Triggering workflow manually...");
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Manual,
-            note: "Manual trigger for debug test",
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Manual,
+              note: "Manual trigger for debug test",
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         console.log("✅ Workflow triggered successfully");
 

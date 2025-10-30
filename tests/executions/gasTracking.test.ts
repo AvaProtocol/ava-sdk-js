@@ -773,7 +773,7 @@ describeIfSepolia("Gas Tracking Tests", () => {
               },
               isBlocking: true,
             },
-            TimeoutPresets.SLOW
+            { timeout: TimeoutPresets.SLOW }
           ); // Use 2min timeout for multi-step blockchain operations
           console.log(
             `✅ [Multi-step Gas Test] Trigger completed with status: ${triggerResult.status}`
