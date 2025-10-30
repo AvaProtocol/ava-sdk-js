@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.10.3
+
+### Patch Changes
+
+- e1fb04e: chore: define LoopRunnerType type in the types package
+- Updated dependencies [e1fb04e]
+  - @avaprotocol/types@2.8.3
+
 ## 2.10.2
 
 ### Patch Changes

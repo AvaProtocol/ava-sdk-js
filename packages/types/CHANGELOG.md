@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.8.3
+
+### Patch Changes
+
+- e1fb04e: chore: define LoopRunnerType type in the types package
+
 ## 2.8.2
 
 ### Patch Changes
