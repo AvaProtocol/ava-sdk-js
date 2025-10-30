@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.10.2
+
+### Patch Changes
+
+- 9167174: fix: updated runNodeImmediate and runTrigger request inputs to be consistent with simulateWorkflow"
+- Updated dependencies [9167174]
+  - @avaprotocol/types@2.8.2
+
 ## 2.10.1
 
 ### Patch Changes
