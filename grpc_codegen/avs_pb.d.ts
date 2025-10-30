@@ -3476,11 +3476,11 @@ export namespace RunNodeWithInputsResp {
 }
 
 export class RunTriggerReq extends jspb.Message { 
-    getTriggerType(): TriggerType;
-    setTriggerType(value: TriggerType): RunTriggerReq;
 
-    getTriggerConfigMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
-    clearTriggerConfigMap(): void;
+    hasTrigger(): boolean;
+    clearTrigger(): void;
+    getTrigger(): TaskTrigger | undefined;
+    setTrigger(value?: TaskTrigger): RunTriggerReq;
 
     getTriggerInputMap(): jspb.Map<string, google_protobuf_struct_pb.Value>;
     clearTriggerInputMap(): void;
@@ -3497,9 +3497,7 @@ export class RunTriggerReq extends jspb.Message {
 
 export namespace RunTriggerReq {
     export type AsObject = {
-        triggerType: TriggerType,
-
-        triggerConfigMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
+        trigger?: TaskTrigger.AsObject,
 
         triggerInputMap: Array<[string, google_protobuf_struct_pb.Value.AsObject]>,
     }

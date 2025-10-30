@@ -123,6 +123,12 @@ describe("Execution Management Tests", () => {
             isBlocking: false, // Non-blocking - immediate executionId return
           });
           triggerPromises.push(triggerPromise);
+          
+          // Add small delay between triggers to avoid transaction conflicts
+          // when atomically incrementing execution index counter
+          if (i < 1) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          }
         }
 
         // Get immediate executionIds (this is what we're testing)

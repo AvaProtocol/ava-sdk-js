@@ -42,12 +42,16 @@ describe("Exported Workflow Consistency Tests", () => {
       const testData = [{ key: "value1" }, { key: "value2" }];
 
       const result = await client.runTrigger({
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: testData,
-          headers: { headerKey: "headerValue" },
-          pathParams: { pathKey: "pathValue" },
-          lang: Lang.JSON,
+        trigger: {
+          id: getNextId(),
+          name: "manual_trigger_test",
+          type: TriggerType.Manual,
+          data: {
+            data: testData,
+            headers: { headerKey: "headerValue" },
+            pathParams: { pathKey: "pathValue" },
+            lang: Lang.JSON,
+          },
         },
       });
 

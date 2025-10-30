@@ -27927,8 +27927,7 @@ proto.aggregator.RunTriggerReq.prototype.toObject = function(opt_includeInstance
  */
 proto.aggregator.RunTriggerReq.toObject = function(includeInstance, msg) {
   var f, obj = {
-    triggerType: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    triggerConfigMap: (f = msg.getTriggerConfigMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : [],
+    trigger: (f = msg.getTrigger()) && proto.aggregator.TaskTrigger.toObject(includeInstance, f),
     triggerInputMap: (f = msg.getTriggerInputMap()) ? f.toObject(includeInstance, proto.google.protobuf.Value.toObject) : []
   };
 
@@ -27967,14 +27966,9 @@ proto.aggregator.RunTriggerReq.deserializeBinaryFromReader = function(msg, reade
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {!proto.aggregator.TriggerType} */ (reader.readEnum());
-      msg.setTriggerType(value);
-      break;
-    case 2:
-      var value = msg.getTriggerConfigMap();
-      reader.readMessage(value, function(message, reader) {
-        jspb.Map.deserializeBinary(message, reader, jspb.BinaryReader.prototype.readString, jspb.BinaryReader.prototype.readMessage, proto.google.protobuf.Value.deserializeBinaryFromReader, "", new proto.google.protobuf.Value());
-         });
+      var value = new proto.aggregator.TaskTrigger;
+      reader.readMessage(value,proto.aggregator.TaskTrigger.deserializeBinaryFromReader);
+      msg.setTrigger(value);
       break;
     case 3:
       var value = msg.getTriggerInputMap();
@@ -28011,16 +28005,13 @@ proto.aggregator.RunTriggerReq.prototype.serializeBinary = function() {
  */
 proto.aggregator.RunTriggerReq.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getTriggerType();
-  if (f !== 0.0) {
-    writer.writeEnum(
+  f = message.getTrigger();
+  if (f != null) {
+    writer.writeMessage(
       1,
-      f
+      f,
+      proto.aggregator.TaskTrigger.serializeBinaryToWriter
     );
-  }
-  f = message.getTriggerConfigMap(true);
-  if (f && f.getLength() > 0) {
-    f.serializeBinary(2, writer, jspb.BinaryWriter.prototype.writeString, jspb.BinaryWriter.prototype.writeMessage, proto.google.protobuf.Value.serializeBinaryToWriter);
   }
   f = message.getTriggerInputMap(true);
   if (f && f.getLength() > 0) {
@@ -28030,43 +28021,40 @@ proto.aggregator.RunTriggerReq.serializeBinaryToWriter = function(message, write
 
 
 /**
- * optional TriggerType trigger_type = 1;
- * @return {!proto.aggregator.TriggerType}
+ * optional TaskTrigger trigger = 1;
+ * @return {?proto.aggregator.TaskTrigger}
  */
-proto.aggregator.RunTriggerReq.prototype.getTriggerType = function() {
-  return /** @type {!proto.aggregator.TriggerType} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+proto.aggregator.RunTriggerReq.prototype.getTrigger = function() {
+  return /** @type{?proto.aggregator.TaskTrigger} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.TaskTrigger, 1));
 };
 
 
 /**
- * @param {!proto.aggregator.TriggerType} value
+ * @param {?proto.aggregator.TaskTrigger|undefined} value
+ * @return {!proto.aggregator.RunTriggerReq} returns this
+*/
+proto.aggregator.RunTriggerReq.prototype.setTrigger = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
  * @return {!proto.aggregator.RunTriggerReq} returns this
  */
-proto.aggregator.RunTriggerReq.prototype.setTriggerType = function(value) {
-  return jspb.Message.setProto3EnumField(this, 1, value);
+proto.aggregator.RunTriggerReq.prototype.clearTrigger = function() {
+  return this.setTrigger(undefined);
 };
 
 
 /**
- * map<string, google.protobuf.Value> trigger_config = 2;
- * @param {boolean=} opt_noLazyCreate Do not create the map if
- * empty, instead returning `undefined`
- * @return {!jspb.Map<string,!proto.google.protobuf.Value>}
+ * Returns whether this field is set.
+ * @return {boolean}
  */
-proto.aggregator.RunTriggerReq.prototype.getTriggerConfigMap = function(opt_noLazyCreate) {
-  return /** @type {!jspb.Map<string,!proto.google.protobuf.Value>} */ (
-      jspb.Message.getMapField(this, 2, opt_noLazyCreate,
-      proto.google.protobuf.Value));
+proto.aggregator.RunTriggerReq.prototype.hasTrigger = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
-
-
-/**
- * Clears values from the map. The map will be non-null.
- * @return {!proto.aggregator.RunTriggerReq} returns this
- */
-proto.aggregator.RunTriggerReq.prototype.clearTriggerConfigMap = function() {
-  this.getTriggerConfigMap().clear();
-  return this;};
 
 
 /**
