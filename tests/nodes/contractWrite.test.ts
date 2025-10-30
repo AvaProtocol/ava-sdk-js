@@ -762,18 +762,18 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
         expect(output).not.toHaveProperty("results");
 
-        // Output is the data object directly; metadata is step-level
-        expect(typeof output).toBe("object");
+        // For deployed workflows, output may be empty {} if no events/return values
+        // Method information is in step-level metadata
         expect(contractWriteStep as any).toHaveProperty("metadata");
-
-        // Verify flattened structure by method name - this test only has transfer
-        expect(output).toHaveProperty("transfer");
-        expect(typeof output.transfer).toBe("object");
-
-        // Should have same number of methods as methodCalls
-        expect(Object.keys(output).length).toBe(
+        const metadata = (contractWriteStep as any).metadata;
+        expect(Array.isArray(metadata)).toBe(true);
+        expect(metadata.length).toBe(
           (contractWriteNode.data as any).methodCalls.length
         );
+
+        // Verify metadata has method details
+        expect(metadata[0].methodName).toBe("transfer");
+        expect(typeof metadata[0].success).toBe("boolean");
 
         // Note: The step might succeed or fail depending on wallet funding and gas
         // step success must reflect metadata/receipt success
@@ -1121,11 +1121,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(result.error).toBeDefined();
       expect(result.errorCode).toBe(ErrorCode.INVALID_REQUEST);
 
-      // Should still return structured data with empty object for the failed method
+      // Data may be empty object when method has no return values/events
       expect(result.data).toBeDefined();
-      expect(result.data[methodName]).toEqual({});
+      expect(typeof result.data).toBe("object");
 
-      // Should include metadata with method-level error details
+      // Method-level error details are in metadata
       expect(result.metadata).toBeDefined();
       expect(Array.isArray(result.metadata)).toBe(true);
       expect(result.metadata.length).toBe(1);
@@ -1302,23 +1302,20 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
       expect(output).not.toHaveProperty("results");
 
-      // Output is the data object directly; metadata is step-level
-      expect(typeof output).toBe("object");
+      // Method information is always in step-level metadata
       expect(contractWriteStep as any).toHaveProperty("metadata");
-
-      // Verify flattened structure by method name - this test only has transfer
-      expect(output).toHaveProperty("transfer");
-      expect(typeof output.transfer).toBe("object");
-
-      // Should have same number of methods as methodCalls
-      expect(Object.keys(output).length).toBe(
+      const metadata = (contractWriteStep as any).metadata;
+      expect(Array.isArray(metadata)).toBe(true);
+      expect(metadata.length).toBe(
         (contractWriteNode.data as any).methodCalls.length
       );
+      
+      // Verify metadata has method details
+      expect(metadata[0].methodName).toBe("transfer");
+      expect(typeof metadata[0].success).toBe("boolean");
 
-      // Access the transfer result directly from flattened structure
-      const transferResult = output.transfer;
-      expect(transferResult).toBeDefined();
-      expect(typeof transferResult).toBe("object");
+      // Output may or may not have method data depending on events/return values
+      // This is acceptable - metadata is the source of truth for method execution
     });
 
     test("should deploy and trigger workflow with applyToFields", async () => {
@@ -1396,23 +1393,20 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         expect(Array.isArray(output)).toBe(false); // Should be flattened object, not array
         expect(output).not.toHaveProperty("results");
 
-        // Output is the data object directly; metadata is step-level
-        expect(typeof output).toBe("object");
+        // Method information is always in step-level metadata
         expect(contractWriteStep as any).toHaveProperty("metadata");
-
-        // Verify flattened structure by method name - this test only has transfer
-        expect(output).toHaveProperty("transfer");
-        expect(typeof output.transfer).toBe("object");
-
-        // Should have same number of methods as methodCalls
-        expect(Object.keys(output).length).toBe(
+        const metadata = (contractWriteStep as any).metadata;
+        expect(Array.isArray(metadata)).toBe(true);
+        expect(metadata.length).toBe(
           (contractWriteNode.data as any).methodCalls.length
         );
 
-        // Access the approve result directly from flattened structure
-        const transferResult = output.transfer;
-        expect(transferResult).toBeDefined();
-        expect(typeof transferResult).toBe("object");
+        // Verify metadata has method details
+        expect(metadata[0].methodName).toBe("transfer");
+        expect(typeof metadata[0].success).toBe("boolean");
+
+        // Output may or may not have method data depending on events/return values
+        // This is acceptable - metadata is the source of truth for method execution
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);

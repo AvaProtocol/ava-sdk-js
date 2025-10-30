@@ -42,6 +42,16 @@ export enum ExecutionMode {
   Parallel = "parallel",
 }
 
+export enum LoopRunnerType {
+  RestAPI = "restApi",
+  CustomCode = "customCode",
+  EthTransfer = "ethTransfer",
+  ContractRead = "contractRead",
+  ContractWrite = "contractWrite",
+  GraphQLQuery = "graphqlQuery",
+  Filter = "filter",
+}
+
 export enum Lang {
   Unspecified = "unspecified",
   JavaScript = "javascript",
