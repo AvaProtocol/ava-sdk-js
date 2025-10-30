@@ -125,8 +125,12 @@ describe("CustomCode Node Tests", () => {
   describe("CustomCode Return Type Tests", () => {
     test("CustomCode should return null when code returns null", async () => {
       const params = {
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnNullProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_null_test",
+          type: NodeType.CustomCode,
+          data: returnNullProps,
+        },
         inputVariables: {},
       };
 
@@ -148,8 +152,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return empty object when code returns {}", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnEmptyObjectProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_empty_obj_test",
+          type: NodeType.CustomCode,
+          data: returnEmptyObjectProps,
+        },
         inputVariables: {},
       });
 
@@ -159,8 +167,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return null when code returns undefined (protobuf limitation)", async () => {
       const params = {
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnUndefinedProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_undefined_test",
+          type: NodeType.CustomCode,
+          data: returnUndefinedProps,
+        },
         inputVariables: {},
       };
 
@@ -184,8 +196,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return empty array when code returns []", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnEmptyArrayProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_empty_array_test",
+          type: NodeType.CustomCode,
+          data: returnEmptyArrayProps,
+        },
         inputVariables: {},
       });
 
@@ -195,8 +211,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return number when code returns number", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnNumberProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_number_test",
+          type: NodeType.CustomCode,
+          data: returnNumberProps,
+        },
         inputVariables: {},
       });
 
@@ -206,8 +226,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return string when code returns string", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnStringProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_string_test",
+          type: NodeType.CustomCode,
+          data: returnStringProps,
+        },
         inputVariables: {},
       });
 
@@ -217,8 +241,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return boolean when code returns boolean", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnBooleanProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_boolean_test",
+          type: NodeType.CustomCode,
+          data: returnBooleanProps,
+        },
         inputVariables: {},
       });
 
@@ -228,8 +256,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return object when code returns object", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnObjectProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_object_test",
+          type: NodeType.CustomCode,
+          data: returnObjectProps,
+        },
         inputVariables: {},
       });
 
@@ -239,8 +271,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should return array when code returns array", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: returnArrayProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_array_test",
+          type: NodeType.CustomCode,
+          data: returnArrayProps,
+        },
         inputVariables: {},
       });
 
@@ -250,8 +286,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should access input variables", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: accessInputVariablesProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_input_test",
+          type: NodeType.CustomCode,
+          data: accessInputVariablesProps,
+        },
         inputVariables: {
           inputData: [1, 2, 3, 4, 5],
         },
@@ -273,8 +313,12 @@ describe("CustomCode Node Tests", () => {
 
     test("CustomCode should handle complex object with nested data", async () => {
       const result = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: complexObjectProps,
+        node: {
+          id: getNextId(),
+          name: "custom_code_complex_test",
+          type: NodeType.CustomCode,
+          data: complexObjectProps,
+        },
         inputVariables: {
           userId: 123,
           userName: "John Doe",

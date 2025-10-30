@@ -365,8 +365,12 @@ describe("FilterNode Tests", () => {
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.Filter,
-        nodeConfig: filterConfig,
+        node: {
+          id: getNextId(),
+          name: "filter_consistency_test",
+          type: NodeType.Filter,
+          data: filterConfig,
+        },
         inputVariables: inputVariables,
       });
 

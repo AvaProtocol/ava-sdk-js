@@ -811,9 +811,12 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
       // Test 1: runNodeWithInputs
       const runNodeWithInputsParams = {
-        nodeType: NodeType.ContractWrite,
-        nodeConfig: contractWriteConfig},
-
+        node: {
+          id: getNextId(),
+          name: "consistency_test",
+          type: NodeType.ContractWrite,
+          data: contractWriteConfig,
+        },
         inputVariables: {
           settings: getSettings(smartWalletAddress),
         },

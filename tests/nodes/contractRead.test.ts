@@ -1034,9 +1034,12 @@ describeIfSepolia("ContractRead Node Tests", () => {
 
         // Test 1: runNodeWithInputs
         const directParams = {
-          nodeType: NodeType.ContractRead,
-          nodeConfig: contractReadConfig},
-
+          node: {
+            id: getNextId(),
+            name: "consistency_test",
+            type: NodeType.ContractRead,
+            data: contractReadConfig,
+          },
           inputVariables: inputVariables,
         };
 

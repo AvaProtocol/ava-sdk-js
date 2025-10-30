@@ -184,9 +184,12 @@ describe("LoopNode Tests", () => {
   describe("runNodeWithInputs Tests", () => {
     test("should process loop with CustomCode runner using runNodeWithInputs", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: customCodeLoopProps},
-
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: customCodeLoopProps,
+        },
         inputVariables: {
           testArray: [1, 2, 3, 4, 5],
         },
@@ -223,9 +226,12 @@ describe("LoopNode Tests", () => {
 
     test("should process loop with REST API runner using runNodeWithInputs", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: restApiLoopProps},
-
+        node: {
+          id: getNextId(),
+          name: "loop_rest_test",
+          type: NodeType.Loop,
+          data: restApiLoopProps,
+        },
         inputVariables: {
           urlArray: [
             "https://mock-api.ap-aggregator.local/get?test=1",
@@ -264,9 +270,12 @@ describe("LoopNode Tests", () => {
 
     test("should handle empty array input", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: emptyArrayLoopProps},
-
+        node: {
+          id: getNextId(),
+          name: "loop_empty_test",
+          type: NodeType.Loop,
+          data: emptyArrayLoopProps,
+        },
         inputVariables: {
           emptyArray: [],
         },
