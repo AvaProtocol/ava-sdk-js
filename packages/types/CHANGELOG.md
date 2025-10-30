@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.8.2
+
+### Patch Changes
+
+- 9167174: fix: updated runNodeImmediate and runTrigger request inputs to be consistent with simulateWorkflow"
+
 ## 2.8.1
 
 ### Patch Changes
