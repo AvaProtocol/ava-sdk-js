@@ -1,7 +1,7 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Trigger from "./interface";
 import {
-  convertInputToProtobuf,
+  convertJSValueToProtobuf,
   extractInputFromProtobuf,
   convertProtobufValueToJs,
 } from "../../utils";
@@ -57,14 +57,8 @@ class ManualTrigger extends Trigger {
       // Otherwise, use this.data directly as the data content
     }
 
-    const dataValue = convertInputToProtobuf(actualData as Record<string, any> | undefined);
-
-    if (!dataValue) {
-      throw new Error(
-        "Failed to convert ManualTrigger data to protobuf format"
-      );
-    }
-
+    // Convert the actual data to protobuf Value (supports primitives, arrays, objects, null, undefined)
+    const dataValue = convertJSValueToProtobuf(actualData);
     config.setData(dataValue);
 
     // Set headers and pathParams in the config for execution step debugging

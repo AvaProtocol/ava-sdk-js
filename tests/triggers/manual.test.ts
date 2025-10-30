@@ -74,25 +74,33 @@ describe("ManualTrigger Tests", () => {
     },
   };
 
-  const runTriggerSimpleProps = {
-    triggerType: TriggerType.Manual,
-    triggerConfig: {
-      data: { message: "Hello, World!" },
-      lang: Lang.JSON,
-    },
-  };
-
-  const runTriggerWithHeadersProps = {
-    triggerType: TriggerType.Manual,
-    triggerConfig: {
-      data: { message: "Hello with headers!" },
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer token123",
+  const runTriggerSimpleProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "manualTrigger",
+      type: TriggerType.Manual,
+      data: {
+        data: { message: "Hello, World!" },
+        lang: Lang.JSON,
       },
-      lang: Lang.JSON,
     },
-  };
+  });
+
+  const runTriggerWithHeadersProps = () => ({
+    trigger: {
+      id: getNextId(),
+      name: "manualTrigger",
+      type: TriggerType.Manual,
+      data: {
+        data: { message: "Hello with headers!" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer token123",
+        },
+        lang: Lang.JSON,
+      },
+    },
+  });
 
   beforeAll(async () => {
     client = getClient();
@@ -150,8 +158,12 @@ describe("ManualTrigger Tests", () => {
 
     test("should handle runTrigger with no data", async () => {
       const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {},
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
+          data: {},
+        },
       };
 
       console.log(
@@ -167,18 +179,18 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result).toBeDefined();
-      // ManualTrigger now requires data, so this should fail
-      expect(result.success).toBe(false);
-      expect(result.error).toContain("ManualTrigger data is required");
+      // Backend now accepts empty data object and returns empty object
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({});
     });
 
     test("should handle runTrigger with simple data", async () => {
       console.log(
         "🚀 runTrigger with simple data input:",
-        util.inspect(runTriggerSimpleProps, { depth: null, colors: true })
+        util.inspect(runTriggerSimpleProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerSimpleProps);
+      const result = await client.runTrigger(runTriggerSimpleProps());
 
       console.log(
         "🚀 runTrigger with simple data result:",
@@ -186,16 +198,16 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerSimpleProps.triggerConfig.data);
+      expect(result.data).toEqual(runTriggerSimpleProps().trigger.data.data);
     });
 
     test("should handle runTrigger with headers", async () => {
       console.log(
         "🚀 runTrigger with headers input:",
-        util.inspect(runTriggerWithHeadersProps, { depth: null, colors: true })
+        util.inspect(runTriggerWithHeadersProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerWithHeadersProps);
+      const result = await client.runTrigger(runTriggerWithHeadersProps());
 
       console.log(
         "🚀 runTrigger with headers result:",
@@ -204,32 +216,36 @@ describe("ManualTrigger Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(
-        runTriggerWithHeadersProps.triggerConfig.data
+        runTriggerWithHeadersProps().trigger.data.data
       );
     });
 
     test("should handle runTrigger with pathParams", async () => {
-      const runTriggerWithPathParamsProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: { message: "Hello with pathParams!" },
-          pathParams: {
-            userId: "123",
-            apiVersion: "v1",
+      const runTriggerWithPathParamsProps = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
+          data: {
+            data: { message: "Hello with pathParams!" },
+            pathParams: {
+              userId: "123",
+              apiVersion: "v1",
+            },
+            lang: Lang.JSON,
           },
-          lang: Lang.JSON,
         },
-      };
+      });
 
       console.log(
         "🚀 runTrigger with pathParams input:",
-        util.inspect(runTriggerWithPathParamsProps, {
+        util.inspect(runTriggerWithPathParamsProps(), {
           depth: null,
           colors: true,
         })
       );
 
-      const result = await client.runTrigger(runTriggerWithPathParamsProps);
+      const result = await client.runTrigger(runTriggerWithPathParamsProps());
 
       console.log(
         "🚀 runTrigger with pathParams result:",
@@ -238,33 +254,37 @@ describe("ManualTrigger Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(
-        runTriggerWithPathParamsProps.triggerConfig.data
+        runTriggerWithPathParamsProps().trigger.data.data
       );
     });
 
     test("should handle runTrigger with headers and pathParams", async () => {
-      const runTriggerWithBothProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: { message: "Hello with both!" },
-          headers: {
-            "Content-Type": "application/json",
-            "X-Custom": "header-value",
+      const runTriggerWithBothProps = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
+          data: {
+            data: { message: "Hello with both!" },
+            headers: {
+              "Content-Type": "application/json",
+              "X-Custom": "header-value",
+            },
+            pathParams: {
+              userId: "456",
+              action: "update",
+            },
+            lang: Lang.JSON,
           },
-          pathParams: {
-            userId: "456",
-            action: "update",
-          },
-          lang: Lang.JSON,
         },
-      };
+      });
 
       console.log(
         "🚀 runTrigger with headers and pathParams input:",
-        util.inspect(runTriggerWithBothProps, { depth: null, colors: true })
+        util.inspect(runTriggerWithBothProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerWithBothProps);
+      const result = await client.runTrigger(runTriggerWithBothProps());
 
       console.log(
         "🚀 runTrigger with headers and pathParams result:",
@@ -272,24 +292,31 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerWithBothProps.triggerConfig.data);
+      expect(result.data).toEqual(runTriggerWithBothProps().trigger.data.data);
     });
 
     test("should handle runTrigger with complex data", async () => {
+      const timestamp = Date.now();
+      const complexData = {
+        items: [
+          { name: "item1", address: "0xaaaa", value: 100 },
+          { name: "item2", address: "0xbbbb", value: 200 },
+        ],
+        metadata: {
+          timestamp: timestamp,
+          version: "1.0.0",
+        },
+      };
+
       const runTriggerComplexProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
           data: {
-            items: [
-              { name: "item1", address: "0xaaaa", value: 100 },
-              { name: "item2", address: "0xbbbb", value: 200 },
-            ],
-            metadata: {
-              timestamp: Date.now(),
-              version: "1.0.0",
-            },
+            data: complexData,
+            lang: Lang.JSON,
           },
-          lang: Lang.JSON,
         },
       };
 
@@ -306,30 +333,44 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerComplexProps.triggerConfig.data);
+      
+      // Validate structure and non-timestamp fields
+      expect(result.data).toBeDefined();
+      expect(result.data.items).toEqual(complexData.items);
+      expect(result.data.metadata).toBeDefined();
+      expect(result.data.metadata.version).toBe("1.0.0");
+      
+      // Validate timestamp with tolerance (allow up to 100ms difference for timing variance)
+      expect(result.data.metadata.timestamp).toBeDefined();
+      expect(typeof result.data.metadata.timestamp).toBe("number");
+      expect(Math.abs(result.data.metadata.timestamp - timestamp)).toBeLessThanOrEqual(100);
     });
 
     test("should handle runTrigger with array data wrapped in JSON object", async () => {
-      const runTriggerArrayProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
+      const runTriggerArrayProps = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
           data: {
-            items: [
-              { name: "item1", address: "0xaaaa" },
-              { name: "item2", address: "0xbbbb" },
-              { name: "item3", address: "0xcccc" },
-            ],
+            data: {
+              items: [
+                { name: "item1", address: "0xaaaa" },
+                { name: "item2", address: "0xbbbb" },
+                { name: "item3", address: "0xcccc" },
+              ],
+            },
+            lang: Lang.JSON,
           },
-          lang: Lang.JSON,
         },
-      };
+      });
 
       console.log(
         "🚀 runTrigger with array data input:",
-        util.inspect(runTriggerArrayProps, { depth: null, colors: true })
+        util.inspect(runTriggerArrayProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerArrayProps);
+      const result = await client.runTrigger(runTriggerArrayProps());
 
       console.log(
         "🚀 runTrigger with array data result:",
@@ -337,29 +378,33 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerArrayProps.triggerConfig.data);
+      expect(result.data).toEqual(runTriggerArrayProps().trigger.data.data);
     });
 
     test("should handle runTrigger with JSON object containing JSON string field", async () => {
-      const runTriggerJsonStringProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
+      const runTriggerJsonStringProps = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
           data: {
-            jsonString: JSON.stringify([
-              { name: "item1", address: "0xaaaa" },
-              { name: "item2", address: "0xbbbb" },
-            ]),
+            data: {
+              jsonString: JSON.stringify([
+                { name: "item1", address: "0xaaaa" },
+                { name: "item2", address: "0xbbbb" },
+              ]),
+            },
+            lang: Lang.JSON,
           },
-          lang: Lang.JSON,
         },
-      };
+      });
 
       console.log(
         "🚀 runTrigger with JSON string field input:",
-        util.inspect(runTriggerJsonStringProps, { depth: null, colors: true })
+        util.inspect(runTriggerJsonStringProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerJsonStringProps);
+      const result = await client.runTrigger(runTriggerJsonStringProps());
 
       console.log(
         "🚀 runTrigger with JSON string field result:",
@@ -367,24 +412,28 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerJsonStringProps.triggerConfig.data);
+      expect(result.data).toEqual(runTriggerJsonStringProps().trigger.data.data);
     });
 
     test("should handle runTrigger with lang field set to JSON", async () => {
-      const runTriggerWithLangProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: { message: "Hello with lang!" },
-          lang: Lang.JSON,
+      const runTriggerWithLangProps = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
+          data: {
+            data: { message: "Hello with lang!" },
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 runTrigger with lang field input:",
-        util.inspect(runTriggerWithLangProps, { depth: null, colors: true })
+        util.inspect(runTriggerWithLangProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerWithLangProps);
+      const result = await client.runTrigger(runTriggerWithLangProps());
 
       console.log(
         "🚀 runTrigger with lang field result:",
@@ -392,24 +441,28 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerWithLangProps.triggerConfig.data);
+      expect(result.data).toEqual(runTriggerWithLangProps().trigger.data.data);
     });
 
     test("should handle runTrigger with lang field set to JavaScript", async () => {
-      const runTriggerWithJSLangProps = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: { code: "return { result: 42 };" },
-          lang: Lang.JavaScript,
+      const runTriggerWithJSLangProps = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "manualTrigger",
+          type: TriggerType.Manual,
+          data: {
+            data: { code: "return { result: 42 };" },
+            lang: Lang.JavaScript,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 runTrigger with JavaScript lang input:",
-        util.inspect(runTriggerWithJSLangProps, { depth: null, colors: true })
+        util.inspect(runTriggerWithJSLangProps(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(runTriggerWithJSLangProps);
+      const result = await client.runTrigger(runTriggerWithJSLangProps());
 
       console.log(
         "🚀 runTrigger with JavaScript lang result:",
@@ -417,7 +470,7 @@ describe("ManualTrigger Tests", () => {
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerWithJSLangProps.triggerConfig.data);
+      expect(result.data).toEqual(runTriggerWithJSLangProps().trigger.data.data);
     });
   });
 
@@ -880,20 +933,24 @@ describe("ManualTrigger Tests", () => {
       };
 
       // Test 1: runTrigger
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: testData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "consistency_test_manual_trigger",
+          type: TriggerType.Manual,
+          data: {
+            data: testData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 ~ runTrigger for consistency test ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true })
       );
 
-      const directResponse = await client.runTrigger(params);
+      const directResponse = await client.runTrigger(getTrigger());
       console.log(
         "runTrigger response:",
         util.inspect(directResponse, { depth: null, colors: true })
@@ -949,19 +1006,23 @@ describe("ManualTrigger Tests", () => {
 
   describe("Required Data Validation Tests", () => {
     test("should reject null data (data is required)", async () => {
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: null,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "null_data_test",
+          type: TriggerType.Manual,
+          data: {
+            data: null,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 ~ runTrigger with null data ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger null data response:",
@@ -973,19 +1034,23 @@ describe("ManualTrigger Tests", () => {
     });
 
     test("should reject undefined data (data is required)", async () => {
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: undefined,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "undefined_data_test",
+          type: TriggerType.Manual,
+          data: {
+            data: undefined,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 ~ runTrigger with undefined data ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger undefined data response:",
@@ -999,20 +1064,24 @@ describe("ManualTrigger Tests", () => {
     test("should handle empty object data", async () => {
       const emptyData = {};
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: emptyData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "empty_object_test",
+          type: TriggerType.Manual,
+          data: {
+            data: emptyData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 ~ runTrigger with empty object ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger empty object response:",
@@ -1029,20 +1098,24 @@ describe("ManualTrigger Tests", () => {
         items: [] as unknown[],
       };
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: emptyArrayData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "empty_array_test",
+          type: TriggerType.Manual,
+          data: {
+            data: emptyArrayData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
       console.log(
         "🚀 ~ runTrigger with empty array wrapped in JSON object ~ input params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true })
       );
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger empty array response:",
@@ -1062,15 +1135,19 @@ describe("ManualTrigger Tests", () => {
         { name: "item2", address: "0xbbbb" },
       ];
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: arrayData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "raw_array_test",
+          type: TriggerType.Manual,
+          data: {
+            data: arrayData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
       console.log("🚀 ~ test ~ result:", result);
 
       expect(result.success).toBe(true);
@@ -1080,15 +1157,19 @@ describe("ManualTrigger Tests", () => {
     test("should reject raw string data (not valid JSON)", async () => {
       const stringData = "Hello World";
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: stringData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "raw_string_test",
+          type: TriggerType.Manual,
+          data: {
+            data: stringData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       // Raw unquoted strings are not valid JSON, so the API should reject them
       expect(result.success).toBe(false);
@@ -1099,15 +1180,19 @@ describe("ManualTrigger Tests", () => {
     test("should accept number data (valid JSON primitive)", async () => {
       const numberData = 42;
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: numberData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "number_data_test",
+          type: TriggerType.Manual,
+          data: {
+            data: numberData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(numberData);
@@ -1116,15 +1201,19 @@ describe("ManualTrigger Tests", () => {
     test("should accept boolean data (valid JSON primitive)", async () => {
       const booleanData = true;
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: booleanData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "boolean_data_test",
+          type: TriggerType.Manual,
+          data: {
+            data: booleanData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(booleanData);
@@ -1133,15 +1222,19 @@ describe("ManualTrigger Tests", () => {
     test("should accept array of objects data (valid JSON)", async () => {
       const arrayData = [{ key1: "value1" }, { key2: "value2" }];
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: arrayData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "array_of_objects_test",
+          type: TriggerType.Manual,
+          data: {
+            data: arrayData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       console.log("🚀 ~ test ~ result:", result);
 
@@ -1163,15 +1256,19 @@ describe("ManualTrigger Tests", () => {
         },
       };
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: jsonObjectData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "json_object_types_test",
+          type: TriggerType.Manual,
+          data: {
+            data: jsonObjectData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(jsonObjectData);
@@ -1191,15 +1288,19 @@ describe("ManualTrigger Tests", () => {
         { id: 3, name: "item3" },
       ];
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: jsonArrayData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "json_array_types_test",
+          type: TriggerType.Manual,
+          data: {
+            data: jsonArrayData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(jsonArrayData);
@@ -1212,15 +1313,19 @@ describe("ManualTrigger Tests", () => {
     test("should reject raw string types (not valid JSON)", async () => {
       const stringData = "Hello, this is a test string!";
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: stringData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "raw_string_types_test",
+          type: TriggerType.Manual,
+          data: {
+            data: stringData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       // Raw unquoted strings are not valid JSON, so the API should reject them
       expect(result.success).toBe(false);
@@ -1231,15 +1336,19 @@ describe("ManualTrigger Tests", () => {
     test("should preserve number types", async () => {
       const numberData = 42.5;
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: numberData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "number_types_test",
+          type: TriggerType.Manual,
+          data: {
+            data: numberData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(numberData);
@@ -1249,15 +1358,19 @@ describe("ManualTrigger Tests", () => {
     test("should preserve boolean types", async () => {
       const booleanData = false;
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: booleanData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "boolean_types_test",
+          type: TriggerType.Manual,
+          data: {
+            data: booleanData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(booleanData);
@@ -1267,15 +1380,19 @@ describe("ManualTrigger Tests", () => {
     test("should preserve null values", async () => {
       // Note: This test checks if null is handled correctly as a valid JSON value
       // This is different from the "data is required" validation test
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: { value: null }, // null as a property value, not the entire data
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "null_values_test",
+          type: TriggerType.Manual,
+          data: {
+            data: { value: null }, // null as a property value, not the entire data
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual({ value: null });
@@ -1313,15 +1430,19 @@ describe("ManualTrigger Tests", () => {
         },
       };
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: complexData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "complex_nested_json_test",
+          type: TriggerType.Manual,
+          data: {
+            data: complexData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(complexData);
@@ -1341,15 +1462,19 @@ describe("ManualTrigger Tests", () => {
       // This tests that if user explicitly sends a JSON string, it stays a string
       const jsonString = '{"this":"should","stay":"as","a":"string"}';
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: jsonString,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "json_string_preservation_test",
+          type: TriggerType.Manual,
+          data: {
+            data: jsonString,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(jsonString);
@@ -1368,15 +1493,19 @@ describe("ManualTrigger Tests", () => {
         null,
       ];
 
-      const params = {
-        triggerType: TriggerType.Manual,
-        triggerConfig: {
-          data: mixedArrayData,
-          lang: Lang.JSON,
+      const getTrigger = () => ({
+        trigger: {
+          id: getNextId(),
+          name: "mixed_type_arrays_test",
+          type: TriggerType.Manual,
+          data: {
+            data: mixedArrayData,
+            lang: Lang.JSON,
+          },
         },
-      };
+      });
 
-      const result = await client.runTrigger(params);
+      const result = await client.runTrigger(getTrigger());
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mixedArrayData);

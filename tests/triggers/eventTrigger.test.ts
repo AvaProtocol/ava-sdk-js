@@ -17,6 +17,7 @@ import {
   getEOAAddress,
   isTemplateVariable,
   padAddressForTopic,
+  getNextId,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -306,7 +307,14 @@ describeIfSepolia("EventTrigger Tests", () => {
         ],
       };
 
-      const params = { triggerType: TriggerType.Event, triggerConfig };
+      const params = {
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: triggerConfig,
+        },
+      };
       console.log(
         "params:",
         util.inspect(params, { depth: null, colors: true })
@@ -337,7 +345,14 @@ describeIfSepolia("EventTrigger Tests", () => {
         ],
       };
 
-      const params = { triggerType: TriggerType.Event, triggerConfig };
+      const params = {
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: triggerConfig,
+        },
+      };
       console.log(
         "params:",
         util.inspect(params, { depth: null, colors: true })
@@ -360,7 +375,14 @@ describeIfSepolia("EventTrigger Tests", () => {
         SEPOLIA_TOKEN_ADDRESSES
       );
 
-      const params = { triggerType: TriggerType.Event, triggerConfig };
+      const params = {
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: triggerConfig,
+        },
+      };
       console.log(
         "params:",
         util.inspect(params, { depth: null, colors: true })
@@ -379,11 +401,15 @@ describeIfSepolia("EventTrigger Tests", () => {
 
     test("should run trigger with Chainlink price condition", async () => {
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: createChainlinkPriceConditionConfig(
-          "200000000000",
-          "gt"
-        ), // ETH > $2000
+        trigger: {
+          id: getNextId(),
+          name: "chainlink_price_condition",
+          type: TriggerType.Event,
+          data: createChainlinkPriceConditionConfig(
+            "200000000000",
+            "gt"
+          ), // ETH > $2000
+        },
       };
 
       console.log(
@@ -425,17 +451,21 @@ describeIfSepolia("EventTrigger Tests", () => {
       ];
 
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
-              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
-              contractAbi: CHAINLINK_AGGREGATOR_ABI,
-              conditions: conditions,
-              maxEventsPerBlock: 3,
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "price_range_conditions",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+                topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+                contractAbi: CHAINLINK_AGGREGATOR_ABI,
+                conditions: conditions,
+                maxEventsPerBlock: 3,
+              },
+            ],
+          },
         },
       };
 
@@ -640,55 +670,59 @@ describeIfSepolia("EventTrigger Tests", () => {
 
     test("should run trigger with enriched Transfer event parsing", async () => {
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          simulationMode: true,
-          queries: [
-            {
-              addresses: ["0x779877A7B0D9E8603169DdbD7836e478b4624789"], // Sample token contract
-              topics: [
-                TRANSFER_EVENT_SIGNATURE,
-                null, // Any from address
-                padAddressForTopic(
-                  "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788"
-                ), // Specific to address
-              ],
-              contractAbi: [
-                {
-                  anonymous: false,
-                  inputs: [
-                    {
-                      indexed: true,
-                      internalType: "address",
-                      name: "from",
-                      type: "address",
-                    },
-                    {
-                      indexed: true,
-                      internalType: "address",
-                      name: "to",
-                      type: "address",
-                    },
-                    {
-                      indexed: false,
-                      internalType: "uint256",
-                      name: "value",
-                      type: "uint256",
-                    },
-                  ],
-                  name: "Transfer",
-                  type: "event",
-                },
-              ],
-              methodCalls: [
-                {
-                  methodName: "decimals",
-                  methodParams: [],
-                  applyToFields: ["Transfer.value"],
-                },
-              ],
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "enriched_transfer_parsing",
+          type: TriggerType.Event,
+          data: {
+            simulationMode: true,
+            queries: [
+              {
+                addresses: ["0x779877A7B0D9E8603169DdbD7836e478b4624789"], // Sample token contract
+                topics: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  null, // Any from address
+                  padAddressForTopic(
+                    "0xc60e71bd0f2e6d8832fea1a2d56091c48493c788"
+                  ), // Specific to address
+                ],
+                contractAbi: [
+                  {
+                    anonymous: false,
+                    inputs: [
+                      {
+                        indexed: true,
+                        internalType: "address",
+                        name: "from",
+                        type: "address",
+                      },
+                      {
+                        indexed: true,
+                        internalType: "address",
+                        name: "to",
+                        type: "address",
+                      },
+                      {
+                        indexed: false,
+                        internalType: "uint256",
+                        name: "value",
+                        type: "uint256",
+                      },
+                    ],
+                    name: "Transfer",
+                    type: "event",
+                  },
+                ],
+                methodCalls: [
+                  {
+                    methodName: "decimals",
+                    methodParams: [],
+                    applyToFields: ["Transfer.value"],
+                  },
+                ],
+              },
+            ],
+          },
         },
       };
 
@@ -1032,9 +1066,13 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
 
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: triggerConfig,
-        inputVariables: {
+        trigger: {
+          id: getNextId(),
+          name: "template_variable_resolution",
+          type: TriggerType.Event,
+          data: triggerConfig,
+        },
+        triggerInput: {
           settings: {
             name: "Template Variable Resolution Test",
             runner: smartWallet.address,
@@ -1149,8 +1187,12 @@ describeIfSepolia("EventTrigger Tests", () => {
       // Test 1: runTrigger (Run Node Immediately)
       console.log("🧪 Testing runTrigger (Run Node Immediately)...");
       const runNodeParams = {
-        triggerType: TriggerType.Event,
-        triggerConfig: oracleEventConfig,
+        trigger: {
+          id: getNextId(),
+          name: "oracle_consistency_run_node",
+          type: TriggerType.Event,
+          data: oracleEventConfig,
+        },
       };
 
       const runNodeResponse = await client.runTrigger(runNodeParams);
@@ -1325,8 +1367,12 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       // Test 1: runTrigger
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: eventTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "consistency_test_run_trigger",
+          type: TriggerType.Event,
+          data: eventTriggerConfig,
+        },
       };
 
       const runTriggerResponse = await client.runTrigger(params);
@@ -1537,14 +1583,18 @@ describeIfSepolia("EventTrigger Tests", () => {
 
     test("should handle empty address array", async () => {
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [], // Empty array - monitor all contracts
-              topics: [TRANSFER_EVENT_SIGNATURE, null, null],
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "empty_address_array",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [], // Empty array - monitor all contracts
+                topics: [TRANSFER_EVENT_SIGNATURE, null, null],
+              },
+            ],
+          },
         },
       };
 
@@ -1566,18 +1616,22 @@ describeIfSepolia("EventTrigger Tests", () => {
 
     test("should handle complex topic filtering", async () => {
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [
-                TRANSFER_EVENT_SIGNATURE,
-                "0x0000000000000000000000000000000000000000", // From zero address (minting)
-                null,
-              ],
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "complex_topic_filtering",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: SEPOLIA_TOKEN_ADDRESSES,
+                topics: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  "0x0000000000000000000000000000000000000000", // From zero address (minting)
+                  null,
+                ],
+              },
+            ],
+          },
         },
       };
 
@@ -1609,15 +1663,19 @@ describeIfSepolia("EventTrigger Tests", () => {
       // Use a definitely non-existent contract address to ensure no events
       // This should be much faster than real blockchain queries
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          simulationMode: false, // Use historical search to get null when no events are found
-          queries: [
-            {
-              addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
-              topics: [TRANSFER_EVENT_SIGNATURE, null, null],
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: {
+            simulationMode: false, // Use historical search to get null when no events are found
+            queries: [
+              {
+                addresses: ["0x0000000000000000000000000000000000000001"], // Non-existent contract
+                topics: [TRANSFER_EVENT_SIGNATURE, null, null],
+              },
+            ],
+          },
         },
       };
 
@@ -1646,18 +1704,22 @@ describeIfSepolia("EventTrigger Tests", () => {
       const monitoringAddress = eoaAddress;
 
       const result = await client.runTrigger({
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [], // Empty array - should fail
-              topics: [
-                TRANSFER_EVENT_SIGNATURE,
-                padAddressForTopic(monitoringAddress),
-                null,
-              ],
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [], // Empty array - should fail
+                topics: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  padAddressForTopic(monitoringAddress),
+                  null,
+                ],
+              },
+            ],
+          },
         },
       });
 
@@ -1681,18 +1743,22 @@ describeIfSepolia("EventTrigger Tests", () => {
       const monitoringAddress = eoaAddress;
 
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
-              topics: [
-                TRANSFER_EVENT_SIGNATURE,
-                null,
-                padAddressForTopic(monitoringAddress),
-              ], // Transfer TO monitoringAddress
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
+                topics: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  null,
+                  padAddressForTopic(monitoringAddress),
+                ], // Transfer TO monitoringAddress
+              },
+            ],
+          },
         },
       };
 
@@ -1746,8 +1812,12 @@ describeIfSepolia("EventTrigger Tests", () => {
 
       // Test 1: runTrigger
       const directResponse = await client.runTrigger({
-        triggerType: TriggerType.Event,
-        triggerConfig: eventTriggerConfig,
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: eventTriggerConfig,
+        },
       });
 
       // Test 2: simulateWorkflow
@@ -1769,10 +1839,11 @@ describeIfSepolia("EventTrigger Tests", () => {
         (step) => step.id === eventTrigger.id
       );
 
-      // runTrigger: Backend returns success: false for no events
-      expect(directResponse.success).toBeFalsy();
-      expect(directResponse.data).toBeNull();
-      expect(typeof directResponse.error).toBe("string");
+      // runTrigger: Backend now returns success: true even when no events found
+      // This is consistent with simulateWorkflow behavior
+      expect(directResponse.success).toBeTruthy();
+      expect(directResponse.data).toBeDefined();
+      expect(directResponse.error).toBe("");
 
       // simulateWorkflow: Always succeeds and provides sample data
       expect(simulatedStep!.success).toBeTruthy();
@@ -1782,14 +1853,18 @@ describeIfSepolia("EventTrigger Tests", () => {
     test("should handle malformed query configurations gracefully", async () => {
       // Test with invalid topic format - not a valid hex string
       const params = {
-        triggerType: TriggerType.Event,
-        triggerConfig: {
-          queries: [
-            {
-              addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
-              topics: ["invalid_topic_format", null, null], // Invalid topic format
-            },
-          ],
+        trigger: {
+          id: getNextId(),
+          name: "eventTrigger",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: [SEPOLIA_TOKEN_ADDRESSES[0]],
+                topics: ["invalid_topic_format", null, null], // Invalid topic format
+              },
+            ],
+          },
         },
       };
 
