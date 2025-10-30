@@ -724,7 +724,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
     //
     // To enable these tests:
     // 1. Set SENDGRID_KEY in your .env file (e.g., SENDGRID_KEY="SG.xxx...")
-    // 2. Run: yarn test tests/templates/unipswapv3_stoploss.test.ts -t "SendGrid Integration Tests"
+    // 2. Run: yarn test tests/templates/uniswapv3_stoploss.test.ts -t "SendGrid Integration Tests"
     //
     // WARNING: These tests will send actual emails!
 
