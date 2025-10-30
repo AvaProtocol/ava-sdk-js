@@ -364,7 +364,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
       expect(typeof data).toBe("object");
       expect(Array.isArray(data)).toBe(false);
       expect(Array.isArray(metadata)).toBe(true);
-      expect(metadata.length).toBe(params.nodeConfig.methodCalls.length);
+      expect(metadata.length).toBe(params.node.data.methodCalls.length);
 
       // NEW: Access flattened data directly
       expect(data.decimals).toBeDefined();
@@ -1394,7 +1394,7 @@ describeIfSepolia("ContractRead Node Tests", () => {
       expect(typeof data).toBe("object");
       expect(Array.isArray(data)).toBe(false);
       expect(Array.isArray(metadata)).toBe(true);
-      expect(metadata.length).toBe(params.nodeConfig.methodCalls.length);
+      expect(metadata.length).toBe(params.node.data.methodCalls.length);
 
       // NEW: Access flattened data directly
       expect(data.decimals).toBeDefined();
