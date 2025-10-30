@@ -37,19 +37,19 @@ await client.runTrigger({
   - `RunTriggerRequest` now has `trigger: TriggerProps` instead of `triggerType` + `triggerConfig`
   - Added optional `triggerInput` field for input variables
 
-### 3. Test Files (⏳ Partial - 2/6 files converted)
+### 3. Test Files (⏳ Partial - 4/6 files converted, 32% done)
 
 #### Converted Files:
 - ✅ `tests/templates/exported-workflow-consistency.test.ts` (1 occurrence)
 - ✅ `tests/templates/telegram-alert-on-transfer.test.ts` (1 occurrence)
+- ✅ `tests/triggers/block.test.ts` (8 occurrences)
+- ✅ `tests/triggers/cron.test.ts` (11 occurrences)
 
 #### Pending Conversion (waiting for backend):
-- ⏳ `tests/triggers/manual.test.ts` (29 occurrences)
 - ⏳ `tests/triggers/eventTrigger.test.ts` (16 occurrences)
-- ⏳ `tests/triggers/cron.test.ts` (11 occurrences)
-- ⏳ `tests/triggers/block.test.ts` (8 occurrences)
+- ⏳ `tests/triggers/manual.test.ts` (29 occurrences)
 
-**Total**: 66 occurrences to convert (2 done, 64 remaining)
+**Total**: 66 occurrences (21 done, 45 remaining)
 
 ## Backend Dependency
 
