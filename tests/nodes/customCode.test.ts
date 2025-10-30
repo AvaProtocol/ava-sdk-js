@@ -764,8 +764,12 @@ describe("CustomCode Node Tests", () => {
 
       // Test 1: runNodeWithInputs
       const directResponse = await client.runNodeWithInputs({
-        nodeType: NodeType.CustomCode,
-        nodeConfig: customCodeConfig,
+        node: {
+          id: getNextId(),
+          name: "consistency_direct_test",
+          type: NodeType.CustomCode,
+          data: customCodeConfig,
+        },
         inputVariables: inputVariables,
       });
 

@@ -303,9 +303,12 @@ describe("LoopNode Tests", () => {
 
     test("should handle complex object array", async () => {
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: complexDataLoopProps},
-
+        node: {
+          id: getNextId(),
+          name: "loop_complex_test",
+          type: NodeType.Loop,
+          data: complexDataLoopProps,
+        },
         inputVariables: {
           complexArray: [
             { id: "a1", name: "Alice", value: 10 },

@@ -85,8 +85,12 @@ describe("Exported Workflow Consistency Tests", () => {
       };
 
       const params = {
-        nodeType: NodeType.Loop,
-        nodeConfig: loopNodeProps,
+        node: {
+          id: getNextId(),
+          name: "loop_test",
+          type: NodeType.Loop,
+          data: loopNodeProps,
+        },
         inputVariables: {
           manualTrigger: testData,
         },
