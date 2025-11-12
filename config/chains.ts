@@ -38,6 +38,14 @@ export type ChainDef = {
 };
 
 const staticChains: Record<string, Omit<ChainDef, "rpcUrl">> = {
+  dev: {
+    avsEndpoint: "localhost:2206",
+    chainId: "11155111", // Sepolia chain ID for local dev
+    chainEndpoint: null,
+    explorerApiBaseUrl: "https://api-sepolia.etherscan.io/api",
+    tokens: {},
+    oracles: {},
+  },
   sepolia: {
     avsEndpoint: "aggregator-sepolia.avaprotocol.org:2206",
     chainId: "11155111",
