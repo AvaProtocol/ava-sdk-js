@@ -82,34 +82,38 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
   afterEach(async () => await removeCreatedWorkflows(client, createdIdMap));
 
   // Function to get workflow config matching run-logs.log structure
-  const getWorkflowConfig = () => ({
-    name: "Using sdk test wallet",
-    chainId: parseInt(chainId),
-    settings: {
-      name: "Using sdk test wallet",
-      chain: getChainNameFromId(parseInt(chainId)),
-      amount: "10000", // 0.01 USDC (6 decimals)
-      runner: smartWalletAddress,
-      chain_id: parseInt(chainId),
-      uniswapv3_pool: {
-        id: UNISWAP_V3_POOL.id,
-        token0: {
-          id: WETH_ADDRESS,
-          symbol: "WETH",
+  // The workflow name is used in email summaries; include the specific test name.
+  const getWorkflowConfig = (testName?: string) => {
+    const name = `SDK Test: ${testName ?? "UniswapV3 StopLoss"}`;
+    return {
+      name,
+      chainId: parseInt(chainId),
+      settings: {
+        name,
+        chain: getChainNameFromId(parseInt(chainId)),
+        amount: "10000", // 0.01 USDC (6 decimals)
+        runner: smartWalletAddress,
+        chain_id: parseInt(chainId),
+        uniswapv3_pool: {
+          id: UNISWAP_V3_POOL.id,
+          token0: {
+            id: WETH_ADDRESS,
+            symbol: "WETH",
+          },
+          token1: {
+            id: USDC_ADDRESS,
+            symbol: tokens.USDC.symbol,
+          },
+          feeTier: UNISWAP_V3_POOL.feeTier,
         },
-        token1: {
-          id: USDC_ADDRESS,
-          symbol: tokens.USDC.symbol,
+        uniswapv3_contracts: {
+          permit2: UNISWAP_V3_CONTRACTS.permit2,
+          quoterV2: UNISWAP_V3_CONTRACTS.quoterV2,
+          swapRouter02: UNISWAP_V3_CONTRACTS.swapRouter02,
         },
-        feeTier: UNISWAP_V3_POOL.feeTier,
       },
-      uniswapv3_contracts: {
-        permit2: UNISWAP_V3_CONTRACTS.permit2,
-        quoterV2: UNISWAP_V3_CONTRACTS.quoterV2,
-        swapRouter02: UNISWAP_V3_CONTRACTS.swapRouter02,
-      },
-    },
-  });
+    };
+  };
 
   const USDC_ABI: AbiElement[] = [
     {
@@ -572,7 +576,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
   describe("simulateWorkflow Tests", () => {
     test("should simulate stoploss workflow end-to-end", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig();
+      const config = getWorkflowConfig(expect.getState().currentTestName);
 
       const workflow = client.createWorkflow({
         smartWalletAddress,
@@ -652,7 +656,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
   describe("Deploy + Trigger Workflow Tests", () => {
     test("should deploy and trigger stoploss workflow end-to-end", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig();
+      const config = getWorkflowConfig(expect.getState().currentTestName);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -755,7 +759,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
 
     test("should send email with summarization via simulateWorkflow", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig();
+      const config = getWorkflowConfig(expect.getState().currentTestName);
 
       // Update email node to use test recipient
       const emailNode = workflowData.nodes.find(
@@ -822,7 +826,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
 
     test("should send email with summarization via deployed workflow", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig();
+      const config = getWorkflowConfig(expect.getState().currentTestName);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 

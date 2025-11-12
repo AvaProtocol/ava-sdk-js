@@ -199,15 +199,45 @@ async function generateApiToken(targetAddress?: string) {
 }
 
 async function getWorkflows(
+  ownerAddress: string,
   address: string,
   options: { cursor: string; limit: number }
 ) {
+  const trimmedOwner = ownerAddress?.trim();
+  if (!trimmedOwner) {
+    console.error("❌ Error: Owner address is required for getWorkflows command");
+    console.error("   Usage: yarn start getWorkflows <owner_address> <smart_wallet_address?> [cursor] [limit]");
+    return;
+  }
+
+  const hasExplicitAddresses = Boolean(address && address.trim() !== "");
+  const targetAddressForAuth = trimmedOwner;
+
+  const authStrategy: AuthStrategy = avsApiKey
+    ? "prefer-api-key"
+    : "private-key-only";
+
+  let workflowsClient: Client;
+  try {
+    workflowsClient = await getAuthenticatedClient({
+      strategy: authStrategy,
+      targetAddress: targetAddressForAuth,
+      commandName: "getWorkflows",
+    });
+  } catch (error) {
+    console.error(
+      "❌ Failed to authenticate for getWorkflows:",
+      (error as Error).message || error
+    );
+    return;
+  }
+
   // If no address provided, get wallets first and use their addresses
   let params: string[];
 
-  if (!address || address.trim() === "") {
+  if (!hasExplicitAddresses) {
     console.log("No smart wallet address provided, fetching all wallets...");
-    const wallets = await client.getWallets();
+    const wallets = await workflowsClient.getWallets();
 
     if (_.isEmpty(wallets)) {
       console.log(
@@ -219,7 +249,14 @@ async function getWorkflows(
     params = _.map(wallets, (wallet: any) => wallet.address);
     console.log(`Found ${wallets.length} wallets:`, params);
   } else {
-    params = _.split(address, ",");
+    params = _.split(address, ",")
+      .map((addr) => addr.trim())
+      .filter(Boolean);
+  }
+
+  if (_.isEmpty(params)) {
+    console.log("No valid smart wallet addresses provided.");
+    return;
   }
 
   const validOptions = {
@@ -237,7 +274,7 @@ async function getWorkflows(
   );
 
   try {
-    const result = await client.getWorkflows(params, {
+    const result = await workflowsClient.getWorkflows(params, {
       after: validOptions.cursor,
       limit: validOptions.limit,
     });
@@ -266,9 +303,9 @@ async function getWorkflows(
       console.error("   yarn start getWallet <salt>");
       console.error("");
       console.error(
-        "3. Or simply run without an address to use all your wallets:"
+        "3. Or run without a wallet address to list all wallets for the owner:"
       );
-      console.error("   yarn start getWorkflows");
+      console.error("   yarn start getWorkflows <owner_address>");
     } else {
       console.error("❌ Error:", error.message || error);
     }
@@ -1044,13 +1081,12 @@ async function examineWorkflow(workflowId: string) {
     fs.writeFileSync(outFile, output, "utf8");
     console.log(`\nWrote sanitized log: ${outFile}`);
     if (failed?.id) console.log(`First failed execution: ${failed.id}`);
-  } catch (error) {
-    console.error("❌ Failed to examine workflow:", error);
+  } catch (error: any) {
+    console.error("❌ Failed to examine workflow:", error.message || error);
     console.error("This could be due to:");
     console.error("1. Workflow not found (check the workflow ID)");
     console.error("2. Network connectivity issues");
     console.error("3. Admin API key issues (already handled above)");
-    throw error;
   }
 }
 
@@ -1411,10 +1447,16 @@ const main = async (cmd: string) => {
     }
 
     case "getWorkflows": {
-      const address = commandArgs.args[0] || ""; // Provide default empty string
-      await getWorkflows(address, {
-        cursor: commandArgs.args[1] || "",
-        limit: _.toNumber(commandArgs.args[2]) || 20,
+      const ownerAddress = commandArgs.args[0];
+      if (!ownerAddress) {
+        console.error("❌ Usage: yarn start getWorkflows <owner_address> <smart_wallet_address?> [cursor] [limit]");
+        break;
+      }
+
+      const addressesArg = commandArgs.args[1] || "";
+      await getWorkflows(ownerAddress, addressesArg, {
+        cursor: commandArgs.args[2] || "",
+        limit: _.toNumber(commandArgs.args[3]) || 20,
       });
       break;
     }
@@ -1666,7 +1708,7 @@ const main = async (cmd: string) => {
       getWallets:                                         to list smart wallet addresses that have been created
       hideAllWallets:                                     to hide all wallets except the default salt:0 wallet
       withdraw [recipient-address] [amount-eth] [token]:   to test withdrawal functionality (defaults to EOA owner, 0.01 ETH)
-      getWorkflows <smart-wallet>,... <cursor> <limit>:  to list all workflows of given smart wallet addresses, with cursor and limit
+      getWorkflows <owner-address> <smart-wallet>,... <cursor> <limit>:  to list workflows for an owner, optionally scoped to specific smart wallets
       getWorkflow <workflow-id>:                          to get workflow detail. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecutions <workflow-id> <cursor> <limit>:       to get workflow execution history. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecution <workflow-id> <execution-id>:          to get a single workflow execution. a permission error is thrown if the eoa isn't the smart wallet owner
