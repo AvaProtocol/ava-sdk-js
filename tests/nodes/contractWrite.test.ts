@@ -1856,9 +1856,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       // Should fail with clear error message about hyphenated variables
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.error).toContain("undefined");
-      // The error message format is: "could not resolve template variable in method 'methodName': variable=undefined"
-      expect(result.error).toContain("could not resolve template variable");
+      // The error message format is: "could not resolve variable settings.recipient-address in method 'transfer'"
+      expect(result.error).toContain("could not resolve variable");
     });
 
     test("should support mathematical expressions with hyphens", async () => {

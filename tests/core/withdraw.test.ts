@@ -129,7 +129,9 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         smartWalletAddress: wallet.address,
       };
 
-      const response = await client.withdrawFunds(withdrawRequest);
+      const response = await client.withdrawFunds(withdrawRequest, {
+        timeout: TimeoutPresets.SLOW,
+      });
 
       console.log(
         "USDC withdrawal response:",

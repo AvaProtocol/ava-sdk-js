@@ -82,7 +82,7 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    npm run gen-apikey
 
    # or if not using docker, run the following command in ./EigenLayer-AVS/out
-   ./out/ap create-api-key --role=admin --subject=apikey
+   ./out/ap create-api-key --config ./config/aggregator-base.yaml --role=admin --subject=apikey
    ```
 
 5. Run the test command with env variables set in `.env.test`.

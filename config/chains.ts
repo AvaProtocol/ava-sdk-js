@@ -54,7 +54,7 @@ const staticChains: Record<string, Omit<ChainDef, "rpcUrl">> = {
     tokens: {
       ETH: {
         address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-        name: "Ethereum",
+        name: "Ether",
         symbol: "ETH",
         decimals: 18,
       },

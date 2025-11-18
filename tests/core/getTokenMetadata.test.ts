@@ -29,7 +29,7 @@ function assertTokenMetadata(
   expect(response.token).toBeTruthy();
 
   if (response.token) {
-    expect(response.token.address).toBe(expectedToken.address.toLowerCase());
+    expect(response.token.id).toBe(expectedToken.address.toLowerCase());
 
     // Flexible assertions - check if server returns expected data or placeholder
     if (response.token.name === "Unknown Token") {
@@ -264,7 +264,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
         expect(response.found).toBeTruthy();
         expect(response.token).toBeDefined();
         if (response.token) {
-          expect(response.token.address).toBe(lowercaseAddress); // Should always return lowercase
+          expect(response.token.id).toBe(lowercaseAddress); // Should always return lowercase
           // All responses should have the same data
           expect(response.token.name).toBe(responses[0].token?.name);
           expect(response.token.symbol).toBe(responses[0].token?.symbol);
@@ -288,9 +288,9 @@ describeOrSkip("getTokenMetadata Tests", () => {
     if (response.token) {
       const token: TokenMetadata = response.token;
 
-      // Validate address format
-      expect(token.address).toMatch(/^0x[a-f0-9]{40}$/);
-      expect(token.address).toBe(token.address.toLowerCase());
+      // Validate id format
+      expect(token.id).toMatch(/^0x[a-f0-9]{40}$/);
+      expect(token.id).toBe(token.id.toLowerCase());
 
       // Validate string fields are not empty
       expect(token.name.length).toBeGreaterThan(0);
@@ -301,7 +301,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
       expect(token.decimals).toBeLessThanOrEqual(24); // NEAR has 24 decimals
 
       // Validate types
-      expect(typeof token.address).toBe("string");
+      expect(typeof token.id).toBe("string");
       expect(typeof token.name).toBe("string");
       expect(typeof token.symbol).toBe("string");
       expect(typeof token.decimals).toBe("number");
@@ -334,7 +334,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
       expect(response.token).toBeDefined();
 
       if (response.token) {
-        expect(response.token.address).toBe(addresses[index].toLowerCase());
+        expect(response.token.id).toBe(addresses[index].toLowerCase());
       }
     });
   });
@@ -374,7 +374,7 @@ describeOrSkip("getTokenMetadata Tests", () => {
     "should handle %s with %d decimals (flexible)",
     async (tokenName, token, expectedDecimals) => {
       const response = await client.getTokenMetadata({
-        address: token.address,
+        address: token.address, // This is the request parameter, not the response field
       });
 
       expect(response.found).toBeTruthy();

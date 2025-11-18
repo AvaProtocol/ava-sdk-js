@@ -8,8 +8,8 @@ import * as jspb from "google-protobuf";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 export class TokenMetadata extends jspb.Message { 
-    getAddress(): string;
-    setAddress(value: string): TokenMetadata;
+    getId(): string;
+    setId(value: string): TokenMetadata;
     getName(): string;
     setName(value: string): TokenMetadata;
     getSymbol(): string;
@@ -29,7 +29,7 @@ export class TokenMetadata extends jspb.Message {
 
 export namespace TokenMetadata {
     export type AsObject = {
-        address: string,
+        id: string,
         name: string,
         symbol: string,
         decimals: number,

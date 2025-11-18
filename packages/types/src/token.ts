@@ -5,7 +5,7 @@
  */
 export interface TokenMetadata {
   /** Contract address (lowercase, normalized) */
-  address: string;
+  id: string;
   /** Token name (e.g., "USD Coin") */
   name: string;
   /** Token symbol (e.g., "USDC") */
