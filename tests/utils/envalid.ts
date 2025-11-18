@@ -1,9 +1,9 @@
 import { cleanEnv, str, makeValidator } from "envalid";
 import dotenv from "dotenv";
 // Use single-source chain config
-import { getChains, type ChainDef } from "../../config/chains";
+import { getChains, type ChainConfig } from "../../config/chains";
 const CHAINS = getChains();
-const chains = CHAINS as Record<string, ChainDef>;
+const chains = CHAINS as Record<string, ChainConfig>;
 
 // Define allowed environment values
 const ALLOWED_ENVIRONMENTS = [

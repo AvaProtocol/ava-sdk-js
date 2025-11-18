@@ -25,7 +25,8 @@ export type UniswapV3PoolDef = {
   feeTier: string;
 };
 
-export type ChainDef = {
+export type ChainConfig = {
+  name: string;
   avsEndpoint: string;
   chainId: string;
   chainEndpoint: string | null;
@@ -37,7 +38,7 @@ export type ChainDef = {
   rpcUrl?: string;
 };
 
-const staticChains: Record<string, Omit<ChainDef, "rpcUrl">> = {
+const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
   dev: {
     avsEndpoint: "localhost:2206",
     chainId: "11155111", // Sepolia chain ID for local dev
@@ -159,13 +160,14 @@ function resolveChainEndpoint(): string | null {
   return null;
 }
 
-export function getChains(): Record<string, ChainDef> {
-  const out: Record<string, ChainDef> = {};
+export function getChains(): Record<string, ChainConfig> {
+  const out: Record<string, ChainConfig> = {};
   for (const [key, value] of Object.entries(staticChains)) {
     const envEndpoint = resolveChainEndpoint();
     const chainEndpoint = value.chainEndpoint || envEndpoint || null;
     out[key] = {
       ...value,
+      name: key,
       chainEndpoint,
       rpcUrl: chainEndpoint ? `https://${chainEndpoint}` : undefined,
     };
