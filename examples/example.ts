@@ -1083,6 +1083,11 @@ async function examineWorkflow(workflowId: string) {
     if (failed?.id) console.log(`First failed execution: ${failed.id}`);
   } catch (error: any) {
     console.error("❌ Failed to examine workflow:", error.message || error);
+    if (error && error.stack) {
+      console.error("Stack trace:", error.stack);
+    } else {
+      console.error("Error object:", error);
+    }
     console.error("This could be due to:");
     console.error("1. Workflow not found (check the workflow ID)");
     console.error("2. Network connectivity issues");
