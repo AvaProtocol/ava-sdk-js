@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import _ from "lodash";
 import { getConfig } from "./envalid";
+import { getChains, type ChainDef } from "../../config/chains";
 
 const config = getConfig();
 
@@ -33,13 +34,16 @@ export const describeIfEthereum = describeIfChain(CHAIN_IDS.ETHEREUM);
 export const describeIfBase = describeIfChain(CHAIN_IDS.BASE);
 export const describeIfBaseSepolia = describeIfChain(CHAIN_IDS.BASE_SEPOLIA);
 
-// Helper function to get current chain info
-export const getCurrentChain = () => {
+// Helper function to get current chain config (ChainDef) which contains chainId and chainName
+export const getCurrentChain = (): ChainDef => {
   const currentChainId = parseInt(config.chainId);
-  const chainName =
-    Object.entries(CHAIN_IDS).find(([, id]) => id === currentChainId)?.[0] ||
-    "UNKNOWN";
-  return { chainId: currentChainId, chainName };
+  const chainConfigName = getChainNameFromId(currentChainId);
+  const chains = getChains();
+  const chainConfig = chains[chainConfigName];
+  if (!chainConfig) {
+    throw new Error(`Chain config not found for chain ID: ${currentChainId} (${chainConfigName})`);
+  }
+  return chainConfig;
 };
 
 // Convert chain ID to chain name (lowercase with hyphens for testnets)
@@ -56,6 +60,7 @@ export const getChainNameFromId = (chainId: number): string => {
   };
   return chainMap[chainId] || `chain-${chainId}`;
 };
+
 
 // Helper to create minimal inputVariables.settings for workflows
 export const getSettings = (

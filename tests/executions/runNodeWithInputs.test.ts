@@ -9,6 +9,7 @@ import {
   authenticateClient,
   getCurrentChain,
   getChainNameFromId,
+  getSmartWalletWithBalance,
 } from "../utils/utils";
 import util from "util";
 
@@ -25,8 +26,8 @@ describe("RunNodeWithInputs", () => {
   describe("isSimulated parameter behavior", () => {
     test("should ignore isSimulated parameter for read-only operations", async () => {
       const wallet = await getSmartWallet(client);
-      const { chainId } = getCurrentChain();
-      const chainName = getChainNameFromId(chainId);
+      const chainConfig = getCurrentChain();
+      const chainName = getChainNameFromId(parseInt(chainConfig.chainId));
       
       const params = {
         node: {
@@ -63,17 +64,21 @@ describe("RunNodeWithInputs", () => {
       
       // Read-only operations (Balance, ContractRead) always use RPC directly, regardless of isSimulated
       expect(result.executionContext).toBeDefined();
-      expect(result.executionContext.provider).toBe("chain_rpc");
+      expect(result.executionContext?.provider).toBe("chain_rpc");
     });
   });
 
   describe("ContractWrite with isSimulated parameter", () => {
     test("should use Tenderly simulation when isSimulated is true", async () => {
       const wallet = await getSmartWallet(client);
+      const chainConfig = getCurrentChain();
       
-      // USDC contract on Sepolia
-      const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-      const swapRouterAddress = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E"; // Uniswap SwapRouter
+      if (!chainConfig?.tokens?.USDC || !chainConfig?.uniswapV3Contracts?.swapRouter02) {
+        throw new Error(`Missing USDC token or Uniswap SwapRouter02 address in config for chain: ${chainConfig.chainId}`);
+      }
+      
+      const usdcAddress = chainConfig.tokens.USDC.address;
+      const swapRouterAddress = chainConfig.uniswapV3Contracts.swapRouter02;
       
       const params = {
         node: {
@@ -85,7 +90,7 @@ describe("RunNodeWithInputs", () => {
             contractAbi: [
               {
                 name: "approve",
-                type: "function",
+                type: "function" as const,
                 inputs: [
                   { name: "spender", type: "address" },
                   { name: "value", type: "uint256" },
@@ -125,16 +130,20 @@ describe("RunNodeWithInputs", () => {
       
       // Should use Tenderly simulation
       expect(result.executionContext).toBeDefined();
-      expect(result.executionContext.isSimulated).toBe(true);
-      expect(result.executionContext.provider).toBe("tenderly");
+      expect(result.executionContext?.isSimulated).toBe(true);
+      expect(result.executionContext?.provider).toBe("tenderly");
     });
 
     test("should attempt real UserOp execution when isSimulated is false", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await getSmartWalletWithBalance(client);
+      const chainConfig = getCurrentChain();
       
-      // USDC contract on Sepolia
-      const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-      const swapRouterAddress = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E"; // Uniswap SwapRouter
+      if (!chainConfig?.tokens?.USDC || !chainConfig?.uniswapV3Contracts?.swapRouter02) {
+        throw new Error(`Missing USDC token or Uniswap SwapRouter02 address in config for chain: ${chainConfig.chainId}`);
+      }
+      
+      const usdcAddress = chainConfig.tokens.USDC.address;
+      const swapRouterAddress = chainConfig.uniswapV3Contracts.swapRouter02;
       
       const params = {
         node: {
@@ -146,7 +155,7 @@ describe("RunNodeWithInputs", () => {
             contractAbi: [
               {
                 name: "approve",
-                type: "function",
+                type: "function" as const,
                 inputs: [
                   { name: "spender", type: "address" },
                   { name: "value", type: "uint256" },
