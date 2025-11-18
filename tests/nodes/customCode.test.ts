@@ -165,7 +165,7 @@ describe("CustomCode Node Tests", () => {
       expect(result.data).toEqual({});
     });
 
-    test("CustomCode should return null when code returns undefined (protobuf limitation)", async () => {
+    test("CustomCode should return null when code returns undefined (protobuf limitation) - CURRENTLY FAILS DUE TO BACKEND VALIDATION BUG", async () => {
       const params = {
         node: {
           id: getNextId(),
@@ -188,9 +188,9 @@ describe("CustomCode Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
+      // NOTE: The protobuf limitation still exists - protobuf cannot represent undefined, only null.
+      // The backend SHOULD execute the code and convert undefined return value to null.Á
       expect(result.success).toBe(true);
-      // Note: JavaScript `undefined` becomes `null` in protobuf conversion since protobuf
-      // only supports JSON-compatible types and has no representation for `undefined`
       expect(result.data).toBeNull();
     });
 
@@ -366,13 +366,13 @@ describe("CustomCode Node Tests", () => {
           name: "custom_code_test",
           type: NodeType.CustomCode,
           data: {
-          lang: Lang.JavaScript,
-          source: `
+            lang: Lang.JavaScript,
+            source: `
             const inputValue = trigger.data.value;
             const multiplier = trigger.data.multiplier || 2;
             return inputValue * multiplier;
           `,
-        }
+          },
         },
         inputVariables: {
           trigger: {
@@ -400,8 +400,8 @@ describe("CustomCode Node Tests", () => {
           name: "custom_code_test",
           type: NodeType.CustomCode,
           data: {
-          lang: Lang.JavaScript,
-          source: `
+            lang: Lang.JavaScript,
+            source: `
             const _ = require('lodash');
             const numbers = trigger.data.numbers;
             return {
@@ -410,7 +410,7 @@ describe("CustomCode Node Tests", () => {
               grouped: _.groupBy(numbers, n => n % 2 === 0 ? 'even' : 'odd')
             };
           `,
-        }
+          },
         },
         inputVariables: {
           trigger: {
@@ -436,8 +436,8 @@ describe("CustomCode Node Tests", () => {
           name: "custom_code_test",
           type: NodeType.CustomCode,
           data: {
-          lang: Lang.JavaScript,
-          source: `
+            lang: Lang.JavaScript,
+            source: `
             const dayjs = require('dayjs');
             const inputDate = trigger.data.date;
             const date = dayjs(inputDate);
@@ -447,7 +447,7 @@ describe("CustomCode Node Tests", () => {
               dayOfWeek: date.format('dddd')
             };
           `,
-        }
+          },
         },
         inputVariables: {
           trigger: {
@@ -473,13 +473,13 @@ describe("CustomCode Node Tests", () => {
           name: "custom_code_test",
           type: NodeType.CustomCode,
           data: {
-          lang: Lang.JavaScript,
-          source: `
+            lang: Lang.JavaScript,
+            source: `
             // This will cause an error
             const result = trigger.data.nonexistent.property;
             return result;
           `,
-        }
+          },
         },
         inputVariables: {
           trigger: {

@@ -15,6 +15,7 @@ import {
   ExecutionStatus,
   ContractWriteNodeData,
   RestAPINodeData,
+  TimeoutPresets,
 } from "@avaprotocol/types";
 import {
   getNextId,
@@ -576,7 +577,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
   describe("simulateWorkflow Tests", () => {
     test("should simulate stoploss workflow end-to-end", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig(expect.getState().currentTestName);
+      const config = getWorkflowConfig(expect.getState()?.currentTestName);
 
       const workflow = client.createWorkflow({
         smartWalletAddress,
@@ -605,12 +606,15 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         )
       );
 
-      const simulation = await client.simulateWorkflow({
-        ...workflow.toJson(),
-        inputVariables: {
-          settings: config.settings,
+      const simulation = await client.simulateWorkflow(
+        {
+          ...workflow.toJson(),
+          inputVariables: {
+            settings: config.settings,
+          },
         },
-      });
+        { timeout: TimeoutPresets.SLOW }
+      );
 
       console.log(
         "✅ Simulation result:",
@@ -656,7 +660,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
   describe("Deploy + Trigger Workflow Tests", () => {
     test("should deploy and trigger stoploss workflow end-to-end", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig(expect.getState().currentTestName);
+      const config = getWorkflowConfig(expect.getState()?.currentTestName);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -684,14 +688,17 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         workflowId = await client.submitWorkflow(workflow);
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Block,
-            blockNumber: currentBlockNumber + triggerInterval,
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Block,
+              blockNumber: currentBlockNumber + triggerInterval,
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -759,7 +766,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
 
     test("should send email with summarization via simulateWorkflow", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig(expect.getState().currentTestName);
+      const config = getWorkflowConfig(expect.getState()?.currentTestName);
 
       // Update email node to use test recipient
       const emailNode = workflowData.nodes.find(
@@ -802,12 +809,15 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         name: config.name,
       });
 
-      const simulation = await client.simulateWorkflow({
-        ...workflow.toJson(),
-        inputVariables: {
-          settings: config.settings,
+      const simulation = await client.simulateWorkflow(
+        {
+          ...workflow.toJson(),
+          inputVariables: {
+            settings: config.settings,
+          },
         },
-      });
+        { timeout: TimeoutPresets.SLOW }
+      );
 
       // Same backend bug as first test
       expect([ExecutionStatus.Success, ExecutionStatus.PartialSuccess]).toContain(
@@ -826,7 +836,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
 
     test("should send email with summarization via deployed workflow", async () => {
       const workflowData = createStopLossWorkflow();
-      const config = getWorkflowConfig(expect.getState().currentTestName);
+      const config = getWorkflowConfig(expect.getState()?.currentTestName);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
 
@@ -883,14 +893,17 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         workflowId = await client.submitWorkflow(workflow);
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Block,
-            blockNumber: currentBlockNumber + triggerInterval,
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Block,
+              blockNumber: currentBlockNumber + triggerInterval,
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,

@@ -2665,7 +2665,7 @@ proto.aggregator.TokenMetadata.prototype.toObject = function(opt_includeInstance
  */
 proto.aggregator.TokenMetadata.toObject = function(includeInstance, msg) {
   var f, obj = {
-    address: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
     symbol: jspb.Message.getFieldWithDefault(msg, 3, ""),
     decimals: jspb.Message.getFieldWithDefault(msg, 4, 0)
@@ -2707,7 +2707,7 @@ proto.aggregator.TokenMetadata.deserializeBinaryFromReader = function(msg, reade
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setAddress(value);
+      msg.setId(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
@@ -2750,7 +2750,7 @@ proto.aggregator.TokenMetadata.prototype.serializeBinary = function() {
  */
 proto.aggregator.TokenMetadata.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getAddress();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -2782,10 +2782,10 @@ proto.aggregator.TokenMetadata.serializeBinaryToWriter = function(message, write
 
 
 /**
- * optional string address = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.aggregator.TokenMetadata.prototype.getAddress = function() {
+proto.aggregator.TokenMetadata.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -2794,7 +2794,7 @@ proto.aggregator.TokenMetadata.prototype.getAddress = function() {
  * @param {string} value
  * @return {!proto.aggregator.TokenMetadata} returns this
  */
-proto.aggregator.TokenMetadata.prototype.setAddress = function(value) {
+proto.aggregator.TokenMetadata.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
