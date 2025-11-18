@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.10.4
+
+### Patch Changes
+
+- 363c57a: fix: updated tokenMetadata to use id instead address
+- Updated dependencies [363c57a]
+  - @avaprotocol/types@2.8.4
+
 ## 2.10.3
 
 ### Patch Changes

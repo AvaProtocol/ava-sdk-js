@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.8.4
+
+### Patch Changes
+
+- 363c57a: fix: updated tokenMetadata to use id instead address
+
 ## 2.8.3
 
 ### Patch Changes
