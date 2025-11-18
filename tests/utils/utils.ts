@@ -6,7 +6,7 @@ import { ethers } from "ethers";
 import { UlidMonotonic } from "id128";
 import _ from "lodash";
 import { getConfig } from "./envalid";
-import { getChains, type ChainDef } from "../../config/chains";
+import { getChains, type ChainConfig } from "../../config/chains";
 
 const config = getConfig();
 
@@ -34,8 +34,8 @@ export const describeIfEthereum = describeIfChain(CHAIN_IDS.ETHEREUM);
 export const describeIfBase = describeIfChain(CHAIN_IDS.BASE);
 export const describeIfBaseSepolia = describeIfChain(CHAIN_IDS.BASE_SEPOLIA);
 
-// Helper function to get current chain config (ChainDef) which contains chainId and chainName
-export const getCurrentChain = (): ChainDef => {
+// Helper function to get current chain config (ChainConfig) which contains chainId and name
+export const getCurrentChain = (): ChainConfig => {
   const currentChainId = parseInt(config.chainId);
   const chainConfigName = getChainNameFromId(currentChainId);
   const chains = getChains();

@@ -8,7 +8,6 @@ import {
   getClient,
   authenticateClient,
   getCurrentChain,
-  getChainNameFromId,
   getSmartWalletWithBalance,
 } from "../utils/utils";
 import util from "util";
@@ -27,7 +26,7 @@ describe("RunNodeWithInputs", () => {
     test("should ignore isSimulated parameter for read-only operations", async () => {
       const wallet = await getSmartWallet(client);
       const chainConfig = getCurrentChain();
-      const chainName = getChainNameFromId(parseInt(chainConfig.chainId));
+      const chainName = chainConfig.name;
       
       const params = {
         node: {
