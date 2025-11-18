@@ -9,7 +9,9 @@ After investigating the EigenLayer-AVS backend codebase, here are the findings f
 ## 1. `stepInput.test.ts` - PartialSuccess Instead of Success
 
 ### Test Details
-- **Test:** "should show input data for both trigger and node in execution steps using comprehensive manual trigger config"
+- **File:** `tests/executions/stepInput.test.ts`
+- **Test Name:** "should show input data for both trigger and node in execution steps using comprehensive manual trigger config"
+- **Full Command:** `yarn test tests/executions/stepInput.test.ts -t "should show input data for both trigger and node in execution steps using comprehensive manual trigger config"`
 - **Expected:** `ExecutionStatus.Success`
 - **Received:** `ExecutionStatus.PartialSuccess`
 
@@ -61,7 +63,9 @@ if failedCount == 0 {
 ## 2. `partialSuccess.test.ts` - ETH Transfer Succeeding When It Should Fail
 
 ### Test Details
-- **Test:** "should return PartialSuccess when ETH transfer fails but other nodes succeed"
+- **File:** `tests/executions/partialSuccess.test.ts`
+- **Test Name:** "should return PartialSuccess when ETH transfer fails but other nodes succeed"
+- **Full Command:** `yarn test tests/executions/partialSuccess.test.ts -t "should return PartialSuccess when ETH transfer fails but other nodes succeed"`
 - **Expected:** `ethTransferStep.success` to be `false`
 - **Received:** `true` (ETH transfer is succeeding)
 
@@ -114,7 +118,9 @@ finalizeStep(executionLog, true, nil, "", logMessage) // Always succeeds in simu
 ## 3. `runNodeWithInputs.test.ts` - Real Execution Failing
 
 ### Test Details
-- **Test:** "should attempt real UserOp execution when isSimulated is false"
+- **File:** `tests/executions/runNodeWithInputs.test.ts`
+- **Test Name:** "should attempt real UserOp execution when isSimulated is false"
+- **Full Command:** `yarn test tests/executions/runNodeWithInputs.test.ts -t "should attempt real UserOp execution when isSimulated is false"`
 - **Expected:** `result.success` to be `true`
 - **Received:** `false`
 
@@ -190,12 +196,32 @@ func (r *ContractWriteProcessor) resolveSimulationMode(node *avsproto.ContractWr
 
 ---
 
+## Quick Test Commands
+
+Run all three failing tests:
+```bash
+yarn test tests/executions/stepInput.test.ts -t "should show input data for both trigger and node in execution steps using comprehensive manual trigger config"
+yarn test tests/executions/partialSuccess.test.ts -t "should return PartialSuccess when ETH transfer fails but other nodes succeed"
+yarn test tests/executions/runNodeWithInputs.test.ts -t "should attempt real UserOp execution when isSimulated is false"
+```
+
+Run entire test suites:
+```bash
+yarn test tests/executions/stepInput.test.ts
+yarn test tests/executions/partialSuccess.test.ts
+yarn test tests/executions/runNodeWithInputs.test.ts
+```
+
 ## Next Steps
 
 1. **For stepInput.test.ts:**
-   - Add logging to check REST API node step success status
-   - Verify mock API endpoint is being called correctly
-   - Check if there's a silent failure in REST API execution
+   - ✅ Added debug logging to check REST API node step success status
+   - ✅ Added logging to verify mock API endpoint is being called correctly
+   - ✅ Added logging to check if there's a silent failure in REST API execution
+   - ✅ **FIXED:** `buildTriggerVariableData` wasn't adding `headers` and `pathParams` directly to trigger variable for ManualTrigger
+   - **Fix Location:** `EigenLayer-AVS/core/taskengine/node_utils.go:23-36`
+   - **Root Cause:** Templates expected `ManualTrigger.pathParams.endpoint` but only `ManualTrigger.input.pathParams.endpoint` was available
+   - **Solution:** Added `headers` and `pathParams` directly to `triggerVarData` for ManualTrigger in `buildTriggerVariableData`
 
 2. **For partialSuccess.test.ts:**
    - Verify wallet balance (might actually have >1 ETH)
