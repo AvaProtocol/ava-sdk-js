@@ -453,7 +453,7 @@ class Client extends BaseClient {
   /**
    * Get the list of smart wallets; new wallets can be added to the list by calling `getWallet`
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<SmartWallet[]>} - The list of SmartWallet objects
+   * @returns {Promise<SmartWallet[]>} - The list of SmartWallet objects, sorted by salt
    */
   async getWallets(options?: RequestOptions): Promise<SmartWallet[]> {
     const request = new avs_pb.ListWalletReq();
@@ -463,7 +463,14 @@ class Client extends BaseClient {
       avs_pb.ListWalletReq
     >("listWallets", request, options);
 
-    return result.getItemsList().map((item) => item.toObject());
+    const wallets = result.getItemsList().map((item) => item.toObject());
+    
+    // Sort wallets by salt (string comparison)
+    return wallets.sort((a, b) => {
+      const saltA = a.salt || "";
+      const saltB = b.salt || "";
+      return saltA.localeCompare(saltB);
+    });
   }
 
   /**

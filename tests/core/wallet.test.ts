@@ -210,6 +210,29 @@ describe("Wallet Management Tests", () => {
         expect(wallet.isHidden).toBeFalsy();
       }
     });
+
+    test("should return wallets sorted by salt", async () => {
+      // Create wallets with different salt values
+      const salt1 = "10";
+      const salt2 = "2";
+      const salt3 = "0";
+      const salt4 = "1";
+
+      await client.getWallet({ salt: salt1 });
+      await client.getWallet({ salt: salt2 });
+      await client.getWallet({ salt: salt3 });
+      await client.getWallet({ salt: salt4 });
+
+      const wallets = await client.getWallets();
+
+      // Extract salt values from wallets and verify they are sorted
+      const saltValues = wallets.map((w) => w.salt || "");
+      
+      // Verify the wallets are sorted by salt (string comparison)
+      // In lexicographic order: "0" < "1" < "10" < "2"
+      const sortedSalts = [...saltValues].sort((a, b) => a.localeCompare(b));
+      expect(saltValues).toEqual(sortedSalts);
+    });
   });
 
   describe("setWallet Tests", () => {
