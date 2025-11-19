@@ -76,7 +76,7 @@ yarn start --avs-target base getWallets 0xYourWalletAddress
 
 ### Smart Wallets Related
 
-- Create a new smart wallet:
+- Create a new smart wallet (for authenticated user):
 
   ```bash
   yarn start getWallet 1
@@ -85,6 +85,15 @@ yarn start --avs-target base getWallets 0xYourWalletAddress
 - Create a smart wallet on Base mainnet:
   ```bash
   yarn start --avs-target base getWallet 1
+  ```
+
+- Create/get a wallet for a specific owner (requires API key):
+  ```bash
+  # Query wallet with salt "0" for a specific owner
+  yarn start getWallet 0xOwnerAddressHere 0
+  
+  # With factory address
+  yarn start getWallet 0xOwnerAddressHere 0 0xFactoryAddress
   ```
 
 - List all registered smart wallets:
@@ -101,6 +110,51 @@ yarn start --avs-target base getWallets 0xYourWalletAddress
   ```bash
   yarn start --avs-target base getWallets 0xYourWalletAddressHere
   ```
+
+**🔑 Querying Any Owner's Wallets**
+
+The script supports querying wallets and workflows for any owner address when using API key authentication:
+
+- **Query wallets for a specific owner:**
+  ```bash
+  # Requires AVS_API_KEY in environment
+  yarn start getWallets 0xOwnerAddressHere
+  yarn start --avs-target base getWallets 0xOwnerAddressHere
+  ```
+
+- **Query workflows for a specific owner:**
+  ```bash
+  # Requires AVS_API_KEY in environment
+  yarn start getWorkflows 0xOwnerAddressHere
+  yarn start getWorkflows 0xOwnerAddressHere 0xSmartWalletAddress
+  ```
+
+**How it works:**
+- When you pass an owner address as an argument, the script uses API key authentication (admin access)
+- Without an owner address, commands default to your own wallets (derived from `TEST_PRIVATE_KEY`)
+- API key authentication allows cross-wallet queries, while private key authentication is limited to your own wallets
+
+**⚠️ Important: Factory Address and Salt "0"**
+
+Wallet addresses are derived from three components: **owner + factory + salt**. This means:
+
+- If you call `getWallet` with salt `"0"` without specifying a factory address, it uses the **default factory** from the server configuration.
+- If `getWallets` returns a wallet with salt `"0"` that was created with a **different factory address**, you must pass that same factory address to `getWallet` to get the matching address.
+
+**Example:**
+```bash
+# First, check what wallets exist and their factory addresses
+yarn start getWallets
+
+# If you see a wallet with salt "0" and factory "0xABC123...", 
+# you must use that factory when calling getWallet:
+yarn start getWallet 0 0xABC123...
+```
+
+**Why this happens:**
+- Different factory contracts produce different wallet addresses even with the same salt
+- Always check `getWallets` first to see the factory address used for existing wallets
+- If you don't specify a factory, `getWallet` uses the server's default factory, which may differ from the factory used when the wallet was originally created
 
 ### Workflow Related
 
