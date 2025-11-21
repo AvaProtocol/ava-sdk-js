@@ -557,7 +557,7 @@ class Client extends BaseClient {
    * Withdraw funds from a smart wallet using UserOp
    * @param {WithdrawFundsRequest} withdrawRequest - The withdraw request parameters
    * @param {string} withdrawRequest.recipientAddress - The recipient address to send funds to
-   * @param {string} withdrawRequest.amount - The amount to withdraw in wei for ETH or smallest token unit for ERC20
+   * @param {string} withdrawRequest.amount - The amount to withdraw in wei for ETH or smallest token unit for ERC20. Use "max" to withdraw maximum available balance
    * @param {string} withdrawRequest.token - Token type: "ETH" for native ETH, or contract address for ERC20 tokens
    * @param {string} withdrawRequest.smartWalletAddress - Required: Smart wallet address to withdraw from (must be from user's getWallet() call)
    * @param {RequestOptions} options - Request options

@@ -267,7 +267,7 @@ export interface SimulateWorkflowRequest {
 // Withdraw funds request interface
 export interface WithdrawFundsRequest {
   recipientAddress: string;
-  amount: string; // Amount in wei for ETH or smallest token unit for ERC20
+  amount: string; // Amount in wei for ETH or smallest token unit for ERC20. Use "max" to withdraw maximum available balance
   token: string; // "ETH" for native ETH, or contract address for ERC20 tokens
   smartWalletAddress: string; // Required: Smart wallet address to withdraw from (must be from user's getWallet() call)
 }
