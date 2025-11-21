@@ -98,7 +98,7 @@ async function generateSignature(
 }
 
 // Common authentication function that handles both API key and private key authentication
-type AuthStrategy = 'api-key-only' | 'private-key-only' | 'prefer-api-key';
+type AuthStrategy = "api-key-only" | "private-key-only" | "prefer-api-key";
 
 interface AuthOptions {
   strategy: AuthStrategy;
@@ -107,40 +107,51 @@ interface AuthOptions {
 }
 
 async function getAuthenticatedClient(options: AuthOptions): Promise<Client> {
-  const { strategy, targetAddress, commandName = 'command' } = options;
-  
+  const { strategy, targetAddress, commandName = "command" } = options;
+
   // Create a new client for authentication
   const authClient = new Client({
     endpoint: config.AP_AVS_RPC,
   });
 
   // API key authentication
-  if ((strategy === 'api-key-only' || strategy === 'prefer-api-key') && avsApiKey) {
+  if (
+    (strategy === "api-key-only" || strategy === "prefer-api-key") &&
+    avsApiKey
+  ) {
     console.log(`🔑 Using API key authentication for ${commandName}...`);
-    
+
     try {
       // Use a dummy address for API key authentication (admin access)
-      const dummyAddress = targetAddress || "0x0000000000000000000000000000000000000000";
+      const dummyAddress =
+        targetAddress || "0x0000000000000000000000000000000000000000";
       const { message } = await authClient.getSignatureFormat(dummyAddress);
-      
+
       const result = await authClient.authWithAPIKey({
         message,
         apiKey: avsApiKey,
       });
-      
+
       authClient.setAuthKey(result.authKey);
       console.log("✅ API key authentication successful");
       return authClient;
     } catch (error) {
-      console.error("❌ API key authentication failed:", (error as Error).message);
+      console.error(
+        "❌ API key authentication failed:",
+        (error as Error).message
+      );
       console.error("   Possible causes:");
       console.error("   1. API key is invalid or expired");
-      console.error("   2. API key is for a different environment (dev/sepolia/base)");
+      console.error(
+        "   2. API key is for a different environment (dev/sepolia/base)"
+      );
       console.error("   3. API key doesn't have admin privileges");
-      console.error(`   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`);
-      
+      console.error(
+        `   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`
+      );
+
       // If this was api-key-only strategy, throw the error
-      if (strategy === 'api-key-only') {
+      if (strategy === "api-key-only") {
         throw error;
       }
       // For prefer-api-key strategy, continue to try private key auth below
@@ -148,20 +159,25 @@ async function getAuthenticatedClient(options: AuthOptions): Promise<Client> {
   }
 
   // Private key authentication (fallback or primary)
-  if ((strategy === 'private-key-only' || strategy === 'prefer-api-key') && privateKey) {
-    console.log(`🔑 Using signature-based authentication for ${commandName}...`);
-    
+  if (
+    (strategy === "private-key-only" || strategy === "prefer-api-key") &&
+    privateKey
+  ) {
+    console.log(
+      `🔑 Using signature-based authentication for ${commandName}...`
+    );
+
     const wallet = new ethers.Wallet(privateKey);
     const eoaAddress = wallet.address;
-    
+
     const { message } = await authClient.getSignatureFormat(eoaAddress);
     const signature = await generateSignature(message, privateKey);
-    
+
     const result = await authClient.authWithSignature({
       message,
       signature,
     } as any);
-    
+
     authClient.setAuthKey(result.authKey);
     console.log("✅ Signature-based authentication successful");
     return authClient;
@@ -171,28 +187,37 @@ async function getAuthenticatedClient(options: AuthOptions): Promise<Client> {
   const availableMethods = [];
   if (avsApiKey) availableMethods.push("AVS_API_KEY");
   if (privateKey) availableMethods.push("TEST_PRIVATE_KEY");
-  
-  const requiredMethods = strategy === 'api-key-only' ? ['AVS_API_KEY'] : 
-                         strategy === 'private-key-only' ? ['TEST_PRIVATE_KEY'] :
-                         ['AVS_API_KEY', 'TEST_PRIVATE_KEY'];
-  
-  throw new Error(`❌ Authentication failed for ${commandName}. Available: [${availableMethods.join(', ')}], Required: one of [${requiredMethods.join(', ')}]`);
+
+  const requiredMethods =
+    strategy === "api-key-only"
+      ? ["AVS_API_KEY"]
+      : strategy === "private-key-only"
+      ? ["TEST_PRIVATE_KEY"]
+      : ["AVS_API_KEY", "TEST_PRIVATE_KEY"];
+
+  throw new Error(
+    `❌ Authentication failed for ${commandName}. Available: [${availableMethods.join(
+      ", "
+    )}], Required: one of [${requiredMethods.join(", ")}]`
+  );
 }
 
 async function generateApiToken(targetAddress?: string) {
   // Check if API key is available for admin access
   if (avsApiKey) {
     if (!targetAddress) {
-      throw new Error("❌ Target address is required when using API key authentication");
+      throw new Error(
+        "❌ Target address is required when using API key authentication"
+      );
     }
     console.log("🔑 Using API key authentication for admin access");
     const { message } = await client.getSignatureFormat(targetAddress);
-    
+
     const result = await client.authWithAPIKey({
       message,
       apiKey: avsApiKey,
     });
-    
+
     client.setAuthKey(result.authKey);
     return result;
   } else if (privateKey) {
@@ -213,7 +238,9 @@ async function generateApiToken(targetAddress?: string) {
     client.setAuthKey(result.authKey);
     return result;
   } else {
-    throw new Error("❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided");
+    throw new Error(
+      "❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided"
+    );
   }
 }
 
@@ -224,8 +251,12 @@ async function getWorkflows(
 ) {
   const trimmedOwner = ownerAddress?.trim();
   if (!trimmedOwner) {
-    console.error("❌ Error: Owner address is required for getWorkflows command");
-    console.error("   Usage: yarn start getWorkflows <owner_address> <smart_wallet_address?> [cursor] [limit]");
+    console.error(
+      "❌ Error: Owner address is required for getWorkflows command"
+    );
+    console.error(
+      "   Usage: yarn start getWorkflows <owner_address> <smart_wallet_address?> [cursor] [limit]"
+    );
     return;
   }
 
@@ -342,8 +373,8 @@ async function getExecutions(
 
   // Use common authentication function with preference for API key (allows cross-wallet access)
   const executionsClient = await getAuthenticatedClient({
-    strategy: 'prefer-api-key',
-    commandName: 'getExecutions'
+    strategy: "prefer-api-key",
+    commandName: "getExecutions",
   });
 
   if (_.isEmpty(workflowIdsString)) {
@@ -505,6 +536,338 @@ async function hideAllWallets() {
   }
 
   console.log("\n🎉 Finished hiding wallets!");
+}
+
+// Withdraw all balances (ETH and ERC20 tokens) from a smart wallet to its owner
+async function withdrawAllFromWallet(
+  smartWalletAddress: string,
+  ownerAddress?: string
+) {
+  if (!smartWalletAddress || !smartWalletAddress.trim()) {
+    console.error("❌ Error: Smart wallet address is required");
+    console.error(
+      "   Usage: yarn start withdrawAll <wallet-address> [owner-address]"
+    );
+    console.error(
+      "   Example: yarn start --avs-target base withdrawAll 0x123..."
+    );
+    console.error(
+      "   Example: yarn start --avs-target base withdrawAll 0x123... 0xowner..."
+    );
+    return;
+  }
+
+  const walletAddress = smartWalletAddress.trim();
+
+  // Authenticate first
+  if (!privateKey && !avsApiKey) {
+    console.error(
+      "❌ Error: Either TEST_PRIVATE_KEY or AVS_API_KEY is required"
+    );
+    return;
+  }
+
+  let withdrawClient: Client;
+  try {
+    withdrawClient = await getAuthenticatedClient({
+      strategy: avsApiKey ? "prefer-api-key" : "private-key-only",
+      commandName: "withdrawAll",
+    });
+  } catch (error) {
+    console.error("❌ Failed to authenticate:", (error as Error).message);
+    return;
+  }
+
+  // Get RPC provider
+  // Try config.RPC_PROVIDER first, then fall back to CHAIN_ENDPOINT from env
+  let rpcUrl = config.RPC_PROVIDER;
+  if (!rpcUrl) {
+    const chainEndpoint = process.env.CHAIN_ENDPOINT;
+    if (chainEndpoint) {
+      // CHAIN_ENDPOINT might already include https:// or might be just the host
+      if (
+        chainEndpoint.startsWith("http://") ||
+        chainEndpoint.startsWith("https://")
+      ) {
+        rpcUrl = chainEndpoint;
+      } else {
+        rpcUrl = `https://${chainEndpoint}`;
+      }
+    }
+  }
+
+  if (!rpcUrl) {
+    console.error("❌ Error: RPC_PROVIDER not configured for this environment");
+    console.error(
+      "   Set CHAIN_ENDPOINT environment variable or configure RPC_PROVIDER in config"
+    );
+    return;
+  }
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+
+  // Get available tokens from chain config (config/chains.ts)
+  // The chain config is defined in /Users/mikasa/Code/ava-sdk-js/config/chains.ts
+  // For Base (chainId: 8453), the tokens config is currently empty: tokens: {}
+  // For Sepolia, tokens are defined: USDC, WETH, LINK, etc.
+  const availableTokens = config.TOKENS || {};
+
+  // Common Base mainnet tokens (fallback when config.TOKENS is empty)
+  // These are hardcoded as fallback for Base since config.TOKENS is empty in chains.ts
+  const commonBaseTokens: Record<
+    string,
+    { address: string; symbol: string; decimals: number }
+  > = {
+    USDC: {
+      address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      symbol: "USDC",
+      decimals: 6,
+    },
+    WETH: {
+      address: "0x4200000000000000000000000000000000000006",
+      symbol: "WETH",
+      decimals: 18,
+    },
+  };
+
+  // Use config tokens if available, otherwise use common tokens for Base
+  const tokensToCheck =
+    Object.keys(availableTokens).length > 0
+      ? availableTokens
+      : config.chainId === "8453"
+      ? commonBaseTokens
+      : {};
+
+  // ERC20 token ABI
+  const erc20Abi = [
+    "function balanceOf(address account) view returns (uint256)",
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)",
+  ];
+
+  if (Object.keys(tokensToCheck).length === 0) {
+    console.log(
+      `⚠️  Warning: No ERC20 tokens configured for this chain (chainId: ${config.chainId})`
+    );
+    console.log(
+      `   Only ETH balances will be checked. To check ERC20 tokens, add them to config/chains.ts\n`
+    );
+  }
+
+  if (!ethers.isAddress(walletAddress)) {
+    console.error(`❌ Invalid wallet address: ${walletAddress}`);
+    return;
+  }
+
+  // Get all wallets to find owners (if owner not provided)
+  let resolvedOwnerAddress = ownerAddress?.trim();
+
+  if (!resolvedOwnerAddress) {
+    console.log("🔍 Fetching wallet information...");
+    const allWallets = await withdrawClient.getWallets();
+    const walletMap = new Map<string, any>();
+    for (const wallet of allWallets) {
+      walletMap.set(wallet.address.toLowerCase(), wallet);
+    }
+
+    // Find wallet owner from getWallets() response
+    const walletInfo = walletMap.get(walletAddress.toLowerCase());
+    if (walletInfo && walletInfo.owner) {
+      resolvedOwnerAddress = walletInfo.owner;
+    }
+  }
+
+  console.log(`\n💰 Processing wallet: ${walletAddress}`);
+
+  // If still no owner found, show error
+  if (!resolvedOwnerAddress) {
+    console.error(`❌ Could not find owner for wallet ${walletAddress}`);
+    console.error(
+      `   Make sure this wallet exists and you have permission to access it`
+    );
+    console.error(
+      `   Or provide the owner address: yarn start withdrawAll ${walletAddress} <owner-address>`
+    );
+    return;
+  }
+
+  console.log(`   Owner: ${resolvedOwnerAddress}`);
+
+  // Get ETH balance
+  const ethBalance = await provider.getBalance(walletAddress);
+  const ethBalanceFormatted = ethers.formatEther(ethBalance);
+  console.log(`   ETH Balance: ${ethBalanceFormatted} ETH`);
+
+  // Get ERC20 token balances
+  const tokenBalances: Array<{
+    address: string;
+    symbol: string;
+    balance: bigint;
+    decimals: number;
+  }> = [];
+
+  for (const tokenKey of Object.keys(tokensToCheck)) {
+    const token = tokensToCheck[tokenKey as keyof typeof tokensToCheck] as any;
+    if (!token || !token.address) continue;
+
+    try {
+      const tokenContract = new ethers.Contract(
+        token.address,
+        erc20Abi,
+        provider
+      );
+      const balance = await tokenContract.balanceOf(walletAddress);
+      const decimals = await tokenContract.decimals();
+      const symbol = await tokenContract.symbol();
+
+      if (balance > BigInt(0)) {
+        tokenBalances.push({
+          address: token.address,
+          symbol,
+          balance,
+          decimals,
+        });
+        const formattedBalance = ethers.formatUnits(balance, decimals);
+        console.log(`   ${symbol} Balance: ${formattedBalance} ${symbol}`);
+      }
+    } catch {
+      // Skip tokens that fail (might not exist on this chain)
+      continue;
+    }
+  }
+
+  // Helper function to wait for transaction to be processed
+  // This prevents nonce issues when sending multiple transactions quickly
+  const waitForTransactionProcessing = async (
+    response: any,
+    waitSeconds: number = 5
+  ) => {
+    if (response.transactionHash) {
+      // Transaction already confirmed, wait a bit for it to be fully processed
+      console.log(
+        `   ⏳ Waiting ${waitSeconds}s for transaction to be processed...`
+      );
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
+      return;
+    }
+
+    if (response.userOpHash) {
+      // Transaction is pending, wait longer for it to be mined
+      console.log(
+        `   ⏳ Waiting ${
+          waitSeconds * 2
+        }s for pending transaction to be mined...`
+      );
+      await new Promise((resolve) =>
+        setTimeout(resolve, waitSeconds * 2 * 1000)
+      );
+      return;
+    }
+  };
+
+  // Withdraw ETH if balance > 0
+  // Backend will handle gas reserve calculation and "withdraw all" logic
+  const currentEthBalance = await provider.getBalance(walletAddress);
+
+  if (currentEthBalance > BigInt(0)) {
+    try {
+      console.log(
+        `   💸 Withdrawing all available ETH (balance: ${ethers.formatEther(currentEthBalance)} ETH)...`
+      );
+      const withdrawRequest = {
+        recipientAddress: resolvedOwnerAddress,
+        amount: "max", // Use "max" to withdraw all available balance
+        token: "ETH",
+        smartWalletAddress: walletAddress,
+      };
+
+      const response = await withdrawClient.withdrawFunds(withdrawRequest, {
+        timeout: { timeout: 180000 },
+      });
+
+      if (response.success) {
+        const txInfo = response.transactionHash
+          ? `tx: ${response.transactionHash}`
+          : response.userOpHash
+          ? `userOpHash: ${response.userOpHash} (pending)`
+          : `status: ${response.status}`;
+        console.log(`   ✅ ETH withdrawal successful: ${txInfo}`);
+
+        // Wait for transaction to be processed before proceeding to next withdrawal
+        // This prevents nonce issues when sending multiple transactions quickly
+        await waitForTransactionProcessing(response, 5);
+      } else {
+        console.error(`   ❌ ETH withdrawal failed: ${response.message}`);
+      }
+    } catch (error: any) {
+      console.error(`   ❌ ETH withdrawal error: ${error.message}`);
+    }
+  } else {
+    console.log(`   ℹ️  No ETH to withdraw`);
+  }
+
+  // Withdraw ERC20 tokens
+  for (const tokenInfo of tokenBalances) {
+    // Re-check token balance before withdrawal (in case it was already withdrawn)
+    try {
+      const tokenContract = new ethers.Contract(
+        tokenInfo.address,
+        erc20Abi,
+        provider
+      );
+      const currentBalance = await tokenContract.balanceOf(walletAddress);
+
+      if (currentBalance === BigInt(0)) {
+        console.log(
+          `   ℹ️  ${tokenInfo.symbol} balance is already zero, skipping`
+        );
+        continue;
+      }
+
+      const formattedBalance = ethers.formatUnits(
+        currentBalance,
+        tokenInfo.decimals
+      );
+      console.log(
+        `   💸 Withdrawing ${formattedBalance} ${tokenInfo.symbol}...`
+      );
+
+      const withdrawRequest = {
+        recipientAddress: resolvedOwnerAddress,
+        amount: currentBalance.toString(),
+        token: tokenInfo.address,
+        smartWalletAddress: walletAddress,
+      };
+
+      const response = await withdrawClient.withdrawFunds(withdrawRequest, {
+        timeout: { timeout: 180000 },
+      });
+
+      if (response.success) {
+        const txInfo = response.transactionHash
+          ? `tx: ${response.transactionHash}`
+          : response.userOpHash
+          ? `userOpHash: ${response.userOpHash} (pending)`
+          : `status: ${response.status}`;
+        console.log(
+          `   ✅ ${tokenInfo.symbol} withdrawal successful: ${txInfo}`
+        );
+
+        // Wait for transaction to be processed before proceeding to next withdrawal
+        // This prevents nonce issues when sending multiple transactions quickly
+        await waitForTransactionProcessing(response, 5);
+      } else {
+        console.error(
+          `   ❌ ${tokenInfo.symbol} withdrawal failed: ${response.message}`
+        );
+      }
+    } catch (error: any) {
+      console.error(
+        `   ❌ ${tokenInfo.symbol} withdrawal error: ${error.message}`
+      );
+    }
+  }
+
+  console.log(`\n🎉 Finished processing wallet!`);
 }
 
 function getTaskDataQuery(owner) {
@@ -1040,10 +1403,12 @@ async function examineWorkflow(workflowId: string) {
   const avsApiKey = process.env.AVS_API_KEY;
   if (!avsApiKey) {
     console.error("❌ AVS_API_KEY is required for examineWorkflow command");
-    console.error("   This command needs admin privileges to access workflows from any wallet");
+    console.error(
+      "   This command needs admin privileges to access workflows from any wallet"
+    );
     return;
   }
-  
+
   console.log(`🔑 Using API key from .env.${currentEnv}`);
 
   const adminClient = new Client({
@@ -1054,49 +1419,74 @@ async function examineWorkflow(workflowId: string) {
     console.log("🔑 Authenticating with admin API key...");
     const dummyAddress = "0x0000000000000000000000000000000000000000";
     const { message } = await adminClient.getSignatureFormat(dummyAddress);
-    
+
     const result = await adminClient.authWithAPIKey({
       message,
       apiKey: avsApiKey,
     });
-    
+
     adminClient.setAuthKey(result.authKey);
     console.log("✅ Admin authentication successful");
   } catch (error) {
-    console.error("❌ Admin API key authentication failed:", (error as Error).message);
+    console.error(
+      "❌ Admin API key authentication failed:",
+      (error as Error).message
+    );
     console.error("   Possible causes:");
     console.error("   1. API key is invalid or expired");
-    console.error("   2. API key is for a different environment (dev/sepolia/base)");
+    console.error(
+      "   2. API key is for a different environment (dev/sepolia/base)"
+    );
     console.error("   3. API key doesn't have admin privileges");
-    console.error(`   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`);
+    console.error(
+      `   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`
+    );
     return;
   }
 
   try {
-    
     // Now query the workflow using admin privileges
     const workflow = await adminClient.getWorkflow(workflowId);
-    const execList: any = await adminClient.getExecutions([workflowId], { after: "", limit: 50 });
+    const execList: any = await adminClient.getExecutions([workflowId], {
+      after: "",
+      limit: 50,
+    });
     const items: any[] = execList?.items || execList || [];
-    const failed = items.find((e: any) => e && e.success === false) || items.find((e: any) => !!e?.error);
+    const failed =
+      items.find((e: any) => e && e.success === false) ||
+      items.find((e: any) => !!e?.error);
     let executionDetail: any = null;
     if (failed?.id) {
       executionDetail = await adminClient.getExecution(workflowId, failed.id);
     }
-    
+
     const header = `examineWorkflow for ${workflowId}`;
-    const wfStr = `\n=== Workflow ===\n` + util.inspect(workflow, { depth: null, colors: false });
+    const wfStr =
+      `\n=== Workflow ===\n` +
+      util.inspect(workflow, { depth: null, colors: false });
     const firstFive = Array.isArray(items) ? items.slice(0, 5) : items;
-    const listStr = `\n\n=== Executions (first 5) ===\n` + util.inspect(firstFive, { depth: null, colors: false });
+    const listStr =
+      `\n\n=== Executions (first 5) ===\n` +
+      util.inspect(firstFive, { depth: null, colors: false });
     const detailStr = executionDetail
-      ? `\n\n=== First Failed Execution Detail (${failed.id}) ===\n` + util.inspect(executionDetail, { depth: null, colors: false })
+      ? `\n\n=== First Failed Execution Detail (${failed.id}) ===\n` +
+        util.inspect(executionDetail, { depth: null, colors: false })
       : `\n\n=== First Failed Execution Detail ===\nNo failed execution found.`;
     let output = [header, wfStr, listStr, detailStr].join("\n");
     // Sanitize: redact bot token and chat_id
-    output = output.replace(/https:\/\/api\.telegram\.org\/bot[0-9A-Za-z:_-]+/g, "https://api.telegram.org/bot<REDACTED>");
+    output = output.replace(
+      /https:\/\/api\.telegram\.org\/bot[0-9A-Za-z:_-]+/g,
+      "https://api.telegram.org/bot<REDACTED>"
+    );
     output = output.replace(/\b(bot)([0-9A-Za-z:_-]{20,})/g, "$1<REDACTED>");
-    output = output.replace(/(\"chat_id\"\s*:\s*\")(?:-?\d+)(\")/g, '$1<REDACTED>$2');
-    const outFile = path.join(__dirname, `examineWorkflow.${workflowId}.sanitized.log`);
+    output = output.replace(
+      /(\"chat_id\"\s*:\s*\")(?:-?\d+)(\")/g,
+      "$1<REDACTED>$2"
+    );
+    const outFile = path.join(
+      __dirname,
+      `examineWorkflow.${workflowId}.sanitized.log`
+    );
     fs.writeFileSync(outFile, output, "utf8");
     console.log(`\nWrote sanitized log: ${outFile}`);
     if (failed?.id) console.log(`First failed execution: ${failed.id}`);
@@ -1288,19 +1678,21 @@ export function demonstrateInputDataHelpers() {
 
 const main = async (cmd: string) => {
   if (!privateKey && !avsApiKey) {
-    console.log("❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided in environment variables");
+    console.log(
+      "❌ Either TEST_PRIVATE_KEY or AVS_API_KEY must be provided in environment variables"
+    );
     return;
   }
-  
+
   let owner: string | null = null;
   let authKey: string | null = null;
-  
+
   // Show wallet address if using private key (for informational purposes)
   if (privateKey) {
     const walletAddress = await getWalletAddress(privateKey);
     console.log("🔑 Wallet:", walletAddress);
   }
-  
+
   // For private key authentication (when no API key), authenticate immediately
   if (privateKey && !avsApiKey) {
     const result = await generateApiToken();
@@ -1392,50 +1784,68 @@ For detailed documentation, see: examples/README.md
       if (authKey) {
         console.log("The authkey associate with the EOA is", authKey);
       } else {
-        console.log("❌ Auth key not available. API key authentication requires target address for each command.");
+        console.log(
+          "❌ Auth key not available. API key authentication requires target address for each command."
+        );
       }
       break;
     case "getWallets": {
       const targetAddress = commandArgs.args[0]; // Optional address argument
-      
+
       if (targetAddress) {
         // Address provided - use API key authentication for cross-user queries
         if (!avsApiKey) {
-          console.error("❌ Error: API key is required to query wallets for specific addresses");
-          console.error("   To query wallets for a specific address, set AVS_API_KEY in your environment");
-          console.error("   To query your own wallets, use: yarn start getWallets (without address)");
+          console.error(
+            "❌ Error: API key is required to query wallets for specific addresses"
+          );
+          console.error(
+            "   To query wallets for a specific address, set AVS_API_KEY in your environment"
+          );
+          console.error(
+            "   To query your own wallets, use: yarn start getWallets (without address)"
+          );
           break;
         }
-        console.log(`🔍 Querying wallets for address: ${targetAddress} (using API key)`);
+        console.log(
+          `🔍 Querying wallets for address: ${targetAddress} (using API key)`
+        );
         await generateApiToken(targetAddress);
       } else {
         // No address provided - use private key authentication for own wallets
         if (!privateKey) {
-          console.error("❌ Error: TEST_PRIVATE_KEY is required for signature-based authentication");
-          console.error("   To query your own wallets, set TEST_PRIVATE_KEY in your environment");
-          console.error("   To query specific addresses, use: yarn start getWallets <address> (requires AVS_API_KEY)");
+          console.error(
+            "❌ Error: TEST_PRIVATE_KEY is required for signature-based authentication"
+          );
+          console.error(
+            "   To query your own wallets, set TEST_PRIVATE_KEY in your environment"
+          );
+          console.error(
+            "   To query specific addresses, use: yarn start getWallets <address> (requires AVS_API_KEY)"
+          );
           break;
         }
-        console.log("🔍 Getting wallets for authenticated user (using private key)");
+        console.log(
+          "🔍 Getting wallets for authenticated user (using private key)"
+        );
         if (!authKey) {
           // Authenticate with private key if not already done
           console.log("🔑 Using signature-based authentication");
           const wallet = new ethers.Wallet(privateKey);
           const eoaAddress = wallet.address;
-          
+
           const { message } = await client.getSignatureFormat(eoaAddress);
           const signature = await generateSignature(message, privateKey);
-          
+
           const result = await client.authWithSignature({
             message,
             signature,
           } as any);
-          
+
           client.setAuthKey(result.authKey);
           authKey = result.authKey;
         }
       }
-      
+
       const wallets = await client.getWallets();
       console.log(
         "getWallets response:\n",
@@ -1450,11 +1860,11 @@ For detailed documentation, see: examples/README.md
       // Support two formats:
       // 1. getWallet <salt> [factory-address] - for authenticated user
       // 2. getWallet <owner-address> <salt> [factory-address] - for specific owner (requires API key)
-      
+
       let ownerAddress: string | undefined;
       let salt: string;
       let factoryAddress: string | undefined;
-      
+
       // Check if first argument is an owner address (starts with 0x and is 42 chars)
       const firstArg = commandArgs.args[0];
       if (firstArg && firstArg.startsWith("0x") && firstArg.length === 42) {
@@ -1462,31 +1872,51 @@ For detailed documentation, see: examples/README.md
         ownerAddress = firstArg;
         salt = commandArgs.args[1];
         factoryAddress = commandArgs.args[2];
-        
+
         if (!avsApiKey) {
-          console.error("❌ Error: API key is required to query wallets for specific owner addresses");
-          console.error("   To query wallets for a specific owner, set AVS_API_KEY in your environment");
-          console.error("   To query your own wallet, use: yarn start getWallet <salt> [factory-address]");
+          console.error(
+            "❌ Error: API key is required to query wallets for specific owner addresses"
+          );
+          console.error(
+            "   To query wallets for a specific owner, set AVS_API_KEY in your environment"
+          );
+          console.error(
+            "   To query your own wallet, use: yarn start getWallet <salt> [factory-address]"
+          );
           break;
         }
-        
+
         if (!salt) {
-          console.error("❌ Error: Salt is required when specifying owner address");
+          console.error(
+            "❌ Error: Salt is required when specifying owner address"
+          );
           console.error("");
           console.error("USAGE:");
-          console.error("  yarn start getWallet <owner-address> <salt> [factory-address]");
+          console.error(
+            "  yarn start getWallet <owner-address> <salt> [factory-address]"
+          );
           console.error("");
           console.error("EXAMPLES:");
           console.error("  # Get wallet with salt '0' for specific owner");
-          console.error("  yarn start getWallet 0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788 0");
+          console.error(
+            "  yarn start getWallet 0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788 0"
+          );
           console.error("");
-          console.error("  # Get wallet with salt '0' and factory for specific owner");
-          console.error("  yarn start getWallet 0xOwnerAddress 0 0x1234567890123456789012345678901234567890");
+          console.error(
+            "  # Get wallet with salt '0' and factory for specific owner"
+          );
+          console.error(
+            "  yarn start getWallet 0xOwnerAddress 0 0x1234567890123456789012345678901234567890"
+          );
           console.error("");
           console.error("  # On Base mainnet");
-          console.error("  yarn start --avs-target base getWallet 0xOwnerAddress 0");
+          console.error(
+            "  yarn start --avs-target base getWallet 0xOwnerAddress 0"
+          );
           console.error("");
-          console.error("⚠️  NOTE: This command requires AVS_API_KEY to be set in your environment");
+          console.error(
+            "⚠️  NOTE: This command requires AVS_API_KEY to be set in your environment"
+          );
           console.error("");
           console.error("For more help: yarn start --help getWallet");
           break;
@@ -1495,7 +1925,7 @@ For detailed documentation, see: examples/README.md
         // First arg is salt - use authenticated user
         salt = firstArg;
         factoryAddress = commandArgs.args[1];
-        
+
         if (!salt) {
           console.error("❌ Error: Salt is required");
           console.error("");
@@ -1504,77 +1934,107 @@ For detailed documentation, see: examples/README.md
           console.error("    yarn start getWallet <salt> [factory-address]");
           console.error("");
           console.error("  For specific owner (requires AVS_API_KEY):");
-          console.error("    yarn start getWallet <owner-address> <salt> [factory-address]");
+          console.error(
+            "    yarn start getWallet <owner-address> <salt> [factory-address]"
+          );
           console.error("");
           console.error("EXAMPLES:");
           console.error("  # Get wallet with salt '0' for authenticated user");
           console.error("  yarn start getWallet 0");
           console.error("");
-          console.error("  # Get wallet with salt '1' and factory for authenticated user");
-          console.error("  yarn start getWallet 1 0x1234567890123456789012345678901234567890");
+          console.error(
+            "  # Get wallet with salt '1' and factory for authenticated user"
+          );
+          console.error(
+            "  yarn start getWallet 1 0x1234567890123456789012345678901234567890"
+          );
           console.error("");
-          console.error("  # Get wallet for specific owner (requires AVS_API_KEY)");
-          console.error("  yarn start getWallet 0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788 0");
+          console.error(
+            "  # Get wallet for specific owner (requires AVS_API_KEY)"
+          );
+          console.error(
+            "  yarn start getWallet 0xc60e71bd0f2e6d8832Fea1a2d56091C48493C788 0"
+          );
           console.error("");
           console.error("  # Get wallet for owner with factory address");
-          console.error("  yarn start getWallet 0xOwnerAddress 0 0xFactoryAddress");
+          console.error(
+            "  yarn start getWallet 0xOwnerAddress 0 0xFactoryAddress"
+          );
           console.error("");
           console.error("  # On Base mainnet");
           console.error("  yarn start --avs-target base getWallet 0");
           console.error("");
           console.error("⚠️  IMPORTANT:");
-          console.error("  • Wallet addresses are derived from: owner + factory + salt");
-          console.error("  • If you don't specify a factory, the default factory is used");
-          console.error("  • Check getWallets first to see existing wallet factories");
-          console.error("  • Example: yarn start getWallets (then use the factory from results)");
+          console.error(
+            "  • Wallet addresses are derived from: owner + factory + salt"
+          );
+          console.error(
+            "  • If you don't specify a factory, the default factory is used"
+          );
+          console.error(
+            "  • Check getWallets first to see existing wallet factories"
+          );
+          console.error(
+            "  • Example: yarn start getWallets (then use the factory from results)"
+          );
           console.error("");
           console.error("For more help: yarn start --help getWallet");
           break;
         }
       }
-      
+
       try {
         // Use common authentication function
         // If owner address is provided, authenticate as that owner using API key
         const walletClient = await getAuthenticatedClient({
-          strategy: ownerAddress ? 'api-key-only' : 'prefer-api-key',
+          strategy: ownerAddress ? "api-key-only" : "prefer-api-key",
           targetAddress: ownerAddress,
-          commandName: 'getWallet'
+          commandName: "getWallet",
         });
-        
+
         // ⚠️ IMPORTANT: Wallet addresses are derived from: owner + factory + salt
         // If you call getWallet with salt "0" without specifying a factory, it uses the default factory.
         // However, if getWallets returns a wallet with salt "0" that was created with a different factory,
         // you must pass that same factory address to getWallet to get the matching address.
         // Always check getWallets first to see what factory address was used for existing wallets.
-        
-        const targetOwner = ownerAddress || (privateKey ? (await getWalletAddress(privateKey)) : "API key user");
-        console.log(`📝 Creating/getting smart wallet with salt ${salt} for owner ${targetOwner}...`);
+
+        const targetOwner =
+          ownerAddress ||
+          (privateKey ? await getWalletAddress(privateKey) : "API key user");
+        console.log(
+          `📝 Creating/getting smart wallet with salt ${salt} for owner ${targetOwner}...`
+        );
         if (factoryAddress) {
           console.log(`   Using factory address: ${factoryAddress}`);
         } else {
-          console.log(`   Using default factory address (check getWallets to see existing wallet factories)`);
+          console.log(
+            `   Using default factory address (check getWallets to see existing wallet factories)`
+          );
         }
-        
+
         const wallet = await walletClient.getWallet({
           salt,
           factoryAddress,
         });
 
-        console.log(
-          `✅ Smart wallet with salt ${salt} for ${targetOwner}:`
-        );
+        console.log(`✅ Smart wallet with salt ${salt} for ${targetOwner}:`);
         console.log(`   Address: ${wallet.address}`);
-        console.log(`   Factory: ${wallet.factory || 'default'}`);
+        console.log(`   Factory: ${wallet.factory || "default"}`);
         console.log(`   Salt: ${wallet.salt}`);
       } catch (error: any) {
-        console.error("❌ Failed to get/create wallet:", error.message || error);
+        console.error(
+          "❌ Failed to get/create wallet:",
+          error.message || error
+        );
         console.error("   Possible causes:");
         console.error("   1. Invalid salt or factory address");
         console.error("   2. Network connectivity issues");
         console.error("   3. Insufficient permissions for wallet creation");
-        if (error.code === 16) { // UNAUTHENTICATED
-          console.error("   4. Authentication failed - check your API key or private key");
+        if (error.code === 16) {
+          // UNAUTHENTICATED
+          console.error(
+            "   4. Authentication failed - check your API key or private key"
+          );
         }
       }
       break;
@@ -1635,7 +2095,9 @@ For detailed documentation, see: examples/README.md
     case "getWorkflows": {
       const ownerAddress = commandArgs.args[0];
       if (!ownerAddress) {
-        console.error("❌ Usage: yarn start getWorkflows <owner_address> <smart_wallet_address?> [cursor] [limit]");
+        console.error(
+          "❌ Usage: yarn start getWorkflows <owner_address> <smart_wallet_address?> [cursor] [limit]"
+        );
         break;
       }
 
@@ -1649,7 +2111,7 @@ For detailed documentation, see: examples/README.md
 
     case "getWorkflow": {
       const workflowId = commandArgs.args[0];
-      
+
       if (!workflowId) {
         console.error("❌ Usage: yarn start getWorkflow <workflow-id>");
         break;
@@ -1658,8 +2120,8 @@ For detailed documentation, see: examples/README.md
       try {
         // Use common authentication function with preference for API key (allows cross-wallet access)
         const workflowClient = await getAuthenticatedClient({
-          strategy: 'prefer-api-key',
-          commandName: 'getWorkflow'
+          strategy: "prefer-api-key",
+          commandName: "getWorkflow",
         });
 
         const result = await workflowClient.getWorkflow(workflowId);
@@ -1672,10 +2134,15 @@ For detailed documentation, see: examples/README.md
         console.error("❌ Failed to get workflow:", error.message || error);
         console.error("   Possible causes:");
         console.error("   1. Workflow ID not found");
-        console.error("   2. You don't have permission to access this workflow");
+        console.error(
+          "   2. You don't have permission to access this workflow"
+        );
         console.error("   3. Network connectivity issues");
-        if (error.code === 16) { // UNAUTHENTICATED
-          console.error("   4. Authentication failed - check your API key or private key");
+        if (error.code === 16) {
+          // UNAUTHENTICATED
+          console.error(
+            "   4. Authentication failed - check your API key or private key"
+          );
         }
       }
       break;
@@ -1691,10 +2158,15 @@ For detailed documentation, see: examples/README.md
         console.error("❌ Failed to get executions:", error.message || error);
         console.error("   Possible causes:");
         console.error("   1. Workflow IDs not found");
-        console.error("   2. You don't have permission to access these executions");
+        console.error(
+          "   2. You don't have permission to access these executions"
+        );
         console.error("   3. Network connectivity issues");
-        if (error.code === 16) { // UNAUTHENTICATED
-          console.error("   4. Authentication failed - check your API key or private key");
+        if (error.code === 16) {
+          // UNAUTHENTICATED
+          console.error(
+            "   4. Authentication failed - check your API key or private key"
+          );
         }
       }
       break;
@@ -1702,20 +2174,25 @@ For detailed documentation, see: examples/README.md
     case "getExecution": {
       const workflowId = commandArgs.args[0];
       const executionId = commandArgs.args[1];
-      
+
       if (!workflowId || !executionId) {
-        console.error("❌ Usage: yarn start getExecution <workflow-id> <execution-id>");
+        console.error(
+          "❌ Usage: yarn start getExecution <workflow-id> <execution-id>"
+        );
         break;
       }
 
       try {
         // Use common authentication function with preference for API key (allows cross-wallet access)
         const executionClient = await getAuthenticatedClient({
-          strategy: 'prefer-api-key',
-          commandName: 'getExecution'
+          strategy: "prefer-api-key",
+          commandName: "getExecution",
         });
 
-        const resultExecution = await executionClient.getExecution(workflowId, executionId);
+        const resultExecution = await executionClient.getExecution(
+          workflowId,
+          executionId
+        );
 
         console.log(
           "getExecution response:\n",
@@ -1725,10 +2202,15 @@ For detailed documentation, see: examples/README.md
         console.error("❌ Failed to get execution:", error.message || error);
         console.error("   Possible causes:");
         console.error("   1. Workflow or execution ID not found");
-        console.error("   2. You don't have permission to access this execution");
+        console.error(
+          "   2. You don't have permission to access this execution"
+        );
         console.error("   3. Network connectivity issues");
-        if (error.code === 16) { // UNAUTHENTICATED
-          console.error("   4. Authentication failed - check your API key or private key");
+        if (error.code === 16) {
+          // UNAUTHENTICATED
+          console.error(
+            "   4. Authentication failed - check your API key or private key"
+          );
         }
       }
       break;
@@ -1804,31 +2286,31 @@ For detailed documentation, see: examples/README.md
         console.log("❌ TEST_PRIVATE_KEY is required for withdrawal testing");
         break;
       }
-      
+
       // Authenticate first
       if (!authKey) {
         console.log("🔑 Authenticating with signature-based auth...");
         const wallet = new ethers.Wallet(privateKey);
         const eoaAddress = wallet.address;
-        
+
         const { message } = await client.getSignatureFormat(eoaAddress);
         const signature = await generateSignature(message, privateKey);
-        
+
         const result = await client.authWithSignature({
           message,
           signature,
         } as any);
-        
+
         client.setAuthKey(result.authKey);
         authKey = result.authKey;
         owner = eoaAddress;
       }
-      
+
       // Smart parameter parsing: detect if first arg is amount (number) or address (0x...)
       let recipientAddress = owner; // Default to EOA owner
       let amountInEth = "0.01"; // Default 0.01 ETH
       let token = "ETH"; // Default token
-      
+
       if (commandArgs.args.length > 0) {
         const firstArg = commandArgs.args[0];
         if (firstArg.startsWith("0x")) {
@@ -1842,22 +2324,22 @@ For detailed documentation, see: examples/README.md
           token = commandArgs.args[1] || "ETH";
         }
       }
-      
+
       // Convert ETH to wei for API call
       const amountInWei = ethers.parseEther(amountInEth).toString();
-      
+
       try {
         console.log("🔍 Testing withdrawal flow...");
         console.log("  Authenticated user:", owner);
         console.log("  Recipient:", recipientAddress);
         console.log("  Amount:", `${amountInEth} ETH (${amountInWei} wei)`);
         console.log("  Token:", token);
-        
+
         // First, get the user's wallet (this should create it if it doesn't exist)
         console.log("📝 Step 1: Getting user's wallet with salt 0...");
         const wallet = await client.getWallet({ salt: "0" });
         console.log("✅ Wallet obtained:", wallet.address);
-        
+
         // Then attempt withdrawal
         console.log("💰 Step 2: Attempting withdrawal...");
         const withdrawRequest = {
@@ -1866,11 +2348,13 @@ For detailed documentation, see: examples/README.md
           token: token,
           smartWalletAddress: wallet.address,
         };
-        
+
         console.log("📡 Withdrawal request:", withdrawRequest);
-        
-        const response = await client.withdrawFunds(withdrawRequest, { timeout: { timeout: 180000 } });
-        
+
+        const response = await client.withdrawFunds(withdrawRequest, {
+          timeout: { timeout: 180000 },
+        });
+
         console.log("✅ Withdrawal response:", {
           success: response.success,
           status: response.status,
@@ -1879,11 +2363,30 @@ For detailed documentation, see: examples/README.md
           transactionHash: response.transactionHash,
           smartWalletAddress: response.smartWalletAddress,
         });
-        
       } catch (error: any) {
         console.error("❌ Withdrawal failed:", error.message);
         console.error("   Full error:", error);
       }
+      break;
+    }
+
+    case "withdrawAll": {
+      const walletAddress = commandArgs.args[0];
+      const ownerAddress = commandArgs.args[1]; // Optional owner address
+      if (!walletAddress) {
+        console.error("❌ Error: Smart wallet address is required");
+        console.error(
+          "   Usage: yarn start withdrawAll <wallet-address> [owner-address]"
+        );
+        console.error(
+          "   Example: yarn start --avs-target base withdrawAll 0x123..."
+        );
+        console.error(
+          "   Example: yarn start --avs-target base withdrawAll 0x123... 0xowner..."
+        );
+        break;
+      }
+      await withdrawAllFromWallet(walletAddress, ownerAddress);
       break;
     }
 
@@ -1898,6 +2401,7 @@ For detailed documentation, see: examples/README.md
       yarn start --help getWallet
       hideAllWallets:                                     to hide all wallets except the default salt:0 wallet
       withdraw [recipient-address] [amount-eth] [token]:   to test withdrawal functionality (defaults to EOA owner, 0.01 ETH)
+      withdrawAll <wallet-address> [owner-address]:   to withdraw all balances (ETH and ERC20 tokens) from a smart wallet to its owner
       getWorkflows <owner-address> <smart-wallet>,... <cursor> <limit>:  to list workflows for an owner (can query any owner with AVS_API_KEY), optionally scoped to specific smart wallets
       getWorkflow <workflow-id>:                          to get workflow detail. a permission error is thrown if the eoa isn't the smart wallet owner
       getExecutions <workflow-id> <cursor> <limit>:       to get workflow execution history. a permission error is thrown if the eoa isn't the smart wallet owner
