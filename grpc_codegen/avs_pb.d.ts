@@ -2537,8 +2537,8 @@ export class GetWalletResp extends jspb.Message {
     setCompletedTaskCount(value: number): GetWalletResp;
     getFailedTaskCount(): number;
     setFailedTaskCount(value: number): GetWalletResp;
-    getCanceledTaskCount(): number;
-    setCanceledTaskCount(value: number): GetWalletResp;
+    getInactiveTaskCount(): number;
+    setInactiveTaskCount(value: number): GetWalletResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): GetWalletResp.AsObject;
@@ -2560,7 +2560,7 @@ export namespace GetWalletResp {
         activeTaskCount: number,
         completedTaskCount: number,
         failedTaskCount: number,
-        canceledTaskCount: number,
+        inactiveTaskCount: number,
     }
 }
 
@@ -3159,38 +3159,61 @@ export namespace DeleteTaskResp {
     }
 }
 
-export class CancelTaskResp extends jspb.Message { 
-    getSuccess(): boolean;
-    setSuccess(value: boolean): CancelTaskResp;
-    getStatus(): string;
-    setStatus(value: string): CancelTaskResp;
-    getMessage(): string;
-    setMessage(value: string): CancelTaskResp;
-    getCancelledAt(): number;
-    setCancelledAt(value: number): CancelTaskResp;
+export class SetTaskActiveReq extends jspb.Message { 
     getId(): string;
-    setId(value: string): CancelTaskResp;
-    getPreviousStatus(): string;
-    setPreviousStatus(value: string): CancelTaskResp;
+    setId(value: string): SetTaskActiveReq;
+    getActive(): boolean;
+    setActive(value: boolean): SetTaskActiveReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): CancelTaskResp.AsObject;
-    static toObject(includeInstance: boolean, msg: CancelTaskResp): CancelTaskResp.AsObject;
+    toObject(includeInstance?: boolean): SetTaskActiveReq.AsObject;
+    static toObject(includeInstance: boolean, msg: SetTaskActiveReq): SetTaskActiveReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: CancelTaskResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): CancelTaskResp;
-    static deserializeBinaryFromReader(message: CancelTaskResp, reader: jspb.BinaryReader): CancelTaskResp;
+    static serializeBinaryToWriter(message: SetTaskActiveReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SetTaskActiveReq;
+    static deserializeBinaryFromReader(message: SetTaskActiveReq, reader: jspb.BinaryReader): SetTaskActiveReq;
 }
 
-export namespace CancelTaskResp {
+export namespace SetTaskActiveReq {
+    export type AsObject = {
+        id: string,
+        active: boolean,
+    }
+}
+
+export class SetTaskActiveResp extends jspb.Message { 
+    getSuccess(): boolean;
+    setSuccess(value: boolean): SetTaskActiveResp;
+    getStatus(): string;
+    setStatus(value: string): SetTaskActiveResp;
+    getMessage(): string;
+    setMessage(value: string): SetTaskActiveResp;
+    getId(): string;
+    setId(value: string): SetTaskActiveResp;
+    getPreviousStatus(): string;
+    setPreviousStatus(value: string): SetTaskActiveResp;
+    getUpdatedAt(): number;
+    setUpdatedAt(value: number): SetTaskActiveResp;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): SetTaskActiveResp.AsObject;
+    static toObject(includeInstance: boolean, msg: SetTaskActiveResp): SetTaskActiveResp.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: SetTaskActiveResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SetTaskActiveResp;
+    static deserializeBinaryFromReader(message: SetTaskActiveResp, reader: jspb.BinaryReader): SetTaskActiveResp;
+}
+
+export namespace SetTaskActiveResp {
     export type AsObject = {
         success: boolean,
         status: string,
         message: string,
-        cancelledAt: number,
         id: string,
         previousStatus: string,
+        updatedAt: number,
     }
 }
 
@@ -4098,8 +4121,8 @@ export enum TaskStatus {
     ACTIVE = 0,
     COMPLETED = 1,
     FAILED = 2,
-    CANCELED = 3,
-    EXECUTING = 4,
+    RUNNING = 4,
+    INACTIVE = 5,
 }
 
 export enum ExecutionStatus {

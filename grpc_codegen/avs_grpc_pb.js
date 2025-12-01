@@ -5,17 +5,6 @@ var grpc = require('@grpc/grpc-js');
 var avs_pb = require('./avs_pb.js');
 var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
 
-function serialize_aggregator_CancelTaskResp(arg) {
-  if (!(arg instanceof avs_pb.CancelTaskResp)) {
-    throw new Error('Expected argument of type aggregator.CancelTaskResp');
-  }
-  return Buffer.from(arg.serializeBinary());
-}
-
-function deserialize_aggregator_CancelTaskResp(buffer_arg) {
-  return avs_pb.CancelTaskResp.deserializeBinary(new Uint8Array(buffer_arg));
-}
-
 function serialize_aggregator_CreateOrUpdateSecretReq(arg) {
   if (!(arg instanceof avs_pb.CreateOrUpdateSecretReq)) {
     throw new Error('Expected argument of type aggregator.CreateOrUpdateSecretReq');
@@ -467,6 +456,28 @@ function deserialize_aggregator_RunTriggerResp(buffer_arg) {
   return avs_pb.RunTriggerResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_aggregator_SetTaskActiveReq(arg) {
+  if (!(arg instanceof avs_pb.SetTaskActiveReq)) {
+    throw new Error('Expected argument of type aggregator.SetTaskActiveReq');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_SetTaskActiveReq(buffer_arg) {
+  return avs_pb.SetTaskActiveReq.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
+function serialize_aggregator_SetTaskActiveResp(arg) {
+  if (!(arg instanceof avs_pb.SetTaskActiveResp)) {
+    throw new Error('Expected argument of type aggregator.SetTaskActiveResp');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_aggregator_SetTaskActiveResp(buffer_arg) {
+  return avs_pb.SetTaskActiveResp.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_aggregator_SetWalletReq(arg) {
   if (!(arg instanceof avs_pb.SetWalletReq)) {
     throw new Error('Expected argument of type aggregator.SetWalletReq');
@@ -705,16 +716,16 @@ createTask: {
     responseSerialize: serialize_aggregator_ExecutionStatusResp,
     responseDeserialize: deserialize_aggregator_ExecutionStatusResp,
   },
-  cancelTask: {
-    path: '/aggregator.Aggregator/CancelTask',
+  setTaskActive: {
+    path: '/aggregator.Aggregator/SetTaskActive',
     requestStream: false,
     responseStream: false,
-    requestType: avs_pb.IdReq,
-    responseType: avs_pb.CancelTaskResp,
-    requestSerialize: serialize_aggregator_IdReq,
-    requestDeserialize: deserialize_aggregator_IdReq,
-    responseSerialize: serialize_aggregator_CancelTaskResp,
-    responseDeserialize: deserialize_aggregator_CancelTaskResp,
+    requestType: avs_pb.SetTaskActiveReq,
+    responseType: avs_pb.SetTaskActiveResp,
+    requestSerialize: serialize_aggregator_SetTaskActiveReq,
+    requestDeserialize: deserialize_aggregator_SetTaskActiveReq,
+    responseSerialize: serialize_aggregator_SetTaskActiveResp,
+    responseDeserialize: deserialize_aggregator_SetTaskActiveResp,
   },
   deleteTask: {
     path: '/aggregator.Aggregator/DeleteTask',

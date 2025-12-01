@@ -22,7 +22,7 @@ interface IAggregatorService extends grpc.ServiceDefinition<grpc.UntypedServiceI
     listExecutions: IAggregatorService_IListExecutions;
     getExecution: IAggregatorService_IGetExecution;
     getExecutionStatus: IAggregatorService_IGetExecutionStatus;
-    cancelTask: IAggregatorService_ICancelTask;
+    setTaskActive: IAggregatorService_ISetTaskActive;
     deleteTask: IAggregatorService_IDeleteTask;
     triggerTask: IAggregatorService_ITriggerTask;
     createSecret: IAggregatorService_ICreateSecret;
@@ -156,14 +156,14 @@ interface IAggregatorService_IGetExecutionStatus extends grpc.MethodDefinition<a
     responseSerialize: grpc.serialize<avs_pb.ExecutionStatusResp>;
     responseDeserialize: grpc.deserialize<avs_pb.ExecutionStatusResp>;
 }
-interface IAggregatorService_ICancelTask extends grpc.MethodDefinition<avs_pb.IdReq, avs_pb.CancelTaskResp> {
-    path: "/aggregator.Aggregator/CancelTask";
+interface IAggregatorService_ISetTaskActive extends grpc.MethodDefinition<avs_pb.SetTaskActiveReq, avs_pb.SetTaskActiveResp> {
+    path: "/aggregator.Aggregator/SetTaskActive";
     requestStream: false;
     responseStream: false;
-    requestSerialize: grpc.serialize<avs_pb.IdReq>;
-    requestDeserialize: grpc.deserialize<avs_pb.IdReq>;
-    responseSerialize: grpc.serialize<avs_pb.CancelTaskResp>;
-    responseDeserialize: grpc.deserialize<avs_pb.CancelTaskResp>;
+    requestSerialize: grpc.serialize<avs_pb.SetTaskActiveReq>;
+    requestDeserialize: grpc.deserialize<avs_pb.SetTaskActiveReq>;
+    responseSerialize: grpc.serialize<avs_pb.SetTaskActiveResp>;
+    responseDeserialize: grpc.deserialize<avs_pb.SetTaskActiveResp>;
 }
 interface IAggregatorService_IDeleteTask extends grpc.MethodDefinition<avs_pb.IdReq, avs_pb.DeleteTaskResp> {
     path: "/aggregator.Aggregator/DeleteTask";
@@ -308,7 +308,7 @@ export interface IAggregatorServer extends grpc.UntypedServiceImplementation {
     listExecutions: grpc.handleUnaryCall<avs_pb.ListExecutionsReq, avs_pb.ListExecutionsResp>;
     getExecution: grpc.handleUnaryCall<avs_pb.ExecutionReq, avs_pb.Execution>;
     getExecutionStatus: grpc.handleUnaryCall<avs_pb.ExecutionReq, avs_pb.ExecutionStatusResp>;
-    cancelTask: grpc.handleUnaryCall<avs_pb.IdReq, avs_pb.CancelTaskResp>;
+    setTaskActive: grpc.handleUnaryCall<avs_pb.SetTaskActiveReq, avs_pb.SetTaskActiveResp>;
     deleteTask: grpc.handleUnaryCall<avs_pb.IdReq, avs_pb.DeleteTaskResp>;
     triggerTask: grpc.handleUnaryCall<avs_pb.TriggerTaskReq, avs_pb.TriggerTaskResp>;
     createSecret: grpc.handleUnaryCall<avs_pb.CreateOrUpdateSecretReq, avs_pb.CreateSecretResp>;
@@ -365,9 +365,9 @@ export interface IAggregatorClient {
     getExecutionStatus(request: avs_pb.ExecutionReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ExecutionStatusResp) => void): grpc.ClientUnaryCall;
     getExecutionStatus(request: avs_pb.ExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ExecutionStatusResp) => void): grpc.ClientUnaryCall;
     getExecutionStatus(request: avs_pb.ExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ExecutionStatusResp) => void): grpc.ClientUnaryCall;
-    cancelTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: avs_pb.CancelTaskResp) => void): grpc.ClientUnaryCall;
-    cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.CancelTaskResp) => void): grpc.ClientUnaryCall;
-    cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.CancelTaskResp) => void): grpc.ClientUnaryCall;
+    setTaskActive(request: avs_pb.SetTaskActiveReq, callback: (error: grpc.ServiceError | null, response: avs_pb.SetTaskActiveResp) => void): grpc.ClientUnaryCall;
+    setTaskActive(request: avs_pb.SetTaskActiveReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.SetTaskActiveResp) => void): grpc.ClientUnaryCall;
+    setTaskActive(request: avs_pb.SetTaskActiveReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.SetTaskActiveResp) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: avs_pb.DeleteTaskResp) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.DeleteTaskResp) => void): grpc.ClientUnaryCall;
     deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.DeleteTaskResp) => void): grpc.ClientUnaryCall;
@@ -453,9 +453,9 @@ export class AggregatorClient extends grpc.Client implements IAggregatorClient {
     public getExecutionStatus(request: avs_pb.ExecutionReq, callback: (error: grpc.ServiceError | null, response: avs_pb.ExecutionStatusResp) => void): grpc.ClientUnaryCall;
     public getExecutionStatus(request: avs_pb.ExecutionReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.ExecutionStatusResp) => void): grpc.ClientUnaryCall;
     public getExecutionStatus(request: avs_pb.ExecutionReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.ExecutionStatusResp) => void): grpc.ClientUnaryCall;
-    public cancelTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: avs_pb.CancelTaskResp) => void): grpc.ClientUnaryCall;
-    public cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.CancelTaskResp) => void): grpc.ClientUnaryCall;
-    public cancelTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.CancelTaskResp) => void): grpc.ClientUnaryCall;
+    public setTaskActive(request: avs_pb.SetTaskActiveReq, callback: (error: grpc.ServiceError | null, response: avs_pb.SetTaskActiveResp) => void): grpc.ClientUnaryCall;
+    public setTaskActive(request: avs_pb.SetTaskActiveReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.SetTaskActiveResp) => void): grpc.ClientUnaryCall;
+    public setTaskActive(request: avs_pb.SetTaskActiveReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.SetTaskActiveResp) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, callback: (error: grpc.ServiceError | null, response: avs_pb.DeleteTaskResp) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: avs_pb.DeleteTaskResp) => void): grpc.ClientUnaryCall;
     public deleteTask(request: avs_pb.IdReq, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: avs_pb.DeleteTaskResp) => void): grpc.ClientUnaryCall;
