@@ -456,26 +456,26 @@ function deserialize_aggregator_RunTriggerResp(buffer_arg) {
   return avs_pb.RunTriggerResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_SetTaskActiveReq(arg) {
-  if (!(arg instanceof avs_pb.SetTaskActiveReq)) {
-    throw new Error('Expected argument of type aggregator.SetTaskActiveReq');
+function serialize_aggregator_SetTaskEnabledReq(arg) {
+  if (!(arg instanceof avs_pb.SetTaskEnabledReq)) {
+    throw new Error('Expected argument of type aggregator.SetTaskEnabledReq');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_SetTaskActiveReq(buffer_arg) {
-  return avs_pb.SetTaskActiveReq.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_SetTaskEnabledReq(buffer_arg) {
+  return avs_pb.SetTaskEnabledReq.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
-function serialize_aggregator_SetTaskActiveResp(arg) {
-  if (!(arg instanceof avs_pb.SetTaskActiveResp)) {
-    throw new Error('Expected argument of type aggregator.SetTaskActiveResp');
+function serialize_aggregator_SetTaskEnabledResp(arg) {
+  if (!(arg instanceof avs_pb.SetTaskEnabledResp)) {
+    throw new Error('Expected argument of type aggregator.SetTaskEnabledResp');
   }
   return Buffer.from(arg.serializeBinary());
 }
 
-function deserialize_aggregator_SetTaskActiveResp(buffer_arg) {
-  return avs_pb.SetTaskActiveResp.deserializeBinary(new Uint8Array(buffer_arg));
+function deserialize_aggregator_SetTaskEnabledResp(buffer_arg) {
+  return avs_pb.SetTaskEnabledResp.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
 function serialize_aggregator_SetWalletReq(arg) {
@@ -716,16 +716,16 @@ createTask: {
     responseSerialize: serialize_aggregator_ExecutionStatusResp,
     responseDeserialize: deserialize_aggregator_ExecutionStatusResp,
   },
-  setTaskActive: {
-    path: '/aggregator.Aggregator/SetTaskActive',
+  setTaskEnabled: {
+    path: '/aggregator.Aggregator/SetTaskEnabled',
     requestStream: false,
     responseStream: false,
-    requestType: avs_pb.SetTaskActiveReq,
-    responseType: avs_pb.SetTaskActiveResp,
-    requestSerialize: serialize_aggregator_SetTaskActiveReq,
-    requestDeserialize: deserialize_aggregator_SetTaskActiveReq,
-    responseSerialize: serialize_aggregator_SetTaskActiveResp,
-    responseDeserialize: deserialize_aggregator_SetTaskActiveResp,
+    requestType: avs_pb.SetTaskEnabledReq,
+    responseType: avs_pb.SetTaskEnabledResp,
+    requestSerialize: serialize_aggregator_SetTaskEnabledReq,
+    requestDeserialize: deserialize_aggregator_SetTaskEnabledReq,
+    responseSerialize: serialize_aggregator_SetTaskEnabledResp,
+    responseDeserialize: deserialize_aggregator_SetTaskEnabledResp,
   },
   deleteTask: {
     path: '/aggregator.Aggregator/DeleteTask',

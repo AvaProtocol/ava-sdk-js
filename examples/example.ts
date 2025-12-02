@@ -2220,10 +2220,10 @@ For detailed documentation, see: examples/README.md
       await examineWorkflow(workflowId);
       break;
     }
-    case "cancelWorkflow": {
-      console.log("Cancelling workflow", commandArgs.args[0]);
-      const resultCancel = await client.cancelWorkflow(commandArgs.args[0]);
-      console.log("Response:\n", resultCancel);
+    case "disableWorkflow": {
+      console.log("Disabling workflow", commandArgs.args[0]);
+      const resultDisable = await client.setWorkflowEnabled(commandArgs.args[0], false);
+      console.log("Response:\n", resultDisable);
       break;
     }
     case "deleteWorkflow": {
@@ -2416,7 +2416,7 @@ For detailed documentation, see: examples/README.md
                                                             trigger abcdef '{"block_number":1234}' for block trigger
                                                             trigger abcdef '{"block_number":1234, "log_index":312,"tx_hash":"0x123"}' for event trigger
                                                             trigger abcdef '{"epoch":1234, "log_index":312,"tx_hash":"0x123"}' for time based trigger (fixed or cron)
-      cancelWorkflow <workflow-id>:                       to cancel a workflow
+      disableWorkflow <workflow-id>:                      to disable a workflow
       deleteWorkflow <workflow-id>:                       to completely remove a workflow
       create-secret <name> <value>:                       create a user secret that is available to all workflows
       list-secrets:                                       list all user secrets

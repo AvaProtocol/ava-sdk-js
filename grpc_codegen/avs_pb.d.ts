@@ -2531,14 +2531,14 @@ export class GetWalletResp extends jspb.Message {
     setIsHidden(value: boolean): GetWalletResp;
     getTotalTaskCount(): number;
     setTotalTaskCount(value: number): GetWalletResp;
-    getActiveTaskCount(): number;
-    setActiveTaskCount(value: number): GetWalletResp;
+    getEnabledTaskCount(): number;
+    setEnabledTaskCount(value: number): GetWalletResp;
     getCompletedTaskCount(): number;
     setCompletedTaskCount(value: number): GetWalletResp;
     getFailedTaskCount(): number;
     setFailedTaskCount(value: number): GetWalletResp;
-    getInactiveTaskCount(): number;
-    setInactiveTaskCount(value: number): GetWalletResp;
+    getDisabledTaskCount(): number;
+    setDisabledTaskCount(value: number): GetWalletResp;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): GetWalletResp.AsObject;
@@ -2557,10 +2557,10 @@ export namespace GetWalletResp {
         factoryAddress: string,
         isHidden: boolean,
         totalTaskCount: number,
-        activeTaskCount: number,
+        enabledTaskCount: number,
         completedTaskCount: number,
         failedTaskCount: number,
-        inactiveTaskCount: number,
+        disabledTaskCount: number,
     }
 }
 
@@ -3159,54 +3159,54 @@ export namespace DeleteTaskResp {
     }
 }
 
-export class SetTaskActiveReq extends jspb.Message { 
+export class SetTaskEnabledReq extends jspb.Message { 
     getId(): string;
-    setId(value: string): SetTaskActiveReq;
-    getActive(): boolean;
-    setActive(value: boolean): SetTaskActiveReq;
+    setId(value: string): SetTaskEnabledReq;
+    getEnabled(): boolean;
+    setEnabled(value: boolean): SetTaskEnabledReq;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SetTaskActiveReq.AsObject;
-    static toObject(includeInstance: boolean, msg: SetTaskActiveReq): SetTaskActiveReq.AsObject;
+    toObject(includeInstance?: boolean): SetTaskEnabledReq.AsObject;
+    static toObject(includeInstance: boolean, msg: SetTaskEnabledReq): SetTaskEnabledReq.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SetTaskActiveReq, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SetTaskActiveReq;
-    static deserializeBinaryFromReader(message: SetTaskActiveReq, reader: jspb.BinaryReader): SetTaskActiveReq;
+    static serializeBinaryToWriter(message: SetTaskEnabledReq, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SetTaskEnabledReq;
+    static deserializeBinaryFromReader(message: SetTaskEnabledReq, reader: jspb.BinaryReader): SetTaskEnabledReq;
 }
 
-export namespace SetTaskActiveReq {
+export namespace SetTaskEnabledReq {
     export type AsObject = {
         id: string,
-        active: boolean,
+        enabled: boolean,
     }
 }
 
-export class SetTaskActiveResp extends jspb.Message { 
+export class SetTaskEnabledResp extends jspb.Message { 
     getSuccess(): boolean;
-    setSuccess(value: boolean): SetTaskActiveResp;
+    setSuccess(value: boolean): SetTaskEnabledResp;
     getStatus(): string;
-    setStatus(value: string): SetTaskActiveResp;
+    setStatus(value: string): SetTaskEnabledResp;
     getMessage(): string;
-    setMessage(value: string): SetTaskActiveResp;
+    setMessage(value: string): SetTaskEnabledResp;
     getId(): string;
-    setId(value: string): SetTaskActiveResp;
+    setId(value: string): SetTaskEnabledResp;
     getPreviousStatus(): string;
-    setPreviousStatus(value: string): SetTaskActiveResp;
+    setPreviousStatus(value: string): SetTaskEnabledResp;
     getUpdatedAt(): number;
-    setUpdatedAt(value: number): SetTaskActiveResp;
+    setUpdatedAt(value: number): SetTaskEnabledResp;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): SetTaskActiveResp.AsObject;
-    static toObject(includeInstance: boolean, msg: SetTaskActiveResp): SetTaskActiveResp.AsObject;
+    toObject(includeInstance?: boolean): SetTaskEnabledResp.AsObject;
+    static toObject(includeInstance: boolean, msg: SetTaskEnabledResp): SetTaskEnabledResp.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: SetTaskActiveResp, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): SetTaskActiveResp;
-    static deserializeBinaryFromReader(message: SetTaskActiveResp, reader: jspb.BinaryReader): SetTaskActiveResp;
+    static serializeBinaryToWriter(message: SetTaskEnabledResp, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): SetTaskEnabledResp;
+    static deserializeBinaryFromReader(message: SetTaskEnabledResp, reader: jspb.BinaryReader): SetTaskEnabledResp;
 }
 
-export namespace SetTaskActiveResp {
+export namespace SetTaskEnabledResp {
     export type AsObject = {
         success: boolean,
         status: string,
@@ -4118,11 +4118,11 @@ export enum ErrorCode {
 }
 
 export enum TaskStatus {
-    ACTIVE = 0,
+    ENABLED = 0,
     COMPLETED = 1,
     FAILED = 2,
     RUNNING = 4,
-    INACTIVE = 5,
+    DISABLED = 5,
 }
 
 export enum ExecutionStatus {

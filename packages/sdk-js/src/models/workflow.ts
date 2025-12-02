@@ -13,15 +13,21 @@ import { convertJSValueToProtobuf } from "../utils";
 export function convertStatusToString(
   status: avs_pb.TaskStatus
 ): WorkflowStatus {
-  const conversionMap: { [key in avs_pb.TaskStatus]: WorkflowStatus } = {
-    [avs_pb.TaskStatus.ACTIVE]: WorkflowStatus.Active,
-    [avs_pb.TaskStatus.COMPLETED]: WorkflowStatus.Completed,
-    [avs_pb.TaskStatus.FAILED]: WorkflowStatus.Failed,
-    [avs_pb.TaskStatus.CANCELED]: WorkflowStatus.Canceled,
-    [avs_pb.TaskStatus.EXECUTING]: WorkflowStatus.Executing,
-  };
-
-  return conversionMap[status] as WorkflowStatus;
+  switch (status) {
+    case avs_pb.TaskStatus.ENABLED:
+      return WorkflowStatus.Enabled;
+    case avs_pb.TaskStatus.COMPLETED:
+      return WorkflowStatus.Completed;
+    case avs_pb.TaskStatus.FAILED:
+      return WorkflowStatus.Failed;
+    case avs_pb.TaskStatus.RUNNING:
+      return WorkflowStatus.Running;
+    case avs_pb.TaskStatus.DISABLED:
+      return WorkflowStatus.Disabled;
+    default: {
+      throw new Error(`Unknown TaskStatus: ${status}`);
+    }
+  }
 }
 
 class Workflow implements WorkflowProps {

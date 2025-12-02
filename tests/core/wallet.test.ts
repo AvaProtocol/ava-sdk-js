@@ -41,9 +41,9 @@ describe("Wallet Management Tests", () => {
       try {
         const initialStat = {
           totalTaskCount: wallet.totalTaskCount,
-          activeTaskCount: wallet.activeTaskCount,
+          enabledTaskCount: wallet.enabledTaskCount,
           completedTaskCount: wallet.completedTaskCount,
-          canceledTaskCount: wallet.canceledTaskCount,
+          disabledTaskCount: wallet.disabledTaskCount,
           failedTaskCount: wallet.failedTaskCount,
         };
 
@@ -62,13 +62,13 @@ describe("Wallet Management Tests", () => {
         expect(wallet.totalTaskCount).toEqual(
           initialStat.totalTaskCount || 0 + 1
         );
-        expect(wallet.activeTaskCount).toEqual(
-          initialStat.activeTaskCount || 0 + 1
+        expect(wallet.enabledTaskCount).toEqual(
+          initialStat.enabledTaskCount || 0 + 1
         );
         expect(wallet.completedTaskCount).toEqual(
           initialStat.completedTaskCount
         );
-        expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
+        expect(wallet.disabledTaskCount).toEqual(initialStat.disabledTaskCount);
 
         // Trigger the task and wait for it finished to check the stat
         await client.triggerWorkflow({
@@ -90,26 +90,26 @@ describe("Wallet Management Tests", () => {
         expect(wallet.completedTaskCount).toEqual(
           initialStat.completedTaskCount || 0 + 1
         );
-        expect(wallet.canceledTaskCount).toEqual(initialStat.canceledTaskCount);
+        expect(wallet.inactiveTaskCount).toEqual(initialStat.inactiveTaskCount);
 
         // Now test the cancel metric
         const workflowProps2 = createFromTemplate(wallet.address);
         const workflow2 = client.createWorkflow(workflowProps2);
         workflowId2 = await client.submitWorkflow(workflow2);
 
-        await client.cancelWorkflow(workflowId2);
+        await client.setWorkflowEnabled(workflowId2!, false);
 
         wallet = await client.getWallet({ salt });
 
         expect(wallet.totalTaskCount).toEqual(
           initialStat.totalTaskCount || 0 + 2
         );
-        expect(wallet.activeTaskCount).toEqual(initialStat.activeTaskCount);
+        expect(wallet.enabledTaskCount).toEqual(initialStat.enabledTaskCount);
         expect(wallet.completedTaskCount).toEqual(
           initialStat.completedTaskCount || 0 + 1
         );
-        expect(wallet.canceledTaskCount).toEqual(
-          initialStat.canceledTaskCount || 0 + 1
+        expect(wallet.disabledTaskCount).toEqual(
+          initialStat.disabledTaskCount || 0 + 1
         );
       } finally {
         if (workflowId1) {

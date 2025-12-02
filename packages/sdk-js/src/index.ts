@@ -48,7 +48,7 @@ import {
   type CreateSecretResponse,
   type UpdateSecretResponse,
   type DeleteSecretResponse,
-  type CancelTaskResponse,
+  type SetTaskActiveResponse,
   type DeleteTaskResponse,
   type GetExecutionStatsResponse,
   type GetExecutionStatsOptions,
@@ -63,7 +63,6 @@ import {
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
-import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 
 // Import the consolidated conversion utilities
 import {
@@ -504,10 +503,10 @@ class Client extends BaseClient {
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
-      activeTaskCount: result.getActiveTaskCount(),
+      enabledTaskCount: (result as any).getEnabledTaskCount ? (result as any).getEnabledTaskCount() : (result as any).getActiveTaskCount?.(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
-      canceledTaskCount: result.getCanceledTaskCount(),
+      disabledTaskCount: (result as any).getDisabledTaskCount ? (result as any).getDisabledTaskCount() : (result as any).getInactiveTaskCount?.(),
     };
   }
 
@@ -546,10 +545,10 @@ class Client extends BaseClient {
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
-      activeTaskCount: result.getActiveTaskCount(),
+      enabledTaskCount: (result as any).getEnabledTaskCount ? (result as any).getEnabledTaskCount() : (result as any).getActiveTaskCount?.(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
-      canceledTaskCount: result.getCanceledTaskCount(),
+      disabledTaskCount: (result as any).getDisabledTaskCount ? (result as any).getDisabledTaskCount() : (result as any).getInactiveTaskCount?.(),
     };
   }
 
@@ -1059,28 +1058,39 @@ class Client extends BaseClient {
   }
 
   /**
-   * Cancel a workflow
+   * Set workflow active state (activate/deactivate)
    * @param {string} id - The workflow id
+   * @param {boolean} active - Desired active state (true=activate, false=deactivate)
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<CancelTaskResponse>} - The response from canceling the workflow
+   * @returns {Promise<SetTaskActiveResponse>} - The response from updating the workflow state
    */
-  async cancelWorkflow(
+  async setWorkflowEnabled(
     id: string,
+    enabled: boolean,
     options?: RequestOptions
-  ): Promise<CancelTaskResponse> {
-    const request = new avs_pb.IdReq();
+  ): Promise<SetTaskActiveResponse> {
+    // Construct request compatible with both Enabled/Active codegen variants
+    const request =
+      (avs_pb as any).SetTaskEnabledReq
+        ? new (avs_pb as any).SetTaskEnabledReq()
+        : new (avs_pb as any).SetTaskActiveReq();
     request.setId(id);
+    if ((request as any).setEnabled) {
+      (request as any).setEnabled(enabled);
+    } else {
+      (request as any).setActive(enabled);
+    }
 
     const result = await this.sendGrpcRequest<
-      avs_pb.CancelTaskResp,
-      avs_pb.IdReq
-    >("cancelTask", request, options);
+      any,
+      any
+    >("setTaskEnabled", request, options);
 
     return {
       success: result.getSuccess(),
       status: result.getStatus(),
       message: result.getMessage(),
-      cancelledAt: result.getCancelledAt() || undefined,
+      updatedAt: result.getUpdatedAt() || undefined,
       id: result.getId(),
       previousStatus: result.getPreviousStatus(),
     };

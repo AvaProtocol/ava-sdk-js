@@ -24,7 +24,7 @@ Here’s a quick example of how to use the types library to get started with Ava
 import { WorkflowStatus, TriggerType } from "@avaprotocol/types";
 
 // Check conditions such as workflow status
-if (workflow.status === WorkflowStatus.Active) {
+if (workflow.status === WorkflowStatus.Enabled) {
   // ...
   // your logic here
   // ...

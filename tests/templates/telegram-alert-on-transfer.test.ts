@@ -490,7 +490,7 @@ return message;`,
       const savedWorkflow = await client.getWorkflow(workflowId);
 
       expect(savedWorkflow.id).toBe(workflowId);
-      expect(savedWorkflow.status).toBe(WorkflowStatus.Active);
+      expect(savedWorkflow.status).toBe(WorkflowStatus.Enabled);
       expect(savedWorkflow.nodes).toHaveLength(2);
       expect(savedWorkflow.edges).toHaveLength(2);
 

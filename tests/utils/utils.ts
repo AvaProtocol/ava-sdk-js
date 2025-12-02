@@ -139,7 +139,7 @@ const fileToStartIndex: Record<string, number> = {
   // Core tests (0-19)
   "auth.test.ts": 0,
   // Workflow tests (20-239)
-  "cancelWorkflow.test.ts": 20,
+  "setWorkflowEnabled.test.ts": 20,
   "secret.test.ts": 40,
   "deleteWorkflow.test.ts": 60,
   "getExecutions.test.ts": 80,
@@ -543,7 +543,7 @@ export const compareResults = (
   expect(actual.startAt).toEqual(expected.startAt);
   expect(actual.expiredAt).toEqual(expected.expiredAt);
   expect(actual.maxExecution).toBe(expected.maxExecution);
-  expect(actual.status).toBe(expected.status || WorkflowStatus.Active);
+  expect(actual.status).toBe(expected.status || WorkflowStatus.Enabled);
   expect(actual.id).toBe(expected.id);
   expect(actual.owner).toBe(expected.owner);
 };

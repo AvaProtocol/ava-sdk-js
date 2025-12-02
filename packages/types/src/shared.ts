@@ -6,10 +6,10 @@ export const DEFAULT_LIMIT = 10;
 
 export type SmartWallet = avs_pb.SmartWallet.AsObject & {
   totalTaskCount?: number;
-  activeTaskCount?: number;
+  enabledTaskCount?: number;
   completedTaskCount?: number;
   failedTaskCount?: number;
-  canceledTaskCount?: number;
+  disabledTaskCount?: number;
 };
 export interface PageInfo {
   startCursor: string;

@@ -109,13 +109,13 @@ export interface DeleteSecretResponse {
   scope: string; // "user", "workflow", "org"
 }
 
-export interface CancelTaskResponse {
+export interface SetTaskActiveResponse {
   success: boolean;
-  status: string; // "cancelled", "not_found", "already_cancelled", "cannot_cancel"
+  status: string; // "active" | "inactive" | "not_found" | "error"
   message: string;
-  cancelledAt?: number; // Unix timestamp when task was cancelled
+  updatedAt?: number; // Unix timestamp when task was updated
   id: string;
-  previousStatus: string; // Previous status before cancellation
+  previousStatus: string; // Previous status before update
 }
 
 export interface DeleteTaskResponse {

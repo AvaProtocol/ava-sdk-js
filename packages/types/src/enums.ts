@@ -1,9 +1,9 @@
 export enum WorkflowStatus {
-  Active = "active",
+  Enabled = "enabled",
   Completed = "completed",
   Failed = "failed",
-  Canceled = "canceled",
-  Executing = "executing",
+  Running = "running",
+  Disabled = "disabled",
 }
 
 export enum ExecutionStatus {

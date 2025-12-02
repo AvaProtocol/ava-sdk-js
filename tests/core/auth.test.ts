@@ -83,7 +83,7 @@ describe("Authentication Tests", () => {
           {
             ...workflowProps,
             id: workflowId,
-            status: WorkflowStatus.Active,
+            status: WorkflowStatus.Enabled,
             owner: eoaAddress,
           },
           getResponse
@@ -113,7 +113,7 @@ describe("Authentication Tests", () => {
       }
     });
 
-    test("cancelWorkflow works with client.authKey", async () => {
+    test("setWorkflowEnabled (disable) works with client.authKey", async () => {
       const wallet = await getSmartWallet(client);
       let workflowId: string | undefined;
 
@@ -123,13 +123,13 @@ describe("Authentication Tests", () => {
         workflowId = await client.submitWorkflow(workflow);
 
         const workflowObj = await client.getWorkflow(workflowId);
-        expect(workflowObj.status).toEqual(WorkflowStatus.Active);
+        expect(workflowObj.status).toEqual(WorkflowStatus.Enabled);
 
-        const cancelResult = await client.cancelWorkflow(workflowId);
-        expect(cancelResult.success).toEqual(true);
+        const deactivateResult = await client.setWorkflowEnabled(workflowId, false);
+        expect(deactivateResult.success).toEqual(true);
 
-        const canceled = await client.getWorkflow(workflowId);
-        expect(canceled.status).toEqual(WorkflowStatus.Canceled);
+        const deactivated = await client.getWorkflow(workflowId);
+        expect(deactivated.status).toEqual(WorkflowStatus.Disabled);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -145,7 +145,7 @@ describe("Authentication Tests", () => {
       const workflowId = await client.submitWorkflow(workflow);
 
       const workflowObj = await client.getWorkflow(workflowId);
-      expect(workflowObj.status).toEqual(WorkflowStatus.Active);
+      expect(workflowObj.status).toEqual(WorkflowStatus.Enabled);
 
       const deleteResult = await client.deleteWorkflow(workflowId!);
       expect(deleteResult.success).toEqual(true);
@@ -262,7 +262,7 @@ describe("Authentication Tests", () => {
           {
             ...workflowProps,
             id: workflowId,
-            status: WorkflowStatus.Active,
+            status: WorkflowStatus.Enabled,
             owner: eoaAddress,
           },
           getResponse
@@ -276,7 +276,7 @@ describe("Authentication Tests", () => {
           {
             ...workflowProps,
             id: workflowId,
-            status: WorkflowStatus.Active,
+            status: WorkflowStatus.Enabled,
             owner: eoaAddress,
           },
           getResponse2
@@ -330,7 +330,7 @@ describe("Authentication Tests", () => {
       }
     });
 
-    test("cancelWorkflow works with options.authKey", async () => {
+    test("setWorkflowActive (deactivate) works with options.authKey", async () => {
       const wallet = await getSmartWallet(client, {
         saltValue: _.toString(saltCounter++),
         authKey: authKeyViaAPI,
@@ -348,17 +348,17 @@ describe("Authentication Tests", () => {
         const workflowObj1 = await client.getWorkflow(workflowId1, {
           authKey: authKeyViaAPI,
         });
-        expect(workflowObj1.status).toEqual(WorkflowStatus.Active);
+        expect(workflowObj1.status).toEqual(WorkflowStatus.Enabled);
 
-        const cancelResult1 = await client.cancelWorkflow(workflowId1, {
+        const deactivateResult1 = await client.setWorkflowEnabled(workflowId1, false, {
           authKey: authKeyViaAPI,
         });
-        expect(cancelResult1.success).toEqual(true);
+        expect(deactivateResult1.success).toEqual(true);
 
-        const canceled1 = await client.getWorkflow(workflowId1, {
+        const deactivated1 = await client.getWorkflow(workflowId1, {
           authKey: authKeyViaAPI,
         });
-        expect(canceled1.status).toEqual(WorkflowStatus.Canceled);
+        expect(deactivated1.status).toEqual(WorkflowStatus.Disabled);
 
         const workflowProps2 = createFromTemplate(wallet.address);
         const workflow2 = client.createWorkflow(workflowProps2);
@@ -369,18 +369,18 @@ describe("Authentication Tests", () => {
         const workflowObj2 = await client.getWorkflow(workflowId2, {
           authKey: authKeyViaSignature,
         });
-        expect(workflowObj2.status).toEqual(WorkflowStatus.Active);
+        expect(workflowObj2.status).toEqual(WorkflowStatus.Enabled);
 
-        const cancelResult2 = await client.cancelWorkflow(workflowId2, {
+        const deactivateResult2 = await client.setWorkflowEnabled(workflowId2, false, {
           authKey: authKeyViaSignature,
         });
 
-        expect(cancelResult2.success).toEqual(true);
+        expect(deactivateResult2.success).toEqual(true);
 
-        const canceled2 = await client.getWorkflow(workflowId2, {
+        const deactivated2 = await client.getWorkflow(workflowId2, {
           authKey: authKeyViaSignature,
         });
-        expect(canceled2.status).toEqual(WorkflowStatus.Canceled);
+        expect(deactivated2.status).toEqual(WorkflowStatus.Disabled);
       } finally {
         if (workflowId1) {
           await client.deleteWorkflow(workflowId1, { authKey: authKeyViaAPI });
@@ -408,7 +408,7 @@ describe("Authentication Tests", () => {
       const workflowObj1 = await client.getWorkflow(workflowId1, {
         authKey: authKeyViaAPI,
       });
-      expect(workflowObj1.status).toEqual(WorkflowStatus.Active);
+      expect(workflowObj1.status).toEqual(WorkflowStatus.Enabled);
 
       const deleteResult1 = await client.deleteWorkflow(workflowId1!, {
         authKey: authKeyViaAPI,
@@ -428,7 +428,7 @@ describe("Authentication Tests", () => {
       const workflowObj2 = await client.getWorkflow(workflowId2, {
         authKey: authKeyViaSignature,
       });
-      expect(workflowObj2.status).toEqual(WorkflowStatus.Active);
+      expect(workflowObj2.status).toEqual(WorkflowStatus.Enabled);
 
       const deleteResult2 = await client.deleteWorkflow(workflowId2!, {
         authKey: authKeyViaSignature,
@@ -570,7 +570,7 @@ describe("Authentication Tests", () => {
       );
     });
 
-    test("cancelWorkflow should throw error", async () => {
+    test("setWorkflowActive should throw error", async () => {
       // Prepare a legit workflowId on the server
       const wallet = await getSmartWallet(client, {
         saltValue: _.toString(saltCounter++),
@@ -586,7 +586,7 @@ describe("Authentication Tests", () => {
         });
 
         client.setAuthKey(undefined);
-        await expect(client.cancelWorkflow(workflowId)).rejects.toThrow(
+        await expect(client.setWorkflowEnabled(workflowId!, false)).rejects.toThrow(
           /User authentication error|unauthenticated/i
         );
       } finally {

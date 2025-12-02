@@ -13,7 +13,6 @@ export type {
   CreateSecretResponse,
   UpdateSecretResponse,
   DeleteSecretResponse,
-  CancelTaskResponse,
   DeleteTaskResponse,
   GetExecutionStatsResponse,
   GetExecutionStatsOptions,

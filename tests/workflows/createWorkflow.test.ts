@@ -213,7 +213,7 @@ describe("createWorkflow Tests", () => {
       compareResults(
         {
           ...workflowProps,
-          status: WorkflowStatus.Active,
+          status: WorkflowStatus.Enabled,
           id: workflowId,
           owner: eoaAddress,
         },
@@ -276,7 +276,7 @@ describe("createWorkflow Tests", () => {
       compareResults(
         {
           ...workflowProps,
-          status: WorkflowStatus.Active,
+          status: WorkflowStatus.Enabled,
           id: workflowId,
           owner: eoaAddress,
         },
@@ -337,7 +337,7 @@ describe("createWorkflow Tests", () => {
       {
         ...MultiNodeWithBranch,
         smartWalletAddress: wallet.address,
-        status: WorkflowStatus.Active,
+        status: WorkflowStatus.Enabled,
         id: workflowId,
         owner: eoaAddress,
       },
