@@ -16,7 +16,7 @@ describe("setWorkflowEnabled Tests", () => {
     await authenticateClient(client);
   });
 
-  test("should disable task when authenticated with signature", async () => {
+  test("should disable workflow when authenticated with signature", async () => {
     const wallet = await getSmartWallet(client);
     let workflowId: string | undefined;
 
