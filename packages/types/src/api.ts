@@ -109,9 +109,9 @@ export interface DeleteSecretResponse {
   scope: string; // "user", "workflow", "org"
 }
 
-export interface SetTaskActiveResponse {
+export interface SetTaskEnabledResponse {
   success: boolean;
-  status: string; // "active" | "inactive" | "not_found" | "error"
+  status: string; // "enabled" | "disabled" | "not_found" | "error"
   message: string;
   updatedAt?: number; // Unix timestamp when task was updated
   id: string;

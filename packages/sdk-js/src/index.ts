@@ -48,7 +48,7 @@ import {
   type CreateSecretResponse,
   type UpdateSecretResponse,
   type DeleteSecretResponse,
-  type SetTaskActiveResponse,
+  type SetTaskEnabledResponse,
   type DeleteTaskResponse,
   type GetExecutionStatsResponse,
   type GetExecutionStatsOptions,
@@ -463,7 +463,7 @@ class Client extends BaseClient {
     >("listWallets", request, options);
 
     const wallets = result.getItemsList().map((item) => item.toObject());
-    
+
     // Sort wallets by salt (string comparison)
     return wallets.sort((a, b) => {
       const saltA = a.salt || "";
@@ -503,10 +503,14 @@ class Client extends BaseClient {
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
-      enabledTaskCount: (result as any).getEnabledTaskCount ? (result as any).getEnabledTaskCount() : (result as any).getActiveTaskCount?.(),
+      enabledTaskCount: (result as any).getEnabledTaskCount
+        ? (result as any).getEnabledTaskCount()
+        : (result as any).getActiveTaskCount?.(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
-      disabledTaskCount: (result as any).getDisabledTaskCount ? (result as any).getDisabledTaskCount() : (result as any).getInactiveTaskCount?.(),
+      disabledTaskCount: (result as any).getDisabledTaskCount
+        ? (result as any).getDisabledTaskCount()
+        : (result as any).getInactiveTaskCount?.(),
     };
   }
 
@@ -545,10 +549,14 @@ class Client extends BaseClient {
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
-      enabledTaskCount: (result as any).getEnabledTaskCount ? (result as any).getEnabledTaskCount() : (result as any).getActiveTaskCount?.(),
+      enabledTaskCount: (result as any).getEnabledTaskCount
+        ? (result as any).getEnabledTaskCount()
+        : (result as any).getActiveTaskCount?.(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
-      disabledTaskCount: (result as any).getDisabledTaskCount ? (result as any).getDisabledTaskCount() : (result as any).getInactiveTaskCount?.(),
+      disabledTaskCount: (result as any).getDisabledTaskCount
+        ? (result as any).getDisabledTaskCount()
+        : (result as any).getInactiveTaskCount?.(),
     };
   }
 
@@ -1062,29 +1070,22 @@ class Client extends BaseClient {
    * @param {string} id - The workflow id
    * @param {boolean} active - Desired active state (true=activate, false=deactivate)
    * @param {RequestOptions} options - Request options
-   * @returns {Promise<SetTaskActiveResponse>} - The response from updating the workflow state
+   * @returns {Promise<SetTaskEnabledResponse>} - The response from updating the workflow state
    */
   async setWorkflowEnabled(
     id: string,
     enabled: boolean,
     options?: RequestOptions
-  ): Promise<SetTaskActiveResponse> {
+  ): Promise<SetTaskEnabledResponse> {
     // Construct request compatible with both Enabled/Active codegen variants
-    const request =
-      (avs_pb as any).SetTaskEnabledReq
-        ? new (avs_pb as any).SetTaskEnabledReq()
-        : new (avs_pb as any).SetTaskActiveReq();
+    const request = new avs_pb.SetTaskEnabledReq();
     request.setId(id);
-    if ((request as any).setEnabled) {
-      (request as any).setEnabled(enabled);
-    } else {
-      (request as any).setActive(enabled);
-    }
+    request.setEnabled(enabled);
 
     const result = await this.sendGrpcRequest<
-      any,
-      any
-    >("setTaskEnabled", request, options);
+      avs_pb.SetTaskEnabledResp,
+      avs_pb.SetTaskEnabledReq
+    >("setTaskEnabled", request as avs_pb.SetTaskEnabledReq, options);
 
     return {
       success: result.getSuccess(),
@@ -1338,7 +1339,7 @@ class Client extends BaseClient {
   ): Promise<RunNodeWithInputsResponse> {
     // Create the request - following the same pattern as simulateWorkflow
     const request = new avs_pb.RunNodeWithInputsReq();
-    
+
     // Use the same factory pattern as simulateWorkflow: create SDK node, then call toRequest()
     const nodeSdk = NodeFactory.create(node as any);
     request.setNode(nodeSdk.toRequest());
@@ -1385,7 +1386,7 @@ class Client extends BaseClient {
   ): Promise<RunTriggerResponse> {
     // Create the request - following the same pattern as simulateWorkflow
     const request = new avs_pb.RunTriggerReq();
-    
+
     // Use the same factory pattern as simulateWorkflow: create SDK trigger, then call toRequest()
     const triggerSdk = TriggerFactory.create(trigger as any);
     request.setTrigger(triggerSdk.toRequest());
