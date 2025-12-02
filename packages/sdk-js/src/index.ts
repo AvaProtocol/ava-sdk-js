@@ -503,14 +503,10 @@ class Client extends BaseClient {
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
-      enabledTaskCount: (result as any).getEnabledTaskCount
-        ? (result as any).getEnabledTaskCount()
-        : (result as any).getActiveTaskCount?.(),
+      enabledTaskCount: result.getEnabledTaskCount(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
-      disabledTaskCount: (result as any).getDisabledTaskCount
-        ? (result as any).getDisabledTaskCount()
-        : (result as any).getInactiveTaskCount?.(),
+      disabledTaskCount: result.getDisabledTaskCount(),
     };
   }
 
@@ -549,14 +545,10 @@ class Client extends BaseClient {
       factory: result.getFactoryAddress(),
       isHidden: result.getIsHidden(),
       totalTaskCount: result.getTotalTaskCount(),
-      enabledTaskCount: (result as any).getEnabledTaskCount
-        ? (result as any).getEnabledTaskCount()
-        : (result as any).getActiveTaskCount?.(),
+      enabledTaskCount: result.getEnabledTaskCount(),
       completedTaskCount: result.getCompletedTaskCount(),
       failedTaskCount: result.getFailedTaskCount(),
-      disabledTaskCount: (result as any).getDisabledTaskCount
-        ? (result as any).getDisabledTaskCount()
-        : (result as any).getInactiveTaskCount?.(),
+      disabledTaskCount: result.getDisabledTaskCount(),
     };
   }
 
@@ -1068,7 +1060,7 @@ class Client extends BaseClient {
   /**
    * Set workflow active state (activate/deactivate)
    * @param {string} id - The workflow id
-   * @param {boolean} active - Desired active state (true=activate, false=deactivate)
+   * @param {boolean} enabled - Desired enabled state (true=enable, false=disable)
    * @param {RequestOptions} options - Request options
    * @returns {Promise<SetTaskEnabledResponse>} - The response from updating the workflow state
    */

@@ -84,13 +84,15 @@ describe("Wallet Management Tests", () => {
         expect(wallet.totalTaskCount).toEqual(
           initialStat.totalTaskCount || 0 + 1
         );
-        expect(wallet.activeTaskCount).toEqual(
-          initialStat.activeTaskCount || 0
+
+        expect(wallet.enabledTaskCount).toEqual(
+          initialStat.enabledTaskCount || 0
         );
+
         expect(wallet.completedTaskCount).toEqual(
           initialStat.completedTaskCount || 0 + 1
         );
-        expect(wallet.inactiveTaskCount).toEqual(initialStat.inactiveTaskCount);
+        expect(wallet.disabledTaskCount).toEqual(initialStat.disabledTaskCount);
 
         // Now test the cancel metric
         const workflowProps2 = createFromTemplate(wallet.address);
@@ -227,7 +229,7 @@ describe("Wallet Management Tests", () => {
 
       // Extract salt values from wallets and verify they are sorted
       const saltValues = wallets.map((w) => w.salt || "");
-      
+
       // Verify the wallets are sorted by salt (string comparison)
       // In lexicographic order: "0" < "1" < "10" < "2"
       const sortedSalts = [...saltValues].sort((a, b) => a.localeCompare(b));

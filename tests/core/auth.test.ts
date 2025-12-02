@@ -330,7 +330,7 @@ describe("Authentication Tests", () => {
       }
     });
 
-    test("setWorkflowActive (deactivate) works with options.authKey", async () => {
+    test("setWorkflowEnabled (disable) works with options.authKey", async () => {
       const wallet = await getSmartWallet(client, {
         saltValue: _.toString(saltCounter++),
         authKey: authKeyViaAPI,
@@ -570,7 +570,7 @@ describe("Authentication Tests", () => {
       );
     });
 
-    test("setWorkflowActive should throw error", async () => {
+    test("setWorkflowEnabled should throw error", async () => {
       // Prepare a legit workflowId on the server
       const wallet = await getSmartWallet(client, {
         saltValue: _.toString(saltCounter++),
