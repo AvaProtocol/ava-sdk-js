@@ -94,7 +94,7 @@ const saltCounters = new Map<number, number>();
 // Global index salt for all tests, e.g. Auth test salts range from 0 to 1000
 export const SaltGlobal = {
   Auth: 0,
-  CancelWorkflow: 1,
+  DisableWorkflow: 1,
   CreateSecret: 2,
   DeleteWorkflow: 3,
   GetExecutions: 4,
