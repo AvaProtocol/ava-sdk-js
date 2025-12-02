@@ -7,6 +7,13 @@
 # Example: sh scripts/get-copilot-comments.sh 987 verbose
 
 PR_NUMBER="${1:-987}"
+
+# Validate PR_NUMBER is numeric
+if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+    echo "Invalid PR number: $PR_NUMBER" >&2
+    exit 1
+fi
+
 REPO="AvaProtocol/ava-sdk-js"
 VERBOSE="${2:-false}"
 OUTPUT_FILE="pr-comments-${PR_NUMBER}.json"

@@ -36,7 +36,7 @@ describe("setWorkflowEnabled Tests", () => {
     }
   });
 
-  test("should return error response when disabling a non-existent task", async () => {
+  test("should return error response when disabling a non-existent workflow", async () => {
     const result = await client.setWorkflowEnabled("non-existent-task-id", false);
     expect(result.success).toBeFalsy();
     expect(result.status).toBe("not_found");

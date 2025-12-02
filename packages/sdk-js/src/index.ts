@@ -1069,7 +1069,6 @@ class Client extends BaseClient {
     enabled: boolean,
     options?: RequestOptions
   ): Promise<SetTaskEnabledResponse> {
-    // Construct request compatible with both Enabled/Active codegen variants
     const request = new avs_pb.SetTaskEnabledReq();
     request.setId(id);
     request.setEnabled(enabled);
@@ -1077,7 +1076,7 @@ class Client extends BaseClient {
     const result = await this.sendGrpcRequest<
       avs_pb.SetTaskEnabledResp,
       avs_pb.SetTaskEnabledReq
-    >("setTaskEnabled", request as avs_pb.SetTaskEnabledReq, options);
+    >("setTaskEnabled", request, options);
 
     return {
       success: result.getSuccess(),
