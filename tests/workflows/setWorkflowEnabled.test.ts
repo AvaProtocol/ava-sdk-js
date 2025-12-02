@@ -1,4 +1,3 @@
-import _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import {
