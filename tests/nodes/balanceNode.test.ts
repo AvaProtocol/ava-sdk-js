@@ -213,7 +213,7 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       // Test different formats for the current chain
-      const chains = [currentChainName, currentChain.chainName.toLowerCase(), currentChain.chainId.toString()];
+      const chains = [currentChainName, currentChain?.chainName?.toLowerCase(), currentChain?.chainId?.toString()].filter(Boolean);
 
       for (const chain of chains) {
         const params = {

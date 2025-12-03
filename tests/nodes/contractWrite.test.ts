@@ -1853,11 +1853,15 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      // Should fail with clear error message about hyphenated variables
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      // The error message format is: "could not resolve variable settings.recipient-address in method 'transfer'"
-      expect(result.error).toContain("could not resolve variable");
+      // Hyphenated keys are now supported in object access - the variable should resolve
+      // The transaction may fail due to insufficient balance, but variable resolution should work
+      if (!result.success && result.error) {
+        // If it fails, it should be due to contract execution, not variable resolution
+        expect(result.error).not.toContain("could not resolve variable");
+        // Contract-level errors are acceptable (e.g., insufficient balance)
+      }
+      // Variable should have been resolved successfully
+      expect(result.error || "").not.toMatch(/could not resolve variable.*recipient-address/i);
     });
 
     test("should support mathematical expressions with hyphens", async () => {

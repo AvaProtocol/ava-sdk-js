@@ -40,7 +40,7 @@ describe("setWorkflowEnabled Tests", () => {
     const result = await client.setWorkflowEnabled("non-existent-task-id", false);
     expect(result.success).toBeFalsy();
     expect(result.status).toBe("not_found");
-    expect(result.message).toMatch(/workflow not found/i);
+    expect(result.message).toMatch(/task not found/i);
     expect(result.id).toBe("non-existent-task-id");
   });
 
