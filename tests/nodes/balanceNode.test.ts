@@ -63,9 +63,10 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: TEST_ADDRESSES.vitalik,
-          chain: currentChainName,
-        }},
+            address: TEST_ADDRESSES.vitalik,
+            chain: currentChainName,
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -116,11 +117,12 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: TEST_ADDRESSES.vitalik,
-          chain: currentChainName,
-          includeSpam: false,
-          includeZeroBalances: false,
-        }},
+            address: TEST_ADDRESSES.vitalik,
+            chain: currentChainName,
+            includeSpam: false,
+            includeZeroBalances: false,
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -164,10 +166,11 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: TEST_ADDRESSES.vitalik,
-          chain: currentChainName,
-          minUsdValue: 1.0, // Only include tokens worth at least $1
-        }},
+            address: TEST_ADDRESSES.vitalik,
+            chain: currentChainName,
+            minUsdValue: 1.0, // Only include tokens worth at least $1
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -213,18 +216,23 @@ describeIfSepolia("BalanceNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       // Test different formats for the current chain
-      const chains = [currentChainName, currentChain?.chainName?.toLowerCase(), currentChain?.chainId?.toString()].filter(Boolean);
+      const chains = [
+        currentChainName,
+        currentChain?.name?.toLowerCase(),
+        currentChain?.chainId?.toString(),
+      ].filter(Boolean);
 
       for (const chain of chains) {
         const params = {
           node: {
-          id: getNextId(),
-          name: "balance_test",
-          type: NodeType.Balance,
-          data: {
-            address: TEST_ADDRESSES.vitalik,
-            chain: chain,
-          }},
+            id: getNextId(),
+            name: "balance_test",
+            type: NodeType.Balance,
+            data: {
+              address: TEST_ADDRESSES.vitalik,
+              chain: chain,
+            },
+          },
 
           inputVariables: {
             settings: getSettings(wallet.address),
@@ -258,9 +266,10 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: "{{walletAddress}}",
-          chain: "{{chainName}}",
-        }},
+            address: "{{walletAddress}}",
+            chain: "{{chainName}}",
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -659,9 +668,10 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: "invalid-address",
-          chain: currentChainName,
-        }},
+            address: "invalid-address",
+            chain: currentChainName,
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -694,9 +704,10 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: TEST_ADDRESSES.vitalik,
-          chain: "invalid-chain",
-        }},
+            address: TEST_ADDRESSES.vitalik,
+            chain: "invalid-chain",
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -729,10 +740,11 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: TEST_ADDRESSES.vitalik,
-          chain: currentChainName,
-          minUsdValue: -1.0, // Negative value - backend should reject
-        }},
+            address: TEST_ADDRESSES.vitalik,
+            chain: currentChainName,
+            minUsdValue: -1.0, // Negative value - backend should reject
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
@@ -796,10 +808,7 @@ describeIfSepolia("BalanceNode Tests", () => {
         includeSpam: false,
         includeZeroBalances: false,
         minUsdValue: 1.0,
-        tokenAddresses: [
-          tokens.USDC.address,
-          tokens.LINK.address,
-        ],
+        tokenAddresses: [tokens.USDC.address, tokens.LINK.address],
       });
 
       const config = balanceNode.getConfig();
@@ -827,13 +836,14 @@ describeIfSepolia("BalanceNode Tests", () => {
           name: "balance_test",
           type: NodeType.Balance,
           data: {
-          address: TEST_ADDRESSES.vitalik,
-          chain: currentChainName,
-          tokenAddresses: [
-            tokens.USDC.address, // USDC on current chain
-            tokens.LINK.address, // LINK on current chain
-          ],
-        }},
+            address: TEST_ADDRESSES.vitalik,
+            chain: currentChainName,
+            tokenAddresses: [
+              tokens.USDC.address, // USDC on current chain
+              tokens.LINK.address, // LINK on current chain
+            ],
+          },
+        },
 
         inputVariables: {
           settings: getSettings(wallet.address),
