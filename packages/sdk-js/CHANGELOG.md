@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.11.0
+
+### Minor Changes
+
+- d37afb0: Allow to set enabled/disabled to workflow; rename from active status and remove cancelWorkflow
+
+### Patch Changes
+
+- Updated dependencies [d37afb0]
+  - @avaprotocol/types@2.9.0
+
 ## 2.10.4
 
 ### Patch Changes

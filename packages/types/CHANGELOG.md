@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.9.0
+
+### Minor Changes
+
+- d37afb0: Allow to set enabled/disabled to workflow; rename from active status and remove cancelWorkflow
+
 ## 2.8.4
 
 ### Patch Changes
