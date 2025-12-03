@@ -32,7 +32,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
     name: "Test Single Approve with max",
     chainId: parseInt(chainId),
     settings: {
-      chain: getChainNameFromId(parseInt(chainId)),
+      chain: getChainNameFromId(chainId),
       amount: "10000", // 0.01 USDC (6 decimals) - matches Go test for repeated testing
       runner: smartWalletAddress, // Now properly initialized after beforeAll
       chain_id: parseInt(chainId),

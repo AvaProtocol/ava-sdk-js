@@ -91,7 +91,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
       chainId: parseInt(chainId),
       settings: {
         name,
-        chain: getChainNameFromId(parseInt(chainId)),
+        chain: getChainNameFromId(chainId),
         amount: "10000", // 0.01 USDC (6 decimals)
         runner: smartWalletAddress,
         chain_id: parseInt(chainId),

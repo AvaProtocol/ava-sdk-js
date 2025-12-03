@@ -198,21 +198,10 @@ describeIfSepolia("BalanceNode Tests", () => {
       // On Sepolia, tokens typically don't have USD pricing, so we expect an empty result
       // This is expected behavior for testnet tokens without market value
       // The test verifies that the filtering mechanism works correctly
-      if (currentChainName === "sepolia") {
-        // Sepolia tokens don't have USD pricing, so filtering by minUsdValue should return empty
-        expect(result.data.length).toBe(0);
-      } else {
-        // On mainnet, we should get some results and verify USD values
-        expect(result.data.length).toBeGreaterThan(0);
-        result.data.forEach((token: any) => {
-          if (token.usdValue) {
-            expect(parseFloat(token.usdValue)).toBeGreaterThanOrEqual(1.0);
-          }
-        });
-      }
+      expect(result.data.length).toBe(0);
     });
 
-    test("should support different chain identifiers (name, short name, id)", async () => {
+    test("should support different chain identifiers such as name, short name, and id", async () => {
       const wallet = await getSmartWallet(client);
 
       // Test different formats for the current chain

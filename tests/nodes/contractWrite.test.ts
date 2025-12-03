@@ -1812,7 +1812,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
 
   describe("Template Variable Validation Tests", () => {
     test("should support hyphenated keys in object property access", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await getSmartWalletWithBalance(client);
 
       const params = {
         node: {
@@ -1853,12 +1853,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      // Hyphenated keys should be supported - the error should be contract-level (e.g., balance), not template resolution
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.error).not.toContain("could not resolve variable");
-      // Should fail with contract error (insufficient balance), not template error
-      expect(result.error).toContain("ERC20: transfer amount exceeds balance");
+      // Hyphenated keys should be supported and the transaction should succeed with funded wallet
+      expect(result.success).toBe(true);
+      expect(result.error).toBeFalsy(); // Error should be undefined or empty string on success
+      // Variable resolution should work correctly
+      expect(result.data).toBeDefined();
     });
 
     test("should support mathematical expressions with hyphens", async () => {

@@ -47,7 +47,8 @@ export const getCurrentChain = (): ChainConfig => {
 };
 
 // Convert chain ID to chain name (lowercase with hyphens for testnets)
-export const getChainNameFromId = (chainId: number): string => {
+export const getChainNameFromId = (chainId: number | string): string => {
+  const id = typeof chainId === "string" ? parseInt(chainId) : chainId;
   const chainMap: Record<number, string> = {
     1: "ethereum",
     11155111: "sepolia",
@@ -58,7 +59,11 @@ export const getChainNameFromId = (chainId: number): string => {
     1868: "soneium",
     1946: "soneium-minato",
   };
-  return chainMap[chainId] || `chain-${chainId}`;
+  const chainName = chainMap[id];
+  if (!chainName) {
+    throw new Error(`Unknown chain ID: ${id}`);
+  }
+  return chainName;
 };
 
 
