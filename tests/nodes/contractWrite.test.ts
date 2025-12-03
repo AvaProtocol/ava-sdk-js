@@ -1811,7 +1811,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
   }, 180000); // 3 minutes for real blockchain transaction (deployment + confirmation)
 
   describe("Template Variable Validation Tests", () => {
-    test("should reject hyphenated variable names in methodParams", async () => {
+    test("should support hyphenated keys in object property access", async () => {
       const wallet = await getSmartWallet(client);
 
       const params = {
@@ -1826,7 +1826,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "transfer",
               methodParams: [
-                "{{settings.recipient-address}}", // Hyphenated key - should be rejected
+                "{{settings.recipient-address}}", // Hyphenated key in object property access
                 "100",
               ],
             },
@@ -1853,15 +1853,11 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         util.inspect(result, { depth: null, colors: true })
       );
 
-      // Hyphenated keys are now supported in object access - the variable should resolve
-      // The transaction may fail due to insufficient balance, but variable resolution should work
-      if (!result.success && result.error) {
-        // If it fails, it should be due to contract execution, not variable resolution
-        expect(result.error).not.toContain("could not resolve variable");
-        // Contract-level errors are acceptable (e.g., insufficient balance)
-      }
-      // Variable should have been resolved successfully
-      expect(result.error || "").not.toMatch(/could not resolve variable.*recipient-address/i);
+      // Hyphenated keys should be supported - the error should be contract-level (e.g., balance), not template resolution
+      expect(result.error).toBeDefined();
+      expect(result.error).not.toContain("could not resolve variable");
+      // Should fail with contract error (insufficient balance), not template error
+      expect(result.error).toContain("ERC20: transfer amount exceeds balance");
     });
 
     test("should support mathematical expressions with hyphens", async () => {
