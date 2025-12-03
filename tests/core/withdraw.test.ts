@@ -225,7 +225,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       expect(response.smartWalletAddress).toBe(wallet.address);
       expect(response.amount).toBe(withdrawRequest.amount);
       // Should have an error message about insufficient funds
-      expect(response.message || response.error).toBeTruthy();
+      expect(response.message).toBeTruthy();
 
       console.log("Large amount withdrawal response:", {
         success: response.success,
