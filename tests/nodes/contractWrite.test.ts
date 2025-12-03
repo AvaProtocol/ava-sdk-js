@@ -1854,6 +1854,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       );
 
       // Hyphenated keys should be supported - the error should be contract-level (e.g., balance), not template resolution
+      expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error).not.toContain("could not resolve variable");
       // Should fail with contract error (insufficient balance), not template error
