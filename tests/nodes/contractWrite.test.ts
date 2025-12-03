@@ -1826,7 +1826,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "transfer",
               methodParams: [
-                "{{settings.recipient-address}}", // Hyphenated key in object property access
+                "{{settings.recipient-address}}", // Hyphenated key - should be rejected
                 "100",
               ],
             },
