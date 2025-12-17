@@ -33,6 +33,12 @@ export interface EventTriggerDataType {
     conditions?: EventConditionType[]; // Event conditions to evaluate on decoded event data
     methodCalls?: MethodCallType[]; // Method calls for enhanced formatting (e.g., decimals)
   }>;
+  // Cooldown period in seconds. After a trigger fires, wait this many seconds before
+  // allowing the same task to trigger again. This prevents repeated firing when
+  // conditions remain true (e.g., price > threshold fires every block).
+  // Default: 300 (5 minutes cooldown - prevents repeated firing when conditions remain true)
+  // Set to 0 to disable cooldown (triggers fire immediately when conditions match)
+  cooldownSeconds?: number;
 }
 export type BlockTriggerDataType = avs_pb.BlockTrigger.Config.AsObject;
 export type FixedTimeTriggerDataType = avs_pb.FixedTimeTrigger.Config.AsObject;

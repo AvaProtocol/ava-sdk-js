@@ -426,6 +426,11 @@ export namespace EventTrigger {
         setQueriesList(value: Array<EventTrigger.Query>): Config;
         addQueries(value?: EventTrigger.Query, index?: number): EventTrigger.Query;
 
+        hasCooldownSeconds(): boolean;
+        clearCooldownSeconds(): void;
+        getCooldownSeconds(): number | undefined;
+        setCooldownSeconds(value: number): Config;
+
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
         static toObject(includeInstance: boolean, msg: Config): Config.AsObject;
@@ -439,6 +444,7 @@ export namespace EventTrigger {
     export namespace Config {
         export type AsObject = {
             queriesList: Array<EventTrigger.Query.AsObject>,
+            cooldownSeconds?: number,
         }
     }
 
