@@ -5545,7 +5545,8 @@ proto.aggregator.EventTrigger.Config.prototype.toObject = function(opt_includeIn
 proto.aggregator.EventTrigger.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     queriesList: jspb.Message.toObjectList(msg.getQueriesList(),
-    proto.aggregator.EventTrigger.Query.toObject, includeInstance)
+    proto.aggregator.EventTrigger.Query.toObject, includeInstance),
+    cooldownSeconds: jspb.Message.getFieldWithDefault(msg, 2, 0)
   };
 
   if (includeInstance) {
@@ -5587,6 +5588,10 @@ proto.aggregator.EventTrigger.Config.deserializeBinaryFromReader = function(msg,
       reader.readMessage(value,proto.aggregator.EventTrigger.Query.deserializeBinaryFromReader);
       msg.addQueries(value);
       break;
+    case 2:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setCooldownSeconds(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -5622,6 +5627,13 @@ proto.aggregator.EventTrigger.Config.serializeBinaryToWriter = function(message,
       1,
       f,
       proto.aggregator.EventTrigger.Query.serializeBinaryToWriter
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 2));
+  if (f != null) {
+    writer.writeUint32(
+      2,
+      f
     );
   }
 };
@@ -5662,6 +5674,42 @@ proto.aggregator.EventTrigger.Config.prototype.addQueries = function(opt_value, 
  */
 proto.aggregator.EventTrigger.Config.prototype.clearQueriesList = function() {
   return this.setQueriesList([]);
+};
+
+
+/**
+ * optional uint32 cooldown_seconds = 2;
+ * @return {number}
+ */
+proto.aggregator.EventTrigger.Config.prototype.getCooldownSeconds = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.EventTrigger.Config} returns this
+ */
+proto.aggregator.EventTrigger.Config.prototype.setCooldownSeconds = function(value) {
+  return jspb.Message.setField(this, 2, value);
+};
+
+
+/**
+ * Clears the field making it undefined.
+ * @return {!proto.aggregator.EventTrigger.Config} returns this
+ */
+proto.aggregator.EventTrigger.Config.prototype.clearCooldownSeconds = function() {
+  return jspb.Message.setField(this, 2, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.EventTrigger.Config.prototype.hasCooldownSeconds = function() {
+  return jspb.Message.getField(this, 2) != null;
 };
 
 

@@ -161,6 +161,12 @@ class EventTrigger extends Trigger {
     });
 
     config.setQueriesList(queryMessages);
+
+    // Set cooldownSeconds if provided
+    if (dataConfig.cooldownSeconds !== undefined) {
+      config.setCooldownSeconds(dataConfig.cooldownSeconds);
+    }
+
     trigger.setConfig(config);
 
     request.setEvent(trigger);
@@ -197,9 +203,9 @@ class EventTrigger extends Trigger {
             if (query.getTopicsList && query.getTopicsList().length > 0) {
               // Convert empty strings back to null for JavaScript compatibility
               // Empty strings represent wildcards in the protobuf representation
-              queryData.topics = query.getTopicsList().map((topic) =>
-                topic === "" ? null : topic
-              );
+              queryData.topics = query
+                .getTopicsList()
+                .map((topic) => (topic === "" ? null : topic));
             }
 
             // Extract maxEventsPerBlock
@@ -240,7 +246,14 @@ class EventTrigger extends Trigger {
           });
         }
 
+        // Extract cooldownSeconds if present
+        // Use hasCooldownSeconds() to check if field was set, since getCooldownSeconds()
+        // returns 0 (default uint32 value) when field is not set
         data = { queries: queries };
+
+        if (config.hasCooldownSeconds()) {
+          data.cooldownSeconds = config.getCooldownSeconds();
+        }
       }
     }
 

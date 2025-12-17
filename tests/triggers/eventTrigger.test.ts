@@ -405,10 +405,7 @@ describeIfSepolia("EventTrigger Tests", () => {
           id: getNextId(),
           name: "chainlink_price_condition",
           type: TriggerType.Event,
-          data: createChainlinkPriceConditionConfig(
-            "200000000000",
-            "gt"
-          ), // ETH > $2000
+          data: createChainlinkPriceConditionConfig("200000000000", "gt"), // ETH > $2000
         },
       };
 
@@ -490,6 +487,45 @@ describeIfSepolia("EventTrigger Tests", () => {
       );
     });
 
+    test("should run trigger with cooldownSeconds parameter", async () => {
+      const params = {
+        trigger: {
+          id: getNextId(),
+          name: "cooldown_seconds_test",
+          type: TriggerType.Event,
+          data: {
+            queries: [
+              {
+                addresses: SEPOLIA_TOKEN_ADDRESSES,
+                topics: [
+                  TRANSFER_EVENT_SIGNATURE,
+                  null,
+                  padAddressForTopic(eoaAddress),
+                ],
+              },
+            ],
+            cooldownSeconds: 60, // 1 minute cooldown
+          },
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true })
+      );
+      const result = await client.runTrigger(params);
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true })
+      );
+
+      expect(typeof result.success).toBe("boolean");
+      expect(result.success).toBe(true);
+      expect(result.data === null || typeof result.data === "object").toBe(
+        true
+      );
+    });
+
     test("should deserialize trigger with conditions from response", () => {
       // Create a trigger with conditions
       const originalConditions: EventConditionType[] = [
@@ -547,6 +583,89 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(condition.operator).toBe("gt");
       expect(condition.value).toBe("200000000000");
       expect(condition.fieldType).toBe("int256");
+    });
+
+    test("should serialize and deserialize cooldownSeconds parameter", () => {
+      const originalTrigger = TriggerFactory.create({
+        id: "test-cooldown-trigger",
+        name: "cooldownTest",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+              contractAbi: CHAINLINK_AGGREGATOR_ABI,
+            },
+          ],
+          cooldownSeconds: 300, // 5 minutes cooldown
+        },
+      });
+
+      // Convert to protobuf and verify serialization
+      const request = originalTrigger.toRequest();
+      const config = request.getEvent()!.getConfig()!;
+      expect(config.hasCooldownSeconds()).toBe(true);
+      expect(config.getCooldownSeconds()).toBe(300);
+
+      // Deserialize and verify
+      const deserializedTrigger = EventTrigger.fromResponse(request);
+      expect(deserializedTrigger.data).toBeDefined();
+      const triggerData = deserializedTrigger.data as Record<string, unknown>;
+      expect(triggerData.cooldownSeconds).toBe(300);
+    });
+
+    test("should handle cooldownSeconds with value 0 (disabled)", () => {
+      const trigger = TriggerFactory.create({
+        id: "test-cooldown-zero",
+        name: "cooldownDisabled",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+            },
+          ],
+          cooldownSeconds: 0, // Disabled cooldown
+        },
+      });
+
+      const request = trigger.toRequest();
+      const config = request.getEvent()!.getConfig()!;
+      expect(config.hasCooldownSeconds()).toBe(true);
+      expect(config.getCooldownSeconds()).toBe(0);
+
+      const deserializedTrigger = EventTrigger.fromResponse(request);
+      const triggerData = deserializedTrigger.data as Record<string, unknown>;
+      expect(triggerData.cooldownSeconds).toBe(0);
+    });
+
+    test("should handle missing cooldownSeconds (undefined)", () => {
+      const trigger = TriggerFactory.create({
+        id: "test-no-cooldown",
+        name: "noCooldown",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: [CHAINLINK_ETH_USD_SEPOLIA],
+              topics: [CHAINLINK_ANSWER_UPDATED_SIGNATURE],
+            },
+          ],
+          // cooldownSeconds not specified
+        },
+      });
+
+      const request = trigger.toRequest();
+      const config = request.getEvent()!.getConfig()!;
+      // When not set, hasCooldownSeconds should be false
+      expect(config.hasCooldownSeconds()).toBe(false);
+
+      const deserializedTrigger = EventTrigger.fromResponse(request);
+      const triggerData = deserializedTrigger.data as Record<string, unknown>;
+      // When not set, cooldownSeconds should be undefined
+      expect(triggerData.cooldownSeconds).toBeUndefined();
     });
 
     test("should reject contractAbi as string format", () => {
@@ -809,6 +928,42 @@ describeIfSepolia("EventTrigger Tests", () => {
       // This is realistic behavior for event triggers
     });
 
+    test("should simulate workflow with cooldownSeconds parameter", async () => {
+      const wallet = await getSmartWallet(client);
+
+      const eventTrigger = TriggerFactory.create({
+        id: defaultTriggerId,
+        name: "simulate_cooldown_test",
+        type: TriggerType.Event,
+        data: {
+          queries: [
+            {
+              addresses: SEPOLIA_TOKEN_ADDRESSES,
+              topics: [
+                TRANSFER_EVENT_SIGNATURE,
+                padAddressForTopic(eoaAddress),
+                null,
+              ],
+            },
+          ],
+          cooldownSeconds: 120, // 2 minutes cooldown
+        },
+      });
+
+      const workflowProps = createFromTemplate(wallet.address, []);
+      workflowProps.trigger = eventTrigger;
+
+      const simulation = await client.simulateWorkflow(
+        client.createWorkflow(workflowProps)
+      );
+
+      expect(simulation.status).toBe(ExecutionStatus.Success);
+      const triggerStep = simulation.steps.find(
+        (step) => step.id === eventTrigger.id
+      );
+      expect(triggerStep!.success).toBeTruthy();
+    });
+
     test("should simulate workflow with single event query", async () => {
       const wallet = await getSmartWallet(client);
 
@@ -820,7 +975,11 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [TRANSFER_EVENT_SIGNATURE, padAddressForTopic(eoaAddress), null], // Only FROM events
+              topics: [
+                TRANSFER_EVENT_SIGNATURE,
+                padAddressForTopic(eoaAddress),
+                null,
+              ], // Only FROM events
             },
           ],
         },
@@ -960,7 +1119,11 @@ describeIfSepolia("EventTrigger Tests", () => {
           queries: [
             {
               addresses: SEPOLIA_TOKEN_ADDRESSES,
-              topics: [TRANSFER_EVENT_SIGNATURE, null, padAddressForTopic(eoaAddress)], // Transfer to eoaAddress
+              topics: [
+                TRANSFER_EVENT_SIGNATURE,
+                null,
+                padAddressForTopic(eoaAddress),
+              ], // Transfer to eoaAddress
             },
           ],
         },
@@ -1516,7 +1679,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       // 🔍 SPECIFIC VALUE TESTS: Verify actual event data values
       // Note: runTrigger and simulateWorkflow return raw log data
       // Only triggerWorkflow execution returns enriched Transfer event data
-      
+
       // Test runTrigger data (raw log format)
       expect(typeof runTriggerData.blockNumber).toBe("number");
       expect(runTriggerData.blockNumber).toBeGreaterThan(0);
@@ -1530,7 +1693,7 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(simulatedData.blockNumber).toBeGreaterThan(0);
       expect(Array.isArray(simulatedData.topics)).toBe(true);
       expect(simulatedData.topics[0]).toBe(TRANSFER_EVENT_SIGNATURE);
-      
+
       // Test triggered execution data (enriched Transfer format)
       // Note: eventFound field is optional and may not be present in all responses
       expect(executionData.eventType).toBe("Transfer");
