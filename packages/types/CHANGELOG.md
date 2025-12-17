@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.9.1
+
+### Patch Changes
+
+- ee62aee: fix: added cooldownSeconds to EventTrigger
+
 ## 2.9.0
 
 ### Minor Changes

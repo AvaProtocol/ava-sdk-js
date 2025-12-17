@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.11.1
+
+### Patch Changes
+
+- ee62aee: fix: added cooldownSeconds to EventTrigger
+- Updated dependencies [ee62aee]
+  - @avaprotocol/types@2.9.1
+
 ## 2.11.0
 
 ### Minor Changes
