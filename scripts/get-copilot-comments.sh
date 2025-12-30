@@ -14,7 +14,9 @@ if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-REPO="AvaProtocol/ava-sdk-js"
+REPO_OWNER="AvaProtocol"
+REPO_NAME="ava-sdk-js"
+REPO="$REPO_OWNER/$REPO_NAME"
 VERBOSE="${2:-false}"
 OUTPUT_FILE="pr-comments-${PR_NUMBER}.json"
 
@@ -33,21 +35,74 @@ if [ "$VERBOSE" = "verbose" ] || [ "$VERBOSE" = "-v" ] || [ "$VERBOSE" = "--verb
 fi
 
 # Create temporary files to avoid bash variable issues with special characters
-TMP_REVIEW=$(mktemp)
+TMP_GRAPHQL=$(mktemp)
+TMP_UNRESOLVED=$(mktemp)
+TMP_RESOLVED=$(mktemp)
 TMP_ISSUE=$(mktemp)
 
-# Fetch review comments and save to temp file
-gh api repos/$REPO/pulls/$PR_NUMBER/comments --jq '[.[] | select(.user.login == "github-copilot[bot]" or .user.login == "copilot" or .user.login == "Copilot" or (.user.login | ascii_downcase | contains("copilot"))) | {
-  id: .id,
-  path: .path,
-  line: .line,
-  diff_hunk: .diff_hunk,
-  body: .body,
-  created_at: .created_at,
-  user: .user.login
-}]' > "$TMP_REVIEW"
+# Use GraphQL to fetch all review threads with resolution status
+gh api graphql -f query='
+query($owner: String!, $name: String!, $pr: Int!) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $pr) {
+      reviewThreads(first: 100) {
+        nodes {
+          isResolved
+          comments(first: 10) {
+            nodes {
+              id
+              path
+              body
+              createdAt
+              author {
+                login
+              }
+              line
+              diffHunk
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner="$REPO_OWNER" -f name="$REPO_NAME" -F pr="$PR_NUMBER" > "$TMP_GRAPHQL"
 
-# Fetch issue/PR comments and save to temp file
+# Extract unresolved Copilot comments
+jq '[
+  .data.repository.pullRequest.reviewThreads.nodes[] |
+  select(.isResolved == false) |
+  .comments.nodes[] |
+  select(.author.login == "github-copilot[bot]" or .author.login == "copilot" or .author.login == "Copilot" or (.author.login | ascii_downcase | contains("copilot"))) |
+  {
+    id: .id,
+    path: .path,
+    line: .line,
+    diff_hunk: .diffHunk,
+    body: .body,
+    created_at: .createdAt,
+    user: .author.login
+  }
+]' "$TMP_GRAPHQL" > "$TMP_UNRESOLVED"
+
+# Extract resolved Copilot comments (for counting)
+jq '[
+  .data.repository.pullRequest.reviewThreads.nodes[] |
+  select(.isResolved == true) |
+  .comments.nodes[] |
+  select(.author.login == "github-copilot[bot]" or .author.login == "copilot" or .author.login == "Copilot" or (.author.login | ascii_downcase | contains("copilot"))) |
+  {
+    id: .id,
+    path: .path,
+    line: .line,
+    diff_hunk: .diffHunk,
+    body: .body,
+    created_at: .createdAt,
+    user: .author.login
+  }
+]' "$TMP_GRAPHQL" > "$TMP_RESOLVED"
+
+# Fetch issue/PR comments (these don't have resolution status)
+# Filter for Copilot comments
 gh api repos/$REPO/issues/$PR_NUMBER/comments --jq '[.[] | select(.user.login == "github-copilot[bot]" or .user.login == "copilot" or .user.login == "Copilot" or (.user.login | ascii_downcase | contains("copilot"))) | {
   id: .id,
   body: .body,
@@ -55,24 +110,32 @@ gh api repos/$REPO/issues/$PR_NUMBER/comments --jq '[.[] | select(.user.login ==
   user: .user.login
 }]' > "$TMP_ISSUE"
 
-# Combine all comments into a single JSON structure using temp files
+# Get counts
+UNRESOLVED_COUNT=$(jq 'length' "$TMP_UNRESOLVED")
+RESOLVED_COUNT=$(jq 'length' "$TMP_RESOLVED")
+TOTAL_REVIEW=$((UNRESOLVED_COUNT + RESOLVED_COUNT))
+ISSUE_COUNT=$(jq 'length' "$TMP_ISSUE")
+
+# Combine unresolved comments into a single JSON structure (only output unresolved)
 jq -n \
-  --argfile review_comments "$TMP_REVIEW" \
+  --argfile review_comments "$TMP_UNRESOLVED" \
   --argfile issue_comments "$TMP_ISSUE" \
   --arg pr_number "$PR_NUMBER" \
   --arg repo "$REPO" \
+  --argjson total_review "$TOTAL_REVIEW" \
+  --argjson unresolved "$UNRESOLVED_COUNT" \
+  --argjson resolved "$RESOLVED_COUNT" \
   '
     ($review_comments) as $review |
     ($issue_comments) as $issue |
-    ($review | length) as $review_count |
     ($issue | length) as $issue_count |
-    ($review_count + $issue_count) as $total |
     {
       pr_number: $pr_number,
       repository: $repo,
       summary: {
-        total_comments: $total,
-        review_comments: $review_count,
+        review_comments_total: $total_review,
+        review_comments_unresolved: $unresolved,
+        review_comments_resolved: $resolved,
         issue_pr_comments: $issue_count
       },
       review_comments: $review,
@@ -80,19 +143,15 @@ jq -n \
     }
   ' > "$OUTPUT_FILE"
 
-# Get counts for summary display
-REVIEW_COUNT=$(jq '.summary.review_comments' "$OUTPUT_FILE")
-ISSUE_COUNT=$(jq '.summary.issue_pr_comments' "$OUTPUT_FILE")
-TOTAL=$(jq '.summary.total_comments' "$OUTPUT_FILE")
-
 # Clean up temp files
-rm -f "$TMP_REVIEW" "$TMP_ISSUE"
+rm -f "$TMP_GRAPHQL" "$TMP_UNRESOLVED" "$TMP_RESOLVED" "$TMP_ISSUE"
 
 # Print summary to stdout
 echo "=== Summary ==="
-echo "Total Copilot comments found: $TOTAL"
-echo "  - Review comments (inline): $REVIEW_COUNT"
-echo "  - Issue/PR comments (general): $ISSUE_COUNT"
+echo "Copilot review comments: $UNRESOLVED_COUNT unresolved / $TOTAL_REVIEW total"
+echo "  - Resolved: $RESOLVED_COUNT"
+echo "  - Unresolved: $UNRESOLVED_COUNT"
+echo "Issue/PR comments: $ISSUE_COUNT"
 echo ""
-echo "Output saved to: $OUTPUT_FILE"
+echo "Output saved to: $OUTPUT_FILE (contains only unresolved comments)"
 
