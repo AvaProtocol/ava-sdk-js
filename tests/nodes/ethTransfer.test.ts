@@ -15,7 +15,6 @@ import {
   describeIfSepolia,
   getSettings,
   getSmartWalletWithBalance,
-  getSmartWallet,
   getEOAAddress,
   authenticateClient,
   getClient,
@@ -34,14 +33,18 @@ jest.setTimeout(TIMEOUT_DURATION);
  * {
  *   success: true/false,
  *   data: {
- *     transactionHash: "0x...", // Transaction hash of the ETH transfer
- *     transfer: {                // ✅ NEW: Now matches ERC20 transfer format!
+ *     transfer: {                // Transfer event data (matches ERC20 format)
  *       from: "0x...",           // Smart wallet address (sender)
  *       to: "0x...",             // Destination address (recipient)
  *       value: "..."             // Amount in wei (as string)
  *     }
  *   },
- *   metadata: undefined, // ETHTransfer does NOT have metadata field (unlike ContractWrite)
+ *   metadata: {                  // ✅ Metadata object with transaction details
+ *     transactionHash: "0x...",  // Transaction hash
+ *     gasUsed: "...",            // Gas used (real execution only)
+ *     gasPrice: "...",           // Gas price (real execution only)
+ *     totalGasCost: "..."        // Total gas cost (real execution only)
+ *   },
  *   error: "",
  *   errorCode: undefined,
  *   executionContext: {
@@ -51,23 +54,42 @@ jest.setTimeout(TIMEOUT_DURATION);
  *   }
  * }
  *
- * For simulateWorkflow/deployWorkflow (step output):
+ * For simulateWorkflow (step output):
  * {
  *   output: {
- *     transactionHash: "0x...",
  *     transfer: {
  *       from: "0x...",
  *       to: "0x...",
  *       value: "..."
  *     }
+ *   },
+ *   metadata: {                  // ✅ FIXED: Now consistent - metadata is an object
+ *     transactionHash: "0x..."   // Transaction hash
  *   }
- *   // Receipt and gas info are on the step level, not in output
  * }
  *
- * Note: ETHTransfer now outputs the same format as ERC20 transfers:
- * - Has a transfer object with from, to, value fields (consistent with ContractWrite ERC20 transfers)
- * - Still does NOT have metadata field in runNodeWithInputs response
- * - Provides structured event data instead of just transactionHash
+ * For deployWorkflow/triggerWorkflow (step output):
+ * {
+ *   output: {
+ *     transfer: {
+ *       from: "0x...",
+ *       to: "0x...",
+ *       value: "..."
+ *     }
+ *   },
+ *   metadata: {                  // ✅ Metadata object with transaction details
+ *     transactionHash: "0x...",  // Transaction hash
+ *     gasUsed: "...",            // Gas used (real execution only)
+ *     gasPrice: "...",           // Gas price (real execution only)
+ *     totalGasCost: "..."        // Total gas cost (real execution only)
+ *   }
+ * }
+ *
+ * Note: ETHTransfer response format is now CONSISTENT across all execution contexts:
+ * - All contexts: metadata is always an object with transactionHash
+ * - Real execution: metadata includes gas fields (gasUsed, gasPrice, totalGasCost)
+ * - Simulation: metadata only includes transactionHash
+ * - data.transfer: Event data with from, to, value (consistent with ERC20)
  */
 
 const createdIdMap: Map<string, boolean> = new Map();
@@ -129,7 +151,7 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
       // Verify transfer object structure (matches ERC20 format)
       expect(result.data.transfer).toBeDefined();
       expect(typeof result.data.transfer).toBe("object");
-      
+
       // Check transfer fields
       expect(result.data.transfer.from).toBeDefined();
       expect(typeof result.data.transfer.from).toBe("string");
@@ -137,14 +159,33 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
       if (result.data.transfer.from) {
         expect(result.data.transfer.from.toLowerCase()).toBe(smartWalletAddress.toLowerCase());
       }
-      
+
       expect(result.data.transfer.to).toBeDefined();
       expect(typeof result.data.transfer.to).toBe("string");
       expect(result.data.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
-      
+
       expect(result.data.transfer.value).toBeDefined();
       expect(typeof result.data.transfer.value).toBe("string");
       expect(result.data.transfer.value).toBe(transferAmount);
+
+      // Verify metadata object (NEW: metadata is now an object, not undefined)
+      expect(result.metadata).toBeDefined();
+      expect(typeof result.metadata).toBe("object");
+      expect(Array.isArray(result.metadata)).toBe(false); // Object, not array
+
+      // Verify transactionHash in metadata (moved from data)
+      expect(result.metadata.transactionHash).toBeDefined();
+      expect(typeof result.metadata.transactionHash).toBe("string");
+
+      // Gas fields only present for real execution with receipt (may not always be available)
+      if (!result.executionContext?.isSimulated && result.metadata.gasUsed) {
+        expect(result.metadata.gasUsed).toBeDefined();
+        expect(typeof result.metadata.gasUsed).toBe("string");
+        expect(result.metadata.gasPrice).toBeDefined();
+        expect(typeof result.metadata.gasPrice).toBe("string");
+        expect(result.metadata.totalGasCost).toBeDefined();
+        expect(typeof result.metadata.totalGasCost).toBe("string");
+      }
 
       // Verify executionContext
       expect(result.executionContext).toBeDefined();
@@ -190,13 +231,16 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.data.transactionHash).toBeDefined();
-      
+
       // Verify transfer object (matches ERC20 format)
       expect(result.data.transfer).toBeDefined();
       expect(result.data.transfer.from).toBeDefined();
       expect(result.data.transfer.to).toBeDefined();
       expect(result.data.transfer.value).toBe("0"); // Zero transfer
+
+      // Verify metadata with transactionHash (moved from data)
+      expect(result.metadata).toBeDefined();
+      expect(result.metadata.transactionHash).toBeDefined();
 
       // Zero transfer should succeed
       expect(result.success).toBe(true);
@@ -235,13 +279,26 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.data.transactionHash).toBeDefined();
-      
+      expect(typeof result.data).toBe("object");
+
       // Verify transfer object (matches ERC20 format)
       expect(result.data.transfer).toBeDefined();
+      expect(typeof result.data.transfer).toBe("object");
       expect(result.data.transfer.from).toBeDefined();
+      expect(typeof result.data.transfer.from).toBe("string");
       expect(result.data.transfer.to).toBeDefined();
+      expect(typeof result.data.transfer.to).toBe("string");
+      expect(result.data.transfer.value).toBeDefined();
+      expect(typeof result.data.transfer.value).toBe("string");
       expect(result.data.transfer.value).toBe("1"); // 1 wei
+
+      // Verify metadata with transactionHash (moved from data)
+      expect(result.metadata).toBeDefined();
+      expect(typeof result.metadata).toBe("object");
+      expect(Array.isArray(result.metadata)).toBe(false); // Object, not array
+      expect(result.metadata.transactionHash).toBeDefined();
+      expect(typeof result.metadata.transactionHash).toBe("string");
+      expect(result.metadata.transactionHash.length).toBeGreaterThan(0);
     });
 
     test("should handle invalid recipient address gracefully", async () => {
@@ -315,7 +372,25 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
 
       expect(typeof result.success).toBe("boolean");
       expect(result.data).toBeDefined();
-      expect(result.data.transactionHash).toBeDefined();
+      expect(typeof result.data).toBe("object");
+
+      // Verify transfer object structure
+      expect(result.data.transfer).toBeDefined();
+      expect(typeof result.data.transfer).toBe("object");
+      expect(result.data.transfer.from).toBeDefined();
+      expect(typeof result.data.transfer.from).toBe("string");
+      expect(result.data.transfer.to).toBeDefined();
+      expect(typeof result.data.transfer.to).toBe("string");
+      expect(result.data.transfer.value).toBeDefined();
+      expect(typeof result.data.transfer.value).toBe("string");
+
+      // Verify metadata with transactionHash (moved from data)
+      expect(result.metadata).toBeDefined();
+      expect(typeof result.metadata).toBe("object");
+      expect(Array.isArray(result.metadata)).toBe(false); // Object, not array
+      expect(result.metadata.transactionHash).toBeDefined();
+      expect(typeof result.metadata.transactionHash).toBe("string");
+      expect(result.metadata.transactionHash.length).toBeGreaterThan(0);
     });
 
     test("should require settings object for ETHTransfer", async () => {
@@ -440,23 +515,35 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
 
       // Verify transfer object in output (matches ERC20 format)
       expect(output.transfer).toBeDefined();
+      expect(typeof output.transfer).toBe("object");
       expect(output.transfer.from).toBeDefined();
+      expect(typeof output.transfer.from).toBe("string");
+      if (output.transfer.from) {
+        expect(output.transfer.from.toLowerCase()).toBe(wallet.address.toLowerCase());
+      }
       expect(output.transfer.to).toBeDefined();
+      expect(typeof output.transfer.to).toBe("string");
+      expect(output.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
+      expect(output.transfer.value).toBeDefined();
+      expect(typeof output.transfer.value).toBe("string");
       expect(output.transfer.value).toBe(transferAmount);
-      
-      // Check step-level metadata
-      expect((ethTransferStep as any).metadata).toBeDefined();
-      const metadata = (ethTransferStep as any).metadata;
-      expect(Array.isArray(metadata)).toBe(true);
-      expect(metadata.length).toBe(1);
 
-      // Verify metadata has transaction details
-      expect(metadata[0].receipt).toBeDefined();
-      expect(typeof metadata[0].success).toBe("boolean");
+      // ✅ FIXED: For simulateWorkflow, transactionHash is now in metadata (consistent with deployWorkflow)
+      const metadata = (ethTransferStep as any).metadata;
+      expect(metadata).toBeDefined();
+      expect(metadata).not.toBeNull();
+      expect(typeof metadata).toBe("object");
+      expect(Array.isArray(metadata)).toBe(false); // Object, not array
+      expect(metadata.transactionHash).toBeDefined();
+      expect(typeof metadata.transactionHash).toBe("string");
+      expect(metadata.transactionHash.length).toBeGreaterThan(0);
+      
+      // For simulation, metadata should only have transactionHash (no gas fields)
+      // This is expected behavior per design documentation
     });
 
     test("should simulate zero ETH transfer", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await getSmartWalletWithBalance(client);
       const recipientAddress = smartWalletAddress;
       const transferAmount = "0"; // 0 ETH
 
@@ -495,13 +582,30 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         (s: any) => s.id === ethTransferNode.id
       );
       expect(ethTransferStep).toBeDefined();
-      
+
       // Verify transfer object in output
       const output = (ethTransferStep as any).output;
+      expect(output).toBeDefined();
+      expect(typeof output).toBe("object");
       expect(output.transfer).toBeDefined();
+      expect(typeof output.transfer).toBe("object");
+      expect(output.transfer.from).toBeDefined();
+      expect(typeof output.transfer.from).toBe("string");
+      expect(output.transfer.to).toBeDefined();
+      expect(typeof output.transfer.to).toBe("string");
+      expect(output.transfer.value).toBeDefined();
+      expect(typeof output.transfer.value).toBe("string");
       expect(output.transfer.value).toBe("0"); // Zero transfer
-      
-      expect((ethTransferStep as any).metadata).toBeDefined();
+
+      // ✅ FIXED: For simulateWorkflow, transactionHash is now in metadata (consistent with deployWorkflow)
+      const metadata = (ethTransferStep as any).metadata;
+      expect(metadata).toBeDefined();
+      expect(metadata).not.toBeNull();
+      expect(typeof metadata).toBe("object");
+      expect(Array.isArray(metadata)).toBe(false); // Object, not array
+      expect(metadata.transactionHash).toBeDefined();
+      expect(typeof metadata.transactionHash).toBe("string");
+      expect(metadata.transactionHash.length).toBeGreaterThan(0);
     });
   });
 
@@ -540,14 +644,17 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Block,
-            blockNumber: currentBlockNumber + triggerInterval,
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Block,
+              blockNumber: currentBlockNumber + triggerInterval,
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -568,6 +675,10 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
           "Deploy + trigger ETH transfer step output:",
           util.inspect(ethTransferStep.output, { depth: null, colors: true })
         );
+        console.log(
+          "Deploy + trigger ETH transfer step metadata:",
+          util.inspect((ethTransferStep as any).metadata, { depth: null, colors: true })
+        );
 
         const output = ethTransferStep.output as any;
         expect(output).toBeDefined();
@@ -575,22 +686,42 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
 
         // Verify transfer object (matches ERC20 format)
         expect(output.transfer).toBeDefined();
+        expect(typeof output.transfer).toBe("object");
         expect(output.transfer.from).toBeDefined();
-        expect(output.transfer.to).toBe(recipientAddress);
+        expect(typeof output.transfer.from).toBe("string");
+        if (output.transfer.from) {
+          expect(output.transfer.from.toLowerCase()).toBe(wallet.address.toLowerCase());
+        }
+        expect(output.transfer.to).toBeDefined();
+        expect(typeof output.transfer.to).toBe("string");
+        expect(output.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
+        expect(output.transfer.value).toBeDefined();
+        expect(typeof output.transfer.value).toBe("string");
         expect(output.transfer.value).toBe(transferAmount);
 
-        // For deployed workflows, step-level metadata contains receipt and gas info
-        expect(ethTransferStep as any).toHaveProperty("metadata");
+        // For deployed workflows, step-level metadata is always an object
+        expect((ethTransferStep as any).metadata).toBeDefined();
         const metadata = (ethTransferStep as any).metadata;
-        expect(Array.isArray(metadata)).toBe(true);
-        expect(metadata.length).toBe(1);
+        expect(metadata).not.toBeNull();
+        expect(typeof metadata).toBe("object");
+        expect(Array.isArray(metadata)).toBe(false); // Object, not array
+        expect(metadata.transactionHash).toBeDefined();
+        expect(typeof metadata.transactionHash).toBe("string");
+        expect(metadata.transactionHash.length).toBeGreaterThan(0);
 
-        // Verify metadata has transaction details
-        expect(metadata[0].receipt).toBeDefined();
-        expect(typeof metadata[0].success).toBe("boolean");
+        // For real execution (deployed workflows), metadata should include gas fields
+        // These may not always be available immediately, so check conditionally
+        if (metadata.gasUsed) {
+          expect(typeof metadata.gasUsed).toBe("string");
+          expect(metadata.gasPrice).toBeDefined();
+          expect(typeof metadata.gasPrice).toBe("string");
+          expect(metadata.totalGasCost).toBeDefined();
+          expect(typeof metadata.totalGasCost).toBe("string");
+        }
 
         // Check overall step success
         expect(typeof ethTransferStep.success).toBe("boolean");
+        expect(ethTransferStep.success).toBe(true);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -600,7 +731,7 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
     });
 
     test("should deploy and trigger workflow with zero ETH transfer", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await getSmartWalletWithBalance(client);
       const currentBlockNumber = await getBlockNumber();
       const triggerInterval = 5;
       const recipientAddress = smartWalletAddress;
@@ -633,14 +764,17 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Block,
-            blockNumber: currentBlockNumber + triggerInterval,
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Block,
+              blockNumber: currentBlockNumber + triggerInterval,
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -654,17 +788,43 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         );
 
         expect(ethTransferStep).toBeDefined();
-        
+
         // Verify transfer object in output
         const output = (ethTransferStep as any).output;
+        expect(output).toBeDefined();
+        expect(typeof output).toBe("object");
         expect(output.transfer).toBeDefined();
+        expect(typeof output.transfer).toBe("object");
+        expect(output.transfer.from).toBeDefined();
+        expect(typeof output.transfer.from).toBe("string");
+        expect(output.transfer.to).toBeDefined();
+        expect(typeof output.transfer.to).toBe("string");
+        expect(output.transfer.value).toBeDefined();
+        expect(typeof output.transfer.value).toBe("string");
         expect(output.transfer.value).toBe("0"); // Zero transfer
-        
-        expect((ethTransferStep as any).metadata).toBeDefined();
 
+        // Check metadata (metadata is always an object for deployed workflows)
+        expect((ethTransferStep as any).metadata).toBeDefined();
+        expect((ethTransferStep as any).metadata).not.toBeNull();
         const metadata = (ethTransferStep as any).metadata;
-        expect(Array.isArray(metadata)).toBe(true);
-        expect(metadata.length).toBe(1);
+        expect(typeof metadata).toBe("object");
+        expect(Array.isArray(metadata)).toBe(false); // Object, not array
+        expect(metadata.transactionHash).toBeDefined();
+        expect(typeof metadata.transactionHash).toBe("string");
+        expect(metadata.transactionHash.length).toBeGreaterThan(0);
+
+        // For real execution, check for gas fields if available
+        if (metadata.gasUsed) {
+          expect(typeof metadata.gasUsed).toBe("string");
+          expect(metadata.gasPrice).toBeDefined();
+          expect(typeof metadata.gasPrice).toBe("string");
+          expect(metadata.totalGasCost).toBeDefined();
+          expect(typeof metadata.totalGasCost).toBe("string");
+        }
+
+        // Check step success
+        expect(typeof ethTransferStep.success).toBe("boolean");
+        expect(ethTransferStep.success).toBe(true);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
@@ -750,14 +910,17 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Block,
-            blockNumber: currentBlockNumber + triggerInterval,
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Block,
+              blockNumber: currentBlockNumber + triggerInterval,
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -777,8 +940,8 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         expect(simulatedStep?.output).toBeDefined();
         expect(executedStep?.output).toBeDefined();
 
-        // Note: runNodeWithInputs for ETHTransfer does NOT have metadata field
-        // But workflow execution steps DO have metadata (different structure)
+        // Note: runNodeWithInputs for ETHTransfer now has metadata object (not array like ContractWrite)
+        // Workflow execution steps also have metadata (similar structure)
         const simulatedOutput = simulatedStep?.output as any;
         const executedOutput = executedStep?.output as any;
 
@@ -796,16 +959,26 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         // Check response structure - runNodeWithInputs has data at top level
         expect(typeof runNodeResponse.data).toBe("object");
         expect(runNodeResponse.data).toBeDefined();
-        expect(runNodeResponse.data.transactionHash).toBeDefined();
-        
-        // Verify transfer object (NEW: matches ERC20 format)
+
+        // Verify transfer object (matches ERC20 format) - runNodeWithInputs
         expect(runNodeResponse.data.transfer).toBeDefined();
+        expect(typeof runNodeResponse.data.transfer).toBe("object");
         expect(runNodeResponse.data.transfer.from).toBeDefined();
-        expect(runNodeResponse.data.transfer.to).toBe(recipientAddress);
+        expect(typeof runNodeResponse.data.transfer.from).toBe("string");
+        expect(runNodeResponse.data.transfer.to).toBeDefined();
+        expect(typeof runNodeResponse.data.transfer.to).toBe("string");
+        expect(runNodeResponse.data.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
+        expect(runNodeResponse.data.transfer.value).toBeDefined();
+        expect(typeof runNodeResponse.data.transfer.value).toBe("string");
         expect(runNodeResponse.data.transfer.value).toBe(transferAmount);
-        
-        // ETHTransfer does NOT have metadata in runNodeWithInputs (unlike ContractWrite)
-        expect(runNodeResponse.metadata).toBeUndefined();
+
+        // Verify metadata object (NEW: metadata is now an object with transactionHash)
+        expect(runNodeResponse.metadata).toBeDefined();
+        expect(typeof runNodeResponse.metadata).toBe("object");
+        expect(Array.isArray(runNodeResponse.metadata)).toBe(false); // Object, not array
+        expect(runNodeResponse.metadata.transactionHash).toBeDefined();
+        expect(typeof runNodeResponse.metadata.transactionHash).toBe("string");
+        expect(runNodeResponse.metadata.transactionHash.length).toBeGreaterThan(0);
 
         // simulateWorkflow and deployWorkflow should have object structure
         expect(typeof simulatedStep?.output).toBe("object");
@@ -817,20 +990,73 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         expect(runNodeResponse.data.transfer).toBeDefined();
         expect(simulatedOutput.transfer).toBeDefined();
         expect(executedOutput.transfer).toBeDefined();
-        
+
+        // Verify transfer object structure in simulatedStep
+        expect(typeof simulatedOutput.transfer).toBe("object");
+        expect(simulatedOutput.transfer.from).toBeDefined();
+        expect(typeof simulatedOutput.transfer.from).toBe("string");
+        expect(simulatedOutput.transfer.to).toBeDefined();
+        expect(typeof simulatedOutput.transfer.to).toBe("string");
+        expect(simulatedOutput.transfer.value).toBeDefined();
+        expect(typeof simulatedOutput.transfer.value).toBe("string");
+
+        // Verify transfer object structure in executedStep
+        expect(typeof executedOutput.transfer).toBe("object");
+        expect(executedOutput.transfer.from).toBeDefined();
+        expect(typeof executedOutput.transfer.from).toBe("string");
+        expect(executedOutput.transfer.to).toBeDefined();
+        expect(typeof executedOutput.transfer.to).toBe("string");
+        expect(executedOutput.transfer.value).toBeDefined();
+        expect(typeof executedOutput.transfer.value).toBe("string");
+
         // Verify transfer fields match across all methods
-        expect(runNodeResponse.data.transfer.to).toBe(recipientAddress);
-        expect(simulatedOutput.transfer.to).toBe(recipientAddress);
-        expect(executedOutput.transfer.to).toBe(recipientAddress);
-        
+        expect(runNodeResponse.data.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
+        expect(simulatedOutput.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
+        expect(executedOutput.transfer.to.toLowerCase()).toBe(recipientAddress.toLowerCase());
+
         expect(runNodeResponse.data.transfer.value).toBe(transferAmount);
         expect(simulatedOutput.transfer.value).toBe(transferAmount);
         expect(executedOutput.transfer.value).toBe(transferAmount);
 
+        // Verify metadata consistency across all methods
+        // runNodeWithInputs metadata
+        expect(runNodeResponse.metadata).toBeDefined();
+        expect(typeof runNodeResponse.metadata).toBe("object");
+        expect(runNodeResponse.metadata.transactionHash).toBeDefined();
+
+        // simulateWorkflow metadata (should be object with transactionHash)
+        const simulatedMetadata = (simulatedStep as any).metadata;
+        expect(simulatedMetadata).toBeDefined();
+        expect(typeof simulatedMetadata).toBe("object");
+        expect(Array.isArray(simulatedMetadata)).toBe(false);
+        expect(simulatedMetadata.transactionHash).toBeDefined();
+        expect(typeof simulatedMetadata.transactionHash).toBe("string");
+
+        // deployWorkflow metadata (should be object with transactionHash, may include gas fields)
+        const executedMetadata = (executedStep as any).metadata;
+        expect(executedMetadata).toBeDefined();
+        expect(typeof executedMetadata).toBe("object");
+        expect(Array.isArray(executedMetadata)).toBe(false);
+        expect(executedMetadata.transactionHash).toBeDefined();
+        expect(typeof executedMetadata.transactionHash).toBe("string");
+        expect(executedMetadata.transactionHash.length).toBeGreaterThan(0);
+
+        // For real execution, check for gas fields if available
+        if (executedMetadata.gasUsed) {
+          expect(typeof executedMetadata.gasUsed).toBe("string");
+          expect(executedMetadata.gasPrice).toBeDefined();
+          expect(typeof executedMetadata.gasPrice).toBe("string");
+          expect(executedMetadata.totalGasCost).toBeDefined();
+          expect(typeof executedMetadata.totalGasCost).toBe("string");
+        }
+
         // Verify top-level success for all methods
         expect(typeof runNodeResponse.success).toBe("boolean");
+        expect(runNodeResponse.success).toBe(true);
         expect(typeof simulatedStep?.success).toBe("boolean");
+        expect(simulatedStep?.success).toBe(true);
         expect(typeof executedStep?.success).toBe("boolean");
+        expect(executedStep?.success).toBe(true);
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
