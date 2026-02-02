@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.12.1
+
+### Patch Changes
+
+- a6f7b8d: fix: resolve getAutomationFee function not found problem
+
 ## 2.12.0
 
 ### Minor Changes
