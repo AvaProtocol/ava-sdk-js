@@ -12,6 +12,7 @@ import {
   TIMEOUT_DURATION,
   getSmartWallet,
   executionHasWriteFailure,
+  expectAutomationFee,
   getClient,
   authenticateClient,
 } from "../utils/utils";
@@ -63,6 +64,8 @@ describe("getExecution Tests", () => {
 
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
+      expectAutomationFee(execution);
+
       // Ensure status reflects step outcomes
       const hasWriteFailure = executionHasWriteFailure(execution as any);
       if (hasWriteFailure) {
@@ -172,6 +175,7 @@ describe("getExecution Tests", () => {
         result.executionId
       );
       expect(execution.id).toEqual(result.executionId);
+      expectAutomationFee(execution);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -251,6 +255,7 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(executionIdFromList);
       expect(execution.status).toBe(ExecutionStatus.Success);
+      expectAutomationFee(execution);
 
       // The execution now contains both trigger and node steps
       // Step 0: Trigger step, Step 1: ETH transfer node
@@ -387,6 +392,7 @@ describe("getExecution Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
       expect(execution.status).toBe(ExecutionStatus.Success);
+      expectAutomationFee(execution);
 
       // Verify execution has both trigger and node steps
       expect(execution.steps).toBeDefined();

@@ -1,3 +1,4 @@
+import { expect } from "@jest/globals";
 import { Client, Workflow, Step } from "@avaprotocol/sdk-js";
 import { WorkflowProps, StepProps, AbiElement } from "@avaprotocol/types";
 import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
@@ -687,6 +688,20 @@ export function executionHasWriteFailure(
   return execution.steps
     .filter((s) => s && s.type === "contractWrite")
     .some((s) => hasWriteFailureFromMetadata(s.metadata));
+}
+
+/** Assert execution has automationFee with expected FeeAmount shape when present */
+export function expectAutomationFee(
+  execution: {
+    automationFee?: { nativeTokenAmount?: string; usdAmount?: string };
+  }
+): void {
+  if (execution.automationFee) {
+    expect(execution.automationFee).toHaveProperty("nativeTokenAmount");
+    expect(execution.automationFee).toHaveProperty("usdAmount");
+    expect(typeof execution.automationFee.nativeTokenAmount).toBe("string");
+    expect(typeof execution.automationFee.usdAmount).toBe("string");
+  }
 }
 
 export const verifyExecutionStepResults = (
