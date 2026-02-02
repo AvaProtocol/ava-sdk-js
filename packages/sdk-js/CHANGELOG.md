@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.12.0
+
+### Minor Changes
+
+- 3c9a303: add automationFee to Execution model for getExecution/getExecutions responses
+
 ## 2.11.1
 
 ### Patch Changes
