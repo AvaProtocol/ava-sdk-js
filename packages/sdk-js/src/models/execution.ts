@@ -1,5 +1,10 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import { TriggerTypeConverter, TriggerType, ExecutionProps, StepProps, ExecutionStatus } from "@avaprotocol/types";
+import {
+  ExecutionProps,
+  StepProps,
+  ExecutionStatus,
+  type FeeAmount,
+} from "@avaprotocol/types";
 import Step from "./step";
 
 /**
@@ -32,6 +37,7 @@ class Execution implements ExecutionProps {
   index: number;
   steps: Step[];
   totalGasCost?: string;
+  automationFee?: FeeAmount;
 
   constructor(props: ExecutionProps) {
     this.id = props.id;
@@ -42,6 +48,7 @@ class Execution implements ExecutionProps {
     this.index = props.index;
     this.steps = props.steps.map(s => new Step(s));
     this.totalGasCost = props.totalGasCost;
+    this.automationFee = props.automationFee;
   }
 
 
@@ -59,10 +66,16 @@ class Execution implements ExecutionProps {
       index: this.index,
       steps: this.steps.map(step => step.toJson()),
       ...(this.totalGasCost && { totalGasCost: this.totalGasCost }),
+      ...(this.automationFee && { automationFee: this.automationFee }),
     };
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
+    const automationFeePb = execution.getAutomationFee();
+    const automationFee: FeeAmount | undefined = automationFeePb
+      ? (automationFeePb.toObject() as FeeAmount)
+      : undefined;
+
     return new Execution({
       id: execution.getId(),
       startAt: execution.getStartAt(),
@@ -71,6 +84,7 @@ class Execution implements ExecutionProps {
       error: execution.getError(),
       index: execution.getIndex(),
       totalGasCost: execution.getTotalGasCost() || undefined,
+      automationFee,
       steps: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)) as StepProps[],

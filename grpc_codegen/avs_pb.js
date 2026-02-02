@@ -15130,6 +15130,7 @@ proto.aggregator.Execution.toObject = function(includeInstance, msg) {
     error: jspb.Message.getFieldWithDefault(msg, 5, ""),
     index: jspb.Message.getFieldWithDefault(msg, 6, 0),
     totalGasCost: jspb.Message.getFieldWithDefault(msg, 7, ""),
+    automationFee: (f = msg.getAutomationFee()) && proto.aggregator.FeeAmount.toObject(includeInstance, f),
     stepsList: jspb.Message.toObjectList(msg.getStepsList(),
     proto.aggregator.Execution.Step.toObject, includeInstance)
   };
@@ -15195,6 +15196,11 @@ proto.aggregator.Execution.deserializeBinaryFromReader = function(msg, reader) {
     case 7:
       var value = /** @type {string} */ (reader.readString());
       msg.setTotalGasCost(value);
+      break;
+    case 9:
+      var value = new proto.aggregator.FeeAmount;
+      reader.readMessage(value,proto.aggregator.FeeAmount.deserializeBinaryFromReader);
+      msg.setAutomationFee(value);
       break;
     case 8:
       var value = new proto.aggregator.Execution.Step;
@@ -15277,6 +15283,14 @@ proto.aggregator.Execution.serializeBinaryToWriter = function(message, writer) {
     writer.writeString(
       7,
       f
+    );
+  }
+  f = message.getAutomationFee();
+  if (f != null) {
+    writer.writeMessage(
+      9,
+      f,
+      proto.aggregator.FeeAmount.serializeBinaryToWriter
     );
   }
   f = message.getStepsList();
@@ -16886,6 +16900,43 @@ proto.aggregator.Execution.prototype.getTotalGasCost = function() {
  */
 proto.aggregator.Execution.prototype.setTotalGasCost = function(value) {
   return jspb.Message.setProto3StringField(this, 7, value);
+};
+
+
+/**
+ * optional FeeAmount automation_fee = 9;
+ * @return {?proto.aggregator.FeeAmount}
+ */
+proto.aggregator.Execution.prototype.getAutomationFee = function() {
+  return /** @type{?proto.aggregator.FeeAmount} */ (
+    jspb.Message.getWrapperField(this, proto.aggregator.FeeAmount, 9));
+};
+
+
+/**
+ * @param {?proto.aggregator.FeeAmount|undefined} value
+ * @return {!proto.aggregator.Execution} returns this
+*/
+proto.aggregator.Execution.prototype.setAutomationFee = function(value) {
+  return jspb.Message.setWrapperField(this, 9, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.aggregator.Execution} returns this
+ */
+proto.aggregator.Execution.prototype.clearAutomationFee = function() {
+  return this.setAutomationFee(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.aggregator.Execution.prototype.hasAutomationFee = function() {
+  return jspb.Message.getField(this, 9) != null;
 };
 
 

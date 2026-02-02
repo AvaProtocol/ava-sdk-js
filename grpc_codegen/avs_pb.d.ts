@@ -1808,6 +1808,11 @@ export class Execution extends jspb.Message {
     setIndex(value: number): Execution;
     getTotalGasCost(): string;
     setTotalGasCost(value: string): Execution;
+
+    hasAutomationFee(): boolean;
+    clearAutomationFee(): void;
+    getAutomationFee(): FeeAmount | undefined;
+    setAutomationFee(value?: FeeAmount): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
@@ -1832,6 +1837,7 @@ export namespace Execution {
         error: string,
         index: number,
         totalGasCost: string,
+        automationFee?: FeeAmount.AsObject,
         stepsList: Array<Execution.Step.AsObject>,
     }
 

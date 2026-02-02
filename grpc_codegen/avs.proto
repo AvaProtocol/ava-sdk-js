@@ -295,7 +295,7 @@ enum ErrorCode {
   // 4000-4999: Resource State errors
   TASK_ALREADY_EXISTS = 4000;       // Task with same ID already exists
   TASK_ALREADY_COMPLETED = 4001;    // Cannot modify completed task
-  TASK_ALREADY_CANCELLED = 4002;    // Cannot modify cancelled task
+  TASK_ALREADY_CANCELLED = 4002 [deprecated = true];  // Deprecated: cancelled state replaced by Disabled
   EXECUTION_IN_PROGRESS = 4003;     // Operation not allowed during execution
   WALLET_ALREADY_EXISTS = 4004;     // Wallet already exists for salt
   SECRET_ALREADY_EXISTS = 4005;     // Secret with same name exists
@@ -686,6 +686,10 @@ message Execution {
   // Total gas cost for the entire workflow execution (sum of all blockchain operations)
   // Units are in wei. Use string for large numbers to avoid overflow.
   string total_gas_cost = 7;
+
+  // Automation fee charged for monitoring and executing this workflow.
+  // Currently hard-coded to zero; will be populated when automation fees are enabled.
+  FeeAmount automation_fee = 9;
 
   message Step {
     string id = 1;
