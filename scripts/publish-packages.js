@@ -165,6 +165,23 @@ async function main() {
   // Preliminary checks
   checkDirectory();
   
+  // Ensure grpc_codegen is up to date and packages are built before publishing
+  log.info('Regenerating protobuf code (yarn protoc-gen)...');
+  const protocResult = runCommand('yarn protoc-gen');
+  if (!protocResult.success) {
+    log.error('Failed to run protoc-gen. Aborting.');
+    process.exit(1);
+  }
+  log.success('Protobuf code regenerated');
+  
+  log.info('Building all packages (yarn build)...');
+  const buildResult = runCommand('yarn build');
+  if (!buildResult.success) {
+    log.error('Failed to build packages. Aborting.');
+    process.exit(1);
+  }
+  log.success('Packages built');
+  
   if (!dryRun) {
     checkNpmAuth();
   }
