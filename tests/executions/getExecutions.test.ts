@@ -8,6 +8,7 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  expectAutomationFee,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 
@@ -70,6 +71,7 @@ describe("getExecutions Tests", () => {
 
       expect(Array.isArray(resultWithLimitOne.items)).toBe(true);
       expect(resultWithLimitOne.items.length).toBe(limitOne);
+      expectAutomationFee(resultWithLimitOne.items[0]);
       expect(resultWithLimitOne).toHaveProperty("pageInfo");
       expect(resultWithLimitOne.pageInfo.hasNextPage).toBeTruthy();
       const firstCursor = resultWithLimitOne.pageInfo.endCursor;
@@ -81,6 +83,7 @@ describe("getExecutions Tests", () => {
       });
       expect(Array.isArray(resultWithLimitTwo.items)).toBe(true);
       expect(resultWithLimitTwo.items.length).toBe(limitTwo);
+      expectAutomationFee(resultWithLimitTwo.items[0]);
       expect(resultWithLimitTwo.pageInfo.hasNextPage).toBeTruthy();
 
       // Make sure there's no overlap between the two lists
@@ -101,6 +104,9 @@ describe("getExecutions Tests", () => {
       expect(resultWithExtraLimit.items.length).toBe(
         totalTriggerCount - limitTwo - limitOne
       );
+      if (resultWithExtraLimit.items.length > 0) {
+        expectAutomationFee(resultWithExtraLimit.items[0]);
+      }
       expect(resultWithExtraLimit.pageInfo.hasNextPage).toBeFalsy();
 
       // Make sure the endCursor exists (may be empty string or valid cursor depending on implementation)
@@ -316,6 +322,7 @@ describe("getExecutions Tests", () => {
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
       expect(firstPage.pageInfo.endCursor).toBeTruthy();
       expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
+      firstPage.items.forEach((item) => expectAutomationFee(item));
 
       const secondPage = await client.getExecutions([workflowId], {
         after: firstPage.pageInfo.endCursor,
@@ -323,6 +330,7 @@ describe("getExecutions Tests", () => {
       });
 
       expect(secondPage.items.length).toBeLessThanOrEqual(pageSize);
+      secondPage.items.forEach((item) => expectAutomationFee(item));
 
       // Verify no overlap between pages
       const firstPageIds = firstPage.items.map((item: any) => item.id);
@@ -383,6 +391,7 @@ describe("getExecutions Tests", () => {
 
       expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
       expect(firstPage.pageInfo.endCursor).toBeTruthy();
+      firstPage.items.forEach((item) => expectAutomationFee(item));
 
       const previousPage = await client.getExecutions([workflowId], {
         before: firstPage.pageInfo.startCursor,
@@ -392,6 +401,7 @@ describe("getExecutions Tests", () => {
       // Verify we got items in both pages
       expect(previousPage.items.length).toBeGreaterThan(0);
       expect(firstPage.items.length).toBeGreaterThan(0);
+      previousPage.items.forEach((item) => expectAutomationFee(item));
 
       // Verify the previous page has endCursor and hasPreviousPage fields
       expect(typeof previousPage.pageInfo.endCursor).toBe("string");
