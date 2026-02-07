@@ -1,0 +1,6 @@
+#!/bin/sh
+# Strip any Co-authored-by: lines from commit message before validation
+
+tmp=$(mktemp)
+grep -vi "co-authored-by:" "$1" > "$tmp"
+mv "$tmp" "$1"
