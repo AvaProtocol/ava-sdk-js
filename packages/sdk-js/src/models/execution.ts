@@ -71,7 +71,9 @@ class Execution implements ExecutionProps {
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
-    const automationFeePb = execution.getAutomationFee();
+    const automationFeePb = typeof execution.getAutomationFee === 'function'
+      ? execution.getAutomationFee()
+      : undefined;
     const automationFee: FeeAmount | undefined = automationFeePb
       ? (automationFeePb.toObject() as FeeAmount)
       : undefined;
