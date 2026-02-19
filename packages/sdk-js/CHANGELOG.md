@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.12.3
+
+### Patch Changes
+
+- 1961cd5: fix: protobuf was not built and updated problem
+
 ## 2.12.2
 
 ### Patch Changes
