@@ -128,211 +128,44 @@ Make sure to set the following environment variables in your `.env.test` file:
 
 ## Release Process
 
-This guide explains how to properly publish packages from the ava-sdk-js monorepo while handling workspace dependencies correctly.
+This section describes the simplified release process for the ava-sdk-js monorepo, matching the typical developer workflow:
 
-### The Problem
+### Release Process (Simplified)
 
-When publishing npm packages from a monorepo with workspace dependencies, the `workspace:*` references don't get resolved to actual version numbers. This causes the published packages to have invalid dependency references that npm cannot resolve.
+1. **Commit your changes:**
+   ```bash
+   git add packages/sdk-js/src/
+   git commit -m "fix: getAutomationFee is not a function in execution problem"
+   git push
+   ```
 
-### Solutions
-
-We've implemented two solutions to handle this issue:
-
-#### 1. Automatic Prepare Script (For Development/Quick Publishing)
-
-Each package has a `prepare` script that automatically resolves workspace dependencies before publishing:
-
-```bash
-# The prepare script runs automatically when you run npm publish
-npm publish
-```
-
-The prepare script:
-- Replaces `workspace:*` dependencies with actual version numbers (e.g., `^2.2.9`)
-- Runs automatically during `npm publish`
-- Restores the original `workspace:*` references after publishing
-
-#### 2. Changesets Release (For Production Releases)
-
-For production releases with proper versioning and changelog generation:
-
-```bash
-# 1. Create a changeset (if you haven't already)
-yarn changeset
-
-# 2. Run the release process
-yarn release
-```
-
-The release script:
-- Checks for changesets
-- Builds all packages
-- Updates workspace dependencies to actual versions
-- Versions packages using changesets
-- Publishes to npm
-- Restores workspace dependencies
-- Generates changelogs
-
-### Publishing Workflow
-
-#### For Development/Quick Publishing
-
-1. **Build the packages:**
+2. **Build all packages:**
    ```bash
    yarn build
    ```
 
-2. **Publish using the prepare script:**
+3. **Create a changeset:**
    ```bash
-   cd packages/sdk-js
-   npm publish
+   yarn run changeset
+   # Follow the prompts to select packages and describe the change
    ```
 
-   The prepare script will automatically:
-   - Replace `"@avaprotocol/types": "workspace:*"` with `"@avaprotocol/types": "^2.2.9"`
-   - Publish the package with resolved dependencies
-   - Restore the original workspace references
-
-#### For Production Releases
-
-1. **Create a changeset:**
+4. **Version packages:**
    ```bash
-   yarn changeset
+   yarn run version
+   # This runs 'changeset version' to update package.json files
+   git push
    ```
-   Follow the prompts to select packages and describe changes.
 
-2. **Run the release process:**
+5. **Publish to npm:**
    ```bash
-   yarn release
+   npm run publish
+   # This runs the publish-packages.js script to publish all packages
    ```
 
-   This will:
-   - Build all packages
-   - Update workspace dependencies to actual versions
-   - Version packages according to changesets
-   - Publish to npm
-   - Restore workspace dependencies
-   - Generates changelogs
-
-### Releasing a new version for development
-
-Once a package is ready for a new version, we first publish a dev version and test it in local environment.
-
-#### Manual Dev Publishing
-
-1. Run `yarn version --prerelease --preid dev` under either `packages/sdk-js` or `packages/types` to update the version in `package.json`.
-2. Run `npm publish --tag dev` under either `packages/sdk-js` or `packages/types` to publish the new dev version to NPM. Most importantly, this **bumps up version number** in `package.json` of `packages/types`.
-3. If the `types` package has a new version, since it is depended on by `sdk-js`, we need to make sure `sdk-js` can build with the new version.
-
-   1. `yarn run clean` **at the root folder** to remove existing node_modules folder and yarn.lock file.
-   2. Run `yarn install` under the root folder to re-install the dependencies. You should see a prompt asking the version of `@avaprotocol/types` to install. Choose the new version you just created in step 1.
-   3. Run `yarn build` under the root folder to build all packages.
-
-### Publishing to NPM
-
-Once the dev version is tested and ready to be published to NPM, `changeset` can be used to create a new release for NPM.
-
-1. **Record changeset workflow**
-
-   - Go to the "Actions" tab in GitHub, and run the "Record Changeset" workflow
-   - Select the version bump type:
-     - `patch` for backwards-compatible bug fixes (0.0.x)
-     - `minor` for backwards-compatible features (0.x.0)
-     - `major` for breaking changes (x.0.0)
-   - Examine the Pull Request created by the workflow, and merge it if everything looks correct. This will record any commits before it as a major, minor, or patch.
-
-2. **Create release workflow**
-   There are two ways to create a release:
-   - Manually create a release in the GitHub UI. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
-   - Automatically create a release when a PR is merged. This will run `npx changeset version` to bump up version in `package.json` based on the recorded changeset files. It will also create a new GitHub Release if the new version is higher than the current version in `package.json`.
-3. **Publish to NPM**
-   - After the last step, the version number in `package.json` is updated and a git tag with the new version number is created. Now you can publish the production version to NPM using `npm publish`.
-
-### Verification
-
-After publishing, you can verify that the packages were published correctly:
-
-1. Check the published package.json on npm:
-   ```bash
-   npm view @avaprotocol/sdk-js dependencies
-   ```
-
-2. The dependencies should show actual version numbers, not `workspace:*`:
-   ```json
-   {
-     '@avaprotocol/types': '^2.2.9',
-     '@grpc/grpc-js': '^1.11.3',
-     // ... other dependencies
-   }
-   ```
-
-### Troubleshooting
-
-#### Workspace Dependencies Not Resolved
-
-If you see `workspace:*` in the published package:
-
-1. Make sure you're using one of the provided publishing methods
-2. Check that the prepare script is running correctly
-3. Verify that the dependent package versions are correct
-
-#### Build Errors
-
-If you encounter build errors:
-
-1. Clean and rebuild:
-   ```bash
-   yarn clean
-   yarn build
-   ```
-
-2. Check that all dependencies are properly installed:
-   ```bash
-   yarn install
-   ```
-
-#### Publishing Errors
-
-If publishing fails:
-
-1. Check that you're logged into npm:
-   ```bash
-   npm whoami
-   ```
-
-2. Verify package versions are correct
-3. Check that the package name and scope are correct
-
-### Best Practices
-
-1. **Use `npm publish` for development** - The prepare script handles workspace dependencies automatically
-2. **Use `yarn release` for production** - Proper versioning and changelog generation
-3. **Test the build process** before publishing
-4. **Verify published packages** after release
-5. **Keep workspace dependencies in sync** during development
-
-### Script Details
-
-#### prepare-package.js
-- Automatically runs during `npm publish`
-- Replaces `workspace:*` with actual versions
-- Restores original references after publishing
-
-#### release.js
-- Production release script
-- Works with changesets for versioning
-- Handles the complete release workflow
-- Generates changelogs automatically
-
-### Utility Scripts
-
-To generate the key request message for signing, you can run the following command:
-
-```bash
-npm run build # Make sure to build the project first
-
-export TEST_MNEMONIC=<your_mnemonic> && node scripts/signMessage.js
-```
+**Note:**
+- The `npm run publish` script handles protobuf regeneration and publishing. If you see errors related to missing binaries (like `protoc`), ensure all dev dependencies are installed and your environment is set up correctly.
+- For troubleshooting, see the Troubleshooting section below.
 
 ## Contributing
 
