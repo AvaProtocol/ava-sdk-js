@@ -49,6 +49,7 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
   },
   sepolia: {
     avsEndpoint: "aggregator-sepolia.avaprotocol.org:2206",
+    // avsEndpoint: "ballast.proxy.rlwy.net:10661", EigenLayer-AVS feature branch of feature/railway-migration-phase1-testnet
     chainId: "11155111",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api-sepolia.etherscan.io/api",
