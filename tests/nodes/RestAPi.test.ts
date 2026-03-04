@@ -49,10 +49,11 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/get",
-          method: "GET",
-          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
-        }
+            url: MOCK_API_BASE_URL + "/get",
+            method: "GET",
+            body: "",
+            headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          },
         },
         inputVariables: {},
       });
@@ -82,14 +83,14 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/post",
-          method: "POST",
-          body: JSON.stringify(postData),
-          headers: {
-            "Content-Type": "application/json",
-            "User-Agent": "AvaProtocol-SDK-Test",
+            url: MOCK_API_BASE_URL + "/post",
+            method: "POST",
+            body: JSON.stringify(postData),
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "AvaProtocol-SDK-Test",
+            },
           },
-        }
         },
         inputVariables: {},
       });
@@ -112,10 +113,11 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/status/404",
-          method: "GET",
-          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
-        }
+            url: MOCK_API_BASE_URL + "/status/404",
+            method: "GET",
+            body: "",
+            headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          }
         },
         inputVariables: {},
       });
@@ -401,11 +403,12 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/get",
-          method: "GET",
-          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
-          options: { summarize: true, maxTokens: 100 },
-        }
+            url: MOCK_API_BASE_URL + "/get",
+            method: "GET",
+            body: "",
+            headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+            options: { summarize: true, maxTokens: 100 },
+          }
         },
         inputVariables: {},
       });
@@ -567,10 +570,11 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/status/204", // Mock API endpoint
-          method: "GET",
-          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
-        }
+            url: MOCK_API_BASE_URL + "/status/204", // Mock API endpoint
+            method: "GET",
+            body: "",
+            headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          }
         },
         inputVariables: {},
       });
@@ -595,10 +599,11 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/status/204",
-          method: "GET",
-          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
-        }
+            url: MOCK_API_BASE_URL + "/status/204",
+            method: "GET",
+            body: "",
+            headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          }
         },
         inputVariables: {},
       });
@@ -610,10 +615,11 @@ describe("RestAPI Node Tests", () => {
           name: "rest_api_test",
           type: NodeType.RestAPI,
           data: {
-          url: MOCK_API_BASE_URL + "/status/500",
-          method: "GET",
-          headers: { "User-Agent": "AvaProtocol-SDK-Test" },
-        }
+            url: MOCK_API_BASE_URL + "/status/500",
+            method: "GET",
+            body: "",
+            headers: { "User-Agent": "AvaProtocol-SDK-Test" },
+          }
         },
         inputVariables: {},
       });

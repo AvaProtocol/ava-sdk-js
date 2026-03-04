@@ -19,7 +19,6 @@ import {
   authenticateClient,
   getSmartWalletWithBalance,
   verifyTransactionReceipt,
-  getPaymasterOwner,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { ethers } from "ethers";
@@ -27,7 +26,7 @@ import { ethers } from "ethers";
 jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in this file
 
 // Get environment variables from envalid config
-const { tokens, chainEndpoint, aggregatorEndpoint, paymasterAddress } = getConfig();
+const { tokens, chainEndpoint, aggregatorEndpoint } = getConfig();
 
 describeIfSepolia("Withdraw Funds Tests", () => {
   let client: Client;
@@ -218,19 +217,11 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         smartWalletAddress: wallet.address,
       };
 
-      const response = await client.withdrawFunds(withdrawRequest);
-
-      // Large amount withdrawal will fail due to insufficient balance, but should return gracefully
-      expect(response.success).toBeFalsy();
-      expect(response.smartWalletAddress).toBe(wallet.address);
-      expect(response.amount).toBe(withdrawRequest.amount);
-      expect(response.message).toBeTruthy();
-
-      console.log("Large amount withdrawal response:", {
-        success: response.success,
-        status: response.status,
-        message: response.message,
-      });
+      // Server returns FAILED_PRECONDITION gRPC error for insufficient balance
+      // (request is valid but wallet state doesn't allow it)
+      await expect(client.withdrawFunds(withdrawRequest)).rejects.toThrow(
+        /insufficient balance|FAILED_PRECONDITION/
+      );
     });
 
     test("should handle withdrawal to different recipient address", async () => {
@@ -431,14 +422,6 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       const wallet = await getSmartWalletWithBalance(client);
       const provider = new ethers.JsonRpcProvider(chainEndpoint);
 
-      // Get paymaster owner address for balance verification
-      const paymasterOwnerAddress = await getPaymasterOwner(paymasterAddress, provider);
-      console.log("Paymaster owner address:", paymasterOwnerAddress);
-
-      // Get initial paymaster owner balance
-      const initialPaymasterOwnerBalance = await provider.getBalance(paymasterOwnerAddress);
-      console.log("Initial paymaster owner balance:", ethers.formatEther(initialPaymasterOwnerBalance), "ETH");
-
       const withdrawalAmount = "2000000000000000"; // 0.002 ETH
       const withdrawRequest: WithdrawFundsRequest = {
         recipientAddress: eoaAddress,
@@ -466,18 +449,13 @@ describeIfSepolia("Withdraw Funds Tests", () => {
       expect(verification.receipt).toBeTruthy();
       expect(verification.receipt?.status).toBe(1);
 
-      // Verify paymaster owner received reimbursement
-      const finalPaymasterOwnerBalance = await provider.getBalance(paymasterOwnerAddress);
-      const balanceIncrease = finalPaymasterOwnerBalance - initialPaymasterOwnerBalance;
-      
-      console.log("Final paymaster owner balance:", ethers.formatEther(finalPaymasterOwnerBalance), "ETH");
-      console.log("Balance increase:", ethers.formatEther(balanceIncrease), "ETH");
-      
-      // The paymaster owner should receive gas reimbursement (should be positive)
-      expect(balanceIncrease).toBeGreaterThan(0n);
-
+      // Note: Withdrawals use SkipReimbursement=true on the aggregator side,
+      // meaning the paymaster absorbs gas costs so users can withdraw their full
+      // balance. No ETH reimbursement transfer is added to the UserOp for withdrawals,
+      // so the paymaster owner balance does not increase here.
+      // Reimbursement is only active for non-withdrawal operations (contract writes, etc.).
       console.log(
-        `✅ All internal transactions succeeded: block ${verification.receipt?.blockNumber}, ${verification.receipt?.logs.length} logs, internal success: ${verification.internalSuccess}`
+        `All internal transactions succeeded: block ${verification.receipt?.blockNumber}, ${verification.receipt?.logs.length} logs, internal success: ${verification.internalSuccess}`
       );
     });
   });
