@@ -125,7 +125,6 @@ describe("Wallet Management Tests", () => {
 
     test("should get wallet with custom salt value", async () => {
       const salt1 = "12345";
-      const salt2 = "-12";
 
       const result1 = await client.getWallet({
         salt: salt1,
@@ -133,13 +132,12 @@ describe("Wallet Management Tests", () => {
       expect(result1.salt).toEqual(salt1);
       expect(result1.factory).toBeTruthy(); // Should use aggregator's default factory
       expect(result1.address).toHaveLength(42);
+    });
 
-      const result2 = await client.getWallet({
-        salt: salt2,
-      });
-      expect(result2.salt).toEqual(salt2);
-      expect(result2.factory).toBeTruthy(); // Should use aggregator's default factory
-      expect(result2.address).toHaveLength(42);
+    test("should reject negative salt value", async () => {
+      await expect(
+        client.getWallet({ salt: "-12" })
+      ).rejects.toThrow(/invalid salt: must be a non-negative integer/);
     });
 
     test("will fail when getting wallet with non-existent factory address", async () => {
