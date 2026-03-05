@@ -137,7 +137,7 @@ describe("Wallet Management Tests", () => {
     test("should reject negative salt value", async () => {
       await expect(
         client.getWallet({ salt: "-12" })
-      ).rejects.toThrow(/invalid salt: must be a non-negative integer/);
+      ).rejects.toThrow(/invalid salt value: must be a non-negative integer/);
     });
 
     test("will fail when getting wallet with non-existent factory address", async () => {
