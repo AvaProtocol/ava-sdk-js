@@ -6,6 +6,7 @@ import {
   expect,
   afterAll,
 } from "@jest/globals";
+import { ethers } from "ethers";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
 import {
   TriggerType,
@@ -20,12 +21,156 @@ import {
   getSmartWalletWithBalance,
   getEOAAddress,
   padAddressForTopic,
+  getExpiredAt,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
-const { chainId, telegramBotToken, telegramChatId } = getConfig();
+const config = getConfig();
+const { chainId, telegramBotToken, telegramChatId } = config;
 
-jest.setTimeout(TIMEOUT_DURATION * 4);
+// --- AAVE V3 Sepolia addresses ---
+const AAVE_V3_POOL_ADDRESS = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
+const AAVE_FAUCET_ADDRESS = "0xC959483DBa39aa9E78757139af0e9a2EDEb3f42D";
+// Use LINK (no supply cap, mintable, collateral enabled) as collateral
+// Borrow DAI (borrow cap unlimited, borrowing enabled) as debt
+// DAI/USDC supply caps are exceeded on Sepolia, but borrowing is unaffected
+const SEPOLIA_LINK = "0xf8Fb3713D459D7C1018BD0A49D19b4C44290EBE5";
+const SEPOLIA_DAI = "0xFF34B3d4Aee8ddCd6F9AFFFB6Fe49bD371b8a357";
+
+// Target: healthFactor between 1.0e18 and 1.6e18 so Branch condition `< 1.6e18` triggers
+const TARGET_HF_MIN = BigInt("1000000000000000000"); // 1.0e18
+const TARGET_HF_MAX = BigInt("1600000000000000000"); // 1.6e18
+
+// Supply 100 LINK as collateral (LINK: no supply cap, LTV 70%, liqThreshold 75%)
+const LINK_SUPPLY_AMOUNT = ethers.parseUnits("100", 18);
+
+// Minimal ABIs for AAVE interactions
+const POOL_ABI = [
+  "function getUserAccountData(address user) view returns (uint256 totalCollateralBase, uint256 totalDebtBase, uint256 availableBorrowsBase, uint256 currentLiquidationThreshold, uint256 ltv, uint256 healthFactor)",
+  "function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)",
+  "function borrow(address asset, uint256 amount, uint256 interestRateMode, uint16 referralCode, address onBehalfOf)",
+  "function repay(address asset, uint256 amount, uint256 interestRateMode, address onBehalfOf) returns (uint256)",
+  "function withdraw(address asset, uint256 amount, address to) returns (uint256)",
+];
+const FAUCET_ABI = [
+  "function mint(address token, address to, uint256 amount)",
+];
+const ERC20_ABI = [
+  "function approve(address spender, uint256 amount) returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",
+];
+
+/**
+ * Ensures the EOA wallet has an AAVE V3 position on Sepolia with
+ * healthFactor between 1.0 and 1.6 (so the Branch condition triggers).
+ *
+ * Idempotent: if position already meets criteria, does nothing.
+ * Otherwise: mints LINK via faucet → approves → supplies LINK → borrows DAI.
+ *
+ * Uses LINK as collateral (no supply cap, mintable) and DAI as debt (borrow cap unlimited).
+ * DAI/USDC/USDT supply caps are exceeded on Sepolia, but borrowing is unaffected.
+ */
+async function ensureAavePosition(eoaAddress: string): Promise<void> {
+  const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
+  const signer = new ethers.Wallet(config.walletPrivateKey, provider);
+  const pool = new ethers.Contract(AAVE_V3_POOL_ADDRESS, POOL_ABI, signer);
+
+  // Check current position
+  const accountData = await pool.getUserAccountData(eoaAddress);
+  const healthFactor = accountData.healthFactor as bigint;
+  const totalDebt = accountData.totalDebtBase as bigint;
+
+  console.log("Current AAVE position:", {
+    totalCollateralBase: accountData.totalCollateralBase.toString(),
+    totalDebtBase: totalDebt.toString(),
+    healthFactor: healthFactor.toString(),
+  });
+
+  // If position exists and HF is in target range, do nothing
+  if (totalDebt > 0n && healthFactor >= TARGET_HF_MIN && healthFactor < TARGET_HF_MAX) {
+    console.log("AAVE position already meets criteria (HF in [1.0, 1.6)). Skipping setup.");
+    return;
+  }
+
+  console.log("Setting up AAVE position: mint LINK -> supply -> borrow DAI...");
+
+  const faucet = new ethers.Contract(AAVE_FAUCET_ADDRESS, FAUCET_ABI, signer);
+  const link = new ethers.Contract(SEPOLIA_LINK, ERC20_ABI, signer);
+
+  // Step 1: Mint LINK from Sepolia faucet
+  const linkBalance = await link.balanceOf(eoaAddress);
+  if (linkBalance < LINK_SUPPLY_AMOUNT) {
+    console.log("Minting LINK from faucet...");
+    const mintTx = await faucet.mint(SEPOLIA_LINK, eoaAddress, LINK_SUPPLY_AMOUNT);
+    await mintTx.wait();
+    console.log("LINK minted:", mintTx.hash);
+  }
+
+  // Step 2: Approve Pool to spend LINK
+  console.log("Approving LINK for Pool...");
+  const approveTx = await link.approve(AAVE_V3_POOL_ADDRESS, LINK_SUPPLY_AMOUNT);
+  await approveTx.wait();
+
+  // Step 3: Supply LINK as collateral
+  console.log("Supplying LINK to AAVE Pool...");
+  const supplyTx = await pool.supply(SEPOLIA_LINK, LINK_SUPPLY_AMOUNT, eoaAddress, 0);
+  await supplyTx.wait();
+  console.log("LINK supplied:", supplyTx.hash);
+
+  // Step 4: Calculate DAI borrow amount for target HF ≈ 1.5
+  // After supply, get the updated account data to know our borrowing power
+  const postSupply = await pool.getUserAccountData(eoaAddress);
+  const collateralBase = postSupply.totalCollateralBase as bigint; // base currency (8 decimals, USD)
+  const liqThreshold = postSupply.currentLiquidationThreshold as bigint; // bps (e.g. 7500 = 75%)
+  const existingDebt = postSupply.totalDebtBase as bigint;
+
+  // Target HF = 1.5: debtNeeded = (collateral * liqThreshold) / (targetHF * 10000)
+  // collateralBase and debtBase are in the same units (USD with 8 decimals)
+  const TARGET_HF = 15n; // 1.5 * 10
+  const debtNeeded = (collateralBase * liqThreshold) / (TARGET_HF * 1000n);
+  const additionalDebt = debtNeeded > existingDebt ? debtNeeded - existingDebt : 0n;
+
+  if (additionalDebt > 0n) {
+    // additionalDebt is in base currency (USD with 8 decimals)
+    // DAI ≈ $1, so DAI amount (18 decimals) ≈ additionalDebt * 1e10
+    const daiBorrowAmount = additionalDebt * BigInt(1e10);
+
+    console.log("Borrow calculation:", {
+      collateralBase: collateralBase.toString(),
+      liqThreshold: liqThreshold.toString(),
+      existingDebt: existingDebt.toString(),
+      debtNeeded: debtNeeded.toString(),
+      additionalDebt: additionalDebt.toString(),
+      daiBorrowAmount: ethers.formatUnits(daiBorrowAmount, 18),
+    });
+
+    // Borrow DAI (variable rate = 2)
+    console.log("Borrowing DAI from AAVE Pool...");
+    const borrowTx = await pool.borrow(SEPOLIA_DAI, daiBorrowAmount, 2, 0, eoaAddress);
+    await borrowTx.wait();
+    console.log("DAI borrowed:", borrowTx.hash);
+  }
+
+  // Verify final position
+  const finalData = await pool.getUserAccountData(eoaAddress);
+  console.log("Final AAVE position:", {
+    totalCollateralBase: finalData.totalCollateralBase.toString(),
+    totalDebtBase: finalData.totalDebtBase.toString(),
+    healthFactor: finalData.healthFactor.toString(),
+  });
+
+  const finalHF = finalData.healthFactor as bigint;
+  if (finalHF < TARGET_HF_MIN || finalHF >= TARGET_HF_MAX) {
+    console.warn(
+      `Warning: healthFactor ${finalHF.toString()} is outside target range [1.0e18, 1.6e18). ` +
+      `Tests may need adjustment.`
+    );
+  }
+}
+
+// Extra timeout for AAVE on-chain setup (mint, supply, borrow) + workflow operations
+// Section 3 e2e: ~20s on-chain txs + 180s polling = ~3.5 min
+jest.setTimeout(TIMEOUT_DURATION * 7);
 
 /**
  * Template: AAVE Health Factor Alert on Sepolia
@@ -50,9 +195,6 @@ describe("Template: AAVE Health Factor Alert", () => {
   let smartWalletAddress: string;
   let eoaAddress: string;
   const createdWorkflowIds: string[] = [];
-
-  // AAVE V3 Pool on Sepolia
-  const AAVE_V3_POOL_SEPOLIA = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
 
   // Health factor threshold: 1.6 * 10^18 (AAVE uses 18 decimals for healthFactor)
   const HEALTH_FACTOR_THRESHOLD = "1600000000000000000";
@@ -199,7 +341,7 @@ describe("Template: AAVE Health Factor Alert", () => {
     ];
 
     const queries = userAtTopic2Events.map((evt) => ({
-      addresses: [AAVE_V3_POOL_SEPOLIA],
+      addresses: [AAVE_V3_POOL_ADDRESS],
       topics: [
         evt.topic0,
         null, // topic1: any reserve
@@ -211,7 +353,7 @@ describe("Template: AAVE Health Factor Alert", () => {
 
     // Add LiquidationCall query (user at topic3)
     queries.push({
-      addresses: [AAVE_V3_POOL_SEPOLIA],
+      addresses: [AAVE_V3_POOL_ADDRESS],
       topics: [
         AAVE_EVENT_TOPICS.LiquidationCall,
         null, // topic1: any collateral asset
@@ -257,7 +399,7 @@ describe("Template: AAVE Health Factor Alert", () => {
       name: "aave_account_data",
       type: NodeType.ContractRead,
       data: {
-        contractAddress: AAVE_V3_POOL_SEPOLIA,
+        contractAddress: AAVE_V3_POOL_ADDRESS,
         contractAbi: AAVE_POOL_ABI,
         methodCalls: [
           {
@@ -465,6 +607,11 @@ describe("Template: AAVE Health Factor Alert", () => {
 
   describe("2. Workflow Simulation Testing", () => {
     test("should simulate AAVE health factor alert workflow", async () => {
+      const workflowName = "should simulate AAVE health factor alert workflow";
+
+      // Ensure real AAVE position exists so ContractRead returns actual HF
+      await ensureAavePosition(eoaAddress);
+
       const eventTrigger = createEventTrigger();
       const contractReadNode = createContractReadNode();
       const branchNode = createBranchNode();
@@ -477,30 +624,16 @@ describe("Template: AAVE Health Factor Alert", () => {
         nodes: [contractReadNode, branchNode, telegramNode],
         edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 10,
-        name: "AAVE Health Factor Alert",
+        name: workflowName,
       });
-
-      console.log(
-        "Simulating AAVE workflow:",
-        util.inspect(
-          {
-            trigger: { id: eventTrigger.id, type: "Event" },
-            nodes: [contractReadNode, branchNode, telegramNode].map(
-              (n) => ({ id: n.id, name: n.name, type: n.type })
-            ),
-            edges: edges.map((e) => ({ source: e.source, target: e.target })),
-          },
-          { depth: null, colors: true }
-        )
-      );
 
       const simulationResult = await client.simulateWorkflow({
         ...workflow,
         inputVariables: {
           settings: {
-            name: "AAVE Health Factor Alert",
+            name: workflowName,
             runner: smartWalletAddress,
             chain: "sepolia",
           },
@@ -514,60 +647,40 @@ describe("Template: AAVE Health Factor Alert", () => {
 
       expect(simulationResult).toBeDefined();
 
-      // The wallet has no AAVE debt, so healthFactor = uint256.max,
-      // branch takes the else path, and Telegram is skipped.
-      expect(simulationResult.status).toBe(ExecutionStatus.PartialSuccess);
-      expect(simulationResult.steps).toHaveLength(3); // trigger + contractRead + branch
+      // With real AAVE position (HF ≈ 1.5 < 1.6), branch takes if path → full success
+      expect(simulationResult.status).toBe(ExecutionStatus.Success);
+      expect(simulationResult.steps).toHaveLength(4); // trigger + contractRead + branch + telegram
     });
 
     test("should simulate alert path and send telegram", async () => {
-      // Full e2e simulation: EventTrigger → ContractRead → Branch → Telegram.
-      // The EOA has no AAVE debt, so ContractRead returns healthFactor = uint256.max.
-      // We use a Branch condition `healthFactor > threshold` to intentionally trigger
-      // the alert path with the real on-chain value — no mocking needed.
+      const workflowName = "should simulate alert path and send telegram";
+
+      // Ensure the EOA has an AAVE position with healthFactor < 1.6e18
+      // so the Branch condition `< threshold` triggers the alert path.
+      await ensureAavePosition(eoaAddress);
+
       const eventTrigger = createEventTrigger();
       const contractReadNode = createContractReadNode();
+      const branchNode = createBranchNode();
       const telegramNode = createTelegramNode();
-
-      // Branch: healthFactor > 1.6e18 → triggers for uint256.max (no-debt wallet)
-      const alertBranchNode = NodeFactory.create({
-        id: branchId,
-        name: "check_health",
-        type: NodeType.Branch,
-        data: {
-          conditions: [
-            {
-              id: "0",
-              type: "if",
-              expression: `BigInt(aave_account_data.data.getUserAccountData.healthFactor) > BigInt("${HEALTH_FACTOR_THRESHOLD}")`,
-            },
-            { id: "1", type: "else", expression: "" },
-          ],
-        },
-      });
-
-      const edges = [
-        new Edge({ id: getNextId(), source: triggerId, target: contractReadId }),
-        new Edge({ id: getNextId(), source: contractReadId, target: branchId }),
-        new Edge({ id: getNextId(), source: branchId + ".0", target: telegramId }),
-      ];
+      const edges = createEdges();
 
       const workflow = client.createWorkflow({
         smartWalletAddress,
         trigger: eventTrigger,
-        nodes: [contractReadNode, alertBranchNode, telegramNode],
+        nodes: [contractReadNode, branchNode, telegramNode],
         edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 10,
-        name: "AAVE Health Factor Alert",
+        name: workflowName,
       });
 
       const simulationResult = await client.simulateWorkflow({
         ...workflow,
         inputVariables: {
           settings: {
-            name: "AAVE Health Factor Alert",
+            name: workflowName,
             runner: smartWalletAddress,
             chain: "sepolia",
           },
@@ -585,7 +698,7 @@ describe("Template: AAVE Health Factor Alert", () => {
       // All 4 steps: trigger + contractRead + branch + telegram
       expect(simulationResult.steps).toHaveLength(4);
 
-      // Verify branch took the if path (healthFactor > threshold)
+      // Verify branch took the if path (healthFactor < threshold)
       const branchStep = simulationResult.steps.find(
         (s: { type: string }) => s.type === "branch"
       );
@@ -606,7 +719,9 @@ describe("Template: AAVE Health Factor Alert", () => {
   });
 
   describe("3. Workflow Deployment Testing", () => {
-    test("should deploy and persist AAVE health factor alert workflow", async () => {
+    test("should deploy and retrieve workflow correctly", async () => {
+      const workflowName = "should deploy and retrieve workflow correctly";
+
       const eventTrigger = createEventTrigger();
       const contractReadNode = createContractReadNode();
       const branchNode = createBranchNode();
@@ -619,9 +734,16 @@ describe("Template: AAVE Health Factor Alert", () => {
         nodes: [contractReadNode, branchNode, telegramNode],
         edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 10,
-        name: "AAVE Health Factor Alert",
+        name: workflowName,
+        inputVariables: {
+          settings: {
+            name: workflowName,
+            runner: smartWalletAddress,
+            chain: "sepolia",
+          },
+        },
       });
 
       const workflowId = await client.submitWorkflow(workflow);
@@ -631,10 +753,14 @@ describe("Template: AAVE Health Factor Alert", () => {
 
       console.log("Deployed workflow ID:", workflowId);
 
-      // Verify the workflow can be retrieved
+      // Verify the workflow can be retrieved with correct structure
       const retrieved = await client.getWorkflow(workflowId);
       expect(retrieved).toBeDefined();
       expect(retrieved.id).toBe(workflowId);
+      expect(retrieved.status).toBe("enabled");
+      expect(retrieved.name).toBe(workflowName);
+      expect(retrieved.nodes?.length).toBe(3);
+      expect(retrieved.edges?.length).toBe(3);
 
       console.log(
         "Retrieved workflow:",
@@ -650,6 +776,89 @@ describe("Template: AAVE Health Factor Alert", () => {
           { depth: null, colors: true }
         )
       );
+    });
+
+    /**
+     * End-to-end test: deploy workflow, trigger via on-chain AAVE action, verify execution.
+     *
+     * Requires the operator to have established its WebSocket subscriptions before the
+     * Supply tx is sent. The incremental subscription update (debounce + diff) should
+     * add only the new subscription within ~1 second, so a 30s wait is sufficient.
+     */
+    test("should trigger via on-chain AAVE action and send alert", async () => {
+      const workflowName = "should trigger via on-chain AAVE action and send alert";
+
+      // Ensure the EOA has an AAVE position with healthFactor < 1.6e18
+      await ensureAavePosition(eoaAddress);
+
+      const eventTrigger = createEventTrigger();
+      const contractReadNode = createContractReadNode();
+      const branchNode = createBranchNode();
+      const telegramNode = createTelegramNode();
+      const edges = createEdges();
+
+      const workflow = client.createWorkflow({
+        smartWalletAddress,
+        trigger: eventTrigger,
+        nodes: [contractReadNode, branchNode, telegramNode],
+        edges,
+        startAt: Date.now(),
+        expiredAt: getExpiredAt("24h"),
+        maxExecution: 10,
+        name: workflowName,
+        inputVariables: {
+          settings: {
+            name: workflowName,
+            runner: smartWalletAddress,
+            chain: "sepolia",
+          },
+        },
+      });
+
+      const workflowId = await client.submitWorkflow(workflow);
+      expect(workflowId).toBeDefined();
+      createdWorkflowIds.push(workflowId);
+      console.log("Deployed workflow ID:", workflowId);
+
+      // Perform on-chain AAVE action to emit a Supply event
+      const provider = new ethers.JsonRpcProvider(config.chainEndpoint);
+      const signer = new ethers.Wallet(config.walletPrivateKey, provider);
+      const pool = new ethers.Contract(AAVE_V3_POOL_ADDRESS, POOL_ABI, signer);
+      const link = new ethers.Contract(SEPOLIA_LINK, ERC20_ABI, signer);
+      const faucet = new ethers.Contract(AAVE_FAUCET_ADDRESS, FAUCET_ABI, signer);
+
+      const tinyAmount = ethers.parseUnits("0.001", 18);
+      const mintTx = await faucet.mint(SEPOLIA_LINK, eoaAddress, tinyAmount);
+      await mintTx.wait();
+      const approveTx = await link.approve(AAVE_V3_POOL_ADDRESS, tinyAmount);
+      await approveTx.wait();
+      const supplyTx = await pool.supply(SEPOLIA_LINK, tinyAmount, eoaAddress, 0);
+      const supplyReceipt = await supplyTx.wait();
+      console.log("Supply tx:", supplyTx.hash, "block:", supplyReceipt.blockNumber);
+
+      // Poll for execution
+      const MAX_POLL_TIME_MS = 180_000;
+      const POLL_INTERVAL_MS = 10_000;
+      const startTime = Date.now();
+      let execution;
+
+      while (Date.now() - startTime < MAX_POLL_TIME_MS) {
+        const executions = await client.getExecutions([workflowId], { limit: 1 });
+        if (executions.items.length > 0) {
+          execution = executions.items[0];
+          console.log("Execution found:", execution.id);
+          break;
+        }
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+        console.log(`No execution yet (${elapsed}s elapsed)...`);
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+      }
+
+      expect(execution).toBeDefined();
+      if (!execution) return;
+
+      expect(execution.status).toBe(ExecutionStatus.Success);
+      expect(execution.steps).toHaveLength(4);
     });
   });
 });
