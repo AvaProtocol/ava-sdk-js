@@ -133,6 +133,8 @@ const validatedEnv = cleanEnv(
     TEST_PRIVATE_KEY: process.env.TEST_PRIVATE_KEY,
     TEST_ENV: env,
     SENDGRID_KEY: process.env.SENDGRID_KEY,
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
   },
   {
     AVS_API_KEY: str({ desc: "AVS API Key" }),
@@ -142,6 +144,8 @@ const validatedEnv = cleanEnv(
       default: "dev",
     }),
     SENDGRID_KEY: str({ desc: "SendGrid API Key", default: "" }),
+    TELEGRAM_BOT_TOKEN: str({ desc: "Telegram Bot Token", default: "" }),
+    TELEGRAM_CHAT_ID: str({ desc: "Telegram Chat ID", default: "" }),
   }
 );
 
@@ -176,6 +180,8 @@ export const getConfig = () => {
     oracles: envConfig.oracles,
     paymasterAddress: envConfig.paymasterAddress,
     sendgridKey: validatedEnv.SENDGRID_KEY,
+    telegramBotToken: validatedEnv.TELEGRAM_BOT_TOKEN,
+    telegramChatId: validatedEnv.TELEGRAM_CHAT_ID,
     uniswapV3Contracts: currentChain?.uniswapV3Contracts,
     uniswapV3Pools: currentChain?.uniswapV3Pools,
   };

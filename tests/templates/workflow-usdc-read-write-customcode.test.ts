@@ -21,7 +21,7 @@ import {
  * one read node is pruned/deduped and CustomCode throws due to missing input.
  */
 
-const { tokens } = getConfig();
+const { tokens, telegramBotToken, telegramChatId } = getConfig();
 
 // Set timeout to 180 seconds for all tests in this file (deployed workflows need more time)
 jest.setTimeout(TIMEOUT_DURATION * 3); // 3 * 60 seconds = 180 seconds
@@ -150,10 +150,10 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "telegram1",
       type: NodeType.RestAPI,
       data: {
-        url: "https://mock-api.ap-aggregator.local/post",
+        url: `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: '{"chat_id":"452247333","text":"{{ code1.data }}\\n","parse_mode":"HTML"}',
+        body: JSON.stringify({ chat_id: telegramChatId, text: "{{ code1.data }}\n", parse_mode: "HTML" }),
       },
     });
 
@@ -326,10 +326,10 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       name: "telegram1",
       type: NodeType.RestAPI,
       data: {
-        url: "https://mock-api.ap-aggregator.local/post",
+        url: `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: '{"chat_id":"452247333","text":"{{ code1.data }}\\n","parse_mode":"HTML"}',
+        body: JSON.stringify({ chat_id: telegramChatId, text: "{{ code1.data }}\n", parse_mode: "HTML" }),
       },
     });
 
