@@ -20,7 +20,7 @@ import {
   getNextId,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { tokens, chainId } = getConfig();
+const { tokens, chainId, telegramBotToken, telegramChatId } = getConfig();
 
 // Get current chain information
 const currentChain = getCurrentChain();
@@ -226,9 +226,13 @@ return message;`,
       name: "telegram0",
       type: NodeType.RestAPI,
       data: {
-        url: "https://mock-api.ap-aggregator.local/post",
+        url: `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
         method: "POST",
-        body: '{"chat_id":452247333,"text":"[Transfer]: {{code0.data}}","parse_mode":"HTML"}',
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: "[Transfer]: {{code0.data}}",
+          parse_mode: "HTML",
+        }),
         headers: { "Content-Type": "application/json" },
       },
     });
@@ -555,7 +559,7 @@ return message;`,
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((savedTelegramNode!.data as any).url).toContain(
-        "mock-api.ap-aggregator.local/post"
+        "api.telegram.org/bot"
       );
     });
   });
