@@ -15,6 +15,7 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  getExpiredAt,
 } from "../utils/utils";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 import { getConfig } from "../utils/envalid";
@@ -69,7 +70,7 @@ describe("Input Field Tests", () => {
       ],
       maxExecution: 1,
       startAt: Date.now(),
-      expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+      expiredAt: getExpiredAt("24h"),
       smartWalletAddress: wallet.address,
     };
 
@@ -160,7 +161,7 @@ describe("Input Field Tests", () => {
         ],
         maxExecution: 1,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours from now
+        expiredAt: getExpiredAt("24h"),
         smartWalletAddress: wallet.address,
       };
 

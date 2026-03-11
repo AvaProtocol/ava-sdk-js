@@ -12,6 +12,7 @@ import {
   authenticateClient,
   getSmartWalletWithBalance,
   getEOAAddress,
+  getExpiredAt,
 } from "../utils/utils";
 
 /**
@@ -185,7 +186,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       nodes: [contractWrite1, contractRead1, contractRead2, code1, telegram1],
       edges,
       startAt: Date.now(),
-      expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+      expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Recurring Transfer with report",
     });
@@ -361,7 +362,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       nodes: [contractWrite1, contractRead1, contractRead2, code1, telegram1],
       edges,
       startAt: Date.now(),
-      expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+      expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Recurring Transfer with report",
     });

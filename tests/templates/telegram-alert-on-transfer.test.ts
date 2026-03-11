@@ -18,6 +18,7 @@ import {
   getClient,
   padAddressForTopic,
   getNextId,
+  getExpiredAt,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens, chainId, telegramBotToken, telegramChatId } = getConfig();
@@ -416,7 +417,7 @@ return message;`,
         nodes: [customCodeNode, telegramNode],
         edges: edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Telegram Alert on Transfer Simulation",
       };
@@ -478,7 +479,7 @@ return message;`,
         nodes: [customCodeNode, telegramNode],
         edges: edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Telegram Alert on Transfer Test",
       };
@@ -524,7 +525,7 @@ return message;`,
         nodes: [customCodeNode, telegramNode],
         edges: edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Serialization Regression Test",
       };

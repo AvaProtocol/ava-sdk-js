@@ -22,6 +22,7 @@ import {
   getEOAAddress,
   padAddressForTopic,
   getExpiredAt,
+  getInputVariables,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 
