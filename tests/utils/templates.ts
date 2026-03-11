@@ -13,7 +13,7 @@ import {
   Lang,
   AbiElement,
 } from "@avaprotocol/types";
-import { getNextId } from "./utils";
+import { getNextId, getExpiredAt } from "./utils";
 import { getConfig } from "./envalid";
 
 export const defaultTriggerId = getNextId();
@@ -194,7 +194,7 @@ export const createFromTemplate = (
       data: { interval: 5 },
     }),
     startAt: now,
-    expiredAt: now + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
+    expiredAt: getExpiredAt("30d", now),
     maxExecution: 1,
   } as WorkflowProps;
 };
@@ -216,7 +216,7 @@ export const MultiNodeWithBranch = {
     data: { interval: 5 },
   }),
   startAt: Date.now(),
-  expiredAt: Date.now() + 3600 * 24 * 30 * 1000, // Current time + 30 days in milliseconds
+  expiredAt: getExpiredAt("30d"),
   name: `Test task`,
   maxExecution: 1,
 };

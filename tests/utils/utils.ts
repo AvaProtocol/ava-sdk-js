@@ -11,6 +11,33 @@ import { getChains, type ChainConfig } from "../../config/chains";
 
 const config = getConfig();
 
+/**
+ * Parse a duration string and return an expiration timestamp in milliseconds.
+ * @param duration - Duration string like "10s", "5m", "24h", "30d"
+ * @param startTime - Start time in ms (defaults to Date.now())
+ * @returns Expiration timestamp in milliseconds
+ */
+export const getExpiredAt = (
+  duration: string,
+  startTime: number = Date.now()
+): number => {
+  const match = duration.match(/^(\d+)([smhd])$/);
+  if (!match) {
+    throw new Error(
+      `Invalid duration format: "${duration}". Use format like "10s", "5m", "24h", "30d".`
+    );
+  }
+  const value = parseInt(match[1], 10);
+  const unit = match[2];
+  const multipliers: Record<string, number> = {
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+  };
+  return startTime + value * multipliers[unit];
+};
+
 // Chain ID constants for reliable chain detection
 export const CHAIN_IDS = {
   ETHEREUM: 1,
@@ -79,6 +106,25 @@ export const getSettings = (
     chain: getChainNameFromId(chainId),
   };
 };
+
+/**
+ * Build inputVariables with settings for workflow creation and simulation.
+ * Enforces that `name` is always included, which is required by the
+ * context-memory API for generating specific trigger descriptions.
+ *
+ * Use this for both `createWorkflow({ inputVariables })` and
+ * `simulateWorkflow({ inputVariables })` to ensure deployed workflows
+ * get AI-generated summaries instead of generic fallbacks.
+ */
+export const getInputVariables = (
+  name: string,
+  runner: string
+): { settings: { name: string; runner: string; chain_id: number; chain: string } } => ({
+  settings: {
+    name,
+    ...getSettings(runner),
+  },
+});
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts

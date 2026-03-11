@@ -26,6 +26,7 @@ import {
   authenticateClient,
   getChainNameFromId,
   getSmartWalletWithBalance,
+  getExpiredAt,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 import { defaultTriggerId } from "../utils/templates";
@@ -585,7 +586,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         nodes: workflowData.nodes,
         edges: workflowData.edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
       });
@@ -678,7 +679,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         nodes: workflowData.nodes,
         edges: workflowData.edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
       });
@@ -804,7 +805,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         nodes: workflowData.nodes,
         edges: workflowData.edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
       });
@@ -883,7 +884,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         nodes: workflowData.nodes,
         edges: workflowData.edges,
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
       });

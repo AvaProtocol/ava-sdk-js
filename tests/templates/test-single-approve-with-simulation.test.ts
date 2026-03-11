@@ -9,6 +9,7 @@ import {
   getClient,
   authenticateClient,
   getChainNameFromId,
+  getExpiredAt,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { chainId } = getConfig();
@@ -753,7 +754,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       nodes: equalWorkflowData.nodes,
       edges: equalWorkflowData.edges,
       startAt: Date.now(),
-      expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+      expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Equal Approval Test",
     });
@@ -806,7 +807,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       nodes: higherWorkflowData.nodes,
       edges: higherWorkflowData.edges,
       startAt: Date.now(),
-      expiredAt: Date.now() + 24 * 60 * 60 * 1000,
+      expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Higher Approval Test",
     });

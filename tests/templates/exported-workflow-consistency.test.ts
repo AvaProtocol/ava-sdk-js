@@ -16,6 +16,7 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  getExpiredAt,
 } from "../utils/utils";
 
 let client: Client;
@@ -261,7 +262,7 @@ describe("Exported Workflow Consistency Tests", () => {
           }),
         ],
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Exported Workflow Simulation Test",
       };
@@ -432,7 +433,7 @@ describe("Exported Workflow Consistency Tests", () => {
           }),
         ],
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Deployed Workflow Consistency Test",
       };
@@ -606,7 +607,7 @@ describe("Exported Workflow Consistency Tests", () => {
           }),
         ],
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "LoopNode Consistency Test",
       };
@@ -733,7 +734,7 @@ describe("Exported Workflow Consistency Tests", () => {
           }),
         ],
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "FilterNode Consistency Test",
       };
@@ -855,7 +856,7 @@ describe("Exported Workflow Consistency Tests", () => {
           }),
         ],
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "CustomCode Consistency Test",
       };
@@ -980,7 +981,7 @@ describe("Exported Workflow Consistency Tests", () => {
           }),
         ],
         startAt: Date.now(),
-        expiredAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Input Field Validation Test",
       };

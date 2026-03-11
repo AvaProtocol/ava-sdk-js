@@ -13,6 +13,7 @@ import {
   getSmartWallet,
   getClient,
   authenticateClient,
+  getExpiredAt,
 } from "../utils/utils";
 import util from "util";
 
@@ -49,7 +50,7 @@ describe("Input Variables", () => {
         ],
         edges: [{ id: "edge1", source: "trigger1", target: "testNode1" }],
         startAt: Date.now(),
-        expiredAt: Date.now() + 86400000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         inputVariables: {
           userToken: "0x1234567890abcdef",
@@ -86,7 +87,7 @@ describe("Input Variables", () => {
         ],
         edges: [{ id: "edge2", source: "trigger2", target: "simpleNode1" }],
         startAt: Date.now(),
-        expiredAt: Date.now() + 86400000,
+        expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         // No inputVariables provided
       });
