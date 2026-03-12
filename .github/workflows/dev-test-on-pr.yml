@@ -31,6 +31,8 @@ jobs:
       ETH_WS_URL: ${{ secrets.ETH_WS_URL }}
       CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       # From repository variables
       SENTRY_DSN: ${{ vars.SENTRY_DSN }}
