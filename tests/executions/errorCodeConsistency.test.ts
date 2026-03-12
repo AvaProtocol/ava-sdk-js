@@ -109,6 +109,7 @@ describe("ErrorCode Consistency", () => {
         edges,
         inputVariables: {
           settings: {
+            name: "ErrorCode Consistency Test",
             runner: runner.address,
             chainId: parseInt(chainId),
             chain: currentChainName,
@@ -122,6 +123,7 @@ describe("ErrorCode Consistency", () => {
         edges,
         inputVariables: {
           settings: {
+            name: "ErrorCode Consistency Test",
             runner: runner.address,
             chainId: parseInt(chainId),
             chain: currentChainName,
@@ -203,6 +205,7 @@ describe("ErrorCode Consistency", () => {
         edges,
         inputVariables: {
           settings: {
+            name: "ErrorCode Consistency Test",
             runner: runner.address,
             chainId: parseInt(chainId),
             chain: currentChainName,

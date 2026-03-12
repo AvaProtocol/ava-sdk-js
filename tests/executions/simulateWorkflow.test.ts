@@ -257,11 +257,14 @@ describe("SimulateWorkflow", () => {
         },
       ];
 
+      const wallet = await getSmartWallet(client);
       const result = await client.simulateWorkflow({
         trigger,
         nodes,
         edges,
-        inputVariables: {},
+        inputVariables: {
+          settings: getSettings(wallet.address),
+        },
       });
 
       expect(result).toBeDefined();
