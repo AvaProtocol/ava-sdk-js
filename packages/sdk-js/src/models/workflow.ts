@@ -213,28 +213,14 @@ class Workflow implements WorkflowProps {
     request.setExpiredAt(this.expiredAt);
     request.setMaxExecution(this.maxExecution);
 
-    // Populate inputVariables with settings.name and settings.runner.
-    // The aggregator reads name and runner exclusively from inputVariables.settings.
-    const inputVars: Record<string, unknown> = this.inputVariables
-      ? { ...this.inputVariables }
-      : {};
-
-    const existingSettings =
-      (inputVars.settings as Record<string, unknown>) || {};
-    const mergedSettings: Record<string, unknown> = { ...existingSettings };
-
-    // Always set name and runner from canonical fields; explicit settings values take precedence
-    if (!mergedSettings.name) {
-      mergedSettings.name = this.name;
-    }
-    if (!mergedSettings.runner) {
-      mergedSettings.runner = this.smartWalletAddress;
-    }
-    inputVars.settings = mergedSettings;
-
-    const inputVarsMap = request.getInputVariablesMap();
-    for (const [key, value] of Object.entries(inputVars)) {
-      inputVarsMap.set(key, convertJSValueToProtobuf(value));
+    // Pass inputVariables directly to the aggregator.
+    // Callers must include inputVariables.settings with name and runner;
+    // the aggregator validates and rejects requests missing these fields.
+    if (this.inputVariables) {
+      const inputVarsMap = request.getInputVariablesMap();
+      for (const [key, value] of Object.entries(this.inputVariables)) {
+        inputVarsMap.set(key, convertJSValueToProtobuf(value));
+      }
     }
 
     return request;
