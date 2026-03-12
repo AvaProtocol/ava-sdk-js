@@ -15,27 +15,28 @@ jobs:
     environment: dev
 
     env:
-      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_ENV: "dev"
-      DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }} # Or your preferred default for PRs
+      DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }}
 
-      # Aggregator configuration (mapped from your GitHub settings)
+      # Aggregator configuration (secrets)
       ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
       CONTROLLER_PRIVATE_KEY: ${{ secrets.CONTROLLER_PRIVATE_KEY }}
       AP_NOTIFY_BOT_TOKEN: ${{ secrets.AP_NOTIFY_BOT_TOKEN }}
       MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
+      SENDGRID_KEY: ${{ secrets.SENDGRID_KEY }}
+      ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+      ETH_WS_URL: ${{ secrets.ETH_WS_URL }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
+      CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
 
       # From repository variables
       SENTRY_DSN: ${{ vars.SENTRY_DSN }}
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
-      SENDGRID_KEY: ${{ vars.SENDGRID_KEY }}
-
-      # From dev environment variables
       BUNDLER_URL: ${{ vars.BUNDLER_URL }}
       # AVS_API_KEY is generated dynamically in "Retrieve AVS API Key from the aggregator" step
 
@@ -46,7 +47,8 @@ jobs:
       - name: Debug environment variables
         run: |
           echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
-          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "ETH_RPC_URL set: $([ -n "$ETH_RPC_URL" ] && echo 'yes' || echo 'NO')"
+          echo "ETH_WS_URL set: $([ -n "$ETH_WS_URL" ] && echo 'yes' || echo 'NO')"
           echo "BUNDLER_URL: $BUNDLER_URL"
           echo "TEST_ENV: $TEST_ENV"
 
@@ -96,11 +98,11 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: |
           echo "Injecting secrets into aggregator configuration..."
-          echo "Chain endpoint: ${CHAIN_ENDPOINT}"
+          echo "ETH_RPC_URL set: $([ -n "$ETH_RPC_URL" ] && echo 'yes' || echo 'NO')"
           echo "Test environment: ${TEST_ENV}"
 
           # Export all environment variables for envsubst
-          export CHAIN_ENDPOINT TEST_ENV ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY
+          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
 
           # Use envsubst to replace ${VAR} placeholders with actual environment variables
           envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
@@ -141,14 +143,14 @@ jobs:
           echo "Waiting for aggregator to start..."
           sleep 10
 
-          echo "=== Config files inside container ==="
-          docker compose exec aggregator ls -lah /app/config/
-
           echo "=== Aggregator container status ==="
           docker compose ps
 
           echo "=== Aggregator logs (last 50 lines) ==="
           docker compose logs aggregator --tail=50
+
+          echo "=== Config files inside container ==="
+          docker compose exec aggregator ls -lah /app/config/ || echo "⚠️ Container not running, cannot exec into it"
 
       - name: Use Node.js
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
@@ -224,7 +226,7 @@ jobs:
         run: |
           echo "=== Required Variables from envalid.ts ==="
           echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
-          echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
+          echo "ETH_RPC_URL set: $([ -n "$ETH_RPC_URL" ] && echo 'yes' || echo 'NO')"
           echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
           echo "TEST_ENV: dev"
 
