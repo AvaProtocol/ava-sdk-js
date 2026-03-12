@@ -1,6 +1,11 @@
 import { describe, test, expect, beforeAll } from "@jest/globals";
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
-import { TriggerType, NodeType, Lang, TimeoutPresets } from "@avaprotocol/types";
+import {
+  TriggerType,
+  NodeType,
+  Lang,
+  TimeoutPresets,
+} from "@avaprotocol/types";
 import util from "util";
 import { getConfig } from "../utils/envalid";
 import {
@@ -13,7 +18,6 @@ import {
   getSmartWalletWithBalance,
   getEOAAddress,
   getExpiredAt,
-  getInputVariables,
 } from "../utils/utils";
 
 /**
@@ -155,7 +159,11 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
         url: `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: telegramChatId, text: "{{ code1.data }}\n", parse_mode: "HTML" }),
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: "{{ code1.data }}\n",
+          parse_mode: "HTML",
+        }),
       },
     });
 
@@ -190,7 +198,12 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Recurring Transfer with report",
-      inputVariables: getInputVariables("Recurring Transfer with report", fundedSmartWalletAddress),
+      inputVariables: {
+        settings: getSettings(
+          fundedSmartWalletAddress,
+          "Recurring Transfer with report",
+        ),
+      },
     });
 
     // Extract workflow data and include name in inputVariables
@@ -209,7 +222,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
 
     console.log(
       "🧪 Simulation",
-      util.inspect(simulation, { depth: null, colors: true })
+      util.inspect(simulation, { depth: null, colors: true }),
     );
 
     // Basic shape assertions
@@ -332,7 +345,11 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
         url: `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: telegramChatId, text: "{{ code1.data }}\n", parse_mode: "HTML" }),
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: "{{ code1.data }}\n",
+          parse_mode: "HTML",
+        }),
       },
     });
 
@@ -367,12 +384,14 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Recurring Transfer with report",
-      inputVariables: getInputVariables("Recurring Transfer with report", wallet.address),
+      inputVariables: {
+        settings: getSettings(wallet.address, "Recurring Transfer with report"),
+      },
     });
 
     console.log(
       "🚀 Deploying workflow, workflowProps",
-      util.inspect(workflow, { depth: null, colors: true })
+      util.inspect(workflow, { depth: null, colors: true }),
     );
 
     let workflowId: string | undefined;
@@ -389,7 +408,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
           },
           isBlocking: true,
         },
-        TimeoutPresets.SLOW // 2 minute timeout for complex workflows
+        TimeoutPresets.SLOW, // 2 minute timeout for complex workflows
       );
       expect(exec).toBeDefined();
 
@@ -400,7 +419,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
 
       console.log(
         "🚀 Deployed workflow, execution",
-        util.inspect(execution, { depth: null, colors: true })
+        util.inspect(execution, { depth: null, colors: true }),
       );
 
       expect(execution).toBeDefined();
@@ -423,8 +442,8 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
             inputsList: codeStep?.inputsList,
             hasOutput: !!codeStep?.output,
           },
-          { depth: null, colors: true }
-        )
+          { depth: null, colors: true },
+        ),
       );
       // Critical: inputsList must include contractRead2 reference
       expect(codeStep?.inputsList || []).toContain("contractRead2.data");

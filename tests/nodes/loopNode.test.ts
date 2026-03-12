@@ -46,7 +46,7 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
-  getInputVariables,
+  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -1621,7 +1621,7 @@ describe("LoopNode Tests", () => {
           startAt: Date.now(),
           expiredAt: getExpiredAt("30d"),
           maxExecution: 1,
-          inputVariables: getInputVariables("Loop Node Type Consistency Test", wallet.address),
+          inputVariables: { settings: getSettings(wallet.address, "Loop Node Type Consistency Test") },
         };
         const simulatedWorkflow = await client.simulateWorkflow(
           client.createWorkflow(workflowProps)

@@ -17,7 +17,7 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
-  getInputVariables,
+  getSettings,
 } from "../utils/utils";
 
 let client: Client;
@@ -266,7 +266,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Exported Workflow Simulation Test",
-        inputVariables: getInputVariables("Exported Workflow Simulation Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "Exported Workflow Simulation Test") },
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -438,7 +438,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Deployed Workflow Consistency Test",
-        inputVariables: getInputVariables("Deployed Workflow Consistency Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "Deployed Workflow Consistency Test") },
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -613,7 +613,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "LoopNode Consistency Test",
-        inputVariables: getInputVariables("LoopNode Consistency Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "LoopNode Consistency Test") },
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -741,7 +741,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "FilterNode Consistency Test",
-        inputVariables: getInputVariables("FilterNode Consistency Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "FilterNode Consistency Test") },
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -864,7 +864,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "CustomCode Consistency Test",
-        inputVariables: getInputVariables("CustomCode Consistency Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "CustomCode Consistency Test") },
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -990,7 +990,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Input Field Validation Test",
-        inputVariables: getInputVariables("Input Field Validation Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "Input Field Validation Test") },
       };
 
       const workflow = client.createWorkflow(workflowProps);

@@ -16,7 +16,7 @@ import {
   getClient,
   authenticateClient,
   getEOAAddress,
-  getInputVariables,
+  getSettings,
 } from "../utils/utils";
 
 import {
@@ -326,7 +326,7 @@ describe("createWorkflow Tests", () => {
     const workflowData = {
       ...MultiNodeWithBranch,
       smartWalletAddress: wallet.address,
-      inputVariables: getInputVariables("Test task", wallet.address),
+      inputVariables: { settings: getSettings(wallet.address, "Test task") },
     };
 
     const workflow = await client.createWorkflow(workflowData);

@@ -261,7 +261,8 @@ export interface SimulateWorkflowRequest {
   trigger: TriggerProps;
   nodes: Array<NodeProps>;
   edges: Array<EdgeProps>;
-  inputVariables?: Record<string, any>;
+  /** Required — must include `settings` with `name` and `runner` */
+  inputVariables: Record<string, any>;
 }
 
 // Withdraw funds request interface

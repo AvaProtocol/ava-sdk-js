@@ -16,7 +16,6 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
-  getInputVariables,
 } from "../utils/utils";
 import { MOCKED_API_ENDPOINT_AGGREGATOR } from "../utils/mocks/api";
 import { getConfig } from "../utils/envalid";
@@ -73,7 +72,7 @@ describe("Input Field Tests", () => {
       startAt: Date.now(),
       expiredAt: getExpiredAt("24h"),
       smartWalletAddress: wallet.address,
-      inputVariables: getInputVariables("TestInvalidWorkflow", wallet.address),
+      inputVariables: { settings: getSettings(wallet.address, "TestInvalidWorkflow") },
     };
 
     const workflow = client.createWorkflow(workflowProps);
@@ -165,7 +164,7 @@ describe("Input Field Tests", () => {
         startAt: Date.now(),
         expiredAt: getExpiredAt("24h"),
         smartWalletAddress: wallet.address,
-        inputVariables: getInputVariables("TestWorkflowWithManualTriggerInput", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "TestWorkflowWithManualTriggerInput") },
       };
 
       // Create the workflow

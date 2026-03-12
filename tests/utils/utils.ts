@@ -109,21 +109,6 @@ export const getSettings = (
   };
 };
 
-/**
- * Build inputVariables with settings for workflow creation and simulation.
- * Enforces that `name` is always included, which is required by the
- * context-memory API for generating specific trigger descriptions.
- *
- * Use this for both `createWorkflow({ inputVariables })` and
- * `simulateWorkflow({ inputVariables })` to ensure deployed workflows
- * get AI-generated summaries instead of generic fallbacks.
- */
-export const getInputVariables = (
-  name: string,
-  runner: string
-): { settings: { name: string; runner: string; chain_id: number; chain: string } } => ({
-  settings: getSettings(runner, name),
-});
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
