@@ -65,6 +65,9 @@ describe("Workflow Management Tests", () => {
       try {
         const workflowProps = createFromTemplate(wallet.address);
         workflowProps.name = workflowName;
+        if (workflowProps.inputVariables?.settings) {
+          (workflowProps.inputVariables.settings as any).name = workflowName;
+        }
         const workflow = client.createWorkflow(workflowProps);
         workflowId = await client.submitWorkflow(workflow);
 
