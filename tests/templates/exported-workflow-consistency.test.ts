@@ -1019,7 +1019,6 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Validate inputsList contains expected references
       expect(loopStep!.inputsList).toContain("manualTrigger.data");
-      expect(loopStep!.inputsList).toContain("workflowContext");
       expect(loopStep!.inputsList).toContain("apContext.configVars");
 
       console.log("✅ Input field validation passed!");

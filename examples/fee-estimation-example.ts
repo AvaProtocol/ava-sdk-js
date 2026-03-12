@@ -63,9 +63,9 @@ async function demonstrateFeeEstimation() {
       nodes: simpleNodes,
       runner: SMART_WALLET_ADDRESS,
       inputVariables: {
-        workflowContext: {
+        settings: {
+          name: 'Simple REST API Workflow',
           runner: SMART_WALLET_ADDRESS,
-          chainId: 1, // Ethereum mainnet
         },
       },
       createdAt: Date.now(),
@@ -138,9 +138,9 @@ async function demonstrateFeeEstimation() {
       nodes: complexNodes,
       runner: SMART_WALLET_ADDRESS,
       inputVariables: {
-        workflowContext: {
+        settings: {
+          name: 'Complex Contract Write Workflow',
           runner: SMART_WALLET_ADDRESS,
-          chainId: 8453, // Base mainnet
         },
       },
       createdAt: Date.now(),
@@ -187,9 +187,9 @@ async function demonstrateFeeEstimation() {
       nodes: cronNodes,
       runner: SMART_WALLET_ADDRESS,
       inputVariables: {
-        workflowContext: {
+        settings: {
+          name: 'Cron ETH Transfer Workflow',
           runner: SMART_WALLET_ADDRESS,
-          chainId: 1, // Ethereum mainnet
         },
       },
       createdAt: Date.now(),
