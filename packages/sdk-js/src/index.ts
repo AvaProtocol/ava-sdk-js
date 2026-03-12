@@ -1421,7 +1421,7 @@ class Client extends BaseClient {
    * @returns {Promise<ExecutionProps>} - The response from simulating the task
    */
   async simulateWorkflow(
-    { trigger, nodes, edges, inputVariables = {} }: SimulateWorkflowRequest,
+    { trigger, nodes, edges, inputVariables }: SimulateWorkflowRequest,
     options?: RequestOptions
   ): Promise<ExecutionProps> {
     // Create the request

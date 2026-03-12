@@ -13,7 +13,7 @@ import {
   Lang,
   AbiElement,
 } from "@avaprotocol/types";
-import { getNextId, getExpiredAt, getInputVariables } from "./utils";
+import { getNextId, getExpiredAt, getSettings } from "./utils";
 import { getConfig } from "./envalid";
 
 export const defaultTriggerId = getNextId();
@@ -197,7 +197,7 @@ export const createFromTemplate = (
     startAt: now,
     expiredAt: getExpiredAt("30d", now),
     maxExecution: 1,
-    inputVariables: getInputVariables("SDK Test Workflow", address),
+    inputVariables: { settings: getSettings(address, "SDK Test Workflow") },
   } as WorkflowProps;
 };
 

@@ -14,7 +14,6 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
-  getInputVariables,
 } from "../utils/utils";
 import util from "util";
 
@@ -30,9 +29,11 @@ describe("Input Variables", () => {
 
   describe("Workflow Creation with Input Variables", () => {
     test("should create workflow with input variables", async () => {
+      const wallet = await getSmartWallet(client);
+
       const workflow = client.createWorkflow({
         name: "Input Variables Test Workflow",
-        smartWalletAddress: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
+        smartWalletAddress: wallet.address,
         trigger: {
           id: "trigger1",
           name: "manualTrigger",
@@ -55,7 +56,7 @@ describe("Input Variables", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         inputVariables: {
-          ...getInputVariables("Input Variables Test Workflow", "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e"),
+          settings: getSettings(wallet.address, "Input Variables Test Workflow"),
           userToken: "0x1234567890abcdef",
           amount: 1000000,
         },
@@ -68,9 +69,11 @@ describe("Input Variables", () => {
     });
 
     test("should handle workflow with only settings (no custom input variables)", async () => {
+      const wallet = await getSmartWallet(client);
+
       const workflow = client.createWorkflow({
         name: "Settings Only Test Workflow",
-        smartWalletAddress: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
+        smartWalletAddress: wallet.address,
         trigger: {
           id: "trigger2",
           name: "manualTrigger",
@@ -92,7 +95,7 @@ describe("Input Variables", () => {
         startAt: Date.now(),
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
-        inputVariables: getInputVariables("Settings Only Test Workflow", "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e"),
+        inputVariables: { settings: getSettings(wallet.address, "Settings Only Test Workflow") },
       });
 
       expect(workflow).toBeDefined();

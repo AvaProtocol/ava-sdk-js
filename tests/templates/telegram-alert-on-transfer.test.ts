@@ -19,7 +19,7 @@ import {
   padAddressForTopic,
   getNextId,
   getExpiredAt,
-  getInputVariables,
+  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens, chainId, telegramBotToken, telegramChatId } = getConfig();
@@ -483,7 +483,7 @@ return message;`,
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Telegram Alert on Transfer Test",
-        inputVariables: getInputVariables("Telegram Alert on Transfer Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "Telegram Alert on Transfer Test") },
       };
 
       // Create and submit workflow
@@ -530,7 +530,7 @@ return message;`,
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Serialization Regression Test",
-        inputVariables: getInputVariables("Serialization Regression Test", wallet.address),
+        inputVariables: { settings: getSettings(wallet.address, "Serialization Regression Test") },
       };
 
       const workflow = client.createWorkflow(workflowData);
