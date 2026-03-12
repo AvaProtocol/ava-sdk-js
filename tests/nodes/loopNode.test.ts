@@ -1606,6 +1606,7 @@ describe("LoopNode Tests", () => {
 
         // Test simulateWorkflow
         const workflowProps: WorkflowProps = {
+          name: "Loop Node Type Consistency Test",
           smartWalletAddress: wallet.address,
           nodes: [loopNode],
           edges: [

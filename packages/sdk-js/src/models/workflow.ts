@@ -39,10 +39,12 @@ class Workflow implements WorkflowProps {
   expiredAt: number;
   maxExecution: number;
 
+  // Required fields set via inputVariables.settings
+  name: string;
+
   // Optional fields
   id?: string;
   owner?: string;
-  name?: string;
   completedAt?: number;
   status?: WorkflowStatus;
   lastRanAt?: number;
@@ -57,8 +59,12 @@ class Workflow implements WorkflowProps {
     if (!props.trigger) {
       throw new Error("Trigger is undefined in new Workflow()");
     }
+    if (!props.name) {
+      throw new Error("name is required in new Workflow()");
+    }
 
     this.smartWalletAddress = props.smartWalletAddress;
+    this.name = props.name;
     this.trigger = props.trigger as any;
     this.nodes = props.nodes as any;
     this.edges = props.edges as any;
@@ -70,7 +76,6 @@ class Workflow implements WorkflowProps {
     // Optional fields
     this.id = props.id;
     this.owner = props.owner;
-    this.name = props.name;
     this.status = props.status;
     this.completedAt = props.completedAt;
     this.lastRanAt = props.lastRanAt;
@@ -168,9 +173,6 @@ class Workflow implements WorkflowProps {
   toRequest(): avs_pb.CreateTaskReq {
     const request = new avs_pb.CreateTaskReq();
 
-    // TODO: add client side validation for each field
-    request.setSmartWalletAddress(this.smartWalletAddress);
-
     request.setTrigger(this.trigger.toRequest());
 
     // Add error handling for node serialization
@@ -211,15 +213,8 @@ class Workflow implements WorkflowProps {
     request.setExpiredAt(this.expiredAt);
     request.setMaxExecution(this.maxExecution);
 
-    // Optional fields — still sent for backward compat with older aggregators
-    if (this.name) {
-      request.setName(this.name);
-    }
-
-    // Ensure inputVariables.settings contains name and runner.
-    // The aggregator requires settings.name and settings.runner in inputVariables.
-    // We auto-populate them from the workflow's top-level fields so callers
-    // don't have to duplicate values.
+    // Populate inputVariables with settings.name and settings.runner.
+    // The aggregator reads name and runner exclusively from inputVariables.settings.
     const inputVars: Record<string, unknown> = this.inputVariables
       ? { ...this.inputVariables }
       : {};
@@ -228,11 +223,11 @@ class Workflow implements WorkflowProps {
       (inputVars.settings as Record<string, unknown>) || {};
     const mergedSettings: Record<string, unknown> = { ...existingSettings };
 
-    // Only backfill — don't overwrite explicit settings values
-    if (!mergedSettings.name && this.name) {
+    // Always set name and runner from canonical fields; explicit settings values take precedence
+    if (!mergedSettings.name) {
       mergedSettings.name = this.name;
     }
-    if (!mergedSettings.runner && this.smartWalletAddress) {
+    if (!mergedSettings.runner) {
       mergedSettings.runner = this.smartWalletAddress;
     }
     inputVars.settings = mergedSettings;

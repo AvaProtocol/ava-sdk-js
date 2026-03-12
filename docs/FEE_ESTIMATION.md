@@ -53,9 +53,9 @@ const request: EstimateFeesRequest = {
   ],
   runner: '0xYourSmartWalletAddress',
   inputVariables: {
-    workflowContext: {
+    settings: {
+      name: 'My ETH Transfer Workflow',
       runner: '0xYourSmartWalletAddress',
-      chainId: 8453, // Base mainnet
     },
   },
   createdAt: Date.now(),

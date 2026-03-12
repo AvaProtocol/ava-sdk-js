@@ -102,9 +102,9 @@ export type WorkflowProps = Omit<
   avs_pb.Task.AsObject,
   | "id"
   | "owner"
+  | "name"
   | "completedAt"
   | "status"
-  | "name"
   | "trigger"
   | "nodesList"
   | "edgesList"
@@ -114,9 +114,9 @@ export type WorkflowProps = Omit<
 > & {
   id?: string;
   owner?: string;
+  name: string; // Required — sent via inputVariables.settings.name
   completedAt?: number;
   status?: WorkflowStatus;
-  name?: string;
   trigger: TriggerProps;
   nodes: NodeProps[];
   edges: EdgeProps[];
