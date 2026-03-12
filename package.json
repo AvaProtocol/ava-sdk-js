@@ -26,7 +26,6 @@
     "test:triggers": "dotenv -e .env.$TEST_ENV jest tests/triggers/ --runInBand --silent",
     "test:nodes": "dotenv -e .env.$TEST_ENV jest tests/nodes/ --runInBand --silent",
     "test:templates": "dotenv -e .env.$TEST_ENV jest tests/templates/ --runInBand --silent",
-    "test:docker": "bash ./scripts/run-tests-with-docker.sh",
     "release": "node scripts/release.js",
     "publish": "node ./scripts/publish-packages.js",
     "publish:dry-run": "node ./scripts/publish-packages.js --dry-run",
