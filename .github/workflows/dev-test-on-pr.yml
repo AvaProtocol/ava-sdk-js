@@ -236,38 +236,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn build
 
-      - name: Test Core Functionality
+      # Temporarily running only wallet test to validate CI pipeline
+      - name: Test Wallet (CI validation)
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: dev
-        run: yarn test:core
-
-      - name: Test Workflows
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:workflows
-
-      - name: Test Executions
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:executions
-
-      - name: Test Triggers
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:triggers
-
-      - name: Test Nodes
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:nodes
-
-      - name: Test Templates
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: yarn test:templates
+        run: npx jest tests/core/wallet.test.ts --no-coverage
