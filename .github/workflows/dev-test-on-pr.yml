@@ -1,4 +1,4 @@
-name: Run Dev Tests on PR
+name: E2E Tests
 
 on:
   pull_request:
@@ -7,19 +7,72 @@ on:
       docker_image_tag:
         description: "Docker Image Tag of avaprotocol/avs-dev"
         required: false
-        default: "latest" # Or use an empty default if you want to force it from elsewhere for PRs
+        default: "latest"
+
+# Shared env for all jobs that need secrets
+env:
+  TEST_ENV: "dev"
+  DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }}
 
 jobs:
-  dev-test:
+  # ── Job 1: Check if tests should run ──────────────────────────────
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.resolve.outputs.should_run }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check source or test code changes
+        id: check
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
+          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests/|config/)'
+          MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
+
+          if [ -z "$MATCHING_FILES" ]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "No source/test changes detected, skipping tests"
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Changes detected:"
+            echo "$MATCHING_FILES"
+          fi
+
+      - name: Always run for workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "should_run=true" >> $GITHUB_OUTPUT
+        id: dispatch_check
+
+      # Merge outputs: workflow_dispatch always runs, PR only if source changed
+      - name: Resolve should_run
+        id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=${{ steps.check.outputs.should_run || 'true' }}" >> $GITHUB_OUTPUT
+          fi
+
+  # ── Job 2: Parallel test suites ───────────────────────────────────
+  e2e-tests:
+    name: "E2E / ${{ matrix.suite }}"
+    needs: setup
+    if: needs.setup.outputs.should_run != 'false'
     runs-on: ubuntu-latest
     environment: dev
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [core, workflows, executions, triggers, nodes, templates]
 
     env:
+      # Secrets
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
-      TEST_ENV: "dev"
-      DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }}
-
-      # Aggregator configuration (secrets)
       ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
@@ -33,212 +86,100 @@ jobs:
       CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-
-      # From repository variables
+      # Variables
       SENTRY_DSN: ${{ vars.SENTRY_DSN }}
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
       BUNDLER_URL: ${{ vars.BUNDLER_URL }}
-      # AVS_API_KEY is generated dynamically in "Retrieve AVS API Key from the aggregator" step
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug environment variables
-        run: |
-          echo "DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
-          echo "ETH_RPC_URL set: $([ -n "$ETH_RPC_URL" ] && echo 'yes' || echo 'NO')"
-          echo "ETH_WS_URL set: $([ -n "$ETH_WS_URL" ] && echo 'yes' || echo 'NO')"
-          echo "BUNDLER_URL: $BUNDLER_URL"
-          echo "TEST_ENV: $TEST_ENV"
-
-      - name: Check Source or Test Code Changes
-        id: check_source_changes
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
-          echo "PR Head SHA: ${{ github.event.pull_request.head.sha }}"
-          echo "GitHub Ref: ${{ github.ref }}"
-
-          # Ensure we have the base branch
-          git fetch origin ${{ github.base_ref }} --depth=1
-
-          # Get all changed files
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-
-          # Define the source code patterns we want to monitor
-          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests/)'
-
-          echo "=== Debug Information ==="
-          echo "Base ref: ${{ github.base_ref }}"
-          echo "Current branch: $(git branch --show-current)"
-          echo "Git status:"
-          git status
-
-          echo "=== Changed Files ==="
-          echo "$CHANGED_FILES"
-
-          # Check if any files in our monitored directories have changed
-          MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
-
-          echo "=== Matching Files ==="
-          echo "$MATCHING_FILES"
-
-          if [ -z "$MATCHING_FILES" ]; then
-            echo "source_changed=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in monitored directories, skipping tests"
-          else
-            echo "source_changed=true" >> $GITHUB_OUTPUT
-            echo "Changes detected in monitored directories:"
-            echo "$MATCHING_FILES"
-          fi
-        shell: bash
-
-      - name: Inject secrets into aggregator config
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          echo "Injecting secrets into aggregator configuration..."
-          echo "ETH_RPC_URL set: $([ -n "$ETH_RPC_URL" ] && echo 'yes' || echo 'NO')"
-          echo "Test environment: ${TEST_ENV}"
-
-          # Export all environment variables for envsubst
-          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
-
-          # Use envsubst to replace ${VAR} placeholders with actual environment variables
-          envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
-
-          # Verify the config was generated (without showing secrets)
-          echo "Generated config file size: $(wc -l < config/aggregator.runtime.yaml) lines"
-          echo "Config template placeholders replaced successfully"
-          echo ""
-          echo "=== Generated config structure (masking secrets) ==="
-          sed 's/eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*/[JWT_TOKEN_MASKED]/g; s/0x[a-fA-F0-9]\{64\}/[PRIVATE_KEY_MASKED]/g; s/SG\.[A-Za-z0-9_-]*/[SENDGRID_KEY_MASKED]/g' config/aggregator.runtime.yaml
-          echo ""
-          echo "=== Checking for unsubstituted variables ==="
-          if grep -q "\${.*}" config/aggregator.runtime.yaml; then
-            echo "❌ Found unsubstituted variables:"
-            grep "\${.*}" config/aggregator.runtime.yaml
-            echo "This may cause issues with the aggregator startup."
-          else
-            echo "✅ All variables appear to be substituted correctly."
-          fi
-
-      - name: Run local AVS aggregator in Docker
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          echo "Starting AVS aggregator with version: $DOCKER_IMAGE_TAG"
-
-          echo "=== Config files in ./config directory ==="
-          ls -lah config/
-
-          echo "=== Verifying runtime config exists ==="
-          if [ -f config/aggregator.runtime.yaml ]; then
-            echo "✅ aggregator.runtime.yaml exists ($(wc -l < config/aggregator.runtime.yaml) lines)"
-          else
-            echo "❌ aggregator.runtime.yaml MISSING!"
-          fi
-
-          docker compose up -d
-
-          echo "Waiting for aggregator to start..."
-          sleep 10
-
-          echo "=== Aggregator container status ==="
-          docker compose ps
-
-          echo "=== Aggregator logs (last 50 lines) ==="
-          docker compose logs aggregator --tail=50
-
-          echo "=== Config files inside container ==="
-          docker compose exec aggregator ls -lah /app/config/ || echo "⚠️ Container not running, cannot exec into it"
-
       - name: Use Node.js
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           cache: "yarn"
 
       - name: Install dependencies
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         run: yarn install
 
-      - name: Ensure the aggregator is running
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: |
-          echo "Waiting for aggregator to become ready..."
-          max_attempts=24  # 2 minutes total (24 * 5 seconds)
-          attempt=0
+      - name: Build SDK
+        run: yarn build
 
+      - name: Inject secrets into aggregator config
+        run: |
+          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
+          envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
+          echo "Generated config: $(wc -l < config/aggregator.runtime.yaml) lines"
+          if grep -q "\${.*}" config/aggregator.runtime.yaml; then
+            echo "WARNING: Found unsubstituted variables:"
+            grep "\${.*}" config/aggregator.runtime.yaml
+          else
+            echo "All variables substituted correctly."
+          fi
+
+      - name: Start aggregator
+        run: |
+          docker compose up -d
+          echo "Waiting for aggregator to start..."
+          sleep 10
+          docker compose ps
+          docker compose logs aggregator --tail=20
+
+      - name: Wait for aggregator health
+        run: |
+          max_attempts=24
+          attempt=0
           while [ $attempt -lt $max_attempts ]; do
-            echo "Attempt $((attempt + 1))/$max_attempts: Testing aggregator health..."
-            
-            # Test if aggregator responds
             if curl --output /dev/null --silent --fail --max-time 5 http://localhost:1323/up; then
-              echo "✅ Aggregator is ready!"
-              curl -v http://localhost:1323/up
+              echo "Aggregator is ready!"
               break
-            else
-              echo "❌ Aggregator not ready yet..."
-              echo "Container status:"
-              docker compose ps
-              echo "Recent aggregator logs:"
-              docker compose logs aggregator --tail=10
-              echo "Waiting 5 seconds..."
-              sleep 5
             fi
-            
+            echo "Attempt $((attempt + 1))/$max_attempts: not ready yet..."
+            docker compose logs aggregator --tail=5
+            sleep 5
             attempt=$((attempt + 1))
           done
-
           if [ $attempt -eq $max_attempts ]; then
-            echo "🚨 Aggregator failed to start after $((max_attempts * 5)) seconds"
-            echo "Final container status:"
+            echo "Aggregator failed to start"
             docker compose ps
-            echo "Full aggregator logs:"
             docker compose logs aggregator
             exit 1
           fi
 
-      - name: Retrieve AVS API Key from the aggregator
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        id: setup-env
+      - name: Generate AVS API key
         run: |
-          echo "=== Available config files in container ==="
-          docker compose exec aggregator ls -lah /app/config/
-
-          echo ""
-          echo "=== Generating AVS API key using runtime config ==="
-          echo "Config file: /app/config/aggregator.runtime.yaml"
-          echo "Command: /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey"
-          echo ""
-
-          # Generate API key (suppress stderr warnings, only capture the JWT token)
           API_KEY=$(docker compose exec aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=apikey 2>/dev/null)
           echo "AVS_API_KEY=$API_KEY" >> $GITHUB_ENV
+          echo "API key generated (${#API_KEY} chars)"
 
-          echo ""
-          echo "✅ AVS API key generated and stored in GITHUB_ENV"
-          echo "API key length: ${#API_KEY} characters"
+      - name: "Run test:${{ matrix.suite }}"
+        run: yarn test:${{ matrix.suite }}
 
-      - name: Print Required Environment Variables
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
+  # ── Job 3: Report results ─────────────────────────────────────────
+  report:
+    name: Report
+    needs: [setup, e2e-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summary
         run: |
-          echo "=== Required Variables from envalid.ts ==="
-          echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
-          echo "ETH_RPC_URL set: $([ -n "$ETH_RPC_URL" ] && echo 'yes' || echo 'NO')"
-          echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
-          echo "TEST_ENV: dev"
+          echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
 
-      - name: Build the SDK for local test
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        run: yarn build
+          if [ "${{ needs.setup.outputs.should_run }}" = "false" ]; then
+            echo "Tests skipped — no source/test changes detected." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
 
-      # Temporarily running only wallet test to validate CI pipeline
-      - name: Test Wallet (CI validation)
-        if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
-        env:
-          TEST_ENV: dev
-        run: npx jest tests/core/wallet.test.ts --no-coverage
+          if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "All test suites passed." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.e2e-tests.result }}" = "skipped" ]; then
+            echo "Tests were skipped." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Some test suites failed. Check individual job logs for details." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
