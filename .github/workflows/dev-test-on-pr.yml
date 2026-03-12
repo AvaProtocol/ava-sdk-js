@@ -87,7 +87,6 @@ jobs:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       # Variables
-      SENTRY_DSN: ${{ vars.SENTRY_DSN }}
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
@@ -111,7 +110,7 @@ jobs:
 
       - name: Inject secrets into aggregator config
         run: |
-          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET SENTRY_DSN BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
+          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
           envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
           echo "Generated config: $(wc -l < config/aggregator.runtime.yaml) lines"
           if grep -q "\${.*}" config/aggregator.runtime.yaml; then

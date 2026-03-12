@@ -19,7 +19,6 @@ jwt_secret: ${JWT_SECRET}
 
 # Optional services configuration
 server_name: "aggregator-${TEST_ENV}-ci"
-sentry_dsn: ${SENTRY_DSN}
 
 tenderly_account: ${TENDERLY_ACCOUNT}
 tenderly_project: ${TENDERLY_PROJECT}
