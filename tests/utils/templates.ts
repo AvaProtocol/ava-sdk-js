@@ -185,6 +185,7 @@ export const createFromTemplate = (
 
   return {
     smartWalletAddress: address,
+    name: "SDK Test Workflow",
     nodes: NodeFactory.createNodes(nodesList),
     edges: createEdgesFromNodes(nodesList),
     trigger: TriggerFactory.create({
