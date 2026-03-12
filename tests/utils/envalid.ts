@@ -94,12 +94,13 @@ const testEnv = process.env.TEST_ENV || "dev";
 // For dev environment, use sepolia's chain configuration
 const chainKey = testEnv === "dev" ? "sepolia" : testEnv;
 const tempConfig = chains[chainKey];
-console.log("Test config:", { 
-  env: testEnv, 
-  chainId: tempConfig?.chainId || "NOT SET", 
-  aggregatorEndpoint: tempConfig?.avsEndpoint || "NOT SET", 
+const tempEnvConfig = ENV_CONFIGS[testEnv as Environment];
+console.log("Test config:", {
+  env: testEnv,
+  chainId: tempConfig?.chainId || "NOT SET",
+  aggregatorEndpoint: tempEnvConfig?.aggregatorEndpoint || "NOT SET",
   operatorEndpoint: "localhost:9010",
-  chainEndpoint: tempConfig?.chainEndpoint || "NOT SET" 
+  chainEndpoint: tempConfig?.chainEndpoint || "NOT SET"
 });
 
 // Define the config type
