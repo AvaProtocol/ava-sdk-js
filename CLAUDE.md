@@ -21,8 +21,6 @@ yarn run protoc-gen     # Generate protobuf types
 
 ```bash
 yarn test                              # Run all tests (requires setup)
-yarn test:docker                       # Run tests with Docker (full e2e)
-yarn test:docker "authWithSignature"   # Run specific test pattern
 yarn test:core                         # Auth, wallet management
 yarn test:workflows                    # Workflow CRUD
 yarn test:executions                   # Execution monitoring
