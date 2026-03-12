@@ -1,11 +1,13 @@
 environment: development
+
 db_path: /tmp/ap-avs/db-${TEST_ENV}
+backup_dir: /tmp/ap-avs-backup-${TEST_ENV}
 
 # Runtime-generated config - secrets injected from GitHub environment
 ecdsa_private_key: ${ECDSA_PRIVATE_KEY}
 
-eth_rpc_url: https://${CHAIN_ENDPOINT}
-eth_ws_url: wss://${CHAIN_ENDPOINT}
+eth_rpc_url: ${ETH_RPC_URL}
+eth_ws_url: ${ETH_WS_URL}
 
 rpc_bind_address: "0.0.0.0:2206"
 http_bind_address: "0.0.0.0:1323"
@@ -19,20 +21,39 @@ jwt_secret: ${JWT_SECRET}
 server_name: "aggregator-${TEST_ENV}-ci"
 sentry_dsn: ${SENTRY_DSN}
 
-# account abstraction config
-# Sepolia
-smart_wallet:
-  eth_rpc_url: https://${CHAIN_ENDPOINT}
-  eth_ws_url: wss://${CHAIN_ENDPOINT}
-  bundler_url: ${BUNDLER_URL}
-
-  controller_private_key: ${CONTROLLER_PRIVATE_KEY}
-  max_wallets_per_owner: 2000
-
-# Optional services - will use environment variables if available
 tenderly_account: ${TENDERLY_ACCOUNT}
 tenderly_project: ${TENDERLY_PROJECT}
 tenderly_access_key: ${TENDERLY_ACCESS_KEY}
+
+# Account abstraction config (Sepolia)
+smart_wallet:
+  eth_rpc_url: ${ETH_RPC_URL}
+  eth_ws_url: ${ETH_WS_URL}
+  bundler_url: ${BUNDLER_URL}
+
+  controller_private_key: ${CONTROLLER_PRIVATE_KEY}
+
+  paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92
+
+  max_wallets_per_owner: 2000
+
+# Configurable fee rates
+fee_rates:
+  base_fee_usd: 0.0
+
+  manual_monitoring_fee_usd_per_minute: 0.0
+  fixed_time_monitoring_fee_usd_per_minute: 0.000017
+  cron_monitoring_fee_usd_per_minute: 0.000033
+  block_monitoring_fee_usd_per_minute: 0.000033
+  event_monitoring_fee_usd_per_minute: 0.000083
+
+  manual_execution_fee_usd: 0.0
+  scheduled_execution_fee_usd: 0.005
+  block_execution_fee_usd: 0.01
+  event_execution_fee_usd: 0.01
+
+  event_address_fee_usd_per_minute: 0.000008
+  event_topic_fee_usd_per_minute: 0.000003
 
 macros:
   secrets:
@@ -40,3 +61,10 @@ macros:
     sendgrid_key: ${SENDGRID_KEY}
     thegraph_api_key: ${THEGRAPH_API_KEY}
     moralis_api_key: ${MORALIS_API_KEY}
+
+notifications:
+  summary:
+    enabled: true
+    provider: context-memory
+    api_endpoint: "https://context-api.avaprotocol.org"
+    api_key: ${CONTEXT_MEMORY_API_KEY}
