@@ -14,6 +14,7 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
+  getInputVariables,
 } from "../utils/utils";
 import util from "util";
 
@@ -54,21 +55,21 @@ describe("Input Variables", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         inputVariables: {
+          ...getInputVariables("Input Variables Test Workflow", "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e"),
           userToken: "0x1234567890abcdef",
           amount: 1000000,
         },
       });
 
       expect(workflow).toBeDefined();
-      expect(workflow.inputVariables).toEqual({
-        userToken: "0x1234567890abcdef",
-        amount: 1000000,
-      });
+      expect(workflow.inputVariables!.userToken).toEqual("0x1234567890abcdef");
+      expect(workflow.inputVariables!.amount).toEqual(1000000);
+      expect(workflow.inputVariables!.settings).toBeDefined();
     });
 
-    test("should handle workflow without input variables", async () => {
+    test("should handle workflow with only settings (no custom input variables)", async () => {
       const workflow = client.createWorkflow({
-        name: "No Input Variables Test Workflow",
+        name: "Settings Only Test Workflow",
         smartWalletAddress: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
         trigger: {
           id: "trigger2",
@@ -83,7 +84,7 @@ describe("Input Variables", () => {
             name: "simpleNode",
             data: {
               lang: Lang.JavaScript,
-              source: "return { message: 'No input variables needed' };",
+              source: "return { message: 'No custom input variables needed' };",
             },
           },
         ],
@@ -91,11 +92,11 @@ describe("Input Variables", () => {
         startAt: Date.now(),
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
-        // No inputVariables provided
+        inputVariables: getInputVariables("Settings Only Test Workflow", "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e"),
       });
 
       expect(workflow).toBeDefined();
-      expect(workflow.inputVariables).toBeUndefined();
+      expect(workflow.inputVariables!.settings).toBeDefined();
     });
   });
 

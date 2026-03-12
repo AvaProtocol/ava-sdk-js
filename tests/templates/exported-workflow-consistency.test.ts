@@ -17,6 +17,7 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
+  getInputVariables,
 } from "../utils/utils";
 
 let client: Client;
@@ -436,6 +437,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Deployed Workflow Consistency Test",
+        inputVariables: getInputVariables("Deployed Workflow Consistency Test", wallet.address),
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -610,6 +612,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "LoopNode Consistency Test",
+        inputVariables: getInputVariables("LoopNode Consistency Test", wallet.address),
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -737,6 +740,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "FilterNode Consistency Test",
+        inputVariables: getInputVariables("FilterNode Consistency Test", wallet.address),
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -859,6 +863,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "CustomCode Consistency Test",
+        inputVariables: getInputVariables("CustomCode Consistency Test", wallet.address),
       };
 
       const workflow = client.createWorkflow(workflowProps);

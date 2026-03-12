@@ -589,6 +589,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
+        inputVariables: { settings: config.settings },
       });
 
       console.log(
@@ -682,6 +683,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
+        inputVariables: { settings: config.settings },
       });
 
       let workflowId: string | undefined;
@@ -808,6 +810,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
+        inputVariables: { settings: config.settings },
       });
 
       const simulation = await client.simulateWorkflow(
@@ -887,6 +890,7 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: config.name,
+        inputVariables: { settings: config.settings },
       });
 
       let workflowId: string | undefined;

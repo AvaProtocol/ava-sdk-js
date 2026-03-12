@@ -13,6 +13,7 @@ import {
   getSmartWalletWithBalance,
   getEOAAddress,
   getExpiredAt,
+  getInputVariables,
 } from "../utils/utils";
 
 /**
@@ -189,6 +190,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Recurring Transfer with report",
+      inputVariables: getInputVariables("Recurring Transfer with report", fundedSmartWalletAddress),
     });
 
     // Extract workflow data and include name in inputVariables
@@ -365,6 +367,7 @@ describe("Templates - USDC Read/Write + CustomCode (replica of workflow-clean)",
       expiredAt: getExpiredAt("24h"),
       maxExecution: 1,
       name: "Recurring Transfer with report",
+      inputVariables: getInputVariables("Recurring Transfer with report", wallet.address),
     });
 
     console.log(
