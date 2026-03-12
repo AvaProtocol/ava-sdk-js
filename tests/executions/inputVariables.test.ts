@@ -30,6 +30,7 @@ describe("Input Variables", () => {
   describe("Workflow Creation with Input Variables", () => {
     test("should create workflow with input variables", async () => {
       const workflow = client.createWorkflow({
+        name: "Input Variables Test Workflow",
         smartWalletAddress: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
         trigger: {
           id: "trigger1",
@@ -67,6 +68,7 @@ describe("Input Variables", () => {
 
     test("should handle workflow without input variables", async () => {
       const workflow = client.createWorkflow({
+        name: "No Input Variables Test Workflow",
         smartWalletAddress: "0x742d35Cc6634C0532925a3b8D091D2B5e57a9C7e",
         trigger: {
           id: "trigger2",
