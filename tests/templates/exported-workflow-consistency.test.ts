@@ -266,6 +266,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Exported Workflow Simulation Test",
+        inputVariables: getInputVariables("Exported Workflow Simulation Test", wallet.address),
       };
 
       const workflow = client.createWorkflow(workflowProps);
@@ -989,6 +990,7 @@ describe("Exported Workflow Consistency Tests", () => {
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Input Field Validation Test",
+        inputVariables: getInputVariables("Input Field Validation Test", wallet.address),
       };
 
       const workflow = client.createWorkflow(workflowProps);

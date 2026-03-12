@@ -97,10 +97,12 @@ export const getChainNameFromId = (chainId: number | string): string => {
 
 // Helper to create minimal inputVariables.settings for workflows
 export const getSettings = (
-  runner: string
-): { runner: string; chain_id: number; chain: string } => {
+  runner: string,
+  name: string = "Test Simulation"
+): { name: string; runner: string; chain_id: number; chain: string } => {
   const chainId = parseInt(config.chainId);
   return {
+    name,
     runner,
     chain_id: chainId,
     chain: getChainNameFromId(chainId),
@@ -120,10 +122,7 @@ export const getInputVariables = (
   name: string,
   runner: string
 ): { settings: { name: string; runner: string; chain_id: number; chain: string } } => ({
-  settings: {
-    name,
-    ...getSettings(runner),
-  },
+  settings: getSettings(runner, name),
 });
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
