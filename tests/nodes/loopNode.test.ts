@@ -1637,14 +1637,12 @@ describe("LoopNode Tests", () => {
 
         // Check data structure consistency
         expect(Array.isArray(directResponse.data)).toBe(true);
-        expect(Array.isArray(directResponse.data)).toBe(true);
         expect((directResponse.data as { key: string; amount: number }[]).length).toBe(2);
 
         const simulatedLoopStep = simulatedWorkflow.steps.find(
           (step) => step.id === loopNode.id
         );
         expect(simulatedLoopStep!.success).toBeTruthy();
-        expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
         expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
         expect((simulatedLoopStep!.output as { key: string; amount: number }[]).length).toBe(2);
 
