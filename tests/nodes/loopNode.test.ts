@@ -46,7 +46,6 @@ import {
   getClient,
   authenticateClient,
   getExpiredAt,
-  getSettings,
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
@@ -85,60 +84,60 @@ describe("LoopNode Tests", () => {
     },
   } as LoopNodeData;
 
-    const restApiLoopProps = {
-      inputNodeName: "urlArray",
-      iterVal: "value",
-      iterKey: "index",
-      executionMode: ExecutionMode.Sequential,
-      runner: {
-        type: LoopRunnerType.RestAPI,
-        config: {
-          url: "{{value}}",
-          method: "GET",
-          body: "",
-          headersMap: [["User-Agent", "AvaProtocol-Loop-Test"]],
-        },
+  const restApiLoopProps = {
+    inputNodeName: "urlArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: LoopRunnerType.RestAPI,
+      config: {
+        url: "{{value}}",
+        method: "GET",
+        body: "",
+        headersMap: [["User-Agent", "AvaProtocol-Loop-Test"]],
       },
-    } as LoopNodeData;
+    },
+  } as LoopNodeData;
 
-    const emptyArrayLoopProps = {
-      inputNodeName: "emptyArray",
-      iterVal: "value",
-      iterKey: "index",
-      executionMode: ExecutionMode.Sequential,
-      runner: {
-        type: LoopRunnerType.CustomCode,
-        config: {
-          lang: Lang.JavaScript,
-          source: "return { processed: value, index: index };",
-        },
+  const emptyArrayLoopProps = {
+    inputNodeName: "emptyArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: LoopRunnerType.CustomCode,
+      config: {
+        lang: Lang.JavaScript,
+        source: "return { processed: value, index: index };",
       },
-    } as LoopNodeData;
+    },
+  } as LoopNodeData;
 
-    const singleItemLoopProps = {
-      inputNodeName: "singleItem",
-      iterVal: "value",
-      iterKey: "index",
-      executionMode: ExecutionMode.Sequential,
-      runner: {
-        type: LoopRunnerType.CustomCode,
-        config: {
-          lang: Lang.JavaScript,
-          source: "return { value: value, index: index, processed: true };",
-        },
+  const singleItemLoopProps = {
+    inputNodeName: "singleItem",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: LoopRunnerType.CustomCode,
+      config: {
+        lang: Lang.JavaScript,
+        source: "return { value: value, index: index, processed: true };",
       },
-    } as LoopNodeData;
+    },
+  } as LoopNodeData;
 
-    const parallelExecutionProps = {
-      inputNodeName: "parallelArray",
-      iterVal: "value",
-      iterKey: "index",
-      executionMode: ExecutionMode.Parallel,
-      runner: {
-        type: LoopRunnerType.CustomCode,
-        config: {
-          lang: Lang.JavaScript,
-          source: `
+  const parallelExecutionProps = {
+    inputNodeName: "parallelArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Parallel,
+    runner: {
+      type: LoopRunnerType.CustomCode,
+      config: {
+        lang: Lang.JavaScript,
+        source: `
             return {
               processedValue: value,
               index: index,
@@ -146,20 +145,20 @@ describe("LoopNode Tests", () => {
               timestamp: new Date().toISOString()
             };
           `,
-        },
       },
-    } as LoopNodeData;
+    },
+  } as LoopNodeData;
 
-    const complexDataLoopProps = {
-      inputNodeName: "complexArray",
-      iterVal: "value",
-      iterKey: "index",
-      executionMode: ExecutionMode.Sequential,
-      runner: {
-        type: LoopRunnerType.CustomCode,
-        config: {
-          lang: Lang.JavaScript,
-          source: `
+  const complexDataLoopProps = {
+    inputNodeName: "complexArray",
+    iterVal: "value",
+    iterKey: "index",
+    executionMode: ExecutionMode.Sequential,
+    runner: {
+      type: LoopRunnerType.CustomCode,
+      config: {
+        lang: Lang.JavaScript,
+        source: `
             const _ = require('lodash');
             return {
               id: value.id,
@@ -169,9 +168,9 @@ describe("LoopNode Tests", () => {
               isEven: value.value % 2 === 0
             };
           `,
-        },
       },
-    } as LoopNodeData;
+    },
+  } as LoopNodeData;
 
   beforeAll(async () => {
     client = getClient();
@@ -200,14 +199,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -245,14 +244,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -286,14 +285,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 Empty array loop input:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "🚀 Empty array loop result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -323,14 +322,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 Complex object array loop input:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "🚀 Complex object array loop result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -357,7 +356,7 @@ describe("LoopNode Tests", () => {
           id: getNextId(),
           name: "loop_test",
           type: NodeType.Loop,
-          data: ({
+          data: {
             inputNodeName: "contractAddresses",
             iterVal: "value",
             iterKey: "index",
@@ -384,7 +383,7 @@ describe("LoopNode Tests", () => {
                 ],
               },
             },
-          } as LoopNodeData),
+          } as LoopNodeData,
         },
         inputVariables: {
           contractAddresses: [
@@ -396,14 +395,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ should process loop with ContractRead ~ params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "runNodeWithInputs ContractRead loop response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(typeof result.success).toBe("boolean");
@@ -421,7 +420,7 @@ describe("LoopNode Tests", () => {
           id: getNextId(),
           name: "loop_test",
           type: NodeType.Loop,
-          data: ({
+          data: {
             inputNodeName: "writeParams",
             iterVal: "value",
             iterKey: "index",
@@ -451,7 +450,7 @@ describe("LoopNode Tests", () => {
                 ],
               },
             },
-          } as LoopNodeData),
+          } as LoopNodeData,
         },
         inputVariables: {
           writeParams: [
@@ -470,14 +469,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ should process loop with ContractWrite ~ params:",
-        params
+        params,
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "runNodeWithInputs ContractWrite loop response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -519,7 +518,7 @@ describe("LoopNode Tests", () => {
         id: getNextId(),
         name: "simulate_loop_test",
         type: NodeType.Loop,
-        data: ({
+        data: {
           inputNodeName: dataNode.id,
           iterVal: "value",
           iterKey: "index",
@@ -538,7 +537,7 @@ describe("LoopNode Tests", () => {
                 `,
             },
           },
-        } as LoopNodeData),
+        } as LoopNodeData,
       });
 
       const workflowProps = createFromTemplate(wallet.address, [
@@ -548,7 +547,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ simulate workflow with CustomCode loop ~ workflowProps:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const base = client.createWorkflow(workflowProps);
@@ -561,7 +560,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "simulateWorkflow loop response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -588,7 +587,7 @@ describe("LoopNode Tests", () => {
         expect(inputConfig.runner.config.lang).toBeDefined();
       } else {
         throw new Error(
-          `Expected runner type 'customCode', but got '${inputConfig.runner?.type}'`
+          `Expected runner type 'customCode', but got '${inputConfig.runner?.type}'`,
         );
       }
 
@@ -628,7 +627,7 @@ describe("LoopNode Tests", () => {
         id: getNextId(),
         name: "simulate_rest_api_loop",
         type: NodeType.Loop,
-        data: ({
+        data: {
           inputNodeName: dataNode.id,
           iterVal: "value",
           iterKey: "index",
@@ -641,7 +640,7 @@ describe("LoopNode Tests", () => {
               headersMap: [["User-Agent", "AvaProtocol-Loop-Test"]],
             },
           },
-        } as LoopNodeData),
+        } as LoopNodeData,
       });
 
       const workflowProps = createFromTemplate(wallet.address, [
@@ -651,16 +650,16 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ simulate workflow with REST API loop ~ workflowProps:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "simulateWorkflow REST API loop response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -688,7 +687,7 @@ describe("LoopNode Tests", () => {
         expect(loopStepConfig.runner.config.body).toBe("");
       } else {
         throw new Error(
-          `Expected runner type 'restApi', but got '${loopStepConfig.runner?.type}'`
+          `Expected runner type 'restApi', but got '${loopStepConfig.runner?.type}'`,
         );
       }
 
@@ -726,7 +725,7 @@ describe("LoopNode Tests", () => {
         id: getNextId(),
         name: "simulate_contract_read_loop",
         type: NodeType.Loop,
-        data: ({
+        data: {
           inputNodeName: dataNode.id,
           iterVal: "value",
           iterKey: "index",
@@ -753,7 +752,7 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        } as LoopNodeData),
+        } as LoopNodeData,
       });
 
       const workflowProps = createFromTemplate(wallet.address, [
@@ -763,16 +762,16 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ simulate workflow with ContractRead loop ~ workflowProps:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "simulateWorkflow ContractRead loop response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
@@ -797,11 +796,11 @@ describe("LoopNode Tests", () => {
         expect(inputConfig.runner.config.contractAddress).toBe("{{value}}");
         // Note: contractAbi is not in the protobuf AsObject type but exists in practice
         expect(
-          (inputConfig.runner.config as Record<string, unknown>).contractAbi
+          (inputConfig.runner.config as Record<string, unknown>).contractAbi,
         ).toBeDefined();
       } else {
         throw new Error(
-          `Expected runner type 'contractRead', but got '${inputConfig.runner?.type}'`
+          `Expected runner type 'contractRead', but got '${inputConfig.runner?.type}'`,
         );
       }
 
@@ -845,7 +844,7 @@ describe("LoopNode Tests", () => {
         id: getNextId(),
         name: "simulate_contract_write_loop",
         type: NodeType.Loop,
-        data: ({
+        data: {
           inputNodeName: dataNode.id,
           iterVal: "value",
           iterKey: "index",
@@ -885,7 +884,7 @@ describe("LoopNode Tests", () => {
               ],
             },
           },
-        } as LoopNodeData),
+        } as LoopNodeData,
       });
 
       const workflowProps = createFromTemplate(wallet.address, [
@@ -895,7 +894,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ simulate workflow with ContractWrite loop ~ workflowProps:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const base = client.createWorkflow(workflowProps);
@@ -908,7 +907,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "simulateWorkflow ContractWrite loop response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       // Accept both success and partialSuccess (contract write operations may fail in simulation)
@@ -943,7 +942,7 @@ describe("LoopNode Tests", () => {
       console.log(
         `Loop step status: ${
           loopStep!.success ? "SUCCESS" : "FAILED (expected in simulation)"
-        }`
+        }`,
       );
     });
   });
@@ -1017,7 +1016,7 @@ describe("LoopNode Tests", () => {
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -1038,7 +1037,7 @@ describe("LoopNode Tests", () => {
 
         const loopStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === loopNode.id
+          (step) => step.id === loopNode.id,
         );
 
         if (_.isUndefined(loopStep)) {
@@ -1112,7 +1111,7 @@ describe("LoopNode Tests", () => {
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -1130,7 +1129,7 @@ describe("LoopNode Tests", () => {
         });
         const customCodeLoopStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === customCodeLoop.id
+          (step) => step.id === customCodeLoop.id,
         );
 
         expect(customCodeLoopStep!.success).toBeTruthy();
@@ -1216,7 +1215,7 @@ describe("LoopNode Tests", () => {
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -1237,13 +1236,13 @@ describe("LoopNode Tests", () => {
 
         const loopStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === loopNode.id
+          (step) => step.id === loopNode.id,
         );
 
         expect(loopStep).toBeDefined();
         console.log(
           "Deploy + trigger ContractRead loop step output:",
-          util.inspect(loopStep!.output, { depth: null, colors: true })
+          util.inspect(loopStep!.output, { depth: null, colors: true }),
         );
 
         // Note: The test may fail due to contract validation or network issues,
@@ -1337,7 +1336,7 @@ describe("LoopNode Tests", () => {
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -1358,13 +1357,13 @@ describe("LoopNode Tests", () => {
 
         const loopStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === loopNode.id
+          (step) => step.id === loopNode.id,
         );
 
         expect(loopStep).toBeDefined();
         console.log(
           "Deploy + trigger ContractWrite loop step output:",
-          util.inspect(loopStep!.output, { depth: null, colors: true })
+          util.inspect(loopStep!.output, { depth: null, colors: true }),
         );
 
         // Note: The test may fail due to contract validation or network issues,
@@ -1423,7 +1422,7 @@ describe("LoopNode Tests", () => {
         id: getNextId(),
         name: "consistency_test",
         type: NodeType.Loop,
-        data: ({
+        data: {
           inputNodeName: "manualTrigger",
           iterVal: "value",
           iterKey: "index",
@@ -1435,7 +1434,7 @@ describe("LoopNode Tests", () => {
               source: `return value;`,
             },
           },
-        } as LoopNodeData),
+        } as LoopNodeData,
       });
 
       const workflowProps = createFromTemplate(wallet.address, [loopNode]);
@@ -1447,18 +1446,18 @@ describe("LoopNode Tests", () => {
       });
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       const simulatedStep = simulation.steps.find(
-        (step) => step.id === loopNode.id
+        (step) => step.id === loopNode.id,
       );
 
       // Test 3: Deploy + Trigger with ManualTrigger
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -1478,7 +1477,7 @@ describe("LoopNode Tests", () => {
         });
         const executedStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === loopNode.id
+          (step) => step.id === loopNode.id,
         );
 
         // Compare response formats - LoopNode should return consistent data structure
@@ -1492,11 +1491,11 @@ describe("LoopNode Tests", () => {
         // Verify consistent structure - the key fix from the backend
         console.log(
           "🔍 Direct Response:",
-          JSON.stringify(directResponse, null, 2)
+          JSON.stringify(directResponse, null, 2),
         );
         console.log(
           "🔍 Simulated Step:",
-          JSON.stringify(simulatedStep, null, 2)
+          JSON.stringify(simulatedStep, null, 2),
         );
         console.log("🔍 Executed Step:", JSON.stringify(executedStep, null, 2));
 
@@ -1569,7 +1568,7 @@ describe("LoopNode Tests", () => {
           id: getNextId(),
           name: "loop1",
           type: NodeType.Loop,
-          data: ({
+          data: {
             inputNodeName: manualTrigger.name,
             iterVal: "value",
             iterKey: "index",
@@ -1581,7 +1580,7 @@ describe("LoopNode Tests", () => {
                 source: "return value;",
               },
             },
-          } as LoopNodeData),
+          } as LoopNodeData,
         });
 
         // Test runNodeWithInputs
@@ -1602,7 +1601,7 @@ describe("LoopNode Tests", () => {
 
         console.log(
           "🔍 Direct Response:",
-          JSON.stringify(directResponse, null, 2)
+          JSON.stringify(directResponse, null, 2),
         );
 
         // Test simulateWorkflow
@@ -1621,15 +1620,20 @@ describe("LoopNode Tests", () => {
           startAt: Date.now(),
           expiredAt: getExpiredAt("30d"),
           maxExecution: 1,
-          inputVariables: { settings: getSettings(wallet.address, "Loop Node Type Consistency Test") },
+          inputVariables: {
+            settings: getSettings(
+              wallet.address,
+              "Loop Node Type Consistency Test",
+            ),
+          },
         };
         const simulatedWorkflow = await client.simulateWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
 
         console.log(
           "🔍 Simulated Workflow:",
-          JSON.stringify(simulatedWorkflow, null, 2)
+          JSON.stringify(simulatedWorkflow, null, 2),
         );
 
         // TODO: Add deployWorkflow test once triggerWorkflow API issue is resolved
@@ -1640,21 +1644,34 @@ describe("LoopNode Tests", () => {
 
         // Check data structure consistency
         expect(Array.isArray(directResponse.data)).toBe(true);
-        expect((directResponse.data as { key: string; amount: number }[]).length).toBe(2);
+        expect(
+          (directResponse.data as { key: string; amount: number }[]).length,
+        ).toBe(2);
 
         const simulatedLoopStep = simulatedWorkflow.steps.find(
-          (step) => step.id === loopNode.id
+          (step) => step.id === loopNode.id,
         );
         expect(simulatedLoopStep!.success).toBeTruthy();
         expect(Array.isArray(simulatedLoopStep!.output)).toBe(true);
-        expect((simulatedLoopStep!.output as { key: string; amount: number }[]).length).toBe(2);
+        expect(
+          (simulatedLoopStep!.output as { key: string; amount: number }[])
+            .length,
+        ).toBe(2);
 
         // Check that data is correctly passed through
-        const directFirstItem = (directResponse.data as { key: string; amount: number }[])[0];
-        const simulatedFirstItem = (simulatedLoopStep!.output as { key: string; amount: number }[])[0];
+        const directFirstItem = (
+          directResponse.data as { key: string; amount: number }[]
+        )[0];
+        const simulatedFirstItem = (
+          simulatedLoopStep!.output as { key: string; amount: number }[]
+        )[0];
 
-        const directSecondItem = (directResponse.data as { key: string; amount: number }[])[1];
-        const simulatedSecondItem = (simulatedLoopStep!.output as { key: string; amount: number }[])[1];
+        const directSecondItem = (
+          directResponse.data as { key: string; amount: number }[]
+        )[1];
+        const simulatedSecondItem = (
+          simulatedLoopStep!.output as { key: string; amount: number }[]
+        )[1];
 
         // First item should be { key: "key", amount: 1 }
         expect(directFirstItem.key).toBe("key");
@@ -1684,17 +1701,18 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "testArray",
-          iterVal: "value",
-          iterKey: "index",
-          runner: {
-            type: LoopRunnerType.CustomCode,
-            config: {
-              lang: Lang.JavaScript,
-              source: `throw new Error("Intentional test error");`,
+            inputNodeName: "testArray",
+            iterVal: "value",
+            iterKey: "index",
+            runner: {
+              type: LoopRunnerType.CustomCode,
+              config: {
+                lang: Lang.JavaScript,
+                source: `throw new Error("Intentional test error");`,
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           testArray: [1, 2, 3],
@@ -1707,7 +1725,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "Error handling response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(false);
@@ -1721,17 +1739,18 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "nonExistentArray",
-          iterVal: "value",
-          iterKey: "index",
-          runner: {
-            type: LoopRunnerType.CustomCode,
-            config: {
-              lang: Lang.JavaScript,
-              source: `return { processed: item };`,
+            inputNodeName: "nonExistentArray",
+            iterVal: "value",
+            iterKey: "index",
+            runner: {
+              type: LoopRunnerType.CustomCode,
+              config: {
+                lang: Lang.JavaScript,
+                source: `return { processed: item };`,
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           existingArray: [1, 2, 3], // Different from sourceId
@@ -1744,7 +1763,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "Missing source array response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       // Backend correctly returns error when input variable is missing
@@ -1788,7 +1807,7 @@ describe("LoopNode Tests", () => {
       id: getNextId(),
       name: "edge_case_test",
       type: NodeType.Loop,
-      data: ({
+      data: {
         inputNodeName: dataNode.id,
         iterVal: "value",
         iterKey: "index",
@@ -1799,7 +1818,7 @@ describe("LoopNode Tests", () => {
             source: `return { value: value, index: index, processed: true };`,
           },
         },
-      } as LoopNodeData),
+      } as LoopNodeData,
     });
 
     const workflowProps = createFromTemplate(wallet.address, [
@@ -1807,11 +1826,11 @@ describe("LoopNode Tests", () => {
       loopNode,
     ]);
     const simulation = await client.simulateWorkflow(
-      client.createWorkflow(workflowProps)
+      client.createWorkflow(workflowProps),
     );
 
     const simulatedStep = simulation.steps.find(
-      (step) => step.id === loopNode.id
+      (step) => step.id === loopNode.id,
     );
 
     // All should be successful
@@ -1842,15 +1861,15 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "testArray",
-          iterVal: "value",
-          iterKey: "index",
-          executionMode: ExecutionMode.Sequential,
-          runner: {
-            type: LoopRunnerType.CustomCode,
-            config: {
-              lang: Lang.JavaScript,
-              source: `
+            inputNodeName: "testArray",
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Sequential,
+            runner: {
+              type: LoopRunnerType.CustomCode,
+              config: {
+                lang: Lang.JavaScript,
+                source: `
                   // Simulate processing time to test sequential execution
                   await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay per item
                   return {
@@ -1860,9 +1879,10 @@ describe("LoopNode Tests", () => {
                     executionMode: 'sequential'
                   };
                 `,
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           testArray: [1, 2, 3, 4],
@@ -1924,7 +1944,7 @@ describe("LoopNode Tests", () => {
 
       // Just verify that all items have the parallel execution mode
       expect(
-        responseData.every((item) => item.executionMode === "parallel")
+        responseData.every((item) => item.executionMode === "parallel"),
       ).toBe(true);
     });
 
@@ -1935,24 +1955,25 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "testArray",
-          iterVal: "value",
-          iterKey: "index",
-          // executionMode not specified - should default to sequential
-          runner: {
-            type: LoopRunnerType.CustomCode,
-            config: {
-              lang: Lang.JavaScript,
-              source: `
+            inputNodeName: "testArray",
+            iterVal: "value",
+            iterKey: "index",
+            // executionMode not specified - should default to sequential
+            runner: {
+              type: LoopRunnerType.CustomCode,
+              config: {
+                lang: Lang.JavaScript,
+                source: `
                   return {
                     item: item,
                     index: index,
                     defaultMode: true
                   };
                 `,
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           testArray: [1, 2, 3],
@@ -1987,37 +2008,41 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "addressArray",
-          iterVal: "value",
-          iterKey: "index",
-          executionMode: ExecutionMode.Parallel, // Requested parallel but should be forced to sequential
-          runner: {
-            type: LoopRunnerType.ContractWrite,
-            config: {
-              contractAddress: "{{value}}",
-              contractAbi: [
-                {
-                  constant: false,
-                  inputs: [
-                    { name: "_spender", type: "address" },
-                    { name: "_value", type: "uint256" },
-                  ],
-                  name: "approve",
-                  outputs: [{ name: "", type: "bool" }],
-                  payable: false,
-                  stateMutability: "nonpayable",
-                  type: "function",
-                },
-              ],
-              methodCalls: [
-                {
-                  methodName: "approve",
-                  methodParams: ["0x0000000000000000000000000000000000000000", "1"],
-                },
-              ],
+            inputNodeName: "addressArray",
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Parallel, // Requested parallel but should be forced to sequential
+            runner: {
+              type: LoopRunnerType.ContractWrite,
+              config: {
+                contractAddress: "{{value}}",
+                contractAbi: [
+                  {
+                    constant: false,
+                    inputs: [
+                      { name: "_spender", type: "address" },
+                      { name: "_value", type: "uint256" },
+                    ],
+                    name: "approve",
+                    outputs: [{ name: "", type: "bool" }],
+                    payable: false,
+                    stateMutability: "nonpayable",
+                    type: "function",
+                  },
+                ],
+                methodCalls: [
+                  {
+                    methodName: "approve",
+                    methodParams: [
+                      "0x0000000000000000000000000000000000000000",
+                      "1",
+                    ],
+                  },
+                ],
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           addressArray: [
@@ -2030,7 +2055,7 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ contractWrite forced sequential test ~ params:",
-        params
+        params,
       );
 
       const result = await client.runNodeWithInputs(params);
@@ -2048,48 +2073,49 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "contractAddresses",
-          iterVal: "value",
-          iterKey: "index",
-          executionMode: ExecutionMode.Parallel, // Contract reads can run in parallel
-          runner: {
-            type: LoopRunnerType.ContractRead,
-            config: {
-              contractAddress: "{{value}}",
-              contractAbi: [
-                {
-                  constant: true,
-                  inputs: [],
-                  name: "totalSupply",
-                  outputs: [{ name: "", type: "uint256" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-                {
-                  constant: true,
-                  inputs: [],
-                  name: "decimals",
-                  outputs: [{ name: "", type: "uint8" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-              ],
-              methodCalls: [
-                {
-                  methodName: "decimals",
-                  methodParams: [],
-                  applyToFields: ["totalSupply"],
-                },
-                {
-                  methodName: "totalSupply",
-                  methodParams: [],
-                },
-              ],
+            inputNodeName: "contractAddresses",
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Parallel, // Contract reads can run in parallel
+            runner: {
+              type: LoopRunnerType.ContractRead,
+              config: {
+                contractAddress: "{{value}}",
+                contractAbi: [
+                  {
+                    constant: true,
+                    inputs: [],
+                    name: "totalSupply",
+                    outputs: [{ name: "", type: "uint256" }],
+                    payable: false,
+                    stateMutability: "view",
+                    type: "function",
+                  },
+                  {
+                    constant: true,
+                    inputs: [],
+                    name: "decimals",
+                    outputs: [{ name: "", type: "uint8" }],
+                    payable: false,
+                    stateMutability: "view",
+                    type: "function",
+                  },
+                ],
+                methodCalls: [
+                  {
+                    methodName: "decimals",
+                    methodParams: [],
+                    applyToFields: ["totalSupply"],
+                  },
+                  {
+                    methodName: "totalSupply",
+                    methodParams: [],
+                  },
+                ],
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           contractAddresses: [
@@ -2101,14 +2127,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ contractRead loop runner test ~ params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "🚀 ~ contractRead loop runner test ~ result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -2155,47 +2181,48 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "contractAddresses",
-          iterVal: "value",
-          iterKey: "index",
-          executionMode: ExecutionMode.Sequential,
-          runner: {
-            type: LoopRunnerType.ContractRead,
-            config: {
-              contractAddress: "{{value}}",
-              contractAbi: [
-                {
-                  constant: true,
-                  inputs: [],
-                  name: "name",
-                  outputs: [{ name: "", type: "string" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-                {
-                  constant: true,
-                  inputs: [],
-                  name: "symbol",
-                  outputs: [{ name: "", type: "string" }],
-                  payable: false,
-                  stateMutability: "view",
-                  type: "function",
-                },
-              ],
-              methodCalls: [
-                {
-                  methodName: "name",
-                  methodParams: [],
-                },
-                {
-                  methodName: "symbol",
-                  methodParams: [],
-                },
-              ],
+            inputNodeName: "contractAddresses",
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Sequential,
+            runner: {
+              type: LoopRunnerType.ContractRead,
+              config: {
+                contractAddress: "{{value}}",
+                contractAbi: [
+                  {
+                    constant: true,
+                    inputs: [],
+                    name: "name",
+                    outputs: [{ name: "", type: "string" }],
+                    payable: false,
+                    stateMutability: "view",
+                    type: "function",
+                  },
+                  {
+                    constant: true,
+                    inputs: [],
+                    name: "symbol",
+                    outputs: [{ name: "", type: "string" }],
+                    payable: false,
+                    stateMutability: "view",
+                    type: "function",
+                  },
+                ],
+                methodCalls: [
+                  {
+                    methodName: "name",
+                    methodParams: [],
+                  },
+                  {
+                    methodName: "symbol",
+                    methodParams: [],
+                  },
+                ],
+              },
             },
           },
-        }},
+        },
 
         inputVariables: {
           contractAddresses: [
@@ -2207,14 +2234,14 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ flattened data format test ~ params:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runNodeWithInputs(params);
 
       console.log(
         "🚀 ~ flattened data format test ~ result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(typeof result.success).toBe("boolean");
@@ -2240,7 +2267,7 @@ describe("LoopNode Tests", () => {
             // The entire iteration result is null because both method calls failed
             expect(iteration).toBeNull(); // Chainlink price feed doesn't have ERC-20 methods
             console.log(
-              `✅ Iteration ${index}: Chainlink contract correctly returns null (no ERC-20 methods)`
+              `✅ Iteration ${index}: Chainlink contract correctly returns null (no ERC-20 methods)`,
             );
           } else if (index === 1) {
             // Second contract: USDC contract has name/symbol methods
@@ -2263,7 +2290,7 @@ describe("LoopNode Tests", () => {
             expect(secondIteration.name).toBe("USDC"); // USDC contract name
             expect(secondIteration.symbol).toBe("USDC"); // USDC contract symbol
             console.log(
-              `✅ Iteration ${index}: USDC contract correctly returns name and symbol`
+              `✅ Iteration ${index}: USDC contract correctly returns name and symbol`,
             );
           }
         });
@@ -2351,7 +2378,7 @@ describe("LoopNode Tests", () => {
       ]);
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -2380,7 +2407,7 @@ describe("LoopNode Tests", () => {
         expect(inputConfig.runner.config.lang).toBeDefined();
       } else {
         throw new Error(
-          `Expected runner type 'customCode', but got '${inputConfig.runner?.type}'`
+          `Expected runner type 'customCode', but got '${inputConfig.runner?.type}'`,
         );
       }
 
@@ -2444,16 +2471,16 @@ describe("LoopNode Tests", () => {
 
       console.log(
         "🚀 ~ simulateWorkflow ~ workflowProps:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "🚀 ~ simulateWorkflow ~ simulation:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -2482,7 +2509,7 @@ describe("LoopNode Tests", () => {
         expect(inputConfig.runner.config.lang).toBeDefined();
       } else {
         throw new Error(
-          `Expected runner type 'customCode', but got '${inputConfig.runner?.type}'`
+          `Expected runner type 'customCode', but got '${inputConfig.runner?.type}'`,
         );
       }
 
@@ -2500,7 +2527,7 @@ describe("LoopNode Tests", () => {
 
       // Verify that all items completed in parallel mode
       expect(output.every((item) => item.executionMode === "parallel")).toBe(
-        true
+        true,
       );
 
       // ✅ **VALIDATION**: Verify that inputsList doesn't contain iteration variables
@@ -2517,7 +2544,7 @@ describe("LoopNode Tests", () => {
 
         // ✅ Should NOT contain iteration-specific node references
         const iterationRefs = inputsList.filter((input: string) =>
-          input.includes("_iter_")
+          input.includes("_iter_"),
         );
         expect(iterationRefs.length).toBe(0);
 
@@ -2536,7 +2563,7 @@ describe("LoopNode Tests", () => {
         });
 
         console.log(
-          "✅ inputsList validation passed - no iteration variables found"
+          "✅ inputsList validation passed - no iteration variables found",
         );
       }
     });
