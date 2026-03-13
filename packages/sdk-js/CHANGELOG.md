@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.13.0
+
+### Minor Changes
+
+- 0d52ded: refactor: migrated workflow.name to inputVariables.settings.name in deployed workflow creation
+
+### Patch Changes
+
+- Updated dependencies [0d52ded]
+  - @avaprotocol/types@2.10.0
+
 ## 2.12.3
 
 ### Patch Changes

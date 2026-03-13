@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.10.0
+
+### Minor Changes
+
+- 0d52ded: refactor: migrated workflow.name to inputVariables.settings.name in deployed workflow creation
+
 ## 2.9.1
 
 ### Patch Changes
