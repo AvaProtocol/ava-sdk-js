@@ -213,14 +213,28 @@ class Workflow implements WorkflowProps {
     request.setExpiredAt(this.expiredAt);
     request.setMaxExecution(this.maxExecution);
 
-    // Pass inputVariables directly to the aggregator.
-    // Callers must include inputVariables.settings with name and runner;
-    // the aggregator validates and rejects requests missing these fields.
-    if (this.inputVariables) {
-      const inputVarsMap = request.getInputVariablesMap();
-      for (const [key, value] of Object.entries(this.inputVariables)) {
-        inputVarsMap.set(key, convertJSValueToProtobuf(value));
-      }
+    // Validate inputVariables.settings before sending to aggregator.
+    // The aggregator requires settings.name and settings.runner.
+    if (!this.inputVariables?.settings) {
+      throw new Error(
+        "inputVariables.settings is required. Must include at least { name, runner }."
+      );
+    }
+    const settings = this.inputVariables.settings as Record<string, unknown>;
+    if (!settings.name || typeof settings.name !== "string" || !settings.name.trim()) {
+      throw new Error(
+        "inputVariables.settings.name is required and must be a non-empty string."
+      );
+    }
+    if (!settings.runner || typeof settings.runner !== "string" || !settings.runner.trim()) {
+      throw new Error(
+        "inputVariables.settings.runner is required and must be a non-empty string (smart wallet address)."
+      );
+    }
+
+    const inputVarsMap = request.getInputVariablesMap();
+    for (const [key, value] of Object.entries(this.inputVariables)) {
+      inputVarsMap.set(key, convertJSValueToProtobuf(value));
     }
 
     return request;
