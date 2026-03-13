@@ -6,7 +6,7 @@ import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
 export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
-import { WorkflowStatus, WorkflowProps, InputVariables, TriggerType, EventTriggerDataType } from "@avaprotocol/types";
+import { WorkflowStatus, WorkflowProps, InputVariables } from "@avaprotocol/types";
 import { convertJSValueToProtobuf } from "../utils";
 
 // Function to convert TaskStatus to string
@@ -230,31 +230,6 @@ class Workflow implements WorkflowProps {
       throw new Error(
         "inputVariables.settings.runner is required and must be a non-empty string (smart wallet address)."
       );
-    }
-
-    // Auto-extract token contract addresses from event trigger queries that have
-    // decimals method calls. This ensures the aggregator can provide tokenMetadata
-    // to context-memory for correct decimal formatting (e.g., 1500000000 → 1,500 USDC).
-    if (this.trigger.type === TriggerType.Event && this.trigger.data) {
-      const eventData = this.trigger.data as EventTriggerDataType;
-      const tokenAddresses = new Set<string>(
-        Array.isArray(settings.tokens) ? (settings.tokens as string[]) : []
-      );
-
-      for (const query of eventData.queries ?? []) {
-        const hasDecimals = query.methodCalls?.some(
-          (mc) => mc.methodName === "decimals"
-        );
-        if (hasDecimals && query.addresses) {
-          for (const addr of query.addresses) {
-            tokenAddresses.add(addr);
-          }
-        }
-      }
-
-      if (tokenAddresses.size > 0) {
-        settings.tokens = Array.from(tokenAddresses);
-      }
     }
 
     const inputVarsMap = request.getInputVariablesMap();
