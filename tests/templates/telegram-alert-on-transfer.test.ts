@@ -19,7 +19,6 @@ import {
   padAddressForTopic,
   getNextId,
   getExpiredAt,
-  getSettings,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
 const { tokens, chainId, telegramBotToken, telegramChatId } = getConfig();
@@ -268,7 +267,7 @@ return message;`,
 
       console.log(
         "EventTrigger result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(typeof result.success).toBe("boolean");
@@ -278,7 +277,7 @@ return message;`,
       if (result.data === null) {
         console.log(
           "ℹ️  No Transfer events found for address (expected):",
-          eoaAddress
+          eoaAddress,
         );
         expect(result.success).toBe(false);
       } else {
@@ -341,24 +340,24 @@ return message;`,
       console.log("=== CustomCode Input Variables ===");
       console.log(
         "eventTrigger.data.value (formatted):",
-        inputVariables.eventTrigger.data.value
+        inputVariables.eventTrigger.data.value,
       );
       console.log(
         "eventTrigger.data.tokenSymbol:",
-        inputVariables.eventTrigger.data.tokenSymbol
+        inputVariables.eventTrigger.data.tokenSymbol,
       );
       console.log(
         "eventTrigger.data.fromAddress:",
-        inputVariables.eventTrigger.data.fromAddress
+        inputVariables.eventTrigger.data.fromAddress,
       );
       console.log(
         "eventTrigger.data.toAddress:",
-        inputVariables.eventTrigger.data.toAddress
+        inputVariables.eventTrigger.data.toAddress,
       );
 
       console.log(
         "=== CustomCode result ===",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -396,7 +395,7 @@ return message;`,
 
       console.log(
         "Telegram result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       // The actual Telegram API call might fail due to invalid token, but we can check the request structure
@@ -434,7 +433,7 @@ return message;`,
 
       console.log(
         "Simulation result:",
-        util.inspect(simulationResult, { depth: null, colors: true })
+        util.inspect(simulationResult, { depth: null, colors: true }),
       );
 
       expect(simulationResult.status).toBe(ExecutionStatus.Success);
@@ -483,7 +482,12 @@ return message;`,
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Telegram Alert on Transfer Test",
-        inputVariables: { settings: getSettings(wallet.address, "Telegram Alert on Transfer Test") },
+        inputVariables: {
+          settings: getSettings(
+            wallet.address,
+            "Telegram Alert on Transfer Test",
+          ),
+        },
       };
 
       // Create and submit workflow
@@ -509,7 +513,7 @@ return message;`,
       expect(triggerData.queries).toBeDefined();
       expect(triggerData.queries).toHaveLength(2); // Two queries: outgoing (from) and incoming (to) transfers
       expect(triggerData.queries[0].addresses).toContain(
-        "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+        "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
       );
     });
 
@@ -530,7 +534,12 @@ return message;`,
         expiredAt: getExpiredAt("24h"),
         maxExecution: 1,
         name: "Serialization Regression Test",
-        inputVariables: { settings: getSettings(wallet.address, "Serialization Regression Test") },
+        inputVariables: {
+          settings: getSettings(
+            wallet.address,
+            "Serialization Regression Test",
+          ),
+        },
       };
 
       const workflow = client.createWorkflow(workflowData);
@@ -546,24 +555,24 @@ return message;`,
 
       // Verify node details are preserved
       const savedCustomCodeNode = savedWorkflow.nodes.find(
-        (n: { id: string }) => n.id === nodeIds.customCode
+        (n: { id: string }) => n.id === nodeIds.customCode,
       );
       const savedTelegramNode = savedWorkflow.nodes.find(
-        (n: { id: string }) => n.id === nodeIds.telegram
+        (n: { id: string }) => n.id === nodeIds.telegram,
       );
 
       expect(savedCustomCodeNode).toBeDefined();
       expect(savedCustomCodeNode!.type).toBe(NodeType.CustomCode);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((savedCustomCodeNode!.data as any).source).toContain(
-        "eventTrigger.data.to"
+        "eventTrigger.data.to",
       );
 
       expect(savedTelegramNode).toBeDefined();
       expect(savedTelegramNode!.type).toBe(NodeType.RestAPI);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((savedTelegramNode!.data as any).url).toContain(
-        "api.telegram.org/bot"
+        "api.telegram.org/bot",
       );
     });
   });
