@@ -820,10 +820,28 @@ export const cleanupSecrets = async (client: Client) => {
     );
 
     if (testSecrets.length > 0) {
-      const secretNames = new Map(
-        testSecrets.map((item) => [item.name, false])
+      await Promise.all(
+        testSecrets.map(async (item) => {
+          try {
+            const options: Record<string, string> = {};
+            if (item.workflowId) {
+              options.workflowId = item.workflowId;
+            }
+            if (item.orgId) {
+              options.orgId = item.orgId;
+            }
+            await client.deleteSecret(
+              item.name,
+              Object.keys(options).length > 0 ? options : undefined
+            );
+          } catch (error) {
+            console.warn(
+              `Failed to cleanup secret ${item.name}:`,
+              (error as Error).message
+            );
+          }
+        })
       );
-      await removeCreatedSecrets(client, secretNames);
     }
   } catch (error) {
     console.warn("Failed to cleanup secrets:", (error as Error).message);
