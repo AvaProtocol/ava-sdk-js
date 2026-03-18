@@ -278,6 +278,24 @@ describe("secret Tests", () => {
       // verify secret presence/absence in getSecrets() immediately after operations.
       // However, the API calls themselves succeed.
     });
+
+    // Regression test for https://github.com/AvaProtocol/EigenLayer-AVS/issues/772
+    it("delete workflow-scoped secret without passing workflowId", async () => {
+      const secretName = `def_${getNextId()}`;
+      const inputWorkflowId = getNextId();
+
+      // Create a workflow-scoped secret
+      const createResult = await client.createSecret(secretName, "value", {
+        workflowId: inputWorkflowId,
+      });
+      expect(createResult.success).toBeTruthy();
+
+      // Delete WITHOUT passing workflowId — this was the bug in #772
+      const deleted = await client.deleteSecret(secretName);
+      expect(deleted.success).toBeTruthy();
+      expect(deleted.status).toBe("deleted");
+      expect(deleted.scope).toBe("workflow");
+    });
   });
 
   describe("update secret suite", () => {
