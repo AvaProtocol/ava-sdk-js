@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.14.0
+
+### Minor Changes
+
+- e636c25: feat: template variables for Loop/Filter nodes, settings validation, secrets fix
+
 ## 2.13.0
 
 ### Minor Changes
