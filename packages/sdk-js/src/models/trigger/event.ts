@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
 import Trigger from "./interface";
@@ -90,7 +89,7 @@ class EventTrigger extends Trigger {
         // Convert null values to empty strings for protobuf compatibility
         // null represents "any value" wildcards in EVM log filtering
         const processedTopics = queryData.topics.map((value) =>
-          value === null ? "" : value
+          value === null ? "" : value,
         );
         query.setTopicsList(processedTopics);
       }
@@ -111,7 +110,7 @@ class EventTrigger extends Trigger {
         const abiValueList = queryData.contractAbi.map((item) => {
           const value = new google_protobuf_struct_pb.Value();
           value.setStructValue(
-            google_protobuf_struct_pb.Struct.fromJavaScript(item as any)
+            google_protobuf_struct_pb.Struct.fromJavaScript(item as any),
           );
           return value;
         });
@@ -152,7 +151,7 @@ class EventTrigger extends Trigger {
               methodCall.setApplyToFieldsList(methodCallData.applyToFields);
             }
             return methodCall;
-          }
+          },
         );
         query.setMethodCallsList(methodCallMessages);
       }
@@ -218,7 +217,7 @@ class EventTrigger extends Trigger {
             const contractAbi = query.getContractAbiList();
             if (contractAbi && contractAbi.length > 0) {
               queryData.contractAbi = contractAbi.map((value) =>
-                convertProtobufValueToJs(value)
+                convertProtobufValueToJs(value),
               );
             }
 
@@ -295,7 +294,7 @@ class EventTrigger extends Trigger {
         } catch (error) {
           console.warn(
             "Failed to convert event trigger data from protobuf Value:",
-            error
+            error,
           );
           // Return the raw protobuf Value object as fallback
           return dataValue;

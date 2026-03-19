@@ -1,8 +1,6 @@
-import * as _ from "lodash";
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import {
   Client,
-  Edge,
   Workflow,
   NodeFactory,
   TriggerFactory,
@@ -63,8 +61,8 @@ describe("createWorkflow Tests", () => {
   test("should throw error when creating a task with owner address using signature", async () => {
     await expect(
       client.submitWorkflow(
-        client.createWorkflow(createFromTemplate(eoaAddress))
-      )
+        client.createWorkflow(createFromTemplate(eoaAddress)),
+      ),
     ).rejects.toThrowError(/invalid smart account address|INVALID_ARGUMENT/i);
   });
 
@@ -87,7 +85,7 @@ describe("createWorkflow Tests", () => {
       const getResult = await client.getWorkflow(workflowId);
       compareResults(
         { ...workflowProps, id: workflowId, owner: eoaAddress },
-        getResult
+        getResult,
       );
     } finally {
       await client.deleteWorkflow(workflowId!);
@@ -113,7 +111,7 @@ describe("createWorkflow Tests", () => {
       const task = await client.getWorkflow(workflowId);
       compareResults(
         { ...workflowProps, id: workflowId, owner: eoaAddress },
-        task
+        task,
       );
     } finally {
       await client.deleteWorkflow(workflowId!);
@@ -218,7 +216,7 @@ describe("createWorkflow Tests", () => {
           id: workflowId,
           owner: eoaAddress,
         },
-        task
+        task,
       );
     } finally {
       expect(workflowId).toBeDefined();
@@ -281,7 +279,7 @@ describe("createWorkflow Tests", () => {
           id: workflowId,
           owner: eoaAddress,
         },
-        getResult
+        getResult,
       );
     } finally {
       expect(workflowId).toBeDefined();
@@ -312,7 +310,7 @@ describe("createWorkflow Tests", () => {
           owner: eoaAddress,
           ...workflowProps,
         },
-        task
+        task,
       );
     } finally {
       expect(workflowId).toBeDefined();
@@ -343,7 +341,7 @@ describe("createWorkflow Tests", () => {
         id: workflowId,
         owner: eoaAddress,
       },
-      getResponse
+      getResponse,
     );
 
     // Clean up

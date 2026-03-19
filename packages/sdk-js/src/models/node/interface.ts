@@ -1,12 +1,15 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import * as google_protobuf_struct_pb from "google-protobuf/google/protobuf/struct_pb";
-import { NodeType, NodeTypeGoConverter, NodeTypeConverter, NodeProps, NodeData } from "@avaprotocol/types";
+import {
+  NodeType,
+  NodeTypeGoConverter,
+  NodeProps,
+  NodeData,
+} from "@avaprotocol/types";
 import _ from "lodash";
-import { extractInputFromProtobuf } from "../../utils";
 
 // Function to convert TaskStatus to string
 export function covertNodeTypeToString(
-  status: avs_pb.TaskNode.TaskTypeCase
+  status: avs_pb.TaskNode.TaskTypeCase,
 ): NodeType {
   const conversionMap: { [key in avs_pb.TaskNode.TaskTypeCase]: NodeType } = {
     [avs_pb.TaskNode.TaskTypeCase.ETH_TRANSFER]: NodeType.ETHTransfer,
@@ -48,14 +51,17 @@ export const ProtobufNodePropsUtils = {
   getGoStringType: (props: ProtobufNodeProps): string => {
     return NodeTypeGoConverter.toGoString(props.type);
   },
-  
+
   // Create ProtobufNodeProps from Go string type
-  fromGoStringType: (goStringType: string, baseProps: Omit<ProtobufNodeProps, 'type'>): ProtobufNodeProps => {
+  fromGoStringType: (
+    goStringType: string,
+    baseProps: Omit<ProtobufNodeProps, "type">,
+  ): ProtobufNodeProps => {
     return {
       ...baseProps,
-      type: NodeTypeGoConverter.fromGoString(goStringType)
+      type: NodeTypeGoConverter.fromGoString(goStringType),
     };
-  }
+  },
 };
 
 export default abstract class Node implements NodeProps {
@@ -63,7 +69,6 @@ export default abstract class Node implements NodeProps {
   name: string;
   type: NodeType;
   data: NodeData;
-
 
   constructor(props: NodeProps) {
     this.id = props.id;
