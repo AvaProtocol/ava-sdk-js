@@ -1,5 +1,4 @@
 import { describe, beforeAll, test, expect, afterEach } from "@jest/globals";
-import _ from "lodash";
 import util from "util";
 import {
   Client,
@@ -115,7 +114,7 @@ describe("ManualTrigger Tests", () => {
 
       expect(() => trigger.toRequest()).not.toThrow();
       expect(trigger.toRequest().getType()).toBe(
-        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
+        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL,
       );
     });
 
@@ -130,7 +129,7 @@ describe("ManualTrigger Tests", () => {
 
       expect(() => trigger.toRequest()).not.toThrow();
       expect(trigger.toRequest().getType()).toBe(
-        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
+        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL,
       );
     });
 
@@ -147,7 +146,7 @@ describe("ManualTrigger Tests", () => {
 
       expect(() => triggerWithLang.toRequest()).not.toThrow();
       expect(triggerWithLang.toRequest().getType()).toBe(
-        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL
+        avs_pb.TriggerType.TRIGGER_TYPE_MANUAL,
       );
 
       const manualTrigger = triggerWithLang.toRequest().getManual();
@@ -168,14 +167,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with no data input:",
-        util.inspect(params, { depth: null, colors: true })
+        util.inspect(params, { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(params);
 
       console.log(
         "🚀 runTrigger with no data result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result).toBeDefined();
@@ -187,14 +186,14 @@ describe("ManualTrigger Tests", () => {
     test("should handle runTrigger with simple data", async () => {
       console.log(
         "🚀 runTrigger with simple data input:",
-        util.inspect(runTriggerSimpleProps(), { depth: null, colors: true })
+        util.inspect(runTriggerSimpleProps(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(runTriggerSimpleProps());
 
       console.log(
         "🚀 runTrigger with simple data result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -204,19 +203,22 @@ describe("ManualTrigger Tests", () => {
     test("should handle runTrigger with headers", async () => {
       console.log(
         "🚀 runTrigger with headers input:",
-        util.inspect(runTriggerWithHeadersProps(), { depth: null, colors: true })
+        util.inspect(runTriggerWithHeadersProps(), {
+          depth: null,
+          colors: true,
+        }),
       );
 
       const result = await client.runTrigger(runTriggerWithHeadersProps());
 
       console.log(
         "🚀 runTrigger with headers result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(
-        runTriggerWithHeadersProps().trigger.data.data
+        runTriggerWithHeadersProps().trigger.data.data,
       );
     });
 
@@ -242,19 +244,19 @@ describe("ManualTrigger Tests", () => {
         util.inspect(runTriggerWithPathParamsProps(), {
           depth: null,
           colors: true,
-        })
+        }),
       );
 
       const result = await client.runTrigger(runTriggerWithPathParamsProps());
 
       console.log(
         "🚀 runTrigger with pathParams result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(
-        runTriggerWithPathParamsProps().trigger.data.data
+        runTriggerWithPathParamsProps().trigger.data.data,
       );
     });
 
@@ -281,14 +283,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with headers and pathParams input:",
-        util.inspect(runTriggerWithBothProps(), { depth: null, colors: true })
+        util.inspect(runTriggerWithBothProps(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(runTriggerWithBothProps());
 
       console.log(
         "🚀 runTrigger with headers and pathParams result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -322,28 +324,30 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with complex data input:",
-        util.inspect(runTriggerComplexProps, { depth: null, colors: true })
+        util.inspect(runTriggerComplexProps, { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(runTriggerComplexProps);
 
       console.log(
         "🚀 runTrigger with complex data result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
-      
+
       // Validate structure and non-timestamp fields
       expect(result.data).toBeDefined();
       expect(result.data.items).toEqual(complexData.items);
       expect(result.data.metadata).toBeDefined();
       expect(result.data.metadata.version).toBe("1.0.0");
-      
+
       // Validate timestamp with tolerance (allow up to 100ms difference for timing variance)
       expect(result.data.metadata.timestamp).toBeDefined();
       expect(typeof result.data.metadata.timestamp).toBe("number");
-      expect(Math.abs(result.data.metadata.timestamp - timestamp)).toBeLessThanOrEqual(100);
+      expect(
+        Math.abs(result.data.metadata.timestamp - timestamp),
+      ).toBeLessThanOrEqual(100);
     });
 
     test("should handle runTrigger with array data wrapped in JSON object", async () => {
@@ -367,14 +371,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with array data input:",
-        util.inspect(runTriggerArrayProps(), { depth: null, colors: true })
+        util.inspect(runTriggerArrayProps(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(runTriggerArrayProps());
 
       console.log(
         "🚀 runTrigger with array data result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -401,18 +405,23 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with JSON string field input:",
-        util.inspect(runTriggerJsonStringProps(), { depth: null, colors: true })
+        util.inspect(runTriggerJsonStringProps(), {
+          depth: null,
+          colors: true,
+        }),
       );
 
       const result = await client.runTrigger(runTriggerJsonStringProps());
 
       console.log(
         "🚀 runTrigger with JSON string field result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerJsonStringProps().trigger.data.data);
+      expect(result.data).toEqual(
+        runTriggerJsonStringProps().trigger.data.data,
+      );
     });
 
     test("should handle runTrigger with lang field set to JSON", async () => {
@@ -430,14 +439,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with lang field input:",
-        util.inspect(runTriggerWithLangProps(), { depth: null, colors: true })
+        util.inspect(runTriggerWithLangProps(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(runTriggerWithLangProps());
 
       console.log(
         "🚀 runTrigger with lang field result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -459,18 +468,23 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 runTrigger with JavaScript lang input:",
-        util.inspect(runTriggerWithJSLangProps(), { depth: null, colors: true })
+        util.inspect(runTriggerWithJSLangProps(), {
+          depth: null,
+          colors: true,
+        }),
       );
 
       const result = await client.runTrigger(runTriggerWithJSLangProps());
 
       console.log(
         "🚀 runTrigger with JavaScript lang result:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual(runTriggerWithJSLangProps().trigger.data.data);
+      expect(result.data).toEqual(
+        runTriggerWithJSLangProps().trigger.data.data,
+      );
     });
   });
 
@@ -490,16 +504,16 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 simulateWorkflow with manual trigger (minimal data):",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "simulateWorkflow response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -508,7 +522,7 @@ describe("ManualTrigger Tests", () => {
 
       // Check that the trigger step ran
       const triggerStep = simulation.steps.find(
-        (step) => step.id === defaultTriggerId
+        (step) => step.id === defaultTriggerId,
       );
       expect(triggerStep!.success).toBeTruthy();
 
@@ -546,16 +560,16 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and user data:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "simulateWorkflow with user data response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -564,7 +578,7 @@ describe("ManualTrigger Tests", () => {
 
       // Check that the trigger step ran with the expected data
       const triggerStep = simulation.steps.find(
-        (step) => step.id === defaultTriggerId
+        (step) => step.id === defaultTriggerId,
       );
       expect(triggerStep!.success).toBeTruthy();
 
@@ -576,7 +590,7 @@ describe("ManualTrigger Tests", () => {
 
       // Check that the CustomCode node successfully referenced the manual trigger data
       const customCodeStep = simulation.steps.find(
-        (step) => step.name === "minimal_node"
+        (step) => step.name === "minimal_node",
       );
       expect(customCodeStep!.success).toBeTruthy();
 
@@ -624,16 +638,16 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 simulateWorkflow with manual trigger and webhook data:",
-        util.inspect(workflowProps, { depth: null, colors: true })
+        util.inspect(workflowProps, { depth: null, colors: true }),
       );
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "simulateWorkflow with webhook data response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
@@ -642,7 +656,7 @@ describe("ManualTrigger Tests", () => {
 
       // Check that the trigger step ran with the expected data
       const triggerStep = simulation.steps.find(
-        (step) => step.id === defaultTriggerId
+        (step) => step.id === defaultTriggerId,
       );
       expect(triggerStep!.success).toBeTruthy();
 
@@ -651,7 +665,7 @@ describe("ManualTrigger Tests", () => {
 
       // Check that the CustomCode node successfully referenced the manual trigger webhook data
       const customCodeStep = simulation.steps.find(
-        (step) => step.name === "minimal_node"
+        (step) => step.name === "minimal_node",
       );
       expect(customCodeStep!.success).toBeTruthy();
 
@@ -690,13 +704,13 @@ describe("ManualTrigger Tests", () => {
 
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
 
         // Verify deployment was successful
         const workflowsResult = await client.getWorkflows([wallet.address]);
         const deployedWorkflow = workflowsResult.items.find(
-          (w) => w.id === workflowId
+          (w) => w.id === workflowId,
         );
 
         expect(deployedWorkflow).toBeDefined();
@@ -705,7 +719,7 @@ describe("ManualTrigger Tests", () => {
 
         console.log(
           "Deployed workflow:",
-          util.inspect(deployedWorkflow, { depth: null, colors: true })
+          util.inspect(deployedWorkflow, { depth: null, colors: true }),
         );
 
         const triggerResponse = await client.triggerWorkflow({
@@ -718,7 +732,7 @@ describe("ManualTrigger Tests", () => {
 
         console.log(
           "Manual trigger response:",
-          util.inspect(triggerResponse, { depth: null, colors: true })
+          util.inspect(triggerResponse, { depth: null, colors: true }),
         );
 
         expect(triggerResponse).toBeDefined();
@@ -755,13 +769,13 @@ describe("ManualTrigger Tests", () => {
 
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
 
         // Verify deployment was successful
         const workflowsResult = await client.getWorkflows([wallet.address]);
         const deployedWorkflow = workflowsResult.items.find(
-          (w) => w.id === workflowId
+          (w) => w.id === workflowId,
         );
 
         expect(deployedWorkflow).toBeDefined();
@@ -770,7 +784,7 @@ describe("ManualTrigger Tests", () => {
 
         console.log(
           "Deployed workflow:",
-          util.inspect(deployedWorkflow, { depth: null, colors: true })
+          util.inspect(deployedWorkflow, { depth: null, colors: true }),
         );
 
         const triggerResponse = await client.triggerWorkflow({
@@ -783,7 +797,7 @@ describe("ManualTrigger Tests", () => {
 
         console.log(
           "Manual trigger response (no data):",
-          util.inspect(triggerResponse, { depth: null, colors: true })
+          util.inspect(triggerResponse, { depth: null, colors: true }),
         );
 
         expect(triggerResponse).toBeDefined();
@@ -833,13 +847,13 @@ describe("ManualTrigger Tests", () => {
 
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
 
         // Verify deployment was successful
         const workflowsResult = await client.getWorkflows([wallet.address]);
         const deployedWorkflow = workflowsResult.items.find(
-          (w) => w.id === workflowId
+          (w) => w.id === workflowId,
         );
 
         expect(deployedWorkflow).toBeDefined();
@@ -848,7 +862,7 @@ describe("ManualTrigger Tests", () => {
 
         console.log(
           "Deployed workflow:",
-          util.inspect(deployedWorkflow, { depth: null, colors: true })
+          util.inspect(deployedWorkflow, { depth: null, colors: true }),
         );
 
         const triggerResponse = await client.triggerWorkflow({
@@ -863,7 +877,7 @@ describe("ManualTrigger Tests", () => {
 
         console.log(
           "Webhook trigger response:",
-          util.inspect(triggerResponse, { depth: null, colors: true })
+          util.inspect(triggerResponse, { depth: null, colors: true }),
         );
 
         expect(triggerResponse).toBeDefined();
@@ -947,13 +961,13 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 ~ runTrigger for consistency test ~ input params:",
-        util.inspect(getTrigger(), { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true }),
       );
 
       const directResponse = await client.runTrigger(getTrigger());
       console.log(
         "runTrigger response:",
-        util.inspect(directResponse, { depth: null, colors: true })
+        util.inspect(directResponse, { depth: null, colors: true }),
       );
 
       // Test 2: simulateWorkflow with LoopNode
@@ -963,12 +977,12 @@ describe("ManualTrigger Tests", () => {
       workflowProps.edges = [edge];
 
       const simulation = await client.simulateWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
 
       console.log(
         "simulateWorkflow response:",
-        util.inspect(simulation, { depth: null, colors: true })
+        util.inspect(simulation, { depth: null, colors: true }),
       );
 
       // Both should be successful
@@ -980,7 +994,7 @@ describe("ManualTrigger Tests", () => {
 
       // Find the trigger step in simulation
       const triggerStep = simulation.steps.find(
-        (step) => step.id === defaultTriggerId
+        (step) => step.id === defaultTriggerId,
       );
       expect(triggerStep!.success).toBeTruthy();
 
@@ -998,7 +1012,7 @@ describe("ManualTrigger Tests", () => {
 
       // Expected results: ["consistency_item10xaaaa", "consistency_item20xbbbb"]
       const expectedResults = testData.map(
-        (item) => `${item.name}${item.address}`
+        (item) => `${item.name}${item.address}`,
       );
       expect(loopStep!.output).toEqual(expectedResults);
     });
@@ -1019,14 +1033,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 ~ runTrigger with null data ~ input params:",
-        util.inspect(getTrigger(), { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger null data response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(false);
@@ -1047,14 +1061,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 ~ runTrigger with undefined data ~ input params:",
-        util.inspect(getTrigger(), { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger undefined data response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(false);
@@ -1078,14 +1092,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 ~ runTrigger with empty object ~ input params:",
-        util.inspect(getTrigger(), { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger empty object response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -1112,14 +1126,14 @@ describe("ManualTrigger Tests", () => {
 
       console.log(
         "🚀 ~ runTrigger with empty array wrapped in JSON object ~ input params:",
-        util.inspect(getTrigger(), { depth: null, colors: true })
+        util.inspect(getTrigger(), { depth: null, colors: true }),
       );
 
       const result = await client.runTrigger(getTrigger());
 
       console.log(
         "runTrigger empty array response:",
-        util.inspect(result, { depth: null, colors: true })
+        util.inspect(result, { depth: null, colors: true }),
       );
 
       expect(result.success).toBe(true);
@@ -1452,7 +1466,7 @@ describe("ManualTrigger Tests", () => {
       expect(result.data.users.length).toBe(2);
       expect(typeof result.data.users[0].settings).toBe("object");
       expect(Array.isArray(result.data.users[0].settings.preferences)).toBe(
-        true
+        true,
       );
       expect(typeof result.data.summary).toBe("object");
       expect(typeof result.data.summary.hasMore).toBe("boolean");
@@ -1560,7 +1574,7 @@ describe("ManualTrigger Tests", () => {
     let workflowId: string | undefined;
     try {
       workflowId = await client.submitWorkflow(
-        client.createWorkflow(workflowProps)
+        client.createWorkflow(workflowProps),
       );
       createdIdMap.set(workflowId, true);
 

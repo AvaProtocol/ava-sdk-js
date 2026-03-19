@@ -1,5 +1,4 @@
 import * as avs_pb from "@/grpc_codegen/avs_pb";
-import _ from "lodash";
 import { EdgeProps } from "@avaprotocol/types";
 
 class Edge implements EdgeProps {

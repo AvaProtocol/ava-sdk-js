@@ -10,14 +10,10 @@ import TriggerFactory from "./models/trigger/factory";
 import Secret from "./models/secret";
 import {
   TriggerType,
-  NodeTypeGoConverter,
-  TriggerTypeGoConverter,
   TriggerTypeConverter,
   AUTH_KEY_HEADER,
   DEFAULT_LIMIT,
   ErrorCode,
-  Lang,
-  LangConverter,
   type WorkflowProps,
   type GetKeyResponse,
   type RequestOptions,
@@ -78,7 +74,7 @@ import {
  * @returns {ExecutionStatus} - The meaningful string enum value
  */
 function convertProtobufExecutionStatus(
-  protobufStatus: ProtobufExecutionStatus
+  protobufStatus: ProtobufExecutionStatus,
 ): ExecutionStatus {
   switch (protobufStatus) {
     case ProtobufExecutionStatus.EXECUTION_STATUS_PENDING:
@@ -108,7 +104,7 @@ class BaseClient {
     this.endpoint = opts.endpoint;
     this.rpcClient = new AggregatorClient(
       this.endpoint,
-      credentials.createInsecure()
+      credentials.createInsecure(),
     );
 
     this.factoryAddress = opts.factoryAddress;
@@ -151,7 +147,7 @@ class BaseClient {
   protected sendFastRequest<TResponse, TRequest>(
     method: string,
     request: TRequest | any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<TResponse> {
     return this.sendGrpcRequest(method, request, {
       ...options,
@@ -169,7 +165,7 @@ class BaseClient {
   protected sendSlowRequest<TResponse, TRequest>(
     method: string,
     request: TRequest | any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<TResponse> {
     return this.sendGrpcRequest(method, request, {
       ...options,
@@ -187,7 +183,7 @@ class BaseClient {
   protected sendNoRetryRequest<TResponse, TRequest>(
     method: string,
     request: TRequest | any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<TResponse> {
     return this.sendGrpcRequest(method, request, {
       ...options,
@@ -222,7 +218,7 @@ class BaseClient {
    * @returns {Promise<GetSignatureFormatResponse>} - The response containing the signature format
    */
   async getSignatureFormat(
-    wallet: string
+    wallet: string,
   ): Promise<GetSignatureFormatResponse> {
     const request = new avs_pb.GetSignatureFormatReq();
     request.setWallet(wallet);
@@ -282,7 +278,7 @@ class BaseClient {
     // when exchanging the key, we don't set the token yet
     const result = await this.sendGrpcRequest<avs_pb.KeyResp, avs_pb.GetKeyReq>(
       "getKey",
-      request
+      request,
     );
     return { authKey: result.getKey() };
   }
@@ -330,7 +326,7 @@ class BaseClient {
   protected sendGrpcRequest<TResponse, TRequest>(
     method: string,
     request: TRequest | any,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<TResponse> {
     return new Promise((resolve, reject) => {
       // Merge timeout configuration (priority: options > instance config > defaults)
@@ -355,7 +351,7 @@ class BaseClient {
         const timeoutPromise = new Promise<never>((_, timeoutReject) => {
           timeoutId = setTimeout(() => {
             const error = new Error(
-              `gRPC request timeout after ${timeout}ms for method ${method}`
+              `gRPC request timeout after ${timeout}ms for method ${method}`,
             ) as TimeoutError;
             error.isTimeout = true;
             error.attemptsMade = attempt;
@@ -384,7 +380,7 @@ class BaseClient {
                 } else {
                   grpcResolve(response);
                 }
-              }
+              },
             );
 
             // Handle call cancellation on timeout
@@ -393,7 +389,7 @@ class BaseClient {
                 call.cancel();
               }
             });
-          }
+          },
         );
 
         // Race between timeout and actual call
@@ -418,7 +414,7 @@ class BaseClient {
             if (isRetryableError && attempt < retries) {
               console.warn(
                 `gRPC ${method} attempt ${attempt} failed, retrying in ${retryDelay}ms:`,
-                error.message
+                error.message,
               );
               setTimeout(executeRequest, retryDelay);
             } else {
@@ -481,7 +477,7 @@ class Client extends BaseClient {
    */
   async getWallet(
     { salt, factoryAddress }: GetWalletRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<SmartWallet> {
     const request = new avs_pb.GetWalletReq();
     request.setSalt(salt);
@@ -521,7 +517,7 @@ class Client extends BaseClient {
   async setWallet(
     { salt, factoryAddress }: GetWalletRequest,
     { isHidden }: { isHidden: boolean },
-    requestOptions?: RequestOptions
+    requestOptions?: RequestOptions,
   ): Promise<SmartWallet> {
     const request = new avs_pb.SetWalletReq();
     request.setSalt(salt);
@@ -569,7 +565,7 @@ class Client extends BaseClient {
       token,
       smartWalletAddress,
     }: WithdrawFundsRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<WithdrawFundsResponse> {
     const request = new avs_pb.WithdrawFundsReq();
     request.setRecipientAddress(recipientAddress);
@@ -604,7 +600,7 @@ class Client extends BaseClient {
    */
   async submitWorkflow(
     workflow: Workflow,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<string> {
     const request = workflow.toRequest();
 
@@ -634,7 +630,7 @@ class Client extends BaseClient {
    */
   async getWorkflows(
     addresses: string[],
-    options?: GetWorkflowsOptions
+    options?: GetWorkflowsOptions,
   ): Promise<{
     items: WorkflowProps[];
     pageInfo: PageInfo;
@@ -692,7 +688,7 @@ class Client extends BaseClient {
    */
   async getWorkflowCount(
     addresses: string[],
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<number> {
     const request = new avs_pb.GetWorkflowCountReq();
     request.setAddressesList(addresses);
@@ -717,7 +713,7 @@ class Client extends BaseClient {
    */
   async getExecutions(
     workflows: string[],
-    options?: GetExecutionsOptions
+    options?: GetExecutionsOptions,
   ): Promise<{
     items: ExecutionProps[];
     pageInfo: PageInfo;
@@ -769,7 +765,7 @@ class Client extends BaseClient {
   async getExecution(
     workflowId: string,
     executionId: string,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ExecutionProps> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(workflowId);
@@ -791,7 +787,7 @@ class Client extends BaseClient {
    */
   async getExecutionCount(
     workflows: string[],
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<number> {
     const request = new avs_pb.GetExecutionCountReq();
     request.setWorkflowIdsList(workflows);
@@ -813,7 +809,7 @@ class Client extends BaseClient {
    * @returns {Promise<GetExecutionStatsResponse>} - Execution statistics
    */
   async getExecutionStats(
-    options?: GetExecutionStatsOptions
+    options?: GetExecutionStatsOptions,
   ): Promise<GetExecutionStatsResponse> {
     const request = new avs_pb.GetExecutionStatsReq();
 
@@ -848,7 +844,7 @@ class Client extends BaseClient {
   async getExecutionStatus(
     workflowId: string,
     executionId: string,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ExecutionStatus> {
     const request = new avs_pb.ExecutionReq();
     request.setTaskId(workflowId);
@@ -875,7 +871,7 @@ class Client extends BaseClient {
     const result = await this.sendGrpcRequest<avs_pb.Task, avs_pb.IdReq>(
       "getTask",
       request,
-      options
+      options,
     );
 
     return Workflow.fromResponse(result);
@@ -900,7 +896,7 @@ class Client extends BaseClient {
       triggerData: TriggerDataProps;
       isBlocking?: boolean;
     },
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<TriggerWorkflowResponse> {
     const request = new avs_pb.TriggerTaskReq();
 
@@ -990,7 +986,7 @@ class Client extends BaseClient {
         break;
       default:
         throw new Error(
-          `Unsupported trigger type: ${(triggerData as any).type}`
+          `Unsupported trigger type: ${(triggerData as any).type}`,
         );
     }
 
@@ -1067,7 +1063,7 @@ class Client extends BaseClient {
   async setWorkflowEnabled(
     id: string,
     enabled: boolean,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<SetTaskEnabledResponse> {
     const request = new avs_pb.SetTaskEnabledReq();
     request.setId(id);
@@ -1096,7 +1092,7 @@ class Client extends BaseClient {
    */
   async deleteWorkflow(
     id: string,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<DeleteTaskResponse> {
     const request = new avs_pb.IdReq();
     request.setId(id);
@@ -1129,7 +1125,7 @@ class Client extends BaseClient {
   async createSecret(
     name: string,
     value: string,
-    options?: SecretOptions
+    options?: SecretOptions,
   ): Promise<CreateSecretResponse> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
@@ -1171,7 +1167,7 @@ class Client extends BaseClient {
   async updateSecret(
     name: string,
     value: string,
-    options?: SecretOptions
+    options?: SecretOptions,
   ): Promise<UpdateSecretResponse> {
     const request = new avs_pb.CreateOrUpdateSecretReq();
     request.setName(name);
@@ -1266,7 +1262,7 @@ class Client extends BaseClient {
             updatedAt: item.getUpdatedAt() || undefined,
             createdBy: item.getCreatedBy() || undefined,
             description: item.getDescription() || undefined,
-          })
+          }),
       ),
       pageInfo: {
         startCursor: pageInfo.getStartCursor(),
@@ -1288,7 +1284,7 @@ class Client extends BaseClient {
    */
   async deleteSecret(
     name: string,
-    options?: SecretOptions
+    options?: SecretOptions,
   ): Promise<DeleteSecretResponse> {
     const request = new avs_pb.DeleteSecretReq();
     request.setName(name);
@@ -1326,7 +1322,7 @@ class Client extends BaseClient {
    */
   async runNodeWithInputs(
     { node, inputVariables = {} }: RunNodeWithInputsRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<RunNodeWithInputsResponse> {
     // Create the request - following the same pattern as simulateWorkflow
     const request = new avs_pb.RunNodeWithInputsReq();
@@ -1357,7 +1353,7 @@ class Client extends BaseClient {
         : undefined,
       executionContext: result.hasExecutionContext()
         ? toCamelCaseKeys(
-            convertProtobufValueToJs(result.getExecutionContext()!)
+            convertProtobufValueToJs(result.getExecutionContext()!),
           )
         : undefined,
     };
@@ -1373,7 +1369,7 @@ class Client extends BaseClient {
    */
   async runTrigger(
     { trigger, triggerInput = {} }: RunTriggerRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<RunTriggerResponse> {
     // Create the request - following the same pattern as simulateWorkflow
     const request = new avs_pb.RunTriggerReq();
@@ -1404,7 +1400,7 @@ class Client extends BaseClient {
         : undefined,
       executionContext: result.hasExecutionContext()
         ? toCamelCaseKeys(
-            convertProtobufValueToJs(result.getExecutionContext()!)
+            convertProtobufValueToJs(result.getExecutionContext()!),
           )
         : undefined,
     };
@@ -1422,7 +1418,7 @@ class Client extends BaseClient {
    */
   async simulateWorkflow(
     { trigger, nodes, edges, inputVariables }: SimulateWorkflowRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ExecutionProps> {
     // Create the request
     const request = new avs_pb.SimulateTaskReq();
@@ -1471,7 +1467,7 @@ class Client extends BaseClient {
    */
   async getTokenMetadata(
     { address }: GetTokenMetadataRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<GetTokenMetadataResponse> {
     const request = new avs_pb.GetTokenMetadataReq();
     request.setAddress(address);
@@ -1513,7 +1509,7 @@ class Client extends BaseClient {
       createdAt,
       expireAt,
     }: EstimateFeesRequest,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<EstimateFeesResponse> {
     // Create the protobuf request
     const request = new avs_pb.EstimateFeesReq();
@@ -1561,7 +1557,7 @@ class Client extends BaseClient {
    * @private
    */
   private convertEstimateFeesResponse(
-    result: avs_pb.EstimateFeesResp
+    result: avs_pb.EstimateFeesResp,
   ): EstimateFeesResponse {
     const response: EstimateFeesResponse = {
       success: result.getSuccess(),
@@ -1642,7 +1638,7 @@ class Client extends BaseClient {
     }
     if (result.getTotalDiscounts()) {
       response.totalDiscounts = this.convertFeeAmount(
-        result.getTotalDiscounts()!
+        result.getTotalDiscounts()!,
       );
     }
     if (result.getFinalTotal()) {

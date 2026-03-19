@@ -191,7 +191,7 @@ describe("Template: Telegram Alert on Transfer", () => {
       data: {
         lang: Lang.JavaScript,
 
-        // eslint-disable-next-line max-len
+         
         source: `const _ = require("lodash");
 const dayjs = require("dayjs");
 const isReceive = eventTrigger.data.toAddress === eventTrigger.input.address;
