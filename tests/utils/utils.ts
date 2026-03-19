@@ -291,6 +291,9 @@ export function padAddressForTopic(address: string): string {
 export function getClient(): Client {
   return new Client({
     endpoint: config.aggregatorEndpoint,
+    // 60s default for tests — real on-chain UserOps can take 15-50s,
+    // and under full-suite load the aggregator queues requests
+    timeout: { timeout: 60000 },
   });
 }
 
