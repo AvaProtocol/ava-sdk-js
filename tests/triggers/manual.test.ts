@@ -923,7 +923,8 @@ describe("ManualTrigger Tests", () => {
         name: "process_array_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: triggerName, // Use inputNodeName instead of deprecated sourceId
+          inputVariable: `{{${triggerName}.data}}`,
+          iterationTimeout: 30,
           iterVal: iteratorValueVar,
           iterKey: iteratorKeyVar,
           executionMode: ExecutionMode.Sequential,

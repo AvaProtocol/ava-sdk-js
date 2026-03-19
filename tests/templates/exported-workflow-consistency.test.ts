@@ -73,7 +73,8 @@ describe("Exported Workflow Consistency Tests", () => {
 
       // Define LoopNode props
       const loopNodeProps = {
-        inputNodeName: "manualTrigger",
+        inputVariable: "{{manualTrigger.data}}",
+        iterationTimeout: 30,
         iterVal: "value",
         iterKey: "index",
         executionMode: ExecutionMode.Sequential,
@@ -94,7 +95,7 @@ describe("Exported Workflow Consistency Tests", () => {
           data: loopNodeProps,
         },
         inputVariables: {
-          manualTrigger: testData,
+          manualTrigger: { data: testData },
         },
       };
 
@@ -115,7 +116,7 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(result.data).toEqual(["value1", "value2"]); // Should return array of key values
     });
 
-    test("should test FilterNode with inputNodeName", async () => {
+    test("should test FilterNode with inputVariable", async () => {
       const inputData = [{ key: "value1" }, { key: "value2" }];
 
       const result = await client.runNodeWithInputs({
@@ -124,12 +125,12 @@ describe("Exported Workflow Consistency Tests", () => {
           name: "filter_test",
           type: NodeType.Filter,
           data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
           expression: 'value.key === "value1"',
         }
         },
         inputVariables: {
-          manualTrigger: inputData,
+          manualTrigger: { data: inputData },
         },
       });
 
@@ -198,7 +199,8 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "loop0",
         type: NodeType.Loop,
         data: {
-          inputNodeName: "manualTrigger", // Updated from sourceId
+          inputVariable: "{{manualTrigger.data}}",
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -218,7 +220,7 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "filter1",
         type: NodeType.Filter,
         data: {
-          inputNodeName: "manualTrigger", // Updated from sourceId
+          inputVariable: "{{manualTrigger.data}}",
           expression: 'value.key === "value1"',
         },
       };
@@ -371,7 +373,8 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "loop0",
         type: NodeType.Loop,
         data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
+        iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -391,7 +394,7 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "filter1",
         type: NodeType.Filter,
         data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
           expression: 'value.key === "value1"',
         },
       };
@@ -552,7 +555,8 @@ describe("Exported Workflow Consistency Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
+        iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -566,7 +570,7 @@ describe("Exported Workflow Consistency Tests", () => {
         }
         },
         inputVariables: {
-          manualTrigger: testData,
+          manualTrigger: { data: testData },
         },
       });
 
@@ -584,7 +588,8 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "loop0",
         type: NodeType.Loop,
         data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
+        iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -698,12 +703,12 @@ describe("Exported Workflow Consistency Tests", () => {
           name: "filter_test",
           type: NodeType.Filter,
           data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
           expression: 'value.key === "value1"',
         }
         },
         inputVariables: {
-          manualTrigger: testData,
+          manualTrigger: { data: testData },
         },
       });
 
@@ -721,7 +726,7 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "filter1",
         type: NodeType.Filter,
         data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
           expression: 'value.key === "value1"',
         },
       });
@@ -960,7 +965,8 @@ describe("Exported Workflow Consistency Tests", () => {
         name: "loop0",
         type: NodeType.Loop,
         data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
+        iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -1019,7 +1025,7 @@ describe("Exported Workflow Consistency Tests", () => {
       expect(loopStep).toBeDefined();
       const loopConfig = loopStep!.config as unknown as LoopNodeData;
       expect(loopConfig).toBeDefined();
-      expect(loopConfig.inputNodeName).toBe("manualTrigger");
+      expect(loopConfig.inputVariable).toBe("{{manualTrigger.data}}");
       expect(loopConfig.executionMode).toBe("sequential");
       expect(loopConfig.runner).toBeDefined();
       expect(loopConfig.runner!.type).toBe("customCode");
