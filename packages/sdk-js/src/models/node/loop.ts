@@ -232,6 +232,7 @@ class LoopNode extends Node {
         break;
       }
 
+      case "graphqlQuery":
       case "graphqlDataQuery": {
         const gqlConfig = config as Record<string, unknown>;
         const graphqlQuery = GraphQLQueryNode.createProtobufNode({
