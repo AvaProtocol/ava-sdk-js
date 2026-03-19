@@ -135,7 +135,9 @@ class LoopNode extends Node {
     const executionMode = this.mapExecutionModeToProtobuf(data.executionMode);
     config.setExecutionMode(executionMode);
 
-    // Set per-iteration timeout (seconds, required by server)
+    // Per-iteration timeout in seconds. The server requires this field and will
+    // reject the request if it is 0 or missing. No default is applied here —
+    // the caller must explicitly provide iterationTimeout in their node config.
     config.setIterationTimeout(data.iterationTimeout);
 
     loopNode.setConfig(config);
