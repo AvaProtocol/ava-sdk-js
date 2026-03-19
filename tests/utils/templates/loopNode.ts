@@ -1,4 +1,4 @@
-import { NodeType, LoopNodeProps, Lang } from "@avaprotocol/types";
+import { NodeType, LoopNodeProps, LoopRunnerType, Lang } from "@avaprotocol/types";
 import { getNextId } from "../utils";
 
 export const loopNodeWithRestApiProps: LoopNodeProps = {
@@ -6,11 +6,12 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
   name: "loop_with_rest_api",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "testArray",
+    inputVariable: "{{testArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     runner: {
-      type: "restApi",
+      type: LoopRunnerType.RestAPI,
       config: {
         url: "https://mock-api.ap-aggregator.local/post",
         method: "POST",
@@ -26,11 +27,12 @@ export const loopNodeWithCustomCodeProps: LoopNodeProps = {
   name: "loop_with_custom_code",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "testArray",
+    inputVariable: "{{testArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     runner: {
-      type: "customCode",
+      type: LoopRunnerType.CustomCode,
       config: {
         lang: Lang.JavaScript,
         source: `const result = { processedValue: value, position: index }; return result;`,
@@ -44,11 +46,12 @@ export const loopNodeWithETHTransferProps: LoopNodeProps = {
   name: "loop_with_eth_transfer",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "addressArray",
+    inputVariable: "{{addressArray}}",
+    iterationTimeout: 30,
     iterVal: "address",
     iterKey: "index",
     runner: {
-      type: "ethTransfer",
+      type: LoopRunnerType.EthTransfer,
       config: {
         destination: "{{value}}",
         amount: "100000000000000", // 0.0001 ETH in wei (decimal string)
@@ -62,11 +65,12 @@ export const loopNodeWithContractReadProps: LoopNodeProps = {
   name: "loop_with_contract_read",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "contractArray",
+    inputVariable: "{{contractArray}}",
+    iterationTimeout: 30,
     iterVal: "contract",
     iterKey: "index",
     runner: {
-      type: "contractRead",
+      type: LoopRunnerType.ContractRead,
       config: {
         contractAddress: "{{contract.address}}",
         contractAbi: "{{contract.abi}}" as any,
@@ -86,11 +90,12 @@ export const loopNodeWithContractWriteProps: LoopNodeProps = {
   name: "loop_with_contract_write",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "contractArray",
+    inputVariable: "{{contractArray}}",
+    iterationTimeout: 30,
     iterVal: "contract",
     iterKey: "index",
     runner: {
-      type: "contractWrite",
+      type: LoopRunnerType.ContractWrite,
       config: {
         contractAddress: "{{contract.address}}",
         contractAbi: "{{contract.abi}}" as any,
@@ -110,11 +115,12 @@ export const loopNodeWithGraphQLQueryProps: LoopNodeProps = {
   name: "loop_with_graphql_query",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "queryArray",
+    inputVariable: "{{queryArray}}",
+    iterationTimeout: 30,
     iterVal: "query",
     iterKey: "index",
     runner: {
-      type: "graphqlQuery",
+      type: LoopRunnerType.GraphQLQuery,
       config: {
         url: "https://mock-api.ap-aggregator.local/graphql",
         query: `

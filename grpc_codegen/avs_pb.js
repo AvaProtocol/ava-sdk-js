@@ -12987,7 +12987,7 @@ proto.aggregator.FilterNode.Config.prototype.toObject = function(opt_includeInst
 proto.aggregator.FilterNode.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
     expression: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    inputNodeName: jspb.Message.getFieldWithDefault(msg, 2, "")
+    inputVariable: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -13030,7 +13030,7 @@ proto.aggregator.FilterNode.Config.deserializeBinaryFromReader = function(msg, r
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setInputNodeName(value);
+      msg.setInputVariable(value);
       break;
     default:
       reader.skipField();
@@ -13068,7 +13068,7 @@ proto.aggregator.FilterNode.Config.serializeBinaryToWriter = function(message, w
       f
     );
   }
-  f = message.getInputNodeName();
+  f = message.getInputVariable();
   if (f.length > 0) {
     writer.writeString(
       2,
@@ -13097,10 +13097,10 @@ proto.aggregator.FilterNode.Config.prototype.setExpression = function(value) {
 
 
 /**
- * optional string input_node_name = 2;
+ * optional string input_variable = 2;
  * @return {string}
  */
-proto.aggregator.FilterNode.Config.prototype.getInputNodeName = function() {
+proto.aggregator.FilterNode.Config.prototype.getInputVariable = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -13109,7 +13109,7 @@ proto.aggregator.FilterNode.Config.prototype.getInputNodeName = function() {
  * @param {string} value
  * @return {!proto.aggregator.FilterNode.Config} returns this
  */
-proto.aggregator.FilterNode.Config.prototype.setInputNodeName = function(value) {
+proto.aggregator.FilterNode.Config.prototype.setInputVariable = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
@@ -13562,10 +13562,11 @@ proto.aggregator.LoopNode.Config.prototype.toObject = function(opt_includeInstan
  */
 proto.aggregator.LoopNode.Config.toObject = function(includeInstance, msg) {
   var f, obj = {
-    inputNodeName: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    inputVariable: jspb.Message.getFieldWithDefault(msg, 1, ""),
     iterVal: jspb.Message.getFieldWithDefault(msg, 2, ""),
     iterKey: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    executionMode: jspb.Message.getFieldWithDefault(msg, 4, 0)
+    executionMode: jspb.Message.getFieldWithDefault(msg, 4, 0),
+    iterationTimeout: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -13604,7 +13605,7 @@ proto.aggregator.LoopNode.Config.deserializeBinaryFromReader = function(msg, rea
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setInputNodeName(value);
+      msg.setInputVariable(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
@@ -13617,6 +13618,10 @@ proto.aggregator.LoopNode.Config.deserializeBinaryFromReader = function(msg, rea
     case 4:
       var value = /** @type {!proto.aggregator.ExecutionMode} */ (reader.readEnum());
       msg.setExecutionMode(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setIterationTimeout(value);
       break;
     default:
       reader.skipField();
@@ -13647,7 +13652,7 @@ proto.aggregator.LoopNode.Config.prototype.serializeBinary = function() {
  */
 proto.aggregator.LoopNode.Config.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getInputNodeName();
+  f = message.getInputVariable();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -13675,14 +13680,21 @@ proto.aggregator.LoopNode.Config.serializeBinaryToWriter = function(message, wri
       f
     );
   }
+  f = message.getIterationTimeout();
+  if (f !== 0) {
+    writer.writeUint32(
+      5,
+      f
+    );
+  }
 };
 
 
 /**
- * optional string input_node_name = 1;
+ * optional string input_variable = 1;
  * @return {string}
  */
-proto.aggregator.LoopNode.Config.prototype.getInputNodeName = function() {
+proto.aggregator.LoopNode.Config.prototype.getInputVariable = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -13691,7 +13703,7 @@ proto.aggregator.LoopNode.Config.prototype.getInputNodeName = function() {
  * @param {string} value
  * @return {!proto.aggregator.LoopNode.Config} returns this
  */
-proto.aggregator.LoopNode.Config.prototype.setInputNodeName = function(value) {
+proto.aggregator.LoopNode.Config.prototype.setInputVariable = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
@@ -13747,6 +13759,24 @@ proto.aggregator.LoopNode.Config.prototype.getExecutionMode = function() {
  */
 proto.aggregator.LoopNode.Config.prototype.setExecutionMode = function(value) {
   return jspb.Message.setProto3EnumField(this, 4, value);
+};
+
+
+/**
+ * optional uint32 iteration_timeout = 5;
+ * @return {number}
+ */
+proto.aggregator.LoopNode.Config.prototype.getIterationTimeout = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.aggregator.LoopNode.Config} returns this
+ */
+proto.aggregator.LoopNode.Config.prototype.setIterationTimeout = function(value) {
+  return jspb.Message.setProto3IntField(this, 5, value);
 };
 
 

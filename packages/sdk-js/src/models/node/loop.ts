@@ -33,8 +33,6 @@ class LoopNode extends Node {
     const configData = loopNode.getConfig()?.toObject();
     const loopNodeData = loopNode.toObject();
 
-    // Since LoopNodeData is now Config.AsObject, we need to merge the config properties
-    // with the runner data from the protobuf structure
     const data: LoopNodeData = {
       ...configData,
       // Extract runner data from the oneof runner field
@@ -129,13 +127,16 @@ class LoopNode extends Node {
 
     // Set the loop config from the flat data structure
     const config = new avs_pb.LoopNode.Config();
-    config.setInputNodeName(data.inputNodeName || "");
+    config.setInputVariable(data.inputVariable || "");
     config.setIterVal(data.iterVal || "");
     config.setIterKey(data.iterKey || "");
 
     // Set execution mode - map ExecutionMode enum to protobuf enum
     const executionMode = this.mapExecutionModeToProtobuf(data.executionMode);
     config.setExecutionMode(executionMode);
+
+    // Set per-iteration timeout (seconds, required by server)
+    config.setIterationTimeout(data.iterationTimeout);
 
     loopNode.setConfig(config);
 
