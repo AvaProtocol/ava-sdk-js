@@ -1493,8 +1493,8 @@ export namespace FilterNode {
     export class Config extends jspb.Message { 
         getExpression(): string;
         setExpression(value: string): Config;
-        getInputNodeName(): string;
-        setInputNodeName(value: string): Config;
+        getInputVariable(): string;
+        setInputVariable(value: string): Config;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -1509,7 +1509,7 @@ export namespace FilterNode {
     export namespace Config {
         export type AsObject = {
             expression: string,
-            inputNodeName: string,
+            inputVariable: string,
         }
     }
 
@@ -1600,14 +1600,16 @@ export namespace LoopNode {
 
 
     export class Config extends jspb.Message { 
-        getInputNodeName(): string;
-        setInputNodeName(value: string): Config;
+        getInputVariable(): string;
+        setInputVariable(value: string): Config;
         getIterVal(): string;
         setIterVal(value: string): Config;
         getIterKey(): string;
         setIterKey(value: string): Config;
         getExecutionMode(): ExecutionMode;
         setExecutionMode(value: ExecutionMode): Config;
+        getIterationTimeout(): number;
+        setIterationTimeout(value: number): Config;
 
         serializeBinary(): Uint8Array;
         toObject(includeInstance?: boolean): Config.AsObject;
@@ -1621,10 +1623,11 @@ export namespace LoopNode {
 
     export namespace Config {
         export type AsObject = {
-            inputNodeName: string,
+            inputVariable: string,
             iterVal: string,
             iterKey: string,
             executionMode: ExecutionMode,
+            iterationTimeout: number,
         }
     }
 

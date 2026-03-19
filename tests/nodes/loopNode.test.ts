@@ -63,7 +63,8 @@ describe("LoopNode Tests", () => {
 
   // Define all node props at the beginning for consistency
   const customCodeLoopProps = {
-    inputNodeName: "testArray",
+    inputVariable: "{{testArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
@@ -85,7 +86,8 @@ describe("LoopNode Tests", () => {
   } as LoopNodeData;
 
   const restApiLoopProps = {
-    inputNodeName: "urlArray",
+    inputVariable: "{{urlArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
@@ -101,7 +103,8 @@ describe("LoopNode Tests", () => {
   } as LoopNodeData;
 
   const emptyArrayLoopProps = {
-    inputNodeName: "emptyArray",
+    inputVariable: "{{emptyArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
@@ -115,7 +118,8 @@ describe("LoopNode Tests", () => {
   } as LoopNodeData;
 
   const singleItemLoopProps = {
-    inputNodeName: "singleItem",
+    inputVariable: "{{singleItem}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
@@ -129,7 +133,8 @@ describe("LoopNode Tests", () => {
   } as LoopNodeData;
 
   const parallelExecutionProps = {
-    inputNodeName: "parallelArray",
+    inputVariable: "{{parallelArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     executionMode: ExecutionMode.Parallel,
@@ -150,7 +155,8 @@ describe("LoopNode Tests", () => {
   } as LoopNodeData;
 
   const complexDataLoopProps = {
-    inputNodeName: "complexArray",
+    inputVariable: "{{complexArray}}",
+    iterationTimeout: 30,
     iterVal: "value",
     iterKey: "index",
     executionMode: ExecutionMode.Sequential,
@@ -357,7 +363,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "contractAddresses",
+            inputVariable: "{{contractAddresses}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Sequential,
@@ -421,7 +428,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "writeParams",
+            inputVariable: "{{writeParams}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Sequential,
@@ -519,7 +527,8 @@ describe("LoopNode Tests", () => {
         name: "simulate_loop_test",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           runner: {
@@ -574,7 +583,7 @@ describe("LoopNode Tests", () => {
       const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
-      expect(inputConfig.inputNodeName).toBe(dataNode.id);
+      expect(inputConfig.inputVariable).toBe(`{{${dataNode.name}.data}}`);
       expect(inputConfig.iterVal).toBe("value");
       expect(inputConfig.iterKey).toBe("index");
       expect(inputConfig.executionMode).toBeDefined();
@@ -628,7 +637,8 @@ describe("LoopNode Tests", () => {
         name: "simulate_rest_api_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           runner: {
@@ -673,7 +683,7 @@ describe("LoopNode Tests", () => {
       const loopStepConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
-      expect(loopStepConfig.inputNodeName).toBe(dataNode.id);
+      expect(loopStepConfig.inputVariable).toBe(`{{${dataNode.name}.data}}`);
       expect(loopStepConfig.iterVal).toBe("value");
       expect(loopStepConfig.iterKey).toBe("index");
       expect(loopStepConfig.executionMode).toBeDefined();
@@ -726,7 +736,8 @@ describe("LoopNode Tests", () => {
         name: "simulate_contract_read_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -784,7 +795,7 @@ describe("LoopNode Tests", () => {
       const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
-      expect(inputConfig.inputNodeName).toBe(dataNode.id);
+      expect(inputConfig.inputVariable).toBe(`{{${dataNode.name}.data}}`);
       expect(inputConfig.iterVal).toBe("value");
       expect(inputConfig.iterKey).toBe("index");
       expect(inputConfig.executionMode).toBeDefined();
@@ -826,14 +837,14 @@ describe("LoopNode Tests", () => {
           source: `
             return [
               {
-                contractAddress: "0x1111111111111111111111111111111111111111",
+                contractAddress: "${USDC_SEPOLIA_ADDRESS}",
                 spender: "${fundedSmartWalletAddress}",
-                amount: "10"
+                amount: "0"
               },
               {
-                contractAddress: "0x2222222222222222222222222222222222222222",
-                spender: "${fundedSmartWalletAddress}", 
-                amount: "10"
+                contractAddress: "${USDC_SEPOLIA_ADDRESS}",
+                spender: "0x0000000000000000000000000000000000000001",
+                amount: "0"
               }
             ];
           `,
@@ -845,7 +856,8 @@ describe("LoopNode Tests", () => {
         name: "simulate_contract_write_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -917,7 +929,7 @@ describe("LoopNode Tests", () => {
       ]).toContain(simulation.status);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 
-      // The KEY fix: Verify the data generation node succeeded (smartWalletAddress is now properly injected)
+      // Verify the data generation node succeeded
       const dataStep = simulation.steps.find((step) => step.id === dataNode.id);
       expect(dataStep).toBeDefined();
       expect(dataStep!.success).toBeTruthy();
@@ -975,7 +987,8 @@ describe("LoopNode Tests", () => {
         name: "deploy_loop_test",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           runner: {
@@ -1083,7 +1096,8 @@ describe("LoopNode Tests", () => {
         name: "custom_code_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           runner: {
@@ -1171,7 +1185,8 @@ describe("LoopNode Tests", () => {
         name: "deploy_contract_read_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -1255,6 +1270,7 @@ describe("LoopNode Tests", () => {
       }
     });
 
+    // 2 sequential real UserOps on Sepolia need longer than the default 60s
     test("should deploy and trigger workflow with Loop node using ContractWrite runner", async () => {
       const wallet = await getSmartWallet(client);
       const currentBlockNumber = await getBlockNumber();
@@ -1270,14 +1286,14 @@ describe("LoopNode Tests", () => {
           source: `
             return [
               {
-                contractAddress: "0x1111111111111111111111111111111111111111",
+                contractAddress: "${USDC_SEPOLIA_ADDRESS}",
                 spender: "${fundedSmartWalletAddress}",
-                amount: "10"
+                amount: "0"
               },
               {
-                contractAddress: "0x2222222222222222222222222222222222222222",
-                spender: "${fundedSmartWalletAddress}", 
-                amount: "10"
+                contractAddress: "${USDC_SEPOLIA_ADDRESS}",
+                spender: "0x0000000000000000000000000000000000000001",
+                amount: "0"
               }
             ];
           `,
@@ -1289,7 +1305,8 @@ describe("LoopNode Tests", () => {
         name: "deploy_contract_write_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: codeNode.id,
+          inputVariable: `{{${codeNode.name}.data}}`,
+          iterationTimeout: 60,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -1340,14 +1357,17 @@ describe("LoopNode Tests", () => {
         );
         createdIdMap.set(workflowId, true);
 
-        await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Block,
-            blockNumber: currentBlockNumber + triggerInterval,
+        await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Block,
+              blockNumber: currentBlockNumber + triggerInterval,
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: { timeout: 120000 } }, // 2 sequential real UserOps on Sepolia
+        );
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -1365,16 +1385,13 @@ describe("LoopNode Tests", () => {
           "Deploy + trigger ContractWrite loop step output:",
           util.inspect(loopStep!.output, { depth: null, colors: true }),
         );
-
-        // Note: The test may fail due to contract validation or network issues,
-        // but the important part is that the backend now supports contractWrite as a loop runner
       } finally {
         if (workflowId) {
           await client.deleteWorkflow(workflowId);
           createdIdMap.delete(workflowId);
         }
       }
-    });
+    }, 180000);
   });
 
   describe("Response Format Consistency Tests", () => {
@@ -1382,7 +1399,8 @@ describe("LoopNode Tests", () => {
       const wallet = await getSmartWallet(client);
 
       const loopConfig = {
-        inputNodeName: "manualTrigger",
+        inputVariable: "{{manualTrigger.data}}",
+        iterationTimeout: 30,
         iterVal: "value",
         iterKey: "index",
         executionMode: ExecutionMode.Sequential,
@@ -1423,7 +1441,8 @@ describe("LoopNode Tests", () => {
         name: "consistency_test",
         type: NodeType.Loop,
         data: {
-          inputNodeName: "manualTrigger",
+          inputVariable: "{{manualTrigger.data}}",
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -1569,7 +1588,8 @@ describe("LoopNode Tests", () => {
           name: "loop1",
           type: NodeType.Loop,
           data: {
-            inputNodeName: manualTrigger.name,
+            inputVariable: `{{${manualTrigger.name}.data}}`,
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Parallel,
@@ -1592,10 +1612,12 @@ describe("LoopNode Tests", () => {
             data: loopNode.data,
           },
           inputVariables: {
-            [manualTrigger.name]: [
-              { key: "key", amount: 1 },
-              { key: "key2", amount: 2000 },
-            ],
+            [manualTrigger.name]: {
+              data: [
+                { key: "key", amount: 1 },
+                { key: "key2", amount: 2000 },
+              ],
+            },
           },
         });
 
@@ -1701,7 +1723,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "testArray",
+            inputVariable: "{{testArray}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             runner: {
@@ -1739,7 +1762,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "nonExistentArray",
+            inputVariable: "{{nonExistentArray}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             runner: {
@@ -1769,7 +1793,7 @@ describe("LoopNode Tests", () => {
       // Backend correctly returns error when input variable is missing
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
-      expect(result.error).toContain("not found");
+      expect(result.error).toContain("could not be resolved");
     });
   });
 
@@ -1808,7 +1832,8 @@ describe("LoopNode Tests", () => {
       name: "edge_case_test",
       type: NodeType.Loop,
       data: {
-        inputNodeName: dataNode.id,
+        inputVariable: `{{${dataNode.name}.data}}`,
+        iterationTimeout: 30,
         iterVal: "value",
         iterKey: "index",
         runner: {
@@ -1861,7 +1886,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "testArray",
+            inputVariable: "{{testArray}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Sequential,
@@ -1955,7 +1981,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "testArray",
+            inputVariable: "{{testArray}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             // executionMode not specified - should default to sequential
@@ -2008,7 +2035,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "addressArray",
+            inputVariable: "{{addressArray}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Parallel, // Requested parallel but should be forced to sequential
@@ -2046,8 +2074,8 @@ describe("LoopNode Tests", () => {
 
         inputVariables: {
           addressArray: [
-            "0x1111111111111111111111111111111111111111",
-            "0x2222222222222222222222222222222222222222",
+            USDC_SEPOLIA_ADDRESS,
+            USDC_SEPOLIA_ADDRESS,
           ],
           settings: getSettings(wallet.address),
         },
@@ -2073,7 +2101,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "contractAddresses",
+            inputVariable: "{{contractAddresses}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Parallel, // Contract reads can run in parallel
@@ -2181,7 +2210,8 @@ describe("LoopNode Tests", () => {
           name: "loop_test",
           type: NodeType.Loop,
           data: {
-            inputNodeName: "contractAddresses",
+            inputVariable: "{{contractAddresses}}",
+            iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
             executionMode: ExecutionMode.Sequential,
@@ -2351,7 +2381,8 @@ describe("LoopNode Tests", () => {
         name: "simulate_sequential_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Sequential,
@@ -2392,7 +2423,7 @@ describe("LoopNode Tests", () => {
       const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
-      expect(inputConfig.inputNodeName).toBe(dataNode.id);
+      expect(inputConfig.inputVariable).toBe(`{{${dataNode.name}.data}}`);
       expect(inputConfig.iterVal).toBe("value");
       expect(inputConfig.iterKey).toBe("index");
       expect(inputConfig.executionMode).toBeDefined();
@@ -2443,7 +2474,8 @@ describe("LoopNode Tests", () => {
         name: "simulate_parallel_loop",
         type: NodeType.Loop,
         data: {
-          inputNodeName: dataNode.id,
+          inputVariable: `{{${dataNode.name}.data}}`,
+          iterationTimeout: 30,
           iterVal: "value",
           iterKey: "index",
           executionMode: ExecutionMode.Parallel,
@@ -2494,7 +2526,7 @@ describe("LoopNode Tests", () => {
       const inputConfig = loopStep!.config as unknown as LoopNodeData;
 
       // Verify basic configuration
-      expect(inputConfig.inputNodeName).toBe(dataNode.id);
+      expect(inputConfig.inputVariable).toBe(`{{${dataNode.name}.data}}`);
       expect(inputConfig.iterVal).toBe("value");
       expect(inputConfig.iterKey).toBe("index");
       expect(inputConfig.executionMode).toBeDefined();

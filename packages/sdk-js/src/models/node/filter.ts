@@ -7,7 +7,7 @@ import {
   NodeProps,
 } from "@avaprotocol/types";
 
-// Required props for constructor: id, name, type and data: { expression, inputNodeName }
+// Required props for constructor: id, name, type and data: { expression, inputVariable }
 
 class FilterNode extends Node {
   constructor(props: FilterNodeProps) {
@@ -36,7 +36,7 @@ class FilterNode extends Node {
 
     const config = new avs_pb.FilterNode.Config();
     config.setExpression((this.data as FilterNodeData).expression);
-    config.setInputNodeName((this.data as FilterNodeData).inputNodeName || "");
+    config.setInputVariable((this.data as FilterNodeData).inputVariable || "");
     node.setConfig(config);
 
     request.setFilter(node);

@@ -41,9 +41,9 @@ describe("FilterNode Tests", () => {
           name: "filter_test",
           type: NodeType.Filter,
           data: {
-          expression: "value.age >= 18",
-          inputNodeName: "testArray",
-        }
+            expression: "value.age >= 18",
+            inputVariable: "{{testArray}}",
+          },
         },
         inputVariables: {
           testArray: [
@@ -69,9 +69,9 @@ describe("FilterNode Tests", () => {
           name: "filter_test",
           type: NodeType.Filter,
           data: {
-          expression: "value.age < 18",
-          inputNodeName: "testArray",
-        }
+            expression: "value.age < 18",
+            inputVariable: "{{testArray}}",
+          },
         },
         inputVariables: {
           testArray: [
@@ -97,9 +97,9 @@ describe("FilterNode Tests", () => {
           name: "filter_test",
           type: NodeType.Filter,
           data: {
-          expression: 'value.name.startsWith("A")',
-          inputNodeName: "testArray",
-        }
+            expression: 'value.name.startsWith("A")',
+            inputVariable: "{{testArray}}",
+          },
         },
         inputVariables: {
           testArray: [
@@ -125,9 +125,9 @@ describe("FilterNode Tests", () => {
           name: "filter_test",
           type: NodeType.Filter,
           data: {
-          expression: "value.age >= trigger.data.minAge",
-          inputNodeName: "testArray",
-        }
+            expression: "value.age >= trigger.data.minAge",
+            inputVariable: "{{testArray}}",
+          },
         },
         inputVariables: {
           testArray: [
@@ -180,7 +180,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: "value.age >= 18",
-          inputNodeName: dataNode.id, // Reference the data generation node
+          inputVariable: `{{${dataNode.name}.data}}`, // Reference the data generation node
         },
       });
 
@@ -200,7 +200,7 @@ describe("FilterNode Tests", () => {
       expect(simulation.steps).toHaveLength(3); // trigger + data node + filter node
 
       const filterStep = simulation.steps.find(
-        (step) => step.id === filterNode.id
+        (step) => step.id === filterNode.id,
       );
       expect(filterStep).toBeDefined();
     });
@@ -233,7 +233,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: 'value.age >= 20 && value.name.startsWith("A")',
-          inputNodeName: dataNode.id, // Reference the data generation node
+          inputVariable: `{{${dataNode.name}.data}}`, // Reference the data generation node
         },
       });
 
@@ -251,7 +251,7 @@ describe("FilterNode Tests", () => {
 
       expect(simulation.status).toBe(ExecutionStatus.Success);
       const filterStep = simulation.steps.find(
-        (step) => step.id === filterNode.id
+        (step) => step.id === filterNode.id,
       );
       expect(filterStep).toBeDefined();
     });
@@ -287,7 +287,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: "value.age >= 18",
-          inputNodeName: dataNode.id, // Reference the data generation node
+          inputVariable: `{{${dataNode.name}.data}}`, // Reference the data generation node
         },
       });
 
@@ -306,7 +306,7 @@ describe("FilterNode Tests", () => {
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -327,7 +327,7 @@ describe("FilterNode Tests", () => {
 
         const filterStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === filterNode.id
+          (step) => step.id === filterNode.id,
         );
 
         if (_.isUndefined(filterStep)) {
@@ -352,7 +352,7 @@ describe("FilterNode Tests", () => {
 
       const filterConfig = {
         expression: "value.age >= 21",
-        inputNodeName: "testArray",
+        inputVariable: "{{testArray}}",
       };
 
       const inputVariables = {
@@ -399,7 +399,7 @@ describe("FilterNode Tests", () => {
         type: NodeType.Filter,
         data: {
           expression: "value.age >= 21",
-          inputNodeName: dataNode.id, // Reference the data generation node
+          inputVariable: `{{${dataNode.name}.data}}`, // Reference the data generation node
         },
       });
 
@@ -415,7 +415,7 @@ describe("FilterNode Tests", () => {
       });
 
       const simulatedStep = simulation.steps.find(
-        (step) => step.id === filterNode.id
+        (step) => step.id === filterNode.id,
       );
 
       // Test 3: Deploy + Trigger
@@ -429,7 +429,7 @@ describe("FilterNode Tests", () => {
       let workflowId: string | undefined;
       try {
         workflowId = await client.submitWorkflow(
-          client.createWorkflow(workflowProps)
+          client.createWorkflow(workflowProps),
         );
         createdIdMap.set(workflowId, true);
 
@@ -447,7 +447,7 @@ describe("FilterNode Tests", () => {
         });
         const executedStep = _.find(
           _.first(executions.items)?.steps,
-          (step) => step.id === filterNode.id
+          (step) => step.id === filterNode.id,
         );
 
         // Compare response formats
