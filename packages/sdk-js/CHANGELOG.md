@@ -1,5 +1,13 @@
 # @avaprotocol/sdk-js
 
+## 2.14.1
+
+### Patch Changes
+
+- fix: update protobuf codegen to use inputVariable (renamed from inputNodeName) for LoopNode and FilterNode configs. Add loop ETHTransfer/GraphQL runner tests and strengthen from-field assertions.
+- Updated dependencies
+  - @avaprotocol/types@2.10.1
+
 ## 2.14.0
 
 ### Minor Changes
