@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 2.14.2
+
+### Patch Changes
+
+- 87715a5: fix: guard sendGrpcRequest against undefined gRPC response
+
 ## 2.14.1
 
 ### Patch Changes
