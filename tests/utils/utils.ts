@@ -203,6 +203,8 @@ const fileToStartIndex: Record<string, number> = {
   "telegram-alert-on-transfer.test.ts": 580,
   "exported-workflow-consistency.test.ts": 660,
   "uniswapv3_stoploss.test.ts": 780,
+  "recurring-payment-with-report.test.ts": 800,
+  "batch-recurring-payment-with-email.test.ts": 820,
   // Trigger tests (600-639)
   "eventTrigger.test.ts": 600,
   "manual.test.ts": 620,

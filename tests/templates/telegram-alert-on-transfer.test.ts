@@ -5,15 +5,12 @@ import {
   NodeType,
   WorkflowStatus,
   ExecutionStatus,
-  Lang,
 } from "@avaprotocol/types";
 import {
   getEOAAddress,
   authenticateClient,
   TIMEOUT_DURATION,
   getSettings,
-  getCurrentChain,
-  getChainNameFromId,
   getSmartWallet,
   getClient,
   padAddressForTopic,
@@ -21,36 +18,36 @@ import {
   getExpiredAt,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { tokens, chainId, telegramBotToken, telegramChatId } = getConfig();
-
-// Get current chain information
-const currentChain = getCurrentChain();
-const currentChainName = getChainNameFromId(currentChain.chainId);
+const { tokens, telegramBotToken, telegramChatId } = getConfig();
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
-// Set timeout to 15 seconds for all tests in this file
 jest.setTimeout(TIMEOUT_DURATION);
 
+/**
+ * Template: Instant Telegram Alert for Token Transfers
+ *
+ * Mirrors the studio template: telegram-alert-on-transfer.json
+ *
+ * Workflow (2-node):
+ *   EventTrigger (transfer monitor: incoming + outgoing ERC-20 transfers)
+ *     → Telegram (RestAPI with shouldSummarize for AI-generated message)
+ *
+ * The EventTrigger uses the "transfer" type to monitor ERC-20 Transfer events
+ * for specified tokens on the user's wallet. The Telegram node uses AI summarization
+ * to compose a human-readable message from the raw event data.
+ */
 describe("Template: Telegram Alert on Transfer", () => {
   let client: Client;
   let eoaAddress: string;
   const createdWorkflowIds: string[] = [];
 
-  // Real client data for USDC transfer monitoring
-  const REAL_WALLET_ADDRESS = "0xB3Fb744d8B811B4fb19586cdbEc821b4aAFbEEe7";
-  // Import USDC address from shared configuration
-  const USDC_CONTRACT_ADDRESS = USDC_SEPOLIA_ADDRESS;
-  const TRANSFER_TOPIC =
-    "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-
-  // Template IDs (using consistent IDs for testing)
+  // Template IDs matching studio template
   const triggerIds = {
     eventTrigger: "01JXCC3P7JY3YFZDDQXKFP45T1",
   };
 
   const nodeIds = {
-    customCode: "01JXCFKH0J52SNNY4BYSKCA7HK",
     telegram: "01JXVQ4CJHS24Y2SYJ38C6017E",
   };
 
@@ -61,7 +58,6 @@ describe("Template: Telegram Alert on Transfer", () => {
   });
 
   afterAll(async () => {
-    // Clean up any created workflows
     for (const workflowId of createdWorkflowIds) {
       try {
         await client.deleteWorkflow(workflowId);
@@ -72,18 +68,29 @@ describe("Template: Telegram Alert on Transfer", () => {
   });
 
   /**
-   * Create the real EventTrigger with input data (monitoring both incoming and outgoing transfers)
+   * EventTrigger: Monitor both incoming and outgoing ERC-20 transfers.
+   *
+   * Matches studio template's eventTrigger node with:
+   * - type: "transfer"
+   * - tokenIds: [native ETH, USDC]
+   * - applyDecimalsTo: "Transfer.value"
+   *
+   * The SDK expresses this as two queries (outgoing + incoming) with
+   * topic filtering on the wallet address.
    */
   function createEventTrigger() {
+    const TRANSFER_TOPIC =
+      "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
     return TriggerFactory.create({
       id: triggerIds.eventTrigger,
-      name: "eventTrigger",
+      name: "transfer_monitor",
       type: TriggerType.Event,
       data: {
         queries: [
           {
-            // Query 1: Outgoing transfers (wallet address === from)
-            addresses: [USDC_CONTRACT_ADDRESS],
+            // Query 1: Outgoing transfers (wallet === from)
+            addresses: [USDC_SEPOLIA_ADDRESS],
             topics: [TRANSFER_TOPIC, padAddressForTopic(eoaAddress), null],
             maxEventsPerBlock: 100,
             contractAbi: [
@@ -129,8 +136,8 @@ describe("Template: Telegram Alert on Transfer", () => {
             ],
           },
           {
-            // Query 2: Incoming transfers (wallet address === to)
-            addresses: [USDC_CONTRACT_ADDRESS],
+            // Query 2: Incoming transfers (wallet === to)
+            addresses: [USDC_SEPOLIA_ADDRESS],
             topics: [TRANSFER_TOPIC, null, padAddressForTopic(eoaAddress)],
             maxEventsPerBlock: 100,
             contractAbi: [
@@ -181,77 +188,44 @@ describe("Template: Telegram Alert on Transfer", () => {
   }
 
   /**
-   * Create the CustomCode node that processes transfer data (matching studio template)
-   */
-  function createCustomCodeNode() {
-    return NodeFactory.create({
-      id: nodeIds.customCode,
-      name: "code0",
-      type: NodeType.CustomCode,
-      data: {
-        lang: Lang.JavaScript,
-
-         
-        source: `const _ = require("lodash");
-const dayjs = require("dayjs");
-const isReceive = eventTrigger.data.toAddress === eventTrigger.input.address;
-
-const {
-  tokenSymbol,
-  value,
-  fromAddress,
-  toAddress,
-  blockTimestamp
-} = eventTrigger.data;
-
-// Format the timestamp into a readable string (e.g. "2025-07-09 14:30")
-const formattedTime = dayjs(blockTimestamp).format('YYYY-MM-DD HH:mm');
-
-const direction = isReceive ? "⬇️ Received" : "⬆️ Sent";
-const amount = \`<b>\${_.floor(parseFloat(value), 4)} \${tokenSymbol}</b>\`;
-const fromTo = isReceive ? \`from <code>\${fromAddress}</code>\` : \`to <code>\${toAddress}</code>\`;
-const chain = \`on <b>Sepolia</b>\`; // Hardcoded for now since chainName is not available
-const message = \`\${direction} \${amount} \${fromTo} \${chain}\\n<i>\${formattedTime}</i>\`;
-
-return message;`,
-      },
-    });
-  }
-
-  /**
-   * Create the Telegram notification node (matching studio template)
+   * Telegram node: Send alert via Telegram Bot API with AI summarization.
+   *
+   * Matches studio template's telegram node:
+   * - shouldSummarize: true (AI generates the message from workflow context)
+   * - message: "" (empty — AI fills it in)
+   *
+   * Since the SDK has no native Telegram node type, we use RestAPI
+   * with options.summarize to achieve the same result.
    */
   function createTelegramNode() {
     return NodeFactory.create({
       id: nodeIds.telegram,
-      name: "telegram0",
+      name: "telegram_send",
       type: NodeType.RestAPI,
       data: {
         url: `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
         method: "POST",
         body: JSON.stringify({
           chat_id: telegramChatId,
-          text: "[Transfer]: {{code0.data}}",
+          text: "",
           parse_mode: "HTML",
         }),
         headers: { "Content-Type": "application/json" },
+        options: { summarize: true },
       },
     });
   }
 
   /**
-   * Create the workflow edges
+   * Edges: EventTrigger → Telegram (direct, no intermediate nodes)
+   * Matches studio template's 2-edge structure (settings→trigger, trigger→telegram)
+   * minus the settings edge which is implicit in the SDK.
    */
   function createWorkflowEdges() {
     return [
       new Edge({
-        id: `xy-edge__${triggerIds.eventTrigger}source_${triggerIds.eventTrigger}-${nodeIds.customCode}target_${nodeIds.customCode}`,
+        id: `xy-edge__${triggerIds.eventTrigger}source_${triggerIds.eventTrigger}-${nodeIds.telegram}target_${nodeIds.telegram}`,
         source: triggerIds.eventTrigger,
-        target: nodeIds.customCode,
-      }),
-      new Edge({
-        id: `xy-edge__${nodeIds.customCode}source_${nodeIds.customCode}-${nodeIds.telegram}target_${nodeIds.telegram}`,
-        source: nodeIds.customCode,
         target: nodeIds.telegram,
       }),
     ];
@@ -273,112 +247,39 @@ return message;`,
       expect(typeof result.success).toBe("boolean");
 
       // For event triggers, no matching events means success: false with data: null
-      // This is expected behavior for historical search with no results
       if (result.data === null) {
         console.log(
-          "ℹ️  No Transfer events found for address (expected):",
+          "No Transfer events found for address (expected):",
           eoaAddress,
         );
         expect(result.success).toBe(false);
       } else {
         expect(result.success).toBe(true);
-        // If we get mock data, verify it has the expected structured event data
         expect(result.data).toHaveProperty("blockNumber");
-        expect(result.data).toHaveProperty("walletAddress"); // Changed from "address" to "walletAddress"
+        expect(result.data).toHaveProperty("walletAddress");
         expect(result.data).toHaveProperty("fromAddress");
         expect(result.data).toHaveProperty("toAddress");
-        expect(result.data).toHaveProperty("value"); // Formatted value from applyToFields
+        expect(result.data).toHaveProperty("value");
         expect(result.data).toHaveProperty("tokenSymbol");
         expect(result.data).toHaveProperty("transactionHash");
       }
     });
 
-    test("should test CustomCode node with runNodeWithInputs", async () => {
-      const customCodeNode = createCustomCodeNode();
-
-      // Mock the eventTrigger context data with structured event fields (post-applyToFields processing)
-      const inputVariables = {
-        eventTrigger: {
-          data: {
-            // Structured fields created by backend event parsing with applyToFields
-            fromAddress: "0x1234567890123456789012345678901234567890",
-            toAddress: eoaAddress,
-            value: "100.5", // Decimal-formatted value (applyToFields: ["Transfer.value"])
-            tokenSymbol: "USDC",
-            blockTimestamp: Date.now(),
-            // Raw blockchain log fields (still available)
-            blockNumber: 12345678,
-            chainId: parseInt(chainId),
-            address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-            data: "0x0000000000000000000000000000000000000000000000000000000005fd8220",
-            topics: [
-              "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-              "0x0000000000000000000000001234567890123456789012345678901234567890",
-              `0x000000000000000000000000${eoaAddress.slice(2)}`,
-            ],
-            transactionHash:
-              "0x000000000000000000000000000000000000000000000000185331f3d274a668",
-          },
-          input: {
-            address: eoaAddress,
-            chainName: currentChainName,
-            tokens: [{ symbol: "USDC", name: "USD Coin", decimals: 6 }],
-          },
-        },
-      };
-
-      const result = await client.runNodeWithInputs({
-        node: {
-          id: getNextId(),
-          name: "custom_code_telegram_test",
-          type: NodeType.CustomCode,
-          data: customCodeNode.data,
-        },
-        inputVariables: inputVariables,
-      });
-
-      console.log("=== CustomCode Input Variables ===");
-      console.log(
-        "eventTrigger.data.value (formatted):",
-        inputVariables.eventTrigger.data.value,
-      );
-      console.log(
-        "eventTrigger.data.tokenSymbol:",
-        inputVariables.eventTrigger.data.tokenSymbol,
-      );
-      console.log(
-        "eventTrigger.data.fromAddress:",
-        inputVariables.eventTrigger.data.fromAddress,
-      );
-      console.log(
-        "eventTrigger.data.toAddress:",
-        inputVariables.eventTrigger.data.toAddress,
-      );
-
-      console.log(
-        "=== CustomCode result ===",
-        util.inspect(result, { depth: null, colors: true }),
-      );
-
-      expect(result.success).toBe(true);
-      expect(typeof result.data).toBe("string");
-      expect(result.data).toContain("⬇️ Received"); // Should be "Received" since to === eoaAddress
-      expect(result.data).toContain("USDC");
-      expect(result.data).toContain("100.5"); // Exact match since we're using pre-formatted value
-      expect(result.data).toContain("Sepolia"); // Should include chain name
-    });
-
     test("should test Telegram node with runNodeWithInputs", async () => {
       const telegramNode = createTelegramNode();
 
-      // Mock the code0 output and apContext
+      // Mock the transfer_monitor (eventTrigger) output data
       const inputVariables = {
-        code0: {
-          data: "Received 100.5 USDC from 0x1234567890123456789012345678901234567890 at block 12345678 (2025-01-15 14:30)",
-        },
-        apContext: {
-          configVars: {
-            ap_notify_bot_token: "dummy_bot_token_for_testing",
+        transfer_monitor: {
+          data: {
+            fromAddress: "0x1234567890123456789012345678901234567890",
+            toAddress: eoaAddress,
+            value: "100.5",
+            tokenSymbol: "USDC",
+            blockTimestamp: Date.now(),
+            blockNumber: 12345678,
+            transactionHash:
+              "0x000000000000000000000000000000000000000000000000185331f3d274a668",
           },
         },
       };
@@ -386,7 +287,7 @@ return message;`,
       const result = await client.runNodeWithInputs({
         node: {
           id: getNextId(),
-          name: "rest_api_telegram_test",
+          name: "telegram_send_test",
           type: NodeType.RestAPI,
           data: telegramNode.data,
         },
@@ -398,36 +299,38 @@ return message;`,
         util.inspect(result, { depth: null, colors: true }),
       );
 
-      // The actual Telegram API call might fail due to invalid token, but we can check the request structure
+      // The node processes correctly even if the actual HTTP call fails (e.g., invalid token)
       expect(result).toBeDefined();
-      // Test should pass even if the HTTP call fails, as long as the node processes correctly
     });
   });
 
   describe("2. Workflow Simulation Testing", () => {
     test("should simulate complete workflow", async () => {
       const eventTrigger = createEventTrigger();
-      const customCodeNode = createCustomCodeNode();
       const telegramNode = createTelegramNode();
       const edges = createWorkflowEdges();
 
+      const wallet = await getSmartWallet(client);
+
       const workflowProps = {
-        smartWalletAddress: REAL_WALLET_ADDRESS,
+        smartWalletAddress: wallet.address,
         trigger: eventTrigger,
-        nodes: [customCodeNode, telegramNode],
+        nodes: [telegramNode],
         edges: edges,
         startAt: Date.now(),
         expiredAt: getExpiredAt("24h"),
-        maxExecution: 1,
+        maxExecution: 5,
         name: "Telegram Alert on Transfer Simulation",
       };
 
       const workflow = client.createWorkflow(workflowProps);
-      const wallet = await getSmartWallet(client);
       const simulationResult = await client.simulateWorkflow({
         ...workflow,
         inputVariables: {
-          settings: getSettings(wallet.address),
+          settings: getSettings(
+            wallet.address,
+            "Telegram Alert on Transfer Simulation",
+          ),
         },
       });
 
@@ -437,7 +340,7 @@ return message;`,
       );
 
       expect(simulationResult.status).toBe(ExecutionStatus.Success);
-      expect(simulationResult.steps).toHaveLength(3); // trigger + 2 nodes
+      expect(simulationResult.steps).toHaveLength(2); // trigger + telegram
 
       // Verify trigger step
       const triggerStep = simulationResult.steps[0];
@@ -445,29 +348,22 @@ return message;`,
       expect(triggerStep.type).toBe(TriggerType.Event);
       expect(triggerStep.success).toBeTruthy();
 
-      // The trigger step's config field should contain custom configuration data provided by the user
-      // TODO: The trigger config field is currently not populated - this is a known backend issue
-      // For now, we verify that config exists and has the queries structure
+      // Verify trigger config contains queries
       expect(triggerStep.config).toBeDefined();
       const triggerConfig = triggerStep.config as Record<string, unknown>;
       expect(triggerConfig.queries).toBeDefined();
       expect(Array.isArray(triggerConfig.queries)).toBe(true);
 
-      // Custom input data should be accessible via VM variables (checked in subsequent node's inputsList)
-      // The CustomCode node should have access to eventTrigger.data which contains the trigger output data
-      const customCodeStep = simulationResult.steps[1];
-      expect(customCodeStep.inputsList).toContain("eventTrigger.data");
-
-      // CRITICAL: Validate that the CustomCode execution succeeds with structured event trigger data
-      expect(customCodeStep.success).toBeTruthy();
-      expect(typeof customCodeStep.output).toBe("string");
+      // Verify Telegram step executed
+      const telegramStep = simulationResult.steps[1];
+      expect(telegramStep.id).toBe(nodeIds.telegram);
+      expect(telegramStep.success).toBeTruthy();
     });
   });
 
   describe("3. Full Deployment and Execution Testing", () => {
-    test("should deploy and trigger workflow", async () => {
+    test("should deploy and retrieve workflow correctly", async () => {
       const eventTrigger = createEventTrigger();
-      const customCodeNode = createCustomCodeNode();
       const telegramNode = createTelegramNode();
       const edges = createWorkflowEdges();
 
@@ -476,11 +372,11 @@ return message;`,
       const workflowData = {
         smartWalletAddress: wallet.address,
         trigger: eventTrigger,
-        nodes: [customCodeNode, telegramNode],
+        nodes: [telegramNode],
         edges: edges,
         startAt: Date.now(),
         expiredAt: getExpiredAt("24h"),
-        maxExecution: 1,
+        maxExecution: 5,
         name: "Telegram Alert on Transfer Test",
         inputVariables: {
           settings: getSettings(
@@ -490,36 +386,31 @@ return message;`,
         },
       };
 
-      // Create and submit workflow
       const workflow = client.createWorkflow(workflowData);
       const workflowId = await client.submitWorkflow(workflow);
       createdWorkflowIds.push(workflowId);
 
-      console.log(`✅ Workflow deployed with ID: ${workflowId}`);
+      console.log(`Workflow deployed with ID: ${workflowId}`);
 
       // Verify workflow was saved correctly
       const savedWorkflow = await client.getWorkflow(workflowId);
 
       expect(savedWorkflow.id).toBe(workflowId);
       expect(savedWorkflow.status).toBe(WorkflowStatus.Enabled);
-      expect(savedWorkflow.nodes).toHaveLength(2);
-      expect(savedWorkflow.edges).toHaveLength(2);
+      expect(savedWorkflow.nodes).toHaveLength(1); // Only telegram node
+      expect(savedWorkflow.edges).toHaveLength(1); // trigger → telegram
 
-      // Triggers no longer have input fields - they only have config fields
-      // EventTrigger data contains the query configuration (addresses, topics, etc.)
+      // Verify trigger data
       expect(savedWorkflow.trigger.data).toBeDefined();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const triggerData = savedWorkflow.trigger.data as any;
       expect(triggerData.queries).toBeDefined();
-      expect(triggerData.queries).toHaveLength(2); // Two queries: outgoing (from) and incoming (to) transfers
-      expect(triggerData.queries[0].addresses).toContain(
-        "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-      );
+      expect(triggerData.queries).toHaveLength(2); // Two queries: outgoing + incoming
+      expect(triggerData.queries[0].addresses).toContain(USDC_SEPOLIA_ADDRESS);
     });
 
-    test("should verify workflow nodes are properly saved (regression test)", async () => {
+    test("should verify workflow structure persistence (regression test)", async () => {
       const eventTrigger = createEventTrigger();
-      const customCodeNode = createCustomCodeNode();
       const telegramNode = createTelegramNode();
       const edges = createWorkflowEdges();
 
@@ -528,11 +419,11 @@ return message;`,
       const workflowData = {
         smartWalletAddress: wallet.address,
         trigger: eventTrigger,
-        nodes: [customCodeNode, telegramNode],
+        nodes: [telegramNode],
         edges: edges,
         startAt: Date.now(),
         expiredAt: getExpiredAt("24h"),
-        maxExecution: 1,
+        maxExecution: 5,
         name: "Serialization Regression Test",
         inputVariables: {
           settings: getSettings(
@@ -546,26 +437,15 @@ return message;`,
       const workflowId = await client.submitWorkflow(workflow);
       createdWorkflowIds.push(workflowId);
 
-      // Get the workflow back and verify it has nodes and edges
       const savedWorkflow = await client.getWorkflow(workflowId);
 
-      // This was the original bug - nodes and edges were empty arrays
-      expect(savedWorkflow.nodes).toHaveLength(2);
-      expect(savedWorkflow.edges).toHaveLength(2);
+      // Regression: nodes and edges were previously empty arrays
+      expect(savedWorkflow.nodes).toHaveLength(1);
+      expect(savedWorkflow.edges).toHaveLength(1);
 
-      // Verify node details are preserved
-      const savedCustomCodeNode = savedWorkflow.nodes.find(
-        (n: { id: string }) => n.id === nodeIds.customCode,
-      );
+      // Verify telegram node details are preserved
       const savedTelegramNode = savedWorkflow.nodes.find(
         (n: { id: string }) => n.id === nodeIds.telegram,
-      );
-
-      expect(savedCustomCodeNode).toBeDefined();
-      expect(savedCustomCodeNode!.type).toBe(NodeType.CustomCode);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((savedCustomCodeNode!.data as any).source).toContain(
-        "eventTrigger.data.to",
       );
 
       expect(savedTelegramNode).toBeDefined();
