@@ -499,6 +499,141 @@ describe("LoopNode Tests", () => {
         expect((iteration as Record<string, unknown>)[methodName]).toBe(true); // Expect {approve: true}
       });
     });
+
+    test("should process loop with ETHTransfer runner and populate from address", async () => {
+      const recipientAddresses = [
+        "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
+        "0x0000000000000000000000000000000000000001",
+      ];
+      const transferAmount = "100000000000000"; // 0.0001 ETH in wei
+
+      const params = {
+        node: {
+          id: getNextId(),
+          name: "loop_eth_transfer_test",
+          type: NodeType.Loop,
+          data: {
+            inputVariable: "{{recipients}}",
+            iterationTimeout: 60,
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Sequential,
+            runner: {
+              type: LoopRunnerType.EthTransfer,
+              config: {
+                destination: "{{value}}",
+                amount: transferAmount,
+              },
+            },
+          } as LoopNodeData,
+        },
+        inputVariables: {
+          recipients: recipientAddresses,
+          settings: getSettings(fundedSmartWalletAddress),
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true }),
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true }),
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+
+      const iterations = result.data as Array<Record<string, unknown>>;
+      expect(iterations.length).toBe(recipientAddresses.length);
+
+      // Each iteration should return a transfer object with from, to, and value
+      iterations.forEach((iteration, i) => {
+        expect(iteration).toHaveProperty("transfer");
+        const transfer = iteration.transfer as Record<string, string>;
+
+        // Verify from address is populated (smart wallet address)
+        expect(transfer.from).toBeDefined();
+        expect(typeof transfer.from).toBe("string");
+        expect(transfer.from.toLowerCase()).toBe(
+          fundedSmartWalletAddress.toLowerCase(),
+        );
+
+        // Verify to address matches the recipient
+        expect(transfer.to).toBeDefined();
+        expect(transfer.to.toLowerCase()).toBe(
+          recipientAddresses[i].toLowerCase(),
+        );
+
+        // Verify amount
+        expect(transfer.value).toBe(transferAmount);
+      });
+    });
+
+    test("should process loop with GraphQL runner using runNodeWithInputs", async () => {
+      const params = {
+        node: {
+          id: getNextId(),
+          name: "loop_graphql_test",
+          type: NodeType.Loop,
+          data: {
+            inputVariable: "{{tokenIds}}",
+            iterationTimeout: 30,
+            iterVal: "value",
+            iterKey: "index",
+            executionMode: ExecutionMode.Sequential,
+            runner: {
+              type: LoopRunnerType.GraphQLQuery,
+              config: {
+                url: "https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV",
+                query: `{
+                  tokens(first: 1, where: {symbol: "{{value}}"}) {
+                    id
+                    symbol
+                    name
+                    decimals
+                  }
+                }`,
+              },
+            },
+          } as LoopNodeData,
+        },
+        inputVariables: {
+          tokenIds: ["WETH", "USDC"],
+        },
+      };
+
+      console.log(
+        "params:",
+        util.inspect(params, { depth: null, colors: true }),
+      );
+
+      const result = await client.runNodeWithInputs(params);
+
+      console.log(
+        "response:",
+        util.inspect(result, { depth: null, colors: true }),
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(Array.isArray(result.data)).toBe(true);
+
+      const iterations = result.data as Array<Record<string, unknown>>;
+      expect(iterations.length).toBe(2);
+
+      // Each iteration should return GraphQL query data
+      iterations.forEach((iteration) => {
+        expect(iteration).toBeDefined();
+        // The response should contain the data from The Graph API
+        expect(typeof iteration).toBe("object");
+      });
+    });
   });
 
   describe("simulateWorkflow Tests", () => {
