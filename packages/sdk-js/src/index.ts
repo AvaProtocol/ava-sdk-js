@@ -377,6 +377,12 @@ class BaseClient {
               (error: any, response: TResponse) => {
                 if (error) {
                   grpcReject(error);
+                } else if (!response) {
+                  grpcReject(
+                    new Error(
+                      `gRPC ${method} returned empty response — possible connection interruption`,
+                    ),
+                  );
                 } else {
                   grpcResolve(response);
                 }
