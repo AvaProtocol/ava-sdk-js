@@ -152,13 +152,11 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
       expect(result.data.transfer).toBeDefined();
       expect(typeof result.data.transfer).toBe("object");
 
-      // Check transfer fields
+      // Check transfer fields - from should always be the smart wallet address
       expect(result.data.transfer.from).toBeDefined();
       expect(typeof result.data.transfer.from).toBe("string");
-      // Note: from might be empty string if backend not yet fully deployed
-      if (result.data.transfer.from) {
-        expect(result.data.transfer.from.toLowerCase()).toBe(smartWalletAddress.toLowerCase());
-      }
+      expect(result.data.transfer.from).not.toBe("");
+      expect(result.data.transfer.from.toLowerCase()).toBe(smartWalletAddress.toLowerCase());
 
       expect(result.data.transfer.to).toBeDefined();
       expect(typeof result.data.transfer.to).toBe("string");
