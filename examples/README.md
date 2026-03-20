@@ -356,7 +356,8 @@ const loopNode = NodeFactory.create({
   name: "Check Multiple Balances",
   type: NodeType.Loop,
   data: {
-    inputNodeName: "manual_trigger", // References the trigger data
+    inputVariable: "{{manual_trigger.data}}", // Template variable referencing trigger data
+    iterationTimeout: 30, // Per-iteration timeout in seconds
     iterVal: "value", // Current iteration value
     iterKey: "index", // Current iteration index
     runner: {

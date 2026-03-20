@@ -406,7 +406,8 @@ describeIfSepolia("Gas Tracking Tests", () => {
             name: "loopEthTransfer",
             type: NodeType.Loop,
             data: {
-              inputNodeName: "manualTrigger",
+              inputVariable: "{{manualTrigger.data}}",
+              iterationTimeout: 30,
               iterVal: "recipient",
               iterKey: "index",
               executionMode: ExecutionMode.Sequential, // ETH transfers always run sequentially
@@ -557,7 +558,8 @@ describeIfSepolia("Gas Tracking Tests", () => {
             name: "loopContractWrite",
             type: NodeType.Loop,
             data: {
-              inputNodeName: "manualTrigger",
+              inputVariable: "{{manualTrigger.data}}",
+              iterationTimeout: 30,
               iterVal: "recipient",
               iterKey: "index",
               executionMode: ExecutionMode.Sequential, // Contract writes always run sequentially
