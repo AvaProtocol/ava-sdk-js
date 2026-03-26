@@ -22,3 +22,6 @@ services:
       - "9010:9010"
     volumes:
       - ./config:/app/config
+    environment:
+      - OPERATOR_ECDSA_KEY_PASSWORD=${OPERATOR_ECDSA_KEY_PASSWORD}
+      - OPERATOR_BLS_KEY_PASSWORD=${OPERATOR_BLS_KEY_PASSWORD}

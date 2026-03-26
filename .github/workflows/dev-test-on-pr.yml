@@ -86,8 +86,10 @@ jobs:
       CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      OPERATOR_PRIVATE_KEY: ${{ secrets.OPERATOR_PRIVATE_KEY }}
-      OPERATOR_ADDRESS: "0x997E5D40a32c44a3D93E59fC55C4Fd20b7d2d49D"
+      OPERATOR_ECDSA_KEYSTORE: ${{ secrets.OPERATOR_ECDSA_KEYSTORE }}
+      OPERATOR_ECDSA_KEY_PASSWORD: ${{ secrets.OPERATOR_ECDSA_KEY_PASSWORD }}
+      OPERATOR_BLS_KEYSTORE: ${{ secrets.OPERATOR_BLS_KEYSTORE }}
+      OPERATOR_BLS_KEY_PASSWORD: ${{ secrets.OPERATOR_BLS_KEY_PASSWORD }}
       # Variables
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
@@ -124,7 +126,12 @@ jobs:
 
       - name: Inject secrets into operator config
         run: |
-          export ETH_RPC_URL ETH_WS_URL OPERATOR_PRIVATE_KEY OPERATOR_ADDRESS
+          # Write operator key files from secrets
+          echo "$OPERATOR_ECDSA_KEYSTORE" > config/operator-ecdsa-key.json
+          echo "$OPERATOR_BLS_KEYSTORE" > config/operator-bls-key.json
+
+          # Generate operator runtime config
+          export ETH_RPC_URL ETH_WS_URL
           envsubst < config/operator.yaml > config/operator.runtime.yaml
           echo "Generated config: $(wc -l < config/operator.runtime.yaml) lines"
           if grep -q "\${.*}" config/operator.runtime.yaml; then

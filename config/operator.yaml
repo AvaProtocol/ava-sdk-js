@@ -1,6 +1,6 @@
 environment: development
 
-operator_address: ${OPERATOR_ADDRESS}
+operator_address: 0x997E5D40a32c44a3D93E59fC55C4Fd20b7d2d49D
 
 # Sepolia AVS contract addresses (same as aggregator)
 avs_registry_coordinator_address: 0xcA95381802FD1398d5BF2D01243210cFb3a2b3BD
@@ -10,8 +10,9 @@ operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
 eth_rpc_url: ${ETH_RPC_URL}
 eth_ws_url: ${ETH_WS_URL}
 
-# Operator ECDSA private key (injected from secrets)
-ecdsa_private_key: ${OPERATOR_PRIVATE_KEY}
+# Operator key files (written by CI from secrets)
+ecdsa_private_key_store_path: /app/config/operator-ecdsa-key.json
+bls_private_key_store_path: /app/config/operator-bls-key.json
 
 # Aggregator connection (docker service name)
 aggregator_server_ip_port_address: "aggregator:2206"
