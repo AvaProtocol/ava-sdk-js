@@ -1,6 +1,6 @@
 # E2E Test Failures Analysis
 
-**Run:** [#23579169424](https://github.com/AvaProtocol/ava-sdk-js/actions/runs/23579169424)
+**CI Run:** [#23579169424](https://github.com/AvaProtocol/ava-sdk-js/actions/runs/23579169424)
 **Date:** 2026-03-26
 **Branch:** `fix/ci-operator-setup-and-balance-tests`
 
@@ -8,115 +8,119 @@
 
 | Suite | Result | Passed | Failed | Total |
 |---|---|---|---|---|
-| triggers | ✅ Pass | — | 0 | — |
-| workflows | ✅ Pass | — | 0 | — |
-| core | ❌ Fail | 87 | 4 | 91 |
-| templates | ❌ Fail | 45 | 3 | 49 |
-| nodes | ❌ Fail | 165 | 6 | 171 |
-| executions | ❌ Fail | 47 | 3 | 50 |
+| triggers | Pass | — | 0 | — |
+| workflows | Pass | — | 0 | — |
+| core | Fail | 87 | 4 | 91 |
+| templates | Fail | 45 | 3 | 49 |
+| nodes | Fail | 165 | 6 | 171 |
+| executions | Fail | 47 | 3 | 50 |
 
 **Total: 16 test failures across 4 suites**
+
+## Local vs CI Comparison
+
+Each failing test file was run locally against the dev aggregator+operator to determine if failures are CI-specific or reproducible.
+
+| Test File | CI | Local | Verdict |
+|---|---|---|---|
+| `tests/core/withdraw.test.ts` | 4 failed (timeouts) | 5 failed (timeouts) | **Fails both** — on-chain withdrawals timeout everywhere |
+| `tests/templates/test-single-approve-with-simulation.test.ts` | 2 failed (gRPC timeout) | 2 failed (gRPC timeout) | **Fails both** — contractWrite `runNodeWithInputs` times out |
+| `tests/templates/uniswapv3_stoploss.test.ts` | 1 failed (expired task) | 3 failed | **Fails both** — stoploss workflow has timing/expiration issues |
+| `tests/nodes/graphqlQuery.test.ts` | 1 failed (DNS mismatch) | 0 failed | **CI-only** — DNS resolver returns different error message |
+| `tests/nodes/contractRead.test.ts` | 1 failed (block not found) | 0 failed | **CI-only** — CI RPC node can't find block header |
+| `tests/nodes/loopNode.test.ts` | 1 failed (data format) | 1 failed (data format) | **Fails both** — loop flattening mismatch is a real bug |
+| `tests/nodes/ethTransfer.test.ts` | 2 failed (timeout + null) | 4 failed (timeouts) | **Fails both** — triggerTask times out at 120s |
+| `tests/nodes/contractWrite.test.ts` | 1 failed (timeout) | 3 failed (timeouts) | **Fails both** — triggerTask times out at 120s |
+| `tests/executions/getExecutions.test.ts` | 1 failed (pagination) | 1 failed (pagination) | **Fails both** — backward pagination returns 0 results |
+| `tests/executions/execution.test.ts` | 1 failed (index gap) | 1 failed (index gap) | **Fails both** — non-consecutive execution indexes |
+| `tests/executions/gasTracking.test.ts` | 1 failed (timeout) | 2 failed (timeouts) | **Fails both** — contract write gas tracking times out |
+
+### Summary by verdict
+
+- **CI-only failures (2):** graphqlQuery DNS mismatch, contractRead block not found
+- **Fails both local and CI (9 test files, 14 CI failures):** These are real issues, not CI environment problems
 
 ---
 
 ## Failure Categories
 
-### 1. gRPC/Test Timeouts (8 failures)
+### 1. On-chain Operation Timeouts (10 failures — fails both locally and CI)
 
-These tests exceed their 60s timeout, likely because on-chain transactions via the bundler/paymaster take longer in CI than locally.
+Tests involving on-chain writes (withdrawals, contract writes, ETH transfers) consistently timeout at 30-120s. This affects `withdraw.test.ts`, `contractWrite.test.ts`, `ethTransfer.test.ts`, `gasTracking.test.ts`, and `test-single-approve-with-simulation.test.ts`.
 
 | Suite | Test | Error |
 |---|---|---|
 | core | `withdraw.test.ts` — should successfully initiate ETH withdrawal with minimal parameters | Exceeded timeout of 60000 ms |
 | core | `withdraw.test.ts` — should handle withdrawal to different recipient address | Exceeded timeout of 60000 ms |
-| core | `withdraw.test.ts` — should work with request-level auth key | gRPC request timeout after 30000ms for method withdrawFunds |
+| core | `withdraw.test.ts` — should work with request-level auth key | gRPC timeout after 30000ms for withdrawFunds |
 | core | `withdraw.test.ts` — should return properly formatted response for successful withdrawal | Exceeded timeout of 60000 ms |
-| templates | `test-single-approve-with-simulation.test.ts` — contractWrite real execution validates approval persistence | gRPC request timeout after 60000ms for method runNodeWithInputs |
-| templates | `test-single-approve-with-simulation.test.ts` — contractWrite (approve) - explicit isSimulated parameter behavior | gRPC request timeout after 60000ms for method runNodeWithInputs |
+| templates | `test-single-approve-with-simulation.test.ts` — contractWrite real execution validates approval persistence | gRPC timeout after 60000ms for runNodeWithInputs |
+| templates | `test-single-approve-with-simulation.test.ts` — contractWrite (approve) - explicit isSimulated parameter behavior | gRPC timeout after 60000ms for runNodeWithInputs |
 | nodes | `contractWrite.test.ts` — should return consistent response format across all methods | Exceeded timeout of 60000 ms |
 | nodes | `ethTransfer.test.ts` — should deploy and trigger workflow with ETH transfer | Exceeded timeout of 60000 ms |
+| executions | `gasTracking.test.ts` — should include gas tracking fields in contract write execution | Exceeded timeout of 60000 ms |
+| nodes | `ethTransfer.test.ts` — should deploy and trigger workflow with zero ETH transfer | Null response (timeout cascade) |
 
-**Root cause:** On-chain write operations (withdrawals, contract writes, ETH transfers) go through the bundler and paymaster, which can be slow on Sepolia. The 30-60s timeouts are too short for CI. Locally these likely succeed because the network is faster or the wallet state is warm.
+**Root cause:** On-chain write operations go through the bundler and paymaster on Sepolia. The bundler is slow — `triggerTask` calls timeout at 120s even with retries. This is not a test issue but a Sepolia bundler/paymaster performance issue.
 
-**Potential fix:** Increase test timeouts for on-chain write operations (e.g., 120-180s), or use `jest.setTimeout` per-test for known slow operations.
+**Potential fix:** Investigate bundler latency. If the bundler is consistently slow, either increase timeouts significantly (180-300s) or use a faster bundler endpoint.
 
-### 2. RPC Block Not Found (2 failures)
-
-| Suite | Test | Error |
-|---|---|---|
-| nodes | `contractRead.test.ts` — should simulate workflow with contract read | `simulation failed: failed to get block header for block 10523674 from RPC: not found` |
-| nodes | `ethTransfer.test.ts` — should simulate zero ETH transfer | `simulation failed: failed to get block header for block 10522793 from RPC: not found` (from previous run) |
-
-**Root cause:** The simulation uses a specific Sepolia block number (likely from `getBlockNumber()` at test setup), but the CI's RPC node may not serve old/recent block headers. The RPC endpoint may be a non-archive node that prunes block headers.
-
-**Potential fix:** Either use an archive RPC node in CI, or adjust the simulation to use a recent confirmed block.
-
-### 3. DNS Resolution Mismatch (1 failure)
+### 2. Loop Node Data Format Bug (1 failure — fails both)
 
 | Suite | Test | Error |
 |---|---|---|
-| nodes | `graphqlQuery.test.ts` — should fail runNodeWithInputs with variables and return network error | Expected: `"dial tcp: lookup mock-api.ap-aggregator.local: no such host"`, Received: `"...server misbehaving"` |
+| nodes | `loopNode.test.ts` — should return flattened data format for contract_read runner in loop | Expected `Array.isArray(result.data)` to be `true`, got `false` |
 
-**Root cause:** The test asserts a specific DNS error message for an intentionally invalid hostname. The CI runner's DNS resolver returns `server misbehaving` instead of `no such host`. This is a test assertion issue, not a real failure.
+**Root cause:** The loop node with a `contract_read` runner returns data in an unexpected format. `result.data` is not an array. This is a real bug in the aggregator's loop node flattening logic, not a test issue.
 
-**Potential fix:** Loosen the assertion to accept any DNS/network error (e.g., check for `dial tcp` or `lookup` instead of the exact message).
+**Potential fix:** Fix the aggregator's loop node to return flattened array format for `contract_read` runners, or update the test if the format intentionally changed.
 
-### 4. Null Response from Trigger (1 failure)
-
-| Suite | Test | Error |
-|---|---|---|
-| nodes | `ethTransfer.test.ts` — should deploy and trigger workflow with zero ETH transfer | `TypeError: Cannot read properties of null (reading 'transfer')` |
-
-**Root cause:** The trigger response returned null output for the ETH transfer node. This may be related to the timeout cascade — if the trigger takes too long, the response may not have populated the transfer object yet.
-
-**Potential fix:** Add a null check before accessing `transfer` property, or increase the wait time for trigger completion.
-
-### 5. Loop Node Data Format (1 failure)
+### 3. Execution Index Non-Consecutive (1 failure — fails both)
 
 | Suite | Test | Error |
 |---|---|---|
-| nodes | `loopNode.test.ts` — should return flattened data format for contract_read runner in loop | Expected: `true`, Received: `false` |
+| executions | `execution.test.ts` — should return immediate executionId for non-blocking triggers and assign consecutive indexes | Expected difference of `1`, received `3` |
 
-**Root cause:** The loop node with a `contract_read` runner is not returning data in the expected flattened format. This may be a behavioral difference in the aggregator version deployed in CI vs what the test expects.
+**Root cause:** Execution indexes are not consecutive even when running locally (not just a parallel CI issue). The global execution counter has gaps, possibly due to failed/cancelled executions consuming index values.
 
-**Potential fix:** Investigate whether the flattening behavior changed in the aggregator. May need to update the test assertion or fix the aggregator.
+**Potential fix:** The test assertion is too strict. Change to check monotonically increasing rather than strictly consecutive.
 
-### 6. Execution Index Non-Consecutive (1 failure)
-
-| Suite | Test | Error |
-|---|---|---|
-| executions | `execution.test.ts` — should return immediate executionId for non-blocking triggers and assign consecutive indexes | Expected: `1`, Received: `3` |
-
-**Root cause:** The test expects consecutive execution indexes (difference of 1), but got a gap of 3. This happens because other parallel test suites share the same aggregator and increment the global execution counter. The test comment even acknowledges this: _"This accounts for global counter being affected by other concurrent tests"_ — but the assertion is still too strict.
-
-**Potential fix:** Relax the assertion to check that indexes are monotonically increasing rather than strictly consecutive.
-
-### 7. Backward Pagination Empty (1 failure)
+### 4. Backward Pagination Empty (1 failure — fails both)
 
 | Suite | Test | Error |
 |---|---|---|
 | executions | `getExecutions.test.ts` — should support backward pagination with before parameter | Expected: `> 0`, Received: `0` |
 
-**Root cause:** The backward pagination query returned 0 results. This may be a timing issue — the test creates executions and immediately queries with a `before` cursor, but the executions may not be indexed yet.
+**Root cause:** The backward pagination `before` cursor query returns 0 results both locally and in CI. This suggests a real bug in the backward pagination implementation or the cursor value used is incorrect.
 
-**Potential fix:** Add a small delay or retry logic between creating executions and querying with backward pagination.
+**Potential fix:** Investigate the backward pagination logic in the aggregator. The cursor may be pointing to the wrong position.
 
-### 8. Gas Tracking Timeout (1 failure)
-
-| Suite | Test | Error |
-|---|---|---|
-| executions | `gasTracking.test.ts` — should include gas tracking fields in contract write execution | Exceeded timeout of 60000 ms |
-
-**Root cause:** Same as category 1 — contract write execution takes too long for the 60s timeout.
-
-**Potential fix:** Increase timeout for gas tracking tests that involve on-chain writes.
-
-### 9. Uniswap Stoploss Expired Task (1 failure)
+### 5. Uniswap Stoploss Timing Issues (1 failure — fails both)
 
 | Suite | Test | Error |
 |---|---|---|
 | templates | `uniswapv3_stoploss.test.ts` — should deploy and trigger stoploss workflow end-to-end | `FAILED_PRECONDITION: task cannot be executed: either reached max execution, expired, or not yet started` |
 
-**Root cause:** The stoploss workflow's task expired before it could be triggered, or has already reached its max execution count. This is likely a timing issue — the task's expiration window is too short for CI execution speed.
+**Root cause:** The stoploss workflow expires or reaches max executions before the test can trigger it. Locally, 3 out of 4 tests fail with similar timing issues. The test's expiration window is too tight.
 
-**Potential fix:** Set a longer expiration window in the test task configuration.
+**Potential fix:** Increase the task expiration window in the test configuration, or add a longer delay before triggering.
+
+### 6. CI-Only: DNS Resolution Mismatch (1 failure — CI only)
+
+| Suite | Test | Error |
+|---|---|---|
+| nodes | `graphqlQuery.test.ts` — should fail runNodeWithInputs with variables and return network error | Expected: `"no such host"`, Received: `"server misbehaving"` |
+
+**Root cause:** The CI runner's DNS resolver (Docker's 127.0.0.11:53) returns `server misbehaving` for invalid hostnames, while local resolvers return `no such host`. Passes locally.
+
+**Potential fix:** Loosen the assertion to check for `dial tcp` or general network error instead of exact DNS message.
+
+### 7. CI-Only: RPC Block Not Found (1 failure — CI only)
+
+| Suite | Test | Error |
+|---|---|---|
+| nodes | `contractRead.test.ts` — should simulate workflow with contract read | `failed to get block header for block 10523674 from RPC: not found` |
+
+**Root cause:** The CI's Sepolia RPC endpoint cannot find the specific block header used in simulation. Passes locally because local RPC endpoint is different (likely archive node).
+
+**Potential fix:** Ensure CI uses an archive RPC node, or adjust simulation to use a well-known confirmed block.
