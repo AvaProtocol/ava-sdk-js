@@ -15,7 +15,7 @@ services:
       test: curl --fail http://localhost:1323/up || exit 1
       interval: 5s
       retries: 24
-      start_period: 5s
+      start_period: 60s
       timeout: 5s
 
   operator:

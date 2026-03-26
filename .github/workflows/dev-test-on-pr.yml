@@ -134,10 +134,10 @@ jobs:
             echo "All variables substituted correctly."
           fi
 
-      - name: Start aggregator and operator
+      - name: Start aggregator
         run: |
-          docker compose up -d
-          echo "Waiting for services to start..."
+          docker compose up -d aggregator
+          echo "Waiting for aggregator to start..."
           sleep 10
           docker compose ps
           docker compose logs aggregator --tail=20
@@ -162,6 +162,14 @@ jobs:
             docker compose logs aggregator
             exit 1
           fi
+
+      - name: Start operator
+        run: |
+          docker compose up -d operator
+          echo "Waiting for operator to start..."
+          sleep 5
+          docker compose ps
+          docker compose logs operator --tail=20
 
       - name: Wait for operator health
         run: |
