@@ -101,11 +101,10 @@ describeIfSepolia("BalanceNode Tests", () => {
       expect(token).toHaveProperty("balanceFormatted");
       expect(token).toHaveProperty("decimals");
 
-      // Native tokens should not have tokenAddress
-      // ERC20 tokens should have tokenAddress
-      if (token.symbol !== "ETH") {
-        expect(token).toHaveProperty("tokenAddress");
-      }
+      // All tokens should have tokenAddress:
+      // - Native tokens: 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE (sentinel)
+      // - ERC20 tokens: their contract address
+      expect(token).toHaveProperty("tokenAddress");
     });
 
     test("should retrieve balance with filters (includeSpam=false, includeZeroBalances=false)", async () => {
