@@ -12,7 +12,7 @@ import {
   getExpiredAt,
 } from "../utils/utils";
 import { getConfig } from "../utils/envalid";
-const { chainId } = getConfig();
+const { chainId, tokens } = getConfig();
 
 // Set timeout to 240 seconds for this test suite
 jest.setTimeout(TIMEOUT_DURATION * 4);
@@ -279,7 +279,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
           address: getWorkflowConfig().settings.runner,
           chain: getWorkflowConfig().settings.chain,
           tokenAddresses: [
-            "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
+            tokens.ETH.address, // ETH
             getWorkflowConfig().settings.uniswapv3_pool.token0.id,
             getWorkflowConfig().settings.uniswapv3_pool.token1.id,
           ],
@@ -535,7 +535,7 @@ describe("Templates - Test Single Approve with Simulation Parameter", () => {
       address: getWorkflowConfig().settings.runner,
       chain: getWorkflowConfig().settings.chain,
       tokenAddresses: [
-        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // ETH
+        tokens.ETH.address, // ETH
         getWorkflowConfig().settings.uniswapv3_pool.token1.id, // USDC
       ],
     };

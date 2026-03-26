@@ -11,3 +11,17 @@ services:
       - "1323:1323"
     volumes:
       - ./config:/app/config
+
+  operator:
+    image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
+    command:
+      - "operator"
+      - "--config"
+      - "/app/config/operator.runtime.yaml"
+    ports:
+      - "9010:9010"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - OPERATOR_ECDSA_KEY_PASSWORD=${OPERATOR_ECDSA_KEY_PASSWORD}
+      - OPERATOR_BLS_KEY_PASSWORD=${OPERATOR_BLS_KEY_PASSWORD}

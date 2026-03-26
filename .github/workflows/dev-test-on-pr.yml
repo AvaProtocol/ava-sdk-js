@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, workflows, executions, triggers, nodes, templates]
+        suite: [workflows, triggers] # Other suites (core, executions, nodes, templates) disabled — bundler not reachable from CI, run locally
 
     env:
       # Secrets
@@ -86,6 +86,10 @@ jobs:
       CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      OPERATOR_ECDSA_KEYSTORE: ${{ secrets.OPERATOR_ECDSA_KEYSTORE }}
+      OPERATOR_ECDSA_KEY_PASSWORD: ${{ secrets.OPERATOR_ECDSA_KEY_PASSWORD }}
+      OPERATOR_BLS_KEYSTORE: ${{ secrets.OPERATOR_BLS_KEYSTORE }}
+      OPERATOR_BLS_KEY_PASSWORD: ${{ secrets.OPERATOR_BLS_KEY_PASSWORD }}
       # Variables
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
@@ -120,9 +124,26 @@ jobs:
             echo "All variables substituted correctly."
           fi
 
+      - name: Inject secrets into operator config
+        run: |
+          # Write operator key files from secrets
+          echo "$OPERATOR_ECDSA_KEYSTORE" > config/operator-ecdsa-key.json
+          echo "$OPERATOR_BLS_KEYSTORE" > config/operator-bls-key.json
+
+          # Generate operator runtime config
+          export ETH_RPC_URL ETH_WS_URL
+          envsubst < config/operator.yaml > config/operator.runtime.yaml
+          echo "Generated config: $(wc -l < config/operator.runtime.yaml) lines"
+          if grep -q "\${.*}" config/operator.runtime.yaml; then
+            echo "WARNING: Found unsubstituted variables:"
+            grep "\${.*}" config/operator.runtime.yaml
+          else
+            echo "All variables substituted correctly."
+          fi
+
       - name: Start aggregator
         run: |
-          docker compose up -d
+          docker compose up -d aggregator
           echo "Waiting for aggregator to start..."
           sleep 10
           docker compose ps
@@ -146,6 +167,35 @@ jobs:
             echo "Aggregator failed to start"
             docker compose ps
             docker compose logs aggregator
+            exit 1
+          fi
+
+      - name: Start operator
+        run: |
+          docker compose up -d operator
+          echo "Waiting for operator to start..."
+          sleep 5
+          docker compose ps
+          docker compose logs operator --tail=20
+
+      - name: Wait for operator health
+        run: |
+          max_attempts=24
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:9010/eigen/node/health; then
+              echo "Operator is ready!"
+              break
+            fi
+            echo "Attempt $((attempt + 1))/$max_attempts: operator not ready yet..."
+            docker compose logs operator --tail=5
+            sleep 5
+            attempt=$((attempt + 1))
+          done
+          if [ $attempt -eq $max_attempts ]; then
+            echo "Operator failed to start"
+            docker compose ps
+            docker compose logs operator
             exit 1
           fi
 

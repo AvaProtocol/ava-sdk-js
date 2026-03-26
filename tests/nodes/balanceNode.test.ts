@@ -867,6 +867,7 @@ describeIfSepolia("BalanceNode Tests", () => {
           const expectedAddresses = [
             tokens.USDC.address.toLowerCase(),
             tokens.LINK.address.toLowerCase(),
+            tokens.ETH.address.toLowerCase(),
           ];
           expect(expectedAddresses).toContain(token.tokenAddress.toLowerCase());
         }

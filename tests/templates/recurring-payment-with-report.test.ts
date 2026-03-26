@@ -28,13 +28,13 @@ import {
 import { getConfig } from "../utils/envalid";
 
 const config = getConfig();
-const { telegramBotToken, telegramChatId } = config;
+const { telegramBotToken, telegramChatId, tokens } = config;
 
 // Use a second EOA-derived address as the transfer recipient for testing
 const TEST_RECIPIENT = "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b";
 
 // Native ETH address (used in the template for token identification)
-const NATIVE_ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+const NATIVE_ETH_ADDRESS = tokens.ETH.address;
 
 // Transfer amount: 0.0001 ETH in wei (small amount for testing)
 const TRANSFER_AMOUNT_WEI = "100000000000000"; // 0.0001 ETH

@@ -28,13 +28,13 @@ import {
 import { getConfig } from "../utils/envalid";
 
 const config = getConfig();
-const { sendgridKey } = config;
+const { sendgridKey, tokens } = config;
 
 // Use a second EOA-derived address as the transfer recipient for testing
 const TEST_RECIPIENT = "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b";
 
 // Native ETH address (matches studio template's default token)
-const NATIVE_ETH_ADDRESS = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+const NATIVE_ETH_ADDRESS = tokens.ETH.address;
 
 // Transfer amount: 0.01 ETH in wei (matches studio template's default)
 const TRANSFER_AMOUNT_WEI = "10000000000000000"; // 0.01 ETH
