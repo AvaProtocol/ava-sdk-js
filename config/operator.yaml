@@ -1,0 +1,37 @@
+environment: development
+
+operator_address: ${OPERATOR_ADDRESS}
+
+# Sepolia AVS contract addresses (same as aggregator)
+avs_registry_coordinator_address: 0xcA95381802FD1398d5BF2D01243210cFb3a2b3BD
+operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
+
+# Main RPC endpoints for AVS operations (Sepolia)
+eth_rpc_url: ${ETH_RPC_URL}
+eth_ws_url: ${ETH_WS_URL}
+
+# Operator ECDSA private key (injected from secrets)
+ecdsa_private_key: ${OPERATOR_PRIVATE_KEY}
+
+# Aggregator connection (docker service name)
+aggregator_server_ip_port_address: "aggregator:2206"
+
+# AVS node spec compliance
+eigen_metrics_ip_port_address: 0.0.0.0:9090
+enable_metrics: true
+node_api_ip_port_address: 0.0.0.0:9010
+enable_node_api: true
+
+# Storage
+db_path: /tmp/ap-avs-operator
+
+# Optional monitoring
+server_name: "operator-dev-ci"
+
+# Destination chain - Sepolia (same as main chain for dev)
+target_chain:
+  eth_rpc_url: ${ETH_RPC_URL}
+  eth_ws_url: ${ETH_WS_URL}
+
+enabled_features:
+  event_trigger: true

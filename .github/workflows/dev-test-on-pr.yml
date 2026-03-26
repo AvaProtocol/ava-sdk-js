@@ -86,6 +86,8 @@ jobs:
       CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      OPERATOR_PRIVATE_KEY: ${{ secrets.OPERATOR_PRIVATE_KEY }}
+      OPERATOR_ADDRESS: "0x997E5D40a32c44a3D93E59fC55C4Fd20b7d2d49D"
       # Variables
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
@@ -120,10 +122,22 @@ jobs:
             echo "All variables substituted correctly."
           fi
 
-      - name: Start aggregator
+      - name: Inject secrets into operator config
+        run: |
+          export ETH_RPC_URL ETH_WS_URL OPERATOR_PRIVATE_KEY OPERATOR_ADDRESS
+          envsubst < config/operator.yaml > config/operator.runtime.yaml
+          echo "Generated config: $(wc -l < config/operator.runtime.yaml) lines"
+          if grep -q "\${.*}" config/operator.runtime.yaml; then
+            echo "WARNING: Found unsubstituted variables:"
+            grep "\${.*}" config/operator.runtime.yaml
+          else
+            echo "All variables substituted correctly."
+          fi
+
+      - name: Start aggregator and operator
         run: |
           docker compose up -d
-          echo "Waiting for aggregator to start..."
+          echo "Waiting for services to start..."
           sleep 10
           docker compose ps
           docker compose logs aggregator --tail=20
@@ -146,6 +160,27 @@ jobs:
             echo "Aggregator failed to start"
             docker compose ps
             docker compose logs aggregator
+            exit 1
+          fi
+
+      - name: Wait for operator health
+        run: |
+          max_attempts=24
+          attempt=0
+          while [ $attempt -lt $max_attempts ]; do
+            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:9010/eigen/node/health; then
+              echo "Operator is ready!"
+              break
+            fi
+            echo "Attempt $((attempt + 1))/$max_attempts: operator not ready yet..."
+            docker compose logs operator --tail=5
+            sleep 5
+            attempt=$((attempt + 1))
+          done
+          if [ $attempt -eq $max_attempts ]; then
+            echo "Operator failed to start"
+            docker compose ps
+            docker compose logs operator
             exit 1
           fi
 

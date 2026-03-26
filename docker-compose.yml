@@ -11,3 +11,23 @@ services:
       - "1323:1323"
     volumes:
       - ./config:/app/config
+    healthcheck:
+      test: curl --fail http://localhost:1323/up || exit 1
+      interval: 5s
+      retries: 24
+      start_period: 5s
+      timeout: 5s
+
+  operator:
+    image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
+    command:
+      - "operator"
+      - "--config"
+      - "/app/config/operator.runtime.yaml"
+    ports:
+      - "9010:9010"
+    volumes:
+      - ./config:/app/config
+    depends_on:
+      aggregator:
+        condition: service_healthy
