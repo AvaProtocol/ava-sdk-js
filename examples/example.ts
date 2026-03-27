@@ -1510,35 +1510,7 @@ export async function exampleWithInputFields() {
     endpoint: "https://avs-aggregator-sepolia.avaprotocol.org",
   });
 
-  // For now, let's comment out the input helper functions since they need to be properly exported
-  // TODO: Uncomment when createInputData, extractInputData, hasInputData are properly exported
-
-  /*
-  // Create input data for the trigger
-  const triggerInput = createInputData({
-    timezone: "UTC",
-    description: "Daily report generation",
-    priority: "high"
-  });
-
-  // Create input data for the nodes
-  const apiNodeInput = createInputData({
-    timeout: 30000,
-    retries: 3,
-    headers: {
-      "User-Agent": "AvaProtocol-SDK/1.0",
-      "Accept": "application/json"
-    }
-  });
-
-  const customCodeInput = createInputData({
-    debugMode: true,
-    maxProcessingTime: 60000,
-    outputFormat: "json"
-  });
-  */
-
-  // For now, manually create input data objects
+  // Create input data for the trigger and nodes
   const triggerInput = {
     timezone: "UTC",
     description: "Daily report generation",
@@ -1570,7 +1542,7 @@ export async function exampleWithInputFields() {
       data: {
         schedules: ["0 9 * * *"], // Every day at 9 AM
       },
-      input: triggerInput as any, // ✨ NEW: Input data for the trigger (cast to any for now)
+      input: triggerInput as any,
     },
     nodes: [
       {

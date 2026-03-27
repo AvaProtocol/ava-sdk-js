@@ -5,7 +5,12 @@ import Edge from "./edge";
 import Trigger from "./trigger/interface";
 import TriggerFactory from "./trigger/factory";
 import NodeFactory from "./node/factory";
-export const DefaultExpiredAt = -1; // TODO: explain the meaning of -1
+/**
+ * Default value for workflow expiration. A value of 0 or negative means the
+ * workflow never expires. The backend only enforces expiration when
+ * `expiredAt > 0` (interpreted as a Unix timestamp in milliseconds).
+ */
+export const DefaultExpiredAt = 0;
 import { WorkflowStatus, WorkflowProps, InputVariables } from "@avaprotocol/types";
 import { convertJSValueToProtobuf } from "../utils";
 
