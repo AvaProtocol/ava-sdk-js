@@ -394,7 +394,7 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           contractAddresses: [
-            "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
+            "0xB0C712f98daE15264c8E26132BCC91C40aD4d5F9", // Chainlink ETH/USD price feed (doesn't have name/symbol)
             USDC_SEPOLIA_ADDRESS, // USDC contract (has name/symbol)
           ],
         },
@@ -2391,7 +2391,7 @@ describe("LoopNode Tests", () => {
 
         inputVariables: {
           contractAddresses: [
-            "0x1234567890abcdef1234567890abcdef12345678", // Mock contract address (doesn't have name/symbol)
+            "0xB0C712f98daE15264c8E26132BCC91C40aD4d5F9", // Chainlink ETH/USD price feed (doesn't have name/symbol)
             USDC_SEPOLIA_ADDRESS, // USDC contract (has name/symbol)
           ],
         },

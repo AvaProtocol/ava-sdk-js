@@ -1,6 +1,6 @@
 import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
-import { NodeType } from "@avaprotocol/types";
+import { NodeType, TimeoutPresets } from "@avaprotocol/types";
 import {
   TIMEOUT_DURATION,
   getSettings,
@@ -182,7 +182,9 @@ describe("RunNodeWithInputs", () => {
         util.inspect(params, { depth: null, colors: true })
       );
 
-      const result = await client.runNodeWithInputs(params);
+      const result = await client.runNodeWithInputs(params, {
+        timeout: TimeoutPresets.SLOW,
+      });
 
       console.log(
         "🚀 ~ runNodeWithInputs ContractWrite with isSimulated=false ~ result:",

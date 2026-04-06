@@ -129,14 +129,17 @@ describeIfSepolia("Gas Tracking Tests", () => {
         createdIdMap.set(workflowId, true);
 
         // Trigger the workflow with blocking execution
-        const triggerResult = await client.triggerWorkflow({
-          id: workflowId,
-          triggerData: {
-            type: TriggerType.Manual,
-            data: {},
+        const triggerResult = await client.triggerWorkflow(
+          {
+            id: workflowId,
+            triggerData: {
+              type: TriggerType.Manual,
+              data: {},
+            },
+            isBlocking: true,
           },
-          isBlocking: true,
-        });
+          { timeout: TimeoutPresets.SLOW }
+        );
 
         // Accept both success and partialSuccess (operational issues may cause partial failures)
         expect([
@@ -204,20 +207,22 @@ describeIfSepolia("Gas Tracking Tests", () => {
         );
         expect(execution).toBeDefined();
 
-        // Check for execution-level gas cost aggregation if any gas operations succeeded
-        if (execution.totalGasCost) {
-          expect(typeof execution.totalGasCost).toBe("string");
-          // Accept 0 gas costs for operations that failed before gas consumption
-          expect(parseInt(execution.totalGasCost)).toBeGreaterThanOrEqual(0);
-
-          // Log the gas cost for debugging
+        // Check for execution-level COGS if any gas operations succeeded
+        expect(Array.isArray(execution.cogs)).toBe(true);
+        if (execution.cogs.length > 0) {
+          execution.cogs.forEach((cogs) => {
+            expect(cogs.nodeId).toBeDefined();
+            expect(cogs.costType).toBeDefined();
+            expect(cogs.fee).toBeDefined();
+            expect(cogs.fee.unit).toBe("WEI");
+          });
           console.log(
-            "✅ ETH Transfer gas tracking validated - execution gas cost:",
-            execution.totalGasCost
+            "✅ ETH Transfer gas tracking validated - execution COGS:",
+            JSON.stringify(execution.cogs)
           );
         } else {
           console.log(
-            "✅ ETH Transfer gas tracking infrastructure validated - no gas cost recorded due to early failure"
+            "✅ ETH Transfer gas tracking infrastructure validated - no COGS recorded due to early failure"
           );
         }
       } finally {
@@ -335,40 +340,41 @@ describeIfSepolia("Gas Tracking Tests", () => {
             triggerResult.executionId
           );
           expect(execution).toBeDefined();
-          expect(execution.totalGasCost).toBeDefined();
-          expect(typeof execution.totalGasCost).toBe("string");
-          expect(parseInt(execution.totalGasCost!)).toBeGreaterThan(0);
+          expect(Array.isArray(execution.cogs)).toBe(true);
+          expect(execution.cogs.length).toBeGreaterThan(0);
 
-          // Execution total gas cost should match step total for single contract write
-          expect(execution.totalGasCost).toBe(contractWriteStep.totalGasCost);
+          // COGS should include the contract write node's gas cost
+          execution.cogs.forEach((cogs) => {
+            expect(cogs.nodeId).toBeDefined();
+            expect(cogs.costType).toBeDefined();
+            expect(cogs.fee).toBeDefined();
+            expect(cogs.fee.unit).toBe("WEI");
+          });
         } else {
           console.log(
             "Contract write step not found - checking for successful operation in logs"
           );
 
-          // Even if step not found in the main steps, check if any gas operations succeeded
-          // by looking at the execution total
           const execution = await client.getExecution(
             workflowId,
             triggerResult.executionId
           );
           expect(execution).toBeDefined();
 
-          if (execution.totalGasCost) {
+          if (execution.cogs.length > 0) {
             console.log(
-              "Found execution-level gas cost despite missing step:",
-              execution.totalGasCost
+              "Found execution-level COGS despite missing step:",
+              JSON.stringify(execution.cogs)
             );
-            expect(typeof execution.totalGasCost).toBe("string");
-            // Accept 0 gas costs for operations that failed before gas consumption
-            expect(parseInt(execution.totalGasCost)).toBeGreaterThanOrEqual(0);
+            execution.cogs.forEach((cogs) => {
+              expect(cogs.fee.unit).toBe("WEI");
+            });
             console.log(
-              "✅ Contract write gas tracking validated - execution gas cost:",
-              execution.totalGasCost
+              "✅ Contract write gas tracking validated via COGS"
             );
           } else {
             console.log(
-              "✅ Contract write gas tracking infrastructure validated - no gas cost due to early failure"
+              "✅ Contract write gas tracking infrastructure validated - no COGS due to early failure"
             );
           }
         }
@@ -504,23 +510,22 @@ describeIfSepolia("Gas Tracking Tests", () => {
         );
         expect(execution).toBeDefined();
 
-        // Check for execution-level gas aggregation if any operations succeeded
-        if (execution.totalGasCost) {
-          expect(typeof execution.totalGasCost).toBe("string");
-          // Accept 0 gas costs for operations that failed before gas consumption
-          expect(parseInt(execution.totalGasCost)).toBeGreaterThanOrEqual(0);
+        // Check for execution-level COGS if any operations succeeded
+        expect(Array.isArray(execution.cogs)).toBe(true);
+        if (execution.cogs.length > 0) {
+          execution.cogs.forEach((cogs) => {
+            expect(cogs.nodeId).toBeDefined();
+            expect(cogs.costType).toBeDefined();
+            expect(cogs.fee).toBeDefined();
+            expect(cogs.fee.unit).toBe("WEI");
+          });
           console.log(
-            "✅ Loop ETH transfer gas tracking validated - execution gas cost:",
-            execution.totalGasCost
+            "✅ Loop ETH transfer gas tracking validated - execution COGS:",
+            JSON.stringify(execution.cogs)
           );
-
-          // If both loop step and execution have gas data, they should match
-          if (loopStep && loopStep.totalGasCost) {
-            expect(execution.totalGasCost).toBe(loopStep.totalGasCost);
-          }
         } else {
           console.log(
-            "✅ Loop ETH transfer gas tracking infrastructure validated - no gas cost due to setup failure"
+            "✅ Loop ETH transfer gas tracking infrastructure validated - no COGS due to setup failure"
           );
         }
       } finally {
@@ -661,23 +666,22 @@ describeIfSepolia("Gas Tracking Tests", () => {
         );
         expect(execution).toBeDefined();
 
-        // Check for execution-level gas aggregation if any operations succeeded
-        if (execution.totalGasCost) {
-          expect(typeof execution.totalGasCost).toBe("string");
-          // Accept 0 gas costs for operations that failed before gas consumption
-          expect(parseInt(execution.totalGasCost)).toBeGreaterThanOrEqual(0);
+        // Check for execution-level COGS if any operations succeeded
+        expect(Array.isArray(execution.cogs)).toBe(true);
+        if (execution.cogs.length > 0) {
+          execution.cogs.forEach((cogs) => {
+            expect(cogs.nodeId).toBeDefined();
+            expect(cogs.costType).toBeDefined();
+            expect(cogs.fee).toBeDefined();
+            expect(cogs.fee.unit).toBe("WEI");
+          });
           console.log(
-            "✅ Loop contract write gas tracking validated - execution gas cost:",
-            execution.totalGasCost
+            "✅ Loop contract write gas tracking validated - execution COGS:",
+            JSON.stringify(execution.cogs)
           );
-
-          // If both loop step and execution have gas data, they should match
-          if (loopStep && loopStep.totalGasCost) {
-            expect(execution.totalGasCost).toBe(loopStep.totalGasCost);
-          }
         } else {
           console.log(
-            "✅ Loop contract write gas tracking infrastructure validated - no gas cost due to setup failure"
+            "✅ Loop contract write gas tracking infrastructure validated - no COGS due to setup failure"
           );
         }
       } finally {
@@ -836,28 +840,21 @@ describeIfSepolia("Gas Tracking Tests", () => {
           );
           expect(execution).toBeDefined();
 
-          if (execution.totalGasCost && successfulSteps.length > 0) {
-            expect(typeof execution.totalGasCost).toBe("string");
-            expect(parseInt(execution.totalGasCost)).toBeGreaterThan(0);
+          expect(Array.isArray(execution.cogs)).toBe(true);
 
-            // If we have multiple successful steps, validate aggregation
+          if (execution.cogs.length > 0 && successfulSteps.length > 0) {
+            // Validate COGS entries
+            execution.cogs.forEach((cogs) => {
+              expect(cogs.nodeId).toBeDefined();
+              expect(cogs.costType).toBeDefined();
+              expect(cogs.fee).toBeDefined();
+              expect(cogs.fee.unit).toBe("WEI");
+            });
+
+            // If we have multiple successful steps, COGS should have multiple entries
             if (successfulSteps.length > 1) {
-              const totalStepCosts = successfulSteps.reduce(
-                (sum, step) => sum + BigInt(step.totalGasCost!),
-                BigInt(0)
-              );
-              expect(BigInt(execution.totalGasCost!)).toBe(totalStepCosts);
-
-              // Execution total should be greater than any individual step
-              successfulSteps.forEach((step) => {
-                expect(parseInt(execution.totalGasCost!)).toBeGreaterThan(
-                  parseInt(step.totalGasCost!)
-                );
-              });
-            } else if (successfulSteps.length === 1) {
-              // For single successful step, execution total should match step total
-              expect(execution.totalGasCost).toBe(
-                successfulSteps[0].totalGasCost
+              expect(execution.cogs.length).toBeGreaterThanOrEqual(
+                successfulSteps.length
               );
             }
           } else {

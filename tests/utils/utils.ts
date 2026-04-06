@@ -764,8 +764,6 @@ export function expectExecutionFees(
   }
 }
 
-/** @deprecated Use expectExecutionFees instead */
-export const expectAutomationFee = expectExecutionFees;
 
 export const verifyExecutionStepResults = (
   expected: StepProps,

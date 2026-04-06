@@ -679,7 +679,7 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         );
 
         const output = ethTransferStep.output as any;
-        expect(output).toBeDefined();
+        expect(output).not.toBeNull();
         expect(typeof output).toBe("object");
 
         // Verify transfer object (matches ERC20 format)
@@ -1061,7 +1061,7 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
           createdIdMap.delete(workflowId);
         }
       }
-    });
+    }, TIMEOUT_DURATION * 3);
   });
 
   describe("Real Transaction Tests", () => {

@@ -416,11 +416,3 @@ export interface EstimateFeesResponse {
   warnings: string[];
 }
 
-// Legacy type — kept for any third-party code that may reference it.
-// New code should use Fee instead.
-export interface FeeAmount {
-  nativeTokenAmount: string;
-  nativeTokenSymbol: string;
-  usdAmount: string;
-  apTokenAmount: string;
-}

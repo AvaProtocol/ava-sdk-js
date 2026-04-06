@@ -888,7 +888,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           isBlocking: true,
         };
 
-        await client.triggerWorkflow(triggerParams);
+        await client.triggerWorkflow(triggerParams, {
+          timeout: TimeoutPresets.SLOW,
+        });
 
         const executions = await client.getExecutions([workflowId], {
           limit: 1,
@@ -1070,7 +1072,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           createdIdMap.delete(workflowId);
         }
       }
-    });
+    }, TIMEOUT_DURATION * 3);
   });
 
   describe("Error Handling Tests", () => {

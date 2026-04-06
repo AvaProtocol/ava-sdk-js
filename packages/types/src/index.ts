@@ -29,5 +29,4 @@ export type {
   NodeCOGS,
   ValueFee,
   FeeDiscount,
-  FeeAmount,
 } from "./api";
