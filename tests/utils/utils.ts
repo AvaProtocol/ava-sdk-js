@@ -725,19 +725,46 @@ export function executionHasWriteFailure(
     .some((s) => hasWriteFailureFromMetadata(s.metadata));
 }
 
-/** Assert execution has automationFee with expected FeeAmount shape when present */
-export function expectAutomationFee(
+/** Assert execution has fee fields with expected shapes when present */
+export function expectExecutionFees(
   execution: {
-    automationFee?: { nativeTokenAmount?: string; usdAmount?: string };
+    executionFee?: { amount?: string; unit?: string };
+    cogs?: Array<{ nodeId?: string; costType?: string; fee?: { amount?: string; unit?: string } }>;
+    valueFee?: { fee?: { amount?: string; unit?: string }; tier?: string };
   }
 ): void {
-  if (execution.automationFee) {
-    expect(execution.automationFee).toHaveProperty("nativeTokenAmount");
-    expect(execution.automationFee).toHaveProperty("usdAmount");
-    expect(typeof execution.automationFee.nativeTokenAmount).toBe("string");
-    expect(typeof execution.automationFee.usdAmount).toBe("string");
+  // executionFee is a Fee{amount, unit} — may be nil for pending executions
+  if (execution.executionFee) {
+    expect(execution.executionFee).toHaveProperty("amount");
+    expect(execution.executionFee).toHaveProperty("unit");
+    expect(typeof execution.executionFee.amount).toBe("string");
+    expect(execution.executionFee.unit).toBe("USD");
+  }
+
+  // cogs is always an array (may be empty)
+  if (execution.cogs) {
+    expect(Array.isArray(execution.cogs)).toBe(true);
+    for (const cogsEntry of execution.cogs) {
+      expect(cogsEntry).toHaveProperty("nodeId");
+      expect(cogsEntry).toHaveProperty("costType");
+      expect(cogsEntry).toHaveProperty("fee");
+      if (cogsEntry.fee) {
+        expect(cogsEntry.fee.unit).toBe("WEI");
+      }
+    }
+  }
+
+  // valueFee is a ValueFee — may be nil for pending executions
+  if (execution.valueFee) {
+    expect(execution.valueFee).toHaveProperty("fee");
+    if (execution.valueFee.fee) {
+      expect(execution.valueFee.fee.unit).toBe("PERCENTAGE");
+    }
   }
 }
+
+/** @deprecated Use expectExecutionFees instead */
+export const expectAutomationFee = expectExecutionFees;
 
 export const verifyExecutionStepResults = (
   expected: StepProps,
