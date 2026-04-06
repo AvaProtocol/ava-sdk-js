@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [workflows, triggers, executions]
+        suite: [core, workflows, executions, triggers, nodes, templates]
 
     env:
       # Secrets
