@@ -380,47 +380,60 @@ describe("secret Tests", () => {
     });
 
     it("should support backward pagination with before parameter", async () => {
-      const middleOptions = { limit: 3 } as GetSecretsOptions;
-      const middlePage = await client.getSecrets(middleOptions);
+      const pageSize = 3;
+      const firstOptions = { limit: pageSize } as GetSecretsOptions;
+      const firstPage = await client.getSecrets(firstOptions);
 
-      if (Array.isArray(middlePage)) {
+      if (Array.isArray(firstPage)) {
         return;
       }
 
       // Skip test if no cursor or no more items
-      if (!middlePage.pageInfo.endCursor || !middlePage.pageInfo.hasNextPage) {
+      if (!firstPage.pageInfo.endCursor || !firstPage.pageInfo.hasNextPage) {
         console.log(
           "No cursor or no more items, skipping backward pagination test"
         );
         return;
       }
 
-      const previousOptions = {
-        before: middlePage.pageInfo.endCursor,
-        limit: 3,
+      // Get the second page (forward) using after
+      const secondOptions = {
+        after: firstPage.pageInfo.endCursor,
+        limit: pageSize,
       } as GetSecretsOptions;
+      const secondPage = await client.getSecrets(secondOptions);
 
-      try {
-        const previousPage = await client.getSecrets(previousOptions);
-
-        // Verify that we got items in both pages
-        expect(previousPage.items.length).toBeGreaterThan(0);
-        expect(middlePage.items.length).toBeGreaterThan(0);
-
-        // Verify that the previous page has the pagination fields
-        if (!Array.isArray(previousPage)) {
-          expect(typeof previousPage.pageInfo.startCursor).toBe("string");
-          expect(typeof previousPage.pageInfo.endCursor).toBe("string");
-          expect(typeof previousPage.pageInfo.hasPreviousPage).toBe("boolean");
-          expect(typeof previousPage.pageInfo.hasNextPage).toBe("boolean");
-        }
-      } catch (error) {
-        console.log(
-          "Backward pagination failed, this might be expected:",
-          error
-        );
-        // Skip the test if backward pagination is not supported
+      if (Array.isArray(secondPage)) {
+        return;
       }
+
+      expect(secondPage.items.length).toBeGreaterThan(0);
+
+      // Now paginate backward from the second page using before
+      const previousOptions = {
+        before: secondPage.pageInfo.startCursor,
+        limit: pageSize,
+      } as GetSecretsOptions;
+      const previousPage = await client.getSecrets(previousOptions);
+
+      // Verify that we got items going backward
+      expect(previousPage.items.length).toBeGreaterThan(0);
+
+      // Verify that the previous page has the pagination fields
+      if (!Array.isArray(previousPage)) {
+        expect(typeof previousPage.pageInfo.startCursor).toBe("string");
+        expect(typeof previousPage.pageInfo.endCursor).toBe("string");
+        expect(typeof previousPage.pageInfo.hasPreviousPage).toBe("boolean");
+        expect(typeof previousPage.pageInfo.hasNextPage).toBe("boolean");
+      }
+
+      // Verify no overlap between second page and backward page
+      const previousNames = previousPage.items.map((item) => item.name);
+      const secondPageNames = secondPage.items.map((item) => item.name);
+      const overlap = previousNames.filter((name) =>
+        secondPageNames.includes(name)
+      );
+      expect(overlap.length).toBe(0);
     });
 
     it("should respect the limit parameter", async () => {

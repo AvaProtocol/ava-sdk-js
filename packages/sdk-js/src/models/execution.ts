@@ -3,7 +3,10 @@ import {
   ExecutionProps,
   StepProps,
   ExecutionStatus,
-  type FeeAmount,
+  type Fee,
+  type FeeUnit,
+  type NodeCOGS,
+  type ValueFee,
 } from "@avaprotocol/types";
 import Step from "./step";
 
@@ -28,6 +31,39 @@ function convertProtobufExecutionStatusToTypes(
   }
 }
 
+function convertFee(feePb: avs_pb.Fee | undefined): Fee | undefined {
+  if (!feePb) return undefined;
+  return {
+    amount: feePb.getAmount(),
+    unit: feePb.getUnit() as FeeUnit,
+  };
+}
+
+function convertNodeCOGS(cogsPb: avs_pb.NodeCOGS): NodeCOGS {
+  return {
+    nodeId: cogsPb.getNodeId(),
+    costType: cogsPb.getCostType(),
+    fee: convertFee(cogsPb.getFee()) || { amount: "0", unit: "WEI" },
+    gasUnits: cogsPb.getGasUnits() || undefined,
+  };
+}
+
+function convertExecutionTier(tier: number): string {
+  return avs_pb.ExecutionTier[tier] ?? tier.toString();
+}
+
+function convertValueFee(valuePb: avs_pb.ValueFee | undefined): ValueFee | undefined {
+  if (!valuePb) return undefined;
+  return {
+    fee: convertFee(valuePb.getFee()) || { amount: "0", unit: "PERCENTAGE" },
+    tier: convertExecutionTier(valuePb.getTier()),
+    valueBase: valuePb.getValueBase() || undefined,
+    classificationMethod: valuePb.getClassificationMethod(),
+    confidence: valuePb.getConfidence(),
+    reason: valuePb.getReason(),
+  };
+}
+
 class Execution implements ExecutionProps {
   id: string;
   startAt: number;
@@ -36,8 +72,9 @@ class Execution implements ExecutionProps {
   error: string;
   index: number;
   steps: Step[];
-  totalGasCost?: string;
-  automationFee?: FeeAmount;
+  executionFee?: Fee;
+  cogs: NodeCOGS[];
+  valueFee?: ValueFee;
 
   constructor(props: ExecutionProps) {
     this.id = props.id;
@@ -47,15 +84,11 @@ class Execution implements ExecutionProps {
     this.error = props.error;
     this.index = props.index;
     this.steps = props.steps.map(s => new Step(s));
-    this.totalGasCost = props.totalGasCost;
-    this.automationFee = props.automationFee;
+    this.executionFee = props.executionFee;
+    this.cogs = props.cogs || [];
+    this.valueFee = props.valueFee;
   }
 
-
-  /**
-   * Convert Execution instance to plain object (ExecutionProps)
-   * This is useful for serialization, especially with Next.js Server Components
-   */
   toJson(): ExecutionProps {
     return {
       id: this.id,
@@ -65,19 +98,13 @@ class Execution implements ExecutionProps {
       error: this.error,
       index: this.index,
       steps: this.steps.map(step => step.toJson()),
-      ...(this.totalGasCost && { totalGasCost: this.totalGasCost }),
-      ...(this.automationFee && { automationFee: this.automationFee }),
+      ...(this.executionFee && { executionFee: this.executionFee }),
+      cogs: this.cogs,
+      ...(this.valueFee && { valueFee: this.valueFee }),
     };
   }
 
   static fromResponse(execution: avs_pb.Execution): Execution {
-    const automationFeePb = typeof execution.getAutomationFee === 'function'
-      ? execution.getAutomationFee()
-      : undefined;
-    const automationFee: FeeAmount | undefined = automationFeePb
-      ? (automationFeePb.toObject() as FeeAmount)
-      : undefined;
-
     return new Execution({
       id: execution.getId(),
       startAt: execution.getStartAt(),
@@ -85,15 +112,14 @@ class Execution implements ExecutionProps {
       status: convertProtobufExecutionStatusToTypes(execution.getStatus()),
       error: execution.getError(),
       index: execution.getIndex(),
-      totalGasCost: execution.getTotalGasCost() || undefined,
-      automationFee,
+      executionFee: convertFee(execution.getExecutionFee()),
+      cogs: execution.getCogsList().map(convertNodeCOGS),
+      valueFee: convertValueFee(execution.getValueFee()),
       steps: execution
         .getStepsList()
         .map((step) => Step.fromResponse(step)) as StepProps[],
     });
   }
-
-  // Client side does not generate the execution, so there's no toRequest() method
 }
 
 export default Execution;

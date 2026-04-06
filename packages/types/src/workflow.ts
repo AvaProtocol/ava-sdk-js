@@ -90,11 +90,12 @@ export type StepProps = Omit<
 };
 
 // Execution Props
-export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList" | "status" | "totalGasCost"> & {
+export type ExecutionProps = Omit<avs_pb.Execution.AsObject, "stepsList" | "status" | "executionFee" | "cogsList" | "valueFee"> & {
   steps: Array<StepProps>;
   status: ExecutionStatus;
-  // Total gas cost for the entire workflow execution (sum of all blockchain operations)
-  totalGasCost?: string;
+  executionFee?: import("./api").Fee;
+  cogs: import("./api").NodeCOGS[];
+  valueFee?: import("./api").ValueFee;
 };
 
 // Workflow Props - depends on other types so defined last

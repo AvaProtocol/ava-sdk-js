@@ -1809,13 +1809,20 @@ export class Execution extends jspb.Message {
     setError(value: string): Execution;
     getIndex(): number;
     setIndex(value: number): Execution;
-    getTotalGasCost(): string;
-    setTotalGasCost(value: string): Execution;
 
-    hasAutomationFee(): boolean;
-    clearAutomationFee(): void;
-    getAutomationFee(): FeeAmount | undefined;
-    setAutomationFee(value?: FeeAmount): Execution;
+    hasExecutionFee(): boolean;
+    clearExecutionFee(): void;
+    getExecutionFee(): Fee | undefined;
+    setExecutionFee(value?: Fee): Execution;
+    clearCogsList(): void;
+    getCogsList(): Array<NodeCOGS>;
+    setCogsList(value: Array<NodeCOGS>): Execution;
+    addCogs(value?: NodeCOGS, index?: number): NodeCOGS;
+
+    hasValueFee(): boolean;
+    clearValueFee(): void;
+    getValueFee(): ValueFee | undefined;
+    setValueFee(value?: ValueFee): Execution;
     clearStepsList(): void;
     getStepsList(): Array<Execution.Step>;
     setStepsList(value: Array<Execution.Step>): Execution;
@@ -1839,8 +1846,9 @@ export namespace Execution {
         status: ExecutionStatus,
         error: string,
         index: number,
-        totalGasCost: string,
-        automationFee?: FeeAmount.AsObject,
+        executionFee?: Fee.AsObject,
+        cogsList: Array<NodeCOGS.AsObject>,
+        valueFee?: ValueFee.AsObject,
         stepsList: Array<Execution.Step.AsObject>,
     }
 
@@ -3848,50 +3856,119 @@ export namespace SmartWalletCreationFee {
     }
 }
 
-export class AutomationFee extends jspb.Message { 
-
-    hasBaseFee(): boolean;
-    clearBaseFee(): void;
-    getBaseFee(): FeeAmount | undefined;
-    setBaseFee(value?: FeeAmount): AutomationFee;
-
-    hasMonitoringFee(): boolean;
-    clearMonitoringFee(): void;
-    getMonitoringFee(): FeeAmount | undefined;
-    setMonitoringFee(value?: FeeAmount): AutomationFee;
-
-    hasExecutionFee(): boolean;
-    clearExecutionFee(): void;
-    getExecutionFee(): FeeAmount | undefined;
-    setExecutionFee(value?: FeeAmount): AutomationFee;
-    getTriggerType(): string;
-    setTriggerType(value: string): AutomationFee;
-    getEstimatedExecutions(): number;
-    setEstimatedExecutions(value: number): AutomationFee;
-    getDurationMinutes(): number;
-    setDurationMinutes(value: number): AutomationFee;
-    getFeeCalculationMethod(): string;
-    setFeeCalculationMethod(value: string): AutomationFee;
+export class Fee extends jspb.Message { 
+    getAmount(): string;
+    setAmount(value: string): Fee;
+    getUnit(): string;
+    setUnit(value: string): Fee;
 
     serializeBinary(): Uint8Array;
-    toObject(includeInstance?: boolean): AutomationFee.AsObject;
-    static toObject(includeInstance: boolean, msg: AutomationFee): AutomationFee.AsObject;
+    toObject(includeInstance?: boolean): Fee.AsObject;
+    static toObject(includeInstance: boolean, msg: Fee): Fee.AsObject;
     static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
     static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-    static serializeBinaryToWriter(message: AutomationFee, writer: jspb.BinaryWriter): void;
-    static deserializeBinary(bytes: Uint8Array): AutomationFee;
-    static deserializeBinaryFromReader(message: AutomationFee, reader: jspb.BinaryReader): AutomationFee;
+    static serializeBinaryToWriter(message: Fee, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Fee;
+    static deserializeBinaryFromReader(message: Fee, reader: jspb.BinaryReader): Fee;
 }
 
-export namespace AutomationFee {
+export namespace Fee {
     export type AsObject = {
-        baseFee?: FeeAmount.AsObject,
-        monitoringFee?: FeeAmount.AsObject,
-        executionFee?: FeeAmount.AsObject,
-        triggerType: string,
-        estimatedExecutions: number,
-        durationMinutes: number,
-        feeCalculationMethod: string,
+        amount: string,
+        unit: string,
+    }
+}
+
+export class NativeToken extends jspb.Message { 
+    getSymbol(): string;
+    setSymbol(value: string): NativeToken;
+    getDecimals(): number;
+    setDecimals(value: number): NativeToken;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): NativeToken.AsObject;
+    static toObject(includeInstance: boolean, msg: NativeToken): NativeToken.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: NativeToken, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): NativeToken;
+    static deserializeBinaryFromReader(message: NativeToken, reader: jspb.BinaryReader): NativeToken;
+}
+
+export namespace NativeToken {
+    export type AsObject = {
+        symbol: string,
+        decimals: number,
+    }
+}
+
+export class NodeCOGS extends jspb.Message { 
+    getNodeId(): string;
+    setNodeId(value: string): NodeCOGS;
+    getCostType(): string;
+    setCostType(value: string): NodeCOGS;
+
+    hasFee(): boolean;
+    clearFee(): void;
+    getFee(): Fee | undefined;
+    setFee(value?: Fee): NodeCOGS;
+    getGasUnits(): string;
+    setGasUnits(value: string): NodeCOGS;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): NodeCOGS.AsObject;
+    static toObject(includeInstance: boolean, msg: NodeCOGS): NodeCOGS.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: NodeCOGS, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): NodeCOGS;
+    static deserializeBinaryFromReader(message: NodeCOGS, reader: jspb.BinaryReader): NodeCOGS;
+}
+
+export namespace NodeCOGS {
+    export type AsObject = {
+        nodeId: string,
+        costType: string,
+        fee?: Fee.AsObject,
+        gasUnits: string,
+    }
+}
+
+export class ValueFee extends jspb.Message { 
+
+    hasFee(): boolean;
+    clearFee(): void;
+    getFee(): Fee | undefined;
+    setFee(value?: Fee): ValueFee;
+    getTier(): ExecutionTier;
+    setTier(value: ExecutionTier): ValueFee;
+    getValueBase(): string;
+    setValueBase(value: string): ValueFee;
+    getClassificationMethod(): string;
+    setClassificationMethod(value: string): ValueFee;
+    getConfidence(): number;
+    setConfidence(value: number): ValueFee;
+    getReason(): string;
+    setReason(value: string): ValueFee;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): ValueFee.AsObject;
+    static toObject(includeInstance: boolean, msg: ValueFee): ValueFee.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: ValueFee, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): ValueFee;
+    static deserializeBinaryFromReader(message: ValueFee, reader: jspb.BinaryReader): ValueFee;
+}
+
+export namespace ValueFee {
+    export type AsObject = {
+        fee?: Fee.AsObject,
+        tier: ExecutionTier,
+        valueBase: string,
+        classificationMethod: string,
+        confidence: number,
+        reason: string,
     }
 }
 
@@ -3900,15 +3977,11 @@ export class FeeDiscount extends jspb.Message {
     setDiscountType(value: string): FeeDiscount;
     getDiscountName(): string;
     setDiscountName(value: string): FeeDiscount;
-    getAppliesTo(): string;
-    setAppliesTo(value: string): FeeDiscount;
-    getDiscountPercentage(): number;
-    setDiscountPercentage(value: number): FeeDiscount;
 
-    hasDiscountAmount(): boolean;
-    clearDiscountAmount(): void;
-    getDiscountAmount(): FeeAmount | undefined;
-    setDiscountAmount(value?: FeeAmount): FeeDiscount;
+    hasDiscount(): boolean;
+    clearDiscount(): void;
+    getDiscount(): Fee | undefined;
+    setDiscount(value?: Fee): FeeDiscount;
     getExpiryDate(): string;
     setExpiryDate(value: string): FeeDiscount;
     getTerms(): string;
@@ -3928,9 +4001,7 @@ export namespace FeeDiscount {
     export type AsObject = {
         discountType: string,
         discountName: string,
-        appliesTo: string,
-        discountPercentage: number,
-        discountAmount?: FeeAmount.AsObject,
+        discount?: Fee.AsObject,
         expiryDate: string,
         terms: string,
     }
@@ -3943,56 +4014,37 @@ export class EstimateFeesResp extends jspb.Message {
     setError(value: string): EstimateFeesResp;
     getErrorCode(): ErrorCode;
     setErrorCode(value: ErrorCode): EstimateFeesResp;
+    getChainId(): string;
+    setChainId(value: string): EstimateFeesResp;
 
-    hasGasFees(): boolean;
-    clearGasFees(): void;
-    getGasFees(): GasFeeBreakdown | undefined;
-    setGasFees(value?: GasFeeBreakdown): EstimateFeesResp;
+    hasNativeToken(): boolean;
+    clearNativeToken(): void;
+    getNativeToken(): NativeToken | undefined;
+    setNativeToken(value?: NativeToken): EstimateFeesResp;
 
-    hasAutomationFees(): boolean;
-    clearAutomationFees(): void;
-    getAutomationFees(): AutomationFee | undefined;
-    setAutomationFees(value?: AutomationFee): EstimateFeesResp;
+    hasExecutionFee(): boolean;
+    clearExecutionFee(): void;
+    getExecutionFee(): Fee | undefined;
+    setExecutionFee(value?: Fee): EstimateFeesResp;
+    clearCogsList(): void;
+    getCogsList(): Array<NodeCOGS>;
+    setCogsList(value: Array<NodeCOGS>): EstimateFeesResp;
+    addCogs(value?: NodeCOGS, index?: number): NodeCOGS;
 
-    hasCreationFees(): boolean;
-    clearCreationFees(): void;
-    getCreationFees(): SmartWalletCreationFee | undefined;
-    setCreationFees(value?: SmartWalletCreationFee): EstimateFeesResp;
-
-    hasTotalFees(): boolean;
-    clearTotalFees(): void;
-    getTotalFees(): FeeAmount | undefined;
-    setTotalFees(value?: FeeAmount): EstimateFeesResp;
+    hasValueFee(): boolean;
+    clearValueFee(): void;
+    getValueFee(): ValueFee | undefined;
+    setValueFee(value?: ValueFee): EstimateFeesResp;
     clearDiscountsList(): void;
     getDiscountsList(): Array<FeeDiscount>;
     setDiscountsList(value: Array<FeeDiscount>): EstimateFeesResp;
     addDiscounts(value?: FeeDiscount, index?: number): FeeDiscount;
-
-    hasTotalDiscounts(): boolean;
-    clearTotalDiscounts(): void;
-    getTotalDiscounts(): FeeAmount | undefined;
-    setTotalDiscounts(value?: FeeAmount): EstimateFeesResp;
-
-    hasFinalTotal(): boolean;
-    clearFinalTotal(): void;
-    getFinalTotal(): FeeAmount | undefined;
-    setFinalTotal(value?: FeeAmount): EstimateFeesResp;
-    getEstimatedAt(): number;
-    setEstimatedAt(value: number): EstimateFeesResp;
-    getChainId(): string;
-    setChainId(value: string): EstimateFeesResp;
-    getPriceDataSource(): string;
-    setPriceDataSource(value: string): EstimateFeesResp;
-    getPriceDataAgeSeconds(): number;
-    setPriceDataAgeSeconds(value: number): EstimateFeesResp;
+    getPricingModel(): string;
+    setPricingModel(value: string): EstimateFeesResp;
     clearWarningsList(): void;
     getWarningsList(): Array<string>;
     setWarningsList(value: Array<string>): EstimateFeesResp;
     addWarnings(value: string, index?: number): string;
-    clearRecommendationsList(): void;
-    getRecommendationsList(): Array<string>;
-    setRecommendationsList(value: Array<string>): EstimateFeesResp;
-    addRecommendations(value: string, index?: number): string;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): EstimateFeesResp.AsObject;
@@ -4009,19 +4061,14 @@ export namespace EstimateFeesResp {
         success: boolean,
         error: string,
         errorCode: ErrorCode,
-        gasFees?: GasFeeBreakdown.AsObject,
-        automationFees?: AutomationFee.AsObject,
-        creationFees?: SmartWalletCreationFee.AsObject,
-        totalFees?: FeeAmount.AsObject,
-        discountsList: Array<FeeDiscount.AsObject>,
-        totalDiscounts?: FeeAmount.AsObject,
-        finalTotal?: FeeAmount.AsObject,
-        estimatedAt: number,
         chainId: string,
-        priceDataSource: string,
-        priceDataAgeSeconds: number,
+        nativeToken?: NativeToken.AsObject,
+        executionFee?: Fee.AsObject,
+        cogsList: Array<NodeCOGS.AsObject>,
+        valueFee?: ValueFee.AsObject,
+        discountsList: Array<FeeDiscount.AsObject>,
+        pricingModel: string,
         warningsList: Array<string>,
-        recommendationsList: Array<string>,
     }
 }
 
@@ -4077,6 +4124,13 @@ export enum NodeType {
     NODE_TYPE_BALANCE = 10,
 }
 
+export enum ExecutionTier {
+    EXECUTION_TIER_UNSPECIFIED = 0,
+    EXECUTION_TIER_1 = 1,
+    EXECUTION_TIER_2 = 2,
+    EXECUTION_TIER_3 = 3,
+}
+
 export enum ExecutionMode {
     EXECUTION_MODE_SEQUENTIAL = 0,
     EXECUTION_MODE_PARALLEL = 1,
@@ -4130,6 +4184,7 @@ export enum ErrorCode {
     SMART_WALLET_NOT_FOUND = 8001,
     SMART_WALLET_DEPLOYMENT_ERROR = 8002,
     INSUFFICIENT_BALANCE = 8003,
+    INSUFFICIENT_CREDIT = 8004,
 }
 
 export enum TaskStatus {

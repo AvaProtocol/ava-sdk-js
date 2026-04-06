@@ -242,27 +242,44 @@ describe("Workflow Management Tests", () => {
           workflowIds.push(workflowId);
         }
 
-        // Get all workflows first to get cursor
-        const allWorkflows = await client.getWorkflows([wallet.address], {
-          limit: totalCount,
-        });
-
-        expect(allWorkflows.items.length).toBe(totalCount);
-
-        // Use the second item's cursor as a reference point
-        const secondItemCursor = allWorkflows.pageInfo.endCursor;
-
-        // Get workflows before the cursor
-        const beforePage = await client.getWorkflows([wallet.address], {
-          before: secondItemCursor,
+        // Get the first page (forward)
+        const firstPage = await client.getWorkflows([wallet.address], {
           limit: pageSize,
         });
 
+        expect(firstPage.items.length).toBeLessThanOrEqual(pageSize);
+        expect(firstPage.pageInfo.endCursor).toBeTruthy();
+        expect(firstPage.pageInfo.hasNextPage).toBeTruthy();
+
+        // Get the second page (forward) using after
+        const secondPage = await client.getWorkflows([wallet.address], {
+          after: firstPage.pageInfo.endCursor,
+          limit: pageSize,
+        });
+
+        expect(secondPage.items.length).toBeGreaterThan(0);
+
+        // Now paginate backward from the second page using before
+        const beforePage = await client.getWorkflows([wallet.address], {
+          before: secondPage.pageInfo.startCursor,
+          limit: pageSize,
+        });
+
+        expect(beforePage.items.length).toBeGreaterThan(0);
         expect(beforePage.items.length).toBeLessThanOrEqual(pageSize);
         expect(typeof beforePage.pageInfo.hasPreviousPage).toBe("boolean");
 
-        // Verify that items in beforePage come before items in the original list
+        // Verify no overlap between second page and backward page
         const beforeIds = beforePage.items.map((item) => item.id);
+        const secondPageIds = secondPage.items.map((item) => item.id);
+        const overlap = beforeIds.filter((id) => secondPageIds.includes(id));
+        expect(overlap.length).toBe(0);
+
+        // The backward page should return the same items as the first page
+        const firstPageIds = firstPage.items.map((item) => item.id);
+        expect(beforeIds.sort()).toEqual(firstPageIds.sort());
+
+        // Verify all returned workflows are in our created list
         beforeIds.forEach((id) => {
           if (id) {
             expect(workflowIds.includes(id)).toBe(true);

@@ -18,4 +18,8 @@ module.exports = {
     "^@/types/(.*)$": "<rootDir>/packages/types/$1",
   },
   setupFilesAfterEnv: ["<rootDir>/tests/utils/mocks/api.ts"],
+  reporters: [
+    "default",
+    "<rootDir>/tests/utils/failureSummaryReporter.js",
+  ],
 };
