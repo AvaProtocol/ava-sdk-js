@@ -68,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [workflows, triggers] # Other suites (core, executions, nodes, templates) disabled — bundler not reachable from CI, run locally
+        suite: [workflows, triggers, executions]
 
     env:
       # Secrets
