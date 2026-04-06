@@ -292,14 +292,19 @@ export interface WithdrawFundsResponse {
 // ==============================================================================
 
 /**
+ * Valid fee units
+ */
+export type FeeUnit = "USD" | "WEI" | "PERCENTAGE";
+
+/**
  * Unit-safe fee value. Every monetary field is self-describing.
  * Units: "USD" (fiat), "WEI" (native token smallest unit), "PERCENTAGE" (0.03 = 0.03%)
  */
 export interface Fee {
   /** Numeric value as string (precision-safe) */
   amount: string;
-  /** Unit: "USD", "WEI", or "PERCENTAGE" */
-  unit: string;
+  /** Unit */
+  unit: FeeUnit;
 }
 
 /**
@@ -411,7 +416,8 @@ export interface EstimateFeesResponse {
   warnings: string[];
 }
 
-// Legacy type kept for backward compatibility with Execution.automationFee
+// Legacy type — kept for any third-party code that may reference it.
+// New code should use Fee instead.
 export interface FeeAmount {
   nativeTokenAmount: string;
   nativeTokenSymbol: string;

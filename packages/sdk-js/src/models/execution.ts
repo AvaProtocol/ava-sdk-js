@@ -4,6 +4,7 @@ import {
   StepProps,
   ExecutionStatus,
   type Fee,
+  type FeeUnit,
   type NodeCOGS,
   type ValueFee,
 } from "@avaprotocol/types";
@@ -34,7 +35,7 @@ function convertFee(feePb: avs_pb.Fee | undefined): Fee | undefined {
   if (!feePb) return undefined;
   return {
     amount: feePb.getAmount(),
-    unit: feePb.getUnit(),
+    unit: feePb.getUnit() as FeeUnit,
   };
 }
 
@@ -47,11 +48,15 @@ function convertNodeCOGS(cogsPb: avs_pb.NodeCOGS): NodeCOGS {
   };
 }
 
+function convertExecutionTier(tier: number): string {
+  return avs_pb.ExecutionTier[tier] ?? tier.toString();
+}
+
 function convertValueFee(valuePb: avs_pb.ValueFee | undefined): ValueFee | undefined {
   if (!valuePb) return undefined;
   return {
     fee: convertFee(valuePb.getFee()) || { amount: "0", unit: "PERCENTAGE" },
-    tier: valuePb.getTier().toString(),
+    tier: convertExecutionTier(valuePb.getTier()),
     valueBase: valuePb.getValueBase() || undefined,
     classificationMethod: valuePb.getClassificationMethod(),
     confidence: valuePb.getConfidence(),

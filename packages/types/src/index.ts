@@ -24,6 +24,7 @@ export type {
   EstimateFeesRequest,
   EstimateFeesResponse,
   Fee,
+  FeeUnit,
   NativeToken,
   NodeCOGS,
   ValueFee,

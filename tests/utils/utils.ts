@@ -742,6 +742,7 @@ export function expectExecutionFees(
   }
 
   // cogs is always an array (may be empty)
+  expect(execution).toHaveProperty("cogs");
   if (execution.cogs) {
     expect(Array.isArray(execution.cogs)).toBe(true);
     for (const cogsEntry of execution.cogs) {

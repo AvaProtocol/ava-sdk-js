@@ -56,6 +56,7 @@ import {
   type EstimateFeesRequest,
   type EstimateFeesResponse,
   type Fee,
+  type FeeUnit,
   type NodeCOGS,
   type ValueFee,
 } from "@avaprotocol/types";
@@ -1576,7 +1577,7 @@ class Client extends BaseClient {
     // Convert execution fee
     const execFeePb = result.getExecutionFee();
     const executionFee: Fee | undefined = execFeePb
-      ? { amount: execFeePb.getAmount(), unit: execFeePb.getUnit() }
+      ? { amount: execFeePb.getAmount(), unit: execFeePb.getUnit() as FeeUnit }
       : undefined;
 
     // Convert COGS array
@@ -1586,8 +1587,8 @@ class Client extends BaseClient {
         nodeId: cogsPb.getNodeId(),
         costType: cogsPb.getCostType(),
         fee: feePb
-          ? { amount: feePb.getAmount(), unit: feePb.getUnit() }
-          : { amount: "0", unit: "WEI" },
+          ? { amount: feePb.getAmount(), unit: feePb.getUnit() as FeeUnit }
+          : { amount: "0", unit: "WEI" as FeeUnit },
         gasUnits: cogsPb.getGasUnits() || undefined,
       };
     });
@@ -1599,9 +1600,9 @@ class Client extends BaseClient {
       const vfFeePb = valueFeePb.getFee();
       valueFee = {
         fee: vfFeePb
-          ? { amount: vfFeePb.getAmount(), unit: vfFeePb.getUnit() }
-          : { amount: "0", unit: "PERCENTAGE" },
-        tier: valueFeePb.getTier().toString(),
+          ? { amount: vfFeePb.getAmount(), unit: vfFeePb.getUnit() as FeeUnit }
+          : { amount: "0", unit: "PERCENTAGE" as FeeUnit },
+        tier: avs_pb.ExecutionTier[valueFeePb.getTier()] ?? valueFeePb.getTier().toString(),
         valueBase: valueFeePb.getValueBase() || undefined,
         classificationMethod: valueFeePb.getClassificationMethod(),
         confidence: valueFeePb.getConfidence(),
@@ -1616,8 +1617,8 @@ class Client extends BaseClient {
         discountType: discountPb.getDiscountType(),
         discountName: discountPb.getDiscountName(),
         discount: dFeePb
-          ? { amount: dFeePb.getAmount(), unit: dFeePb.getUnit() }
-          : { amount: "0", unit: "USD" },
+          ? { amount: dFeePb.getAmount(), unit: dFeePb.getUnit() as FeeUnit }
+          : { amount: "0", unit: "USD" as FeeUnit },
         expiryDate: discountPb.getExpiryDate() || undefined,
         terms: discountPb.getTerms() || undefined,
       };
