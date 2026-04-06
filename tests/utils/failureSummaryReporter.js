@@ -1,3 +1,5 @@
+const path = require("path");
+
 /**
  * Custom Jest reporter that prints a clear summary of failed tests at the end.
  * Works alongside --silent to keep output clean while surfacing failures.
@@ -15,7 +17,7 @@ class FailureSummaryReporter {
       for (const test of suite.testResults) {
         if (test.status === "failed") {
           failures.push({
-            suitePath: suite.testFilePath.replace(process.cwd() + "/", ""),
+            suitePath: path.relative(process.cwd(), suite.testFilePath),
             testName: test.ancestorTitles.concat(test.title).join(" > "),
             messages: test.failureMessages,
           });

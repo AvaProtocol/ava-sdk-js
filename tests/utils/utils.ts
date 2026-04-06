@@ -216,6 +216,7 @@ const fileToStartIndex: Record<string, number> = {
   "inputVariables.test.ts": 220, // Shares with createWorkflow
   "partialSuccess.test.ts": 700, // Shares with execution
   "gasTracking.test.ts": 540, // Shares with contractWrite
+  "estimateFees.test.ts": 840,
 };
 
 /**
@@ -729,7 +730,7 @@ export function executionHasWriteFailure(
 export function expectExecutionFees(
   execution: {
     executionFee?: { amount?: string; unit?: string };
-    cogs?: Array<{ nodeId?: string; costType?: string; fee?: { amount?: string; unit?: string } }>;
+    cogs: Array<{ nodeId?: string; costType?: string; fee?: { amount?: string; unit?: string } }>;
     valueFee?: { fee?: { amount?: string; unit?: string }; tier?: string };
   }
 ): void {
@@ -742,16 +743,13 @@ export function expectExecutionFees(
   }
 
   // cogs is always an array (may be empty)
-  expect(execution).toHaveProperty("cogs");
-  if (execution.cogs) {
-    expect(Array.isArray(execution.cogs)).toBe(true);
-    for (const cogsEntry of execution.cogs) {
-      expect(cogsEntry).toHaveProperty("nodeId");
-      expect(cogsEntry).toHaveProperty("costType");
-      expect(cogsEntry).toHaveProperty("fee");
-      if (cogsEntry.fee) {
-        expect(cogsEntry.fee.unit).toBe("WEI");
-      }
+  expect(Array.isArray(execution.cogs)).toBe(true);
+  for (const cogsEntry of execution.cogs) {
+    expect(cogsEntry).toHaveProperty("nodeId");
+    expect(cogsEntry).toHaveProperty("costType");
+    expect(cogsEntry).toHaveProperty("fee");
+    if (cogsEntry.fee) {
+      expect(cogsEntry.fee.unit).toBe("WEI");
     }
   }
 
