@@ -1,5 +1,11 @@
 # @avaprotocol/types
 
+## 2.11.0
+
+### Minor Changes
+
+- 11d46a3: eat: update SDK for new fee proto (Fee/NodeCOGS/ValueFee)
+
 ## 2.10.1
 
 ### Patch Changes

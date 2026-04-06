@@ -1,5 +1,16 @@
 # @avaprotocol/sdk-js
 
+## 2.15.0
+
+### Minor Changes
+
+- 11d46a3: eat: update SDK for new fee proto (Fee/NodeCOGS/ValueFee)
+
+### Patch Changes
+
+- Updated dependencies [11d46a3]
+  - @avaprotocol/types@2.11.0
+
 ## 2.14.2
 
 ### Patch Changes
