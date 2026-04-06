@@ -52,10 +52,12 @@ import {
   type TriggerWorkflowResponse,
   type WithdrawFundsRequest,
   type WithdrawFundsResponse,
-  // Fee estimation types (only those used internally by SDK)
+  // Fee estimation types
   type EstimateFeesRequest,
   type EstimateFeesResponse,
-  type FeeAmount,
+  type Fee,
+  type NodeCOGS,
+  type ValueFee,
 } from "@avaprotocol/types";
 
 import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
@@ -1565,163 +1567,74 @@ class Client extends BaseClient {
   private convertEstimateFeesResponse(
     result: avs_pb.EstimateFeesResp,
   ): EstimateFeesResponse {
-    const response: EstimateFeesResponse = {
+    // Convert native token metadata
+    const nativeTokenPb = result.getNativeToken();
+    const nativeToken = nativeTokenPb
+      ? { symbol: nativeTokenPb.getSymbol(), decimals: nativeTokenPb.getDecimals() }
+      : undefined;
+
+    // Convert execution fee
+    const execFeePb = result.getExecutionFee();
+    const executionFee: Fee | undefined = execFeePb
+      ? { amount: execFeePb.getAmount(), unit: execFeePb.getUnit() }
+      : undefined;
+
+    // Convert COGS array
+    const cogs: NodeCOGS[] = result.getCogsList().map((cogsPb) => {
+      const feePb = cogsPb.getFee();
+      return {
+        nodeId: cogsPb.getNodeId(),
+        costType: cogsPb.getCostType(),
+        fee: feePb
+          ? { amount: feePb.getAmount(), unit: feePb.getUnit() }
+          : { amount: "0", unit: "WEI" },
+        gasUnits: cogsPb.getGasUnits() || undefined,
+      };
+    });
+
+    // Convert value fee
+    const valueFeePb = result.getValueFee();
+    let valueFee: ValueFee | undefined;
+    if (valueFeePb) {
+      const vfFeePb = valueFeePb.getFee();
+      valueFee = {
+        fee: vfFeePb
+          ? { amount: vfFeePb.getAmount(), unit: vfFeePb.getUnit() }
+          : { amount: "0", unit: "PERCENTAGE" },
+        tier: valueFeePb.getTier().toString(),
+        valueBase: valueFeePb.getValueBase() || undefined,
+        classificationMethod: valueFeePb.getClassificationMethod(),
+        confidence: valueFeePb.getConfidence(),
+        reason: valueFeePb.getReason(),
+      };
+    }
+
+    // Convert discounts
+    const discounts = result.getDiscountsList().map((discountPb) => {
+      const dFeePb = discountPb.getDiscount();
+      return {
+        discountType: discountPb.getDiscountType(),
+        discountName: discountPb.getDiscountName(),
+        discount: dFeePb
+          ? { amount: dFeePb.getAmount(), unit: dFeePb.getUnit() }
+          : { amount: "0", unit: "USD" },
+        expiryDate: discountPb.getExpiryDate() || undefined,
+        terms: discountPb.getTerms() || undefined,
+      };
+    });
+
+    return {
       success: result.getSuccess(),
       error: result.getError() || undefined,
       errorCode: result.getErrorCode().toString() || undefined,
-    };
-
-    // Convert gas fees if present
-    const gasFees = result.getGasFees();
-    if (gasFees) {
-      response.gasFees = {
-        nodeGasFees: gasFees.getOperationsList().map((operation) => ({
-          nodeId: operation.getNodeId(),
-          operationType: operation.getOperationType(),
-          methodName: operation.getMethodName() || undefined,
-          gasUnits: operation.getGasUnits(),
-          gasPrice: gasFees.getGasPriceGwei() || "", // Use parent gas price
-          totalCost: operation.getFee()
-            ? this.convertFeeAmount(operation.getFee()!)
-            : this.createZeroFeeAmount(),
-          success: operation.getFee()
-            ? parseFloat(operation.getFee()!.getNativeTokenAmount()) > 0
-            : false, // Check if operation has valid gas cost
-          error: undefined,
-        })),
-        totalGasCost: this.convertFeeAmount(gasFees.getTotalGasFees()!),
-        estimationAccurate: gasFees.getEstimationAccurate(),
-        estimationMethod: gasFees.getEstimationMethod(),
-        averageGasPrice: gasFees.getGasPriceGwei(),
-        notes: [], // Not available in current protobuf
-      };
-    }
-
-    // Convert automation fees if present
-    const automationFees = result.getAutomationFees();
-    if (automationFees) {
-      // Calculate total fee from base + execution
-      const baseFee = automationFees.getBaseFee();
-      const executionFee = automationFees.getExecutionFee();
-
-      // For now, use baseFee as totalFee since the exact calculation isn't available
-      // If baseFee is not available, create a mock fee amount with proper chain detection
-      const totalFee = baseFee || this.createMockFeeAmount();
-
-      response.automationFees = {
-        triggerType: automationFees.getTriggerType(),
-        durationMinutes: automationFees.getDurationMinutes(),
-        baseFee: baseFee
-          ? this.convertFeeAmount(baseFee)
-          : this.createZeroFeeAmount(),
-        executionFee: executionFee
-          ? this.convertFeeAmount(executionFee)
-          : this.createZeroFeeAmount(),
-        estimatedExecutions: automationFees.getEstimatedExecutions(),
-        totalFee: this.convertFeeAmount(totalFee),
-        breakdown: [], // Not available in current protobuf structure
-      };
-    }
-
-    // Convert creation fees if present
-    const creationFees = result.getCreationFees();
-    if (creationFees) {
-      response.creationFees = {
-        creationRequired: creationFees.getCreationRequired(),
-        walletAddress: creationFees.getWalletAddress(),
-        creationFee: creationFees.getCreationFee()
-          ? this.convertFeeAmount(creationFees.getCreationFee()!)
-          : undefined,
-        initialFunding: creationFees.getInitialFunding()
-          ? this.convertFeeAmount(creationFees.getInitialFunding()!)
-          : undefined,
-      };
-    }
-
-    // Convert fee amounts
-    if (result.getTotalFees()) {
-      response.totalFees = this.convertFeeAmount(result.getTotalFees()!);
-    }
-    if (result.getTotalDiscounts()) {
-      response.totalDiscounts = this.convertFeeAmount(
-        result.getTotalDiscounts()!,
-      );
-    }
-    if (result.getFinalTotal()) {
-      response.finalTotal = this.convertFeeAmount(result.getFinalTotal()!);
-    }
-
-    // Convert discounts (using FeeDiscount type, not Discount)
-    response.discounts = result.getDiscountsList().map((discount, index) => ({
-      discountId: `auto-${index}`, // Synthesized unique ID since not available in FeeDiscount
-      discountType: discount.getDiscountType(),
-      discountName: discount.getDiscountName(),
-      appliesTo: discount.getAppliesTo(),
-      discountPercentage: discount.getDiscountPercentage(),
-      discountAmount: this.convertFeeAmount(discount.getDiscountAmount()!),
-      expiryDate: discount.getExpiryDate() || undefined,
-      terms: discount.getTerms() || undefined,
-    }));
-
-    // Add metadata
-    response.estimatedAt = result.getEstimatedAt() || undefined;
-    response.chainId = result.getChainId() || undefined;
-    response.priceDataSource = result.getPriceDataSource() || undefined;
-    response.priceDataAgeSeconds = result.getPriceDataAgeSeconds() || undefined;
-    response.warnings = result.getWarningsList();
-    response.recommendations = result.getRecommendationsList();
-
-    return response;
-  }
-
-  /**
-   * Create a mock fee amount object that mimics protobuf FeeAmount interface
-   * @private
-   */
-  private createMockFeeAmount(): any {
-    const getNativeTokenSymbol = (): string => {
-      // All supported chains (Ethereum and Base) use ETH as native token
-      return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
-    };
-
-    return {
-      getNativeTokenAmount: () => "0",
-      getNativeTokenSymbol: () => getNativeTokenSymbol(),
-      getUsdAmount: () => "0",
-      getApTokenAmount: () => "0",
-    };
-  }
-
-  /**
-   * Create a zero fee amount
-   * @private
-   */
-  private createZeroFeeAmount(): FeeAmount {
-    // Determine native token symbol based on chain ID
-    const getNativeTokenSymbol = (): string => {
-      // All supported chains (Ethereum and Base) use ETH as native token
-      // But could be extended for other chains in the future
-      return "ETH"; // Ethereum, Base mainnet/testnet all use ETH
-    };
-
-    return {
-      nativeTokenAmount: "0",
-      nativeTokenSymbol: getNativeTokenSymbol(),
-      usdAmount: "0",
-      apTokenAmount: "0",
-    };
-  }
-
-  /**
-   * Convert protobuf FeeAmount to TypeScript FeeAmount
-   * @private
-   */
-  private convertFeeAmount(feeAmount: avs_pb.FeeAmount): FeeAmount {
-    return {
-      nativeTokenAmount: feeAmount.getNativeTokenAmount(),
-      nativeTokenSymbol: feeAmount.getNativeTokenSymbol(),
-      usdAmount: feeAmount.getUsdAmount(),
-      apTokenAmount: feeAmount.getApTokenAmount(),
+      chainId: result.getChainId() || undefined,
+      nativeToken,
+      executionFee,
+      cogs,
+      valueFee,
+      discounts,
+      pricingModel: result.getPricingModel() || undefined,
+      warnings: result.getWarningsList(),
     };
   }
 }

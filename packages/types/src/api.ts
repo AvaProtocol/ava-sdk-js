@@ -292,185 +292,129 @@ export interface WithdrawFundsResponse {
 // ==============================================================================
 
 /**
- * Request for comprehensive fee estimation for workflow deployment
+ * Unit-safe fee value. Every monetary field is self-describing.
+ * Units: "USD" (fiat), "WEI" (native token smallest unit), "PERCENTAGE" (0.03 = 0.03%)
+ */
+export interface Fee {
+  /** Numeric value as string (precision-safe) */
+  amount: string;
+  /** Unit: "USD", "WEI", or "PERCENTAGE" */
+  unit: string;
+}
+
+/**
+ * Native token metadata for the chain
+ */
+export interface NativeToken {
+  /** Token symbol (e.g., "ETH") */
+  symbol: string;
+  /** Token decimals (e.g., 18) */
+  decimals: number;
+}
+
+/**
+ * Per-node cost of goods sold (gas, external API costs)
+ */
+export interface NodeCOGS {
+  /** Node ID */
+  nodeId: string;
+  /** Cost type: "gas", "external_api", "wallet_creation" */
+  costType: string;
+  /** Cost amount */
+  fee: Fee;
+  /** Gas units (for gas costs only) */
+  gasUnits?: string;
+}
+
+/**
+ * Workflow-level value-capture fee
+ */
+export interface ValueFee {
+  /** Fee as percentage of transaction value */
+  fee: Fee;
+  /** Pricing tier */
+  tier: string;
+  /** What the percentage applies to (e.g., "input_token_value") */
+  valueBase?: string;
+  /** Classification method: "rule_based" or "llm" */
+  classificationMethod: string;
+  /** Classification confidence (0.0–1.0) */
+  confidence: number;
+  /** Why this tier was assigned */
+  reason: string;
+}
+
+/**
+ * Applied discount
+ */
+export interface FeeDiscount {
+  /** Discount type: "new_user", "volume", "promotional", "beta_program" */
+  discountType: string;
+  /** Human-readable name */
+  discountName: string;
+  /** Discount amount or percentage */
+  discount: Fee;
+  /** Expiry date (ISO string) */
+  expiryDate?: string;
+  /** Terms and conditions */
+  terms?: string;
+}
+
+/**
+ * Request for fee estimation
  */
 export interface EstimateFeesRequest {
-  /** Trigger configuration for the workflow */
+  /** Trigger configuration */
   trigger: TriggerProps;
-  /** Array of workflow nodes */
+  /** Workflow nodes */
   nodes: NodeProps[];
-  /** Runner address (smart wallet address) - if not provided, will be extracted from inputVariables */
+  /** Runner address (smart wallet) */
   runner?: string;
-  /** Input variables for the workflow context */
+  /** Input variables */
   inputVariables?: Record<string, any>;
-  /** Workflow creation timestamp (milliseconds) */
+  /** Creation timestamp (ms) */
   createdAt: number;
-  /** Workflow expiration timestamp (milliseconds) */
+  /** Expiration timestamp (ms) */
   expireAt: number;
 }
 
 /**
- * Comprehensive fee estimation response with detailed breakdown
+ * Fee estimation response.
+ * All fees are per-execution. No totals — client computes.
+ * Components: execution_fee (USD) + cogs[] (WEI) + value_fee (PERCENTAGE)
  */
 export interface EstimateFeesResponse {
-  /** Whether the fee estimation was successful */
+  /** Whether estimation succeeded */
   success: boolean;
-  /** Error message if estimation failed */
+  /** Error message */
   error?: string;
-  /** Error code if estimation failed */
+  /** Error code */
   errorCode?: string;
 
-  /** Gas fees for blockchain operations */
-  gasFees?: GasFeeBreakdown;
-  /** Automation/monitoring fees based on trigger type */
-  automationFees?: AutomationFee;
-  /** Smart wallet creation fees (if needed) */
-  creationFees?: SmartWalletCreationFee;
-
-  /** Total fees before discounts */
-  totalFees?: FeeAmount;
-  /** Applied discounts */
-  discounts?: Discount[];
-  /** Total discount amount */
-  totalDiscounts?: FeeAmount;
-  /** Final total after discounts */
-  finalTotal?: FeeAmount;
-
-  /** When the estimation was performed (milliseconds) */
-  estimatedAt?: number;
-  /** Chain ID where the workflow will be deployed */
+  /** Chain ID */
   chainId?: string;
-  /** Source of price data ("moralis", "fallback") */
-  priceDataSource?: string;
-  /** Age of price data in seconds */
-  priceDataAgeSeconds?: number;
+  /** Native token metadata */
+  nativeToken?: NativeToken;
 
-  /** Warnings about estimation accuracy */
-  warnings?: string[];
-  /** Recommendations for cost optimization */
-  recommendations?: string[];
+  /** Flat per-execution platform fee */
+  executionFee?: Fee;
+  /** Per-node operational costs (gas, external API) */
+  cogs: NodeCOGS[];
+  /** Workflow-level value-capture fee */
+  valueFee?: ValueFee;
+  /** Applied discounts */
+  discounts: FeeDiscount[];
+
+  /** Pricing model version */
+  pricingModel?: string;
+  /** Warnings */
+  warnings: string[];
 }
 
-/**
- * Fee amount in multiple formats (native token + USD + AP token)
- */
+// Legacy type kept for backward compatibility with Execution.automationFee
 export interface FeeAmount {
-  /** Amount in native token wei (e.g., ETH wei) */
   nativeTokenAmount: string;
-  /** Native token symbol (ETH, etc.) */
   nativeTokenSymbol: string;
-  /** USD amount (formatted string with 6 decimals) */
   usdAmount: string;
-  /** AP token amount (future feature, currently "0") */
   apTokenAmount: string;
-}
-
-/**
- * Gas fee breakdown for blockchain operations
- */
-export interface GasFeeBreakdown {
-  /** Individual gas fees per node */
-  nodeGasFees: NodeGasFee[];
-  /** Total gas cost across all nodes */
-  totalGasCost: FeeAmount;
-  /** Whether the estimation is accurate or fallback */
-  estimationAccurate: boolean;
-  /** Method used for estimation ("rpc_estimate", "tenderly_simulation", "fallback") */
-  estimationMethod: string;
-  /** Average gas price used (gwei) */
-  averageGasPrice: string;
-  /** Notes about the estimation */
-  notes?: string[];
-}
-
-/**
- * Gas fee for a single node/operation
- */
-export interface NodeGasFee {
-  /** Node ID */
-  nodeId: string;
-  /** Type of operation ("contract_write", "eth_transfer") */
-  operationType: string;
-  /** Contract method name (for contract writes) */
-  methodName?: string;
-  /** Estimated gas units */
-  gasUnits: string;
-  /** Gas price in wei */
-  gasPrice: string;
-  /** Total cost for this operation */
-  totalCost: FeeAmount;
-  /** Whether the estimation was successful */
-  success: boolean;
-  /** Error message if estimation failed */
-  error?: string;
-}
-
-/**
- * Automation fees based on trigger type and duration
- */
-export interface AutomationFee {
-  /** Type of trigger */
-  triggerType: string;
-  /** Monitoring duration in minutes */
-  durationMinutes: number;
-  /** Base monitoring fee */
-  baseFee: FeeAmount;
-  /** Per-execution fee estimate */
-  executionFee: FeeAmount;
-  /** Estimated number of executions */
-  estimatedExecutions: number;
-  /** Total automation fee */
-  totalFee: FeeAmount;
-  /** Fee calculation breakdown */
-  breakdown: AutomationFeeComponent[];
-}
-
-/**
- * Individual component of automation fee calculation
- */
-export interface AutomationFeeComponent {
-  /** Component type ("base", "monitoring", "execution", "address_scaling", "topic_scaling") */
-  type: string;
-  /** Description of this fee component */
-  description: string;
-  /** Fee amount for this component */
-  amount: FeeAmount;
-  /** Calculation details */
-  calculation?: string;
-}
-
-/**
- * Smart wallet creation fees (if wallet doesn't exist)
- */
-export interface SmartWalletCreationFee {
-  /** Whether wallet creation is required */
-  creationRequired: boolean;
-  /** Smart wallet address */
-  walletAddress: string;
-  /** Cost to create the wallet */
-  creationFee?: FeeAmount;
-  /** Recommended initial funding amount */
-  initialFunding?: FeeAmount;
-}
-
-/**
- * Applied discount information
- */
-export interface Discount {
-  /** Unique discount ID */
-  discountId: string;
-  /** Type of discount ("beta_program", "new_user", "volume") */
-  discountType: string;
-  /** Human-readable discount name */
-  discountName: string;
-  /** What the discount applies to ("automation_fees", "gas_fees", "total_fees") */
-  appliesTo: string;
-  /** Discount percentage (0-100) */
-  discountPercentage: number;
-  /** Discount amount */
-  discountAmount: FeeAmount;
-  /** When the discount expires (ISO string) */
-  expiryDate?: string;
-  /** Terms and conditions */
-  terms?: string;
 }

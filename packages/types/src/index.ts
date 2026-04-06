@@ -23,11 +23,10 @@ export type {
   // Fee estimation types
   EstimateFeesRequest,
   EstimateFeesResponse,
+  Fee,
+  NativeToken,
+  NodeCOGS,
+  ValueFee,
+  FeeDiscount,
   FeeAmount,
-  GasFeeBreakdown,
-  NodeGasFee,
-  AutomationFee,
-  AutomationFeeComponent,
-  SmartWalletCreationFee,
-  Discount
 } from "./api";
