@@ -24,8 +24,30 @@
  *   Example: yarn start getWallet 0x1234...5678 0
  * - getWorkflows <owner-address> <smart-wallet-address?> ...: Query workflows for a specific owner
  *   Example: yarn start getWorkflows 0x1234...5678
+ * - getExecutions <workflow-id> [cursor] [limit]: Get execution history for a workflow
+ *   Example: yarn start getExecutions 01knnzdfpm2bygwarxndm2fs50
+ * - getExecution <workflow-id> <execution-id>: Get a single workflow execution
+ *   Example: yarn start getExecution 01knnzdfpm2bygwarxndm2fs50 <execution-id>
  * - When using API key authentication, you can query any owner's data, not just your own
  * - Without API key, commands default to your own wallets (derived from TEST_PRIVATE_KEY)
+ *
+ * 🔐 Getting an AVS_API_KEY:
+ * The API key is a JWT minted by the aggregator's `create-api-key` command. The JWT
+ * subject MUST be a 0x-prefixed EOA address — that EOA becomes the "owner" the key
+ * is bound to. See ../README.md ("Generate a test API key") for the full setup.
+ *
+ * Quick reference (run from the EigenLayer-AVS repo against your local aggregator):
+ *   ./out/ap create-api-key \
+ *     --config ./config/aggregator-sepolia.yaml \
+ *     --role=admin \
+ *     --subject=0xYourOwnerEoaAddress
+ *
+ * Then place the printed token in `.env.dev` (or your env-specific file) as:
+ *   AVS_API_KEY=eyJhbGciOi...
+ *
+ * The example loader auto-loads `.env.<currentEnv>` (including `.env.dev`), so no
+ * extra flags are needed — `yarn start <command>` will pick it up. You can also
+ * override per-invocation: `AVS_API_KEY=... yarn start getWorkflow <id>`.
  */
 
 import { Client, TriggerFactory, NodeFactory, Edge } from "@avaprotocol/sdk-js";
@@ -54,7 +76,7 @@ if (fs.existsSync(baseEnvPath)) {
 }
 
 // 2. Then load environment-specific .env file if currentEnv is set
-if (currentEnv && currentEnv !== "dev") {
+if (currentEnv) {
   const envSpecificPath = path.join(rootDir, `.env.${currentEnv}`);
   if (fs.existsSync(envSpecificPath)) {
     console.log(`📁 Loading environment from: .env.${currentEnv}`);
