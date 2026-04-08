@@ -27,7 +27,7 @@ jobs:
         env: [sepolia, ethereum, base, base-sepolia] # soneium-minato disabled
     environment: ${{ matrix.env }}
     env:
-      CHAIN_ENDPOINT: ${{ vars.CHAIN_ENDPOINT }}
+      CHAIN_ENDPOINT: ${{ secrets.CHAIN_ENDPOINT }}
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_ENV: ${{ matrix.env }}
       AVS_API_KEY: ${{ secrets.AVS_API_KEY }}

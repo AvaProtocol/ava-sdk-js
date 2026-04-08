@@ -94,7 +94,7 @@ jobs:
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
-      BUNDLER_URL: ${{ vars.BUNDLER_URL }}
+      BUNDLER_URL: ${{ secrets.BUNDLER_URL }}
 
     steps:
       - name: Checkout repository
