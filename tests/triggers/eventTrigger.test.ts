@@ -835,8 +835,10 @@ describeIfSepolia("EventTrigger Tests", () => {
                 // No methodCalls needed: the operator's shared event
                 // enrichment publishes `valueFormatted` automatically for
                 // ERC-20 Transfer events when token decimals are known.
-                // applyToFields: ["Transfer.value"] is deprecated for this
-                // use case (see MethodCallType JSDoc and SDK README).
+                // applyToFields: ["Transfer.value"] is no longer needed for
+                // Transfer events (see MethodCallType JSDoc and SDK README).
+                // The field itself is not deprecated — it's still required
+                // for non-Transfer cases like Chainlink AnswerUpdated.
               },
             ],
           },

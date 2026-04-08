@@ -513,19 +513,12 @@ describe("Input Field Tests", () => {
             const fromAddress = topics[1] ? '0x' + topics[1].slice(-40) : 'Unknown';
             const toAddress = topics[2] ? '0x' + topics[2].slice(-40) : 'Unknown';
             
-            // Prefer the operator-provided valueFormatted (decimal-applied
-            // display string) when available. Fall back to decoding rawData
-            // for simulation paths that don't populate it. See
-            // EigenLayer-AVS PR #509: \`value\` is now raw uint256 base
-            // units; \`valueFormatted\` is the human-readable decimal.
-            let valueFormatted;
-            if (eventData.valueFormatted) {
-              valueFormatted = parseFloat(eventData.valueFormatted);
-            } else {
-              const rawValue = eventData.rawData || "0x0";
-              const valueWei = parseInt(rawValue, 16);
-              valueFormatted = valueWei / Math.pow(10, 18); // Assuming 18 decimals
-            }
+            // Read the operator-provided valueFormatted (decimal-applied
+            // display string) directly. Per EigenLayer-AVS PR #509, the
+            // operator's shared event enrichment always publishes
+            // \`valueFormatted\` for ERC-20 Transfer events when token
+            // decimals are known. \`value\` is the raw uint256 base units.
+            const valueFormatted = parseFloat(eventData.valueFormatted);
             
             // Use simulation data
             const tokenSymbol = "USDC"; // Default for simulation

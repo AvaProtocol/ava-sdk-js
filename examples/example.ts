@@ -1153,8 +1153,12 @@ async function scheduleSweep(owner: string, token: string, target: string) {
           //   - `data.value`          → raw uint256 base units (use this for math/encoding)
           //   - `data.valueFormatted` → decimal-applied display string (use this for messages/UI)
           // For ERC-20 transfer calldata we need the raw base units, so `data.value` is correct here.
+          // Use `BigInt(...)` (not `Number(...)`) — ERC-20 amounts can exceed
+          // JavaScript's safe-integer range (~9e15) and `Number(...)` would silently
+          // lose precision, producing incorrect calldata for any token amount
+          // larger than that.
           callData:
-            "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
+            "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ BigInt(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
           // Adding required contractAbi property
           contractAbi: [],
         },

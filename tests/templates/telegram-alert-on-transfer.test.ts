@@ -131,7 +131,8 @@ describe("Template: Telegram Alert on Transfer", () => {
             ],
             // No methodCalls needed: shared event enrichment publishes
             // `valueFormatted` automatically. applyToFields ["Transfer.value"]
-            // is deprecated for this case.
+            // is no longer needed for Transfer events (the field itself is
+            // still valid for other cases like Chainlink AnswerUpdated).
           },
           {
             // Query 2: Incoming transfers (wallet === to)
@@ -174,7 +175,8 @@ describe("Template: Telegram Alert on Transfer", () => {
             ],
             // No methodCalls needed: shared event enrichment publishes
             // `valueFormatted` automatically. applyToFields ["Transfer.value"]
-            // is deprecated for this case.
+            // is no longer needed for Transfer events (the field itself is
+            // still valid for other cases like Chainlink AnswerUpdated).
           },
         ],
       },
