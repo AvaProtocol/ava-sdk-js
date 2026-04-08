@@ -73,10 +73,12 @@ describe("Template: Telegram Alert on Transfer", () => {
    * Matches studio template's eventTrigger node with:
    * - type: "transfer"
    * - tokenIds: [native ETH, USDC]
-   * - applyDecimalsTo: "Transfer.value"
    *
    * The SDK expresses this as two queries (outgoing + incoming) with
-   * topic filtering on the wallet address.
+   * topic filtering on the wallet address. The operator's shared event
+   * enrichment publishes both `value` (raw uint256 base units) and
+   * `valueFormatted` (decimal-applied display string) automatically when
+   * token decimals are known, so no `applyToFields` is required.
    */
   function createEventTrigger() {
     const TRANSFER_TOPIC =
@@ -127,13 +129,9 @@ describe("Template: Telegram Alert on Transfer", () => {
                 type: "event",
               },
             ],
-            methodCalls: [
-              {
-                methodName: "decimals",
-                methodParams: [],
-                applyToFields: ["Transfer.value"],
-              },
-            ],
+            // No methodCalls needed: shared event enrichment publishes
+            // `valueFormatted` automatically. applyToFields ["Transfer.value"]
+            // is deprecated for this case.
           },
           {
             // Query 2: Incoming transfers (wallet === to)
@@ -174,13 +172,9 @@ describe("Template: Telegram Alert on Transfer", () => {
                 type: "event",
               },
             ],
-            methodCalls: [
-              {
-                methodName: "decimals",
-                methodParams: [],
-                applyToFields: ["Transfer.value"],
-              },
-            ],
+            // No methodCalls needed: shared event enrichment publishes
+            // `valueFormatted` automatically. applyToFields ["Transfer.value"]
+            // is deprecated for this case.
           },
         ],
       },

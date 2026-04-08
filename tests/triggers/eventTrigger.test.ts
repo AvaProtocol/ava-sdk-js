@@ -832,13 +832,11 @@ describeIfSepolia("EventTrigger Tests", () => {
                     type: "event",
                   },
                 ],
-                methodCalls: [
-                  {
-                    methodName: "decimals",
-                    methodParams: [],
-                    applyToFields: ["Transfer.value"],
-                  },
-                ],
+                // No methodCalls needed: the operator's shared event
+                // enrichment publishes `valueFormatted` automatically for
+                // ERC-20 Transfer events when token decimals are known.
+                // applyToFields: ["Transfer.value"] is deprecated for this
+                // use case (see MethodCallType JSDoc and SDK README).
               },
             ],
           },
@@ -888,6 +886,13 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(typeof transferData.valueFormatted).toBe("string"); // Decimal-applied display string
       expect(typeof transferData.blockNumber).toBe("number");
       expect(typeof transferData.transactionHash).toBe("string");
+
+      // Semantic checks: `value` is raw base units (digits only, no decimal
+      // point), `valueFormatted` is a decimal-formatted string. This pins the
+      // PR #509 contract beyond just typeof string. If the operator
+      // accidentally swaps the two fields back, these assertions catch it.
+      expect(transferData.value as string).toMatch(/^\d+$/);
+      expect(transferData.valueFormatted as string).toMatch(/^\d+(\.\d+)?$/);
     });
   });
 
