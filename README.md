@@ -82,7 +82,9 @@ To ensure the SDK is functioning correctly, we have a comprehensive test suite. 
    npm run gen-apikey
 
    # or if not using docker, run the following command in ./EigenLayer-AVS/out
-   ./out/ap create-api-key --config ./config/aggregator-base.yaml --role=admin --subject=apikey
+   # --subject must be the owner EOA address you want this admin key bound to.
+   # For local tests, use the wallet derived from TEST_PRIVATE_KEY (default below).
+   ./out/ap create-api-key --config ./config/aggregator-base.yaml --role=admin --subject=<OWNER_EOA_ADDRESS>
    ```
 
 5. Run the test command with env variables set in `.env.test`.
