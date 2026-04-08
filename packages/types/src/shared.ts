@@ -51,18 +51,22 @@ export interface MethodCallType {
   methodParams: string[];
   /**
    * Fields to apply the method's return value to (e.g., decimal-format
-   * `["current", "answer"]` for a Chainlink AnswerUpdated event).
+   * `["latestRoundData.answer"]` for a Chainlink read, or
+   * `["AnswerUpdated.current"]` for a Chainlink event trigger).
    *
-   * @deprecated For ERC-20 `Transfer` events, prefer the auto-populated
-   * `valueFormatted` field on the trigger output instead of
-   * `applyToFields: ["Transfer.value"]`. As of EigenLayer-AVS PR #509
-   * (release v1.x), the operator's shared event enrichment always
-   * publishes a `valueFormatted` key alongside the raw `value` for
-   * Transfer events when token decimals are known. Using `applyToFields`
-   * for `Transfer.value` is now redundant and may double-format. This
-   * field remains the correct mechanism for non-Transfer events whose
-   * formatting is not handled by shared enrichment (e.g., Chainlink
-   * AnswerUpdated `current`/`answer`).
+   * @remarks
+   * **Do not use for ERC-20 `Transfer` events.** As of EigenLayer-AVS
+   * PR #509, the operator's shared event enrichment always publishes a
+   * `valueFormatted` key alongside the raw `value` on Transfer event
+   * trigger output when token decimals are known. Setting
+   * `applyToFields: ["Transfer.value"]` is redundant in that case and
+   * may double-format. Read the `valueFormatted` field from the trigger
+   * output directly instead.
+   *
+   * This field remains the correct and supported mechanism for every
+   * other use case — Chainlink AnswerUpdated `current`/`answer`, ERC-20
+   * `totalSupply`, generic contract read fields, etc. — where shared
+   * enrichment does not pre-compute a formatted value.
    */
   applyToFields?: string[];
   /** Hex-encoded calldata for the method (used when methodParams is not provided). */

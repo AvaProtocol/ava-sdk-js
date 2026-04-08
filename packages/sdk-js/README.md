@@ -126,7 +126,7 @@ When an `EventTrigger` matches an ERC-20 `Transfer`, the operator's shared event
 
 **Breaking change in v1.x**: Prior versions populated `data.value` with the decimal-formatted amount when token metadata was available. As of EigenLayer-AVS PR #509, `data.value` is **always raw uint256 base units**, and `data.valueFormatted` is the new field for human-readable amounts. SDK consumers that read `data.value` for display **must migrate to `data.valueFormatted`**.
 
-`MethodCallType.applyToFields` with `["Transfer.value"]` is deprecated for the same reason — the enrichment is now automatic. The field remains the correct mechanism for non-Transfer events whose formatting is not handled by shared enrichment (e.g., Chainlink AnswerUpdated `current`/`answer`).
+**Do not use `MethodCallType.applyToFields: ["Transfer.value"]`** for ERC-20 Transfer events — the enrichment is now automatic and `applyToFields` would be redundant (and may double-format). `applyToFields` remains the correct mechanism for every other use case where shared enrichment does not pre-compute a formatted value (Chainlink AnswerUpdated `current`/`answer`, ERC-20 `totalSupply`, generic contract read fields, etc.).
 
 ## Contributing
 
