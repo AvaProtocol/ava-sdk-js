@@ -259,7 +259,8 @@ describe("Template: Telegram Alert on Transfer", () => {
         expect(result.data).toHaveProperty("walletAddress");
         expect(result.data).toHaveProperty("fromAddress");
         expect(result.data).toHaveProperty("toAddress");
-        expect(result.data).toHaveProperty("value");
+        expect(result.data).toHaveProperty("value"); // raw uint256 base units
+        expect(result.data).toHaveProperty("valueFormatted"); // decimal-applied display string
         expect(result.data).toHaveProperty("tokenSymbol");
         expect(result.data).toHaveProperty("transactionHash");
       }
@@ -268,14 +269,19 @@ describe("Template: Telegram Alert on Transfer", () => {
     test("should test Telegram node with runNodeWithInputs", async () => {
       const telegramNode = createTelegramNode();
 
-      // Mock the transfer_monitor (eventTrigger) output data
+      // Mock the transfer_monitor (eventTrigger) output data.
+      // `value` is the raw uint256 base-units string (USDC has 6 decimals,
+      // so 100.5 USDC == 100_500_000 base units). `valueFormatted` is the
+      // decimal-applied display string. See EigenLayer-AVS PR #509.
       const inputVariables = {
         transfer_monitor: {
           data: {
             fromAddress: "0x1234567890123456789012345678901234567890",
             toAddress: eoaAddress,
-            value: "100.5",
+            value: "100500000",
+            valueFormatted: "100.5",
             tokenSymbol: "USDC",
+            tokenDecimals: 6,
             blockTimestamp: Date.now(),
             blockNumber: 12345678,
             transactionHash:

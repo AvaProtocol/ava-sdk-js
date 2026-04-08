@@ -45,8 +45,26 @@ export type InputVariables = Record<string, unknown>;
 // MethodCall interface for enhanced event data formatting
 // Used by both triggers and nodes for contract interactions
 export interface MethodCallType {
-  methodName: string; // Method name (e.g., "decimals")
-  methodParams: string[]; // Method parameters array (replaces need for callData generation)
-  applyToFields?: string[]; // Optional: Fields to apply formatting to (e.g., ["current", "answer"])
-  callData?: string; // Optional: Hex-encoded calldata for the method (used when methodParams is not provided)
+  /** Method name (e.g., "decimals"). */
+  methodName: string;
+  /** Method parameters array (replaces need for callData generation). */
+  methodParams: string[];
+  /**
+   * Fields to apply the method's return value to (e.g., decimal-format
+   * `["current", "answer"]` for a Chainlink AnswerUpdated event).
+   *
+   * @deprecated For ERC-20 `Transfer` events, prefer the auto-populated
+   * `valueFormatted` field on the trigger output instead of
+   * `applyToFields: ["Transfer.value"]`. As of EigenLayer-AVS PR #509
+   * (release v1.x), the operator's shared event enrichment always
+   * publishes a `valueFormatted` key alongside the raw `value` for
+   * Transfer events when token decimals are known. Using `applyToFields`
+   * for `Transfer.value` is now redundant and may double-format. This
+   * field remains the correct mechanism for non-Transfer events whose
+   * formatting is not handled by shared enrichment (e.g., Chainlink
+   * AnswerUpdated `current`/`answer`).
+   */
+  applyToFields?: string[];
+  /** Hex-encoded calldata for the method (used when methodParams is not provided). */
+  callData?: string;
 }

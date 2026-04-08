@@ -866,8 +866,11 @@ describeIfSepolia("EventTrigger Tests", () => {
       // Verify ABI parsing worked
       expect(transferData.fromAddress).toBeDefined();
       expect(transferData.toAddress).toBeDefined();
-      expect(transferData.value).toBeDefined(); // Formatted value (main value field)
-      // Note: valueRaw field removed in backend changes
+      // `value` is the raw uint256 base-units string (for math).
+      // `valueFormatted` is the decimal-applied display string.
+      // See EigenLayer-AVS shared_event_enrichment.go and PR #509.
+      expect(transferData.value).toBeDefined();
+      expect(transferData.valueFormatted).toBeDefined();
       expect(transferData.tokenName).toBeDefined();
       expect(transferData.tokenSymbol).toBeDefined();
       expect(transferData.tokenDecimals).toBeDefined();
@@ -881,8 +884,8 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(typeof transferData.tokenDecimals).toBe("number");
       expect(typeof transferData.fromAddress).toBe("string");
       expect(typeof transferData.toAddress).toBe("string");
-      expect(typeof transferData.value).toBe("string"); // Formatted value
-      // Note: valueRaw field removed in backend changes
+      expect(typeof transferData.value).toBe("string"); // Raw uint256 base units
+      expect(typeof transferData.valueFormatted).toBe("string"); // Decimal-applied display string
       expect(typeof transferData.blockNumber).toBe("number");
       expect(typeof transferData.transactionHash).toBe("string");
     });

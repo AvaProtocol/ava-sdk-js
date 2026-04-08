@@ -1148,6 +1148,11 @@ async function scheduleSweep(owner: string, token: string, target: string) {
           contractAddress: "{{demoTriggerName.data.address}}",
           // Transfer whatever coming in to 0xe0f7d11fd714674722d325cd86062a5f1882e13a
           // Learn more how to compute these here https://ethereum.stackexchange.com/questions/114146/how-do-i-manually-encode-and-send-transaction-data and https://docs.ethers.org/v6/api/abi/#Interface-encodeFunctionData
+          //
+          // Field semantics on Transfer event triggers (see EigenLayer-AVS PR #509):
+          //   - `data.value`          → raw uint256 base units (use this for math/encoding)
+          //   - `data.valueFormatted` → decimal-applied display string (use this for messages/UI)
+          // For ERC-20 transfer calldata we need the raw base units, so `data.value` is correct here.
           callData:
             "0xa9059cbb000000000000000000000000e0f7d11fd714674722d325cd86062a5f1882e13a{{ Number(demoTriggerName.data.value).toString(16).padStart(64, '0') }}",
           // Adding required contractAbi property

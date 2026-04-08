@@ -513,10 +513,19 @@ describe("Input Field Tests", () => {
             const fromAddress = topics[1] ? '0x' + topics[1].slice(-40) : 'Unknown';
             const toAddress = topics[2] ? '0x' + topics[2].slice(-40) : 'Unknown';
             
-            // Decode value from rawData (assuming 18 decimals for simulation)
-            const rawValue = eventData.rawData || "0x0";
-            const valueWei = parseInt(rawValue, 16);
-            const valueFormatted = valueWei / Math.pow(10, 18); // Assuming 18 decimals
+            // Prefer the operator-provided valueFormatted (decimal-applied
+            // display string) when available. Fall back to decoding rawData
+            // for simulation paths that don't populate it. See
+            // EigenLayer-AVS PR #509: \`value\` is now raw uint256 base
+            // units; \`valueFormatted\` is the human-readable decimal.
+            let valueFormatted;
+            if (eventData.valueFormatted) {
+              valueFormatted = parseFloat(eventData.valueFormatted);
+            } else {
+              const rawValue = eventData.rawData || "0x0";
+              const valueWei = parseInt(rawValue, 16);
+              valueFormatted = valueWei / Math.pow(10, 18); // Assuming 18 decimals
+            }
             
             // Use simulation data
             const tokenSymbol = "USDC"; // Default for simulation
