@@ -73,10 +73,12 @@ describe("Template: Telegram Alert on Transfer", () => {
    * Matches studio template's eventTrigger node with:
    * - type: "transfer"
    * - tokenIds: [native ETH, USDC]
-   * - applyDecimalsTo: "Transfer.value"
    *
    * The SDK expresses this as two queries (outgoing + incoming) with
-   * topic filtering on the wallet address.
+   * topic filtering on the wallet address. The operator's shared event
+   * enrichment publishes both `value` (raw uint256 base units) and
+   * `valueFormatted` (decimal-applied display string) automatically when
+   * token decimals are known, so no `applyToFields` is required.
    */
   function createEventTrigger() {
     const TRANSFER_TOPIC =
@@ -127,13 +129,10 @@ describe("Template: Telegram Alert on Transfer", () => {
                 type: "event",
               },
             ],
-            methodCalls: [
-              {
-                methodName: "decimals",
-                methodParams: [],
-                applyToFields: ["Transfer.value"],
-              },
-            ],
+            // No methodCalls needed: shared event enrichment publishes
+            // `valueFormatted` automatically. applyToFields ["Transfer.value"]
+            // is no longer needed for Transfer events (the field itself is
+            // still valid for other cases like Chainlink AnswerUpdated).
           },
           {
             // Query 2: Incoming transfers (wallet === to)
@@ -174,13 +173,10 @@ describe("Template: Telegram Alert on Transfer", () => {
                 type: "event",
               },
             ],
-            methodCalls: [
-              {
-                methodName: "decimals",
-                methodParams: [],
-                applyToFields: ["Transfer.value"],
-              },
-            ],
+            // No methodCalls needed: shared event enrichment publishes
+            // `valueFormatted` automatically. applyToFields ["Transfer.value"]
+            // is no longer needed for Transfer events (the field itself is
+            // still valid for other cases like Chainlink AnswerUpdated).
           },
         ],
       },
@@ -259,7 +255,8 @@ describe("Template: Telegram Alert on Transfer", () => {
         expect(result.data).toHaveProperty("walletAddress");
         expect(result.data).toHaveProperty("fromAddress");
         expect(result.data).toHaveProperty("toAddress");
-        expect(result.data).toHaveProperty("value");
+        expect(result.data).toHaveProperty("value"); // raw uint256 base units
+        expect(result.data).toHaveProperty("valueFormatted"); // decimal-applied display string
         expect(result.data).toHaveProperty("tokenSymbol");
         expect(result.data).toHaveProperty("transactionHash");
       }
@@ -268,14 +265,19 @@ describe("Template: Telegram Alert on Transfer", () => {
     test("should test Telegram node with runNodeWithInputs", async () => {
       const telegramNode = createTelegramNode();
 
-      // Mock the transfer_monitor (eventTrigger) output data
+      // Mock the transfer_monitor (eventTrigger) output data.
+      // `value` is the raw uint256 base-units string (USDC has 6 decimals,
+      // so 100.5 USDC == 100_500_000 base units). `valueFormatted` is the
+      // decimal-applied display string. See EigenLayer-AVS PR #509.
       const inputVariables = {
         transfer_monitor: {
           data: {
             fromAddress: "0x1234567890123456789012345678901234567890",
             toAddress: eoaAddress,
-            value: "100.5",
+            value: "100500000",
+            valueFormatted: "100.5",
             tokenSymbol: "USDC",
+            tokenDecimals: 6,
             blockTimestamp: Date.now(),
             blockNumber: 12345678,
             transactionHash:

@@ -113,6 +113,21 @@ export async function getAuthKey(
 }
 ```
 
+## Event trigger output: `value` vs `valueFormatted`
+
+When an `EventTrigger` matches an ERC-20 `Transfer`, the operator's shared event enrichment publishes both a raw and a formatted amount on the trigger's output `data`:
+
+| Field | Type | Meaning | Use for |
+|---|---|---|---|
+| `data.value` | `string` | Raw uint256 base units (e.g. `"1500000"` for 1.5 USDC) | Math, encoding ERC-20 calldata, BigInt operations |
+| `data.valueFormatted` | `string` | Decimal-applied display string (e.g. `"1.5"`) | Telegram/email messages, UI rendering |
+| `data.tokenSymbol` | `string` | Token symbol from contract metadata | Display |
+| `data.tokenDecimals` | `number` | Token decimals from contract metadata | Reference |
+
+**Breaking change in operator output (EigenLayer-AVS PR #509)**: Prior operator versions populated `data.value` with the decimal-formatted amount when token metadata was available. After PR #509, `data.value` is **always raw uint256 base units**, and `data.valueFormatted` is the new field for human-readable amounts. SDK consumers that read `data.value` for display **must migrate to `data.valueFormatted`**.
+
+**Do not use `MethodCallType.applyToFields: ["Transfer.value"]`** for ERC-20 Transfer events — the enrichment is now automatic and `applyToFields` would be redundant (and may double-format). `applyToFields` remains the correct mechanism for every other use case where shared enrichment does not pre-compute a formatted value (Chainlink AnswerUpdated `current`/`answer`, ERC-20 `totalSupply`, generic contract read fields, etc.).
+
 ## Contributing
 
 We welcome contributions! Feel free to submit pull requests or open issues for any bugs or feature requests.

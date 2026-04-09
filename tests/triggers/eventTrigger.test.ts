@@ -832,13 +832,13 @@ describeIfSepolia("EventTrigger Tests", () => {
                     type: "event",
                   },
                 ],
-                methodCalls: [
-                  {
-                    methodName: "decimals",
-                    methodParams: [],
-                    applyToFields: ["Transfer.value"],
-                  },
-                ],
+                // No methodCalls needed: the operator's shared event
+                // enrichment publishes `valueFormatted` automatically for
+                // ERC-20 Transfer events when token decimals are known.
+                // applyToFields: ["Transfer.value"] is no longer needed for
+                // Transfer events (see MethodCallType JSDoc and SDK README).
+                // The field itself is not deprecated — it's still required
+                // for non-Transfer cases like Chainlink AnswerUpdated.
               },
             ],
           },
@@ -866,8 +866,11 @@ describeIfSepolia("EventTrigger Tests", () => {
       // Verify ABI parsing worked
       expect(transferData.fromAddress).toBeDefined();
       expect(transferData.toAddress).toBeDefined();
-      expect(transferData.value).toBeDefined(); // Formatted value (main value field)
-      // Note: valueRaw field removed in backend changes
+      // `value` is the raw uint256 base-units string (for math).
+      // `valueFormatted` is the decimal-applied display string.
+      // See EigenLayer-AVS shared_event_enrichment.go and PR #509.
+      expect(transferData.value).toBeDefined();
+      expect(transferData.valueFormatted).toBeDefined();
       expect(transferData.tokenName).toBeDefined();
       expect(transferData.tokenSymbol).toBeDefined();
       expect(transferData.tokenDecimals).toBeDefined();
@@ -881,10 +884,17 @@ describeIfSepolia("EventTrigger Tests", () => {
       expect(typeof transferData.tokenDecimals).toBe("number");
       expect(typeof transferData.fromAddress).toBe("string");
       expect(typeof transferData.toAddress).toBe("string");
-      expect(typeof transferData.value).toBe("string"); // Formatted value
-      // Note: valueRaw field removed in backend changes
+      expect(typeof transferData.value).toBe("string"); // Raw uint256 base units
+      expect(typeof transferData.valueFormatted).toBe("string"); // Decimal-applied display string
       expect(typeof transferData.blockNumber).toBe("number");
       expect(typeof transferData.transactionHash).toBe("string");
+
+      // Semantic checks: `value` is raw base units (digits only, no decimal
+      // point), `valueFormatted` is a decimal-formatted string. This pins the
+      // PR #509 contract beyond just typeof string. If the operator
+      // accidentally swaps the two fields back, these assertions catch it.
+      expect(transferData.value as string).toMatch(/^\d+$/);
+      expect(transferData.valueFormatted as string).toMatch(/^\d+(\.\d+)?$/);
     });
   });
 

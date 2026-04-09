@@ -23,7 +23,13 @@ import {
 import { getConfig } from "../utils/envalid";
 import { ethers } from "ethers";
 
-jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 60 seconds for all tests in this file
+// Withdraw tests perform real Sepolia UserOp round-trips (bundler →
+// EntryPoint → on-chain confirmation) and use TimeoutPresets.SLOW
+// (3 minutes) on the gRPC client. The default TIMEOUT_DURATION (60s)
+// races the gRPC timeout and aborts the test before the chain call can
+// complete. Bump to 4 minutes to give the gRPC call its full SLOW
+// budget plus some headroom.
+jest.setTimeout(240000);
 
 // Get environment variables from envalid config
 const { tokens, chainEndpoint, aggregatorEndpoint } = getConfig();
