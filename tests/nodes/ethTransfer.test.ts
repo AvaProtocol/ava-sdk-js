@@ -11,6 +11,7 @@ import {
 import {
   getNextId,
   TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   removeCreatedWorkflows,
   describeIfSepolia,
   getSettings,
@@ -24,7 +25,10 @@ import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
 const { chainId } = getConfig();
 
-jest.setTimeout(TIMEOUT_DURATION);
+// Tests in this file deploy + trigger real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 /**
  * ETHTransfer Node Expected Response Structure:

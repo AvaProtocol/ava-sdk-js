@@ -113,6 +113,12 @@ export const getSettings = (
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
 
+// For tests that submit real UserOps via the bundler. The gRPC client uses
+// TimeoutPresets.SLOW (120s + 2 retries × 2s delay ≈ 244s worst case), so
+// jest must allow more than that to avoid racing the gRPC call under load.
+// See AvaProtocol/ava-sdk-js#209.
+export const TIMEOUT_DURATION_SLOW = 300000; // 5 minutes
+
 // Salt bucket size per suite to ensure total salts < 2000
 export const SALT_BUCKET_SIZE = 20;
 
