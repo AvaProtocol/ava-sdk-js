@@ -10,7 +10,6 @@ import {
 } from "@avaprotocol/types";
 import {
   getNextId,
-  TIMEOUT_DURATION,
   TIMEOUT_DURATION_SLOW,
   removeCreatedWorkflows,
   describeIfSepolia,
@@ -1065,7 +1064,7 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
           createdIdMap.delete(workflowId);
         }
       }
-    }, TIMEOUT_DURATION * 3);
+    }, TIMEOUT_DURATION_SLOW);
   });
 
   describe("Real Transaction Tests", () => {
