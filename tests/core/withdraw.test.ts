@@ -178,7 +178,9 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         smartWalletAddress: wallet.address,
       };
 
-      const response = await client.withdrawFunds(withdrawRequest);
+      const response = await client.withdrawFunds(withdrawRequest, {
+        timeout: TimeoutPresets.SLOW,
+      });
 
       expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
@@ -246,7 +248,9 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         smartWalletAddress: wallet.address,
       };
 
-      const response = await client.withdrawFunds(withdrawRequest);
+      const response = await client.withdrawFunds(withdrawRequest, {
+        timeout: TimeoutPresets.SLOW,
+      });
 
       expect(response.success).toBeTruthy();
       expect(response.smartWalletAddress).toBe(wallet.address);
@@ -345,7 +349,7 @@ describeIfSepolia("Withdraw Funds Tests", () => {
 
       const response = await unauthenticatedClient.withdrawFunds(
         withdrawRequest,
-        { authKey: authKey! }
+        { authKey: authKey!, timeout: TimeoutPresets.SLOW }
       );
 
       expect(response.success).toBeTruthy();
@@ -370,7 +374,9 @@ describeIfSepolia("Withdraw Funds Tests", () => {
         smartWalletAddress: wallet.address,
       };
 
-      const response = await client.withdrawFunds(withdrawRequest);
+      const response = await client.withdrawFunds(withdrawRequest, {
+        timeout: TimeoutPresets.SLOW,
+      });
 
       // Validate all required fields
       expect(response).toHaveProperty("success");
