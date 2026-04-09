@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import { Client, Workflow, Step } from "@avaprotocol/sdk-js";
-import { WorkflowProps, StepProps, AbiElement } from "@avaprotocol/types";
+import { WorkflowProps, StepProps, AbiElement, TimeoutPresets } from "@avaprotocol/types";
 import { GetKeyRequestApiKey, WorkflowStatus } from "@avaprotocol/types";
 
 import { ethers } from "ethers";
@@ -112,6 +112,17 @@ export const getSettings = (
 
 const EXPIRATION_DURATION_MS = 86400000; // Milliseconds in 24 hours, or 24 * 60 * 60 * 1000
 export const TIMEOUT_DURATION = 60000; // 60 seconds to reduce flaky timeouts
+
+// For tests that submit real UserOps via the bundler. The gRPC client uses
+// TimeoutPresets.SLOW, so jest must allow more than the SLOW preset's worst
+// case (initial attempt + N retries, each up to `timeout`, separated by
+// `retryDelay`) plus a safety buffer for gas estimation and bundler queueing.
+// Derived from TimeoutPresets.SLOW so it stays in sync if retry config changes.
+// See AvaProtocol/ava-sdk-js#209.
+export const TIMEOUT_DURATION_SLOW =
+  TimeoutPresets.SLOW.timeout * (1 + TimeoutPresets.SLOW.retries) +
+  TimeoutPresets.SLOW.retryDelay * TimeoutPresets.SLOW.retries +
+  60000; // 60s safety buffer
 
 // Salt bucket size per suite to ensure total salts < 2000
 export const SALT_BUCKET_SIZE = 20;

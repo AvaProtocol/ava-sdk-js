@@ -37,7 +37,7 @@ interface RunNodeResponseData {
 
 import {
   getNextId,
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   removeCreatedWorkflows,
   getBlockNumber,
   getSettings,
@@ -53,7 +53,10 @@ const { tokens } = getConfig();
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
-jest.setTimeout(TIMEOUT_DURATION);
+// Loop tests deploy + trigger real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 const createdIdMap: Map<string, boolean> = new Map();
 

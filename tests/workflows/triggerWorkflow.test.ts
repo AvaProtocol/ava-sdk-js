@@ -8,14 +8,17 @@ import {
 import {
   cleanupWorkflows,
   getBlockNumber,
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   getSmartWallet,
   getClient,
   authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 
-jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
+// Trigger tests submit real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 describe("triggerWorkflow Tests", () => {
   let client: Client;

@@ -12,7 +12,7 @@ import {
 } from "@avaprotocol/types";
 import {
   getNextId,
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   removeCreatedWorkflows,
   getBlockNumber,
   stepIndicatesWriteFailure,
@@ -35,7 +35,10 @@ const USDC_AMOUNT_0_01 = "10000"; // 0.01 USDC (6 decimals)
 // Use a known contract address as spender (Uniswap V3 SwapRouter on Sepolia)
 const SPENDER_CONTRACT_ADDRESS = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
 
-jest.setTimeout(TIMEOUT_DURATION);
+// Tests in this file deploy + trigger real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 /**
  * ContractWrite Node Expected Response Structure:
@@ -1072,7 +1075,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           createdIdMap.delete(workflowId);
         }
       }
-    }, TIMEOUT_DURATION * 3);
+    }, TIMEOUT_DURATION_SLOW);
   });
 
   describe("Error Handling Tests", () => {
