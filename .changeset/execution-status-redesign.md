@@ -1,6 +1,6 @@
 ---
-"@avaprotocol/types": major
-"@avaprotocol/sdk-js": major
+"@avaprotocol/types": minor
+"@avaprotocol/sdk-js": minor
 ---
 
 Replace `ExecutionStatus.PartialSuccess` with clear SUCCESS/FAILED/ERROR semantics.
