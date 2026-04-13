@@ -32946,7 +32946,7 @@ proto.aggregator.ExecutionStatus = {
   EXECUTION_STATUS_PENDING: 1,
   EXECUTION_STATUS_SUCCESS: 2,
   EXECUTION_STATUS_FAILED: 3,
-  EXECUTION_STATUS_PARTIAL_SUCCESS: 4
+  EXECUTION_STATUS_ERROR: 5
 };
 
 goog.object.extend(exports, proto.aggregator);

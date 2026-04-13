@@ -86,8 +86,8 @@ function convertProtobufExecutionStatus(
       return ExecutionStatus.Success;
     case ProtobufExecutionStatus.EXECUTION_STATUS_FAILED:
       return ExecutionStatus.Failed;
-    case ProtobufExecutionStatus.EXECUTION_STATUS_PARTIAL_SUCCESS:
-      return ExecutionStatus.PartialSuccess;
+    case ProtobufExecutionStatus.EXECUTION_STATUS_ERROR:
+      return ExecutionStatus.Error;
     case ProtobufExecutionStatus.EXECUTION_STATUS_UNSPECIFIED:
     default:
       return ExecutionStatus.Unspecified;

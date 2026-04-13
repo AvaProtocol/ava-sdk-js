@@ -69,7 +69,7 @@ describe("getExecution Tests", () => {
       // Ensure status reflects step outcomes
       const hasWriteFailure = executionHasWriteFailure(execution as any);
       if (hasWriteFailure) {
-        expect([ExecutionStatus.Failed, ExecutionStatus.PartialSuccess]).toContain(execution.status);
+        expect(execution.status).toBe(ExecutionStatus.Failed);
       } else {
         expect(execution.status).toBe(ExecutionStatus.Success);
       }

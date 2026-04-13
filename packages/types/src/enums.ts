@@ -11,7 +11,7 @@ export enum ExecutionStatus {
   Pending = "pending",
   Success = "success",
   Failed = "failed",
-  PartialSuccess = "partialSuccess",
+  Error = "error",
 }
 
 export enum TriggerType {

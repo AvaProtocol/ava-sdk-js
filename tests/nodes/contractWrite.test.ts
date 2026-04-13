@@ -670,7 +670,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           contractWriteSimStep as any
         );
         const expectedStatus = writeFail
-          ? ExecutionStatus.PartialSuccess
+          ? ExecutionStatus.Failed
           : ExecutionStatus.Success;
         expect(simulation.status).toBe(expectedStatus);
         expect(simulation.steps).toHaveLength(2); // trigger + contract write node
@@ -1293,7 +1293,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         contractWriteSimStep3 as any
       );
       const expectedStatus = writeFail3
-        ? ExecutionStatus.PartialSuccess
+        ? ExecutionStatus.Failed
         : ExecutionStatus.Success;
       expect(simulation.status).toBe(expectedStatus);
       const contractWriteStep = simulation.steps.find(

@@ -498,10 +498,10 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
         util.inspect(simulation, { depth: null, colors: true })
       );
 
-      // Verify simulation status - should be Success or PartialSuccess
+      // Verify simulation status - should be Success or Failed
       expect([
         ExecutionStatus.Success,
-        ExecutionStatus.PartialSuccess,
+        ExecutionStatus.Failed,
       ]).toContain(simulation.status);
       expect(simulation.steps).toHaveLength(2); // trigger + eth transfer node
 
@@ -576,7 +576,7 @@ describeIfSepolia("ETHTransfer Node Tests", () => {
 
       expect([
         ExecutionStatus.Success,
-        ExecutionStatus.PartialSuccess,
+        ExecutionStatus.Failed,
       ]).toContain(simulation.status);
 
       const ethTransferStep = simulation.steps.find(

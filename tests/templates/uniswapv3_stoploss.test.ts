@@ -638,8 +638,8 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
       // Aggregator log shows: "invalid address: {{settings.uniswapv3_contracts.quoterV2}}"
       // The template is correct but backend fails to resolve it before address validation
       // ContractWrite nodes DO resolve templates in contractAddress, so this is inconsistent behavior
-      // Accept partialSuccess until backend fix is deployed
-      expect([ExecutionStatus.Success, ExecutionStatus.PartialSuccess]).toContain(
+      // Branch skips are SUCCESS; step failures are FAILED
+      expect([ExecutionStatus.Success, ExecutionStatus.Failed]).toContain(
         simulation.status
       );
       expect(simulation.steps).toBeDefined();
@@ -823,8 +823,8 @@ describe("UniswapV3 StopLoss Workflow Tests", () => {
         { timeout: TimeoutPresets.SLOW }
       );
 
-      // Same backend bug as first test
-      expect([ExecutionStatus.Success, ExecutionStatus.PartialSuccess]).toContain(
+      // Same backend issue as first test
+      expect([ExecutionStatus.Success, ExecutionStatus.Failed]).toContain(
         simulation.status
       );
 

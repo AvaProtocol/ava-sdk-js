@@ -444,9 +444,8 @@ return { balance: balance.toString(), totalNeeded: totalNeeded.toString() };`,
       );
 
       expect(simulationResult).toBeDefined();
-      // Accept both success and partialSuccess (e.g., email node may fail in
-      // simulation without a real SendGrid key, or loop transfer is simulated)
-      expect([ExecutionStatus.Success, ExecutionStatus.PartialSuccess]).toContain(
+      // Branch skips are SUCCESS; step failures are FAILED
+      expect([ExecutionStatus.Success, ExecutionStatus.Failed]).toContain(
         simulationResult.status,
       );
 
