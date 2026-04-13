@@ -73,7 +73,7 @@ import {
 
 /**
  * Convert protobuf ExecutionStatus numeric value to meaningful string enum
- * @param protobufStatus - The numeric status from protobuf (0=UNSPECIFIED, 1=PENDING, 2=SUCCESS, 3=FAILED, 4=PARTIAL_SUCCESS)
+ * @param protobufStatus - The numeric status from protobuf (0=UNSPECIFIED, 1=PENDING, 2=SUCCESS, 3=FAILED, 4=reserved, 5=ERROR)
  * @returns {ExecutionStatus} - The meaningful string enum value
  */
 function convertProtobufExecutionStatus(
@@ -85,6 +85,7 @@ function convertProtobufExecutionStatus(
     case ProtobufExecutionStatus.EXECUTION_STATUS_SUCCESS:
       return ExecutionStatus.Success;
     case ProtobufExecutionStatus.EXECUTION_STATUS_FAILED:
+    case 4 as ProtobufExecutionStatus: // legacy PARTIAL_SUCCESS — treat as Failed
       return ExecutionStatus.Failed;
     case ProtobufExecutionStatus.EXECUTION_STATUS_ERROR:
       return ExecutionStatus.Error;

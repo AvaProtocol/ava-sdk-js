@@ -353,7 +353,7 @@ describe("SimulateWorkflow", () => {
       } catch (error: unknown) {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();
-        expect((error as Error).message).toContain("failed");
+        expect((error as Error).message).toContain("steps failed");
       }
     });
   });

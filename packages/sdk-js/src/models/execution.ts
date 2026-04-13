@@ -22,6 +22,7 @@ function convertProtobufExecutionStatusToTypes(
     case avs_pb.ExecutionStatus.EXECUTION_STATUS_SUCCESS:
       return ExecutionStatus.Success;
     case avs_pb.ExecutionStatus.EXECUTION_STATUS_FAILED:
+    case 4 as avs_pb.ExecutionStatus: // legacy PARTIAL_SUCCESS — treat as Failed
       return ExecutionStatus.Failed;
     case avs_pb.ExecutionStatus.EXECUTION_STATUS_ERROR:
       return ExecutionStatus.Error;
