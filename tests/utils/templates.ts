@@ -92,7 +92,7 @@ const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
   name: "graphql_call",
   type: NodeType.GraphQLQuery,
   data: {
-    url: "https://mock-api.ap-aggregator.local/graphql",
+    url: "http://localhost:19876/graphql",
     query: `query TestQuery {
         test {
           id

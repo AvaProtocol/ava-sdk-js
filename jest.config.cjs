@@ -1,4 +1,6 @@
 module.exports = {
+  globalSetup: "<rootDir>/tests/mock-server/globalSetup.ts",
+  globalTeardown: "<rootDir>/tests/mock-server/globalTeardown.ts",
   roots: ["<rootDir>/tests"], // Points to the `tests` folder
   transform: {
     "^.+\\.(ts|tsx|js|jsx)$": "babel-jest",

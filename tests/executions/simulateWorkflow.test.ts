@@ -166,7 +166,7 @@ describe("SimulateWorkflow", () => {
           name: "restAPICall",
           type: NodeType.RestAPI,
           data: {
-            url: "https://mock-api.ap-aggregator.local/posts/1",
+            url: "http://localhost:19876/posts/1",
             method: "GET",
             body: "",
             headers: {},
@@ -381,7 +381,7 @@ describe("SimulateWorkflow", () => {
           name: "rest_api_node",
           type: NodeType.RestAPI,
           data: {
-            url: "https://mock-api.ap-aggregator.local/posts/1",
+            url: "http://localhost:19876/posts/1",
             method: "GET",
             body: "",
             headers: {

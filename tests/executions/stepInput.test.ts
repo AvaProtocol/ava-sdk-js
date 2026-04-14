@@ -228,7 +228,7 @@ describe("Input Field Tests", () => {
 
       const triggerData = triggerConfig.data as Record<string, unknown>;
       expect(triggerData.apiBaseUrl).toBe(
-        "https://mock-api.ap-aggregator.local"
+        "http://localhost:19876"
       );
       expect(triggerData.apiKey).toBe("test-api-key-123");
       expect(triggerData.environment).toBe("testing");

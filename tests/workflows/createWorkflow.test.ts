@@ -159,7 +159,7 @@ describe("createWorkflow Tests", () => {
         id: getNextId(),
         data: {
           config: {
-            url: "https://mock-api.ap-aggregator.local/post",
+            url: "http://localhost:19876/post",
             method: "POST",
             headersMap: [["content-type", "application/json"]],
             body: `JSON.stringify({
@@ -235,7 +235,7 @@ describe("createWorkflow Tests", () => {
         id: getNextId(),
         data: {
           config: {
-            url: "https://mock-api.ap-aggregator.local/get",
+            url: "http://localhost:19876/get",
             method: "GET",
             headersMap: [["content-type", "application/json"]],
             body: `helloworld`,

@@ -245,8 +245,8 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           urlArray: [
-            "https://mock-api.ap-aggregator.local/get?test=1",
-            "https://mock-api.ap-aggregator.local/get?test=2",
+            "http://localhost:19876/get?test=1",
+            "http://localhost:19876/get?test=2",
           ],
         },
       };
@@ -764,8 +764,8 @@ describe("LoopNode Tests", () => {
           lang: Lang.JavaScript,
           source: `
               return [
-                "https://mock-api.ap-aggregator.local/get?test=1",
-                "https://mock-api.ap-aggregator.local/get?test=2"
+                "http://localhost:19876/get?test=1",
+                "http://localhost:19876/get?test=2"
               ] ;
             `,
         },

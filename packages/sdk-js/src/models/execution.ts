@@ -11,9 +11,11 @@ import {
 import Step from "./step";
 
 /**
- * Convert protobuf ExecutionStatus to types ExecutionStatus
+ * Convert the numeric protobuf ExecutionStatus to the string-based
+ * @avaprotocol/types enum. Legacy value 4 (retired PARTIAL_SUCCESS) maps
+ * to Failed so older aggregator responses still deserialize cleanly.
  */
-function convertProtobufExecutionStatusToTypes(
+export function convertProtobufExecutionStatus(
   protobufStatus: avs_pb.ExecutionStatus
 ): ExecutionStatus {
   switch (protobufStatus) {
@@ -32,7 +34,7 @@ function convertProtobufExecutionStatusToTypes(
   }
 }
 
-function convertFee(feePb: avs_pb.Fee | undefined): Fee | undefined {
+export function convertFee(feePb: avs_pb.Fee | undefined): Fee | undefined {
   if (!feePb) return undefined;
   return {
     amount: feePb.getAmount(),
@@ -40,7 +42,7 @@ function convertFee(feePb: avs_pb.Fee | undefined): Fee | undefined {
   };
 }
 
-function convertNodeCOGS(cogsPb: avs_pb.NodeCOGS): NodeCOGS {
+export function convertNodeCOGS(cogsPb: avs_pb.NodeCOGS): NodeCOGS {
   return {
     nodeId: cogsPb.getNodeId(),
     costType: cogsPb.getCostType(),
@@ -49,11 +51,11 @@ function convertNodeCOGS(cogsPb: avs_pb.NodeCOGS): NodeCOGS {
   };
 }
 
-function convertExecutionTier(tier: number): string {
+export function convertExecutionTier(tier: number): string {
   return avs_pb.ExecutionTier[tier] ?? tier.toString();
 }
 
-function convertValueFee(valuePb: avs_pb.ValueFee | undefined): ValueFee | undefined {
+export function convertValueFee(valuePb: avs_pb.ValueFee | undefined): ValueFee | undefined {
   if (!valuePb) return undefined;
   return {
     fee: convertFee(valuePb.getFee()) || { amount: "0", unit: "PERCENTAGE" },
@@ -110,7 +112,7 @@ class Execution implements ExecutionProps {
       id: execution.getId(),
       startAt: execution.getStartAt(),
       endAt: execution.getEndAt(),
-      status: convertProtobufExecutionStatusToTypes(execution.getStatus()),
+      status: convertProtobufExecutionStatus(execution.getStatus()),
       error: execution.getError(),
       index: execution.getIndex(),
       executionFee: convertFee(execution.getExecutionFee()),
