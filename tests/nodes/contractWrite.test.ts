@@ -12,7 +12,7 @@ import {
 } from "@avaprotocol/types";
 import {
   getNextId,
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   removeCreatedWorkflows,
   getBlockNumber,
   stepIndicatesWriteFailure,
@@ -27,7 +27,8 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-const { tokens, chainId } = getConfig();
+const { tokens, chainId, uniswapV3Contracts } = getConfig();
+const PERMIT2_ADDRESS = uniswapV3Contracts?.permit2;
 
 // Common test constants
 const USDC_AMOUNT_0_01 = "10000"; // 0.01 USDC (6 decimals)
@@ -35,7 +36,10 @@ const USDC_AMOUNT_0_01 = "10000"; // 0.01 USDC (6 decimals)
 // Use a known contract address as spender (Uniswap V3 SwapRouter on Sepolia)
 const SPENDER_CONTRACT_ADDRESS = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
 
-jest.setTimeout(TIMEOUT_DURATION);
+// Tests in this file deploy + trigger real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 /**
  * ContractWrite Node Expected Response Structure:
@@ -168,8 +172,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     client = getClient();
     await authenticateClient(client);
 
-    // Derive smart wallet address using centralized funded wallet (newest implementation)
-    // Expected address: 0x5a8A8a79DdF433756D4D97DCCE33334D9E218856
+    // Derive smart wallet address using centralized funded wallet.
+    // The actual address depends on chainId, factory, and salt — don't hardcode.
     const wallet = await getSmartWalletWithBalance(client);
     smartWalletAddress = wallet.address;
   });
@@ -195,7 +199,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "approve",
               methodParams: [
-                "0x000000000022D473030F116dDEE9F6B43aC78BA3", // Permit2 contract
+                PERMIT2_ADDRESS!, // Permit2 contract
                 "0", // 0 amount approval
               ],
             },
@@ -242,7 +246,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       
       // Verify the event field values
       expect(result.data.approve.owner).toBe(smartWalletAddress);
-      expect(result.data.approve.spender).toBe("0x000000000022D473030F116dDEE9F6B43aC78BA3");
+      expect(result.data.approve.spender.toLowerCase()).toBe(
+        PERMIT2_ADDRESS!.toLowerCase()
+      );
       expect(result.data.approve.value).toBe("0");
 
       // Verify error is empty string
@@ -667,7 +673,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           contractWriteSimStep as any
         );
         const expectedStatus = writeFail
-          ? ExecutionStatus.PartialSuccess
+          ? ExecutionStatus.Failed
           : ExecutionStatus.Success;
         expect(simulation.status).toBe(expectedStatus);
         expect(simulation.steps).toHaveLength(2); // trigger + contract write node
@@ -1072,7 +1078,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
           createdIdMap.delete(workflowId);
         }
       }
-    }, TIMEOUT_DURATION * 3);
+    }, TIMEOUT_DURATION_SLOW);
   });
 
   describe("Error Handling Tests", () => {
@@ -1290,7 +1296,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
         contractWriteSimStep3 as any
       );
       const expectedStatus = writeFail3
-        ? ExecutionStatus.PartialSuccess
+        ? ExecutionStatus.Failed
         : ExecutionStatus.Success;
       expect(simulation.status).toBe(expectedStatus);
       const contractWriteStep = simulation.steps.find(

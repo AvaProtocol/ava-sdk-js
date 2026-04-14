@@ -1,8 +1,9 @@
 import axios from "axios";
 
-// A mocked URL set up on the aggregator to return a mock response for testing purpose
+// Local mock server started in globalSetup (tests/mock-server/server.ts).
+// The aggregator makes HTTP calls to this URL during test execution.
 export const MOCKED_API_ENDPOINT_AGGREGATOR =
-  "https://mock-api.ap-aggregator.local";
+  "http://localhost:19876";
 
 // Mock responses
 export const mockRestApiResponse = {

@@ -13,7 +13,7 @@ export const loopNodeWithRestApiProps: LoopNodeProps = {
     runner: {
       type: LoopRunnerType.RestAPI,
       config: {
-        url: "https://mock-api.ap-aggregator.local/post",
+        url: "http://localhost:19876/post",
         method: "POST",
         body: JSON.stringify({ data: "{{value}}", index: "{{index}}" }),
         headersMap: [["Content-Type", "application/json"]],
@@ -122,7 +122,7 @@ export const loopNodeWithGraphQLQueryProps: LoopNodeProps = {
     runner: {
       type: LoopRunnerType.GraphQLQuery,
       config: {
-        url: "https://mock-api.ap-aggregator.local/graphql",
+        url: "http://localhost:19876/graphql",
         query: `
           query GetToken($id: String!) {
             token(id: $id) {

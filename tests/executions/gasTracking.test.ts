@@ -141,10 +141,10 @@ describeIfSepolia("Gas Tracking Tests", () => {
           { timeout: TimeoutPresets.SLOW }
         );
 
-        // Accept both success and partialSuccess (operational issues may cause partial failures)
+        // Accept both success and failed (operational issues may cause step failures)
         expect([
           ExecutionStatus.Success,
-          ExecutionStatus.PartialSuccess,
+          ExecutionStatus.Failed,
         ]).toContain(triggerResult.status);
         expect(triggerResult.steps).toBeDefined();
         expect(triggerResult.steps.length).toBeGreaterThan(0);
@@ -292,10 +292,10 @@ describeIfSepolia("Gas Tracking Tests", () => {
           isBlocking: true,
         });
 
-        // Accept both success and partialSuccess (operational issues may cause partial failures)
+        // Accept both success and failed (operational issues may cause step failures)
         expect([
           ExecutionStatus.Success,
-          ExecutionStatus.PartialSuccess,
+          ExecutionStatus.Failed,
         ]).toContain(triggerResult.status);
         expect(triggerResult.steps).toBeDefined();
         expect(triggerResult.steps.length).toBeGreaterThan(0);
@@ -453,10 +453,10 @@ describeIfSepolia("Gas Tracking Tests", () => {
           isBlocking: true,
         });
 
-        // Accept both success and partialSuccess (operational issues may cause partial failures)
+        // Accept both success and failed (operational issues may cause step failures)
         expect([
           ExecutionStatus.Success,
-          ExecutionStatus.PartialSuccess,
+          ExecutionStatus.Failed,
         ]).toContain(triggerResult.status);
         expect(triggerResult.steps).toBeDefined();
         expect(triggerResult.steps.length).toBeGreaterThan(0);
@@ -610,10 +610,10 @@ describeIfSepolia("Gas Tracking Tests", () => {
           isBlocking: true,
         });
 
-        // Accept both success and partialSuccess (operational issues may cause partial failures)
+        // Accept both success and failed (operational issues may cause step failures)
         expect([
           ExecutionStatus.Success,
-          ExecutionStatus.PartialSuccess,
+          ExecutionStatus.Failed,
         ]).toContain(triggerResult.status);
         expect(triggerResult.steps).toBeDefined();
         expect(triggerResult.steps.length).toBeGreaterThan(0);
@@ -785,10 +785,10 @@ describeIfSepolia("Gas Tracking Tests", () => {
             `✅ [Multi-step Gas Test] Trigger completed with status: ${triggerResult.status}`
           );
 
-          // Accept both success and partialSuccess (operational issues may cause partial failures)
+          // Accept both success and failed (operational issues may cause step failures)
           expect([
             ExecutionStatus.Success,
-            ExecutionStatus.PartialSuccess,
+            ExecutionStatus.Failed,
           ]).toContain(triggerResult.status);
           expect(triggerResult.steps).toBeDefined();
           expect(triggerResult.steps.length).toBeGreaterThan(0);

@@ -31,6 +31,21 @@ yarn test:integrations                 # External service integrations
 
 **Note:** Do not specify `TEST_ENV` explicitly - the default value `dev` works fine.
 
+### Running tests — ALWAYS pipe to a log file
+
+When running any e2e test from the `./tests` folder (via `npx jest`, `yarn test*`,
+etc.), **always** pipe full output to a timestamped file under `./logs/` so
+failures can be inspected without rerunning:
+
+```bash
+mkdir -p logs
+npx jest tests/path/to/file.test.ts --verbose 2>&1 | tee logs/$(date +%Y%m%d-%H%M%S)-name.log
+```
+
+Then grep the log for `FAIL`, `✕`, `Error:`, `Received:`, etc. Do not repeatedly
+rerun a suite to extract failure details — the log has everything. The `./logs/`
+folder is gitignored.
+
 ### Docker Environment
 
 ```bash

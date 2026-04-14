@@ -19,7 +19,7 @@ import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 
 jest.setTimeout(TIMEOUT_DURATION);
 
-describe("Execution Partial Success Tests", () => {
+describe("Execution Status Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
@@ -27,7 +27,7 @@ describe("Execution Partial Success Tests", () => {
     await authenticateClient(client);
   });
 
-  test("should return PartialSuccess status when some nodes succeed and others fail", async () => {
+  test("should return Failed status when some nodes succeed and others fail", async () => {
     const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
@@ -86,9 +86,6 @@ describe("Execution Partial Success Tests", () => {
       expect(execution).toBeDefined();
       expect(execution.id).toEqual(triggerResult.executionId);
 
-      // The overall execution should show partial success
-      // Note: This might be "failed" initially if the system doesn't yet implement PartialSuccess
-      // The test will help verify when the feature is implemented
       const executionStatus = await client.getExecutionStatus(
         workflowId,
         triggerResult.executionId
@@ -112,14 +109,8 @@ describe("Execution Partial Success Tests", () => {
         expect(failureStep.success).toBe(false);
         expect(failureStep.error).toBeTruthy();
 
-        // When PartialSuccess is implemented, this should be PartialSuccess
-        // For now, it might be Failed, Success, or Unspecified depending on current implementation
-        expect([
-          ExecutionStatus.PartialSuccess,
-          ExecutionStatus.Failed,
-          ExecutionStatus.Success,
-          ExecutionStatus.Unspecified,
-        ]).toContain(executionStatus);
+        // Any step failure results in Failed status
+        expect(executionStatus).toBe(ExecutionStatus.Failed);
       }
     } finally {
       if (workflowId) {
@@ -128,7 +119,7 @@ describe("Execution Partial Success Tests", () => {
     }
   });
 
-  test("should return PartialSuccess when ETH transfer fails but other nodes succeed", async () => {
+  test("should return Failed when ETH transfer fails but other nodes succeed", async () => {
     const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
@@ -203,13 +194,8 @@ describe("Execution Partial Success Tests", () => {
         expect(ethTransferStep.success).toBe(false);
         expect(ethTransferStep.error).toBeTruthy();
 
-        // Should be PartialSuccess when feature is implemented
-        expect([
-          ExecutionStatus.PartialSuccess,
-          ExecutionStatus.Failed,
-          ExecutionStatus.Success,
-          ExecutionStatus.Unspecified,
-        ]).toContain(executionStatus);
+        // Any step failure results in Failed status
+        expect(executionStatus).toBe(ExecutionStatus.Failed);
       }
     } finally {
       if (workflowId) {
@@ -218,7 +204,7 @@ describe("Execution Partial Success Tests", () => {
     }
   });
 
-  test("should return Completed status when all steps succeed (not PartialSuccess)", async () => {
+  test("should return Success status when all steps succeed", async () => {
     const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
@@ -289,9 +275,8 @@ describe("Execution Partial Success Tests", () => {
         expect(step.error).toBeFalsy();
       });
 
-      // Should be Success, not PartialSuccess when all succeed
+      // Should be Success when all steps succeed
       expect(executionStatus).toBe(ExecutionStatus.Success);
-      expect(executionStatus).not.toBe(ExecutionStatus.PartialSuccess);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);
@@ -299,7 +284,7 @@ describe("Execution Partial Success Tests", () => {
     }
   });
 
-  test("should return PartialSuccess status when all nodes fail but trigger succeeds", async () => {
+  test("should return Failed status when all nodes fail", async () => {
     const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
     let workflowId: string | undefined;
@@ -368,8 +353,8 @@ describe("Execution Partial Success Tests", () => {
         expect(step.error).toBeTruthy();
       });
 
-      // Should be PartialSuccess when all nodes fail but trigger succeeds
-      expect(executionStatus).toBe(ExecutionStatus.PartialSuccess);
+      // All nodes failed — status is Failed
+      expect(executionStatus).toBe(ExecutionStatus.Failed);
     } finally {
       if (workflowId) {
         await client.deleteWorkflow(workflowId);

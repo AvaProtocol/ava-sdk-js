@@ -3,7 +3,12 @@ import { AggregatorClient } from "@/grpc_codegen/avs_grpc_pb";
 import * as avs_pb from "@/grpc_codegen/avs_pb";
 import Workflow from "./models/workflow";
 import Edge from "./models/edge";
-import Execution from "./models/execution";
+import Execution, {
+  convertProtobufExecutionStatus,
+  convertFee,
+  convertNodeCOGS,
+  convertValueFee,
+} from "./models/execution";
 import Step from "./models/step";
 import NodeFactory from "./models/node/factory";
 import TriggerFactory from "./models/trigger/factory";
@@ -55,13 +60,9 @@ import {
   // Fee estimation types
   type EstimateFeesRequest,
   type EstimateFeesResponse,
-  type Fee,
   type FeeUnit,
   type NodeCOGS,
-  type ValueFee,
 } from "@avaprotocol/types";
-
-import { ExecutionStatus as ProtobufExecutionStatus } from "@/grpc_codegen/avs_pb";
 
 // Import the consolidated conversion utilities
 import {
@@ -70,29 +71,6 @@ import {
   cleanGrpcErrorMessage,
   toCamelCaseKeys,
 } from "./utils";
-
-/**
- * Convert protobuf ExecutionStatus numeric value to meaningful string enum
- * @param protobufStatus - The numeric status from protobuf (0=UNSPECIFIED, 1=PENDING, 2=SUCCESS, 3=FAILED, 4=PARTIAL_SUCCESS)
- * @returns {ExecutionStatus} - The meaningful string enum value
- */
-function convertProtobufExecutionStatus(
-  protobufStatus: ProtobufExecutionStatus,
-): ExecutionStatus {
-  switch (protobufStatus) {
-    case ProtobufExecutionStatus.EXECUTION_STATUS_PENDING:
-      return ExecutionStatus.Pending;
-    case ProtobufExecutionStatus.EXECUTION_STATUS_SUCCESS:
-      return ExecutionStatus.Success;
-    case ProtobufExecutionStatus.EXECUTION_STATUS_FAILED:
-      return ExecutionStatus.Failed;
-    case ProtobufExecutionStatus.EXECUTION_STATUS_PARTIAL_SUCCESS:
-      return ExecutionStatus.PartialSuccess;
-    case ProtobufExecutionStatus.EXECUTION_STATUS_UNSPECIFIED:
-    default:
-      return ExecutionStatus.Unspecified;
-  }
-}
 
 class BaseClient {
   readonly endpoint: string;
@@ -1575,54 +1553,25 @@ class Client extends BaseClient {
       : undefined;
 
     // Convert execution fee
-    const execFeePb = result.getExecutionFee();
-    const executionFee: Fee | undefined = execFeePb
-      ? { amount: execFeePb.getAmount(), unit: execFeePb.getUnit() as FeeUnit }
-      : undefined;
+    const executionFee = convertFee(result.getExecutionFee());
 
     // Convert COGS array
-    const cogs: NodeCOGS[] = result.getCogsList().map((cogsPb) => {
-      const feePb = cogsPb.getFee();
-      return {
-        nodeId: cogsPb.getNodeId(),
-        costType: cogsPb.getCostType(),
-        fee: feePb
-          ? { amount: feePb.getAmount(), unit: feePb.getUnit() as FeeUnit }
-          : { amount: "0", unit: "WEI" as FeeUnit },
-        gasUnits: cogsPb.getGasUnits() || undefined,
-      };
-    });
+    const cogs: NodeCOGS[] = result.getCogsList().map(convertNodeCOGS);
 
     // Convert value fee
-    const valueFeePb = result.getValueFee();
-    let valueFee: ValueFee | undefined;
-    if (valueFeePb) {
-      const vfFeePb = valueFeePb.getFee();
-      valueFee = {
-        fee: vfFeePb
-          ? { amount: vfFeePb.getAmount(), unit: vfFeePb.getUnit() as FeeUnit }
-          : { amount: "0", unit: "PERCENTAGE" as FeeUnit },
-        tier: avs_pb.ExecutionTier[valueFeePb.getTier()] ?? valueFeePb.getTier().toString(),
-        valueBase: valueFeePb.getValueBase() || undefined,
-        classificationMethod: valueFeePb.getClassificationMethod(),
-        confidence: valueFeePb.getConfidence(),
-        reason: valueFeePb.getReason(),
-      };
-    }
+    const valueFee = convertValueFee(result.getValueFee());
 
     // Convert discounts
-    const discounts = result.getDiscountsList().map((discountPb) => {
-      const dFeePb = discountPb.getDiscount();
-      return {
-        discountType: discountPb.getDiscountType(),
-        discountName: discountPb.getDiscountName(),
-        discount: dFeePb
-          ? { amount: dFeePb.getAmount(), unit: dFeePb.getUnit() as FeeUnit }
-          : { amount: "0", unit: "USD" as FeeUnit },
-        expiryDate: discountPb.getExpiryDate() || undefined,
-        terms: discountPb.getTerms() || undefined,
-      };
-    });
+    const discounts = result.getDiscountsList().map((discountPb) => ({
+      discountType: discountPb.getDiscountType(),
+      discountName: discountPb.getDiscountName(),
+      discount: convertFee(discountPb.getDiscount()) || {
+        amount: "0",
+        unit: "USD" as FeeUnit,
+      },
+      expiryDate: discountPb.getExpiryDate() || undefined,
+      terms: discountPb.getTerms() || undefined,
+    }));
 
     return {
       success: result.getSuccess(),

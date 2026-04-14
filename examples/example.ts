@@ -137,46 +137,71 @@ async function getAuthenticatedClient(options: AuthOptions): Promise<Client> {
   });
 
   // API key authentication
+  //
+  // IMPORTANT: the aggregator's authWithAPIKey flow re-mints a short-lived
+  // JWT whose `sub` claim is taken from the *targetAddress*, NOT from the
+  // admin API key's own subject. If we call this path with no
+  // targetAddress, the SDK previously used "0x0000…" as a dummy, which
+  // produced a re-minted token with sub: 0x0… and silently broke every
+  // downstream ownership check (see EigenLayer-AVS PR #520 fallout).
+  //
+  // We now refuse the API-key path when targetAddress is missing:
+  //   - api-key-only:   throw a clear error (programmer must provide it).
+  //   - prefer-api-key: fall through to the private-key path so commands
+  //                     that don't know the target owner ahead of time
+  //                     (e.g. getWorkflow, getExecution by ID) still work
+  //                     when both auth methods are configured.
   if (
     (strategy === "api-key-only" || strategy === "prefer-api-key") &&
     avsApiKey
   ) {
-    console.log(`🔑 Using API key authentication for ${commandName}...`);
-
-    try {
-      // Use a dummy address for API key authentication (admin access)
-      const dummyAddress =
-        targetAddress || "0x0000000000000000000000000000000000000000";
-      const { message } = await authClient.getSignatureFormat(dummyAddress);
-
-      const result = await authClient.authWithAPIKey({
-        message,
-        apiKey: avsApiKey,
-      });
-
-      authClient.setAuthKey(result.authKey);
-      console.log("✅ API key authentication successful");
-      return authClient;
-    } catch (error) {
-      console.error(
-        "❌ API key authentication failed:",
-        (error as Error).message
-      );
-      console.error("   Possible causes:");
-      console.error("   1. API key is invalid or expired");
-      console.error(
-        "   2. API key is for a different environment (dev/sepolia/base)"
-      );
-      console.error("   3. API key doesn't have admin privileges");
-      console.error(
-        `   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`
-      );
-
-      // If this was api-key-only strategy, throw the error
+    if (!targetAddress) {
       if (strategy === "api-key-only") {
-        throw error;
+        throw new Error(
+          `❌ ${commandName}: the api-key-only strategy requires targetAddress (the EOA whose wallet you're operating on). ` +
+            `The aggregator re-mints the auth token with sub=targetAddress, so without it the request would fail every ownership check.`
+        );
       }
-      // For prefer-api-key strategy, continue to try private key auth below
+      console.log(
+        `🔑 ${commandName}: API key present but no targetAddress provided; ` +
+          `falling back to private-key auth (API-key path requires explicit owner).`
+      );
+      // intentional fall-through to the private-key block below
+    } else {
+      console.log(`🔑 Using API key authentication for ${commandName}...`);
+
+      try {
+        const { message } = await authClient.getSignatureFormat(targetAddress);
+
+        const result = await authClient.authWithAPIKey({
+          message,
+          apiKey: avsApiKey,
+        });
+
+        authClient.setAuthKey(result.authKey);
+        console.log("✅ API key authentication successful");
+        return authClient;
+      } catch (error) {
+        console.error(
+          "❌ API key authentication failed:",
+          (error as Error).message
+        );
+        console.error("   Possible causes:");
+        console.error("   1. API key is invalid or expired");
+        console.error(
+          "   2. API key is for a different environment (dev/sepolia/base)"
+        );
+        console.error("   3. API key doesn't have admin privileges");
+        console.error(
+          `   Current environment: ${currentEnv} (${config.AP_AVS_RPC})`
+        );
+
+        // If this was api-key-only strategy, throw the error
+        if (strategy === "api-key-only") {
+          throw error;
+        }
+        // For prefer-api-key strategy, continue to try private key auth below
+      }
     }
   }
 
@@ -594,6 +619,9 @@ async function withdrawAllFromWallet(
     withdrawClient = await getAuthenticatedClient({
       strategy: avsApiKey ? "prefer-api-key" : "private-key-only",
       commandName: "withdrawAll",
+      // Bind the re-minted JWT to the wallet's actual owner so
+      // validateSmartWalletOwnership hits w:<owner>:<wallet> on the server.
+      targetAddress: ownerAddress,
     });
   } catch (error) {
     console.error("❌ Failed to authenticate:", (error as Error).message);

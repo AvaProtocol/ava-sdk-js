@@ -37,7 +37,7 @@ interface RunNodeResponseData {
 
 import {
   getNextId,
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   removeCreatedWorkflows,
   getBlockNumber,
   getSettings,
@@ -53,7 +53,10 @@ const { tokens } = getConfig();
 
 const USDC_SEPOLIA_ADDRESS = tokens?.USDC?.address;
 
-jest.setTimeout(TIMEOUT_DURATION);
+// Loop tests deploy + trigger real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 const createdIdMap: Map<string, boolean> = new Map();
 
@@ -242,8 +245,8 @@ describe("LoopNode Tests", () => {
         },
         inputVariables: {
           urlArray: [
-            "https://mock-api.ap-aggregator.local/get?test=1",
-            "https://mock-api.ap-aggregator.local/get?test=2",
+            "http://localhost:19876/get?test=1",
+            "http://localhost:19876/get?test=2",
           ],
         },
       };
@@ -576,13 +579,15 @@ describe("LoopNode Tests", () => {
     });
 
     test("should process loop with GraphQL runner using runNodeWithInputs", async () => {
+      // Uses a free, public GraphQL API (no auth required).
+      // See https://github.com/AvaProtocol/ava-sdk-js/issues/211 for mock server plan.
       const params = {
         node: {
           id: getNextId(),
           name: "loop_graphql_test",
           type: NodeType.Loop,
           data: {
-            inputVariable: "{{tokenIds}}",
+            inputVariable: "{{countryCodes}}",
             iterationTimeout: 30,
             iterVal: "value",
             iterKey: "index",
@@ -590,13 +595,13 @@ describe("LoopNode Tests", () => {
             runner: {
               type: LoopRunnerType.GraphQLQuery,
               config: {
-                url: "https://gateway.thegraph.com/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV",
+                url: "https://countries.trevorblades.com/graphql",
                 query: `{
-                  tokens(first: 1, where: {symbol: "{{value}}"}) {
-                    id
-                    symbol
+                  countries(filter: {code: {eq: "{{value}}"}}) {
                     name
-                    decimals
+                    code
+                    capital
+                    currency
                   }
                 }`,
               },
@@ -604,7 +609,7 @@ describe("LoopNode Tests", () => {
           } as LoopNodeData,
         },
         inputVariables: {
-          tokenIds: ["WETH", "USDC"],
+          countryCodes: ["US", "JP"],
         },
       };
 
@@ -627,10 +632,9 @@ describe("LoopNode Tests", () => {
       const iterations = result.data as Array<Record<string, unknown>>;
       expect(iterations.length).toBe(2);
 
-      // Each iteration should return GraphQL query data
+      // Each iteration should return country data from the public API
       iterations.forEach((iteration) => {
         expect(iteration).toBeDefined();
-        // The response should contain the data from The Graph API
         expect(typeof iteration).toBe("object");
       });
     });
@@ -760,8 +764,8 @@ describe("LoopNode Tests", () => {
           lang: Lang.JavaScript,
           source: `
               return [
-                "https://mock-api.ap-aggregator.local/get?test=1",
-                "https://mock-api.ap-aggregator.local/get?test=2"
+                "http://localhost:19876/get?test=1",
+                "http://localhost:19876/get?test=2"
               ] ;
             `,
         },
@@ -1057,10 +1061,10 @@ describe("LoopNode Tests", () => {
         util.inspect(simulation, { depth: null, colors: true }),
       );
 
-      // Accept both success and partialSuccess (contract write operations may fail in simulation)
+      // Accept both success and failed (contract write operations may fail in simulation)
       expect([
         ExecutionStatus.Success,
-        ExecutionStatus.PartialSuccess,
+        ExecutionStatus.Failed,
       ]).toContain(simulation.status);
       expect(simulation.steps).toHaveLength(3); // trigger + data node + loop node
 

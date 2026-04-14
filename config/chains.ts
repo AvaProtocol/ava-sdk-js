@@ -106,8 +106,7 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   base: {
-    // avsEndpoint: "aggregator-base.avaprotocol.org:3206",
-    avsEndpoint: "localhost:3207",
+    avsEndpoint: "aggregator-base.avaprotocol.org:3206",
     chainId: "8453",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api.basescan.org/api",

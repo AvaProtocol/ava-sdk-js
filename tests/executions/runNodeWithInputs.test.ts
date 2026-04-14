@@ -2,7 +2,7 @@ import { describe, beforeAll, test, expect } from "@jest/globals";
 import { Client } from "@avaprotocol/sdk-js";
 import { NodeType, TimeoutPresets } from "@avaprotocol/types";
 import {
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   getSettings,
   getSmartWallet,
   getClient,
@@ -12,7 +12,10 @@ import {
 } from "../utils/utils";
 import util from "util";
 
-jest.setTimeout(TIMEOUT_DURATION);
+// runNodeWithInputs submits real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 describe("RunNodeWithInputs", () => {
   let client: Client;

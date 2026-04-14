@@ -133,7 +133,7 @@ describe("ErrorCode Consistency", () => {
 
       console.log("🚀 ~ simulateWorkflow ~ response:", simulateResponse);
 
-      expect(simulateResponse.status).toBe(ExecutionStatus.PartialSuccess);
+      expect(simulateResponse.status).toBe(ExecutionStatus.Failed);
       expect(simulateResponse.error).toContain("code1"); // Error message contains the failed step name
 
       // Find the custom code step

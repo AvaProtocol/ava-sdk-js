@@ -8,14 +8,17 @@ import {
 import {
   cleanupWorkflows,
   getBlockNumber,
-  TIMEOUT_DURATION,
+  TIMEOUT_DURATION_SLOW,
   getSmartWallet,
   getClient,
   authenticateClient,
 } from "../utils/utils";
 import { createFromTemplate, defaultTriggerId } from "../utils/templates";
 
-jest.setTimeout(TIMEOUT_DURATION); // Set timeout to 15 seconds for all tests in this file
+// Trigger tests submit real UserOps via the bundler under load.
+// Use the slow preset to avoid jest racing TimeoutPresets.SLOW gRPC calls.
+// See AvaProtocol/ava-sdk-js#209.
+jest.setTimeout(TIMEOUT_DURATION_SLOW);
 
 describe("triggerWorkflow Tests", () => {
   let client: Client;
@@ -26,7 +29,9 @@ describe("triggerWorkflow Tests", () => {
   });
 
   test("trigger for block type should succeed", async () => {
-    const interval = 5;
+    // Sepolia produces a block every ~12s, so interval=1 means the test
+    // waits ~12s for a block instead of ~60s for 5 blocks.
+    const interval = 1;
     const wallet = await getSmartWallet(client);
     const blockNumber = await getBlockNumber();
 
@@ -52,34 +57,31 @@ describe("triggerWorkflow Tests", () => {
       expect(Array.isArray(executions.items)).toBe(true);
       expect(executions.items.length).toEqual(0);
 
-      // Manually trigger the workflow with block number + 5
+      // Manually trigger the workflow with the next block
       await client.triggerWorkflow({
         id: workflowId,
         triggerData: {
           type: TriggerType.Block,
-          blockNumber: blockNumber + interval, // block interval in the workflow template
+          blockNumber: blockNumber + interval,
         },
         isBlocking: false, // Don't block to avoid timeouts
       });
 
-      // Wait for execution to complete with polling mechanism
-      let executions2;
+      // Wait for execution to complete with polling mechanism.
+      // Sepolia block time ~12s + operator processing ~5s, so poll every
+      // 3s up to ~30s total to give the operator time to finalize.
+      let executions2 = await client.getExecutions([workflowId]);
       let attempts = 0;
-      const maxAttempts = 10; // 10 attempts = 50 seconds max wait (operator needs ~26s)
-      const pollInterval = 5000; // Poll every 5 seconds
-      
-      do {
+      const maxAttempts = 10;
+      const pollInterval = 3000;
+
+      while (executions2.items.length === 0 && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, pollInterval));
         attempts++;
-        
-        try {
-          executions2 = await client.getExecutions([workflowId]);
-        } catch (error) {
-          executions2 = { items: [] };
-        }
-      } while (executions2.items.length === 0 && attempts < maxAttempts);
+        executions2 = await client.getExecutions([workflowId]);
+      }
 
-      // Verify that the execution is successfully triggered at block number + 5
+      // Verify that the execution is successfully triggered
       expect(Array.isArray(executions2.items)).toBe(true);
       expect(executions2.items.length).toEqual(1);
       expect(executions2.items[0].status).toEqual(ExecutionStatus.Success);

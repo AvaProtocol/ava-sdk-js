@@ -422,9 +422,8 @@ return { balance: balance.toString(), totalNeeded: totalNeeded.toString() };`,
       );
 
       expect(simulationResult).toBeDefined();
-      // Accept both success and partialSuccess (e.g., loop transfer may be simulated,
-      // or telegram node may partially fail in simulation context)
-      expect([ExecutionStatus.Success, ExecutionStatus.PartialSuccess]).toContain(
+      // Branch skips are SUCCESS; step failures are FAILED
+      expect([ExecutionStatus.Success, ExecutionStatus.Failed]).toContain(
         simulationResult.status,
       );
 

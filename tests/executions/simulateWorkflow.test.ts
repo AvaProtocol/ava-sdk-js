@@ -166,7 +166,7 @@ describe("SimulateWorkflow", () => {
           name: "restAPICall",
           type: NodeType.RestAPI,
           data: {
-            url: "https://mock-api.ap-aggregator.local/posts/1",
+            url: "http://localhost:19876/posts/1",
             method: "GET",
             body: "",
             headers: {},
@@ -336,8 +336,8 @@ describe("SimulateWorkflow", () => {
 
         // If we get here, the simulation succeeded despite the error
         expect(result).toBeDefined();
-        // Should be PartialSuccess since trigger succeeds but node fails
-        expect(result.status).toBe(ExecutionStatus.PartialSuccess);
+        // Should be Failed since trigger succeeds but node fails
+        expect(result.status).toBe(ExecutionStatus.Failed);
         expect(result.error).toBeDefined();
 
         // Even failed simulations should have unified step structure
@@ -353,7 +353,7 @@ describe("SimulateWorkflow", () => {
       } catch (error: unknown) {
         // The server treats JavaScript errors as simulation failures
         expect(error).toBeDefined();
-        expect((error as Error).message).toContain("partialSuccess");
+        expect((error as Error).message).toContain("steps failed");
       }
     });
   });
@@ -381,7 +381,7 @@ describe("SimulateWorkflow", () => {
           name: "rest_api_node",
           type: NodeType.RestAPI,
           data: {
-            url: "https://mock-api.ap-aggregator.local/posts/1",
+            url: "http://localhost:19876/posts/1",
             method: "GET",
             body: "",
             headers: {
