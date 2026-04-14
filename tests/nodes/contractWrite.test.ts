@@ -27,7 +27,8 @@ import {
 } from "../utils/utils";
 import { defaultTriggerId, createFromTemplate } from "../utils/templates";
 import { getConfig } from "../utils/envalid";
-const { tokens, chainId } = getConfig();
+const { tokens, chainId, uniswapV3Contracts } = getConfig();
+const PERMIT2_ADDRESS = uniswapV3Contracts?.permit2;
 
 // Common test constants
 const USDC_AMOUNT_0_01 = "10000"; // 0.01 USDC (6 decimals)
@@ -171,8 +172,8 @@ describeIfSepolia("ContractWrite Node Tests", () => {
     client = getClient();
     await authenticateClient(client);
 
-    // Derive smart wallet address using centralized funded wallet (newest implementation)
-    // Expected address: 0x5a8A8a79DdF433756D4D97DCCE33334D9E218856
+    // Derive smart wallet address using centralized funded wallet.
+    // The actual address depends on chainId, factory, and salt — don't hardcode.
     const wallet = await getSmartWalletWithBalance(client);
     smartWalletAddress = wallet.address;
   });
@@ -198,7 +199,7 @@ describeIfSepolia("ContractWrite Node Tests", () => {
             {
               methodName: "approve",
               methodParams: [
-                "0x000000000022D473030F116dDEE9F6B43aC78BA3", // Permit2 contract
+                PERMIT2_ADDRESS!, // Permit2 contract
                 "0", // 0 amount approval
               ],
             },
@@ -245,7 +246,9 @@ describeIfSepolia("ContractWrite Node Tests", () => {
       
       // Verify the event field values
       expect(result.data.approve.owner).toBe(smartWalletAddress);
-      expect(result.data.approve.spender).toBe("0x000000000022D473030F116dDEE9F6B43aC78BA3");
+      expect(result.data.approve.spender.toLowerCase()).toBe(
+        PERMIT2_ADDRESS!.toLowerCase()
+      );
       expect(result.data.approve.value).toBe("0");
 
       // Verify error is empty string
