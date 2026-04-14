@@ -414,6 +414,7 @@ async function getExecutions(
   options: {
     cursor?: string;
     limit?: number;
+    ownerAddress?: string;
   } = { cursor: "", limit: 20 }
 ) {
   let workflowIds = [];
@@ -421,6 +422,7 @@ async function getExecutions(
   // Use common authentication function with preference for API key (allows cross-wallet access)
   const executionsClient = await getAuthenticatedClient({
     strategy: "prefer-api-key",
+    targetAddress: options.ownerAddress,
     commandName: "getExecutions",
   });
 
@@ -2142,9 +2144,10 @@ For detailed documentation, see: examples/README.md
 
     case "getWorkflow": {
       const workflowId = commandArgs.args[0];
+      const ownerAddress = commandArgs.args[1];
 
       if (!workflowId) {
-        console.error("❌ Usage: yarn start getWorkflow <workflow-id>");
+        console.error("❌ Usage: yarn start getWorkflow <workflow-id> [owner-address]");
         break;
       }
 
@@ -2152,6 +2155,7 @@ For detailed documentation, see: examples/README.md
         // Use common authentication function with preference for API key (allows cross-wallet access)
         const workflowClient = await getAuthenticatedClient({
           strategy: "prefer-api-key",
+          targetAddress: ownerAddress,
           commandName: "getWorkflow",
         });
 
@@ -2184,6 +2188,7 @@ For detailed documentation, see: examples/README.md
         await getExecutions(commandArgs.args[0], {
           cursor: commandArgs.args[1],
           limit: _.toNumber(commandArgs.args[2]),
+          ownerAddress: commandArgs.args[3],
         });
       } catch (error: any) {
         console.error("❌ Failed to get executions:", error.message || error);
