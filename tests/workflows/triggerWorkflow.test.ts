@@ -70,21 +70,16 @@ describe("triggerWorkflow Tests", () => {
       // Wait for execution to complete with polling mechanism.
       // Sepolia block time ~12s + operator processing ~5s, so poll every
       // 3s up to ~30s total to give the operator time to finalize.
-      let executions2;
+      let executions2 = await client.getExecutions([workflowId]);
       let attempts = 0;
       const maxAttempts = 10;
       const pollInterval = 3000;
 
-      do {
+      while (executions2.items.length === 0 && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, pollInterval));
         attempts++;
-
-        try {
-          executions2 = await client.getExecutions([workflowId]);
-        } catch (error) {
-          executions2 = { items: [] };
-        }
-      } while (executions2.items.length === 0 && attempts < maxAttempts);
+        executions2 = await client.getExecutions([workflowId]);
+      }
 
       // Verify that the execution is successfully triggered
       expect(Array.isArray(executions2.items)).toBe(true);
