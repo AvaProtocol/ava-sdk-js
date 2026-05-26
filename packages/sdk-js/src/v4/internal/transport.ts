@@ -100,7 +100,13 @@ export class Transport {
     const url = this.buildUrl(opts.path, opts.query);
     const controller = new AbortController();
     const timeoutMs = opts.timeoutMs ?? this.defaultTimeoutMs;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    // timeoutMs <= 0 means "no timeout" (used by SSE streams). With
+    // a positive value we schedule an abort; otherwise the only
+    // cancellation channel is the caller-supplied signal.
+    const timeoutId =
+      timeoutMs > 0
+        ? setTimeout(() => controller.abort(), timeoutMs)
+        : undefined;
     if (opts.signal) {
       opts.signal.addEventListener("abort", () => controller.abort(), { once: true });
     }
