@@ -57,12 +57,27 @@ export const Triggers = Object.freeze({
     } as v4.Trigger;
   },
 
-  manual(opts: { name: string; id?: string; lang?: v4.Lang }): v4.Trigger {
+  manual(opts: {
+    name: string;
+    id?: string;
+    lang?: v4.Lang;
+    /** Payload returned in the trigger output when the workflow is triggered. */
+    data?: Record<string, unknown>;
+    /** Optional HTTP headers (for webhook-style testing). */
+    headers?: Record<string, string>;
+    /** Optional URL path params (for webhook-style testing). */
+    pathParams?: Record<string, string>;
+  }): v4.Trigger {
     return {
       type: "manual",
       name: opts.name,
       ...(opts.id ? { id: opts.id } : {}),
-      config: { lang: opts.lang ?? "json" },
+      config: {
+        lang: opts.lang ?? "json",
+        ...(opts.data !== undefined ? { data: opts.data } : {}),
+        ...(opts.headers ? { headers: opts.headers } : {}),
+        ...(opts.pathParams ? { pathParams: opts.pathParams } : {}),
+      },
     } as v4.Trigger;
   },
 
