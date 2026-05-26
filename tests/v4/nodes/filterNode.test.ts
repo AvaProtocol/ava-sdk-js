@@ -54,12 +54,7 @@ describe("FilterNode Tests", () => {
         inputVariables: { testArray: TEST_PEOPLE },
       });
       expect(result.success).toBe(true);
-      // nodes.run double-wraps filter output as `output.data.data`
-      // (server-side mapper quirk — the embedded full RunNodeResponse
-      // ends up inside the outer output.data). Inside a workflow the
-      // shape is `step.output.data` (single wrap), as the simulate
-      // and deploy+trigger tests below confirm.
-      const data = (result.output as { data: { data: unknown[] } }).data.data;
+      const data = (result.output as { data: unknown[] }).data;
       expect(Array.isArray(data)).toBe(true);
       expect(data).toHaveLength(2);
     });
@@ -75,12 +70,7 @@ describe("FilterNode Tests", () => {
         inputVariables: { testArray: TEST_PEOPLE },
       });
       expect(result.success).toBe(true);
-      // nodes.run double-wraps filter output as `output.data.data`
-      // (server-side mapper quirk — the embedded full RunNodeResponse
-      // ends up inside the outer output.data). Inside a workflow the
-      // shape is `step.output.data` (single wrap), as the simulate
-      // and deploy+trigger tests below confirm.
-      const data = (result.output as { data: { data: unknown[] } }).data.data;
+      const data = (result.output as { data: unknown[] }).data;
       expect(data).toHaveLength(1);
     });
 
@@ -101,7 +91,7 @@ describe("FilterNode Tests", () => {
         },
       });
       expect(result.success).toBe(true);
-      expect((result.output as { data: { data: unknown[] } }).data.data).toHaveLength(2);
+      expect((result.output as { data: unknown[] }).data).toHaveLength(2);
     });
 
     test("references a sibling input variable inside the predicate", async () => {
@@ -118,7 +108,7 @@ describe("FilterNode Tests", () => {
         },
       });
       expect(result.success).toBe(true);
-      expect((result.output as { data: { data: unknown[] } }).data.data).toHaveLength(2);
+      expect((result.output as { data: unknown[] }).data).toHaveLength(2);
     });
   });
 

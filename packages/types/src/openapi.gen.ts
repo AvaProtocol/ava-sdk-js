@@ -1209,8 +1209,7 @@ export interface components {
         };
         readonly TriggerWorkflowResponse: {
             readonly executionId: components["schemas"]["Ulid"];
-            /** @enum {string} */
-            readonly status: "queued" | "succeeded" | "failed";
+            readonly status: components["schemas"]["ExecutionStatus"];
             /** Format: int64 */
             readonly startAt?: number;
             /** Format: int64 */
@@ -2370,14 +2369,19 @@ export interface operations {
             };
         };
         readonly responses: {
-            /** @description Secret stored. */
-            readonly 200: {
+            /** @description Secret created. */
+            readonly 201: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
-                content: {
-                    readonly "application/json": components["schemas"]["Secret"];
+                content?: never;
+            };
+            /** @description Secret replaced (already existed). */
+            readonly 204: {
+                headers: {
+                    readonly [name: string]: unknown;
                 };
+                content?: never;
             };
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];

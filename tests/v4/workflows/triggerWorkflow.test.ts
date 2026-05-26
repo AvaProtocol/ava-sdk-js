@@ -174,10 +174,9 @@ describe("workflows.trigger Tests", () => {
         isBlocking: true,
       });
       expect(trig.executionId).toBeTruthy();
-      // The actual engine returns "success" rather than the spec'd
-      // "succeeded" — track the lived value, file a separate issue
-      // to harmonize the enum.
-      expect(typeof trig.status).toBe("string");
+      // trigger status mirrors ExecutionStatus — pending (async),
+      // success / failed / error (blocking terminal states).
+      expect(["pending", "success", "failed", "error"]).toContain(trig.status);
 
       // The execution is reachable by id immediately after blocking.
       const exec = await client.executions.retrieve(trig.executionId, { workflowId: wfId });

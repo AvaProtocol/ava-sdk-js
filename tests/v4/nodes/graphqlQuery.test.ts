@@ -6,10 +6,8 @@
  * (a public no-auth GraphQL endpoint) to stay self-contained and
  * deterministic without external creds.
  *
- * Output shape: `output.data.<queryField>` — same as v3, with the
- * caveat that the mapper folds `executionContext` and `success`
- * back into `output.data` (same double-wrap quirk filter has). The
- * tests reach for the query field directly and ignore the extras.
+ * Output shape: `output.data.<queryField>` — the GraphQL response
+ * body sits directly under `output.data`, no meta-field leakage.
  */
 
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
