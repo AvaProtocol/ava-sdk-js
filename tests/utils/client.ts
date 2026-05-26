@@ -159,3 +159,34 @@ export async function removeCreatedWorkflows(
     }
   }
 }
+
+/**
+ * The `settings` block all v4 workflows expect in inputVariables.
+ * Mirrors v3's `getSettings()` — keeps the per-test boilerplate down.
+ */
+export function settingsFor(runner: string, name = "Test Simulation") {
+  // chain_id (snake_case to match the engine's expectation) is
+  // mandatory for contractWrite simulation through Tenderly. Default
+  // to Sepolia since the dev stack runs there; callers running on a
+  // different chain can override via `settingsForChain` below.
+  return { name, runner, chain_id: 11_155_111 };
+}
+
+export function settingsForChain(runner: string, chainId: number, name = "Test Simulation") {
+  return { name, runner, chain_id: chainId };
+}
+
+/**
+ * Fetch the current block number from the configured CHAIN_ENDPOINT.
+ * Several node tests need this to seed a block-trigger workflow at
+ * a near-future block.
+ */
+export async function getCurrentBlockNumber(): Promise<number> {
+  const ep = process.env.CHAIN_ENDPOINT ?? "";
+  if (!ep) throw new Error("CHAIN_ENDPOINT not set — block-trigger tests need it");
+  const url = ep.startsWith("http") ? ep : `https://${ep}`;
+  // Defer the ethers import so non-chain tests don't pay the cost.
+  const { JsonRpcProvider } = await import("ethers");
+  const provider = new JsonRpcProvider(url);
+  return provider.getBlockNumber();
+}
