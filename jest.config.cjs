@@ -16,4 +16,7 @@ module.exports = {
     "^@avaprotocol/sdk-js$": "<rootDir>/packages/sdk-js/src/index.ts",
     "^@avaprotocol/types$": "<rootDir>/packages/types/src/index.ts",
   },
+  // Register shared jest matchers (e.g. toEqualIgnoreCase) for
+  // every spec file without per-file boilerplate.
+  setupFilesAfterEnv: ["<rootDir>/tests/utils/matchers.ts"],
 };
