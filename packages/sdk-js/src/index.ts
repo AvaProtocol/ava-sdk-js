@@ -1607,3 +1607,17 @@ export {
 
 // Note: Types should be imported directly from @avaprotocol/types
 // This keeps the SDK lightweight and follows proper separation of concerns
+
+// ---------------------------------------------------------------------
+// v4 (REST) surface — sub-clients, builders, and the new Client class.
+// Re-exported namespaced so v3 callers keep working during the
+// transition window. Migrate via:
+//
+//   import { v4 } from "@avaprotocol/sdk-js";
+//   const client = new v4.Client({ baseUrl, token });
+//   await client.workflows.create({ ... });
+//
+// Once every consumer has migrated, the v3 default export above is
+// deleted and v4.Client becomes the top-level Client.
+// ---------------------------------------------------------------------
+export * as v4 from "./v4";
