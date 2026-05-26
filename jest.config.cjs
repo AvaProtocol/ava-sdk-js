@@ -1,27 +1,19 @@
 module.exports = {
-  globalSetup: "<rootDir>/tests/mock-server/globalSetup.ts",
-  globalTeardown: "<rootDir>/tests/mock-server/globalTeardown.ts",
-  roots: ["<rootDir>/tests"], // Points to the `tests` folder
+  // The mock-server / globalSetup / failureSummaryReporter from the
+  // v3 test rig are not used by v4 tests — the v4 smoke suite is
+  // pure unit code and the integration tests (when added) hit a
+  // live aggregator over HTTP.
+  roots: ["<rootDir>/tests/v4"],
   transform: {
     "^.+\\.(ts|tsx|js|jsx)$": "babel-jest",
   },
   testEnvironment: "node",
-  extensionsToTreatAsEsm: [".ts"],
-  testMatch: ["**/?(*.)+(spec|test).[tj]s?(x)"], // Matches test files
+  testMatch: ["**/?(*.)+(spec|test).[tj]s?(x)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   moduleNameMapper: {
-    // Map workspace packages to their TypeScript source files for testing
-    // This ensures tests run against the latest source code instead of built/published versions
+    // Resolve workspace packages to their TypeScript source so tests
+    // run against the latest code, not the built dist/.
     "^@avaprotocol/sdk-js$": "<rootDir>/packages/sdk-js/src/index.ts",
     "^@avaprotocol/types$": "<rootDir>/packages/types/src/index.ts",
-    // Legacy mappings for internal imports
-    "^@/sdk-js/(.*)$": "<rootDir>/packages/sdk-js/$1",
-    "^@/grpc_codegen/(.*)$": "<rootDir>/grpc_codegen/$1",
-    "^@/types/(.*)$": "<rootDir>/packages/types/$1",
   },
-  setupFilesAfterEnv: ["<rootDir>/tests/utils/mocks/api.ts"],
-  reporters: [
-    "default",
-    "<rootDir>/tests/utils/failureSummaryReporter.js",
-  ],
 };
