@@ -6,28 +6,18 @@
     "yarn": ">=1.22.19"
   },
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "license": "Apache-2.0",
   "scripts": {
-    "start": "ts-node example.ts",
-    "start:sepolia": "ts-node example.ts -t sepolia",
-    "start:base": "ts-node example.ts -t base",
-    "start:base-sepolia": "ts-node example.ts -t base-sepolia",
-    "start:ethereum": "ts-node example.ts -t ethereum",
-    "check-allowances": "ts-node get-uniswapv3-allowance.ts"
+    "start": "ts-node --transpile-only example.ts",
+    "verify": "ts-node --transpile-only example.ts verify"
   },
   "dependencies": {
     "@avaprotocol/sdk-js": "file:../packages/sdk-js",
     "@avaprotocol/types": "file:../packages/types",
-    "ethers": "^6.13.3",
-    "id128": "^1.6.6",
-    "lodash": "^4.17.21"
+    "ethers": "^6.13.3"
   },
   "devDependencies": {
     "@types/node": "^22.7.7",
-    "command-line-args": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2"
   }
