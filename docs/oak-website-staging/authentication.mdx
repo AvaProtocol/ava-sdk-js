@@ -1,0 +1,150 @@
+---
+title: Authentication
+description: Mint and use the Bearer JWT every Ava Protocol REST endpoint requires — the EIP-191 sign-in flow for users plus the out-of-band CLI mint for server tooling.
+---
+
+Every endpoint except `client.health.check()` requires a Bearer JWT on the `Authorization` header. The SDK manages this for you once you've supplied a token — set it once on the Client and every subsequent request carries it automatically. This page covers how you obtain that token.
+
+There are two production-supported paths. Both produce the same Bearer JWT and use the same `EOAWallet.authKey` cache shape; the difference is who signs.
+
+For the per-method reference see [Auth](/docs/ava-sdk-js/reference/classes/AuthResource), [buildAuthMessage()](/docs/ava-sdk-js/reference/functions/buildAuthMessage), and [signAuthMessage()](/docs/ava-sdk-js/reference/functions/signAuthMessage).
+
+# Browser flow (production)
+
+The connected wallet signs a canonical message; the SDK exchanges it for a JWT and sets it on the transport in one call. Use this for any user-driven action.
+
+```ts
+import { Client, buildAuthMessage } from "@avaprotocol/sdk-js";
+
+const client = new Client({ baseUrl: process.env.NEXT_PUBLIC_AVS_REST_URL! });
+
+// 1. Build the canonical message client-side. Pure — no SDK network call.
+const { message } = buildAuthMessage({ ownerAddress });
+
+// 2. Ask the connected wallet to sign it (wagmi / viem / window.ethereum).
+const signature = await walletClient.signMessage({ message, account: ownerAddress });
+
+// 3. Exchange the signature for a JWT. The SDK stores it on the transport
+//    automatically — every subsequent client.* call carries it.
+const { token } = await client.auth.exchange({ message, signature, ownerAddress });
+
+// Persist `token` server-side (NextAuth session, cookie, EOAWallet.authKey row)
+// so future server actions can call client.setToken(token) instead of re-prompting.
+```
+
+The signed message looks like this (`AUTH_TEMPLATE` in the SDK):
+
+```
+Please sign the below text for ownership verification.
+
+URI: https://app.avaprotocol.org
+Chain ID: 11155111
+Version: 4
+Issued At: 2026-05-27T22:14:00.000Z
+Expire At: 2026-05-28T22:14:00.000Z
+Wallet: 0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557
+```
+
+`Chain ID` defaults to `Chains.EigenLayerAuth` (Sepolia, `11_155_111`). Override via the `chainId` option on `buildAuthMessage` if you want a different value in the signed payload — but see [Multi-chain behaviour](#multi-chain-behaviour) below before designing the UX around per-chain sign prompts.
+
+# Admin / server flow (out-of-band)
+
+For background jobs, webhooks, CI smoke tests, or anything that runs without a connected wallet, mint a long-lived JWT once via the aggregator's CLI on the gateway host and treat it as a credential. The CLI signs with the gateway's JWT signing secret directly — no wallet signature, no SDK round-trip.
+
+```bash
+./ap create-api-key \
+  --config=config/gateway.yaml \
+  --role=admin \
+  --subject=0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557 \
+  --chain-id=11155111
+```
+
+Output is a JWT string. Store it as a deploy-time secret and pass it on Client construction:
+
+```ts
+const client = new Client({
+  baseUrl: process.env.AVS_REST_URL!,
+  token: process.env.AVS_API_KEY,
+});
+```
+
+CLI-minted tokens have a 10-year expiry — they're effectively long-lived credentials. Rotate by minting a new one and replacing the secret; the gateway doesn't track or revoke previously-issued JWTs.
+
+The CLI is also the only way to mint a JWT for an EOA you don't have a signature from — there is no SDK-level "admin mint for arbitrary subject" call.
+
+# Token lifecycle
+
+JWTs minted via `client.auth.exchange()` expire 24 hours after issuance (the message's `Expire At` field controls this; default is `issuedAt + 24h`). The transport doesn't refresh them automatically — when a token expires or is otherwise rejected, the next request returns:
+
+```
+401 Unauthorized
+{
+  "type": "about:blank",
+  "title": "Authentication required",
+  "code": "AUTH_REQUIRED",
+  ...
+}
+```
+
+The SDK throws [`AuthRequiredError`](/docs/ava-sdk-js/reference/classes/AuthRequiredError) for these. Catch it and re-run `client.auth.exchange(...)` (re-prompt the user to sign) instead of retrying with the stale token.
+
+```ts
+import { Client, AuthRequiredError } from "@avaprotocol/sdk-js";
+
+try {
+  const workflows = await client.workflows.list();
+} catch (err) {
+  if (err instanceof AuthRequiredError) {
+    // Token missing / expired — kick the user back to the sign-in flow.
+    await reauthenticate();
+    return retry();
+  }
+  throw err;
+}
+```
+
+To deliberately discard the current token without making any other state change:
+
+```ts
+client.auth.clear();
+```
+
+# Multi-chain behaviour
+
+The signed message embeds a single `Chain ID` and the JWT's `aud` claim carries that exact value. In practice today, the gateway routes per-request by `body.chainId` / `inputVariables.settings.chain_id` and only falls back to `aud` as a default — so one Sepolia-signed JWT works for workflow calls on all four supported chains. This means your sign-in UX can prompt the user once per session, not once per chain switch.
+
+This is a property of the current gateway, not the JWT itself. If a future server change tightens `aud` enforcement, you'll need one signature per chain (same cardinality v3 forced, minus the silent admin-mint fallback). Verify against your target gateway before committing to a one-prompt-per-session sign-in flow:
+
+```ts
+// After sign-in with chainId=11155111, confirm cross-chain reuse works.
+await client.wallets.list();                       // implicit aud chain
+await client.workflows.simulate({ chainId: 1, ... });        // mainnet
+await client.workflows.simulate({ chainId: 8453, ... });     // base
+await client.workflows.simulate({ chainId: 84532, ... });    // base-sepolia
+```
+
+If any call returns a 403 or `Problem.code === "AUTH_AUDIENCE_MISMATCH"`, the gateway is enforcing strict `aud` — fall back to minting one JWT per (eoa, chain).
+
+# Test / Node tooling shortcut
+
+When you have a private key in hand (CI tests, scripts, never browser code), the SDK ships a one-shot helper that builds the message, signs it, and exchanges it in one call:
+
+```ts
+import { Client } from "@avaprotocol/sdk-js";
+
+const client = new Client({ baseUrl: process.env.AVS_REST_URL! });
+await client.auth.exchangeWithKey(process.env.TEST_PRIVATE_KEY!);
+
+// Token is set; client.workflows.* / wallets.* / etc. all carry it.
+```
+
+Use this **only** when the private key is part of the runtime context (test fixtures, server-side admin scripts). Production browser code uses the [Browser flow](#browser-flow-production) — the SDK never sees the user's private key.
+
+# What never works in v4
+
+A few v3 auth patterns no longer exist; if you see code reaching for them, it's leftover from the gRPC SDK:
+
+- **`client.authWithAPIKey({ message, apiKey })`** — gone. v4 has no API-key-mints-user-JWT path; that's the [admin / server flow](#admin--server-flow-out-of-band) via the CLI now.
+- **`client.getSignatureFormat(eoa)`** — gone. Build the message client-side via `buildAuthMessage({ownerAddress})`; no server round-trip.
+- **Per-call `{ authKey }` option** on resource methods — gone. The Client transport carries the Bearer token; methods don't take it explicitly.
+- **One JWT per chain via the SDK** — there's no SDK call that mints a wildcard-`aud` JWT from a browser signature. The CLI's `--chain-id=0` flag does this server-side; consult the [Auth model section of the studio v4 upgrade plan](https://github.com/AvaProtocol/studio/blob/staging/docs/AVA_SDK_V4_UPGRADE.md#auth-model-change) if you're migrating a multi-chain consumer.
