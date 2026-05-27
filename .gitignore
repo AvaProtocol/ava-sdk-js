@@ -9,6 +9,9 @@ dist/
 out/
 *.tsbuildinfo
 
+# TypeDoc generated reference (regenerated via `yarn docs` in each package)
+docs-api/
+
 # Logs
 logs
 *.log

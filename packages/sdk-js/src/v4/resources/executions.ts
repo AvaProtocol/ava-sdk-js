@@ -38,6 +38,12 @@ export interface StreamExecutionParams {
   signal?: AbortSignal;
 }
 
+/**
+ * `client.executions.*` — read-only access to past workflow runs and
+ * a live SSE stream for in-flight ones. Workflow executions are
+ * created by the operator when a trigger fires (or by `workflows.trigger`
+ * for manual runs); this resource never creates them, only reads.
+ */
 export class ExecutionsResource {
   constructor(private readonly transport: Transport) {}
 

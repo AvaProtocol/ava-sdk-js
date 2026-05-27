@@ -28,6 +28,16 @@ export interface CountWorkflowsParams {
   chainId?: number;
 }
 
+/**
+ * `client.workflows.*` — the primary surface for creating and
+ * controlling automations. A "workflow" is one trigger + a DAG of
+ * nodes that fires when the trigger condition matches. This resource
+ * covers the full lifecycle: create, list, retrieve, pause / resume,
+ * cancel, manual trigger, dry-run simulation, and fee estimation.
+ *
+ * Executions produced by these workflows are read via
+ * [`ExecutionsResource`](ExecutionsResource.mdx).
+ */
 export class WorkflowsResource {
   constructor(private readonly transport: Transport) {}
 

@@ -15,6 +15,16 @@ export interface DeleteSecretParams {
   orgId?: string;
 }
 
+/**
+ * `client.secrets.*` — write-only secret store, scoped to the
+ * authenticated user. Values are referenced from workflow nodes via
+ * `{{secrets.NAME}}` template variables and are decrypted server-side
+ * at execution time; the SDK never receives the plaintext value back.
+ *
+ * `put` is a single idempotent endpoint replacing v3's create + update
+ * split — sending the same name twice rotates the value silently
+ * rather than erroring.
+ */
 export class SecretsResource {
   constructor(private readonly transport: Transport) {}
 

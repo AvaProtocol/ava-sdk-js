@@ -27,12 +27,17 @@
     "build:declarations": "tsc -b tsconfig.json",
     "build:js": "tsup src/index.ts --format cjs,esm",
     "build": "yarn build:declarations && yarn build:js",
-    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo",
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo docs-api",
+    "docs": "typedoc && node scripts/flatten-docs.js",
     "prepare": "node ../../scripts/prepare-package.js"
   },
   "dependencies": {
     "@avaprotocol/types": "4.0.0-dev.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.2"
+  },
+  "devDependencies": {
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.11.0"
   }
 }
