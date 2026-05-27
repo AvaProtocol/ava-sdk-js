@@ -1441,7 +1441,7 @@ export interface components {
         };
         readonly WithdrawResponse: {
             /** @enum {string} */
-            readonly status: "pending" | "submitted" | "failed";
+            readonly status: "pending" | "confirmed" | "failed";
             readonly message?: string;
             readonly userOpHash?: components["schemas"]["Hex"];
             readonly transactionHash?: components["schemas"]["Hex"];

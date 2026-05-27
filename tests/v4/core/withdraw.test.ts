@@ -312,7 +312,7 @@ describe("Withdraw Funds Tests", () => {
       expect(response).toHaveProperty("amount");
       expect(response).toHaveProperty("token");
       expect(typeof response.status).toBe("string");
-      expect(["pending", "submitted", "failed"]).toContain(response.status);
+      expect(["pending", "confirmed", "failed"]).toContain(response.status);
       if (response.message !== undefined) expect(typeof response.message).toBe("string");
       if (response.userOpHash !== undefined) expect(typeof response.userOpHash).toBe("string");
       if (response.transactionHash !== undefined) {
