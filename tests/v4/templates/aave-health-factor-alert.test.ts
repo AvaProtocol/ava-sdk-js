@@ -91,16 +91,25 @@ describe("Template: AAVE health factor alert", () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  test("simulates the eventTrigger->contractRead->branch->REST top-up workflow", async () => {
-    const wallet = await getSmartWallet(client);
-    const sim = await client.workflows.simulate({
-      // Fire when the AAVE V3 Pool emits a Borrow event with
-      // onBehalfOf == this wallet. Layout of the Borrow topics:
-      //   topics[0] = event signature
-      //   topics[1] = reserve (indexed address)
-      //   topics[2] = onBehalfOf (indexed address) ← filter slot
-      //   topics[3] = referralCode (indexed uint16)
-      // Empty strings in slots 1 and 3 are wildcards.
+  /**
+   * Build the canonical AAVE-health-factor-alert workflow shape so
+   * both the simulate test and the deploy+retrieve test exercise the
+   * exact same graph. The only thing that changes between calls is
+   * the smart wallet address (which the caller passes in for the
+   * settings.runner field).
+   *
+   * Trigger filter — topics layout for the AAVE V3 Borrow event:
+   *   topics[0] = event signature
+   *   topics[1] = reserve (indexed address)
+   *   topics[2] = onBehalfOf (indexed address) ← filter slot
+   *   topics[3] = referralCode (indexed uint16)
+   * Empty strings in slots 1 and 3 are wildcards.
+   */
+  function buildWorkflow(smartWalletAddress: string) {
+    return {
+      smartWalletAddress,
+      name: "AAVE Health Factor Alert",
+      chainId: 11_155_111,
       trigger: Triggers.event({
         id: "trigger",
         name: "aaveBorrow",
@@ -160,6 +169,17 @@ describe("Template: AAVE health factor alert", () => {
         { id: "e2", source: "read", target: "branch" },
         { id: "e3", source: "branch.lowHF", target: "topup" },
       ],
+    };
+  }
+
+  test("simulates the eventTrigger->contractRead->branch->REST top-up workflow", async () => {
+    const wallet = await getSmartWallet(client);
+    const wf = buildWorkflow(wallet.address);
+
+    const sim = await client.workflows.simulate({
+      trigger: wf.trigger,
+      nodes: wf.nodes,
+      edges: wf.edges,
       inputVariables: {
         settings: settingsForChain(wallet.address, 11_155_111),
       },
@@ -169,6 +189,55 @@ describe("Template: AAVE health factor alert", () => {
     const stepIds = (sim.steps ?? []).map((s) => s.id);
     expect(stepIds).toContain("read");
     expect(stepIds).toContain("branch");
+  });
+
+  test("deploys + retrieves the workflow with the eventTrigger trigger type", async () => {
+    // Mirrors v3's "Full Deployment and Execution Testing" section.
+    // We can't observe real execution here because the trigger is
+    // event-driven (would require an actual AAVE Borrow on Sepolia
+    // for the wallet under test) — so the assertion bar is "deployed,
+    // persisted, retrievable with the right shape." Anything beyond
+    // that needs a funded test wallet that actually borrows, which
+    // would make this test non-deterministic.
+    const wallet = await getSmartWallet(client);
+    const wf = buildWorkflow(wallet.address);
+
+    const created = await client.workflows.create({
+      ...wf,
+      // The engine validates wallet ownership against settings.runner
+      // on every persisted workflow (same as workflows.simulate) —
+      // omit it and the create call fails with "inputVariables is
+      // required" / "settings.runner is required".
+      // The engine also keys the persisted workflow.name off
+      // settings.name, so pass the canonical template name through
+      // here rather than letting settingsForChain default to its
+      // "Test Simulation" placeholder.
+      inputVariables: {
+        settings: settingsForChain(wallet.address, 11_155_111, wf.name),
+      },
+    });
+    expect(created.id).toBeDefined();
+    expect(typeof created.id).toBe("string");
+    createdWorkflowIds.push(created.id);
+
+    const retrieved = await client.workflows.retrieve(created.id);
+    expect(retrieved.id).toBe(created.id);
+    expect(retrieved.name).toBe("AAVE Health Factor Alert");
+    expect(retrieved.trigger?.type).toBe("event");
+    expect(retrieved.nodes).toHaveLength(3); // contractRead + branch + restApi
+    expect(retrieved.edges).toHaveLength(3);
+
+    // Spot-check the trigger config persisted in the right shape —
+    // if the Borrow filter got lost on the wire, the deployed
+    // workflow would silently fire on every Borrow event rather than
+    // only the wallet's. The eventTrigger config is the most
+    // serialization-sensitive part of this graph.
+    const triggerQueries = (retrieved.trigger?.config as { queries?: unknown[] })
+      ?.queries;
+    expect(triggerQueries).toHaveLength(1);
+    const topics = (triggerQueries?.[0] as { topics?: string[] })?.topics ?? [];
+    expect(topics[0]).toBe(AAVE_BORROW_SIG);
+    expect(topics[2]).toBe(padTopic(eoaAddress));
   });
 
   // The Borrow event ABI is exported so Studio surfaces decoded
