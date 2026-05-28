@@ -81,10 +81,12 @@ describe("Template: Uniswap V3 stop-loss", () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  test("simulates the cron->priceRead->branch->swap workflow shape", async () => {
-    const wallet = await getSmartWallet(client, { saltValue: "2" });
-
-    const sim = await client.workflows.simulate({
+  /** Canonical workflow shape — shared by simulate and deploy tests. */
+  function buildWorkflow(smartWalletAddress: string) {
+    return {
+      smartWalletAddress,
+      name: "Uniswap V3 stop-loss",
+      chainId: 11_155_111,
       trigger: Triggers.cron({
         id: "trigger",
         name: "cron",
@@ -124,7 +126,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
                   tokenIn: WETH_SEPOLIA,
                   tokenOut: USDC_SEPOLIA,
                   fee: 3000,
-                  recipient: wallet.address,
+                  recipient: smartWalletAddress,
                   amountIn: "1000000000000000",
                   amountOutMinimum: "0",
                   sqrtPriceLimitX96: "0",
@@ -139,6 +141,17 @@ describe("Template: Uniswap V3 stop-loss", () => {
         { id: "e2", source: "price", target: "branch" },
         { id: "e3", source: "branch.stopLoss", target: "swap" },
       ],
+    };
+  }
+
+  test("simulates the cron->priceRead->branch->swap workflow shape", async () => {
+    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wf = buildWorkflow(wallet.address);
+
+    const sim = await client.workflows.simulate({
+      trigger: wf.trigger,
+      nodes: wf.nodes,
+      edges: wf.edges,
       inputVariables: { settings: settingsForChain(wallet.address, 11_155_111) },
     });
 
@@ -149,5 +162,26 @@ describe("Template: Uniswap V3 stop-loss", () => {
     // The swap step only fires if the price condition is met (it
     // shouldn't be in this dev env). The point of this test is the
     // workflow compiles + simulates successfully.
+  });
+
+  test("deploys + retrieves the workflow with the cron trigger type", async () => {
+    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wf = buildWorkflow(wallet.address);
+
+    const created = await client.workflows.create({
+      ...wf,
+      inputVariables: {
+        settings: settingsForChain(wallet.address, 11_155_111, wf.name),
+      },
+    });
+    expect(typeof created.id).toBe("string");
+    createdWorkflowIds.push(created.id);
+
+    const retrieved = await client.workflows.retrieve(created.id);
+    expect(retrieved.id).toBe(created.id);
+    expect(retrieved.name).toBe(wf.name);
+    expect(retrieved.trigger?.type).toBe("cron");
+    expect(retrieved.nodes).toHaveLength(3);
+    expect(retrieved.edges).toHaveLength(3);
   });
 });

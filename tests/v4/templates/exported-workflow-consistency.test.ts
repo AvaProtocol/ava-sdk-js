@@ -39,9 +39,16 @@ describe("Template: exported workflow consistency", () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  test("simulates the manual->filter->loop->customCode workflow", async () => {
-    const wallet = await getSmartWallet(client);
-    const sim = await client.workflows.simulate({
+  /**
+   * Canonical workflow shape — shared by simulate and deploy tests so
+   * both exercise the same exported graph. This is the "single source
+   * of truth" the v3 cross-method consistency check was built around.
+   */
+  function buildWorkflow(smartWalletAddress: string) {
+    return {
+      smartWalletAddress,
+      name: "Exported workflow consistency",
+      chainId: 11_155_111,
       trigger: Triggers.manual({
         id: "trigger",
         name: "manualTrigger",
@@ -80,6 +87,17 @@ describe("Template: exported workflow consistency", () => {
         { id: "e2", source: "filter", target: "loop" },
         { id: "e3", source: "loop", target: "sum" },
       ],
+    };
+  }
+
+  test("simulates the manual->filter->loop->customCode workflow", async () => {
+    const wallet = await getSmartWallet(client);
+    const wf = buildWorkflow(wallet.address);
+
+    const sim = await client.workflows.simulate({
+      trigger: wf.trigger,
+      nodes: wf.nodes,
+      edges: wf.edges,
       inputVariables: { settings: settingsFor(wallet.address) },
     });
 
@@ -91,6 +109,29 @@ describe("Template: exported workflow consistency", () => {
     expect(sumStep?.success).toBe(true);
     const out = (sumStep?.output as { data: { count: number } }).data;
     expect(out.count).toBe(1); // Only value1 passes the filter.
+  });
+
+  test("deploys + retrieves the workflow with the manual trigger type", async () => {
+    const wallet = await getSmartWallet(client);
+    const wf = buildWorkflow(wallet.address);
+
+    const created = await client.workflows.create({
+      ...wf,
+      inputVariables: {
+        // settings.name keys the persisted workflow.name — pass the
+        // canonical template name rather than the helper default.
+        settings: settingsFor(wallet.address, wf.name),
+      },
+    });
+    expect(typeof created.id).toBe("string");
+    createdWorkflowIds.push(created.id);
+
+    const retrieved = await client.workflows.retrieve(created.id);
+    expect(retrieved.id).toBe(created.id);
+    expect(retrieved.name).toBe(wf.name);
+    expect(retrieved.trigger?.type).toBe("manual");
+    expect(retrieved.nodes).toHaveLength(3);
+    expect(retrieved.edges).toHaveLength(3);
   });
 
   test("nodes.run loop result matches simulate's loop step output", async () => {

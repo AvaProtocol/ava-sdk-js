@@ -42,10 +42,15 @@ describe("Template: recurring payment with report", () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  test("simulates the manual->balance->customCode->branch->loop->REST flow", async () => {
-    const wallet = await getSmartWallet(client);
-
-    const sim = await client.workflows.simulate({
+  /**
+   * Canonical workflow shape — shared by simulate and deploy tests so
+   * both exercise the same graph.
+   */
+  function buildWorkflow(smartWalletAddress: string) {
+    return {
+      smartWalletAddress,
+      name: "Recurring payment with report",
+      chainId: 11_155_111,
       trigger: Triggers.manual({
         id: "trigger",
         name: "manualTrigger",
@@ -56,7 +61,7 @@ describe("Template: recurring payment with report", () => {
         Nodes.balance({
           id: "balance",
           name: "balance",
-          address: wallet.address,
+          address: smartWalletAddress,
           chain: "sepolia",
         }),
         Nodes.customCode({
@@ -108,6 +113,17 @@ describe("Template: recurring payment with report", () => {
         { id: "e4", source: "branch.yes", target: "loop" },
         { id: "e5", source: "loop", target: "telegram" },
       ],
+    };
+  }
+
+  test("simulates the manual->balance->customCode->branch->loop->REST flow", async () => {
+    const wallet = await getSmartWallet(client);
+    const wf = buildWorkflow(wallet.address);
+
+    const sim = await client.workflows.simulate({
+      trigger: wf.trigger,
+      nodes: wf.nodes,
+      edges: wf.edges,
       inputVariables: { settings: settingsFor(wallet.address) },
     });
 
@@ -118,5 +134,28 @@ describe("Template: recurring payment with report", () => {
     expect(stepIds).toContain("balance");
     expect(stepIds).toContain("code");
     expect(stepIds).toContain("branch");
+  });
+
+  test("deploys + retrieves the workflow with the manual trigger type", async () => {
+    const wallet = await getSmartWallet(client);
+    const wf = buildWorkflow(wallet.address);
+
+    const created = await client.workflows.create({
+      ...wf,
+      inputVariables: {
+        // settings.name keys the persisted workflow.name — pass the
+        // canonical template name rather than the helper default.
+        settings: settingsFor(wallet.address, wf.name),
+      },
+    });
+    expect(typeof created.id).toBe("string");
+    createdWorkflowIds.push(created.id);
+
+    const retrieved = await client.workflows.retrieve(created.id);
+    expect(retrieved.id).toBe(created.id);
+    expect(retrieved.name).toBe(wf.name);
+    expect(retrieved.trigger?.type).toBe("manual");
+    expect(retrieved.nodes).toHaveLength(5);
+    expect(retrieved.edges).toHaveLength(5);
   });
 });

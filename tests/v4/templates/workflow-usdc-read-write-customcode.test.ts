@@ -71,10 +71,12 @@ describe("Template: USDC read+write+customCode", () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  test("simulates the workflow with both contractReads + contractWrite + customCode", async () => {
-    const wallet = await getSmartWallet(client, { saltValue: "2" });
-
-    const sim = await client.workflows.simulate({
+  /** Canonical workflow shape — shared by simulate and deploy tests. */
+  function buildWorkflow(smartWalletAddress: string) {
+    return {
+      smartWalletAddress,
+      name: "USDC read+write+customCode",
+      chainId: 11_155_111,
       trigger: Triggers.cron({
         id: "timeTrigger",
         name: "timeTrigger",
@@ -119,6 +121,17 @@ describe("Template: USDC read+write+customCode", () => {
         { id: "e3", source: "contractRead2", target: "contractWrite1" },
         { id: "e4", source: "contractWrite1", target: "code1" },
       ],
+    };
+  }
+
+  test("simulates the workflow with both contractReads + contractWrite + customCode", async () => {
+    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wf = buildWorkflow(wallet.address);
+
+    const sim = await client.workflows.simulate({
+      trigger: wf.trigger,
+      nodes: wf.nodes,
+      edges: wf.edges,
       inputVariables: { settings: settingsForChain(wallet.address, 11_155_111) },
     });
 
@@ -137,5 +150,26 @@ describe("Template: USDC read+write+customCode", () => {
     expect(typeof out.symbol).toBe("string");
     expect(typeof out.decimals).toBe("number");
     expect(out.transferOk).toBe(true);
+  });
+
+  test("deploys + retrieves the workflow with the cron trigger type", async () => {
+    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wf = buildWorkflow(wallet.address);
+
+    const created = await client.workflows.create({
+      ...wf,
+      inputVariables: {
+        settings: settingsForChain(wallet.address, 11_155_111, wf.name),
+      },
+    });
+    expect(typeof created.id).toBe("string");
+    createdWorkflowIds.push(created.id);
+
+    const retrieved = await client.workflows.retrieve(created.id);
+    expect(retrieved.id).toBe(created.id);
+    expect(retrieved.name).toBe(wf.name);
+    expect(retrieved.trigger?.type).toBe("cron");
+    expect(retrieved.nodes).toHaveLength(4);
+    expect(retrieved.edges).toHaveLength(4);
   });
 });
