@@ -142,10 +142,10 @@ describe("Template: recurring payment with report", () => {
 
     const created = await client.workflows.create({
       ...wf,
+      // The top-level wf.name is the canonical workflow name; the
+      // REST mapper auto-mirrors it into settings.name server-side.
       inputVariables: {
-        // settings.name keys the persisted workflow.name — pass the
-        // canonical template name rather than the helper default.
-        settings: settingsFor(wallet.address, wf.name),
+        settings: settingsFor(wallet.address),
       },
     });
     expect(typeof created.id).toBe("string");

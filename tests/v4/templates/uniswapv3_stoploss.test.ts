@@ -170,8 +170,10 @@ describe("Template: Uniswap V3 stop-loss", () => {
 
     const created = await client.workflows.create({
       ...wf,
+      // The top-level wf.name is the canonical workflow name; the
+      // REST mapper auto-mirrors it into settings.name server-side.
       inputVariables: {
-        settings: settingsForChain(wallet.address, 11_155_111, wf.name),
+        settings: settingsForChain(wallet.address, 11_155_111),
       },
     });
     expect(typeof created.id).toBe("string");

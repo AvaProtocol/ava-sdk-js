@@ -204,16 +204,14 @@ describe("Template: AAVE health factor alert", () => {
 
     const created = await client.workflows.create({
       ...wf,
-      // The engine validates wallet ownership against settings.runner
-      // on every persisted workflow (same as workflows.simulate) —
-      // omit it and the create call fails with "inputVariables is
-      // required" / "settings.runner is required".
-      // The engine also keys the persisted workflow.name off
-      // settings.name, so pass the canonical template name through
-      // here rather than letting settingsForChain default to its
-      // "Test Simulation" placeholder.
+      // settings.runner is required on every persisted workflow (same
+      // as workflows.simulate) — the engine validates wallet
+      // ownership against it. Omit and create fails with
+      // "inputVariables is required" / "settings.runner is required".
+      // The top-level wf.name is the canonical workflow name; the
+      // REST mapper auto-mirrors it into settings.name server-side.
       inputVariables: {
-        settings: settingsForChain(wallet.address, 11_155_111, wf.name),
+        settings: settingsForChain(wallet.address, 11_155_111),
       },
     });
     expect(created.id).toBeDefined();
