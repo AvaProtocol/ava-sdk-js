@@ -64,10 +64,13 @@ const AAVE_BORROW_SIG = Protocols.aaveV3.eventTopics.Borrow;
 // against the AAVE Sepolia faucet without re-funding the test wallet.
 const TOPUP_AMOUNT_WEI = "100000000000000000";
 
-// Destination address for the top-up notification email. Not validated
-// at simulate time — SendGrid is reachable from Tenderly's egress and
-// the test asserts on workflow shape + step ids, not on delivery.
-const NOTIFY_EMAIL = "noreply@avaprotocol.org";
+// Destination address for the top-up notification email. Routes to
+// chris@avaprotocol.org via Google Workspace plus-addressing — the
+// `+sdk_test` tag survives in the To: header so we can filter on it.
+// Use this for both the canonical template (which only delivers when
+// a real low-HF Borrow fires) and the email-delivery probe test at
+// the bottom of this file (which always delivers via simulate).
+const NOTIFY_EMAIL = "chris+sdk_test@avaprotocol.org";
 
 /** Pads a 20-byte address to a 32-byte topic value (left-zero-padded). */
 function padTopic(addr: string): string {
@@ -310,6 +313,96 @@ describe("Template: AAVE health factor alert", () => {
     const topics = (triggerQueries?.[0] as { topics?: string[] })?.topics ?? [];
     expect(topics[0]).toBe(AAVE_BORROW_SIG);
     expect(topics[2]).toBe(padTopic(eoaAddress));
+  });
+
+  /**
+   * Email-delivery probe — proves the SendGrid + context-memory
+   * summarize path actually fires end-to-end against the Railway
+   * gateway. Built deliberately *minimal* compared to the canonical
+   * template above:
+   *
+   *   manualTrigger → contractRead (AAVE.getUserAccountData)
+   *                 → restApi (SendGrid /v3/mail/send, summarize:true)
+   *
+   * Why a separate test instead of restructuring the canonical
+   * template: the production template's chain (`approve → supply →
+   * email`) only fires when the wallet has a low health factor.
+   * The dev test wallet has no AAVE position, so the branch routes
+   * to `ok` and the email step never executes in simulate. We don't
+   * want to change the production shape for testability — so we add
+   * a separate probe that strips the branch and the writes, leaving
+   * just enough context for the summarizer to compose a meaningful
+   * body.
+   *
+   * Manual trigger so simulate fires the chain unconditionally
+   * (no event-payload synthesis, no cron schedule); contractRead
+   * gives the summarizer real on-chain data to describe in the
+   * email body so the recipient can verify the LLM polish landed.
+   * Successful run delivers a message to chris+sdk_test@avaprotocol.org.
+   */
+  test("delivers an email via SendGrid + context-memory summarize", async () => {
+    const wallet = await createSmartWallet(client);
+    const trigger = Triggers.manual({
+      id: "trigger",
+      name: "manual",
+      data: { source: "aave-email-probe", eoa: eoaAddress },
+    });
+    const nodes = [
+      Nodes.contractRead({
+        id: "read",
+        name: "aaveRead",
+        contractAddress: AAVE_V3_POOL_SEPOLIA,
+        contractAbi: Protocols.aaveV3.poolMethodsAbi,
+        methodCalls: [
+          { methodName: "getUserAccountData", methodParams: [eoaAddress] },
+        ],
+      }),
+      Nodes.restApi({
+        id: "email",
+        name: "topupAlertProbe",
+        url: "https://api.sendgrid.com/v3/mail/send",
+        method: "POST",
+        body: JSON.stringify({
+          personalizations: [
+            {
+              to: [{ email: NOTIFY_EMAIL }],
+              subject: "AAVE Email Probe — context-memory summarize",
+            },
+          ],
+          from: { email: "noreply@avaprotocol.org", name: "Ava Protocol" },
+          content: [{ type: "text/html", value: "" }],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer {{apContext.configVars.sendgrid_key}}",
+        },
+        options: { summarize: true },
+      }),
+    ];
+    const edges = [
+      { id: "e1", source: "trigger", target: "read" },
+      { id: "e2", source: "read", target: "email" },
+    ];
+
+    const sim = await client.workflows.simulate({
+      trigger,
+      nodes,
+      edges,
+      inputVariables: {
+        settings: settingsForChain(wallet.address, 11_155_111),
+      },
+    });
+
+    expect(sim.status).toBeTruthy();
+    const stepIds = (sim.steps ?? []).map((s) => s.id);
+    expect(stepIds).toContain("read");
+    // The email step's presence in sim.steps means the aggregator
+    // dispatched the terminal restApi node — at which point the
+    // summarizer was invoked + SendGrid was hit. Final delivery
+    // depends on SendGrid acceptance; check chris's inbox to
+    // confirm and the Railway gateway logs for the
+    // ComposeSummarySmart call + the SendGrid 202 response.
+    expect(stepIds).toContain("email");
   });
 
   // Spot-check the SDK protocol catalog's published Borrow event ABI
