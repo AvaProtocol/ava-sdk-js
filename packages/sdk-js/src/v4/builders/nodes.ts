@@ -116,6 +116,7 @@ export const Nodes = Object.freeze({
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
     body?: string;
     headers?: Record<string, string>;
+    options?: { summarize?: boolean };
   }): v4.Node {
     return {
       id: opts.id,
@@ -126,6 +127,7 @@ export const Nodes = Object.freeze({
         method: opts.method,
         ...(opts.body ? { body: opts.body } : {}),
         ...(opts.headers ? { headers: opts.headers } : {}),
+        ...(opts.options ? { options: opts.options } : {}),
       },
     } as v4.Node;
   },

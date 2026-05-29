@@ -13,6 +13,7 @@
  *     → branch         (if HF < 1.5e18)
  *       → contractWrite (LINK.approve(Pool, amount))
  *       → contractWrite (Pool.supply(LINK, amount, runner, 0))
+ *       → restApi       (SendGrid /v3/mail/send, options.summarize: true)
  *
  * Intent (per design): reactive top-up safety net for user-initiated
  * debt increases — not a liquidation preventer. Oracle-driven HF
@@ -58,6 +59,11 @@ const AAVE_LINK_SEPOLIA = "0xf8Fb3713D459D7C1018BD0A49D19b4C44290EBE5";
 // 0.1 LINK in wei (18 decimals). Sized small enough to be repeatable
 // against the AAVE Sepolia faucet without re-funding the test wallet.
 const TOPUP_AMOUNT_WEI = "100000000000000000";
+
+// Destination address for the top-up notification email. Not validated
+// at simulate time — SendGrid is reachable from Tenderly's egress and
+// the test asserts on workflow shape + step ids, not on delivery.
+const NOTIFY_EMAIL = "noreply@avaprotocol.org";
 
 const ERC20_APPROVE_ABI = [
   {
@@ -242,17 +248,48 @@ describe("Template: AAVE health factor alert", () => {
             },
           ],
         }),
+        // Terminal notification step. options.summarize: true tells
+        // the aggregator's terminal-RestAPI runner to call
+        // context-memory at execution time to generate the email
+        // subject + HTML body from the executed workflow context
+        // (trigger payload, read result, branch outcome, write tx
+        // receipts) — so the empty content slot here gets filled
+        // server-side. The SendGrid bearer is templated against
+        // apContext.configVars, populated from the aggregator's
+        // macro_vars table; never embed the literal in the workflow.
+        Nodes.restApi({
+          id: "email",
+          name: "topupAlert",
+          url: "https://api.sendgrid.com/v3/mail/send",
+          method: "POST",
+          body: JSON.stringify({
+            personalizations: [
+              {
+                to: [{ email: NOTIFY_EMAIL }],
+                subject: "AAVE Health Factor Top-up",
+              },
+            ],
+            from: { email: "noreply@avaprotocol.org", name: "Ava Protocol" },
+            content: [{ type: "text/html", value: "" }],
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer {{apContext.configVars.sendgrid_key}}",
+          },
+          options: { summarize: true },
+        }),
       ],
       edges: [
         { id: "e1", source: "trigger", target: "read" },
         { id: "e2", source: "read", target: "branch" },
         { id: "e3", source: "branch.lowHF", target: "approve" },
         { id: "e4", source: "approve", target: "supply" },
+        { id: "e5", source: "supply", target: "email" },
       ],
     };
   }
 
-  test("simulates the eventTrigger->contractRead->branch->approve->supply workflow", async () => {
+  test("simulates the eventTrigger->contractRead->branch->approve->supply->email workflow", async () => {
     const wallet = await getSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
@@ -277,14 +314,15 @@ describe("Template: AAVE health factor alert", () => {
     expect(stepIds).toContain("read");
     expect(stepIds).toContain("branch");
 
-    // approve + supply only appear in sim.steps when the branch
-    // routed to the lowHF slot — i.e. when the test wallet's live
-    // HF is < 1.5e18. With no AAVE position the HF is type(uint256).max
-    // and the branch routes to the `ok` (else) slot, so the chain
-    // never fires. Production users with a real low-HF position get
-    // the actual top-up. The deploy+retrieve test asserts the
-    // workflow shape includes approve + supply regardless of whether
-    // the simulate path exercises them here.
+    // approve + supply + email only appear in sim.steps when the
+    // branch routed to the lowHF slot — i.e. when the test wallet's
+    // live HF is < 1.5e18. With no AAVE position the HF is
+    // type(uint256).max and the branch routes to the `ok` (else)
+    // slot, so the chain never fires. Production users with a real
+    // low-HF position get the actual top-up and the SendGrid call.
+    // The deploy+retrieve test asserts the workflow shape includes
+    // approve + supply + email regardless of whether the simulate
+    // path exercises them here.
   });
 
   test("deploys + retrieves the workflow with the eventTrigger trigger type", async () => {
@@ -318,10 +356,11 @@ describe("Template: AAVE health factor alert", () => {
     expect(retrieved.id).toBe(created.id);
     expect(retrieved.name).toBe("AAVE Health Factor Top-up");
     expect(retrieved.trigger?.type).toBe("event");
-    // contractRead + branch + approve + supply
-    expect(retrieved.nodes).toHaveLength(4);
-    // trigger->read, read->branch, branch.lowHF->approve, approve->supply
-    expect(retrieved.edges).toHaveLength(4);
+    // contractRead + branch + approve + supply + email
+    expect(retrieved.nodes).toHaveLength(5);
+    // trigger->read, read->branch, branch.lowHF->approve,
+    // approve->supply, supply->email
+    expect(retrieved.edges).toHaveLength(5);
 
     // Spot-check the trigger config persisted in the right shape —
     // if the Borrow filter got lost on the wire, the deployed
