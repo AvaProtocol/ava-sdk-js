@@ -184,7 +184,7 @@ describe("Template: AAVE health factor alert", () => {
                 AAVE_LINK_SEPOLIA,
                 TOPUP_AMOUNT_WEI,
                 "{{settings.runner}}",
-                0,
+                "0",
               ],
             },
           ],
