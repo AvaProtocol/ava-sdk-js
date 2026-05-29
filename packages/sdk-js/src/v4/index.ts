@@ -7,6 +7,7 @@ export { Client, type ClientOptions } from "./client";
 export { Chains, type ChainId } from "./chains";
 export { Triggers } from "./builders/triggers";
 export { Nodes } from "./builders/nodes";
+export { Protocols, type AbiFragment, type AddressByChain } from "./protocols";
 export {
   buildAuthMessage,
   signAuthMessage,

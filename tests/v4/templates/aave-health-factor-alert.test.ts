@@ -36,7 +36,7 @@
  * Production users with a real position get the actual top-up.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Nodes, Protocols, Triggers, type Client } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -49,12 +49,16 @@ import {
 
 jest.setTimeout(60_000);
 
-const AAVE_V3_POOL_SEPOLIA = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
-
-// AAVE V3 Sepolia LINK reserve (the faucet-mintable test token wired
-// into the Sepolia market — not mainnet LINK). The same address the
-// AAVE testnet faucet hands out for borrow / supply experiments.
-const AAVE_LINK_SEPOLIA = "0xf8Fb3713D459D7C1018BD0A49D19b4C44290EBE5";
+// Whitelist context — addresses, ABI fragments, and event-topic
+// hashes come from the SDK's data-only DeFi catalog
+// (`Protocols.aaveV3` / `Protocols.erc20`) so this test and any
+// other v4 template test consume the same canonical source as
+// studio's UI layer. Pre-catalog, every template test hard-coded
+// its own copies; the constants below are sanity-checked against
+// those in the dedicated test at the bottom of this file.
+const AAVE_V3_POOL_SEPOLIA = Protocols.aaveV3.pool[Chains.Sepolia]!;
+const AAVE_LINK_SEPOLIA = Protocols.aaveV3.tokens.LINK[Chains.Sepolia]!;
+const AAVE_BORROW_SIG = Protocols.aaveV3.eventTopics.Borrow;
 
 // 0.1 LINK in wei (18 decimals). Sized small enough to be repeatable
 // against the AAVE Sepolia faucet without re-funding the test wallet.
@@ -64,73 +68,6 @@ const TOPUP_AMOUNT_WEI = "100000000000000000";
 // at simulate time — SendGrid is reachable from Tenderly's egress and
 // the test asserts on workflow shape + step ids, not on delivery.
 const NOTIFY_EMAIL = "noreply@avaprotocol.org";
-
-const ERC20_APPROVE_ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "spender", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "approve",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
-
-const AAVE_SUPPLY_ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "asset", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "address", name: "onBehalfOf", type: "address" },
-      { internalType: "uint16", name: "referralCode", type: "uint16" },
-    ],
-    name: "supply",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
-
-// keccak256("Borrow(address,address,address,uint256,uint8,uint256,uint16)")
-// Stable across AAVE V3 deployments (mainnet, sepolia, base, etc.).
-const AAVE_BORROW_SIG =
-  "0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0";
-
-const AAVE_BORROW_EVENT_ABI = [
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "reserve", type: "address" },
-      { indexed: false, internalType: "address", name: "user", type: "address" },
-      { indexed: true, internalType: "address", name: "onBehalfOf", type: "address" },
-      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-      { indexed: false, internalType: "uint8", name: "interestRateMode", type: "uint8" },
-      { indexed: false, internalType: "uint256", name: "borrowRate", type: "uint256" },
-      { indexed: true, internalType: "uint16", name: "referralCode", type: "uint16" },
-    ],
-    name: "Borrow",
-    type: "event",
-  },
-];
-
-const AAVE_POOL_ABI = [
-  {
-    inputs: [{ internalType: "address", name: "user", type: "address" }],
-    name: "getUserAccountData",
-    outputs: [
-      { internalType: "uint256", name: "totalCollateralBase", type: "uint256" },
-      { internalType: "uint256", name: "totalDebtBase", type: "uint256" },
-      { internalType: "uint256", name: "availableBorrowsBase", type: "uint256" },
-      { internalType: "uint256", name: "currentLiquidationThreshold", type: "uint256" },
-      { internalType: "uint256", name: "ltv", type: "uint256" },
-      { internalType: "uint256", name: "healthFactor", type: "uint256" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-];
 
 /** Pads a 20-byte address to a 32-byte topic value (left-zero-padded). */
 function padTopic(addr: string): string {
@@ -189,7 +126,7 @@ describe("Template: AAVE health factor alert", () => {
           id: "read",
           name: "aaveRead",
           contractAddress: AAVE_V3_POOL_SEPOLIA,
-          contractAbi: AAVE_POOL_ABI,
+          contractAbi: Protocols.aaveV3.poolMethodsAbi,
           methodCalls: [
             { methodName: "getUserAccountData", methodParams: [eoaAddress] },
           ],
@@ -219,7 +156,7 @@ describe("Template: AAVE health factor alert", () => {
           id: "approve",
           name: "approveLink",
           contractAddress: AAVE_LINK_SEPOLIA,
-          contractAbi: ERC20_APPROVE_ABI,
+          contractAbi: Protocols.erc20.approveAbi,
           methodCalls: [
             {
               methodName: "approve",
@@ -235,7 +172,7 @@ describe("Template: AAVE health factor alert", () => {
           id: "supply",
           name: "supplyLink",
           contractAddress: AAVE_V3_POOL_SEPOLIA,
-          contractAbi: AAVE_SUPPLY_ABI,
+          contractAbi: Protocols.aaveV3.poolMethodsAbi,
           methodCalls: [
             {
               methodName: "supply",
@@ -375,16 +312,20 @@ describe("Template: AAVE health factor alert", () => {
     expect(topics[2]).toBe(padTopic(eoaAddress));
   });
 
-  // The Borrow event ABI is exported so Studio surfaces decoded
-  // event fields (reserve, amount, etc.) for downstream nodes that
-  // want to reference them. Spot-check that the constant survives
-  // schema changes — if it doesn't, the test below catches it before
-  // a Studio template export drifts silently.
-  test("Borrow event signature matches the published ABI definition", () => {
-    const borrow = AAVE_BORROW_EVENT_ABI.find((e) => e.name === "Borrow");
+  // Spot-check the SDK protocol catalog's published Borrow event ABI
+  // + topic hash so silent drift between the SDK whitelist and the
+  // canonical AAVE V3 event signature gets caught here, not by a
+  // mysterious mis-decode at runtime. If this fails after a catalog
+  // edit, double-check against studio's aave-v3.ts and the AAVE V3
+  // Pool contract on Etherscan.
+  test("Borrow event signature matches the catalog's ABI definition", () => {
+    const borrow = Protocols.aaveV3.poolEventsAbi.find((e) => e.name === "Borrow");
     expect(borrow).toBeDefined();
     expect(borrow!.inputs).toHaveLength(7);
-    expect(borrow!.inputs[2]).toMatchObject({ name: "onBehalfOf", indexed: true });
+    expect((borrow!.inputs as Array<{ name: string; indexed: boolean }>)[2]).toMatchObject({
+      name: "onBehalfOf",
+      indexed: true,
+    });
     expect(AAVE_BORROW_SIG).toMatch(/^0x[0-9a-f]{64}$/);
   });
 });

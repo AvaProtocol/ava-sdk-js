@@ -34,7 +34,7 @@ export const Nodes = Object.freeze({
     id: string;
     name: string;
     contractAddress: string;
-    contractAbi?: Array<Record<string, unknown>>;
+    contractAbi?: ReadonlyArray<Record<string, unknown>>;
     methodCalls?: Array<{
       methodName: string;
       methodParams?: string[];
@@ -68,7 +68,7 @@ export const Nodes = Object.freeze({
     id: string;
     name: string;
     contractAddress: string;
-    contractAbi?: Array<Record<string, unknown>>;
+    contractAbi?: ReadonlyArray<Record<string, unknown>>;
     methodCalls?: Array<{
       methodName: string;
       methodParams?: string[];

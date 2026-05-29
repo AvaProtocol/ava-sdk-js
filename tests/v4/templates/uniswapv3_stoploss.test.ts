@@ -10,7 +10,7 @@
  * deterministic.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Nodes, Protocols, Triggers, type Client } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -22,51 +22,15 @@ import {
 
 jest.setTimeout(60_000);
 
-const WETH_SEPOLIA = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const UNISWAP_SWAP_ROUTER02_SEPOLIA = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
-const CHAINLINK_ETH_USD_SEPOLIA = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
-
-const CHAINLINK_ABI = [
-  {
-    inputs: [],
-    name: "latestRoundData",
-    outputs: [
-      { internalType: "uint80", name: "roundId", type: "uint80" },
-      { internalType: "int256", name: "answer", type: "int256" },
-      { internalType: "uint256", name: "startedAt", type: "uint256" },
-      { internalType: "uint256", name: "updatedAt", type: "uint256" },
-      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-];
-
-const SWAP_ROUTER_ABI = [
-  {
-    inputs: [
-      {
-        components: [
-          { internalType: "address", name: "tokenIn", type: "address" },
-          { internalType: "address", name: "tokenOut", type: "address" },
-          { internalType: "uint24", name: "fee", type: "uint24" },
-          { internalType: "address", name: "recipient", type: "address" },
-          { internalType: "uint256", name: "amountIn", type: "uint256" },
-          { internalType: "uint256", name: "amountOutMinimum", type: "uint256" },
-          { internalType: "uint160", name: "sqrtPriceLimitX96", type: "uint160" },
-        ],
-        internalType: "struct IV3SwapRouter.ExactInputSingleParams",
-        name: "params",
-        type: "tuple",
-      },
-    ],
-    name: "exactInputSingle",
-    outputs: [{ internalType: "uint256", name: "amountOut", type: "uint256" }],
-    stateMutability: "payable",
-    type: "function",
-  },
-];
+// Whitelist context — addresses + ABIs come from the SDK protocol
+// catalog so this template test consumes the same canonical data as
+// studio's UI layer. The `!` non-null assertions are safe: every
+// constant resolved below is present in the catalog for Sepolia.
+const WETH_SEPOLIA = Protocols.uniswapV3.tokens.WETH[Chains.Sepolia]!;
+const USDC_SEPOLIA = Protocols.uniswapV3.tokens.USDC[Chains.Sepolia]!;
+const UNISWAP_SWAP_ROUTER02_SEPOLIA =
+  Protocols.uniswapV3.swapRouter02[Chains.Sepolia]!;
+const CHAINLINK_ETH_USD_SEPOLIA = Protocols.chainlink.ethUsdFeed[Chains.Sepolia]!;
 
 describe("Template: Uniswap V3 stop-loss", () => {
   let client: Client;
@@ -97,7 +61,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
           id: "price",
           name: "price",
           contractAddress: CHAINLINK_ETH_USD_SEPOLIA,
-          contractAbi: CHAINLINK_ABI,
+          contractAbi: Protocols.chainlink.aggregatorV3Abi,
           methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
         }),
         Nodes.branch({
@@ -117,7 +81,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
           id: "swap",
           name: "swap",
           contractAddress: UNISWAP_SWAP_ROUTER02_SEPOLIA,
-          contractAbi: SWAP_ROUTER_ABI,
+          contractAbi: Protocols.uniswapV3.swapRouter02Abi,
           methodCalls: [
             {
               methodName: "exactInputSingle",
