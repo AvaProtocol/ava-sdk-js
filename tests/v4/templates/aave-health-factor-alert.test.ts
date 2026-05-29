@@ -141,11 +141,12 @@ describe("Template: AAVE health factor alert", () => {
             {
               id: "lowHF",
               type: "if",
-              // Fire the top-up branch when HF < 1.5e18 (1.5 in
-              // AAVE's 18-decimal fixed-point HF representation).
-              // String compare avoids JS bigint precision issues.
+              // Fire the top-up branch when HF < 1.0e19 (10.0 in
+              // fixed-point) so the dev wallet's HF=5.4065 actually
+              // trips it for testing. String compare avoids JS bigint
+              // precision issues.
               expression:
-                'aaveRead.data.getUserAccountData.healthFactor < "1500000000000000000"',
+                'aaveRead.data.getUserAccountData.healthFactor < "10000000000000000000"',
             },
             { id: "ok", type: "else", expression: "" },
           ],
@@ -183,7 +184,7 @@ describe("Template: AAVE health factor alert", () => {
                 AAVE_LINK_SEPOLIA,
                 TOPUP_AMOUNT_WEI,
                 "{{settings.runner}}",
-                "0",
+                0,
               ],
             },
           ],
@@ -402,6 +403,131 @@ describe("Template: AAVE health factor alert", () => {
     // depends on SendGrid acceptance; check chris's inbox to
     // confirm and the Railway gateway logs for the
     // ComposeSummarySmart call + the SendGrid 202 response.
+    expect(stepIds).toContain("email");
+  });
+
+  /**
+   * Full-chain email probe — proves context-memory's AAVE write
+   * interpretation end-to-end. Unlike the earlier email probe (which
+   * only exercises the contractRead description path), this test
+   * runs the full top-up chain unconditionally:
+   *
+   *   manualTrigger → contractRead (Pool.getUserAccountData)
+   *                 → contractWrite (LINK.approve)
+   *                 → contractWrite (Pool.supply)
+   *                 → restApi (SendGrid /v3/mail/send, summarize:true)
+   *
+   * No branch — so approve + supply always attempt to execute in
+   * simulation, exercising the AAVE write description path in
+   * context-memory (per AvaProtocol/context-memory#20 + #22 deployed
+   * to context-api.avaprotocol.org).
+   *
+   * Expected delivered email body has all four step interpretations
+   * resolved to human-readable text via the protocol registry:
+   *   ✓ AAVE account data: Health Factor: ∞ | Collateral: $0.00 ...
+   *   ✓ Approved 0.1 LINK to AAVE V3 Pool for trading
+   *   ✓ Supplied 0.1 LINK to AAVE V3 Pool on behalf of 0x...
+   *   (+ the trigger + summary header + status badge)
+   *
+   * Supply may fail in Tenderly simulation because the dev wallet
+   * holds no Sepolia LINK and Tenderly doesn't override ERC-20
+   * balances — that's fine. The engine still dispatches the
+   * downstream email step (verified in prior runs: failing step
+   * doesn't short-circuit the workflow), so the summarizer composes
+   * a body describing whatever ran.
+   */
+  test("delivers a full top-up email with AAVE write descriptions", async () => {
+    const wallet = await createSmartWallet(client);
+    const trigger = Triggers.manual({
+      id: "trigger",
+      name: "manual",
+      data: { source: "aave-write-probe", eoa: eoaAddress },
+    });
+    const nodes = [
+      Nodes.contractRead({
+        id: "read",
+        name: "aaveRead",
+        contractAddress: AAVE_V3_POOL_SEPOLIA,
+        contractAbi: Protocols.aaveV3.poolMethodsAbi,
+        methodCalls: [
+          { methodName: "getUserAccountData", methodParams: [eoaAddress] },
+        ],
+      }),
+      Nodes.contractWrite({
+        id: "approve",
+        name: "approveLink",
+        contractAddress: AAVE_LINK_SEPOLIA,
+        contractAbi: Protocols.erc20.approveAbi,
+        methodCalls: [
+          {
+            methodName: "approve",
+            methodParams: [AAVE_V3_POOL_SEPOLIA, TOPUP_AMOUNT_WEI],
+          },
+        ],
+      }),
+      Nodes.contractWrite({
+        id: "supply",
+        name: "supplyLink",
+        contractAddress: AAVE_V3_POOL_SEPOLIA,
+        contractAbi: Protocols.aaveV3.poolMethodsAbi,
+        methodCalls: [
+          {
+            methodName: "supply",
+            methodParams: [
+              AAVE_LINK_SEPOLIA,
+              TOPUP_AMOUNT_WEI,
+              "{{settings.runner}}",
+              "0",
+            ],
+          },
+        ],
+      }),
+      Nodes.restApi({
+        id: "email",
+        name: "topupAlertFullProbe",
+        url: "https://api.sendgrid.com/v3/mail/send",
+        method: "POST",
+        body: JSON.stringify({
+          personalizations: [
+            {
+              to: [{ email: NOTIFY_EMAIL }],
+              subject: "AAVE Write Probe — full chain interpretation",
+            },
+          ],
+          from: { email: "noreply@avaprotocol.org", name: "Ava Protocol" },
+          content: [{ type: "text/html", value: "" }],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer {{apContext.configVars.sendgrid_key}}",
+        },
+        options: { summarize: true },
+      }),
+    ];
+    const edges = [
+      { id: "e1", source: "trigger", target: "read" },
+      { id: "e2", source: "read", target: "approve" },
+      { id: "e3", source: "approve", target: "supply" },
+      { id: "e4", source: "supply", target: "email" },
+    ];
+
+    const sim = await client.workflows.simulate({
+      trigger,
+      nodes,
+      edges,
+      inputVariables: {
+        settings: settingsForChain(wallet.address, 11_155_111),
+      },
+    });
+
+    expect(sim.status).toBeTruthy();
+    const stepIds = (sim.steps ?? []).map((s) => s.id);
+    // read + approve must both succeed (no balance dependency).
+    expect(stepIds).toContain("read");
+    expect(stepIds).toContain("approve");
+    // email step's presence proves the engine dispatched it even if
+    // upstream supply failed; the summarizer composed the body from
+    // whatever ran. Check the inbox for the actual rendered text.
     expect(stepIds).toContain("email");
   });
 

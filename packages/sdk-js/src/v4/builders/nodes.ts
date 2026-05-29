@@ -35,9 +35,13 @@ export const Nodes = Object.freeze({
     name: string;
     contractAddress: string;
     contractAbi?: ReadonlyArray<Record<string, unknown>>;
+    // methodParams accepts numbers (e.g. uint16 referralCode = 0) as
+    // well as strings. The Go ABI encoder on the aggregator rejects
+    // stringified numbers for fixed-size uint params, so callers must
+    // pass the literal number for those slots — see #213.
     methodCalls?: Array<{
       methodName: string;
-      methodParams?: string[];
+      methodParams?: Array<string | number>;
       callData?: string;
       applyToFields?: string[];
     }>;
@@ -71,7 +75,7 @@ export const Nodes = Object.freeze({
     contractAbi?: ReadonlyArray<Record<string, unknown>>;
     methodCalls?: Array<{
       methodName: string;
-      methodParams?: string[];
+      methodParams?: Array<string | number>;
       callData?: string;
       applyToFields?: string[];
     }>;
