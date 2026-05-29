@@ -15,7 +15,6 @@
 
 import { APIError, Client } from "@avaprotocol/sdk-js";
 
-import { TEST_REST_URL } from "../../utils/env";
 import {
   authenticateClient,
   buildAuthPayload,
