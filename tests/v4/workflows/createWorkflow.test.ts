@@ -16,7 +16,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -47,7 +47,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("creates a workflow with a block trigger", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
@@ -64,7 +64,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("creates a workflow with a cron trigger and round-trips through retrieve", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       trigger: Triggers.cron({
@@ -81,7 +81,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("creates a workflow with a fixedTime trigger", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       trigger: Triggers.fixedTime({
@@ -96,7 +96,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("creates a workflow with an event trigger filtered by wallet address", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const branch = Nodes.branch({
       id: "branchCheckTokenAmount",
       name: "branchCheckTokenAmount",
@@ -145,7 +145,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("creates a workflow with a block trigger and large interval", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       trigger: Triggers.block({
@@ -160,7 +160,7 @@ describe("createWorkflow Tests", () => {
   });
 
   test("creates a complex workflow with multiple nodes + branch + edges", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const dataNode = Nodes.customCode({
       id: "data",
       name: "data",

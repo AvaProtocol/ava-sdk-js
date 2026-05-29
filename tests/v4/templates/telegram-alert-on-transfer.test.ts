@@ -15,7 +15,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -45,7 +45,7 @@ describe("Template: Telegram alert on transfer", () => {
   });
 
   test("creates a transfer-monitor workflow with event trigger + REST notifier", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const padded = padTopic(eoaAddress);
 
     const created = await client.workflows.create({
@@ -93,7 +93,7 @@ describe("Template: Telegram alert on transfer", () => {
   });
 
   test("simulates the workflow firing the REST notifier on a transfer event", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.event({
         id: "trigger",

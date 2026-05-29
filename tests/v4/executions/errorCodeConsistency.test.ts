@@ -14,7 +14,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   settingsFor,
 } from "../../utils/client";
 
@@ -29,7 +29,7 @@ describe("Error code consistency between nodes.run and workflows.simulate", () =
   });
 
   test("empty customCode source surfaces the same error code on both paths", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const emptyCustomCode = Nodes.customCode({ id: "step1", name: "code1", source: "" });
 
     // nodes.run path.
@@ -60,7 +60,7 @@ describe("Error code consistency between nodes.run and workflows.simulate", () =
   });
 
   test("successful step has no errorCode (or an UNSPECIFIED sentinel)", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.block({ id: "trigger", name: "timeTrigger", interval: 7200 }),
       nodes: [

@@ -17,7 +17,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
 } from "../../utils/client";
@@ -42,7 +42,7 @@ describe("Workflow Management Tests", () => {
 
   describe("workflows.retrieve", () => {
     test("returns the workflow with smartWalletAddress and name", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create(createFromTemplate(wallet.address));
       const id = created.id as string;
       createdWorkflowIds.push(id);
@@ -63,7 +63,7 @@ describe("Workflow Management Tests", () => {
   describe("workflows.list", () => {
     test("lists workflows for a smart wallet with name + startAt", async () => {
       const workflowName = "test 123";
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       // Pass name via the overrides arg so the template uses it in
       // both name and inputVariables.settings.name; setting it
       // after-the-fact only patches the outer object.
@@ -84,7 +84,7 @@ describe("Workflow Management Tests", () => {
       const total = 4;
       const firstLimit = 1;
       // Fresh wallet for predictable counts.
-      const wallet = await getSmartWallet(client, { saltValue: nextTestSalt() });
+      const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
 
       for (let i = 0; i < total; i++) {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -141,7 +141,7 @@ describe("Workflow Management Tests", () => {
     });
 
     test("rejects a negative limit with HTTP 400", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       await expect(
         client.workflows.list({ smartWalletAddress: [wallet.address], limit: -1 }),
       ).rejects.toMatchObject({ status: 400 });
@@ -150,7 +150,7 @@ describe("Workflow Management Tests", () => {
     test("supports backward pagination via the before cursor", async () => {
       const total = 4;
       const pageSize = 2;
-      const wallet = await getSmartWallet(client, { saltValue: nextTestSalt() });
+      const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
 
       for (let i = 0; i < total; i++) {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -187,7 +187,7 @@ describe("Workflow Management Tests", () => {
       // Per-process salt may already have workflows attached from
       // earlier tests' completed-but-not-cancellable runs (e.g., the
       // maxExecution=1 path). Assert on shape rather than emptiness.
-      const wallet = await getSmartWallet(client, { saltValue: nextTestSalt() });
+      const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
       const list = await client.workflows.list({ smartWalletAddress: [wallet.address] });
       expect(Array.isArray(list.data)).toBe(true);
       expect(list.pageInfo).toBeDefined();
@@ -196,7 +196,7 @@ describe("Workflow Management Tests", () => {
     });
 
     test("each listed row carries a status field", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create(createFromTemplate(wallet.address));
       const id = created.id as string;
       createdWorkflowIds.push(id);

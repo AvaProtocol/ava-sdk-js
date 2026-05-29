@@ -20,7 +20,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -117,7 +117,7 @@ describe("Template: recurring payment with report", () => {
   }
 
   test("simulates the manual->balance->customCode->branch->loop->REST flow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const sim = await client.workflows.simulate({
@@ -137,7 +137,7 @@ describe("Template: recurring payment with report", () => {
   });
 
   test("deploys + retrieves the workflow with the manual trigger type", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({

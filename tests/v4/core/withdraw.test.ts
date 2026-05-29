@@ -29,7 +29,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
 } from "../../utils/client";
 import { optionalEnv } from "../../utils/env";
 
@@ -69,7 +69,7 @@ async function pollReceipt(
 
 async function tryFundedWallet(client: Client): Promise<v4.Wallet | undefined> {
   if (SKIP_ON_CHAIN) return undefined;
-  return getSmartWallet(client, { saltValue: FUNDED_WALLET_SALT });
+  return createSmartWallet(client, { saltValue: FUNDED_WALLET_SALT });
 }
 
 /**
@@ -193,7 +193,7 @@ describe("Withdraw Funds Tests", () => {
 
   describe("withdraw: edge cases (validation-only, no funding required)", () => {
     test("rejects zero amount", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       await expect(
         client.wallets.withdraw(wallet.address, {
           recipientAddress: eoaAddress,
@@ -204,7 +204,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("rejects unrealistically large amount with 400 (insufficient balance)", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       // 1000 ETH from a wallet that almost certainly doesn't hold it.
       // Server returns 400 (insufficient balance is a precondition
       // failure mapped to BadRequest by the gRPC→HTTP translation).
@@ -243,7 +243,7 @@ describe("Withdraw Funds Tests", () => {
     }, WITHDRAW_TIMEOUT_MS);
 
     test("rejects invalid recipient address", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       await expect(
         client.wallets.withdraw(wallet.address, {
           recipientAddress: "invalid-address",
@@ -254,7 +254,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("rejects invalid token address", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       await expect(
         client.wallets.withdraw(wallet.address, {
           recipientAddress: eoaAddress,
@@ -265,7 +265,7 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("rejects invalid amount format", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       await expect(
         client.wallets.withdraw(wallet.address, {
           recipientAddress: eoaAddress,
@@ -278,7 +278,7 @@ describe("Withdraw Funds Tests", () => {
 
   describe("withdraw: authentication", () => {
     test("rejects unauthenticated withdrawals with 401", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const unauth = getClient();
       await expect(
         unauth.wallets.withdraw(wallet.address, {

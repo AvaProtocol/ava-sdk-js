@@ -11,7 +11,7 @@ import { Client } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
@@ -26,7 +26,7 @@ describe("deleteWorkflow Tests", () => {
   });
 
   test("cancels a workflow and removes it from the list", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const id = created.id as string;
 

@@ -25,7 +25,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -145,7 +145,7 @@ describe("RestAPI Node Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a workflow with a successful REST call", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [
@@ -178,7 +178,7 @@ describe("RestAPI Node Tests", () => {
     });
 
     test("simulates a workflow whose REST step 404s", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [

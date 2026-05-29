@@ -25,7 +25,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -171,7 +171,7 @@ describe("LoopNode Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a workflow with a loop step", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const dataNode = Nodes.customCode({
         id: "data",
         name: "data",

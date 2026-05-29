@@ -15,7 +15,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -107,7 +107,7 @@ describe("GraphQL Query Node Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a workflow with a GraphQL step", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [

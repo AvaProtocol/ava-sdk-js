@@ -19,7 +19,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -52,7 +52,7 @@ describe("Gas tracking", () => {
   });
 
   test("ETH transfer node exposes gas metadata via nodes.run", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const result = await client.nodes.run({
       node: Nodes.ethTransfer({
         id: "transfer",
@@ -79,7 +79,7 @@ describe("Gas tracking", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client, { saltValue: "2" });
     const blockNumber = (await import("ethers")).JsonRpcProvider
       ? await (async () => {
           const { JsonRpcProvider } = await import("ethers");
@@ -133,7 +133,7 @@ describe("Gas tracking", () => {
   });
 
   test("simulated workflow carries metadata.transactionHash on transfer steps", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
       nodes: [

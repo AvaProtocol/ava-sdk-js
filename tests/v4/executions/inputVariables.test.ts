@@ -11,7 +11,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -33,7 +33,7 @@ describe("Input Variables", () => {
 
   describe("Workflow Creation with Input Variables", () => {
     test("create+retrieve round-trips inputVariables", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         name: "Input Variables Test Workflow",
         smartWalletAddress: wallet.address,
@@ -69,7 +69,7 @@ describe("Input Variables", () => {
     });
 
     test("settings-only workflows round-trip cleanly", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         name: "Settings Only",
         smartWalletAddress: wallet.address,
@@ -101,7 +101,7 @@ describe("Input Variables", () => {
 
   describe("simulateWorkflow with Input Variables", () => {
     test("scalars + primitives are accessible to the runner", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.manual({
           id: "trigger",
@@ -143,7 +143,7 @@ describe("Input Variables", () => {
     });
 
     test("nested object input variables preserve structure", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const swapConfig = {
         routerAddress: "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
         amountIn: "1000000000000000000",

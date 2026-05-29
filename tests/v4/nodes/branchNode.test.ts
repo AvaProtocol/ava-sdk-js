@@ -16,7 +16,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -80,7 +80,7 @@ describe("BranchNode Tests", () => {
 
   describe("workflows.simulate", () => {
     test("includes the branch step in the simulation output", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const node = branchNode("branch", [
         { id: "condition1", type: "if", expression: "{{ trigger.data.user.age >= 18 }}" },
         { id: "condition2", type: "else", expression: "" },
@@ -99,7 +99,7 @@ describe("BranchNode Tests", () => {
 
   describe("Branch gating of successors", () => {
     test("simulate: true branch fires NodeA, false branch fires NodeB", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
 
       const buildSim = async (expr: string) => {
         const branch = branchNode("branch", [
@@ -138,7 +138,7 @@ describe("BranchNode Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const blockNumber = await getCurrentBlockNumber();
 
       const runCase = async (expr: string, expectFires: "A" | "B") => {

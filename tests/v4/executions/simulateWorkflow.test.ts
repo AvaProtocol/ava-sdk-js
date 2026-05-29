@@ -13,7 +13,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   settingsFor,
 } from "../../utils/client";
 
@@ -29,7 +29,7 @@ describe("workflows.simulate Tests", () => {
 
   describe("Manual trigger + customCode", () => {
     test("simulates the workflow and returns trigger + node steps", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.workflows.simulate({
         trigger: Triggers.manual({
           id: "trigger",
@@ -63,7 +63,7 @@ describe("workflows.simulate Tests", () => {
     });
 
     test("forwards input variables to the runner", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.workflows.simulate({
         trigger: Triggers.manual({
           id: "trigger",
@@ -93,7 +93,7 @@ describe("workflows.simulate Tests", () => {
 
   describe("Fixed-time trigger + REST API", () => {
     test("simulates a workflow that calls a REST endpoint", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.workflows.simulate({
         trigger: Triggers.fixedTime({
           id: "trigger",
@@ -125,7 +125,7 @@ describe("workflows.simulate Tests", () => {
 
   describe("Multi-node workflow", () => {
     test("simulates a workflow with chained customCode + branch + customCode", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [
@@ -170,7 +170,7 @@ describe("workflows.simulate Tests", () => {
 
   describe("Error handling", () => {
     test("step that throws surfaces success=false on that step", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [
@@ -191,7 +191,7 @@ describe("workflows.simulate Tests", () => {
 
   describe("Data field access between nodes", () => {
     test("a downstream node can read a predecessor node's data", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.workflows.simulate({
         trigger: Triggers.manual({
           id: "trigger",

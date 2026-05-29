@@ -21,7 +21,7 @@ import {
   generateSignature,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
   testPrivateKey,
@@ -45,7 +45,7 @@ describe("Authentication Tests", () => {
 
     test("wallets.create works with the authenticated client", async () => {
       const salt = nextTestSalt();
-      const result = await getSmartWallet(client, { saltValue: salt });
+      const result = await createSmartWallet(client, { saltValue: salt });
       expect(result.address).toHaveLength(42);
       expect(result.salt).toEqual(salt);
       expect(result.factoryAddress).toBeTruthy();
@@ -57,7 +57,7 @@ describe("Authentication Tests", () => {
     });
 
     test("workflows.create returns a ULID", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
         const wf = await client.workflows.create(createFromTemplate(wallet.address));
@@ -69,7 +69,7 @@ describe("Authentication Tests", () => {
     });
 
     test("workflows.retrieve fetches by id", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -84,7 +84,7 @@ describe("Authentication Tests", () => {
     });
 
     test("workflows.list filters by smart wallet", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -99,7 +99,7 @@ describe("Authentication Tests", () => {
     });
 
     test("workflows.pause flips the workflow to disabled", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -112,7 +112,7 @@ describe("Authentication Tests", () => {
     });
 
     test("workflows.cancel deletes the workflow", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create(createFromTemplate(wallet.address));
       const workflowId = created.id as string;
       await expect(client.workflows.cancel(workflowId)).resolves.toBeUndefined();

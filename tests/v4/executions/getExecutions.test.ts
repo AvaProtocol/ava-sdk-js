@@ -16,7 +16,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
 } from "../../utils/client";
@@ -63,7 +63,7 @@ describe("executions.list Tests", () => {
       return;
     }
     const total = 4;
-    const wallet = await getSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
     const blockNumber = await getCurrentBlockNumber();
 
     // Each workflow fires once (maxExecution=1), producing 1 execution.
@@ -93,7 +93,7 @@ describe("executions.list Tests", () => {
   });
 
   test("rejects a negative limit with HTTP 400", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -104,7 +104,7 @@ describe("executions.list Tests", () => {
   });
 
   test("count returns 0 for a workflow with no executions", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -119,7 +119,7 @@ describe("executions.list Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
     const wfId = await createAndFireWorkflow(client, wallet.address, blockNumber, "countSingle");
     createdWorkflowIds.push(wfId);
@@ -133,7 +133,7 @@ describe("executions.list Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
     const blockNumber = await getCurrentBlockNumber();
     const wfIds: string[] = [];
     for (let i = 0; i < 3; i++) {
@@ -150,7 +150,7 @@ describe("executions.list Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
     const blockNumber = await getCurrentBlockNumber();
     const wfIds: string[] = [];
     for (let i = 0; i < 4; i++) {
@@ -175,7 +175,7 @@ describe("executions.list Tests", () => {
   });
 
   test("rejects invalid before/after cursors with HTTP 400", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);

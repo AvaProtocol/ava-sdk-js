@@ -15,7 +15,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
@@ -125,7 +125,7 @@ describe("Template: USDC read+write+customCode", () => {
   }
 
   test("simulates the workflow with both contractReads + contractWrite + customCode", async () => {
-    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client, { saltValue: "2" });
     const wf = buildWorkflow(wallet.address);
 
     const sim = await client.workflows.simulate({
@@ -153,7 +153,7 @@ describe("Template: USDC read+write+customCode", () => {
   });
 
   test("deploys + retrieves the workflow with the cron trigger type", async () => {
-    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client, { saltValue: "2" });
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({

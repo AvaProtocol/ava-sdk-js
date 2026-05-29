@@ -15,7 +15,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -38,7 +38,7 @@ describe("Step Input Tests", () => {
   });
 
   test("rejects workflow with an invalid node name (spaces)", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     await expect(
       client.workflows.create({
         name: "TestInvalidWorkflow",
@@ -64,7 +64,7 @@ describe("Step Input Tests", () => {
   });
 
   test("trigger config + node config + step output round-trip through deploy + trigger", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const triggerData = {
       apiBaseUrl: HTTPBIN,
       apiKey: "test-key-123",
@@ -148,7 +148,7 @@ describe("Step Input Tests", () => {
   });
 
   test("step.inputs lists available variable references", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.manual({
         id: "trigger",

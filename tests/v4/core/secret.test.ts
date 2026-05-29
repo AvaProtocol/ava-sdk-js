@@ -28,7 +28,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   testPrivateKey,
 } from "../../utils/client";
@@ -90,7 +90,7 @@ describe("secret Tests", () => {
       await client.secrets.put(secretName, { value: secretValue });
       createdSecrets.push({ name: secretName });
 
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
 
       // Build a block-trigger workflow whose customCode node reads
       // the secret from apContext and returns it. We drive the

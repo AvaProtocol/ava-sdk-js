@@ -24,7 +24,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -50,7 +50,7 @@ describe("workflows.trigger Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const blockNumber = await getCurrentBlockNumber();
       const interval = 5;
 
@@ -72,7 +72,7 @@ describe("workflows.trigger Tests", () => {
     });
 
     test("cron trigger workflow fires and reports the execution", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
         trigger: Triggers.cron({ id: "trigger", name: "cronTrigger", schedule: ["* * * * *"] }),
@@ -92,7 +92,7 @@ describe("workflows.trigger Tests", () => {
     });
 
     test("fixedTime trigger workflow fires and reports the execution", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const epoch = Math.floor(Date.now() / 1000);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
@@ -121,7 +121,7 @@ describe("workflows.trigger Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const blockNumber = await getCurrentBlockNumber();
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
@@ -160,7 +160,7 @@ describe("workflows.trigger Tests", () => {
 
   describe("blocking vs async mode", () => {
     test("blocking returns the execution id and terminal status", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["* * * * *"] }),
@@ -184,7 +184,7 @@ describe("workflows.trigger Tests", () => {
     });
 
     test("async mode returns id with queued/pending status", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["* * * * *"] }),
@@ -216,7 +216,7 @@ describe("workflows.trigger Tests", () => {
     });
 
     test("rejects re-triggering a completed (maxExecution=1) workflow", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
         maxExecution: 1,

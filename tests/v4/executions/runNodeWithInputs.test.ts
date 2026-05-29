@@ -16,7 +16,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   settingsFor,
 } from "../../utils/client";
 
@@ -47,7 +47,7 @@ describe("nodes.run (provider routing)", () => {
   });
 
   test("Balance node always uses chain_rpc (read-only)", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const result = await client.nodes.run({
       node: Nodes.balance({
         id: "b",
@@ -69,7 +69,7 @@ describe("nodes.run (provider routing)", () => {
   });
 
   test("ContractWrite routes through Tenderly (is_simulated=true)", async () => {
-    const wallet = await getSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client, { saltValue: "2" });
     const result = await client.nodes.run({
       node: Nodes.contractWrite({
         id: "w",

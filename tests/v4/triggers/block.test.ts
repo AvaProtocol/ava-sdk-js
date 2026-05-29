@@ -23,7 +23,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -75,7 +75,7 @@ describe("BlockTrigger Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a workflow with a block trigger", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 10 }),
         nodes: [Nodes.customCode({ id: "step1", name: "step1", source: "return {ok: true};" })],
@@ -94,7 +94,7 @@ describe("BlockTrigger Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const blockNumber = await getCurrentBlockNumber();
       const interval = 5;
 

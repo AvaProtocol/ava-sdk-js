@@ -15,7 +15,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -75,7 +75,7 @@ describe("CronTrigger Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a workflow with a cron trigger", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 0 * * *"] }),
         nodes: [Nodes.customCode({ id: "step1", name: "step1", source: "return {ok:true};" })],
@@ -88,7 +88,7 @@ describe("CronTrigger Tests", () => {
     });
 
     test("simulates a workflow with multiple cron schedules", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({
           id: "trigger",
@@ -109,7 +109,7 @@ describe("CronTrigger Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       // We borrow getCurrentBlockNumber just to fail-fast on chain
       // unreachability, even though cron triggers don't need it.
       await getCurrentBlockNumber();

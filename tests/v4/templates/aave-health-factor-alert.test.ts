@@ -42,7 +42,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
@@ -290,7 +290,7 @@ describe("Template: AAVE health factor alert", () => {
   }
 
   test("simulates the eventTrigger->contractRead->branch->approve->supply->email workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const sim = await client.workflows.simulate({
@@ -333,7 +333,7 @@ describe("Template: AAVE health factor alert", () => {
     // persisted, retrievable with the right shape." Anything beyond
     // that needs a funded test wallet that actually borrows, which
     // would make this test non-deterministic.
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({

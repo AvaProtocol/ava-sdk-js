@@ -1,6 +1,6 @@
 /**
  * v4 SDK test client helpers. Mirrors the v3 `getClient` /
- * `authenticateClient` / `getEOAAddress` / `getSmartWallet` API so
+ * `authenticateClient` / `getEOAAddress` / `createSmartWallet` API so
  * the per-test-file mechanical port stays surface-level.
  *
  * Notable behavioural differences vs v3:
@@ -110,7 +110,7 @@ export async function buildAuthPayload(
  *
  * For most call sites a single `nextTestSalt()` is enough; rare
  * suites that need stable per-test salts can pass an explicit
- * `saltValue` to `getSmartWallet`.
+ * `saltValue` to `createSmartWallet`.
  */
 let saltCursor = 1_000;
 export function nextTestSalt(): string {
@@ -118,7 +118,7 @@ export function nextTestSalt(): string {
   return String(saltCursor);
 }
 
-export interface GetSmartWalletOptions {
+export interface CreateSmartWalletOptions {
   /** Override the salt instead of pulling from the per-process cursor. */
   saltValue?: string;
   /** Override the factory address (otherwise the aggregator's default is used). */
@@ -126,13 +126,21 @@ export interface GetSmartWalletOptions {
 }
 
 /**
- * Get-or-create a smart wallet via the v4 idempotent ensure-exists
- * endpoint. Returns the Wallet envelope as the spec defines it
- * (lowercase strings, `factoryAddress` not `factory`).
+ * Mints (or re-resolves) a smart wallet via `POST /wallets`, which
+ * is the v4 REST API's idempotent ensure-exists endpoint. Returns
+ * the Wallet envelope as the spec defines it (lowercase strings,
+ * `factoryAddress` not `factory`).
+ *
+ * Default behaviour: `nextTestSalt()` returns a fresh salt each call,
+ * so each invocation derives a distinct CREATE2 address and registers
+ * a brand-new wallet record — that's why the name is `create`, not
+ * `get`. Callers that need a stable wallet across re-runs pass an
+ * explicit `saltValue`, and the same (owner, salt) always returns the
+ * same address — get-or-create semantics under the hood.
  */
-export async function getSmartWallet(
+export async function createSmartWallet(
   client: Client,
-  options: GetSmartWalletOptions = {},
+  options: CreateSmartWalletOptions = {},
 ): Promise<v4.Wallet> {
   const salt = options.saltValue ?? nextTestSalt();
   return client.wallets.create({

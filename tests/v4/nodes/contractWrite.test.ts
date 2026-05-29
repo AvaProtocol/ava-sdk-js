@@ -26,7 +26,7 @@ import {
   getClient,
   getCurrentBlockNumber,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -76,7 +76,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("nodes.run (Tenderly simulation)", () => {
     test("simulates an approve(spender, 0) call", async () => {
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -96,7 +96,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("simulates a transfer call against the funded wallet", async () => {
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -117,7 +117,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("simulates multiple method calls in one node", async () => {
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -139,7 +139,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("rejects a method that doesn't exist in the ABI", async () => {
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -157,7 +157,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates an approve workflow step", async () => {
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [
@@ -185,7 +185,7 @@ describe("ContractWrite Node Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const blockNumber = await getCurrentBlockNumber();
 
       const wfReq = {

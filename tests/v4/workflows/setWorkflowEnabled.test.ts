@@ -13,7 +13,7 @@ import { Client } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -34,7 +34,7 @@ describe("pause/resume Workflow Tests", () => {
   });
 
   test("pause flips status to disabled", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const id = created.id as string;
     createdWorkflowIds.push(id);
@@ -53,7 +53,7 @@ describe("pause/resume Workflow Tests", () => {
   });
 
   test("resume is idempotent on an already-enabled workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const id = created.id as string;
     createdWorkflowIds.push(id);
@@ -63,7 +63,7 @@ describe("pause/resume Workflow Tests", () => {
   });
 
   test("resume re-enables a paused workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const id = created.id as string;
     createdWorkflowIds.push(id);
@@ -77,7 +77,7 @@ describe("pause/resume Workflow Tests", () => {
   });
 
   test("pause is idempotent on an already-paused workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const id = created.id as string;
     createdWorkflowIds.push(id);

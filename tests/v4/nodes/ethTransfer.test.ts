@@ -23,7 +23,7 @@ import {
   getClient,
   getCurrentBlockNumber,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -50,7 +50,7 @@ describe("ETHTransfer Node Tests", () => {
 
   describe("nodes.run", () => {
     test("simulates an ETH transfer and returns the canonical transfer/metadata shape", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const amountWei = "1000000000000000"; // 0.001 ETH
 
       const result = await client.nodes.run({
@@ -86,7 +86,7 @@ describe("ETHTransfer Node Tests", () => {
     });
 
     test("rejects empty destination", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       // v4 returns success=false with an error message rather than
       // throwing on validation — assert on the shape.
       const result = await client.nodes.run({
@@ -109,7 +109,7 @@ describe("ETHTransfer Node Tests", () => {
       // legal even if pointless). The on-chain bundler would still
       // reject a real 0-wei UserOp, so this only matters at the
       // simulate path.
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const result = await client.nodes.run({
         node: Nodes.ethTransfer({
           id: "n1",
@@ -127,7 +127,7 @@ describe("ETHTransfer Node Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a workflow whose only step is an ETH transfer", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const amountWei = "1000000000000000";
 
       const sim = await client.workflows.simulate({
@@ -166,7 +166,7 @@ describe("ETHTransfer Node Tests", () => {
       // This test uses the funded salt:2 wallet. If it's unfunded
       // (fresh chain), the trigger returns failed and we skip the
       // assertion block.
-      const wallet = await getSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const blockNumber = await getCurrentBlockNumber();
       const triggerInterval = 5;
 

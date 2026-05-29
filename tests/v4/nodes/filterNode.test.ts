@@ -15,7 +15,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -114,7 +114,7 @@ describe("FilterNode Tests", () => {
 
   describe("workflows.simulate", () => {
     test("chains a data-producing customCode node into a filter node", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const dataNode = Nodes.customCode({
         id: "data",
         name: "data",
@@ -152,7 +152,7 @@ describe("FilterNode Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const blockNumber = await getCurrentBlockNumber();
 
       const dataNode = Nodes.customCode({

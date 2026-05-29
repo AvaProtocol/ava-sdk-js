@@ -28,7 +28,7 @@ import { Client, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
 } from "../../utils/client";
@@ -212,7 +212,7 @@ describe("Wallet Management Tests", () => {
   describe("wallets.update (v3 setWallet)", () => {
     test("toggles the isHidden flag through update", async () => {
       const salt = nextTestSalt();
-      const created = await getSmartWallet(client, { saltValue: salt });
+      const created = await createSmartWallet(client, { saltValue: salt });
       expect(created.isHidden ?? false).toBeFalsy();
 
       // Hide.

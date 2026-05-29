@@ -17,7 +17,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -91,7 +91,7 @@ describe("Template: exported workflow consistency", () => {
   }
 
   test("simulates the manual->filter->loop->customCode workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const sim = await client.workflows.simulate({
@@ -112,7 +112,7 @@ describe("Template: exported workflow consistency", () => {
   });
 
   test("deploys + retrieves the workflow with the manual trigger type", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({
@@ -155,7 +155,7 @@ describe("Template: exported workflow consistency", () => {
     expect(directData[0]).toEqual({ processed: "value1" });
 
     // Same loop inside a workflow.
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.manual({
         id: "trigger",

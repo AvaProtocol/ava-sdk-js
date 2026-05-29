@@ -19,7 +19,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -107,7 +107,7 @@ describe("ManualTrigger Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates a manual-trigger workflow whose customCode reads trigger.data", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.manual({
           id: "trigger",
@@ -137,7 +137,7 @@ describe("ManualTrigger Tests", () => {
 
   describe("deploy + trigger", () => {
     test("deploys a manual-trigger workflow and fires it via workflows.trigger", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const wfReq = createManualFromTemplate(wallet.address);
       // Manual trigger requires data on the config to pass server
       // validation at create-time. createManualFromTemplate omits

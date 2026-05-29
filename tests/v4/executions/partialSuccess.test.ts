@@ -13,7 +13,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -38,7 +38,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
 
     const created = await client.workflows.create({
@@ -81,7 +81,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
 
     const created = await client.workflows.create({
@@ -115,7 +115,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
 
     const created = await client.workflows.create({

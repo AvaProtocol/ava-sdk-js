@@ -13,7 +13,7 @@ import {
   authenticateClient,
   getClient,
   getEOAAddress,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -105,7 +105,7 @@ describe("Template: batch recurring payment with email", () => {
   }
 
   test("simulates the cron-driven batch transfer workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const sim = await client.workflows.simulate({
@@ -126,7 +126,7 @@ describe("Template: batch recurring payment with email", () => {
   });
 
   test("deploys + retrieves the workflow with the cron trigger type", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({

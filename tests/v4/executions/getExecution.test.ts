@@ -20,7 +20,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -45,7 +45,7 @@ describe("executions.retrieve Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
     const interval = 5;
 
@@ -87,7 +87,7 @@ describe("executions.retrieve Tests", () => {
   });
 
   test("rejects retrieve for a non-existent execution under a valid workflow", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create(createFromTemplate(wallet.address));
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -98,7 +98,7 @@ describe("executions.retrieve Tests", () => {
   });
 
   test("retrieves an execution after a cron-triggered workflow fires", async () => {
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       trigger: Triggers.cron({ id: "trigger", name: "cronTrigger", schedule: ["* * * * *"] }),
@@ -130,7 +130,7 @@ describe("executions.retrieve Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await getSmartWallet(client);
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
 
     const created = await client.workflows.create({

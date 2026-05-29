@@ -27,7 +27,7 @@ import {
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
-  getSmartWallet,
+  createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
@@ -205,7 +205,7 @@ describe("CustomCode Node Tests", () => {
 
   describe("simulateWorkflow Tests", () => {
     test("simulates a single customCode node and returns its output", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const node = Nodes.customCode({
         id: "step1",
         name: "step1",
@@ -240,7 +240,7 @@ describe("CustomCode Node Tests", () => {
     });
 
     test("simulates two chained customCode nodes sharing data", async () => {
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const dataNode = Nodes.customCode({
         id: "data",
         name: "data",
@@ -295,7 +295,7 @@ describe("CustomCode Node Tests", () => {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await getSmartWallet(client);
+      const wallet = await createSmartWallet(client);
       const blockNumber = await getCurrentBlockNumber();
       const triggerInterval = 5;
 
