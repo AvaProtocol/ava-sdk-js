@@ -156,6 +156,30 @@ describe("Authentication Tests", () => {
       expect(res.subject?.toLowerCase()).toEqual(eoaAddress.toLowerCase());
     });
 
+    test("mints a JWT scoped to BNB Smart Chain (56) — proves new-chain worker is reachable via gateway", async () => {
+      // Lightest possible probe that a newly-added chain is wired up
+      // through the full stack: signing a canonical auth message
+      // against `chainId: 56`, posting it to /api/v1/auth:exchange,
+      // and getting back a JWT means the gateway:
+      //   - has chain 56 in its chains[] config (gateway-railway.yaml)
+      //   - resolved its per-chain TokenEnrichmentService at startup
+      //   - was able to validate the EIP-191 signature against the
+      //     chain-aware message template
+      // No smart wallet ops happen here, so this works even when
+      // SimpleAccountFactory isn't deployed on the chain (the BNB
+      // connectivity-only rollout state).
+      const c = getClient();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), { chainId: 56 });
+      expect(res.token).toBeTruthy();
+      // The JWT body should encode the requested chain id in the
+      // audience claim — that's how downstream chain-routed handlers
+      // know which chain the caller is operating against.
+      const [, body] = res.token.split(".");
+      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("56");
+    });
+
     test("rejects a signature that doesn't match the owner", async () => {
       const payload = await buildAuthPayload();
       // Re-sign the message with a different key — verifier will

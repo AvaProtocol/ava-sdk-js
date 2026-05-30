@@ -3,22 +3,22 @@
 // SDK callers don't sprinkle magic numbers and so the auth flow has a
 // single source of truth for which chain JWTs are minted against.
 //
-// `EigenLayerAuth` is the chain the aggregator's auth handler treats
-// as the canonical audience. It does NOT have to match the workflow's
-// target chain — the v4 auth flow is chain-agnostic. Keep this in
-// lockstep with the engine's smart-wallet config.
+// The full chain set comes from `@avaprotocol/protocols` (the data-only
+// DeFi catalog), with one SDK-specific addition (`EigenLayerAuth`) for
+// the auth-handler audience. New chains added to the catalog flow
+// through automatically — bumping the catalog dep is enough.
+
+import { Chains as CatalogChains } from "@avaprotocol/protocols";
 
 export const Chains = Object.freeze({
-  EthereumMainnet: 1 as const,
-  Sepolia: 11_155_111 as const,
-  Holesky: 17_000 as const,
-  BaseMainnet: 8453 as const,
-  BaseSepolia: 84_532 as const,
+  ...CatalogChains,
   /**
    * The chain the auth handler signs the canonical EIP-191 message
    * against. Defaults to Sepolia — keep this synced with the
    * aggregator's `smart_wallet.chain_id` setting (currently Sepolia
-   * in dev/staging, Ethereum mainnet in production).
+   * in dev/staging, Ethereum mainnet in production). This is the only
+   * chain constant the SDK adds on top of the catalog, because the
+   * catalog is consumer-agnostic and doesn't know about our auth flow.
    */
   EigenLayerAuth: 11_155_111 as const,
 });
