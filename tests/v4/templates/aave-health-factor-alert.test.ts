@@ -4,13 +4,14 @@
  *
  * Studio template: watch the AAVE V3 Pool for a `Borrow` event on
  * behalf of the user's wallet, check the resulting health factor,
- * and when it dropped below 1.5 supply additional LINK collateral
- * from the smart wallet so the HF recovers.
+ * and when HF is below the configured threshold supply additional
+ * LINK collateral from the smart wallet so the HF recovers.
  *
  * Workflow shape:
  *   eventTrigger (Pool.Borrow filtered by onBehalfOf)
  *     → contractRead   (Pool.getUserAccountData → healthFactor)
- *     → branch         (if HF < 1.5e18)
+ *     → branch         (BigInt comparison: HF < 6.0e18 in the test;
+ *                       production would set this nearer 1.5e18)
  *       → contractWrite (LINK.approve(Pool, amount))
  *       → contractWrite (Pool.supply(LINK, amount, runner, 0))
  *       → restApi       (SendGrid /v3/mail/send, options.summarize: true)
@@ -141,12 +142,22 @@ describe("Template: AAVE health factor alert", () => {
             {
               id: "lowHF",
               type: "if",
-              // Fire the top-up branch when HF < 1.0e19 (10.0 in
-              // fixed-point) so the dev wallet's HF=5.4065 actually
-              // trips it for testing. String compare avoids JS bigint
-              // precision issues.
+              // Fire the top-up branch when HF < 6.0e18 (i.e. HF < 6.0
+              // in AAVE's 18-decimal fixed-point representation). The
+              // dev wallet's HF hovers near 5.41, so this trips the
+              // branch and exercises the approve+supply chain on
+              // every run. Production users would typically set this
+              // closer to 1.5 (near the liquidation cushion).
+              //
+              // BigInt comparison is required: AAVE returns
+              // healthFactor as a raw uint256 string (e.g.
+              // "5406537200000000000"), and plain string `<` would
+              // compare lexicographically (a leading "5" sorts above
+              // "1", so "5406…" > "1000…" lex-wise even though the
+              // numeric inequality is reversed). goja supports
+              // BigInt() natively for cases like this.
               expression:
-                'aaveRead.data.getUserAccountData.healthFactor < "10000000000000000000"',
+                'BigInt(aaveRead.data.getUserAccountData.healthFactor) < BigInt("6000000000000000000")',
             },
             { id: "ok", type: "else", expression: "" },
           ],
@@ -174,7 +185,7 @@ describe("Template: AAVE health factor alert", () => {
         // wallet address). referralCode = 0 (no referral).
         Nodes.contractWrite({
           id: "supply",
-          name: "supplyLink",
+          name: "topUpCollateral",
           contractAddress: AAVE_V3_POOL_SEPOLIA,
           contractAbi: Protocols.aaveV3.poolMethodsAbi,
           methodCalls: [
@@ -467,7 +478,7 @@ describe("Template: AAVE health factor alert", () => {
       }),
       Nodes.contractWrite({
         id: "supply",
-        name: "supplyLink",
+        name: "topUpCollateral",
         contractAddress: AAVE_V3_POOL_SEPOLIA,
         contractAbi: Protocols.aaveV3.poolMethodsAbi,
         methodCalls: [
