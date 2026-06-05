@@ -81,9 +81,17 @@ export interface BuiltAuthMessage {
  *   const { token } = await client.auth.exchange({ ownerAddress, message, signature });
  */
 export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage {
-  if (typeof input.uri !== "string" || input.uri.length === 0) {
+  const trimmedUri = typeof input.uri === "string" ? input.uri.trim() : "";
+  if (!trimmedUri) {
     throw new Error(
       "buildAuthMessage: uri must be a non-empty string (the origin the user is signing into, e.g. window.location.origin).",
+    );
+  }
+  try {
+    new URL(trimmedUri);
+  } catch {
+    throw new Error(
+      "buildAuthMessage: uri must be a valid URL (e.g. window.location.origin).",
     );
   }
   if (!Number.isInteger(input.chainId) || input.chainId <= 0) {
@@ -101,13 +109,18 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
   // Canonicalize the address so the wire form matches what the
   // aggregator extracts via crypto.PubkeyToAddress.
   const ownerAddress = getAddress(input.ownerAddress);
-  const message = AUTH_TEMPLATE
-    .replace("{uri}", input.uri)
-    .replace("{chainId}", String(input.chainId))
-    .replace("{version}", input.version)
-    .replace("{issuedAt}", toRFC3339Millis(issuedAt))
-    .replace("{expireAt}", toRFC3339Millis(expireAt))
-    .replace("{wallet}", ownerAddress);
+  const replacements: Record<string, string> = {
+    "{uri}": trimmedUri,
+    "{chainId}": String(input.chainId),
+    "{version}": input.version,
+    "{issuedAt}": toRFC3339Millis(issuedAt),
+    "{expireAt}": toRFC3339Millis(expireAt),
+    "{wallet}": ownerAddress,
+  };
+  const message = AUTH_TEMPLATE.replace(
+    /\{uri\}|\{chainId\}|\{version\}|\{issuedAt\}|\{expireAt\}|\{wallet\}/g,
+    (m) => replacements[m],
+  );
   return { message, chainId: input.chainId, ownerAddress, expireAt };
 }
 

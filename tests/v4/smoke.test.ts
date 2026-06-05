@@ -102,6 +102,16 @@ describe("v4 SDK smoke", () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         buildAuthMessage({ ...baseOk, uri: undefined as any }),
       ).toThrow(/uri/);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => buildAuthMessage({ ...baseOk, uri: null as any })).toThrow(/uri/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "   " })).toThrow(/uri/);
+    });
+
+    test("buildAuthMessage throws on invalid uri format", () => {
+      const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
+      const baseOk = { ownerAddress: owner, chainId: 1, version: "v4-test" };
+      expect(() => buildAuthMessage({ ...baseOk, uri: "not-a-url" })).toThrow(/uri/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "localhost:3000" })).toThrow(/uri/);
     });
 
     test("signAuthMessage throws when called without input", async () => {
