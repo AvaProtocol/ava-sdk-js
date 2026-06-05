@@ -48,6 +48,13 @@ export function getClient(overrides?: Partial<ClientOptions>): Client {
 // probe) call exchangeWithKey directly with their own chainId.
 export const TEST_AUTH_CHAIN_ID = 11_155_111;
 
+// TEST_AUTH_URI is the origin tests stamp into the canonical message.
+// Doesn't matter what value we pick — the aggregator doesn't validate
+// the URI line server-side — but stamping a stable, recognizable test
+// host makes it obvious in JWT-debug output that a token came from
+// the test suite rather than a real app.
+export const TEST_AUTH_URI = "https://test.avaprotocol.org";
+
 /**
  * Drive the EIP-191 sign-then-exchange flow against the live
  * aggregator and stash the resulting JWT on the supplied client.
@@ -84,6 +91,7 @@ export async function authenticateClient(
   const pk = privateKey ?? testPrivateKey();
   const version = await fetchGatewayVersion(client);
   const resp = await client.auth.exchangeWithKey(pk, {
+    uri: TEST_AUTH_URI,
     chainId: TEST_AUTH_CHAIN_ID,
     version,
   });
@@ -131,6 +139,7 @@ export async function buildAuthPayload(
 }> {
   const version = await fetchGatewayVersion(client);
   const signed = await signAuthMessage(privateKey ?? testPrivateKey(), {
+    uri: TEST_AUTH_URI,
     chainId: TEST_AUTH_CHAIN_ID,
     version,
   });
