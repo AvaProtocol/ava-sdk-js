@@ -38,10 +38,16 @@ export class AuthResource {
    * stashed on the transport. Designed for Node tooling — browser
    * callers should use `buildAuthMessage` + a wallet's
    * `personal_sign` and then call `exchange()` directly.
+   *
+   * `chainId` and `version` are required for the same reasons as
+   * `buildAuthMessage` — silently defaulting either field would
+   * mis-route every wallet RPC the resulting JWT is used for.
+   * `version` is the gateway binary version; the simplest source
+   * is the `version` field returned by `client.health.check()`.
    */
   async exchangeWithKey(
     privateKey: string,
-    opts?: { ownerAddress?: string; chainId?: number; version?: string },
+    opts: { ownerAddress?: string; chainId: number; version: string },
   ): Promise<v4.AuthExchangeResponse> {
     const signed = await signAuthMessage(privateKey, opts);
     return this.exchange({

@@ -475,7 +475,13 @@ export interface paths {
     };
     readonly "/wallets/{address}:getNonce": {
         readonly parameters: {
-            readonly query?: never;
+            readonly query?: {
+                /**
+                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
+                 *     the parameter to filter by multiple chains.
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
             readonly header?: never;
             readonly path: {
                 readonly address: components["schemas"]["EthereumAddress"];
@@ -691,8 +697,13 @@ export interface components {
         readonly HealthStatus: {
             /** @enum {string} */
             readonly status: "ok" | "degraded" | "starting";
-            /** @description Aggregator binary version (e.g., `v1.9.6`). */
-            readonly version?: string;
+            /**
+             * @description Aggregator binary version (e.g., `v3.2.0`). Always set —
+             *     SDK clients use this to stamp the canonical EIP-191 auth
+             *     message so the signed `Version` field reflects the
+             *     gateway the user actually authenticated against.
+             */
+            readonly version: string;
             /** @description EigenLayer registration chain ID. */
             readonly chainId?: components["schemas"]["ChainId"];
         };
@@ -944,6 +955,27 @@ export interface components {
                 readonly [key: string]: string;
             };
             readonly body?: string;
+            /**
+             * @description Generic options bag for backend features on terminal
+             *     RestAPI nodes. `summarize: true` opts a SendGrid /v3/mail/send
+             *     or Telegram /sendMessage node into the aggregator's
+             *     context-memory summarizer, which composes a subject + HTML
+             *     body from the workflow's execution context and injects them
+             *     into the outgoing request. Without this field set, the
+             *     aggregator falls back to the deterministic summarizer (no
+             *     LLM polish).
+             */
+            readonly options?: {
+                /**
+                 * @description When true on a terminal SendGrid or Telegram node,
+                 *     ComposeSummarySmart runs at execution time and fills
+                 *     in the empty content.value / text slot with an
+                 *     AI-generated body. No-op on non-notification URLs.
+                 */
+                readonly summarize?: boolean;
+            } & {
+                readonly [key: string]: unknown;
+            };
         };
         readonly CustomCodeNodeConfig: {
             readonly lang: components["schemas"]["Lang"];
@@ -1426,6 +1458,15 @@ export interface components {
             readonly salt: string;
             /** @description Optional factory override. Defaults to the aggregator's configured factory. */
             readonly factoryAddress?: components["schemas"]["EthereumAddress"];
+            /**
+             * @description Chain to derive the wallet on. Optional override — when
+             *     omitted, the gateway defaults to the JWT `aud` chain (i.e.
+             *     the chain the caller signed the auth message for). Set
+             *     this when minting a wallet for a chain different from the
+             *     one the JWT was issued against; the JWT proves EOA
+             *     ownership, which is chain-independent.
+             */
+            readonly chainId?: components["schemas"]["ChainId"];
         };
         readonly UpdateWalletRequest: {
             readonly isHidden?: boolean;
@@ -2302,7 +2343,13 @@ export interface operations {
     };
     readonly getWalletNonce: {
         readonly parameters: {
-            readonly query?: never;
+            readonly query?: {
+                /**
+                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
+                 *     the parameter to filter by multiple chains.
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
             readonly header?: never;
             readonly path: {
                 readonly address: components["schemas"]["EthereumAddress"];

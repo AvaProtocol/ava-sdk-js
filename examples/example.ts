@@ -164,7 +164,22 @@ async function ensureAuth(client: Client): Promise<string> {
       "Set TEST_PRIVATE_KEY (EOA private key) or AVS_API_KEY (pre-minted JWT) before running this command.",
     );
   }
-  const resp = await client.auth.exchangeWithKey(pk);
+  // Stamp the message with the live gateway version (cheap /health
+  // round trip) and the dev/test stack chain (Sepolia). Callers
+  // operating on a different chain swap in their wallet's
+  // currently-connected chainId.
+  const { version } = await client.health.check();
+  if (!version) {
+    fail(
+      EXIT_SDK_ERROR,
+      "GATEWAY_NO_VERSION",
+      "Gateway /health did not return a version field — the gateway predates Position D auth (AVS PR #554). Upgrade the gateway.",
+    );
+  }
+  const resp = await client.auth.exchangeWithKey(pk, {
+    chainId: 11_155_111,
+    version,
+  });
   if (!client.token) {
     // Shouldn't happen — auth.exchangeWithKey sets the token — but
     // surface the wire response if it ever does.

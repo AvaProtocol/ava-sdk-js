@@ -1,7 +1,5 @@
 import { Wallet, getAddress } from "ethers";
 
-import { Chains } from "./chains";
-
 /**
  * Canonical EIP-191 message template the aggregator's auth handler
  * verifies. Must match the format documented in the API spec.
@@ -23,14 +21,28 @@ export interface BuildAuthMessageInput {
   /** EOA the JWT will be bound to. Lowercased / checksummed both work. */
   ownerAddress: string;
   /**
-   * Chain id to embed in the canonical message. Defaults to
-   * `Chains.EigenLayerAuth` — the auth flow is chain-agnostic, the
-   * embedded id only tells the verifier which chain bucket the
-   * minted JWT belongs to.
+   * Chain ID to embed in the canonical message. Required — callers
+   * MUST pass the user's currently-connected wallet chain (e.g.
+   * `await wallet.getChainId()`). The aggregator echoes this into
+   * the JWT `aud` claim, which becomes the default chain for
+   * subsequent wallet RPCs. Hardcoding a value here would silently
+   * route every request to the wrong chain.
+   *
+   * Source this from the wallet itself (`provider.getNetwork()`,
+   * `wallet.getChainId()`, EIP-1193 `eth_chainId`), NOT from
+   * user-typed input or URL params — those can lie, and a JWT
+   * minted against a forged chain id will route the user's wallet
+   * RPCs to the wrong chain bucket.
    */
-  chainId?: number;
-  /** SDK version string surfaced in the message (purely informational). */
-  version?: string;
+  chainId: number;
+  /**
+   * Gateway binary version to stamp into the message. Required —
+   * fetch it once per session via `client.health.check()` and pass
+   * the `version` field through. Pinning a literal here (the old
+   * `"v4-sdk"` default) lies about which gateway the message was
+   * signed against and breaks support triage.
+   */
+  version: string;
   /** Issuance timestamp; defaults to `new Date()`. */
   issuedAt?: Date;
   /** Token expiry; defaults to 24h from issuedAt. */
@@ -48,21 +60,37 @@ export interface BuiltAuthMessage {
  * Build the canonical auth message a wallet must sign. Pure — does
  * no signing — so it can run in the browser before opening the wallet
  * popup.
+ *
+ * @example
+ *   const { version } = await client.health.check();
+ *   const chainId = await wallet.getChainId();
+ *   const { message } = buildAuthMessage({ ownerAddress, chainId, version });
+ *   const signature = await wallet.signMessage(message);
+ *   const { token } = await client.auth.exchange({ ownerAddress, message, signature });
  */
 export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage {
+  if (!Number.isInteger(input.chainId) || input.chainId <= 0) {
+    throw new Error(
+      "buildAuthMessage: chainId must be a positive integer (the wallet's currently-connected chain).",
+    );
+  }
+  if (typeof input.version !== "string" || input.version.length === 0) {
+    throw new Error(
+      "buildAuthMessage: version must be a non-empty string (fetch it from `client.health.check()`).",
+    );
+  }
   const issuedAt = input.issuedAt ?? new Date();
   const expireAt = input.expireAt ?? new Date(issuedAt.getTime() + 24 * 60 * 60 * 1000);
-  const chainId = input.chainId ?? Chains.EigenLayerAuth;
   // Canonicalize the address so the wire form matches what the
   // aggregator extracts via crypto.PubkeyToAddress.
   const ownerAddress = getAddress(input.ownerAddress);
   const message = AUTH_TEMPLATE
-    .replace("{chainId}", String(chainId))
-    .replace("{version}", input.version ?? "v4-sdk")
+    .replace("{chainId}", String(input.chainId))
+    .replace("{version}", input.version)
     .replace("{issuedAt}", toRFC3339Millis(issuedAt))
     .replace("{expireAt}", toRFC3339Millis(expireAt))
     .replace("{wallet}", ownerAddress);
-  return { message, chainId, ownerAddress, expireAt };
+  return { message, chainId: input.chainId, ownerAddress, expireAt };
 }
 
 /**
@@ -71,18 +99,31 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
  * `client.auth.exchange()`. Only useful in tests / Node tooling
  * where the private key is in hand; browser flows use
  * `buildAuthMessage` + a wallet's `personal_sign`.
+ *
+ * `chainId` and `version` are required for the same reasons as
+ * `buildAuthMessage` — silent defaults would lie about the chain
+ * the JWT is bound to and the gateway it was signed against.
  */
 export async function signAuthMessage(
   privateKey: string,
-  input?: Omit<BuildAuthMessageInput, "ownerAddress"> & { ownerAddress?: string },
+  input: Omit<BuildAuthMessageInput, "ownerAddress"> & { ownerAddress?: string },
 ): Promise<{ message: string; signature: string; ownerAddress: string; expireAt: Date }> {
+  // Defensive runtime guard for JS callers / TS callers casting through
+  // `any` who'd otherwise hit a cryptic "Cannot read properties of
+  // undefined" inside buildAuthMessage. The type-level requirement
+  // stands; this just makes the breaking-change error legible.
+  if (input == null || typeof input !== "object") {
+    throw new Error(
+      "signAuthMessage: input is required — pass { chainId, version } (chainId from the wallet's connected chain, version from client.health.check()).",
+    );
+  }
   const signer = new Wallet(privateKey);
   const built = buildAuthMessage({
-    ownerAddress: input?.ownerAddress ?? signer.address,
-    chainId: input?.chainId,
-    version: input?.version,
-    issuedAt: input?.issuedAt,
-    expireAt: input?.expireAt,
+    ownerAddress: input.ownerAddress ?? signer.address,
+    chainId: input.chainId,
+    version: input.version,
+    issuedAt: input.issuedAt,
+    expireAt: input.expireAt,
   });
   // signMessage performs EIP-191 personal_sign — the same prefix
   // accounts.TextHash uses on the verifier side.

@@ -41,20 +41,52 @@ export function getClient(overrides?: Partial<ClientOptions>): Client {
   });
 }
 
+// TEST_AUTH_CHAIN_ID is the chain id tests sign their auth message
+// against. The dev/test stack runs on Sepolia, so we pin to that —
+// matching what the engine's settings/test fixtures use elsewhere.
+// Tests that exercise a different chain (e.g. the BNB connectivity
+// probe) call exchangeWithKey directly with their own chainId.
+export const TEST_AUTH_CHAIN_ID = 11_155_111;
+
 /**
  * Drive the EIP-191 sign-then-exchange flow against the live
  * aggregator and stash the resulting JWT on the supplied client.
+ *
+ * Fetches the gateway version from /health and signs against the
+ * dev-stack chain (Sepolia). The /health round trip is cheap and
+ * keeps the test stamp honest — pinning a literal would lie about
+ * which gateway the message was signed against.
  *
  * @param client v4 Client to authenticate.
  * @param privateKey Optional override; defaults to `TEST_PRIVATE_KEY`.
  * @returns The minted token (also already set on the client).
  */
+async function fetchGatewayVersion(client: Client): Promise<string> {
+  const { version } = await client.health.check();
+  // The HealthStatus schema marks version as required (post AVS #554),
+  // so TS guarantees a string at compile time. Belt-and-suspenders
+  // runtime check catches the transition window where an old gateway
+  // could still return undefined — that surfaces as a clear migration
+  // error here, not a confusing "version must be non-empty" deep
+  // inside buildAuthMessage.
+  if (!version) {
+    throw new Error(
+      "Gateway /health did not return a version field — the gateway is older than the Position D rollout (AVS PR #554). Upgrade the gateway or test against a newer one.",
+    );
+  }
+  return version;
+}
+
 export async function authenticateClient(
   client: Client,
   privateKey?: string,
 ): Promise<string> {
   const pk = privateKey ?? testPrivateKey();
-  const resp = await client.auth.exchangeWithKey(pk);
+  const version = await fetchGatewayVersion(client);
+  const resp = await client.auth.exchangeWithKey(pk, {
+    chainId: TEST_AUTH_CHAIN_ID,
+    version,
+  });
   return resp.token;
 }
 
@@ -84,15 +116,24 @@ export async function generateSignature(
  * going through `authenticateClient`. Mirrors v3's
  * `generateAuthPayloadWithApiKey` shape minus the API-key field —
  * v4 doesn't combine signature + API key in one request.
+ *
+ * Takes a `client` so it can fetch the gateway version from /health —
+ * the SDK no longer defaults `version`. Same dev-stack Sepolia chainId
+ * as `authenticateClient`.
  */
 export async function buildAuthPayload(
+  client: Client,
   privateKey?: string,
 ): Promise<{
   ownerAddress: string;
   message: string;
   signature: string;
 }> {
-  const signed = await signAuthMessage(privateKey ?? testPrivateKey());
+  const version = await fetchGatewayVersion(client);
+  const signed = await signAuthMessage(privateKey ?? testPrivateKey(), {
+    chainId: TEST_AUTH_CHAIN_ID,
+    version,
+  });
   return {
     ownerAddress: signed.ownerAddress,
     message: signed.message,
