@@ -1,5 +1,25 @@
 # @avaprotocol/sdk-js
 
+## 3.0.0
+
+### Major Changes — REST cutover
+
+`@avaprotocol/sdk-js` is now a REST client. The gRPC client surface that powered every 2.x release has been archived; the SDK speaks the OpenAPI-described REST surface (`/api/v1/...`) of the aggregator gateway directly. This is a hard break from 2.x — there is no compat shim.
+
+**What's new in 3.0.0:**
+
+- **REST `Client`** — `import { Client } from "@avaprotocol/sdk-js"` constructs a Bearer-JWT client; resource sub-clients (`client.auth`, `client.workflows`, `client.wallets`, `client.executions`, `client.secrets`, `client.tokens`, `client.nodes`, `client.triggers`, `client.operators`, `client.health`) replace the old gRPC method surface.
+- **Position D auth** — `buildAuthMessage({ ownerAddress, chainId, version })` requires the wallet's currently-connected chainId and the gateway version (fetched from `client.health.check()`). The previous silent defaults (`Chains.EigenLayerAuth` / `"v4-sdk"`) are gone. See [studio/docs/AUTH_POSITION_D_MIGRATION.md](https://github.com/AvaProtocol/studio/blob/main/docs/AUTH_POSITION_D_MIGRATION.md) for the migration rationale.
+- **Protocol catalog** — `Protocols` re-exports from `@avaprotocol/protocols`. 14 protocols (AAVE v3, Uniswap v3, Chainlink, etc.) across mainnet, Base, Sepolia, Base Sepolia.
+- **Typed builders** — `Triggers.cron()`, `Triggers.event()`, `Triggers.block()`, `Triggers.fixedTime()`, `Nodes.contractWrite()`, `Nodes.restApi()`, etc. return discriminated-union-shaped objects so the OpenAPI types validate at compile time.
+- **Generated types** — `@avaprotocol/types@^3.0.0` ships the OpenAPI-derived TypeScript types (`components`, `paths`, `v4.*` re-exports) the SDK and consumers can import directly.
+
+**Why 3.0.0 (not 4.0.0):**
+
+The pre-release dev iterations of the REST rewrite (`4.0.0-dev.0` through `4.0.0-dev.3`) used a major version that matched the internal codebase generation tag (`src/v4/` directory). Publishing the stable release as `3.0.0` instead restores npm semver continuity from `2.17.0` — consumers see the expected major bump cadence. The `src/v4/` internal directory name is preserved as a codebase generation tag (the prior gRPC iteration was internally "v3" but published as the 2.x line, and the REST rewrite is "v4" internally regardless of its npm version).
+
+The `4.0.0-dev.X` versions remain on npm under the `dev` dist-tag for anyone who pinned them during the rewrite; they're functionally equivalent to the 3.0.0 release minus the Position D auth changes (round 1 of the breaking SDK changes).
+
 ## 2.17.0
 
 ### Minor Changes

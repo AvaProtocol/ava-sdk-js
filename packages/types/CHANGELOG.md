@@ -1,5 +1,22 @@
 # @avaprotocol/types
 
+## 3.0.0
+
+### Major Changes — OpenAPI-derived types for the REST aggregator
+
+`@avaprotocol/types` is now the OpenAPI-derived TypeScript type surface for the aggregator's `/api/v1/...` REST API. The protobuf-derived types that powered every 2.x release are archived alongside the gRPC SDK client (see `@avaprotocol/sdk-js@3.0.0`).
+
+**What's new in 3.0.0:**
+
+- **OpenAPI schemas** — `components["schemas"]["..."]` resolves to every aggregator schema (workflows, executions, wallets, secrets, tokens, nodes, triggers, health, auth, etc.).
+- **`v4.*` namespace re-exports** — convenience aliases for the most commonly consumed shapes (`v4.Workflow`, `v4.Execution`, `v4.HealthStatus`, `v4.AuthExchangeRequest`, etc.). The `v4` prefix mirrors the internal codebase generation tag in `@avaprotocol/sdk-js`; see that package's CHANGELOG for the codebase-vs-npm versioning rationale.
+- **`HealthStatus.version` now required** — Position D auth depends on this field; the schema reflects that.
+- **New wallet routing fields** — `CreateWalletRequest.chainId` (body override) and `GetWalletNonce` `?chainId=` query param mirror the gateway's per-request chain override path.
+
+**Why 3.0.0 (not 4.0.0):**
+
+The `4.0.0-dev.0` pre-release that shipped during the REST rewrite has been superseded by `3.0.0` to keep npm semver continuous from `2.13.0`. See `@avaprotocol/sdk-js@3.0.0` for the full versioning rationale.
+
 ## 2.13.0
 
 ### Minor Changes
