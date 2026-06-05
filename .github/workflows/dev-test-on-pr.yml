@@ -86,10 +86,6 @@ jobs:
       CONTEXT_MEMORY_API_KEY: ${{ secrets.CONTEXT_MEMORY_API_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      OPERATOR_ECDSA_KEYSTORE: ${{ secrets.OPERATOR_ECDSA_KEYSTORE }}
-      OPERATOR_ECDSA_KEY_PASSWORD: ${{ secrets.OPERATOR_ECDSA_KEY_PASSWORD }}
-      OPERATOR_BLS_KEYSTORE: ${{ secrets.OPERATOR_BLS_KEYSTORE }}
-      OPERATOR_BLS_KEY_PASSWORD: ${{ secrets.OPERATOR_BLS_KEY_PASSWORD }}
       # Variables
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
@@ -112,90 +108,75 @@ jobs:
       - name: Build SDK
         run: yarn build
 
-      - name: Inject secrets into aggregator config
+      - name: Inject secrets into gateway + worker configs
         run: |
           export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
-          envsubst < config/aggregator.yaml > config/aggregator.runtime.yaml
-          echo "Generated config: $(wc -l < config/aggregator.runtime.yaml) lines"
-          if grep -q "\${.*}" config/aggregator.runtime.yaml; then
-            echo "WARNING: Found unsubstituted variables:"
-            grep "\${.*}" config/aggregator.runtime.yaml
-          else
-            echo "All variables substituted correctly."
-          fi
+          for src in gateway worker-sepolia; do
+            envsubst < config/${src}.yaml > config/${src}.runtime.yaml
+            echo "Generated config/${src}.runtime.yaml: $(wc -l < config/${src}.runtime.yaml) lines"
+            if grep -q "\${.*}" config/${src}.runtime.yaml; then
+              echo "WARNING: Found unsubstituted variables in ${src}.runtime.yaml:"
+              grep "\${.*}" config/${src}.runtime.yaml
+            else
+              echo "All variables substituted correctly in ${src}.runtime.yaml."
+            fi
+          done
 
-      - name: Inject secrets into operator config
+      - name: Start gateway
         run: |
-          # Write operator key files from secrets
-          echo "$OPERATOR_ECDSA_KEYSTORE" > config/operator-ecdsa-key.json
-          echo "$OPERATOR_BLS_KEYSTORE" > config/operator-bls-key.json
-
-          # Generate operator runtime config
-          export ETH_RPC_URL ETH_WS_URL
-          envsubst < config/operator.yaml > config/operator.runtime.yaml
-          echo "Generated config: $(wc -l < config/operator.runtime.yaml) lines"
-          if grep -q "\${.*}" config/operator.runtime.yaml; then
-            echo "WARNING: Found unsubstituted variables:"
-            grep "\${.*}" config/operator.runtime.yaml
-          else
-            echo "All variables substituted correctly."
-          fi
-
-      - name: Start aggregator
-        run: |
-          docker compose up -d aggregator
-          echo "Waiting for aggregator to start..."
+          docker compose up -d gateway
+          echo "Waiting for gateway to start..."
           sleep 10
           docker compose ps
-          docker compose logs aggregator --tail=20
+          docker compose logs gateway --tail=20
 
-      - name: Wait for aggregator health
+      - name: Wait for gateway health
         run: |
           max_attempts=24
           attempt=0
           while [ $attempt -lt $max_attempts ]; do
-            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:1323/up; then
-              echo "Aggregator is ready!"
+            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:8080/up; then
+              echo "Gateway is ready!"
               break
             fi
             echo "Attempt $((attempt + 1))/$max_attempts: not ready yet..."
-            docker compose logs aggregator --tail=5
+            docker compose logs gateway --tail=5
             sleep 5
             attempt=$((attempt + 1))
           done
           if [ $attempt -eq $max_attempts ]; then
-            echo "Aggregator failed to start"
+            echo "Gateway failed to start"
             docker compose ps
-            docker compose logs aggregator
+            docker compose logs gateway
             exit 1
           fi
 
-      - name: Start operator
+      - name: Start worker-sepolia
         run: |
-          docker compose up -d operator
-          echo "Waiting for operator to start..."
+          docker compose up -d worker-sepolia
+          echo "Waiting for worker-sepolia to start..."
           sleep 5
           docker compose ps
-          docker compose logs operator --tail=20
+          docker compose logs worker-sepolia --tail=20
 
-      - name: Wait for operator health
+      - name: Wait for worker-sepolia health
         run: |
           max_attempts=24
           attempt=0
           while [ $attempt -lt $max_attempts ]; do
-            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:9010/eigen/node/health; then
-              echo "Operator is ready!"
+            if curl --output /dev/null --silent --fail --max-time 5 http://localhost:8090/health; then
+              echo "Worker-sepolia is ready!"
               break
             fi
-            echo "Attempt $((attempt + 1))/$max_attempts: operator not ready yet..."
-            docker compose logs operator --tail=5
+            echo "Attempt $((attempt + 1))/$max_attempts: worker not ready yet..."
+            docker compose logs worker-sepolia --tail=5
             sleep 5
             attempt=$((attempt + 1))
           done
           if [ $attempt -eq $max_attempts ]; then
-            echo "Operator failed to start"
+            echo "Worker-sepolia failed to start"
             docker compose ps
-            docker compose logs operator
+            docker compose logs worker-sepolia
             exit 1
           fi
 
@@ -203,8 +184,8 @@ jobs:
         run: |
           # IMPORTANT: -T disables TTY allocation. Without it, docker compose exec
           # converts \n to \r\n on stdout, so the captured API key gets a trailing
-          # \r and the aggregator rejects it as "API key invalid".
-          API_KEY=$(docker compose exec -T aggregator /ava create-api-key --config /app/config/aggregator.runtime.yaml --role=admin --subject=0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557 2>/dev/null)
+          # \r and the gateway rejects it as "API key invalid".
+          API_KEY=$(docker compose exec -T gateway ./ap create-api-key --config /app/config/gateway.runtime.yaml --role=admin --subject=0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557 2>/dev/null)
           echo "AVS_API_KEY=$API_KEY" >> $GITHUB_ENV
           echo "API key generated (${#API_KEY} chars)"
 

@@ -1,42 +1,68 @@
+# Gateway config used by the ava-sdk-js E2E test docker-compose stack.
+#
+# CI renders this through envsubst into config/gateway.runtime.yaml,
+# substituting the ${...} placeholders from GitHub secrets/vars.
+#
+# Mirrors the gateway-dev shape in EigenLayer-AVS/config/gateway-dev.example.yaml:
+# REST :8080, gRPC :2206, single chain entry (Sepolia) pointing at the
+# in-network worker-sepolia container on :50051. Tests hit
+# http://localhost:8080/api/v1 — see tests/utils/env.ts → TEST_REST_URL.
 environment: development
 
 db_path: /tmp/ap-avs/db-${TEST_ENV}
 backup_dir: /tmp/ap-avs-backup-${TEST_ENV}
 
-# Runtime-generated config - secrets injected from GitHub environment
 ecdsa_private_key: ${ECDSA_PRIVATE_KEY}
 
 eth_rpc_url: ${ETH_RPC_URL}
 eth_ws_url: ${ETH_WS_URL}
 
 rpc_bind_address: "0.0.0.0:2206"
-http_bind_address: "0.0.0.0:1323"
+http_bind_address: "0.0.0.0:8080"
 
 avs_registry_coordinator_address: 0xcA95381802FD1398d5BF2D01243210cFb3a2b3BD
 operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
 
 jwt_secret: ${JWT_SECRET}
 
-# Optional services configuration
-server_name: "aggregator-${TEST_ENV}-ci"
+# REST rate-limit overrides — the full v4 jest suite spreads ~90 requests
+# across parallel workers and trips the conservative production default
+# (10/s, burst 50). Lifted to match the gateway-railway test env.
+rest_rate_limit_per_second: 200
+rest_rate_limit_burst: 1000
+
+server_name: "gateway-${TEST_ENV}-ci"
 
 tenderly_account: ${TENDERLY_ACCOUNT}
 tenderly_project: ${TENDERLY_PROJECT}
 tenderly_access_key: ${TENDERLY_ACCESS_KEY}
 
-# Account abstraction config (Sepolia)
+# Top-level smart_wallet — required by the aa package globals and the
+# startup paymaster probe even in gateway mode. Points at Sepolia to
+# match the AVS chain above. Per-workflow execution still routes via
+# chains[] below.
 smart_wallet:
   eth_rpc_url: ${ETH_RPC_URL}
   eth_ws_url: ${ETH_WS_URL}
   bundler_url: ${BUNDLER_URL}
-
   controller_private_key: ${CONTROLLER_PRIVATE_KEY}
-
   paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92
-
   max_wallets_per_owner: 2000
 
-# Configurable fee rates
+# Single chain entry for the CI stack. worker-sepolia is the compose
+# service name; gateway resolves it via Docker's internal DNS.
+chains:
+  - chain_id: 11155111
+    name: sepolia
+    worker_addr: "worker-sepolia:50051"
+    smart_wallet:
+      eth_rpc_url: ${ETH_RPC_URL}
+      eth_ws_url: ${ETH_WS_URL}
+      bundler_url: ${BUNDLER_URL}
+      controller_private_key: ${CONTROLLER_PRIVATE_KEY}
+      paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92
+      max_wallets_per_owner: 2000
+
 fee_rates:
   base_fee_usd: 0.0
 

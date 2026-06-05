@@ -1,0 +1,32 @@
+# Worker config (Sepolia, chain 11155111) used by the ava-sdk-js E2E
+# test docker-compose stack.
+#
+# CI renders this through envsubst into config/worker-sepolia.runtime.yaml,
+# substituting the ${...} placeholders from GitHub secrets/vars.
+#
+# Mirrors EigenLayer-AVS/config/worker-sepolia-dev.example.yaml: gRPC
+# on :50051, HTTP health on :8090. Stateless — the gateway owns
+# storage. The gateway's chains[0].worker_addr points at this service.
+environment: development
+
+chain_id: 11155111
+chain_name: sepolia
+
+# Internal gRPC listen address (gateway connects here).
+listen_address: "0.0.0.0:50051"
+
+# HTTP health check endpoint.
+health_address: "0.0.0.0:8090"
+
+# Gateway address (worker registers with gateway on startup).
+# `gateway` is the compose service name resolved via Docker DNS.
+gateway_address: "gateway:2206"
+
+eth_rpc_url: ${ETH_RPC_URL}
+eth_ws_url: ${ETH_WS_URL}
+
+bundler_url: ${BUNDLER_URL}
+
+smart_wallet:
+  controller_private_key: ${CONTROLLER_PRIVATE_KEY}
+  paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92

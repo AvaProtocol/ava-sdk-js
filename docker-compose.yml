@@ -1,27 +1,35 @@
 name: ava-sdk-test
 services:
-  aggregator:
-    image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest} # DOCKER_IMAGE_TAG is a specific git commit hash of https://github.com/AvaProtocol/EigenLayer-AVS. It's used in the .github/workflows/dev-test-on-pr.yml file.
+  # Gateway: REST API on :8080, gRPC on :2206. Tests talk to the REST
+  # surface via AVS_REST_URL (defaults to http://localhost:8080/api/v1
+  # — see tests/utils/env.ts). DOCKER_IMAGE_TAG pins a specific build
+  # of https://github.com/AvaProtocol/EigenLayer-AVS — set in CI via
+  # .github/workflows/dev-test-on-pr.yml.
+  gateway:
+    image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
     command:
       - "aggregator"
       - "--config"
-      - "/app/config/aggregator.runtime.yaml"
+      - "/app/config/gateway.runtime.yaml"
     ports:
       - "2206:2206"
-      - "1323:1323"
+      - "8080:8080"
     volumes:
       - ./config:/app/config
 
-  operator:
+  # Per-chain worker for Sepolia. The gateway routes tasks here via
+  # chains[].worker_addr ("worker-sepolia:50051"). Health check on
+  # :8090 confirms the worker has registered with the gateway.
+  worker-sepolia:
     image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
     command:
-      - "operator"
+      - "worker"
       - "--config"
-      - "/app/config/operator.runtime.yaml"
+      - "/app/config/worker-sepolia.runtime.yaml"
     ports:
-      - "9010:9010"
+      - "50051:50051"
+      - "8090:8090"
     volumes:
       - ./config:/app/config
-    environment:
-      - OPERATOR_ECDSA_KEY_PASSWORD=${OPERATOR_ECDSA_KEY_PASSWORD}
-      - OPERATOR_BLS_KEY_PASSWORD=${OPERATOR_BLS_KEY_PASSWORD}
+    depends_on:
+      - gateway

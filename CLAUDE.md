@@ -19,14 +19,19 @@ yarn run protoc-gen     # Generate protobuf types
 
 ### Testing
 
+All E2E suites target the v4 REST surface (`tests/v4/**`); the legacy
+v3 gRPC tests are archived under `tests-v3-archive/`. Each suite maps
+to a subdirectory and is sharded as its own CI matrix job:
+
 ```bash
-yarn test                              # Run all tests (requires setup)
-yarn test:core                         # Auth, wallet management
-yarn test:workflows                    # Workflow CRUD
-yarn test:executions                   # Execution monitoring
-yarn test:triggers                     # Trigger types (block, cron, manual, event)
-yarn test:nodes                        # Node types (REST, custom code, contracts)
-yarn test:integrations                 # External service integrations
+yarn test                              # Run every jest spec (full suite)
+yarn test:v4                           # Everything under tests/v4
+yarn test:core                         # tests/v4/core      — auth, wallet, secrets, getToken, withdraw
+yarn test:workflows                    # tests/v4/workflows — CRUD + trigger/enable/cancel
+yarn test:executions                   # tests/v4/executions — simulate, runNodeWithInputs, gas, fees
+yarn test:triggers                     # tests/v4/triggers   — block, cron, event, manual
+yarn test:nodes                        # tests/v4/nodes      — REST, contractRead/Write, customCode, etc.
+yarn test:templates                    # tests/v4/templates  — end-to-end template workflows
 ```
 
 **Note:** Do not specify `TEST_ENV` explicitly - the default value `dev` works fine.
@@ -96,11 +101,25 @@ If logs show a warning the test passes through (e.g. `Worker not ready, will ret
 
 ### Docker Environment
 
+The local stack mirrors the Railway deployment shape: one **gateway**
+(REST + gRPC, multi-chain) plus one **worker** per chain. The CI
+compose file (`docker-compose.yml`) wires up gateway + worker-sepolia
+— the v4 REST suite only needs Sepolia. Configs live under `config/`
+and are modeled on the EigenLayer-AVS `gateway-dev.example.yaml` /
+`worker-sepolia-dev.example.yaml` shapes; CI renders the `${...}`
+placeholders into `*.runtime.yaml` via `envsubst` before booting.
+
 ```bash
-docker compose up -d                   # Start local aggregator
-yarn run apikey-gen                    # Generate API key for tests
-curl http://localhost:2206/up          # Health check
+docker compose up -d gateway           # Start gateway (REST :8080, gRPC :2206)
+docker compose up -d worker-sepolia    # Start Sepolia chain worker (gRPC :50051, health :8090)
+yarn run apikey-gen                    # Mint an admin JWT for the v4 suite (sets TEST_API_KEY in .env.test)
+curl http://localhost:8080/up          # Gateway liveness probe
+curl http://localhost:8090/health      # Worker liveness probe
 ```
+
+The container binary is `/app/ap` (subcommands: `aggregator` —
+which runs in gateway mode when the config carries a `chains[]`
+block — plus `worker`, `operator`, and `create-api-key`).
 
 ### Release
 
