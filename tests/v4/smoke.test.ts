@@ -49,12 +49,13 @@ describe("v4 SDK smoke", () => {
     test("buildAuthMessage produces a canonical EIP-191 template", () => {
       const built = buildAuthMessage({
         ownerAddress: "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50",
+        uri: "http://localhost:3000",
         chainId: 11_155_111,
         issuedAt: new Date("2026-05-25T12:00:00.000Z"),
         expireAt: new Date("2026-05-26T12:00:00.000Z"),
         version: "v4-test",
       });
-      expect(built.message).toContain("URI: https://app.avaprotocol.org");
+      expect(built.message).toContain("URI: http://localhost:3000");
       expect(built.message).toContain("Chain ID: 11155111");
       expect(built.message).toContain("Issued At: 2026-05-25T12:00:00.000Z");
       expect(built.message).toContain("Expire At: 2026-05-26T12:00:00.000Z");
@@ -65,7 +66,11 @@ describe("v4 SDK smoke", () => {
     test("signAuthMessage produces a hex signature with the recovered owner", async () => {
       // Deterministic test key (no funds). Not the same as TEST_PRIVATE_KEY.
       const pk = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
-      const out = await signAuthMessage(pk, { chainId: 11_155_111, version: "v4-test" });
+      const out = await signAuthMessage(pk, {
+        uri: "http://localhost:3000",
+        chainId: 11_155_111,
+        version: "v4-test",
+      });
       expect(out.signature.startsWith("0x")).toBe(true);
       expect(out.signature.length).toBe(132); // 65 bytes hex + 0x prefix
       expect(out.ownerAddress.length).toBe(42);
@@ -73,18 +78,40 @@ describe("v4 SDK smoke", () => {
 
     test("buildAuthMessage throws on invalid chainId (zero, negative, non-integer)", () => {
       const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
-      expect(() => buildAuthMessage({ ownerAddress: owner, chainId: 0, version: "v4-test" })).toThrow(/chainId/);
-      expect(() => buildAuthMessage({ ownerAddress: owner, chainId: -1, version: "v4-test" })).toThrow(/chainId/);
-      expect(() => buildAuthMessage({ ownerAddress: owner, chainId: 1.5, version: "v4-test" })).toThrow(/chainId/);
+      const baseOk = { ownerAddress: owner, uri: "http://localhost:3000", version: "v4-test" };
+      expect(() => buildAuthMessage({ ...baseOk, chainId: 0 })).toThrow(/chainId/);
+      expect(() => buildAuthMessage({ ...baseOk, chainId: -1 })).toThrow(/chainId/);
+      expect(() => buildAuthMessage({ ...baseOk, chainId: 1.5 })).toThrow(/chainId/);
     });
 
     test("buildAuthMessage throws on missing/empty version", () => {
       const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
-      expect(() => buildAuthMessage({ ownerAddress: owner, chainId: 1, version: "" })).toThrow(/version/);
+      const baseOk = { ownerAddress: owner, uri: "http://localhost:3000", chainId: 1 };
+      expect(() => buildAuthMessage({ ...baseOk, version: "" })).toThrow(/version/);
       expect(() =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        buildAuthMessage({ ownerAddress: owner, chainId: 1, version: undefined as any }),
+        buildAuthMessage({ ...baseOk, version: undefined as any }),
       ).toThrow(/version/);
+    });
+
+    test("buildAuthMessage throws on missing/empty uri", () => {
+      const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
+      const baseOk = { ownerAddress: owner, chainId: 1, version: "v4-test" };
+      expect(() => buildAuthMessage({ ...baseOk, uri: "" })).toThrow(/uri/);
+      expect(() =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        buildAuthMessage({ ...baseOk, uri: undefined as any }),
+      ).toThrow(/uri/);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect(() => buildAuthMessage({ ...baseOk, uri: null as any })).toThrow(/uri/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "   " })).toThrow(/uri/);
+    });
+
+    test("buildAuthMessage throws on invalid uri format", () => {
+      const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
+      const baseOk = { ownerAddress: owner, chainId: 1, version: "v4-test" };
+      expect(() => buildAuthMessage({ ...baseOk, uri: "not-a-url" })).toThrow(/uri/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "localhost:3000" })).toThrow(/uri/);
     });
 
     test("signAuthMessage throws when called without input", async () => {

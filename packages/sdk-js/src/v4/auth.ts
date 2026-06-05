@@ -10,7 +10,7 @@ import { Wallet, getAddress } from "ethers";
  */
 export const AUTH_TEMPLATE = `Please sign the below text for ownership verification.
 
-URI: https://app.avaprotocol.org
+URI: {uri}
 Chain ID: {chainId}
 Version: {version}
 Issued At: {issuedAt}
@@ -20,6 +20,17 @@ Wallet: {wallet}`;
 export interface BuildAuthMessageInput {
   /** EOA the JWT will be bound to. Lowercased / checksummed both work. */
   ownerAddress: string;
+  /**
+   * Origin URL the user is authenticating against. Required — callers
+   * MUST pass the actual studio/app origin the user is on right now
+   * (e.g. `https://app.avaprotocol.org` in production, `http://localhost:3000`
+   * in local dev). Shows up in the wallet popup as the "site" the user
+   * is granting access to, so a dishonest value reads as a phishing
+   * attempt or a config bug. The aggregator currently does not validate
+   * this field, but it's a candidate for cross-origin replay protection
+   * if it's ever turned on server-side.
+   */
+  uri: string;
   /**
    * Chain ID to embed in the canonical message. Required — callers
    * MUST pass the user's currently-connected wallet chain (e.g.
@@ -64,11 +75,25 @@ export interface BuiltAuthMessage {
  * @example
  *   const { version } = await client.health.check();
  *   const chainId = await wallet.getChainId();
- *   const { message } = buildAuthMessage({ ownerAddress, chainId, version });
+ *   const uri = window.location.origin; // or the studio's getSiteUrlOrDefault()
+ *   const { message } = buildAuthMessage({ ownerAddress, uri, chainId, version });
  *   const signature = await wallet.signMessage(message);
  *   const { token } = await client.auth.exchange({ ownerAddress, message, signature });
  */
 export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage {
+  const trimmedUri = typeof input.uri === "string" ? input.uri.trim() : "";
+  if (!trimmedUri) {
+    throw new Error(
+      "buildAuthMessage: uri must be a non-empty string (the origin the user is signing into, e.g. window.location.origin).",
+    );
+  }
+  try {
+    new URL(trimmedUri);
+  } catch {
+    throw new Error(
+      "buildAuthMessage: uri must be a valid URL (e.g. window.location.origin).",
+    );
+  }
   if (!Number.isInteger(input.chainId) || input.chainId <= 0) {
     throw new Error(
       "buildAuthMessage: chainId must be a positive integer (the wallet's currently-connected chain).",
@@ -84,12 +109,18 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
   // Canonicalize the address so the wire form matches what the
   // aggregator extracts via crypto.PubkeyToAddress.
   const ownerAddress = getAddress(input.ownerAddress);
-  const message = AUTH_TEMPLATE
-    .replace("{chainId}", String(input.chainId))
-    .replace("{version}", input.version)
-    .replace("{issuedAt}", toRFC3339Millis(issuedAt))
-    .replace("{expireAt}", toRFC3339Millis(expireAt))
-    .replace("{wallet}", ownerAddress);
+  const replacements: Record<string, string> = {
+    "{uri}": trimmedUri,
+    "{chainId}": String(input.chainId),
+    "{version}": input.version,
+    "{issuedAt}": toRFC3339Millis(issuedAt),
+    "{expireAt}": toRFC3339Millis(expireAt),
+    "{wallet}": ownerAddress,
+  };
+  const message = AUTH_TEMPLATE.replace(
+    /\{uri\}|\{chainId\}|\{version\}|\{issuedAt\}|\{expireAt\}|\{wallet\}/g,
+    (m) => replacements[m],
+  );
   return { message, chainId: input.chainId, ownerAddress, expireAt };
 }
 
@@ -100,9 +131,10 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
  * where the private key is in hand; browser flows use
  * `buildAuthMessage` + a wallet's `personal_sign`.
  *
- * `chainId` and `version` are required for the same reasons as
- * `buildAuthMessage` — silent defaults would lie about the chain
- * the JWT is bound to and the gateway it was signed against.
+ * `uri`, `chainId`, and `version` are required for the same reasons as
+ * `buildAuthMessage` — silent defaults would lie about the origin the
+ * user is signing for, the chain the JWT is bound to, or the gateway
+ * it was signed against.
  */
 export async function signAuthMessage(
   privateKey: string,
@@ -114,12 +146,13 @@ export async function signAuthMessage(
   // stands; this just makes the breaking-change error legible.
   if (input == null || typeof input !== "object") {
     throw new Error(
-      "signAuthMessage: input is required — pass { chainId, version } (chainId from the wallet's connected chain, version from client.health.check()).",
+      "signAuthMessage: input is required — pass { uri, chainId, version } (uri from the calling origin, chainId from the wallet's connected chain, version from client.health.check()).",
     );
   }
   const signer = new Wallet(privateKey);
   const built = buildAuthMessage({
     ownerAddress: input.ownerAddress ?? signer.address,
+    uri: input.uri,
     chainId: input.chainId,
     version: input.version,
     issuedAt: input.issuedAt,

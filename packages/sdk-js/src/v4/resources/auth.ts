@@ -39,15 +39,17 @@ export class AuthResource {
    * callers should use `buildAuthMessage` + a wallet's
    * `personal_sign` and then call `exchange()` directly.
    *
-   * `chainId` and `version` are required for the same reasons as
-   * `buildAuthMessage` — silently defaulting either field would
-   * mis-route every wallet RPC the resulting JWT is used for.
-   * `version` is the gateway binary version; the simplest source
-   * is the `version` field returned by `client.health.check()`.
+   * `uri`, `chainId`, and `version` are required for the same reasons
+   * as `buildAuthMessage` — silent defaults would lie about the origin
+   * the user is signing for, mis-route wallet RPCs, or hide which
+   * gateway minted the JWT. `version` is the gateway binary version;
+   * the simplest source is the `version` field returned by
+   * `client.health.check()`. `uri` is the calling origin (the studio
+   * URL the user is on right now).
    */
   async exchangeWithKey(
     privateKey: string,
-    opts: { ownerAddress?: string; chainId: number; version: string },
+    opts: { ownerAddress?: string; uri: string; chainId: number; version: string },
   ): Promise<v4.AuthExchangeResponse> {
     const signed = await signAuthMessage(privateKey, opts);
     return this.exchange({

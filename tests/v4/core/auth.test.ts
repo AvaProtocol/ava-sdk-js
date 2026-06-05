@@ -17,6 +17,7 @@ import { APIError, Client } from "@avaprotocol/sdk-js";
 
 import {
   TEST_AUTH_CHAIN_ID,
+  TEST_AUTH_URI,
   authenticateClient,
   buildAuthPayload,
   generateSignature,
@@ -153,6 +154,7 @@ describe("Authentication Tests", () => {
       const c = getClient();
       const { version } = await c.health.check();
       const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
         chainId: TEST_AUTH_CHAIN_ID,
         version,
       });
@@ -175,7 +177,7 @@ describe("Authentication Tests", () => {
       // connectivity-only rollout state).
       const c = getClient();
       const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), { chainId: 56, version });
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), { uri: TEST_AUTH_URI, chainId: 56, version });
       expect(res.token).toBeTruthy();
       // The JWT body should encode the requested chain id in the
       // audience claim — that's how downstream chain-routed handlers

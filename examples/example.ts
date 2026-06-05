@@ -177,6 +177,10 @@ async function ensureAuth(client: Client): Promise<string> {
     );
   }
   const resp = await client.auth.exchangeWithKey(pk, {
+    // CLI tool — no real browser origin, so stamp a stable
+    // example-cli marker so any token minted from this example is
+    // distinguishable from a real app's token in debug output.
+    uri: "https://example-cli.avaprotocol.org",
     chainId: 11_155_111,
     version,
   });
