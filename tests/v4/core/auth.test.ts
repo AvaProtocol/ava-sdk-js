@@ -130,7 +130,7 @@ describe("Authentication Tests", () => {
     });
 
     test("returns a JWT with the expected claims (issuer + subject + exp)", async () => {
-      const payload = await buildAuthPayload();
+      const payload = await buildAuthPayload(client);
       const res = await client.auth.exchange(payload);
       expect(res.token).toBeTruthy();
       // The token also gets stashed on the transport for follow-up calls.
@@ -150,7 +150,11 @@ describe("Authentication Tests", () => {
 
     test("exchangeWithKey is a one-shot helper around exchange()", async () => {
       const c = getClient();
-      const res = await c.auth.exchangeWithKey(testPrivateKey());
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        chainId: 11_155_111,
+        version,
+      });
       expect(res.token).toEqual(c.token);
       expect(res.subject).toBeTruthy();
       expect(res.subject?.toLowerCase()).toEqual(eoaAddress.toLowerCase());
@@ -169,7 +173,8 @@ describe("Authentication Tests", () => {
       // SimpleAccountFactory isn't deployed on the chain (the BNB
       // connectivity-only rollout state).
       const c = getClient();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), { chainId: 56 });
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), { chainId: 56, version });
       expect(res.token).toBeTruthy();
       // The JWT body should encode the requested chain id in the
       // audience claim — that's how downstream chain-routed handlers
@@ -181,7 +186,7 @@ describe("Authentication Tests", () => {
     });
 
     test("rejects a signature that doesn't match the owner", async () => {
-      const payload = await buildAuthPayload();
+      const payload = await buildAuthPayload(client);
       // Re-sign the message with a different key — verifier will
       // reject because the recovered address doesn't match ownerAddress.
       const otherKey = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";

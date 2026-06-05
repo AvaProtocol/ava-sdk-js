@@ -41,9 +41,21 @@ export function getClient(overrides?: Partial<ClientOptions>): Client {
   });
 }
 
+// TEST_AUTH_CHAIN_ID is the chain id tests sign their auth message
+// against. The dev/test stack runs on Sepolia, so we pin to that —
+// matching what the engine's settings/test fixtures use elsewhere.
+// Tests that exercise a different chain (e.g. the BNB connectivity
+// probe) call exchangeWithKey directly with their own chainId.
+const TEST_AUTH_CHAIN_ID = 11_155_111;
+
 /**
  * Drive the EIP-191 sign-then-exchange flow against the live
  * aggregator and stash the resulting JWT on the supplied client.
+ *
+ * Fetches the gateway version from /health and signs against the
+ * dev-stack chain (Sepolia). The /health round trip is cheap and
+ * keeps the test stamp honest — pinning a literal would lie about
+ * which gateway the message was signed against.
  *
  * @param client v4 Client to authenticate.
  * @param privateKey Optional override; defaults to `TEST_PRIVATE_KEY`.
@@ -54,7 +66,11 @@ export async function authenticateClient(
   privateKey?: string,
 ): Promise<string> {
   const pk = privateKey ?? testPrivateKey();
-  const resp = await client.auth.exchangeWithKey(pk);
+  const { version } = await client.health.check();
+  const resp = await client.auth.exchangeWithKey(pk, {
+    chainId: TEST_AUTH_CHAIN_ID,
+    version,
+  });
   return resp.token;
 }
 
@@ -84,15 +100,24 @@ export async function generateSignature(
  * going through `authenticateClient`. Mirrors v3's
  * `generateAuthPayloadWithApiKey` shape minus the API-key field —
  * v4 doesn't combine signature + API key in one request.
+ *
+ * Takes a `client` so it can fetch the gateway version from /health —
+ * the SDK no longer defaults `version`. Same dev-stack Sepolia chainId
+ * as `authenticateClient`.
  */
 export async function buildAuthPayload(
+  client: Client,
   privateKey?: string,
 ): Promise<{
   ownerAddress: string;
   message: string;
   signature: string;
 }> {
-  const signed = await signAuthMessage(privateKey ?? testPrivateKey());
+  const { version } = await client.health.check();
+  const signed = await signAuthMessage(privateKey ?? testPrivateKey(), {
+    chainId: TEST_AUTH_CHAIN_ID,
+    version,
+  });
   return {
     ownerAddress: signed.ownerAddress,
     message: signed.message,

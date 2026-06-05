@@ -65,7 +65,7 @@ describe("v4 SDK smoke", () => {
     test("signAuthMessage produces a hex signature with the recovered owner", async () => {
       // Deterministic test key (no funds). Not the same as TEST_PRIVATE_KEY.
       const pk = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
-      const out = await signAuthMessage(pk, { version: "v4-test" });
+      const out = await signAuthMessage(pk, { chainId: 11155111, version: "v4-test" });
       expect(out.signature.startsWith("0x")).toBe(true);
       expect(out.signature.length).toBe(132); // 65 bytes hex + 0x prefix
       expect(out.ownerAddress.length).toBe(42);

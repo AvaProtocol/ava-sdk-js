@@ -164,7 +164,15 @@ async function ensureAuth(client: Client): Promise<string> {
       "Set TEST_PRIVATE_KEY (EOA private key) or AVS_API_KEY (pre-minted JWT) before running this command.",
     );
   }
-  const resp = await client.auth.exchangeWithKey(pk);
+  // Stamp the message with the live gateway version (cheap /health
+  // round trip) and the dev/test stack chain (Sepolia). Callers
+  // operating on a different chain swap in their wallet's
+  // currently-connected chainId.
+  const { version } = await client.health.check();
+  const resp = await client.auth.exchangeWithKey(pk, {
+    chainId: 11_155_111,
+    version,
+  });
   if (!client.token) {
     // Shouldn't happen — auth.exchangeWithKey sets the token — but
     // surface the wire response if it ever does.
