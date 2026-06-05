@@ -117,9 +117,14 @@ curl http://localhost:8080/up          # Gateway liveness probe
 curl http://localhost:8090/health      # Worker liveness probe
 ```
 
-The container binary is `/app/ap` (subcommands: `aggregator` —
-which runs in gateway mode when the config carries a `chains[]`
-block — plus `worker`, `operator`, and `create-api-key`).
+The container binary in the published `avaprotocol/avs-dev:latest`
+image today is `/ava` (root path, ENTRYPOINT `["/ava"]`). The
+EigenLayer-AVS source Dockerfile has since renamed it to `/app/ap`
+(ENTRYPOINT `["./ap"]`); flip the `apikey-gen` script in
+`package.json` and the workflow's API-key step to `./ap` once a
+fresh image tag picks up that rebuild. Subcommands either way:
+`aggregator` (runs in gateway mode when the config carries a
+`chains[]` block), `worker`, `operator`, `create-api-key`.
 
 ### Release
 
