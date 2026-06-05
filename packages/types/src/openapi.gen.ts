@@ -955,27 +955,6 @@ export interface components {
                 readonly [key: string]: string;
             };
             readonly body?: string;
-            /**
-             * @description Generic options bag for backend features on terminal
-             *     RestAPI nodes. `summarize: true` opts a SendGrid /v3/mail/send
-             *     or Telegram /sendMessage node into the aggregator's
-             *     context-memory summarizer, which composes a subject + HTML
-             *     body from the workflow's execution context and injects them
-             *     into the outgoing request. Without this field set, the
-             *     aggregator falls back to the deterministic summarizer (no
-             *     LLM polish).
-             */
-            readonly options?: {
-                /**
-                 * @description When true on a terminal SendGrid or Telegram node,
-                 *     ComposeSummarySmart runs at execution time and fills
-                 *     in the empty content.value / text slot with an
-                 *     AI-generated body. No-op on non-notification URLs.
-                 */
-                readonly summarize?: boolean;
-            } & {
-                readonly [key: string]: unknown;
-            };
         };
         readonly CustomCodeNodeConfig: {
             readonly lang: components["schemas"]["Lang"];
