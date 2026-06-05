@@ -118,6 +118,12 @@ function pickPublishTag(version) {
   if (dash === -1) return null; // stable → npm default (`latest`)
   const preRelease = version.slice(dash + 1); // e.g. "dev.4" or "rc.1"
   const identifier = preRelease.split('.')[0];
+  if (!identifier) {
+    // Malformed pre-release like "4.0.0-" or "4.0.0-.1" — refuse rather
+    // than emit `--tag ""`, which npm rejects with a cryptic error
+    // many minutes into the publish flow.
+    throw new Error(`Cannot determine dist-tag: malformed pre-release in version "${version}"`);
+  }
   if (identifier === 'rc') return 'next';
   return identifier; // "dev", "alpha", "beta", etc.
 }
@@ -154,10 +160,13 @@ async function publishPackage(packagePath, dryRun = false) {
   }
 
   // Publish the package — explicit --tag when pre-release so we never
-  // overwrite `latest` by accident.
+  // overwrite `latest` by accident. Quoted to keep a malicious or
+  // accidentally-shell-meta-bearing tag value from breaking out of
+  // the argument; npm itself rejects tags with shell metacharacters,
+  // but defense-in-depth at the call site is cheap.
   log.info(`Publishing ${packageInfo.name} to npm under ${tagSummary}...`);
   const publishCmd = tag
-    ? `npm publish --access public --tag ${tag}`
+    ? `npm publish --access public --tag "${tag}"`
     : 'npm publish --access public';
   const publishResult = runCommand(publishCmd, { cwd: packagePath });
 

@@ -259,11 +259,13 @@ main_publish() {
     local types_version=$(get_package_version "packages/types")
     local sdk_name=$(get_package_name "packages/sdk-js")
     local sdk_version=$(get_package_version "packages/sdk-js")
-    
+    local types_tag=$(pick_publish_tag "$types_version")
+    local sdk_tag=$(pick_publish_tag "$sdk_version")
+
     print_status "Packages to publish:"
-    echo "  - $types_name@$types_version"
-    echo "  - $sdk_name@$sdk_version"
-    
+    echo "  - $types_name@$types_version (dist-tag '${types_tag:-latest}')"
+    echo "  - $sdk_name@$sdk_version (dist-tag '${sdk_tag:-latest}')"
+
     if [[ "$dry_run" == "true" ]]; then
         print_warning "DRY RUN MODE - No packages will actually be published"
         return 0
