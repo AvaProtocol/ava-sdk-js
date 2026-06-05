@@ -121,9 +121,28 @@ get_package_name() {
 check_version_exists() {
     local package_name=$1
     local version=$2
-    
+
     npm view "$package_name@$version" version > /dev/null 2>&1
     return $?
+}
+
+# Pick the npm dist-tag from a semver string. Stable versions (no
+# pre-release identifier, e.g. "4.0.0") return empty → npm uses its
+# `latest` default. Pre-release versions route by their identifier:
+# `4.0.0-dev.N` → `dev`, `4.0.0-rc.N` → `next`, anything else → the
+# first dot-segment. Mirrors pickPublishTag() in publish-packages.js.
+pick_publish_tag() {
+    local version=$1
+    case "$version" in
+        *-*)
+            local pre="${version#*-}"
+            local id="${pre%%.*}"
+            if [[ "$id" == "rc" ]]; then echo "next"; else echo "$id"; fi
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
 }
 
 # Function to publish a package
@@ -131,9 +150,16 @@ publish_package() {
     local package_path=$1
     local package_name=$(get_package_name "$package_path")
     local package_version=$(get_package_version "$package_path")
-    
-    print_status "Publishing $package_name@$package_version"
-    
+    local tag=$(pick_publish_tag "$package_version")
+    local tag_summary
+    if [[ -n "$tag" ]]; then
+        tag_summary="dist-tag '$tag'"
+    else
+        tag_summary="dist-tag 'latest' (stable)"
+    fi
+
+    print_status "Publishing $package_name@$package_version ($tag_summary)"
+
     # Check if this version already exists
     if check_version_exists "$package_name" "$package_version"; then
         print_warning "$package_name@$package_version already exists on npm"
@@ -144,10 +170,10 @@ publish_package() {
             return 0
         fi
     fi
-    
+
     # Change to package directory
     cd "$package_path"
-    
+
     # Run build to ensure package is ready
     print_status "Building $package_name..."
     npm run build
@@ -156,17 +182,22 @@ publish_package() {
         cd - > /dev/null
         return 1
     fi
-    
-    # Publish the package
-    print_status "Publishing $package_name to npm..."
-    npm publish --access public
+
+    # Publish the package — explicit --tag for pre-releases so we
+    # never overwrite `latest` by accident.
+    print_status "Publishing $package_name to npm under $tag_summary..."
+    if [[ -n "$tag" ]]; then
+        npm publish --access public --tag "$tag"
+    else
+        npm publish --access public
+    fi
     local publish_result=$?
     
     # Return to root directory
     cd - > /dev/null
     
     if [[ $publish_result -eq 0 ]]; then
-        print_success "Successfully published $package_name@$package_version"
+        print_success "Successfully published $package_name@$package_version under $tag_summary"
         return 0
     else
         print_error "Failed to publish $package_name"
@@ -228,11 +259,13 @@ main_publish() {
     local types_version=$(get_package_version "packages/types")
     local sdk_name=$(get_package_name "packages/sdk-js")
     local sdk_version=$(get_package_version "packages/sdk-js")
-    
+    local types_tag=$(pick_publish_tag "$types_version")
+    local sdk_tag=$(pick_publish_tag "$sdk_version")
+
     print_status "Packages to publish:"
-    echo "  - $types_name@$types_version"
-    echo "  - $sdk_name@$sdk_version"
-    
+    echo "  - $types_name@$types_version (dist-tag '${types_tag:-latest}')"
+    echo "  - $sdk_name@$sdk_version (dist-tag '${sdk_tag:-latest}')"
+
     if [[ "$dry_run" == "true" ]]; then
         print_warning "DRY RUN MODE - No packages will actually be published"
         return 0

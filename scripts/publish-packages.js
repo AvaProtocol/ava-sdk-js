@@ -105,12 +105,37 @@ function getUserInput(question) {
   });
 }
 
+// Pick the npm dist-tag from the semver string. Stable versions
+// (no pre-release identifier, e.g. "4.0.0") publish under `latest`,
+// the npm default. Pre-release versions route by their identifier:
+// `4.0.0-dev.N` → `dev`, `4.0.0-rc.N` → `next`, anything else → the
+// first dot-segment of the pre-release. The point is to never let a
+// pre-release version silently overwrite `latest` — that's the npm
+// footgun behind https://github.com/AvaProtocol/ava-sdk-js/pull/214
+// where `4.0.0-dev.N` could have clobbered the v2.x `latest` tag.
+function pickPublishTag(version) {
+  const dash = version.indexOf('-');
+  if (dash === -1) return null; // stable → npm default (`latest`)
+  const preRelease = version.slice(dash + 1); // e.g. "dev.4" or "rc.1"
+  const identifier = preRelease.split('.')[0];
+  if (!identifier) {
+    // Malformed pre-release like "4.0.0-" or "4.0.0-.1" — refuse rather
+    // than emit `--tag ""`, which npm rejects with a cryptic error
+    // many minutes into the publish flow.
+    throw new Error(`Cannot determine dist-tag: malformed pre-release in version "${version}"`);
+  }
+  if (identifier === 'rc') return 'next';
+  return identifier; // "dev", "alpha", "beta", etc.
+}
+
 // Main publish function for a single package
 async function publishPackage(packagePath, dryRun = false) {
   const packageInfo = getPackageInfo(packagePath);
-  
-  log.info(`Publishing ${packageInfo.name}@${packageInfo.version}`);
-  
+  const tag = pickPublishTag(packageInfo.version);
+  const tagSummary = tag ? `dist-tag '${tag}'` : `dist-tag 'latest' (stable)`;
+
+  log.info(`Publishing ${packageInfo.name}@${packageInfo.version} (${tagSummary})`);
+
   // Check if this version already exists
   if (checkVersionExists(packageInfo.name, packageInfo.version)) {
     log.warning(`${packageInfo.name}@${packageInfo.version} already exists on npm`);
@@ -120,12 +145,12 @@ async function publishPackage(packagePath, dryRun = false) {
       return true;
     }
   }
-  
+
   if (dryRun) {
-    log.info(`[DRY RUN] Would publish ${packageInfo.name}@${packageInfo.version}`);
+    log.info(`[DRY RUN] Would publish ${packageInfo.name}@${packageInfo.version} under ${tagSummary}`);
     return true;
   }
-  
+
   // Build the package
   log.info(`Building ${packageInfo.name}...`);
   const buildResult = runCommand('npm run build', { cwd: packagePath });
@@ -133,13 +158,20 @@ async function publishPackage(packagePath, dryRun = false) {
     log.error(`Build failed for ${packageInfo.name}`);
     return false;
   }
-  
-  // Publish the package
-  log.info(`Publishing ${packageInfo.name} to npm...`);
-  const publishResult = runCommand('npm publish --access public', { cwd: packagePath });
-  
+
+  // Publish the package — explicit --tag when pre-release so we never
+  // overwrite `latest` by accident. Quoted to keep a malicious or
+  // accidentally-shell-meta-bearing tag value from breaking out of
+  // the argument; npm itself rejects tags with shell metacharacters,
+  // but defense-in-depth at the call site is cheap.
+  log.info(`Publishing ${packageInfo.name} to npm under ${tagSummary}...`);
+  const publishCmd = tag
+    ? `npm publish --access public --tag "${tag}"`
+    : 'npm publish --access public';
+  const publishResult = runCommand(publishCmd, { cwd: packagePath });
+
   if (publishResult.success) {
-    log.success(`Successfully published ${packageInfo.name}@${packageInfo.version}`);
+    log.success(`Successfully published ${packageInfo.name}@${packageInfo.version} under ${tagSummary}`);
     return true;
   } else {
     log.error(`Failed to publish ${packageInfo.name}`);
@@ -165,15 +197,17 @@ async function main() {
   // Preliminary checks
   checkDirectory();
   
-  // Ensure grpc_codegen is up to date and packages are built before publishing
-  log.info('Regenerating protobuf code (yarn protoc-gen)...');
-  const protocResult = runCommand('yarn protoc-gen');
-  if (!protocResult.success) {
-    log.error('Failed to run protoc-gen. Aborting.');
+  // Regenerate OpenAPI types from the vendored openapi.yaml snapshot
+  // before building. (The v2.x line ran `yarn protoc-gen` here for the
+  // gRPC code path; v4 is REST-only and uses openapi-typescript.)
+  log.info('Regenerating OpenAPI types (yarn types-gen)...');
+  const typesGenResult = runCommand('yarn types-gen');
+  if (!typesGenResult.success) {
+    log.error('Failed to run types-gen. Aborting.');
     process.exit(1);
   }
-  log.success('Protobuf code regenerated');
-  
+  log.success('OpenAPI types regenerated');
+
   log.info('Building all packages (yarn build)...');
   const buildResult = runCommand('yarn build');
   if (!buildResult.success) {
