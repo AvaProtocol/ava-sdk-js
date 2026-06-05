@@ -46,7 +46,7 @@ export function getClient(overrides?: Partial<ClientOptions>): Client {
 // matching what the engine's settings/test fixtures use elsewhere.
 // Tests that exercise a different chain (e.g. the BNB connectivity
 // probe) call exchangeWithKey directly with their own chainId.
-const TEST_AUTH_CHAIN_ID = 11_155_111;
+export const TEST_AUTH_CHAIN_ID = 11_155_111;
 
 /**
  * Drive the EIP-191 sign-then-exchange flow against the live
@@ -61,12 +61,28 @@ const TEST_AUTH_CHAIN_ID = 11_155_111;
  * @param privateKey Optional override; defaults to `TEST_PRIVATE_KEY`.
  * @returns The minted token (also already set on the client).
  */
+async function fetchGatewayVersion(client: Client): Promise<string> {
+  const { version } = await client.health.check();
+  // The HealthStatus schema marks version as required (post AVS #554),
+  // so TS guarantees a string at compile time. Belt-and-suspenders
+  // runtime check catches the transition window where an old gateway
+  // could still return undefined — that surfaces as a clear migration
+  // error here, not a confusing "version must be non-empty" deep
+  // inside buildAuthMessage.
+  if (!version) {
+    throw new Error(
+      "Gateway /health did not return a version field — the gateway is older than the Position D rollout (AVS PR #554). Upgrade the gateway or test against a newer one.",
+    );
+  }
+  return version;
+}
+
 export async function authenticateClient(
   client: Client,
   privateKey?: string,
 ): Promise<string> {
   const pk = privateKey ?? testPrivateKey();
-  const { version } = await client.health.check();
+  const version = await fetchGatewayVersion(client);
   const resp = await client.auth.exchangeWithKey(pk, {
     chainId: TEST_AUTH_CHAIN_ID,
     version,
@@ -113,7 +129,7 @@ export async function buildAuthPayload(
   message: string;
   signature: string;
 }> {
-  const { version } = await client.health.check();
+  const version = await fetchGatewayVersion(client);
   const signed = await signAuthMessage(privateKey ?? testPrivateKey(), {
     chainId: TEST_AUTH_CHAIN_ID,
     version,

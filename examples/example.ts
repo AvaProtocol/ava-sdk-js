@@ -169,6 +169,13 @@ async function ensureAuth(client: Client): Promise<string> {
   // operating on a different chain swap in their wallet's
   // currently-connected chainId.
   const { version } = await client.health.check();
+  if (!version) {
+    fail(
+      EXIT_SDK_ERROR,
+      "GATEWAY_NO_VERSION",
+      "Gateway /health did not return a version field — the gateway predates Position D auth (AVS PR #554). Upgrade the gateway.",
+    );
+  }
   const resp = await client.auth.exchangeWithKey(pk, {
     chainId: 11_155_111,
     version,

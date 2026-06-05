@@ -27,6 +27,12 @@ export interface BuildAuthMessageInput {
    * the JWT `aud` claim, which becomes the default chain for
    * subsequent wallet RPCs. Hardcoding a value here would silently
    * route every request to the wrong chain.
+   *
+   * Source this from the wallet itself (`provider.getNetwork()`,
+   * `wallet.getChainId()`, EIP-1193 `eth_chainId`), NOT from
+   * user-typed input or URL params — those can lie, and a JWT
+   * minted against a forged chain id will route the user's wallet
+   * RPCs to the wrong chain bucket.
    */
   chainId: number;
   /**
@@ -102,6 +108,15 @@ export async function signAuthMessage(
   privateKey: string,
   input: Omit<BuildAuthMessageInput, "ownerAddress"> & { ownerAddress?: string },
 ): Promise<{ message: string; signature: string; ownerAddress: string; expireAt: Date }> {
+  // Defensive runtime guard for JS callers / TS callers casting through
+  // `any` who'd otherwise hit a cryptic "Cannot read properties of
+  // undefined" inside buildAuthMessage. The type-level requirement
+  // stands; this just makes the breaking-change error legible.
+  if (input == null || typeof input !== "object") {
+    throw new Error(
+      "signAuthMessage: input is required — pass { chainId, version } (chainId from the wallet's connected chain, version from client.health.check()).",
+    );
+  }
   const signer = new Wallet(privateKey);
   const built = buildAuthMessage({
     ownerAddress: input.ownerAddress ?? signer.address,

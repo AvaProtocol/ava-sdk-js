@@ -16,6 +16,7 @@
 import { APIError, Client } from "@avaprotocol/sdk-js";
 
 import {
+  TEST_AUTH_CHAIN_ID,
   authenticateClient,
   buildAuthPayload,
   generateSignature,
@@ -152,7 +153,7 @@ describe("Authentication Tests", () => {
       const c = getClient();
       const { version } = await c.health.check();
       const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        chainId: 11_155_111,
+        chainId: TEST_AUTH_CHAIN_ID,
         version,
       });
       expect(res.token).toEqual(c.token);
