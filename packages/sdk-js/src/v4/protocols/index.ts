@@ -1,6 +1,6 @@
 // Protocol catalog re-export.
 //
-// As of 4.0.0-dev.3 the actual address/ABI/topic data lives in the
+// As of 3.0.0 the actual address/ABI/topic data lives in the
 // standalone `@avaprotocol/protocols` package — the SDK ships a thin
 // re-export so consumers don't have to install a second package and
 // the existing `import { Protocols } from "@avaprotocol/sdk-js"`

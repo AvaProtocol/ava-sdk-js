@@ -1,5 +1,9 @@
 # Ava SDK for JavaScript/TypeScript
 
+`ava-sdk-js` is the official TypeScript SDK for Ava Protocol's AVS.
+
+> **3.0.0 is a REST-only rewrite.** The 2.x line spoke gRPC; the 3.x line speaks the aggregator gateway's `/api/v1/...` REST API. The `4.0.0-dev.X` versions on npm are pre-release iterations of this rewrite that we ultimately stabilized as `3.0.0` to keep semver continuity from 2.x — see [packages/sdk-js/CHANGELOG.md](./packages/sdk-js/CHANGELOG.md) for the full rationale. The sections below still describe the 2.x gRPC client; an updated quick-start for the 3.x REST client is tracked in a follow-up doc PR.
+
 `ava-sdk-js` is a simple, type-safe wrapper around gRPC designed to simplify integration with Ava Protocol's AVS. It enables developers to interact with Ava Protocol efficiently, whether on the client-side or server-side, and provides full TypeScript support for a seamless development experience.
 
 ## Features
