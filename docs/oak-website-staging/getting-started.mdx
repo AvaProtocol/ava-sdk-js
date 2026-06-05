@@ -1,0 +1,130 @@
+---
+title: Getting Started
+description: Install the Ava Protocol JavaScript SDK and make your first authenticated call against the gateway.
+---
+
+The Ava SDK is a thin TypeScript wrapper over Ava Protocol's REST API. It speaks plain `fetch` (no gRPC), runs in Node 20+ and modern browsers, and ships full OpenAPI-generated types. This page gets you from `yarn add` to a verified call in under five minutes.
+
+For the per-class, per-method reference see [SDK Reference](/docs/ava-sdk-js/reference). For the canonical EIP-191 sign-in flow, see [Authentication](/docs/ava-sdk-js/authentication).
+
+# Install
+
+The v4 SDK is published to the npm `dev` channel during development and will graduate to `latest` when the cutover lands. Pin to a specific dev release for reproducibility, or track the channel.
+
+```bash
+# Track the dev channel (latest 4.x dev release)
+yarn add @avaprotocol/sdk-js@dev @avaprotocol/types@dev
+
+# Or pin a specific version
+yarn add @avaprotocol/sdk-js@4.0.0-dev.0 @avaprotocol/types@4.0.0-dev.0
+```
+
+`@avaprotocol/types` ships the OpenAPI-generated request and response shapes; the SDK takes it as a peer-level dep so you can import types directly:
+
+```ts
+import { Client } from "@avaprotocol/sdk-js";
+import type { v4 } from "@avaprotocol/types";
+```
+
+# Construct the client
+
+The Client is the single entrypoint. Construct one per aggregator endpoint and share it across the app — all requests go through one underlying transport (one Bearer token, one timeout setting, one fetch implementation).
+
+```ts
+import { Client } from "@avaprotocol/sdk-js";
+
+const client = new Client({
+  baseUrl: "https://gateway.avaprotocol.org/api/v1",
+  // Optional: pin a request timeout (defaults to 30s).
+  defaultTimeoutMs: 120_000,
+});
+```
+
+The v4 gateway is multi-chain — one endpoint serves Ethereum mainnet, Base, Sepolia, and Base-Sepolia. The target chain is selected per-request (via `body.chainId` or `inputVariables.settings.chain_id`); you do not need a separate Client per chain.
+
+# Authenticate
+
+Every endpoint except `client.health.check()` requires a Bearer JWT. Two ways to get one:
+
+**EIP-191 signature exchange (production).** The wallet UI signs a canonical message; the SDK exchanges it for a JWT and stashes it on the transport automatically.
+
+```ts
+import { Client, buildAuthMessage } from "@avaprotocol/sdk-js";
+
+const client = new Client({ baseUrl: "https://gateway.avaprotocol.org/api/v1" });
+
+// In the browser, build the message + ask the wallet to sign it.
+const { message } = buildAuthMessage({ ownerAddress });
+const signature = await wallet.signMessage(message); // wagmi, viem, ethers, …
+
+// Exchange. The returned token is now set as the client's Bearer credential.
+const { token } = await client.auth.exchange({ message, signature, ownerAddress });
+```
+
+**Pre-minted admin key (server tooling, tests).** When the server has the JWT signing secret, mint a long-lived JWT out-of-band via the aggregator CLI and pass it on construction:
+
+```bash
+./ap create-api-key --config=config/gateway.yaml \
+  --role=admin --subject=0xYourEOA --chain-id=11155111
+```
+
+```ts
+const client = new Client({
+  baseUrl: process.env.AVS_REST_URL!,
+  token: process.env.AVS_API_KEY,
+});
+```
+
+For the full sign-in lifecycle (token caching, re-prompt on 401, multi-chain JWTs) see [Authentication](/docs/ava-sdk-js/authentication).
+
+# First call
+
+A canonical smoke test: list your smart wallets, ensuring one exists at `salt=0`.
+
+```ts
+const wallet = await client.wallets.create({ salt: "0" });
+console.log(`Smart wallet: ${wallet.address}`);
+
+const wallets = await client.wallets.list();
+console.log(`Owned wallets: ${wallets.data.length}`);
+```
+
+Note the **`{ data: [...] }` envelope** on list endpoints — v4 list responses are always envelopes, never bare arrays. This applies to `wallets.list()`, `workflows.list()`, `executions.list()`, and `secrets.list()`.
+
+# Deploy a workflow
+
+A workflow is one trigger + a DAG of nodes that fires when the trigger condition matches. The minimum example: a cron-triggered workflow that runs a custom JS snippet.
+
+```ts
+import { Client, Triggers, Nodes } from "@avaprotocol/sdk-js";
+
+const workflow = await client.workflows.create({
+  smartWalletAddress: wallet.address,
+  trigger: Triggers.cron({
+    id: "trigger",
+    name: "hourly",
+    schedule: ["0 * * * *"], // every hour at :00
+  }),
+  nodes: [
+    Nodes.customCode({
+      id: "log",
+      name: "log",
+      source: 'return { ts: Date.now(), msg: "hello from workflow" };',
+    }),
+  ],
+  edges: [{ id: "e1", source: "trigger", target: "log" }],
+});
+
+console.log(`Deployed workflow: ${workflow.id}`);
+```
+
+The `Triggers.*` and `Nodes.*` builders return plain JSON objects shaped to the OpenAPI discriminated union — no class instances, fully serializable.
+
+# What's next
+
+- **Run a workflow once without deploying:** [`client.workflows.simulate(...)`](/docs/ava-sdk-js/reference/classes/WorkflowsResource#simulate) — same payload shape as `create`, returns a transient Execution instead of persisting.
+- **React to chain events instead of cron:** [`Triggers.event(...)`](/docs/ava-sdk-js/reference/variables/Triggers) — filter by contract address + topic, including indexed parameters.
+- **Stream a running execution:** [`client.executions.stream(id, { workflowId })`](/docs/ava-sdk-js/reference/classes/ExecutionsResource#stream) — SSE async-iterable that yields one status summary per change and closes on terminal status.
+- **Withdraw funds from a smart wallet:** [`client.wallets.withdraw(address, { token, amount, recipientAddress })`](/docs/ava-sdk-js/reference/classes/WalletsResource#withdraw).
+
+The [SDK Reference](/docs/ava-sdk-js/reference) lists every method, every type, and every error class with a source-link to the SDK's git revision.

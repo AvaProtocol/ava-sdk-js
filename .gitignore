@@ -9,6 +9,9 @@ dist/
 out/
 *.tsbuildinfo
 
+# TypeDoc generated reference (regenerated via `yarn docs` in each package)
+docs-api/
+
 # Logs
 logs
 *.log
@@ -56,6 +59,8 @@ coverage/
 # dotenv environment variables file
 .env
 .env.*
+# but track .env.*.example template files (no real secrets)
+!.env.*.example
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

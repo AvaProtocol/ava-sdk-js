@@ -1,0 +1,12 @@
+---
+title: REST API
+description: Interactive reference for the Ava Protocol REST API — every endpoint, every schema, every example, rendered live from the OpenAPI spec.
+---
+
+The Ava Protocol REST API is the gateway's wire protocol. The TypeScript SDK on this site is a thin wrapper around it; partners who don't use JavaScript (Python services, Go backends, on-chain indexers, curl tests) call it directly.
+
+This page renders the OpenAPI spec from [`ava-sdk-js/packages/types/openapi/openapi.yaml`](https://github.com/AvaProtocol/ava-sdk-js/blob/feature/v4-rest-rewrite/packages/types/openapi/openapi.yaml) — the same source that generates `@avaprotocol/types`, so what you see below matches the SDK shapes one-to-one.
+
+Authentication, error model, and chain-context resolution are unchanged from the SDK reference — see [Authentication](/docs/ava-sdk-js/authentication) and the [Errors classes](/docs/ava-sdk-js/reference/classes/APIError) for the application-level rules.
+
+<RestApiReference url="https://raw.githubusercontent.com/AvaProtocol/ava-sdk-js/feature/v4-rest-rewrite/packages/types/openapi/openapi.yaml" />

@@ -1,7 +1,7 @@
 {
   "name": "@avaprotocol/sdk-js",
-  "version": "2.17.0",
-  "description": "A JavaScript/TypeScript SDK designed to simplify integration with Ava Protocol's AVS",
+  "version": "4.0.0-dev.3",
+  "description": "TypeScript SDK for Ava Protocol's AVS REST API (v4). Resource-grouped sub-clients, fetch transport, EIP-191 auth.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -27,20 +27,18 @@
     "build:declarations": "tsc -b tsconfig.json",
     "build:js": "tsup src/index.ts --format cjs,esm",
     "build": "yarn build:declarations && yarn build:js",
-    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo",
+    "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo docs-api",
+    "docs": "typedoc && node scripts/flatten-docs.js",
     "prepare": "node ../../scripts/prepare-package.js"
   },
   "dependencies": {
-    "@avaprotocol/types": "2.13.0",
-    "@grpc/grpc-js": "^1.11.3",
-    "@grpc/proto-loader": "^0.7.13",
+    "@avaprotocol/protocols": "^0.2.0",
+    "@avaprotocol/types": "4.0.0-dev.0",
     "dotenv": "^16.4.5",
-    "ethers": "^6.13.2",
-    "google-protobuf": "3.19.4",
-    "id128": "^1.6.6",
-    "lodash": "^4.17.21"
+    "ethers": "^6.13.2"
   },
   "devDependencies": {
-    "@types/google-protobuf": "^3.15.12"
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.11.0"
   }
 }

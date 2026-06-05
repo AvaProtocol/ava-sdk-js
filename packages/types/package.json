@@ -1,7 +1,7 @@
 {
   "name": "@avaprotocol/types",
-  "version": "2.13.0",
-  "description": "Type definitions for Ava Protocol's AVS",
+  "version": "4.0.0-dev.0",
+  "description": "Type definitions for Ava Protocol's AVS REST API (v4) — generated from api/openapi.yaml.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

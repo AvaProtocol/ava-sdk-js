@@ -1,0 +1,242 @@
+import { Edge, NodeFactory, TriggerFactory } from "@avaprotocol/sdk-js";
+import {
+  NodeProps,
+  ContractWriteNodeProps,
+  ContractReadNodeProps,
+  ETHTransferNodeProps,
+  CustomCodeNodeProps,
+  GraphQLQueryNodeProps,
+  BranchNodeProps,
+  WorkflowProps,
+  NodeType,
+  TriggerType,
+  Lang,
+  AbiElement,
+} from "@avaprotocol/types";
+import { getNextId, getExpiredAt, getSettings } from "./utils";
+import { getConfig } from "./envalid";
+
+export const defaultTriggerId = getNextId();
+
+export const ethTransferNodeProps: ETHTransferNodeProps = {
+  id: getNextId(),
+  name: "sendETH",
+  type: NodeType.ETHTransfer,
+  data: {
+    destination: "0x2e8bdb63d09ef989a0018eeb1c47ef84e3e61f7b",
+    amount: "100000000000000", // 0.0001 ETH in wei (decimal string)
+  },
+};
+
+// Simple ERC20 ABI for template usage
+const ERC20_MINIMAL_ABI: AbiElement[] = [
+  {
+    inputs: [{ name: "_owner", type: "address" }],
+    name: "balanceOf",
+    outputs: [{ name: "balance", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "name",
+    outputs: [{ name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+export const createContractWriteNodeProps = async (
+  owner: string
+): Promise<ContractWriteNodeProps> => {
+  const { tokens } = getConfig();
+  return {
+    id: getNextId(),
+    name: "approve_token",
+    type: NodeType.ContractWrite,
+    data: {
+      contractAddress: tokens.USDC.address,
+      contractAbi: ERC20_MINIMAL_ABI,
+      methodCalls: [
+        {
+          methodName: "approve",
+          methodParams: [owner, "0"],
+        },
+      ],
+    },
+  };
+};
+
+export const createContractReadNodeProps =
+  async (): Promise<ContractReadNodeProps> => {
+    const { tokens } = getConfig();
+    return {
+      id: getNextId(),
+      name: "get_token_name",
+      type: NodeType.ContractRead,
+      data: {
+        contractAddress: tokens.USDC.address,
+        contractAbi: ERC20_MINIMAL_ABI,
+        methodCalls: [
+          {
+            methodName: "name",
+            methodParams: [],
+          },
+        ],
+      },
+    };
+  };
+
+const graphqlQueryNodeProps: GraphQLQueryNodeProps = {
+  id: getNextId(),
+  name: "graphql_call",
+  type: NodeType.GraphQLQuery,
+  data: {
+    url: "http://localhost:19876/graphql",
+    query: `query TestQuery {
+        test {
+          id
+          value
+        }
+      }`,
+    variables: {
+      test: "true",
+    },
+  },
+};
+
+const branchNodeProps: BranchNodeProps = {
+  id: getNextId(),
+  name: "branch",
+  type: NodeType.Branch,
+  data: {
+    conditions: [
+      { id: "b1", type: "if", expression: "foo >= 5" },
+      { id: "b2", type: "if", expression: "foo <= -1" },
+      { id: "b3", type: "else", expression: "" },
+    ],
+  },
+};
+
+const customCodeNodeProps: CustomCodeNodeProps = {
+  id: getNextId(),
+  name: "customCode",
+  type: NodeType.CustomCode,
+  data: {
+    lang: Lang.JavaScript,
+    source: "return { foo: 'bar' };",
+  },
+};
+
+export const NodesTemplate = [customCodeNodeProps];
+
+// Programmatically create edges from nodes
+const createEdgesFromNodes = (nodes: NodeProps[]): Edge[] => {
+  return nodes.map((node, index) => {
+    if (index === 0) {
+      // First edge connects trigger to first node
+      return new Edge({
+        id: getNextId(),
+        source: defaultTriggerId,
+        target: node.id,
+      });
+    }
+    // Connect each node to the next one
+    return new Edge({
+      id: getNextId(),
+      source: nodes[index - 1].id,
+      target: node.id,
+    });
+  });
+};
+
+/**
+ * Workflow templates
+ */
+export const createFromTemplate = (
+  address: string,
+  nodes?: NodeProps[]
+): WorkflowProps => {
+  let nodesList: NodeProps[];
+
+  if (nodes === undefined) {
+    // Use default template when nodes is not provided
+    nodesList = NodesTemplate;
+  } else if (nodes.length === 0) {
+    // When empty array is explicitly passed, use a minimal no-op node
+    // This handles cases where tests want to test triggers in isolation
+    nodesList = [
+      {
+        id: getNextId(),
+        name: "minimal_node",
+        type: NodeType.CustomCode,
+        data: {
+          lang: Lang.JavaScript,
+          source: "return {};", // Minimal no-op code
+        },
+      } as CustomCodeNodeProps,
+    ];
+  } else {
+    // Use provided nodes
+    nodesList = nodes;
+  }
+
+  const now = Date.now(); // Get current time in milliseconds
+
+  return {
+    smartWalletAddress: address,
+    name: "SDK Test Workflow",
+    nodes: NodeFactory.createNodes(nodesList),
+    edges: createEdgesFromNodes(nodesList),
+    trigger: TriggerFactory.create({
+      id: defaultTriggerId,
+      name: "blockTrigger",
+      type: TriggerType.Block,
+      data: { interval: 5 },
+    }),
+    startAt: now,
+    expiredAt: getExpiredAt("30d", now),
+    maxExecution: 1,
+    inputVariables: { settings: getSettings(address, "SDK Test Workflow") },
+  } as WorkflowProps;
+};
+
+const nodes = [
+  ethTransferNodeProps,
+  graphqlQueryNodeProps,
+  branchNodeProps,
+  customCodeNodeProps,
+];
+
+export const MultiNodeWithBranch = {
+  nodes: NodeFactory.createNodes(nodes),
+  edges: createEdgesFromNodes(nodes),
+  trigger: TriggerFactory.create({
+    id: defaultTriggerId,
+    name: "blockTrigger",
+    type: TriggerType.Block,
+    data: { interval: 5 },
+  }),
+  startAt: Date.now(),
+  expiredAt: getExpiredAt("30d"),
+  name: `Test task`,
+  maxExecution: 1,
+};
+
+// Import Loop node templates
+import {
+  loopNodeWithRestApiProps,
+  loopNodeWithCustomCodeProps,
+  loopNodeWithETHTransferProps,
+  loopNodeWithContractReadProps,
+  loopNodeWithGraphQLQueryProps,
+} from "./templates/loopNode";
+
+// Export Loop node templates
+export {
+  loopNodeWithRestApiProps,
+  loopNodeWithCustomCodeProps,
+  loopNodeWithETHTransferProps,
+  loopNodeWithContractReadProps,
+  loopNodeWithGraphQLQueryProps,
+};

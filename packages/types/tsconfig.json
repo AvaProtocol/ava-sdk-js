@@ -7,11 +7,8 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "typeRoots": ["../../node_modules/@types"],
-    "types": ["google-protobuf"],
+    "types": [],
     "baseUrl": ".",
-    "paths": {
-      "@/grpc_codegen/*": ["../../grpc_codegen/*"]
-    },
     "outDir": "./dist",
     "rootDir": "./src",
     "composite": true,

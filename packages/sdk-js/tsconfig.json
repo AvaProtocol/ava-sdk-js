@@ -6,11 +6,11 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "lib": ["ES2022", "DOM"],
     "typeRoots": ["../../node_modules/@types", "./node_modules/@types"],
-    "types": ["google-protobuf"],
+    "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@/grpc_codegen/*": ["../../grpc_codegen/*"],
       "@avaprotocol/types": ["../types/src/index.ts"]
     },
     "outDir": "./dist",

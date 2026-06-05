@@ -46,6 +46,54 @@ Then grep the log for `FAIL`, `✕`, `Error:`, `Received:`, etc. Do not repeated
 rerun a suite to extract failure details — the log has everything. The `./logs/`
 folder is gitignored.
 
+### Running v4 tests against the Railway gateway
+
+For the v4 REST suite (`tests/v4/**`), `TEST_ENV=railway` points the tests at
+the deployed gateway in the EigenLayer-AVS `eigenlayer-avs` project,
+`feature/rest-api-migration` environment. Use this when verifying changes
+that landed on the server side (a fresh push to `feature/rest-api-migration`
+auto-rebuilds the gateway service) without standing up `make dev-stack`
+locally.
+
+```bash
+TEST_ENV=railway yarn jest tests/v4/templates/aave-health-factor-alert.test.ts
+```
+
+**Setup**: see `.env.railway.example`. Requires `AVS_REST_URL` pointing at
+the public gateway domain + an admin JWT in `AVS_API_KEY` minted via
+`railway ssh --service gateway --environment feature/rest-api-migration "./ap create-api-key --config=config/gateway-railway.yaml --role=admin --subject=0x..."`.
+
+#### Per-test log verification
+
+When **adding or rewriting** a v4 test (especially template tests that exercise
+multiple node types), run **one test at a time** and tail both the gateway and
+the matching chain worker's Railway logs for that execution window. The test
+passing is necessary but not sufficient — log lines reveal expected behaviour
+the test can't assert (Tenderly invocations, RPC calls, state-override
+injection, chain-worker dispatch). They also surface warnings the test
+swallows.
+
+```bash
+# 1) Run the single test (NOT the full suite)
+TEST_ENV=railway yarn jest tests/v4/templates/your-template.test.ts
+
+# 2) Tail the gateway logs for the same time window. The relevant chain worker
+#    is determined by the test's chainId — Sepolia (11_155_111) → worker-sepolia,
+#    Base Sepolia (84_532) → worker-base-sepolia, mainnet → worker-ethereum,
+#    Base → worker-base.
+cd /Users/mikasa/Code/avs-infra
+railway logs --service gateway --environment feature/rest-api-migration --deployment 2>&1 | tail -50
+railway logs --service worker-sepolia --environment feature/rest-api-migration --deployment 2>&1 | tail -50
+```
+
+What to look for:
+
+- **Gateway**: HTTP method + URI + status code for each request (`POST /api/v1/workflows:simulate status=200`), no `Worker reconnect failed` / `context deadline exceeded` warnings, no Sentry-bound errors.
+- **Worker**: `Chain worker gRPC server listening` at startup, the actual RPC calls the test induced (contract reads/writes show up as `eth_call` / Tenderly simulate requests), no `Failed to connect to WebSocket RPC` / `403 Forbidden` from the chain RPC.
+- **For contractWrite-bearing tests**: confirm Tenderly state-override invocations show up in worker logs — same-workflow `approve` should inject allowance state for the chained `supply`/`transfer`.
+
+If logs show a warning the test passes through (e.g. `Worker not ready, will retry`, `Failed to fetch paymaster owner`), surface it explicitly in the test's output or the change description. Tests that pass on green logs but ignore amber logs are how regressions slip in.
+
 ### Docker Environment
 
 ```bash

@@ -1,0 +1,256 @@
+---
+title: Usage Examples
+description: Five canonical patterns — deploy a manual workflow, simulate before deploying, schedule with cron, react to an on-chain event, and withdraw funds from a smart wallet.
+---
+
+Each example below is self-contained: copy-paste-able, runs against a Railway gateway, and inspects the response shape so you see what to expect. All five assume you've already constructed an authenticated `client` per [Authentication](/docs/ava-sdk-js/authentication) — that setup is omitted from each snippet.
+
+For the per-method reference see the [SDK reference](/docs/ava-sdk-js/reference). For the canonical workflow shape see [Workflows](/docs/ava-sdk-js/reference/classes/WorkflowsResource).
+
+# 1. Deploy a workflow and trigger it manually
+
+The smallest end-to-end pattern: ensure a smart wallet exists, deploy a workflow with a manual trigger, fire it, and read the execution. Use this when integrating from a server — you want to control when the workflow runs, not wait for a chain event or cron tick.
+
+```ts
+import { Triggers, Nodes } from "@avaprotocol/sdk-js";
+
+// 1. Ensure a smart wallet exists for the authenticated EOA.
+const wallet = await client.wallets.create({ salt: "0" });
+
+// 2. Deploy a workflow with a manual trigger + one customCode node.
+const workflow = await client.workflows.create({
+  smartWalletAddress: wallet.address,
+  name: "Manual demo",
+  trigger: Triggers.manual({ id: "trigger", name: "manual" }),
+  nodes: [
+    Nodes.customCode({
+      id: "echo",
+      name: "echo",
+      source: 'return { ts: Date.now(), msg: "fired" };',
+    }),
+  ],
+  edges: [{ id: "e1", source: "trigger", target: "echo" }],
+});
+
+// 3. Fire the trigger. `isBlocking: true` waits for the execution
+//    to terminate before returning; omit for fire-and-forget.
+const trig = await client.workflows.trigger(workflow.id, {
+  triggerType: "manual",
+  triggerInput: { reason: "smoke-test" },
+  isBlocking: true,
+});
+
+// 4. Retrieve the execution and inspect the customCode step's output.
+const execution = await client.executions.retrieve(trig.executionId, {
+  workflowId: workflow.id,
+});
+const echoStep = execution.steps?.find((s) => s.id === "echo");
+console.log(echoStep?.output);
+// → { ts: 1748382712345, msg: "fired" }
+```
+
+The `executionId` returned by `trigger()` is a ULID; `executions.retrieve(id, { workflowId })` is the canonical lookup. Step output is a tagged union keyed by node type — `echoStep.output` here is the `customCode` variant.
+
+# 2. Simulate before deploying
+
+`workflows.simulate` runs the exact same DAG the engine would run, but doesn't persist anything. Use this to validate a workflow shape (does it parse, do the chained variables resolve, does the branch take the path you expect) before committing to a deploy.
+
+```ts
+import { Triggers, Nodes } from "@avaprotocol/sdk-js";
+
+const wallet = await client.wallets.create({ salt: "0" });
+
+const sim = await client.workflows.simulate({
+  trigger: Triggers.cron({
+    id: "trigger",
+    name: "cron",
+    schedule: ["0 * * * *"], // hourly at :00 — irrelevant for simulation
+  }),
+  nodes: [
+    Nodes.customCode({
+      id: "data",
+      name: "data",
+      source: "return [{name:'Alice',age:21},{name:'Bob',age:17}];",
+    }),
+    Nodes.filter({
+      id: "filter",
+      name: "filter",
+      expression: "value.age >= 18",
+      inputVariable: "{{data.data}}",
+    }),
+  ],
+  edges: [
+    { id: "e1", source: "trigger", target: "data" },
+    { id: "e2", source: "data", target: "filter" },
+  ],
+  inputVariables: {
+    // Required: the runner field gates wallet-ownership checks.
+    settings: { name: "Adult filter", runner: wallet.address, chain_id: 11_155_111 },
+  },
+});
+
+console.log(sim.status);                                    // → "success"
+const filterStep = sim.steps?.find((s) => s.id === "filter");
+console.log((filterStep?.output as { data: unknown[] }).data);
+// → [{ name: "Alice", age: 21 }]
+```
+
+Two things to know:
+
+- `inputVariables.settings` is **required**. The engine validates wallet ownership against `settings.runner` and uses `settings.chain_id` as the per-request chain selector — omit them and the simulate call fails.
+- Simulation returns full step outputs but does not consume bundler gas or persist an execution. Run as many simulations as you like during workflow design.
+
+# 3. Schedule a cron workflow
+
+The production pattern for time-based automation. Same `workflows.create` call as Example 1, with `Triggers.cron` instead of `Triggers.manual`. After deploy, the operator pool fires it on schedule — your code doesn't need to do anything else.
+
+```ts
+import { Triggers, Nodes } from "@avaprotocol/sdk-js";
+
+const wallet = await client.wallets.create({ salt: "0" });
+
+const workflow = await client.workflows.create({
+  smartWalletAddress: wallet.address,
+  name: "Hourly heartbeat",
+  trigger: Triggers.cron({
+    id: "trigger",
+    name: "cron",
+    // Standard 5-field cron, multiple schedules allowed for staggered fires.
+    schedule: ["0 * * * *"],
+  }),
+  nodes: [
+    Nodes.restApi({
+      id: "ping",
+      name: "ping",
+      url: "https://example.com/ava-heartbeat",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ wallet: wallet.address }),
+    }),
+  ],
+  edges: [{ id: "e1", source: "trigger", target: "ping" }],
+});
+
+// Verify it landed and is active.
+console.log(workflow.id, workflow.status);
+// → "01HQ...", "active"
+
+// Pull execution history (paginated, envelope-wrapped — `.data`).
+const recent = await client.executions.list({ workflowId: [workflow.id], limit: 5 });
+recent.data.forEach((e) => console.log(e.id, e.status, e.startAt));
+```
+
+Pause and resume idempotently:
+
+```ts
+await client.workflows.pause(workflow.id);   // status → "paused"
+await client.workflows.resume(workflow.id);  // status → "active"
+await client.workflows.cancel(workflow.id);  // permanent delete
+```
+
+# 4. React to an on-chain event
+
+The pattern for chain-state automation. The operator pool monitors the configured `addresses` + `topics` filter; the workflow fires every matching log. This example watches the AAVE V3 Pool for `Borrow` events with `onBehalfOf` equal to the user's wallet, then reads the resulting health factor.
+
+```ts
+import { Triggers, Nodes } from "@avaprotocol/sdk-js";
+
+const AAVE_V3_POOL_SEPOLIA = "0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951";
+// keccak256("Borrow(address,address,address,uint256,uint8,uint256,uint16)")
+const AAVE_BORROW_SIG =
+  "0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0";
+
+// Indexed args in Borrow are [reserve, onBehalfOf, referralCode] —
+// topics[2] is onBehalfOf. Empty strings are wildcards.
+const padTopic = (addr: string) =>
+  "0x" + addr.slice(2).padStart(64, "0").toLowerCase();
+
+const wallet = await client.wallets.create({ salt: "0" });
+
+const workflow = await client.workflows.create({
+  smartWalletAddress: wallet.address,
+  name: "AAVE borrow watcher",
+  chainId: 11_155_111,
+  trigger: Triggers.event({
+    id: "trigger",
+    name: "aaveBorrow",
+    queries: [
+      {
+        addresses: [AAVE_V3_POOL_SEPOLIA],
+        topics: [AAVE_BORROW_SIG, "", padTopic(wallet.address), ""],
+      },
+    ],
+  }),
+  nodes: [
+    Nodes.contractRead({
+      id: "read",
+      name: "aaveRead",
+      contractAddress: AAVE_V3_POOL_SEPOLIA,
+      contractAbi: [
+        {
+          inputs: [{ name: "user", type: "address" }],
+          name: "getUserAccountData",
+          outputs: [
+            { name: "totalCollateralBase", type: "uint256" },
+            { name: "totalDebtBase", type: "uint256" },
+            { name: "availableBorrowsBase", type: "uint256" },
+            { name: "currentLiquidationThreshold", type: "uint256" },
+            { name: "ltv", type: "uint256" },
+            { name: "healthFactor", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+      methodCalls: [{ methodName: "getUserAccountData", methodParams: [wallet.address] }],
+    }),
+  ],
+  edges: [{ id: "e1", source: "trigger", target: "read" }],
+});
+```
+
+The topic layout is event-specific — for any indexed `event Foo(address indexed a, uint b, address indexed c)`, `topics[0]` is the keccak256 signature hash and indexed args fill `topics[1..n]` in declaration order. Padding addresses to 32 bytes is the caller's responsibility; the SDK doesn't do it for you because non-address indexed types (`uint256`, `bytes32`) pad differently.
+
+To validate the trigger filter before deploying, run it through `client.triggers.run()` — it simulates a matching log via Tenderly and returns the decoded event under `output.data`.
+
+# 5. Withdraw funds from a smart wallet
+
+Move ETH or an ERC-20 out of a smart wallet via a UserOp through the bundler + paymaster. The paymaster sponsors gas, so the wallet only needs the token balance you're sending.
+
+```ts
+const wallet = await client.wallets.create({ salt: "0" });
+
+// ETH withdrawal — amount in wei.
+const ethResponse = await client.wallets.withdraw(wallet.address, {
+  recipientAddress: "0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557",
+  amount: "1000000000000000",   // 0.001 ETH
+  token: "ETH",
+});
+
+console.log(ethResponse.status);          // → "pending" | "confirmed" | "failed"
+console.log(ethResponse.userOpHash);      // → "0x..."
+console.log(ethResponse.transactionHash); // → set when status === "confirmed"
+
+// ERC-20 withdrawal — amount in the token's base units (USDC = 6 decimals).
+const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+const usdcResponse = await client.wallets.withdraw(wallet.address, {
+  recipientAddress: "0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557",
+  amount: "10000",              // 0.01 USDC
+  token: USDC_SEPOLIA,
+});
+```
+
+A few things worth knowing before you put this in production:
+
+- **`amount: "max"`** withdraws the entire balance (the SDK reads the on-chain balance and computes the right number for you). Useful for "drain wallet" UIs.
+- The `status` enum is `pending | confirmed | failed`. `confirmed` means the bundler returned a receipt synchronously; `pending` means accepted but the receipt hasn't landed yet (poll via [`executions.retrieve`](/docs/ava-sdk-js/reference/classes/ExecutionsResource) is not relevant — withdraws aren't executions, just track `userOpHash` on a bundler).
+- The chain is resolved per-request from the JWT's `aud` claim — if your authenticated chain doesn't match where the token lives, the call returns `Problem.code === "WITHDRAW_NO_CONTRACT_CODE"` (the token contract isn't deployed on the gateway's resolved chain).
+
+# What's next
+
+The five patterns above cover ~90% of the SDK surface. For the rest:
+
+- **Per-method signatures, return types, every option:** [SDK reference](/docs/ava-sdk-js/reference).
+- **Streaming a long-running execution as it progresses** (replaces poll loops): [`client.executions.stream(id, { workflowId })`](/docs/ava-sdk-js/reference/classes/ExecutionsResource) — SSE async-iterable, yields one status summary per change, closes on terminal status.
+- **Managing secrets referenced from workflow nodes** (`{{secrets.NAME}}` template variables): [`client.secrets.*`](/docs/ava-sdk-js/reference/classes/SecretsResource) — write-only store, idempotent PUT for create-or-update.
+- **Estimating fees before deploying:** [`client.workflows.estimateFees(...)`](/docs/ava-sdk-js/reference/classes/WorkflowsResource) — returns USD + native-token cost projections derived from current bundler gas prices.
