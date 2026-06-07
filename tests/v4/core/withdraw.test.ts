@@ -23,7 +23,7 @@
 
 import { ethers } from "ethers";
 
-import { Client, type v4 } from "@avaprotocol/sdk-js";
+import { Chains, Client, Tokens, type v4 } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -174,7 +174,7 @@ describe("Withdraw Funds Tests", () => {
         return;
       }
 
-      const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+      const usdcAddress = Tokens.USDC[Chains.Sepolia]!.address;
       const req: v4.WithdrawRequest = {
         recipientAddress: eoaAddress,
         amount: "10000", // 0.01 USDC (6 decimals)

@@ -18,7 +18,7 @@
  *   - result.metadata = raw log (with chainId)
  */
 
-import { Client, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -28,24 +28,11 @@ import {
 
 jest.setTimeout(60_000);
 
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const CHAINLINK_ETH_USD_SEPOLIA = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
-const TRANSFER_SIG = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
-const CHAINLINK_ANSWER_UPDATED_SIG =
-  "0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f";
-
-const CHAINLINK_ABI = [
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "int256", name: "current", type: "int256" },
-      { indexed: true, internalType: "uint256", name: "roundId", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "updatedAt", type: "uint256" },
-    ],
-    name: "AnswerUpdated",
-    type: "event",
-  },
-];
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
+const CHAINLINK_ETH_USD_SEPOLIA = Protocols.chainlink.ethUsdFeed[Chains.Sepolia]!;
+const TRANSFER_SIG = Protocols.erc20.eventTopics.Transfer;
+const CHAINLINK_ANSWER_UPDATED_SIG = Protocols.chainlink.eventTopics.AnswerUpdated;
+const CHAINLINK_ABI = Protocols.chainlink.answerUpdatedEventAbi;
 
 function padTopic(addr: string): string {
   return "0x" + addr.slice(2).padStart(64, "0").toLowerCase();

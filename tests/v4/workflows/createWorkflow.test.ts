@@ -10,7 +10,7 @@
  * defined so we no longer need the loose compare logic.
  */
 
-import { Client, Nodes, Triggers, type v4 } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers, type v4 } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -23,9 +23,9 @@ import { createFromTemplate } from "../../utils/templates";
 
 jest.setTimeout(60_000);
 
-const USDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const WETH = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
-const TRANSFER_SIG = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+const USDC = Tokens.USDC[Chains.Sepolia]!.address;
+const WETH = Tokens.WETH[Chains.Sepolia]!.address;
+const TRANSFER_SIG = Protocols.erc20.eventTopics.Transfer;
 
 function padTopic(addr: string): string {
   return "0x" + addr.slice(2).padStart(64, "0").toLowerCase();

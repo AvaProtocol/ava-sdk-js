@@ -17,7 +17,7 @@
  * passes.
  */
 
-import { Client } from "@avaprotocol/sdk-js";
+import { Chains, Client, Tokens, type TokenChainEntry } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -31,9 +31,29 @@ interface TokenDef {
   readonly decimals: number;
 }
 
+/**
+ * Build a TokenDef from the catalog's symbol-keyed entry. The
+ * catalog ships `name`/`decimals`/`address` per chain; `symbol` is
+ * the lookup key so we add it back into the shape the existing
+ * test logic expects.
+ */
+function fromCatalog(symbol: string): TokenDef {
+  const entry: TokenChainEntry | undefined = Tokens[symbol]?.[Chains.Sepolia];
+  if (!entry) {
+    throw new Error(`Expected ${symbol} in @avaprotocol/protocols Sepolia catalog`);
+  }
+  return {
+    address: entry.address,
+    name: entry.name ?? symbol,
+    symbol,
+    decimals: entry.decimals,
+  };
+}
+
 // Sepolia (chainId 11155111) — matches the dev aggregator's chain.
-// Mirrors config/chains.ts; inlined so the test stays decoupled
-// from the SDK's chain config module.
+// Catalog symbols come from `@avaprotocol/protocols`. ETH is the
+// native-asset sentinel (`0xeee…`) — not an ERC-20, so it's not in
+// the catalog; stays inlined here.
 const TOKENS: Readonly<Record<string, TokenDef>> = {
   ETH: {
     address: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
@@ -41,24 +61,9 @@ const TOKENS: Readonly<Record<string, TokenDef>> = {
     symbol: "ETH",
     decimals: 18,
   },
-  WETH: {
-    address: "0xfff9976782d46cc05630d1f6ebab18b2324d6b14",
-    name: "Wrapped Ether",
-    symbol: "WETH",
-    decimals: 18,
-  },
-  USDC: {
-    address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-    name: "USD Coin",
-    symbol: "USDC",
-    decimals: 6,
-  },
-  LINK: {
-    address: "0x779877a7b0d9e8603169ddbd7836e478b4624789",
-    name: "ChainLink Token",
-    symbol: "LINK",
-    decimals: 18,
-  },
+  WETH: fromCatalog("WETH"),
+  USDC: fromCatalog("USDC"),
+  LINK: fromCatalog("LINK"),
 };
 
 const HAS_TOKENS = Object.keys(TOKENS).length > 0;

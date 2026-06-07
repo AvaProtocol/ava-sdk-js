@@ -18,7 +18,7 @@
  *     the gRPC→HTTP code translation).
  */
 
-import { Client, Triggers } from "@avaprotocol/sdk-js";
+import { Client, Protocols, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -132,7 +132,7 @@ describe("workflows.trigger Tests", () => {
             {
               addresses: [],
               topics: [
-                "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+                Protocols.erc20.eventTopics.Transfer,
                 "",
                 "0x" + wallet.address.slice(2).padStart(64, "0").toLowerCase(),
               ],

@@ -15,7 +15,7 @@
  *     alongside the formatted one.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -27,16 +27,17 @@ import {
 
 jest.setTimeout(60_000);
 
-// Chainlink ETH/USD price feed on Sepolia.
-const ORACLE_ADDRESS = "0xB0C712f98daE15264c8E26132BCC91C40aD4d5F9";
+// Chainlink ETH/USD price feed on Sepolia, sourced from the catalog.
+// The previous hardcoded address (0xB0C712...) was actually the
+// Sepolia AUD/USD feed — same AggregatorV3 shape (so the test still
+// passed on shape assertions) but a misleading constant. Using the
+// catalog locks the right contract for the test name.
+const ORACLE_ADDRESS = Protocols.chainlink.ethUsdFeed[Chains.Sepolia]!;
+// AggregatorV3 ABI from the catalog covers `latestRoundData` +
+// `decimals`. The two extra read-only fragments (`description`,
+// `version`) the test exercises live here as inline extras.
 const ORACLE_ABI = [
-  {
-    inputs: [],
-    name: "decimals",
-    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-    stateMutability: "view",
-    type: "function",
-  },
+  ...Protocols.chainlink.aggregatorV3Abi,
   {
     inputs: [],
     name: "description",
@@ -48,19 +49,6 @@ const ORACLE_ABI = [
     inputs: [],
     name: "version",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "latestRoundData",
-    outputs: [
-      { internalType: "uint80", name: "roundId", type: "uint80" },
-      { internalType: "int256", name: "answer", type: "int256" },
-      { internalType: "uint256", name: "startedAt", type: "uint256" },
-      { internalType: "uint256", name: "updatedAt", type: "uint256" },
-      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
-    ],
     stateMutability: "view",
     type: "function",
   },
