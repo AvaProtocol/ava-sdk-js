@@ -19,7 +19,7 @@
  * deploy+trigger path. If it's unfunded the test skips cleanly.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -35,29 +35,8 @@ import { createFromTemplate } from "../../utils/templates";
 jest.setTimeout(180_000);
 
 // Sepolia USDC — long-lived ERC-20 fixture.
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const ERC20_ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "transfer",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "spender", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "approve",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
+const ERC20_ABI = [...Protocols.erc20.transferAbi, ...Protocols.erc20.approveAbi];
 
 describe("ContractWrite Node Tests", () => {
   let client: Client;

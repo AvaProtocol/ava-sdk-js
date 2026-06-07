@@ -1,4 +1,12 @@
-import { Client, Triggers, Nodes, buildAuthMessage, signAuthMessage, APIError } from "@avaprotocol/sdk-js";
+import {
+  APIError,
+  Client,
+  Nodes,
+  Protocols,
+  Triggers,
+  buildAuthMessage,
+  signAuthMessage,
+} from "@avaprotocol/sdk-js";
 
 import { TEST_REST_URL } from "../utils/env";
 
@@ -150,20 +158,18 @@ describe("v4 SDK smoke", () => {
     });
 
     test("Triggers.event preserves topic wildcards as empty strings", () => {
+      const transferTopic = Protocols.erc20.eventTopics.Transfer;
       const trigger = Triggers.event({
         name: "transfer",
         queries: [
           {
             addresses: ["0x0000000000000000000000000000000000000001"],
-            topics: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", ""],
+            topics: [transferTopic, ""],
           },
         ],
       });
       const config = (trigger as { config: { queries: Array<{ topics: string[] }> } }).config;
-      expect(config.queries[0].topics).toEqual([
-        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-        "",
-      ]);
+      expect(config.queries[0].topics).toEqual([transferTopic, ""]);
     });
   });
 

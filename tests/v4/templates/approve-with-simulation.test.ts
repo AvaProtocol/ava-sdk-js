@@ -7,7 +7,7 @@
  * covered by uniswapv3_stoploss.test.ts.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -19,20 +19,9 @@ import {
 
 jest.setTimeout(60_000);
 
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const UNISWAP_ROUTER02 = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
-const APPROVE_ABI = [
-  {
-    inputs: [
-      { name: "_spender", type: "address" },
-      { name: "_value", type: "uint256" },
-    ],
-    name: "approve",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
+const UNISWAP_ROUTER02 = Protocols.uniswapV3.swapRouter02[Chains.Sepolia]!;
+const APPROVE_ABI = Protocols.erc20.approveAbi;
 
 describe("Template: single approve with Tenderly simulation", () => {
   let client: Client;

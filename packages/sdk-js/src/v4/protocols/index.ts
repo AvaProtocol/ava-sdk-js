@@ -11,4 +11,13 @@
 // bumping `@avaprotocol/protocols` minor version + republishing this
 // SDK package picks it up automatically.
 
-export { Protocols, type AbiFragment, type AddressByChain } from "@avaprotocol/protocols";
+export {
+  Protocols,
+  Tokens,
+  lookupToken,
+  type AbiFragment,
+  type AddressByChain,
+  type TokenByChain,
+  type TokenChainEntry,
+  type TokenLinks,
+} from "@avaprotocol/protocols";

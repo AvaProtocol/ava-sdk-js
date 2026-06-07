@@ -9,7 +9,7 @@
  * can run without a real bot token.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -22,8 +22,8 @@ import {
 
 jest.setTimeout(60_000);
 
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
+const TRANSFER_TOPIC = Protocols.erc20.eventTopics.Transfer;
 
 function padTopic(addr: string): string {
   return "0x" + addr.slice(2).padStart(64, "0").toLowerCase();

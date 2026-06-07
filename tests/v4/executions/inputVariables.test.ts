@@ -6,7 +6,7 @@
  * access them as named globals.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -145,10 +145,10 @@ describe("Input Variables", () => {
     test("nested object input variables preserve structure", async () => {
       const wallet = await createSmartWallet(client);
       const swapConfig = {
-        routerAddress: "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E",
+        routerAddress: Protocols.uniswapV3.swapRouter02[Chains.Sepolia]!,
         amountIn: "1000000000000000000",
-        tokenIn: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-        tokenOut: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        tokenIn: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", // native-ETH sentinel
+        tokenOut: Tokens.USDC[Chains.Sepolia]!.address,
       };
       const sim = await client.workflows.simulate({
         trigger: Triggers.manual({

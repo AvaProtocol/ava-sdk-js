@@ -10,7 +10,7 @@
  * behaviors and asserts the provider field accordingly.
  */
 
-import { Client, Nodes } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -22,19 +22,8 @@ import {
 
 jest.setTimeout(60_000);
 
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const APPROVE_ABI = [
-  {
-    inputs: [
-      { internalType: "address", name: "spender", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "approve",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
+const APPROVE_ABI = Protocols.erc20.approveAbi;
 
 describe("nodes.run (provider routing)", () => {
   let client: Client;

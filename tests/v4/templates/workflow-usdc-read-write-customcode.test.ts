@@ -9,7 +9,7 @@
  * deduped, causing the customCode to fail with undefined input.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -22,39 +22,10 @@ import {
 
 jest.setTimeout(60_000);
 
-const USDC_SEPOLIA = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const SYMBOL_ABI = [
-  {
-    constant: true,
-    inputs: [],
-    name: "symbol",
-    outputs: [{ name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-];
-const DECIMALS_ABI = [
-  {
-    constant: true,
-    inputs: [],
-    name: "decimals",
-    outputs: [{ name: "", type: "uint8" }],
-    stateMutability: "view",
-    type: "function",
-  },
-];
-const TRANSFER_ABI = [
-  {
-    inputs: [
-      { name: "to", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    name: "transfer",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
+const SYMBOL_ABI = Protocols.erc20.symbolAbi;
+const DECIMALS_ABI = Protocols.erc20.decimalsAbi;
+const TRANSFER_ABI = Protocols.erc20.transferAbi;
 
 describe("Template: USDC read+write+customCode", () => {
   let client: Client;
