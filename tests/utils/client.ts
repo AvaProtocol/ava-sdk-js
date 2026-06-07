@@ -34,17 +34,8 @@ export function testPrivateKey(): string {
 export function getClient(overrides?: Partial<ClientOptions>): Client {
   return new Client({
     baseUrl: TEST_REST_URL(),
-    // Real-bundler round-trip tests (gasTracking, withdraw,
-    // contractWrite deploy+trigger, ethTransfer deploy+trigger) wait
-    // for a UserOp to land on Sepolia — that's bundler submission +
-    // mempool + block-time + receipt polling, easily 60-120s under CI
-    // cold-start and Sepolia jitter. The individual tests bump their
-    // jest budget to 120-200s for exactly this reason; the SDK
-    // transport ceiling has to keep pace or `AbortController` fires
-    // first and the test sees a misleading `NetworkError: aborted`
-    // instead of the real failure. 240s aligns with the slowest jest
-    // timeout in the suite (`WITHDRAW_TIMEOUT_MS`). The ceiling is an
-    // abort-after, not a sleep — fast tests still return fast.
+    // 240s: real-bundler UserOp round-trips (Sepolia mempool + receipt polling)
+    // can hit 120-200s on CI cold-start — must exceed the largest jest.setTimeout().
     defaultTimeoutMs: 240_000,
     ...overrides,
   });
