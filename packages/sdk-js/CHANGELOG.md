@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 3.2.0
+
+### Minor Changes
+
+- 8ea2a5b: Extend the catalog re-export surface and bump `@avaprotocol/protocols` to `^0.6.0`.
+
 ## 3.1.0
 
 ### Minor Changes
