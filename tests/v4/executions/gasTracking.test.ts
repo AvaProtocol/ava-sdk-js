@@ -25,7 +25,9 @@ import {
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
-jest.setTimeout(120_000);
+// 180s: same blockNumber+5 trigger pattern as ethTransfer — 60s of
+// pure block-wait before the UserOp round-trip even starts.
+jest.setTimeout(180_000);
 
 interface StepWithMeta {
   readonly metadata?: {

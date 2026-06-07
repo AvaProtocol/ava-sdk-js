@@ -34,9 +34,9 @@ export function testPrivateKey(): string {
 export function getClient(overrides?: Partial<ClientOptions>): Client {
   return new Client({
     baseUrl: TEST_REST_URL(),
-    // The full suite under load can take a while — give every
-    // request the same 60s budget the v3 helpers used.
-    defaultTimeoutMs: 60_000,
+    // 240s: real-bundler UserOp round-trips (Sepolia mempool + receipt polling)
+    // can hit 120-200s on CI cold-start — must exceed the largest jest.setTimeout().
+    defaultTimeoutMs: 240_000,
     ...overrides,
   });
 }

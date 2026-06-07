@@ -29,7 +29,9 @@ import {
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
-jest.setTimeout(60_000);
+// 180s: deploy+trigger block matches a future block (blockNumber+5)
+// then waits for the bundler/UserOp receipt — ~75-90s nominal on CI.
+jest.setTimeout(180_000);
 
 // Pull a fresh wallet per test from the per-process salt cursor — the
 // validation tests don't need funding, so a hot wallet works fine.
