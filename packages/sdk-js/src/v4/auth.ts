@@ -87,11 +87,23 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
       "buildAuthMessage: uri must be a non-empty string (the origin the user is signing into, e.g. window.location.origin).",
     );
   }
+  // WHATWG URL treats `localhost:3000` as scheme `localhost:` — require an http(s) origin with a host.
+  let parsed: URL;
   try {
-    new URL(trimmedUri);
+    parsed = new URL(trimmedUri);
   } catch {
     throw new Error(
-      "buildAuthMessage: uri must be a valid URL (e.g. window.location.origin).",
+      `buildAuthMessage: uri must be a valid URL (got ${JSON.stringify(trimmedUri)}); use the http(s) origin the user is signing into.`,
+    );
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(
+      `buildAuthMessage: uri scheme must be http or https (got ${parsed.protocol}); use the origin the user is signing into.`,
+    );
+  }
+  if (!parsed.hostname) {
+    throw new Error(
+      `buildAuthMessage: uri must include a host (got ${JSON.stringify(trimmedUri)}); use the origin the user is signing into.`,
     );
   }
   if (!Number.isInteger(input.chainId) || input.chainId <= 0) {

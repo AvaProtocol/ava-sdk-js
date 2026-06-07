@@ -118,8 +118,15 @@ describe("v4 SDK smoke", () => {
     test("buildAuthMessage throws on invalid uri format", () => {
       const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
       const baseOk = { ownerAddress: owner, chainId: 1, version: "v4-test" };
+      // Negative cases — each line documents one rejection mode.
       expect(() => buildAuthMessage({ ...baseOk, uri: "not-a-url" })).toThrow(/uri/);
-      expect(() => buildAuthMessage({ ...baseOk, uri: "localhost:3000" })).toThrow(/uri/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "localhost:3000" })).toThrow(/scheme/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "ftp://example.com" })).toThrow(/scheme/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "javascript:void(0)" })).toThrow(/scheme/);
+      // Positive cases — guard against future over-aggressive validation.
+      expect(() => buildAuthMessage({ ...baseOk, uri: "http://localhost:3000" })).not.toThrow();
+      expect(() => buildAuthMessage({ ...baseOk, uri: "https://app.example.com" })).not.toThrow();
+      expect(() => buildAuthMessage({ ...baseOk, uri: "https://app.example.com:8443/path" })).not.toThrow();
     });
 
     test("signAuthMessage throws when called without input", async () => {
