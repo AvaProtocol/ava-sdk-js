@@ -87,25 +87,23 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
       "buildAuthMessage: uri must be a non-empty string (the origin the user is signing into, e.g. window.location.origin).",
     );
   }
-  // Enforce a real http(s) protocol — the `uri` is the origin the
-  // user is signing into, and the canonical message embeds it as the
-  // app identity. Bare authority strings like `localhost:3000` parse
-  // successfully via `new URL(...)` because the WHATWG URL parser
-  // accepts `<scheme>:<rest>` greedily ("localhost" becomes the
-  // scheme). That's not what callers mean by "origin", and a
-  // signature scoped to a phantom `localhost:` scheme can't be
-  // trusted by anything verifying against the real origin.
+  // WHATWG URL treats `localhost:3000` as scheme `localhost:` — require an http(s) origin with a host.
   let parsed: URL;
   try {
     parsed = new URL(trimmedUri);
   } catch {
     throw new Error(
-      "buildAuthMessage: uri must be a valid URL with an http or https scheme (e.g. window.location.origin).",
+      `buildAuthMessage: uri must be a valid URL (got ${JSON.stringify(trimmedUri)}); use the http(s) origin the user is signing into.`,
     );
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     throw new Error(
-      "buildAuthMessage: uri must be a valid URL with an http or https scheme (e.g. window.location.origin).",
+      `buildAuthMessage: uri scheme must be http or https (got ${parsed.protocol}); use the origin the user is signing into.`,
+    );
+  }
+  if (!parsed.hostname) {
+    throw new Error(
+      `buildAuthMessage: uri must include a host (got ${JSON.stringify(trimmedUri)}); use the origin the user is signing into.`,
     );
   }
   if (!Number.isInteger(input.chainId) || input.chainId <= 0) {
