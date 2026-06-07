@@ -19,6 +19,28 @@ import {
 
 jest.setTimeout(60_000);
 
+// The `EstimateFeesRequest` OpenAPI schema still marks `createdAt` /
+// `expireAt` / `maxExecution` as required because it reuses the
+// `CreateWorkflowRequest` shape, but the estimate endpoint ignores
+// them server-side — the fee math doesn't depend on a workflow's
+// lifecycle window. Provide stubs so the typed call satisfies the
+// generated request type. Real workflow create paths supply real
+// values; this is estimate-only.
+//
+// TODO: decouple `EstimateFeesRequest` from `CreateWorkflowRequest`
+// in the OpenAPI schema (currently in `packages/types/openapi/openapi.yaml`)
+// so these lifecycle fields aren't required for estimate calls;
+// remove the stubs here once that lands.
+const ESTIMATE_LIFECYCLE_STUBS = {
+  // 0 reads naturally as "unset" — server ignores both.
+  createdAt: 0,
+  expireAt: 0,
+  // Arbitrary non-zero; ignored by the estimate endpoint. Picked 100
+  // to match the test-utils default in `createManualFromTemplate`
+  // so the stub and a real workflow estimate look the same.
+  maxExecution: 100,
+} as const;
+
 describe("workflows.estimateFees Tests", () => {
   let client: Client;
   let smartWalletAddress: string;
@@ -42,6 +64,7 @@ describe("workflows.estimateFees Tests", () => {
       edges: [{ id: "e1", source: "trigger", target: "step1" }],
       runner: smartWalletAddress,
       inputVariables: { settings: settingsForChain(smartWalletAddress, 11_155_111) },
+      ...ESTIMATE_LIFECYCLE_STUBS,
     });
 
     // v4 EstimateFeesResponse: executionFee, valueFee, cogs[], optional
@@ -71,7 +94,13 @@ describe("workflows.estimateFees Tests", () => {
 
     if (result.discounts) {
       for (const d of result.discounts) {
-        expect(typeof d.discount.amount).toBe("string");
+        // `discount` is optional on FeeDiscount — some discount types
+        // (e.g. tier-based) don't carry an inline fee, the discount is
+        // baked into the upstream rate. Skip the amount assertion when
+        // it's absent.
+        if (d.discount) {
+          expect(typeof d.discount.amount).toBe("string");
+        }
       }
     }
   });
@@ -95,6 +124,7 @@ describe("workflows.estimateFees Tests", () => {
       edges: [{ id: "e1", source: "trigger", target: "step1" }],
       runner: smartWalletAddress,
       inputVariables: { settings: settingsForChain(smartWalletAddress, 11_155_111) },
+      ...ESTIMATE_LIFECYCLE_STUBS,
     });
 
     // ETH transfer is expected to produce gas COGS but the server
