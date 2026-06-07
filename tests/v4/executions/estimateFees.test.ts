@@ -26,9 +26,18 @@ jest.setTimeout(60_000);
 // lifecycle window. Provide stubs so the typed call satisfies the
 // generated request type. Real workflow create paths supply real
 // values; this is estimate-only.
+//
+// TODO: decouple `EstimateFeesRequest` from `CreateWorkflowRequest`
+// in the OpenAPI schema (currently in `packages/types/openapi/openapi.yaml`)
+// so these lifecycle fields aren't required for estimate calls;
+// remove the stubs here once that lands.
 const ESTIMATE_LIFECYCLE_STUBS = {
+  // 0 reads naturally as "unset" — server ignores both.
   createdAt: 0,
   expireAt: 0,
+  // Arbitrary non-zero; ignored by the estimate endpoint. Picked 100
+  // to match the test-utils default in `createManualFromTemplate`
+  // so the stub and a real workflow estimate look the same.
   maxExecution: 100,
 } as const;
 
