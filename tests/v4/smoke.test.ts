@@ -118,8 +118,17 @@ describe("v4 SDK smoke", () => {
     test("buildAuthMessage throws on invalid uri format", () => {
       const owner = "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50";
       const baseOk = { ownerAddress: owner, chainId: 1, version: "v4-test" };
+      // Not a URL at all — URL constructor throws.
       expect(() => buildAuthMessage({ ...baseOk, uri: "not-a-url" })).toThrow(/uri/);
+      // Bare authority: WHATWG URL accepts this as `<scheme>:<rest>`
+      // with scheme `localhost`, so the protocol check is what
+      // actually rejects it. Without that check, signatures would be
+      // scoped to a phantom `localhost:` scheme.
       expect(() => buildAuthMessage({ ...baseOk, uri: "localhost:3000" })).toThrow(/uri/);
+      // Non-http(s) schemes that parse successfully but aren't valid
+      // origins for an auth message.
+      expect(() => buildAuthMessage({ ...baseOk, uri: "ftp://example.com" })).toThrow(/uri/);
+      expect(() => buildAuthMessage({ ...baseOk, uri: "javascript:void(0)" })).toThrow(/uri/);
     });
 
     test("signAuthMessage throws when called without input", async () => {
