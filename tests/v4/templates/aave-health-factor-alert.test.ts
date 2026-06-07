@@ -3,9 +3,11 @@
  * event trigger and an automated top-up action.
  *
  * Studio template: watch the AAVE V3 Pool for a `Borrow` event on
- * behalf of the user's wallet, check the resulting health factor,
- * and when HF is below the configured threshold supply additional
- * LINK collateral from the smart wallet so the HF recovers.
+ * behalf of the user's smart wallet (the runner), check the resulting
+ * health factor, and when HF is below the configured threshold supply
+ * additional LINK collateral from that same smart wallet so the HF
+ * recovers. The workflow monitors and acts on the smart wallet
+ * (settings.runner), never the EOA.
  *
  * Workflow shape:
  *   eventTrigger (Pool.Borrow filtered by onBehalfOf)
@@ -105,7 +107,10 @@ describe("Template: AAVE health factor alert", () => {
    *   topics[1] = reserve (indexed address)
    *   topics[2] = onBehalfOf (indexed address) ← filter slot
    *   topics[3] = referralCode (indexed uint16)
-   * Empty strings in slots 1 and 3 are wildcards.
+   * Empty strings in slots 1 and 3 are wildcards. The onBehalfOf slot
+   * is pinned to the smart wallet (the runner) so the trigger fires
+   * only on the user's own borrows — not the EOA, which holds no AAVE
+   * position; the smart wallet is the on-chain account being managed.
    */
   function buildWorkflow(smartWalletAddress: string) {
     return {
@@ -118,7 +123,7 @@ describe("Template: AAVE health factor alert", () => {
         queries: [
           {
             addresses: [AAVE_V3_POOL_SEPOLIA],
-            topics: [AAVE_BORROW_SIG, "", padTopic(eoaAddress), ""],
+            topics: [AAVE_BORROW_SIG, "", padTopic(smartWalletAddress), ""],
           },
         ],
       }),
@@ -131,8 +136,15 @@ describe("Template: AAVE health factor alert", () => {
           name: "aaveRead",
           contractAddress: AAVE_V3_POOL_SEPOLIA,
           contractAbi: Protocols.aaveV3.poolMethodsAbi,
+          // Read the HF of the smart wallet (the runner) — the account
+          // the workflow manages and supplies collateral to. Resolves
+          // from settings.runner at execution time, matching the
+          // trigger's onBehalfOf filter and the supply() recipient.
           methodCalls: [
-            { methodName: "getUserAccountData", methodParams: [eoaAddress] },
+            {
+              methodName: "getUserAccountData",
+              methodParams: ["{{settings.runner}}"],
+            },
           ],
         }),
         Nodes.branch({
@@ -267,9 +279,10 @@ describe("Template: AAVE health factor alert", () => {
     expect(stepIds).toContain("branch");
 
     // approve + supply + email only appear in sim.steps when the
-    // branch routed to the lowHF slot — i.e. when the test wallet's
-    // live HF is < 1.5e18. With no AAVE position the HF is
-    // type(uint256).max and the branch routes to the `ok` (else)
+    // branch routed to the lowHF slot — i.e. when the smart wallet's
+    // live HF is < 6.0e18 (the test threshold). With no AAVE position
+    // the HF is type(uint256).max and the branch routes to the `ok`
+    // (else)
     // slot, so the chain never fires. Production users with a real
     // low-HF position get the actual top-up and the SendGrid call.
     // The deploy+retrieve test asserts the workflow shape includes
@@ -317,14 +330,14 @@ describe("Template: AAVE health factor alert", () => {
     // Spot-check the trigger config persisted in the right shape —
     // if the Borrow filter got lost on the wire, the deployed
     // workflow would silently fire on every Borrow event rather than
-    // only the wallet's. The eventTrigger config is the most
+    // only the smart wallet's. The eventTrigger config is the most
     // serialization-sensitive part of this graph.
     const triggerQueries = (retrieved.trigger?.config as { queries?: unknown[] })
       ?.queries;
     expect(triggerQueries).toHaveLength(1);
     const topics = (triggerQueries?.[0] as { topics?: string[] })?.topics ?? [];
     expect(topics[0]).toBe(AAVE_BORROW_SIG);
-    expect(topics[2]).toBe(padTopic(eoaAddress));
+    expect(topics[2]).toBe(padTopic(wallet.address));
   });
 
   /**
@@ -366,7 +379,7 @@ describe("Template: AAVE health factor alert", () => {
         contractAddress: AAVE_V3_POOL_SEPOLIA,
         contractAbi: Protocols.aaveV3.poolMethodsAbi,
         methodCalls: [
-          { methodName: "getUserAccountData", methodParams: [eoaAddress] },
+          { methodName: "getUserAccountData", methodParams: ["{{settings.runner}}"] },
         ],
       }),
       Nodes.restApi({
@@ -461,7 +474,7 @@ describe("Template: AAVE health factor alert", () => {
         contractAddress: AAVE_V3_POOL_SEPOLIA,
         contractAbi: Protocols.aaveV3.poolMethodsAbi,
         methodCalls: [
-          { methodName: "getUserAccountData", methodParams: [eoaAddress] },
+          { methodName: "getUserAccountData", methodParams: ["{{settings.runner}}"] },
         ],
       }),
       Nodes.contractWrite({
