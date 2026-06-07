@@ -138,9 +138,12 @@ describe("v4 SDK smoke", () => {
       expect(trigger.type).toBe("cron");
       expect(trigger.name).toBe("every5min");
       // Config lives inline alongside the discriminator (see builders/triggers.ts).
-      expect((trigger as { config: { schedules: string[] } }).config.schedules).toEqual([
-        "*/5 * * * *",
-      ]);
+      // The discriminated-union shape carries readonly arrays per the
+      // OpenAPI types; the test only reads the value, so widening
+      // through `unknown` keeps the assertion intent without
+      // pretending the source array is mutable.
+      const config = (trigger as unknown as { config: { schedules: readonly string[] } }).config;
+      expect(config.schedules).toEqual(["*/5 * * * *"]);
     });
 
     test("Nodes.customCode returns id+name+type+config", () => {
@@ -168,7 +171,14 @@ describe("v4 SDK smoke", () => {
           },
         ],
       });
-      const config = (trigger as { config: { queries: Array<{ topics: string[] }> } }).config;
+      // Same readonly-vs-mutable widening as the cron case above —
+      // the builders return discriminated-union readonly shapes; the
+      // test only reads the topic array.
+      const config = (
+        trigger as unknown as {
+          config: { queries: ReadonlyArray<{ topics: ReadonlyArray<string | null> }> };
+        }
+      ).config;
       expect(config.queries[0].topics).toEqual([transferTopic, ""]);
     });
   });

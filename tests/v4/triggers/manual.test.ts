@@ -138,16 +138,21 @@ describe("ManualTrigger Tests", () => {
   describe("deploy + trigger", () => {
     test("deploys a manual-trigger workflow and fires it via workflows.trigger", async () => {
       const wallet = await createSmartWallet(client);
-      const wfReq = createManualFromTemplate(wallet.address);
-      // Manual trigger requires data on the config to pass server
+      // Manual trigger requires `data` on the config to pass server
       // validation at create-time. createManualFromTemplate omits
-      // data (test uses non-default schedule); patch it in here.
-      wfReq.trigger = Triggers.manual({
-        id: "trigger",
-        name: "manualGo",
-        lang: "json",
-        data: { boot: true },
-      });
+      // data, so spread its result with a patched trigger here.
+      // `CreateWorkflowRequest.trigger` is readonly per the OpenAPI
+      // types — spread + replace is the immutable way to patch it.
+      const baseReq = createManualFromTemplate(wallet.address);
+      const wfReq = {
+        ...baseReq,
+        trigger: Triggers.manual({
+          id: "trigger",
+          name: "manualGo",
+          lang: "json",
+          data: { boot: true },
+        }),
+      };
       const created = await client.workflows.create(wfReq);
       const wfId = created.id as string;
       createdWorkflowIds.push(wfId);
