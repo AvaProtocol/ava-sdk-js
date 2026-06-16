@@ -129,13 +129,12 @@ describe("EventTrigger Tests", () => {
           ],
         }),
       });
-      // Tenderly's event simulation can be flaky on chainlink price
-      // feeds depending on recent feed activity; skip cleanly if it
-      // fails for environmental reasons.
-      if (!result.success) {
-        console.log(`Skipping — Tenderly Chainlink sim failed: ${result.error}`);
-        return;
-      }
+      // CLAUDE.md forbids soft-skips; hard-assert. The
+      // WORKFLOWS_BAD_TRIGGER fix (SDK value: string) ensures this
+      // request no longer rejects at the validation layer. If Tenderly
+      // genuinely can't simulate the Chainlink feed in CI, that's a
+      // real environmental issue to address — not silently mask.
+      expect(result.success).toBe(true);
       const data = (result.output as { data: any }).data;
       expect(data.topics[0]).toBe(CHAINLINK_ANSWER_UPDATED_SIG);
       // Provide the ABI so the engine knows which field gates the
