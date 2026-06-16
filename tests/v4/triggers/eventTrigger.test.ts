@@ -121,7 +121,7 @@ describe("EventTrigger Tests", () => {
                   fieldName: "AnswerUpdated.current",
                   operator: "gt",
                   fieldType: "int256",
-                  value: { stringValue: "0" },
+                  value: "0",
                 },
               ],
               maxEventsPerBlock: 5,

@@ -93,7 +93,7 @@ export const Triggers = Object.freeze({
         fieldName: string;
         operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "contains";
         fieldType?: string;
-        value: Record<string, unknown>;
+        value: string;
       }>;
     }>;
     chainId?: number;
