@@ -1,5 +1,14 @@
 # @avaprotocol/sdk-js
 
+## 3.2.2
+
+### Patch Changes
+
+- 8567ada: fix: `EventCondition.value` is now typed as `string` instead of `Record<string, unknown>`, matching the proto contract and the aggregator's REST decoder. Studio templates (e.g. Uniswap V3 stop-loss) that previously failed with `WORKFLOWS_BAD_TRIGGER: cannot unmarshal string into Go struct field EventCondition.config.queries.conditions.value` now serialize correctly. Re-syncs `packages/types/openapi/openapi.yaml` from EigenLayer-AVS staging (PR #601) and regenerates `openapi.gen.ts`.
+- Updated dependencies [8567ada]
+- Updated dependencies [8567ada]
+  - @avaprotocol/types@3.0.1
+
 ## 3.2.1
 
 ### Patch Changes

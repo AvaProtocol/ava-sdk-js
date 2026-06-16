@@ -1,5 +1,12 @@
 # @avaprotocol/types
 
+## 3.0.1
+
+### Patch Changes
+
+- 8567ada: fix: `EventCondition.value` is now typed as `string` instead of `Record<string, unknown>`, matching the proto contract and the aggregator's REST decoder. Studio templates (e.g. Uniswap V3 stop-loss) that previously failed with `WORKFLOWS_BAD_TRIGGER: cannot unmarshal string into Go struct field EventCondition.config.queries.conditions.value` now serialize correctly. Re-syncs `packages/types/openapi/openapi.yaml` from EigenLayer-AVS staging (PR #601) and regenerates `openapi.gen.ts`.
+- 8567ada: types: `RestAPINodeConfig` now exposes an optional `options` bag, with a typed `summarize?: boolean` flag. Setting `summarize: true` on a terminal SendGrid or Telegram RestAPI node opts the workflow into the aggregator's context-memory AI summarizer (which composes a subject + HTML body from execution context and injects them into the outgoing request). No-op on non-notification URLs; the deterministic summarizer remains the default. Surface added via the openapi resync from EigenLayer-AVS staging.
+
 ## 3.0.0
 
 ### Major Changes — OpenAPI-derived types for the REST aggregator
