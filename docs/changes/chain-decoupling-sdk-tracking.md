@@ -5,12 +5,16 @@ gateway built from `staging` for end-to-end runtime verification + the release
 changeset. **Date:** 2026-06-26.
 **Upstream:** `EigenLayer-AVS/PLAN_CHAIN_DECOUPLING.md` (backend leads, bottom-up).
 
-> **#634 is merged to `staging`.** Types regenerated; builders + resources +
-> tests + example updated; `yarn build` clean, `tsc -p tsconfig.json` = 0 errors,
-> smoke suite green. The local docker gateway is still the pre-renovation
-> `avs-dev:latest` image (create() still rejects per-node `chainId` with the
-> int64 error), so the `PER_NODE_CHAIN_READY` tests stay gated until a gateway
-> built from `staging` (#631/#633) is deployed.
+> **#634 merged + #639 fixed and VERIFIED (2026-06-26).** Types regenerated;
+> builders + resources + tests + example updated. Against the local v4.0.0
+> gateway (`:8080`, start.sh, with the #639 fix): the multichain create→retrieve
+> round-trip **passes**, and the **full `yarn test:v4` suite is 283 passed / 1
+> skipped / 285**, with **0 int64 errors**. The one remaining failure
+> (`eventTrigger.test.ts › condition-based filtering`) is **unrelated** to
+> chain-decoupling: the event is fetched correctly on Sepolia, but the gateway
+> evaluates `AnswerUpdated.current > 0` as "Conditions not met" (no ABI in the
+> query) — pre-existing condition-eval behavior, flagged for a separate look.
+> `yarn build` clean, `tsc -p tsconfig.json` = 0.
 
 The backend is making `chainId` a property of the **parts that touch a chain**
 (event/block triggers; contract-read/-write and ETH-transfer nodes) and
