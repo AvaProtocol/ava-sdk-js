@@ -56,7 +56,7 @@ describe("workflows.trigger Tests", () => {
 
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
-        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval }),
+        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval }),
       });
       const wfId = created.id as string;
       createdWorkflowIds.push(wfId);
@@ -128,6 +128,7 @@ describe("workflows.trigger Tests", () => {
         trigger: Triggers.event({
           id: "trigger",
           name: "eventTrigger",
+          chainId: 11_155_111,
           queries: [
             {
               addresses: [],

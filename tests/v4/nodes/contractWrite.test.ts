@@ -60,6 +60,7 @@ describe("ContractWrite Node Tests", () => {
         node: Nodes.contractWrite({
           id: "w",
           name: "w",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: ERC20_ABI,
           methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "0"] }],
@@ -80,6 +81,7 @@ describe("ContractWrite Node Tests", () => {
         node: Nodes.contractWrite({
           id: "w",
           name: "w",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: ERC20_ABI,
           methodCalls: [{ methodName: "transfer", methodParams: [eoaAddress, "1"] }],
@@ -101,6 +103,7 @@ describe("ContractWrite Node Tests", () => {
         node: Nodes.contractWrite({
           id: "w",
           name: "w",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: ERC20_ABI,
           methodCalls: [
@@ -123,6 +126,7 @@ describe("ContractWrite Node Tests", () => {
         node: Nodes.contractWrite({
           id: "w",
           name: "w",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: ERC20_ABI,
           methodCalls: [{ methodName: "nonexistent", methodParams: [] }],
@@ -143,6 +147,7 @@ describe("ContractWrite Node Tests", () => {
           Nodes.contractWrite({
             id: "w",
             name: "w",
+            chainId: 11_155_111,
             contractAddress: USDC_SEPOLIA,
             contractAbi: ERC20_ABI,
             methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "0"] }],
@@ -172,12 +177,14 @@ describe("ContractWrite Node Tests", () => {
         trigger: Triggers.block({
           id: "trigger",
           name: "blockTrigger",
+          chainId: 11_155_111,
           interval: 5,
         }),
         nodes: [
           Nodes.contractWrite({
             id: "w",
             name: "w",
+            chainId: 11_155_111,
             contractAddress: USDC_SEPOLIA,
             contractAbi: ERC20_ABI,
             methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "0"] }],

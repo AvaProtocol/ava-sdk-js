@@ -47,7 +47,6 @@ describe("Template: USDC read+write+customCode", () => {
     return {
       smartWalletAddress,
       name: "USDC read+write+customCode",
-      chainId: 11_155_111,
       trigger: Triggers.cron({
         id: "timeTrigger",
         name: "timeTrigger",
@@ -57,6 +56,7 @@ describe("Template: USDC read+write+customCode", () => {
         Nodes.contractRead({
           id: "contractRead1",
           name: "contractRead1",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: SYMBOL_ABI,
           methodCalls: [{ methodName: "symbol", methodParams: [] }],
@@ -64,6 +64,7 @@ describe("Template: USDC read+write+customCode", () => {
         Nodes.contractRead({
           id: "contractRead2",
           name: "contractRead2",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: DECIMALS_ABI,
           methodCalls: [{ methodName: "decimals", methodParams: [] }],
@@ -71,6 +72,7 @@ describe("Template: USDC read+write+customCode", () => {
         Nodes.contractWrite({
           id: "contractWrite1",
           name: "contractWrite1",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: TRANSFER_ABI,
           methodCalls: [{ methodName: "transfer", methodParams: [eoaAddress, "100000"] }],

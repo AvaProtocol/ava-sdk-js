@@ -117,6 +117,7 @@ describe("workflows.estimateFees Tests", () => {
         Nodes.ethTransfer({
           id: "step1",
           name: "ethTransfer",
+          chainId: 11_155_111,
           destination: smartWalletAddress,
           amountWei: "1000000000000000",
         }),

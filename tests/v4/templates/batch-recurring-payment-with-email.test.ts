@@ -44,7 +44,6 @@ describe("Template: batch recurring payment with email", () => {
     return {
       smartWalletAddress,
       name: "Batch recurring payment with email",
-      chainId: 11_155_111,
       trigger: Triggers.cron({
         id: "trigger",
         name: "cron",

@@ -59,6 +59,7 @@ describe("Gas tracking", () => {
       node: Nodes.ethTransfer({
         id: "transfer",
         name: "transfer",
+        chainId: 11_155_111,
         destination: eoaAddress,
         amountWei: "1000000000000000",
       }),
@@ -93,11 +94,12 @@ describe("Gas tracking", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 1,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
       nodes: [
         Nodes.ethTransfer({
           id: "transfer",
           name: "transfer",
+          chainId: 11_155_111,
           destination: eoaAddress,
           amountWei: "100000000000000",
         }),
@@ -142,6 +144,7 @@ describe("Gas tracking", () => {
         Nodes.ethTransfer({
           id: "transfer",
           name: "transfer",
+          chainId: 11_155_111,
           destination: eoaAddress,
           amountWei: "1",
         }),

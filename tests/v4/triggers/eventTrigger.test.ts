@@ -54,6 +54,7 @@ describe("EventTrigger Tests", () => {
         trigger: Triggers.event({
           id: "t",
           name: "ev",
+          chainId: 11_155_111,
           queries: [
             {
               addresses: [USDC_SEPOLIA],
@@ -75,6 +76,7 @@ describe("EventTrigger Tests", () => {
         trigger: Triggers.event({
           id: "t",
           name: "ev",
+          chainId: 11_155_111,
           queries: [
             {
               addresses: [USDC_SEPOLIA],
@@ -96,6 +98,7 @@ describe("EventTrigger Tests", () => {
         trigger: Triggers.event({
           id: "t",
           name: "ev",
+          chainId: 11_155_111,
           queries: [
             { addresses: [USDC_SEPOLIA], topics: [TRANSFER_SIG, padTopic(eoaAddress), ""] },
             { addresses: [USDC_SEPOLIA], topics: [TRANSFER_SIG, "", padTopic(eoaAddress)] },
@@ -112,6 +115,7 @@ describe("EventTrigger Tests", () => {
         trigger: Triggers.event({
           id: "t",
           name: "ev",
+          chainId: 11_155_111,
           queries: [
             {
               addresses: [CHAINLINK_ETH_USD_SEPOLIA],
@@ -146,6 +150,7 @@ describe("EventTrigger Tests", () => {
       const trigger = Triggers.event({
         id: "t",
         name: "ev",
+        chainId: 11_155_111,
         queries: [
           {
             addresses: [USDC_SEPOLIA],
@@ -164,7 +169,7 @@ describe("EventTrigger Tests", () => {
 
     test("rejects empty queries with success=false", async () => {
       const result = await client.triggers.run({
-        trigger: Triggers.event({ id: "t", name: "ev", queries: [] }),
+        trigger: Triggers.event({ id: "t", name: "ev", chainId: 11_155_111, queries: [] }),
       });
       expect(result.success).toBe(false);
       expect(typeof result.error).toBe("string");
@@ -175,6 +180,7 @@ describe("EventTrigger Tests", () => {
         trigger: Triggers.event({
           id: "t",
           name: "ev",
+          chainId: 11_155_111,
           queries: [{ addresses: [USDC_SEPOLIA], topics: [TRANSFER_SIG] }],
         }),
       });

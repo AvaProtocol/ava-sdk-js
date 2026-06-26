@@ -48,7 +48,6 @@ describe("Template: exported workflow consistency", () => {
     return {
       smartWalletAddress,
       name: "Exported workflow consistency",
-      chainId: 11_155_111,
       trigger: Triggers.manual({
         id: "trigger",
         name: "manualTrigger",

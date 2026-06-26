@@ -55,6 +55,7 @@ describe("Template: Telegram alert on transfer", () => {
       trigger: Triggers.event({
         id: "trigger",
         name: "transferMonitor",
+        chainId: 11_155_111,
         queries: [
           // Outgoing: wallet === from
           {
@@ -98,6 +99,7 @@ describe("Template: Telegram alert on transfer", () => {
       trigger: Triggers.event({
         id: "trigger",
         name: "transferMonitor",
+        chainId: 11_155_111,
         queries: [
           {
             addresses: [USDC_SEPOLIA],

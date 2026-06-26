@@ -63,6 +63,7 @@ describe("nodes.run (provider routing)", () => {
       node: Nodes.contractWrite({
         id: "w",
         name: "approve",
+        chainId: 11_155_111,
         contractAddress: USDC_SEPOLIA,
         contractAbi: APPROVE_ABI,
         methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "1000000"] }],

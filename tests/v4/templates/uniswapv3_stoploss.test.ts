@@ -50,7 +50,6 @@ describe("Template: Uniswap V3 stop-loss", () => {
     return {
       smartWalletAddress,
       name: "Uniswap V3 stop-loss",
-      chainId: 11_155_111,
       trigger: Triggers.cron({
         id: "trigger",
         name: "cron",
@@ -60,6 +59,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
         Nodes.contractRead({
           id: "price",
           name: "price",
+          chainId: 11_155_111,
           contractAddress: CHAINLINK_ETH_USD_SEPOLIA,
           contractAbi: Protocols.chainlink.aggregatorV3Abi,
           methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
@@ -80,6 +80,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
         Nodes.contractWrite({
           id: "swap",
           name: "swap",
+          chainId: 11_155_111,
           contractAddress: UNISWAP_SWAP_ROUTER02_SEPOLIA,
           contractAbi: Protocols.uniswapV3.swapRouter02Abi,
           methodCalls: [

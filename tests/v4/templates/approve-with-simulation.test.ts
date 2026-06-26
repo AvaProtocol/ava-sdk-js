@@ -49,6 +49,7 @@ describe("Template: single approve with Tenderly simulation", () => {
         Nodes.contractWrite({
           id: "approve",
           name: "approve",
+          chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: APPROVE_ABI,
           methodCalls: [{ methodName: "approve", methodParams: [UNISWAP_ROUTER02, "10000"] }],

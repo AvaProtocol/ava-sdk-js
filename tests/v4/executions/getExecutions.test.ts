@@ -33,7 +33,7 @@ async function createAndFireWorkflow(
   const created = await client.workflows.create({
     ...createFromTemplate(walletAddress),
     maxExecution: 1,
-    trigger: Triggers.block({ id: "trigger", name: triggerName, interval: 5 }),
+    trigger: Triggers.block({ id: "trigger", name: triggerName, chainId: 11_155_111, interval: 5 }),
   });
   const wfId = created.id as string;
   await client.workflows.trigger(wfId, {
