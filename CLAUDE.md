@@ -24,8 +24,7 @@ v3 gRPC tests are archived under `tests-v3-archive/`. Each suite maps
 to a subdirectory and is sharded as its own CI matrix job:
 
 ```bash
-yarn test                              # Run every jest spec (full suite)
-yarn test:v4                           # Everything under tests/v4
+yarn test                              # Run the full v4 suite (everything under tests/v4)
 yarn test:core                         # tests/v4/core      — auth, wallet, secrets, getToken, withdraw
 yarn test:workflows                    # tests/v4/workflows — CRUD + trigger/enable/cancel
 yarn test:executions                   # tests/v4/executions — simulate, runNodeWithInputs, gas, fees

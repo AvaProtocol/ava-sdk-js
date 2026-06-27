@@ -8,7 +8,7 @@ changeset. **Date:** 2026-06-26.
 > **#634 merged + #639 fixed and VERIFIED (2026-06-26).** Types regenerated;
 > builders + resources + tests + example updated. Against the local v4.0.0
 > gateway (`:8080`, start.sh, with the #639 fix): the multichain create→retrieve
-> round-trip **passes**, and the **full `yarn test:v4` suite is 283 passed / 1
+> round-trip **passes**, and the **full `yarn test` suite is 283 passed / 1
 > skipped / 285**, with **0 int64 errors**. The one remaining failure
 > (`eventTrigger.test.ts › condition-based filtering`) is **unrelated** to
 > chain-decoupling: the event is fetched correctly on Sepolia, but the gateway
