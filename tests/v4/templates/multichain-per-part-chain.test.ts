@@ -30,7 +30,7 @@
  * type-clean after `yarn types-gen` regenerates against #634's spec.
  */
 
-import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
+import { APIError, Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -129,6 +129,49 @@ describe("Template: per-part multi-chain wire contract", () => {
     expect(partChainId(retrieved.trigger)).toBe(Chains.Sepolia);
     const readNode = retrieved.nodes?.find((n) => n.id === "read");
     expect(partChainId(readNode)).toBe(Chains.Sepolia);
+  });
+
+  contractTest("rejects a chain-aware node that omits chainId (400)", async () => {
+    const wallet = await createSmartWallet(client);
+
+    // The builder requires `chainId` (TS-enforced), so strip it post-build to
+    // emulate a client that omits the now-required per-part chain. G5 makes
+    // this a hard create-time rejection — explicit-or-error, never flattened
+    // to a task default (there is no task default anymore).
+    const read = Nodes.contractRead({
+      id: "read",
+      name: "read",
+      chainId: Chains.Sepolia,
+      contractAddress: USDC_SEPOLIA,
+      contractAbi: SYMBOL_ABI,
+      methodCalls: [{ methodName: "symbol", methodParams: [] }],
+    });
+    delete (read as { config: { chainId?: number } }).config.chainId;
+
+    let error: unknown;
+    try {
+      const created = await client.workflows.create({
+        smartWalletAddress: wallet.address,
+        name: "Missing per-part chain",
+        trigger: Triggers.event({
+          id: "evt",
+          name: "evt",
+          chainId: Chains.Sepolia,
+          queries: [{ addresses: [USDC_SEPOLIA], topics: [TRANSFER_TOPIC] }],
+        }),
+        nodes: [read],
+        edges: [{ id: "e1", source: "evt", target: "read" }],
+        inputVariables: { settings: settingsForChain(wallet.address, Chains.Sepolia) },
+      });
+      // Should not reach here; register for cleanup if the server ever flattens.
+      createdWorkflowIds.push(created.id);
+    } catch (e) {
+      error = e;
+    }
+
+    expect(error).toBeInstanceOf(APIError);
+    expect((error as APIError).status).toBe(400);
+    expect((error as APIError).message).toMatch(/chain_id/i);
   });
 
   crossChainTest(
