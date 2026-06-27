@@ -120,6 +120,10 @@ describe("EventTrigger Tests", () => {
             {
               addresses: [CHAINLINK_ETH_USD_SEPOLIA],
               topics: [CHAINLINK_ANSWER_UPDATED_SIG],
+              // The ABI is required for the condition below to resolve
+              // `AnswerUpdated.current`; without it the engine can't decode
+              // the indexed field and returns "Conditions not met".
+              contractAbi: CHAINLINK_ABI,
               conditions: [
                 {
                   fieldName: "AnswerUpdated.current",
@@ -139,11 +143,12 @@ describe("EventTrigger Tests", () => {
       // genuinely can't simulate the Chainlink feed in CI, that's a
       // real environmental issue to address — not silently mask.
       expect(result.success).toBe(true);
+      // With the ABI provided, a matched event is returned decoded and keyed
+      // by event name (not as a raw topics[] log). The condition (current > 0)
+      // is satisfied, so the decoded `current` price is present and positive.
       const data = (result.output as { data: any }).data;
-      expect(data.topics[0]).toBe(CHAINLINK_ANSWER_UPDATED_SIG);
-      // Provide the ABI so the engine knows which field gates the
-      // condition; without ABI the condition is silently ignored.
-      void CHAINLINK_ABI;
+      expect(data.AnswerUpdated).toBeDefined();
+      expect(Number(data.AnswerUpdated.current)).toBeGreaterThan(0);
     });
 
     test("honors cooldownSeconds (no second fire within window)", async () => {

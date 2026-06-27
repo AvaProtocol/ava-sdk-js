@@ -89,11 +89,24 @@ export const Triggers = Object.freeze({
       /** Topic filters; empty string ("") matches any topic at that index. */
       topics?: string[];
       maxEventsPerBlock?: number;
+      /**
+       * Contract ABI (JSON entries) for decoding the event. REQUIRED for
+       * `conditions` that reference a decoded field (e.g. `AnswerUpdated.current`):
+       * without it the engine can't resolve the field and the condition fails.
+       */
+      contractAbi?: ReadonlyArray<Record<string, unknown>>;
       conditions?: Array<{
         fieldName: string;
         operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "contains";
         fieldType?: string;
         value: string;
+      }>;
+      /** Method calls that enrich decoded event data (e.g. `decimals`). */
+      methodCalls?: Array<{
+        methodName: string;
+        callData?: string;
+        applyToFields?: string[];
+        methodParams?: string[];
       }>;
     }>;
     chainId: number;
