@@ -52,7 +52,7 @@ describe("executions.retrieve Tests", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 3,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval }),
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -136,7 +136,7 @@ describe("executions.retrieve Tests", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 1,
-      trigger: Triggers.block({ id: "trigger", name: "blockGetExecs", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockGetExecs", chainId: 11_155_111, interval: 5 }),
       nodes: [Nodes.customCode({ id: "step1", name: "step1", source: "return {ok: true};" })],
       edges: [{ id: "e1", source: "trigger", target: "step1" }],
     });

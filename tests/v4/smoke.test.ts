@@ -171,6 +171,7 @@ describe("v4 SDK smoke", () => {
       const transferTopic = Protocols.erc20.eventTopics.Transfer;
       const trigger = Triggers.event({
         name: "transfer",
+        chainId: 11_155_111,
         queries: [
           {
             addresses: ["0x0000000000000000000000000000000000000001"],

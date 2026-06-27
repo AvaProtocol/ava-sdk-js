@@ -621,9 +621,9 @@ export interface components {
     schemas: {
         /**
          * Format: int64
-         * @description Numeric chain ID. `0` or omitted means "use the aggregator's default
-         *     chain" — typically only useful in single-chain deployments or for
-         *     chain-agnostic operations.
+         * @description Numeric chain ID (e.g. 11155111 for Sepolia, 8453 for Base). On
+         *     chain-aware trigger/node configs this is required and must be a
+         *     configured chain; on query/filter params it is optional.
          * @example 11155111
          */
         readonly ChainId: number;
@@ -784,8 +784,8 @@ export interface components {
              * @description Fire every N blocks.
              */
             readonly interval: number;
-            /** @description Chain to watch blocks on. 0 = inherit workflow chainId. */
-            readonly chainId?: components["schemas"]["ChainId"];
+            /** @description Chain to watch blocks on. Required — a workflow carries no chain to inherit. */
+            readonly chainId: components["schemas"]["ChainId"];
         };
         /** @description Single ethereum.FilterQuery — one subscription per query. */
         readonly EventTriggerQuery: {
@@ -841,8 +841,8 @@ export interface components {
              *     trigger again. Default 300. 0 disables cooldown.
              */
             readonly cooldownSeconds?: number;
-            /** @description Chain to watch events on. 0 = inherit workflow chainId. */
-            readonly chainId?: components["schemas"]["ChainId"];
+            /** @description Chain to watch events on. Required — a workflow carries no chain to inherit. */
+            readonly chainId: components["schemas"]["ChainId"];
         };
         readonly Trigger: {
             readonly id?: string;
@@ -915,8 +915,8 @@ export interface components {
             readonly destination: components["schemas"]["EthereumAddress"];
             /** @description Amount in wei (decimal string for big-int safety). Special value `max` withdraws the entire balance. */
             readonly amount: string;
-            /** @description Chain to execute on. 0 = inherit workflow chainId. */
-            readonly chainId?: components["schemas"]["ChainId"];
+            /** @description Chain to execute on. Required — a workflow carries no chain to inherit. */
+            readonly chainId: components["schemas"]["ChainId"];
         };
         readonly ContractWriteNodeConfig: {
             readonly contractAddress: components["schemas"]["EthereumAddress"];
@@ -931,8 +931,8 @@ export interface components {
             readonly value?: string;
             /** @description Custom gas limit (decimal string). */
             readonly gasLimit?: string;
-            /** @description Chain to execute on. 0 = inherit workflow chainId. */
-            readonly chainId?: components["schemas"]["ChainId"];
+            /** @description Chain to execute on. Required — a workflow carries no chain to inherit. */
+            readonly chainId: components["schemas"]["ChainId"];
         };
         readonly ContractReadNodeConfig: {
             readonly contractAddress: components["schemas"]["EthereumAddress"];
@@ -940,8 +940,8 @@ export interface components {
                 readonly [key: string]: unknown;
             }[];
             readonly methodCalls?: readonly components["schemas"]["MethodCall"][];
-            /** @description Chain to read from. 0 = inherit workflow chainId. */
-            readonly chainId?: components["schemas"]["ChainId"];
+            /** @description Chain to read from. Required — a workflow carries no chain to inherit. */
+            readonly chainId: components["schemas"]["ChainId"];
         };
         readonly GraphQLQueryNodeConfig: {
             /** Format: uri */
@@ -1168,8 +1168,6 @@ export interface components {
             readonly name?: string;
             readonly owner: components["schemas"]["EthereumAddress"];
             readonly smartWalletAddress: components["schemas"]["EthereumAddress"];
-            /** @description Workflow-level default chain. Triggers and nodes may override. */
-            readonly chainId?: components["schemas"]["ChainId"];
             readonly trigger: components["schemas"]["Trigger"];
             readonly nodes: readonly components["schemas"]["Node"][];
             readonly edges?: readonly components["schemas"]["Edge"][];
@@ -1209,8 +1207,6 @@ export interface components {
         readonly CreateWorkflowRequest: {
             readonly name?: string;
             readonly smartWalletAddress: components["schemas"]["EthereumAddress"];
-            /** @description Default chain. Triggers and nodes may override. */
-            readonly chainId?: components["schemas"]["ChainId"];
             readonly trigger: components["schemas"]["Trigger"];
             readonly nodes: readonly components["schemas"]["Node"][];
             readonly edges?: readonly components["schemas"]["Edge"][];
@@ -1547,6 +1543,28 @@ export interface components {
             readonly node: components["schemas"]["Node"];
             readonly inputVariables?: components["schemas"]["InputVariables"];
             readonly chainId?: components["schemas"]["ChainId"];
+            /** @description Optional ERC20 balance/allowance state overrides applied only during this isolated node simulation. Lets callers seed token balances and approvals so contract-write simulations (e.g. Uniswap swaps) don't revert with "transfer amount exceeds allowance/balance" before the approval/funding transactions have been run. Simulation-only: a real-execution request (isSimulated=false) that sets these is rejected with an error, never silently ignored. */
+            readonly erc20Overrides?: readonly components["schemas"]["ERC20StateOverride"][];
+        };
+        /** @description Seeds a token's balanceOf / allowance storage slots for a single simulation. balanceOf[owner] lives at keccak256(abi.encode(owner, balanceSlot)); allowance[owner][spender] at keccak256(abi.encode(spender, keccak256(abi.encode(owner, allowanceSlot)))). */
+        readonly ERC20StateOverride: {
+            readonly tokenAddress: components["schemas"]["EthereumAddress"];
+            readonly ownerAddress: components["schemas"]["EthereumAddress"];
+            readonly spenderAddress?: components["schemas"]["EthereumAddress"];
+            /** @description Balance override (hex 0x… or decimal string). */
+            readonly balance?: string;
+            /** @description Allowance override (hex 0x… or decimal string). */
+            readonly allowance?: string;
+            /**
+             * Format: int64
+             * @description Storage slot for the balanceOf mapping. Required when balance is set; ERC20 storage layout varies per token (OpenZeppelin 0, USDC FiatToken 9).
+             */
+            readonly balanceSlot?: number;
+            /**
+             * Format: int64
+             * @description Storage slot for the allowance mapping. Required when allowance is set; ERC20 storage layout varies per token (OpenZeppelin 1, USDC FiatToken 10).
+             */
+            readonly allowanceSlot?: number;
         };
         readonly RunNodeResponse: {
             readonly success: boolean;
@@ -1713,11 +1731,6 @@ export interface operations {
                 readonly smartWalletAddress?: readonly components["schemas"]["EthereumAddress"][];
                 /** @description Filter by status. Repeat to OR multiple statuses. */
                 readonly status?: readonly components["schemas"]["WorkflowStatus"][];
-                /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
-                 */
-                readonly chainId?: components["parameters"]["ChainIdQuery"];
                 /** @description Cursor — return items immediately before this position (backward pagination). */
                 readonly before?: components["parameters"]["PageBefore"];
                 /** @description Cursor — return items immediately after this position (forward pagination). */
@@ -1990,11 +2003,6 @@ export interface operations {
             readonly query?: {
                 readonly smartWalletAddress?: readonly components["schemas"]["EthereumAddress"][];
                 readonly status?: readonly components["schemas"]["WorkflowStatus"][];
-                /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
-                 */
-                readonly chainId?: components["parameters"]["ChainIdQuery"];
             };
             readonly header?: never;
             readonly path?: never;
@@ -2019,11 +2027,6 @@ export interface operations {
             readonly query?: {
                 /** @description Filter by workflow ID. Repeat to OR multiple workflows. */
                 readonly workflowId?: readonly components["schemas"]["Ulid"][];
-                /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
-                 */
-                readonly chainId?: components["parameters"]["ChainIdQuery"];
                 /** @description Cursor — return items immediately before this position (backward pagination). */
                 readonly before?: components["parameters"]["PageBefore"];
                 /** @description Cursor — return items immediately after this position (forward pagination). */
@@ -2172,11 +2175,6 @@ export interface operations {
         readonly parameters: {
             readonly query?: {
                 readonly workflowId?: readonly components["schemas"]["Ulid"][];
-                /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
-                 */
-                readonly chainId?: components["parameters"]["ChainIdQuery"];
             };
             readonly header?: never;
             readonly path?: never;
@@ -2200,11 +2198,6 @@ export interface operations {
         readonly parameters: {
             readonly query?: {
                 readonly workflowId?: readonly components["schemas"]["Ulid"][];
-                /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
-                 */
-                readonly chainId?: components["parameters"]["ChainIdQuery"];
             };
             readonly header?: never;
             readonly path?: never;

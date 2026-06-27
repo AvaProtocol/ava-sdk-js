@@ -50,7 +50,6 @@ describe("Template: recurring payment with report", () => {
     return {
       smartWalletAddress,
       name: "Recurring payment with report",
-      chainId: 11_155_111,
       trigger: Triggers.manual({
         id: "trigger",
         name: "manualTrigger",

@@ -16,7 +16,6 @@ export interface ListWorkflowsParams {
   smartWalletAddress?: string[];
   /** Filter by status. Repeat to OR multiple statuses. */
   status?: v4.WorkflowStatus[];
-  chainId?: number;
   before?: string;
   after?: string;
   limit?: number;
@@ -25,7 +24,6 @@ export interface ListWorkflowsParams {
 export interface CountWorkflowsParams {
   smartWalletAddress?: string[];
   status?: v4.WorkflowStatus[];
-  chainId?: number;
 }
 
 /**

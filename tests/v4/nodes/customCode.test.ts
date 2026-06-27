@@ -321,6 +321,7 @@ describe("CustomCode Node Tests", () => {
         trigger: Triggers.block({
           id: "trigger",
           name: "blockTrigger",
+          chainId: 11_155_111,
           interval: triggerInterval,
         }),
         nodes: [node],

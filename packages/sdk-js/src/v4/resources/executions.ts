@@ -5,7 +5,6 @@ import { Transport } from "../internal/transport";
 export interface ListExecutionsParams {
   /** Required for the flat list endpoint; pass one or more workflowIds. */
   workflowId?: string[];
-  chainId?: number;
   before?: string;
   after?: string;
   limit?: number;
@@ -13,19 +12,19 @@ export interface ListExecutionsParams {
 
 export interface CountExecutionsParams {
   workflowId?: string[];
-  chainId?: number;
 }
 
 export interface ExecutionStatsParams {
   workflowId?: string[];
-  chainId?: number;
 }
 
 export interface RetrieveExecutionParams {
   /**
    * Workflow id the execution belongs to. Required because executions
-   * are stored under their parent workflow's chain-scoped prefix in
-   * BadgerDB — there is no global execution index.
+   * are indexed under their parent workflow — there is no global
+   * execution index. (Storage is chain-agnostic since the chain
+   * decoupling: chain lives on the workflow's parts, not on the
+   * execution key.)
    */
   workflowId: string;
 }

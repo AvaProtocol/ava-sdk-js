@@ -44,7 +44,7 @@ describe("Error code consistency between nodes.run and workflows.simulate", () =
 
     // workflows.simulate path.
     const sim = await client.workflows.simulate({
-      trigger: Triggers.block({ id: "trigger", name: "timeTrigger", interval: 7200 }),
+      trigger: Triggers.block({ id: "trigger", name: "timeTrigger", chainId: 11_155_111, interval: 7200 }),
       nodes: [emptyCustomCode],
       edges: [{ id: "e1", source: "trigger", target: "step1" }],
       inputVariables: { settings: settingsFor(wallet.address) },
@@ -62,7 +62,7 @@ describe("Error code consistency between nodes.run and workflows.simulate", () =
   test("successful step has no errorCode (or an UNSPECIFIED sentinel)", async () => {
     const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
-      trigger: Triggers.block({ id: "trigger", name: "timeTrigger", interval: 7200 }),
+      trigger: Triggers.block({ id: "trigger", name: "timeTrigger", chainId: 11_155_111, interval: 7200 }),
       nodes: [
         Nodes.customCode({ id: "step1", name: "code1", source: "return {result: 'ok'};" }),
       ],

@@ -50,7 +50,7 @@ describe("createWorkflow Tests", () => {
     const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
     });
     expect(typeof created.id).toBe("string");
     expect((created.id as string).length).toBe(26);
@@ -122,6 +122,7 @@ describe("createWorkflow Tests", () => {
       trigger: Triggers.event({
         id: "trigger",
         name: "eventTrigger",
+        chainId: 11_155_111,
         queries: [
           {
             addresses: [WETH, USDC],
@@ -151,6 +152,7 @@ describe("createWorkflow Tests", () => {
       trigger: Triggers.block({
         id: "trigger",
         name: "blockTrigger",
+        chainId: 11_155_111,
         interval: 102,
       }),
     });

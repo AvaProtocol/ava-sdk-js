@@ -116,10 +116,10 @@ describe("Template: AAVE health factor alert", () => {
     return {
       smartWalletAddress,
       name: "AAVE Health Factor Top-up",
-      chainId: 11_155_111,
       trigger: Triggers.event({
         id: "trigger",
         name: "aaveBorrow",
+        chainId: 11_155_111,
         queries: [
           {
             addresses: [AAVE_V3_POOL_SEPOLIA],
@@ -134,6 +134,7 @@ describe("Template: AAVE health factor alert", () => {
         Nodes.contractRead({
           id: "read",
           name: "aaveRead",
+          chainId: 11_155_111,
           contractAddress: AAVE_V3_POOL_SEPOLIA,
           contractAbi: Protocols.aaveV3.poolMethodsAbi,
           // Read the HF of the smart wallet (the runner) — the account
@@ -182,6 +183,7 @@ describe("Template: AAVE health factor alert", () => {
         Nodes.contractWrite({
           id: "approve",
           name: "approveLink",
+          chainId: 11_155_111,
           contractAddress: AAVE_LINK_SEPOLIA,
           contractAbi: Protocols.erc20.approveAbi,
           methodCalls: [
@@ -198,6 +200,7 @@ describe("Template: AAVE health factor alert", () => {
         Nodes.contractWrite({
           id: "supply",
           name: "topUpCollateral",
+          chainId: 11_155_111,
           contractAddress: AAVE_V3_POOL_SEPOLIA,
           contractAbi: Protocols.aaveV3.poolMethodsAbi,
           methodCalls: [
@@ -376,6 +379,7 @@ describe("Template: AAVE health factor alert", () => {
       Nodes.contractRead({
         id: "read",
         name: "aaveRead",
+        chainId: 11_155_111,
         contractAddress: AAVE_V3_POOL_SEPOLIA,
         contractAbi: Protocols.aaveV3.poolMethodsAbi,
         methodCalls: [
@@ -471,6 +475,7 @@ describe("Template: AAVE health factor alert", () => {
       Nodes.contractRead({
         id: "read",
         name: "aaveRead",
+        chainId: 11_155_111,
         contractAddress: AAVE_V3_POOL_SEPOLIA,
         contractAbi: Protocols.aaveV3.poolMethodsAbi,
         methodCalls: [
@@ -480,6 +485,7 @@ describe("Template: AAVE health factor alert", () => {
       Nodes.contractWrite({
         id: "approve",
         name: "approveLink",
+        chainId: 11_155_111,
         contractAddress: AAVE_LINK_SEPOLIA,
         contractAbi: Protocols.erc20.approveAbi,
         methodCalls: [
@@ -492,6 +498,7 @@ describe("Template: AAVE health factor alert", () => {
       Nodes.contractWrite({
         id: "supply",
         name: "topUpCollateral",
+        chainId: 11_155_111,
         contractAddress: AAVE_V3_POOL_SEPOLIA,
         contractAbi: Protocols.aaveV3.poolMethodsAbi,
         methodCalls: [

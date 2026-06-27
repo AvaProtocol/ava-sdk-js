@@ -223,13 +223,18 @@ export async function removeCreatedWorkflows(
  * Mirrors v3's `getSettings()` — keeps the per-test boilerplate down.
  */
 export function settingsFor(runner: string, name = "Test Simulation") {
-  // chain_id (snake_case to match the engine's expectation) is
-  // mandatory for contractWrite simulation through Tenderly. Default
-  // to Sepolia since the dev stack runs there; callers running on a
-  // different chain can override via `settingsForChain` below.
+  // `settings.chain_id` is VESTIGIAL since the chain decoupling: the engine
+  // resolves the execution chain from each chain-aware part's own `chainId`,
+  // not from settings (the old "audit class A" fallback was removed by G5).
+  // Verified: simulate succeeds with or without it. Kept only so the helper's
+  // shape doesn't churn callers; the engine ignores it. `name` is still read
+  // by the context-memory summarizer. Safe to drop in a follow-up.
   return { name, runner, chain_id: 11_155_111 };
 }
 
+// Retained for back-compat with callers that pass an explicit chain. Like
+// `settingsFor`, the `chain_id` it emits is vestigial — the per-part `chainId`
+// on each node/trigger is authoritative.
 export function settingsForChain(runner: string, chainId: number, name = "Test Simulation") {
   return { name, runner, chain_id: chainId };
 }

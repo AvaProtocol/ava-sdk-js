@@ -16,7 +16,7 @@ export const Nodes = Object.freeze({
     name: string;
     destination: string;
     amountWei: string;
-    chainId?: number;
+    chainId: number;
   }): v4.Node {
     return {
       id: opts.id,
@@ -25,7 +25,7 @@ export const Nodes = Object.freeze({
       config: {
         destination: opts.destination,
         amount: opts.amountWei,
-        ...(opts.chainId ? { chainId: opts.chainId } : {}),
+        chainId: opts.chainId,
       },
     } as v4.Node;
   },
@@ -45,7 +45,7 @@ export const Nodes = Object.freeze({
     isSimulated?: boolean;
     valueWei?: string;
     gasLimit?: string;
-    chainId?: number;
+    chainId: number;
   }): v4.Node {
     return {
       id: opts.id,
@@ -59,7 +59,7 @@ export const Nodes = Object.freeze({
         ...(opts.isSimulated !== undefined ? { isSimulated: opts.isSimulated } : {}),
         ...(opts.valueWei ? { value: opts.valueWei } : {}),
         ...(opts.gasLimit ? { gasLimit: opts.gasLimit } : {}),
-        ...(opts.chainId ? { chainId: opts.chainId } : {}),
+        chainId: opts.chainId,
       },
     } as v4.Node;
   },
@@ -75,7 +75,7 @@ export const Nodes = Object.freeze({
       callData?: string;
       applyToFields?: string[];
     }>;
-    chainId?: number;
+    chainId: number;
   }): v4.Node {
     return {
       id: opts.id,
@@ -85,7 +85,7 @@ export const Nodes = Object.freeze({
         contractAddress: opts.contractAddress,
         ...(opts.contractAbi ? { contractAbi: opts.contractAbi } : {}),
         ...(opts.methodCalls ? { methodCalls: opts.methodCalls } : {}),
-        ...(opts.chainId ? { chainId: opts.chainId } : {}),
+        chainId: opts.chainId,
       },
     } as v4.Node;
   },

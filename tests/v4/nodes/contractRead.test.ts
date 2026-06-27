@@ -74,6 +74,7 @@ describe("ContractRead Node Tests", () => {
         node: Nodes.contractRead({
           id: "r",
           name: "r",
+          chainId: 11_155_111,
           contractAddress: ORACLE_ADDRESS,
           contractAbi: ORACLE_ABI,
           methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
@@ -97,6 +98,7 @@ describe("ContractRead Node Tests", () => {
         node: Nodes.contractRead({
           id: "r",
           name: "r",
+          chainId: 11_155_111,
           contractAddress: ORACLE_ADDRESS,
           contractAbi: ORACLE_ABI,
           methodCalls: [
@@ -119,6 +121,7 @@ describe("ContractRead Node Tests", () => {
         node: Nodes.contractRead({
           id: "r",
           name: "r",
+          chainId: 11_155_111,
           contractAddress: ORACLE_ADDRESS,
           contractAbi: ORACLE_ABI,
           methodCalls: [{ methodName: "description", methodParams: [] }],
@@ -141,6 +144,7 @@ describe("ContractRead Node Tests", () => {
         node: Nodes.contractRead({
           id: "r",
           name: "r",
+          chainId: 11_155_111,
           contractAddress: "0x1234567890123456789012345678901234567890",
           contractAbi: [
             {
@@ -165,6 +169,7 @@ describe("ContractRead Node Tests", () => {
         node: Nodes.contractRead({
           id: "r",
           name: "r",
+          chainId: 11_155_111,
           contractAddress: ORACLE_ADDRESS,
           contractAbi: ORACLE_ABI,
           methodCalls: [
@@ -203,6 +208,7 @@ describe("ContractRead Node Tests", () => {
           Nodes.contractRead({
             id: "r",
             name: "r",
+            chainId: 11_155_111,
             contractAddress: ORACLE_ADDRESS,
             contractAbi: ORACLE_ABI,
             methodCalls: [{ methodName: "latestRoundData", methodParams: [] }],
