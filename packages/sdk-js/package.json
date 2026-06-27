@@ -1,6 +1,6 @@
 {
   "name": "@avaprotocol/sdk-js",
-  "version": "3.2.2",
+  "version": "4.0.0",
   "description": "TypeScript SDK for Ava Protocol's AVS REST API. Resource-grouped sub-clients, fetch transport, EIP-191 auth.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@avaprotocol/protocols": "^0.6.0",
-    "@avaprotocol/types": "^3.0.1",
+    "@avaprotocol/types": "^4.0.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.2"
   },
