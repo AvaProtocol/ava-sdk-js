@@ -16,7 +16,7 @@ import type { v4 } from "@avaprotocol/types";
  * SDK callers use the builder or hand-assemble the object.
  */
 export const Triggers = Object.freeze({
-  block(opts: { name: string; id?: string; interval: number; chainId?: number }): v4.Trigger {
+  block(opts: { name: string; id?: string; interval: number; chainId: number }): v4.Trigger {
     return {
       type: "block",
       name: opts.name,
@@ -26,7 +26,7 @@ export const Triggers = Object.freeze({
       // alongside the discriminator. Both forms (`{type, config}` and
       // the `BlockTrigger.type` enum) survive the wire-level merge
       // oapi-codegen's serializer performs.
-      config: { interval: opts.interval, ...(opts.chainId ? { chainId: opts.chainId } : {}) },
+      config: { interval: opts.interval, chainId: opts.chainId },
     } as v4.Trigger;
   },
 
@@ -89,14 +89,27 @@ export const Triggers = Object.freeze({
       /** Topic filters; empty string ("") matches any topic at that index. */
       topics?: string[];
       maxEventsPerBlock?: number;
+      /**
+       * Contract ABI (JSON entries) for decoding the event. REQUIRED for
+       * `conditions` that reference a decoded field (e.g. `AnswerUpdated.current`):
+       * without it the engine can't resolve the field and the condition fails.
+       */
+      contractAbi?: ReadonlyArray<Record<string, unknown>>;
       conditions?: Array<{
         fieldName: string;
         operator: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "contains";
         fieldType?: string;
         value: string;
       }>;
+      /** Method calls that enrich decoded event data (e.g. `decimals`). */
+      methodCalls?: Array<{
+        methodName: string;
+        callData?: string;
+        applyToFields?: string[];
+        methodParams?: string[];
+      }>;
     }>;
-    chainId?: number;
+    chainId: number;
     cooldownSeconds?: number;
   }): v4.Trigger {
     return {
@@ -105,7 +118,7 @@ export const Triggers = Object.freeze({
       ...(opts.id ? { id: opts.id } : {}),
       config: {
         queries: opts.queries,
-        ...(opts.chainId ? { chainId: opts.chainId } : {}),
+        chainId: opts.chainId,
         ...(opts.cooldownSeconds !== undefined ? { cooldownSeconds: opts.cooldownSeconds } : {}),
       },
     } as v4.Trigger;

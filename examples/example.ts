@@ -52,7 +52,6 @@ interface CliFlags {
   pretty: boolean;
   blocking: boolean;
   limit?: number;
-  chainId?: number;
   workflowId?: string;
   owner?: string;
   factory?: string;
@@ -89,9 +88,6 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
         break;
       case "limit":
         flags.limit = Number(argv[++i]);
-        break;
-      case "chain-id":
-        flags.chainId = Number(argv[++i]);
         break;
       case "workflow-id":
         flags.workflowId = argv[++i];
@@ -227,16 +223,11 @@ const commands: Record<string, { description: string; usage: string; run: Comman
 
   "workflows:create": {
     description: "Create a workflow from a JSON definition file",
-    usage: "workflows:create <file.json> [--chain-id N]",
-    run: async (client, [file], flags) => {
+    usage: "workflows:create <file.json>",
+    run: async (client, [file], _flags) => {
       if (!file) fail(EXIT_USER_ERROR, "WORKFLOWS_BAD_ARGS", "Usage: workflows:create <file.json>");
       await ensureAuth(client);
-      // openapi-typescript marks generated schema fields readonly, so
-      // we build a fresh request that merges the file payload with
-      // the optional --chain-id flag rather than mutating in place.
-      const file_body = readJsonFile<v4.CreateWorkflowRequest>(file);
-      const body: v4.CreateWorkflowRequest =
-        flags.chainId !== undefined ? { ...file_body, chainId: flags.chainId } : file_body;
+      const body = readJsonFile<v4.CreateWorkflowRequest>(file);
       return client.workflows.create(body);
     },
   },
@@ -473,7 +464,6 @@ const commands: Record<string, { description: string; usage: string; run: Comman
         // --- 4. create workflow -------------------------------------
         const create = {
           smartWalletAddress,
-          chainId: flags.chainId,
           trigger: Triggers.cron({
             name: "verify-cron",
             schedule: ["*/10 * * * *"],

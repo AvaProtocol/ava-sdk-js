@@ -151,7 +151,7 @@ describe("BranchNode Tests", () => {
 
         const wfReq = {
           ...createFromTemplate(wallet.address),
-          trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 3 }),
+          trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 3 }),
           nodes: [branch, nodeA, nodeB],
           edges: [
             { id: "e1", source: "trigger", target: "branch" },

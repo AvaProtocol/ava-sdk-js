@@ -20,11 +20,13 @@ export class NodesResource {
    * delegation, no persistence) and returns the raw output keyed by
    * node type — `{ success, output: { <nodeType>: {...} } }`.
    *
-   * Chain context: the gateway resolves the target chain in this order:
-   * `body.chainId` → `inputVariables.settings.chain_id` → the JWT's
-   * `aud` claim → the gateway's default chain. Specify `chainId`
-   * explicitly when calling a contract that lives on a non-default
-   * chain (e.g. a sepolia oracle when the gateway defaults to mainnet).
+   * Chain context: the chain is **explicit-or-error** since the chain
+   * decoupling — there is no `settings.chain_id` / JWT-`aud` / default
+   * fallback. For a chain-aware node, set either the request-level
+   * `chainId` or the node's own `config.chainId`; the gateway stamps the
+   * request chain onto the node when the node leaves it unset
+   * (`stampNodeChainIfUnset`). The chain must be one of the configured
+   * set (Ethereum, Base, Sepolia, Base Sepolia) or the call is rejected.
    */
   run(req: v4.RunNodeRequest): Promise<v4.RunNodeResponse> {
     return this.transport.request<v4.RunNodeResponse>({

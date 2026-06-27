@@ -62,7 +62,7 @@ describe("BlockTrigger Tests", () => {
       ["single block", 1],
     ])("returns the latest block for %s", async (_label, interval) => {
       const result = await client.triggers.run({
-        trigger: Triggers.block({ id: "t", name: "blockTrigger", interval }),
+        trigger: Triggers.block({ id: "t", name: "blockTrigger", chainId: 11_155_111, interval }),
       });
       expect(result.success).toBe(true);
       const data = (result.output as { data: BlockTriggerOutput }).data;
@@ -77,7 +77,7 @@ describe("BlockTrigger Tests", () => {
     test("simulates a workflow with a block trigger", async () => {
       const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
-        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 10 }),
+        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 10 }),
         nodes: [Nodes.customCode({ id: "step1", name: "step1", source: "return {ok: true};" })],
         edges: [{ id: "e1", source: "trigger", target: "step1" }],
         inputVariables: { settings: settingsFor(wallet.address) },
@@ -100,7 +100,7 @@ describe("BlockTrigger Tests", () => {
 
       const wfReq = {
         ...createFromTemplate(wallet.address),
-        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval }),
+        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval }),
       };
       const created = await client.workflows.create(wfReq);
       const wfId = created.id as string;

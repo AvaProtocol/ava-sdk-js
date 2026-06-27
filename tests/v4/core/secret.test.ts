@@ -101,6 +101,7 @@ describe("secret Tests", () => {
         trigger: Triggers.block({
           id: "trigger",
           name: "blockTrigger",
+          chainId: 11_155_111,
           interval: 5,
         }),
         nodes: [

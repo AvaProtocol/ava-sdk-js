@@ -44,7 +44,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 1,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
       nodes: [
         Nodes.customCode({ id: "good", name: "successfulNode", source: "return {result: 'success'};" }),
         Nodes.customCode({
@@ -87,7 +87,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 1,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
       nodes: [
         Nodes.customCode({ id: "step1", name: "step1", source: "return {ok: 1};" }),
         Nodes.customCode({ id: "step2", name: "step2", source: "return {ok: 2};" }),
@@ -121,7 +121,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 1,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
       nodes: [
         Nodes.customCode({ id: "step1", name: "step1", source: "throw new Error('boom1');" }),
       ],

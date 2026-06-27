@@ -48,7 +48,7 @@ describe("Execution Management Tests", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 0,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -99,7 +99,7 @@ describe("Execution Management Tests", () => {
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 0,
-      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+      trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);

@@ -169,7 +169,7 @@ describe("FilterNode Tests", () => {
 
       const wfReq = {
         ...createFromTemplate(wallet.address),
-        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", interval: 5 }),
+        trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
         nodes: [dataNode, filter],
         edges: [
           { id: "e1", source: "trigger", target: "data" },

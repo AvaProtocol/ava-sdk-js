@@ -7,7 +7,7 @@ the root of this repo and point `AVS_REST_URL` at the gateway.
 ```bash
 export AVS_REST_URL=http://localhost:8080/api/v1
 export TEST_PRIVATE_KEY=0x...                       # EOA for auth flow
-yarn test:v4
+yarn test
 ```
 
 `tests-v3-archive/` holds the legacy gRPC test suite (44 files). They

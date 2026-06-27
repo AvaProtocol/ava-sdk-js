@@ -59,6 +59,7 @@ describe("ETHTransfer Node Tests", () => {
         node: Nodes.ethTransfer({
           id: "n1",
           name: "n1",
+          chainId: 11_155_111,
           destination: eoaAddress,
           amountWei,
         }),
@@ -95,6 +96,7 @@ describe("ETHTransfer Node Tests", () => {
         node: Nodes.ethTransfer({
           id: "n1",
           name: "n1",
+          chainId: 11_155_111,
           destination: "",
           amountWei: "1",
         }),
@@ -116,6 +118,7 @@ describe("ETHTransfer Node Tests", () => {
         node: Nodes.ethTransfer({
           id: "n1",
           name: "n1",
+          chainId: 11_155_111,
           destination: eoaAddress,
           amountWei: "0",
         }),
@@ -138,6 +141,7 @@ describe("ETHTransfer Node Tests", () => {
           Nodes.ethTransfer({
             id: "transfer",
             name: "transfer",
+            chainId: 11_155_111,
             destination: eoaAddress,
             amountWei,
           }),
@@ -177,12 +181,14 @@ describe("ETHTransfer Node Tests", () => {
         trigger: Triggers.block({
           id: "trigger",
           name: "blockTrigger",
+          chainId: 11_155_111,
           interval: triggerInterval,
         }),
         nodes: [
           Nodes.ethTransfer({
             id: "transfer",
             name: "transfer",
+            chainId: 11_155_111,
             destination: eoaAddress,
             amountWei: "100000000000000",
           }),
