@@ -212,4 +212,69 @@ export const Nodes = Object.freeze({
       },
     } as v4.Node;
   },
+
+  /**
+   * Durable-execution pause point. The execution suspends at this node
+   * (status `WAITING`, non-terminal) and resumes exactly-once when a wake
+   * arrives. Two mutually-exclusive flavors — set **either** `channel` **or**
+   * `chainEvent`, never both:
+   *
+   * - **External-signal (human approval):** `channel: "telegram" | "api"`
+   *   (+ optional `approvers` / `prompt`). Resumes via
+   *   `client.executions.signal(...)` with an approve/reject decision; the
+   *   decision (and any `payload`) becomes this node's output, readable
+   *   downstream as `{{<name>.data...}}`.
+   * - **Chain-event (cross-chain):** `chainEvent` — a mid-workflow event
+   *   watch (same shape as an Event trigger's config). An operator covering
+   *   `chainEvent.chainId` resumes the execution when the event fires; the
+   *   matched log becomes this node's output. NOT resumed via `signal(...)`.
+   *
+   * `timeoutSeconds` is a safety bound (0 ⇒ server default, 24h; the wait is
+   * never unbounded). On timeout the execution fails.
+   *
+   * The XOR is enforced server-side too, but is guarded here for a friendly
+   * error before the round-trip. The TS overload also makes the two flavors
+   * mutually exclusive at compile time.
+   */
+  await(
+    opts: {
+      id: string;
+      name: string;
+      timeoutSeconds?: number;
+    } & (
+      | { channel: "telegram" | "api"; approvers?: string[]; prompt?: string; chainEvent?: never }
+      | { chainEvent: v4.EventTriggerConfig; channel?: never; approvers?: never; prompt?: never }
+    ),
+  ): v4.Node {
+    const hasExternal = "channel" in opts && opts.channel !== undefined;
+    const hasChainEvent = "chainEvent" in opts && opts.chainEvent !== undefined;
+    if (hasExternal && hasChainEvent) {
+      throw new Error(
+        "Nodes.await: set either `channel` (external-signal) or `chainEvent` (chain-event), not both",
+      );
+    }
+    if (!hasExternal && !hasChainEvent) {
+      throw new Error(
+        "Nodes.await: must set either `channel` (external-signal) or `chainEvent` (chain-event)",
+      );
+    }
+
+    const config: Record<string, unknown> = {
+      ...(opts.timeoutSeconds !== undefined ? { timeoutSeconds: opts.timeoutSeconds } : {}),
+    };
+    if (hasChainEvent) {
+      config.chainEvent = opts.chainEvent;
+    } else {
+      config.channel = opts.channel;
+      if (opts.approvers !== undefined) config.approvers = opts.approvers;
+      if (opts.prompt !== undefined) config.prompt = opts.prompt;
+    }
+
+    return {
+      id: opts.id,
+      name: opts.name,
+      type: "await",
+      config,
+    } as v4.Node;
+  },
 });

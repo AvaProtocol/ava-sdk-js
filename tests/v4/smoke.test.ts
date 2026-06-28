@@ -167,6 +167,73 @@ describe("v4 SDK smoke", () => {
       expect(config.lang).toBe("javascript");
     });
 
+    test("Nodes.await (external-signal) carries channel/approvers/prompt + timeout", () => {
+      const node = Nodes.await({
+        id: "approve",
+        name: "approve",
+        channel: "telegram",
+        approvers: ["0xabc"],
+        prompt: "Approve this transfer?",
+        timeoutSeconds: 3600,
+      });
+      expect(node.id).toBe("approve");
+      expect(node.type).toBe("await");
+      const config = (
+        node as {
+          config: {
+            channel: string;
+            approvers: readonly string[];
+            prompt: string;
+            timeoutSeconds: number;
+            chainEvent?: unknown;
+          };
+        }
+      ).config;
+      expect(config.channel).toBe("telegram");
+      expect(config.approvers).toEqual(["0xabc"]);
+      expect(config.prompt).toBe("Approve this transfer?");
+      expect(config.timeoutSeconds).toBe(3600);
+      expect(config.chainEvent).toBeUndefined();
+    });
+
+    test("Nodes.await (chain-event) carries chainEvent and no signal fields", () => {
+      const node = Nodes.await({
+        id: "bridge",
+        name: "bridge",
+        chainEvent: {
+          chainId: 8453,
+          queries: [{ addresses: ["0x0000000000000000000000000000000000000001"], topics: [""] }],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
+      });
+      expect(node.type).toBe("await");
+      const config = (
+        node as { config: { chainEvent?: { chainId: number }; channel?: string } }
+      ).config;
+      expect(config.chainEvent?.chainId).toBe(8453);
+      expect(config.channel).toBeUndefined();
+    });
+
+    test("Nodes.await throws when both flavors are set", () => {
+      expect(() =>
+        Nodes.await({
+          id: "x",
+          name: "x",
+          // Force the runtime guard (bypass the compile-time XOR) the way a
+          // JS consumer could.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...({ channel: "api", chainEvent: { chainId: 1, queries: [] } } as any),
+        }),
+      ).toThrow(/not both/);
+    });
+
+    test("Nodes.await throws when neither flavor is set", () => {
+      expect(() =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Nodes.await({ id: "x", name: "x" } as any),
+      ).toThrow(/either/);
+    });
+
     test("Triggers.event preserves topic wildcards as empty strings", () => {
       const transferTopic = Protocols.erc20.eventTopics.Transfer;
       const trigger = Triggers.event({
@@ -188,6 +255,70 @@ describe("v4 SDK smoke", () => {
         }
       ).config;
       expect(config.queries[0].topics).toEqual([transferTopic, ""]);
+    });
+  });
+
+  describe("executions.signal", () => {
+    test("POSTs decision+payload to /executions/{id}:signal?workflowId=...", async () => {
+      let captured: { url: string; method?: string; body?: string } | undefined;
+      const fakeFetch: typeof fetch = async (input, init) => {
+        captured = {
+          url: String(input),
+          method: init?.method,
+          body: init?.body as string | undefined,
+        };
+        return new Response(JSON.stringify({ id: "exec1", status: "success" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      };
+      const client = new Client({ baseUrl: "http://example.test/api/v1", fetchImpl: fakeFetch });
+      const exec = await client.executions.signal("exec1", {
+        workflowId: "wf1",
+        decision: "approve",
+        payload: { note: "ok" },
+      });
+
+      expect(captured?.method).toBe("POST");
+      const url = new URL(captured!.url);
+      expect(url.pathname).toBe("/api/v1/executions/exec1:signal");
+      expect(url.searchParams.get("workflowId")).toBe("wf1");
+      expect(JSON.parse(captured!.body!)).toEqual({
+        decision: "approve",
+        payload: { note: "ok" },
+      });
+      expect(exec.status).toBe("success");
+    });
+  });
+
+  describe("executions.waitForTerminal — durable-execution WAITING", () => {
+    test("treats 'waiting' as non-terminal and resolves on the terminal status", async () => {
+      // Fake SSE stream: pending -> waiting (paused on an await node) ->
+      // success (resumed). waitForTerminal must skip pending+waiting and
+      // only resolve on success.
+      const frames = [
+        { id: "e1", status: "pending" },
+        { id: "e1", status: "waiting" },
+        { id: "e1", status: "success" },
+      ].map((s) => `data: ${JSON.stringify(s)}\n\n`);
+
+      const fakeFetch: typeof fetch = async () => {
+        const enc = new TextEncoder();
+        const body = new ReadableStream<Uint8Array>({
+          start(controller) {
+            for (const f of frames) controller.enqueue(enc.encode(f));
+            controller.close();
+          },
+        });
+        return new Response(body, {
+          status: 200,
+          headers: { "Content-Type": "text/event-stream" },
+        });
+      };
+
+      const client = new Client({ baseUrl: "http://example.test/api/v1", fetchImpl: fakeFetch });
+      const final = await client.executions.waitForTerminal("e1", { workflowId: "wf1" });
+      expect(final.status).toBe("success");
     });
   });
 
