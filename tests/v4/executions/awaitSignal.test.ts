@@ -18,11 +18,24 @@
  *    downstream step.
  *
  * GATED: this exercises brand-new server behaviour and live timing, so
- * it only runs when `DURABLE_E2E=1` is set (e.g. `TEST_ENV=railway
- * DURABLE_E2E=1 yarn jest tests/v4/executions/awaitSignal.test.ts`).
- * Left off by default until the target gateway image is confirmed to
- * carry the durable-execution engine — otherwise it would fail against
- * an older `avs-dev` image that doesn't suspend on `await`.
+ * it only runs when `DURABLE_E2E=1` is set (e.g.
+ * `AVS_REST_URL=http://localhost:8080/api/v1 DURABLE_E2E=1 \
+ *   yarn jest tests/v4/executions/awaitSignal.test.ts`).
+ * Left off by default until the target gateway is confirmed to carry
+ * the durable-execution engine.
+ *
+ * KNOWN SERVER BLOCKER (as of 2026-06-28, verified against a local
+ * `make dev-stack` on EigenLayer-AVS staging): the WAITING half works
+ * end-to-end — the execution suspends at `await` and `getStatus` /
+ * `retrieve` report `"waiting"` — but `POST /executions/{id}:signal`
+ * 404s at the gateway router. The generated echo route
+ * `/executions/:id:signal` is unmatchable: the GET colon-method routes
+ * (`:getStatus`, `:stream`) only resolve because `GetExecution`
+ * registers a bare `/executions/:id` that anchors echo's param+suffix
+ * split; POST has no such sibling, so `:signal` never matches (probe:
+ * POST → 404 generic, GET `:getStatus` → 401). The SDK sends the
+ * correct URI. This test will pass once the gateway routing is fixed;
+ * until then the signal step fails. Tracked for EigenLayer-AVS.
  */
 
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
@@ -78,6 +91,7 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
 
     const created = await client.workflows.create({
       smartWalletAddress: wallet.address,
+      name: "durable-await-approve",
       trigger: Triggers.manual({ id: "trigger", name: "manualTrigger" }),
       nodes: [
         Nodes.await({
@@ -97,6 +111,9 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
         { id: "e1", source: "trigger", target: "gate" },
         { id: "e2", source: "gate", target: "gated" },
       ],
+      inputVariables: {
+        settings: { name: "durable-await-approve", runner: wallet.address },
+      },
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -146,6 +163,7 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
 
     const created = await client.workflows.create({
       smartWalletAddress: wallet.address,
+      name: "durable-await-reject",
       trigger: Triggers.manual({ id: "trigger", name: "manualTrigger" }),
       nodes: [
         Nodes.await({
@@ -164,6 +182,9 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
         { id: "e1", source: "trigger", target: "gate" },
         { id: "e2", source: "gate", target: "gated" },
       ],
+      inputVariables: {
+        settings: { name: "durable-await-reject", runner: wallet.address },
+      },
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
