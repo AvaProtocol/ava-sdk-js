@@ -24,18 +24,14 @@
  * Left off by default until the target gateway is confirmed to carry
  * the durable-execution engine.
  *
- * KNOWN SERVER BLOCKER (as of 2026-06-28, verified against a local
- * `make dev-stack` on EigenLayer-AVS staging): the WAITING half works
- * end-to-end — the execution suspends at `await` and `getStatus` /
- * `retrieve` report `"waiting"` — but `POST /executions/{id}:signal`
- * 404s at the gateway router. The generated echo route
- * `/executions/:id:signal` is unmatchable: the GET colon-method routes
- * (`:getStatus`, `:stream`) only resolve because `GetExecution`
- * registers a bare `/executions/:id` that anchors echo's param+suffix
- * split; POST has no such sibling, so `:signal` never matches (probe:
- * POST → 404 generic, GET `:getStatus` → 401). The SDK sends the
- * correct URI. This test will pass once the gateway routing is fixed;
- * until then the signal step fails. Tracked for EigenLayer-AVS.
+ * Verified passing 2026-06-28 against a local `make dev-stack`
+ * (EigenLayer-AVS staging). Gateway logs for the run show the full
+ * lifecycle: `execution suspended (durable) resume_node: gate` →
+ * `POST /executions/{id}:signal -> 200` → `execution resumed to
+ * terminal status: EXECUTION_STATUS_SUCCESS`. (An earlier gateway
+ * build 404'd the POST `:signal` route — the generated echo route
+ * `/executions/:id:signal` was unmatchable for POST; fixed server-side
+ * before this run.)
  */
 
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
