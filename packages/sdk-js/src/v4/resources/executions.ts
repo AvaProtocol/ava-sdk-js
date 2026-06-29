@@ -197,6 +197,13 @@ export class ExecutionsResource {
    * from elsewhere; this helper then sees the resumed terminal status.
    * Consumers that want to *react* to the pause (e.g. prompt an
    * approver) should use `stream()` and branch on `status === "waiting"`.
+   *
+   * Caveat: if the SSE stream ends without a terminal event (network
+   * drop, proxy idle-timeout — plausible on long `waiting` pauses), this
+   * returns the last status seen, which may be non-terminal (`waiting` /
+   * `pending`). Callers that must distinguish "disconnected mid-wait"
+   * from "finished" should re-check `getStatus`/`retrieve`, or poll
+   * those directly instead of relying on a single long-lived stream.
    */
   async waitForTerminal(
     id: string,

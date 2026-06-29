@@ -143,8 +143,10 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
     });
 
     // 4) Terminal success, and the gated step ran post-resume.
+    //    signal(...) can return before the engine finishes transitioning
+    //    through "pending", so treat "pending" as keep-polling too.
     const finalStatus =
-      resumed.status === "waiting"
+      resumed.status === "waiting" || resumed.status === "pending"
         ? await waitForStatus(client, execId, wfId, (s) => s !== "waiting" && s !== "pending")
         : resumed.status;
     expect(finalStatus).toBe("success");
@@ -154,7 +156,7 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
     expect(gatedAfter?.success).toBe(true);
   });
 
-  test("reject routes the execution down the reject path (gated step skipped)", async () => {
+  test("reject resumes the execution to a clean terminal success", async () => {
     const wallet = await createSmartWallet(client);
 
     const created = await client.workflows.create({
@@ -203,8 +205,10 @@ describeMaybe("durable execution — await(channel:'api') + executions.signal", 
       resumed.status === "waiting" || resumed.status === "pending"
         ? await waitForStatus(client, execId, wfId, (s) => s !== "waiting" && s !== "pending")
         : resumed.status;
-    // Reject is a clean decision, not a failure — the execution
-    // completes; the gated step on the approve branch never fires.
-    expect(["success", "failed"]).toContain(finalStatus);
+    // Reject is a clean decision, not a failure: the execution resumes
+    // and completes successfully. (This linear workflow has no Branch,
+    // so reject doesn't skip a downstream step — routing-on-decision is
+    // a separate Branch concern; this asserts the resume itself.)
+    expect(finalStatus).toBe("success");
   });
 });
