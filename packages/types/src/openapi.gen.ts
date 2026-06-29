@@ -89,10 +89,10 @@ export interface paths {
         readonly put?: never;
         /**
          * Create a workflow
-         * @description Persist a new workflow definition. The server resolves the
-         *     workflow-level `chainId` (falling back to the aggregator default
-         *     if omitted) and ensures the smart wallet belongs to the
-         *     authenticated user. Returns the persisted Workflow with its
+         * @description Persist a new workflow definition. Each chain-aware trigger and node
+         *     carries its own required `chainId` (there is no workflow-level chain);
+         *     the server validates those chains and ensures the smart wallet belongs
+         *     to the authenticated user. Returns the persisted Workflow with its
          *     server-assigned `id` and `createdAt`.
          */
         readonly post: operations["createWorkflow"];
@@ -346,6 +346,34 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/executions/{id}:signal": {
+        readonly parameters: {
+            readonly query: {
+                /** @description Workflow id the execution belongs to. See `getExecution`. */
+                readonly workflowId: components["schemas"]["Ulid"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Deliver an approval/external signal to a waiting execution
+         * @description Resumes a WAITING execution (durable execution). The caller must own the
+         *     workflow; the signal only counts against an actual pending wait whose kind
+         *     it matches and which has not timed out. v1 is the external-signal (human
+         *     approval) flavor — e.g. a Telegram approve/reject for a money-moving step.
+         */
+        readonly post: operations["signalExecution"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/executions/{id}:stream": {
         readonly parameters: {
             readonly query: {
@@ -477,8 +505,8 @@ export interface paths {
         readonly parameters: {
             readonly query?: {
                 /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
                  */
                 readonly chainId?: components["parameters"]["ChainIdQuery"];
             };
@@ -743,7 +771,7 @@ export interface components {
          *     `NodeType` enum but without the `NODE_TYPE_` prefix.
          * @enum {string}
          */
-        readonly NodeType: "ethTransfer" | "contractWrite" | "contractRead" | "graphqlQuery" | "restApi" | "customCode" | "branch" | "filter" | "loop" | "balance";
+        readonly NodeType: "ethTransfer" | "contractWrite" | "contractRead" | "graphqlQuery" | "restApi" | "customCode" | "branch" | "filter" | "loop" | "balance" | "await";
         /**
          * @description Language/format of an inline payload (e.g., custom code source,
          *     manual trigger data). Mirrors the proto `Lang` enum minus the
@@ -1004,8 +1032,9 @@ export interface components {
         };
         /**
          * @description Iterates over an input array, running an inner Node per item. The
-         *     runner node is one of the chain-aware or chain-agnostic node types
-         *     and inherits chainId from this LoopNode if it does not specify its own.
+         *     runner node is one of the chain-aware or chain-agnostic node types;
+         *     a chain-aware runner must specify its own required `chainId` (there is
+         *     no inheritance from the loop or workflow).
          */
         readonly LoopNodeConfig: {
             /** @description Template path for the iterable (e.g., `{{settings.addressList}}`). */
@@ -1031,11 +1060,48 @@ export interface components {
             /** @description Restrict to these tokens. Empty = fetch all. */
             readonly tokenAddresses?: readonly components["schemas"]["EthereumAddress"][];
         };
+        /**
+         * @description Pauses the workflow until a wake arrives (durable execution). Two mutually
+         *     exclusive flavors: the external-signal flavor (human approval — set `channel`,
+         *     e.g. a Telegram approve/reject), or the chain-event flavor (cross-chain — set
+         *     `chainEvent` to pause until an operator observes that on-chain event, e.g. a
+         *     bridge arrival on another chain). Exactly one flavor must be configured.
+         */
+        readonly AwaitNodeConfig: {
+            /** @description External-signal flavor — signal channel: `telegram` or `api`. */
+            readonly channel?: string;
+            /** @description External-signal flavor — authorized approver identities. Empty = the workflow owner. */
+            readonly approvers?: readonly string[];
+            /** @description External-signal flavor — message shown to the approver. */
+            readonly prompt?: string;
+            /**
+             * @description Chain-event flavor — the on-chain event to wait for (a mid-workflow
+             *     EventTrigger). An operator covering `chainEvent.chainId` watches it and
+             *     resumes the execution when it fires. Mutually exclusive with `channel`.
+             */
+            readonly chainEvent?: components["schemas"]["EventTriggerConfig"];
+            /**
+             * Format: int64
+             * @description Safety bound; 0 = server default (the wait is never unbounded).
+             */
+            readonly timeoutSeconds?: number;
+        };
+        readonly SignalExecutionRequest: {
+            /**
+             * @description The approver's decision.
+             * @enum {string}
+             */
+            readonly decision: "approve" | "reject";
+            /** @description Optional structured data delivered as the await step's output. */
+            readonly payload?: {
+                readonly [key: string]: unknown;
+            };
+        };
         readonly Node: {
             readonly id: string;
             readonly name?: string;
             readonly type: components["schemas"]["NodeType"];
-        } & (components["schemas"]["ETHTransferNode"] | components["schemas"]["ContractWriteNode"] | components["schemas"]["ContractReadNode"] | components["schemas"]["GraphQLQueryNode"] | components["schemas"]["RestAPINode"] | components["schemas"]["CustomCodeNode"] | components["schemas"]["BranchNode"] | components["schemas"]["FilterNode"] | components["schemas"]["LoopNode"] | components["schemas"]["BalanceNode"]);
+        } & (components["schemas"]["ETHTransferNode"] | components["schemas"]["ContractWriteNode"] | components["schemas"]["ContractReadNode"] | components["schemas"]["GraphQLQueryNode"] | components["schemas"]["RestAPINode"] | components["schemas"]["CustomCodeNode"] | components["schemas"]["BranchNode"] | components["schemas"]["FilterNode"] | components["schemas"]["LoopNode"] | components["schemas"]["BalanceNode"] | components["schemas"]["AwaitNode"]);
         readonly ETHTransferNode: {
             /** @enum {string} */
             readonly type?: "ethTransfer";
@@ -1145,6 +1211,17 @@ export interface components {
              * @enum {string}
              */
             readonly type: "balance";
+        };
+        readonly AwaitNode: {
+            /** @enum {string} */
+            readonly type?: "await";
+            readonly config?: components["schemas"]["AwaitNodeConfig"];
+        } & {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            readonly type: "await";
         };
         readonly Edge: {
             readonly id: string;
@@ -1285,12 +1362,16 @@ export interface components {
             readonly pricingModel?: string;
         };
         /**
-         * @description Outcome of an execution. `pending` is in-flight; `success` is full
-         *     success; `failed` is logical failure (e.g., a node returned an error);
+         * @description Outcome of an execution. `pending` is in-flight; `waiting` is suspended
+         *     mid-workflow at an `await` node, durably parked until a signal arrives
+         *     (a human approve/reject or an operator-observed chain event) or the wait
+         *     times out — non-terminal, like `pending`, but distinguishable so a client
+         *     can show "awaiting approval"; `success` is full success; `failed` is
+         *     logical failure (e.g., a node returned an error, or a wait timed out);
          *     `error` is a system / infrastructure failure (e.g., RPC unreachable).
          * @enum {string}
          */
-        readonly ExecutionStatus: "pending" | "success" | "failed" | "error";
+        readonly ExecutionStatus: "pending" | "waiting" | "success" | "failed" | "error";
         readonly Fee: {
             /** @description Decimal numeric value, encoded as a string for big-int safety. */
             readonly amount: string;
@@ -1686,8 +1767,8 @@ export interface components {
         /** @description Max items to return. Default 20; server-enforced ceiling applies. */
         readonly PageLimit: number;
         /**
-         * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-         *     the parameter to filter by multiple chains.
+         * @description The chain to operate on (a single value). Omit to use the aggregator
+         *     default (the request's JWT `aud` chain, then the gateway default).
          */
         readonly ChainIdQuery: number;
     };
@@ -2143,6 +2224,38 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
         };
     };
+    readonly signalExecution: {
+        readonly parameters: {
+            readonly query: {
+                /** @description Workflow id the execution belongs to. See `getExecution`. */
+                readonly workflowId: components["schemas"]["Ulid"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["SignalExecutionRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description The resumed (terminal or still-waiting) execution. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["Execution"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
     readonly streamExecution: {
         readonly parameters: {
             readonly query: {
@@ -2343,8 +2456,8 @@ export interface operations {
         readonly parameters: {
             readonly query?: {
                 /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
                  */
                 readonly chainId?: components["parameters"]["ChainIdQuery"];
             };
@@ -2461,8 +2574,8 @@ export interface operations {
         readonly parameters: {
             readonly query?: {
                 /**
-                 * @description Chain ID filter. Omit to use the aggregator default chain. Repeat
-                 *     the parameter to filter by multiple chains.
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
                  */
                 readonly chainId?: components["parameters"]["ChainIdQuery"];
             };

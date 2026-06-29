@@ -44,6 +44,8 @@ export type FixedTimeTrigger = components["schemas"]["FixedTimeTrigger"];
 export type EventTrigger = components["schemas"]["EventTrigger"];
 export type ManualTrigger = components["schemas"]["ManualTrigger"];
 
+export type EventTriggerConfig = components["schemas"]["EventTriggerConfig"];
+
 export type Node = components["schemas"]["Node"];
 export type NodeType = components["schemas"]["NodeType"];
 export type ETHTransferNode = components["schemas"]["ETHTransferNode"];
@@ -56,6 +58,9 @@ export type FilterNode = components["schemas"]["FilterNode"];
 export type LoopNode = components["schemas"]["LoopNode"];
 export type CustomCodeNode = components["schemas"]["CustomCodeNode"];
 export type BalanceNode = components["schemas"]["BalanceNode"];
+// Durable-execution pause node (human approval / cross-chain wait).
+export type AwaitNode = components["schemas"]["AwaitNode"];
+export type AwaitNodeConfig = components["schemas"]["AwaitNodeConfig"];
 
 export type Edge = components["schemas"]["Edge"];
 export type InputVariables = components["schemas"]["InputVariables"];
@@ -72,6 +77,7 @@ export type ExecutionStep = components["schemas"]["ExecutionStep"];
 export type ExecutionStatusSummary = components["schemas"]["ExecutionStatusSummary"];
 export type ExecutionCount = components["schemas"]["ExecutionCount"];
 export type ExecutionStats = components["schemas"]["ExecutionStats"];
+export type SignalExecutionRequest = components["schemas"]["SignalExecutionRequest"];
 
 // ---------------------------------------------------------------------
 // Wallets

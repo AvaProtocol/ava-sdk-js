@@ -63,9 +63,18 @@ locally.
 TEST_ENV=railway yarn jest tests/v4/templates/aave-health-factor-alert.test.ts
 ```
 
-**Setup**: see `.env.railway.example`. Requires `AVS_REST_URL` pointing at
-the public gateway domain + an admin JWT in `AVS_API_KEY` minted via
-`railway ssh --service gateway --environment feature/rest-api-migration "./ap create-api-key --config=config/gateway-railway.yaml --role=admin --subject=0x..."`.
+**Setup**: see `.env.railway.example`. The renovated multi-chain gateway
+authenticates via the SIWE signature exchange (`client.auth.exchangeWithKey`),
+so the suite needs **no pre-minted JWT** — just two env vars:
+
+- `AVS_REST_URL` → the public gateway base, `https://api.avaprotocol.org/api/v1`.
+- `TEST_PRIVATE_KEY` → a throwaway test EOA private key (**no funds**; used only
+  to sign the auth message — the gateway mints the JWT in return).
+
+The Railway project is `eigenlayer-avs`; there is a single environment named
+**`production`** (sourced from the `feature/rest-api-migration` branch, renamed
+in place — see `avs-infra/RAILWAY_OPERATIONS.md`). The old admin-JWT-via-`railway
+ssh ... create-api-key` path is **no longer required** for the test suite.
 
 #### Per-test log verification
 
@@ -86,9 +95,16 @@ TEST_ENV=railway yarn jest tests/v4/templates/your-template.test.ts
 #    Base Sepolia (84_532) → worker-base-sepolia, mainnet → worker-ethereum,
 #    Base → worker-base.
 cd /Users/mikasa/Code/avs-infra
-railway logs --service gateway --environment feature/rest-api-migration --deployment 2>&1 | tail -50
-railway logs --service worker-sepolia --environment feature/rest-api-migration --deployment 2>&1 | tail -50
+railway logs --service gateway --environment production --deployment 2>&1 | tail -50
+railway logs --service worker-sepolia --environment production --deployment 2>&1 | tail -50
 ```
+
+For a **local** source-built stack (the usual day-to-day setup), skip Railway
+entirely: run `make dev-stack` from `../EigenLayer-AVS` (gateway + Sepolia
+worker + Base-Sepolia worker + Sepolia operator, all from current source) and
+point the suite at it with `AVS_REST_URL=http://localhost:8080/api/v1`. Logs
+stream to `../EigenLayer-AVS/logs/{gateway,worker-sepolia,...}.log` — `grep` /
+`tail` those instead of `railway logs`.
 
 What to look for:
 
@@ -116,14 +132,20 @@ curl http://localhost:8080/up          # Gateway liveness probe
 curl http://localhost:8090/health      # Worker liveness probe
 ```
 
-The container binary in the published `avaprotocol/avs-dev:latest`
-image today is `/ava` (root path, ENTRYPOINT `["/ava"]`). The
-EigenLayer-AVS source Dockerfile has since renamed it to `/app/ap`
-(ENTRYPOINT `["./ap"]`); flip the `apikey-gen` script in
-`package.json` and the workflow's API-key step to `./ap` once a
-fresh image tag picks up that rebuild. Subcommands either way:
-`aggregator` (runs in gateway mode when the config carries a
-`chains[]` block), `worker`, `operator`, `create-api-key`.
+The binary is now **`ap`**. Built from EigenLayer-AVS source via
+`make build` → `./out/ap`; `make dev-stack` / `make gateway` invoke
+that. The published `avaprotocol/avs-dev:latest` image's older `/ava`
+entrypoint is legacy — the `apikey-gen` script in `package.json` still
+references `/ava` and only matters when running the docker-compose
+stack against that legacy image; the source `make dev-stack` path mints
+keys via `./out/ap create-api-key`. Subcommands (either binary):
+`aggregator` (runs in gateway mode when the config carries a `chains[]`
+block), `worker`, `operator`, `create-api-key`.
+
+> Note: `make dev-stack` (source) is the primary local stack today; the
+> `docker compose` flow below targets the published image and is the CI
+> shape. They're interchangeable for the v4 suite — both expose the
+> gateway REST on `:8080`.
 
 ### Release
 

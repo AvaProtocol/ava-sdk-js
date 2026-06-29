@@ -37,6 +37,21 @@ export interface StreamExecutionParams {
   signal?: AbortSignal;
 }
 
+export interface SignalExecutionParams {
+  /**
+   * Workflow the execution belongs to. Required — executions are
+   * workflow-scoped (same as `retrieve`). The caller must own it.
+   */
+  workflowId: string;
+  /** The approver's decision. */
+  decision: v4.SignalExecutionRequest["decision"];
+  /**
+   * Optional structured data delivered as the `await` node's output,
+   * readable downstream as `{{<awaitNodeName>.data...}}`.
+   */
+  payload?: Record<string, unknown>;
+}
+
 /**
  * `client.executions.*` — read-only access to past workflow runs and
  * a live SSE stream for in-flight ones. Workflow executions are
@@ -78,6 +93,29 @@ export class ExecutionsResource {
     return this.transport.request<v4.ExecutionStatusSummary>({
       path: `/executions/${encodeURIComponent(id)}:getStatus`,
       query: { workflowId: params.workflowId },
+    });
+  }
+
+  /**
+   * POST /executions/{id}:signal — resume a `WAITING` execution paused on
+   * an external-signal `await` node (human approval). Delivers an
+   * approve/reject decision (+ optional payload) that becomes the await
+   * node's output, then returns the resumed `Execution` (terminal, or still
+   * `WAITING` if the workflow hit a *second* await).
+   *
+   * Chain-event awaits are **not** resumed here — an operator fires them
+   * automatically when it observes the on-chain event; poll `retrieve` or
+   * `stream` to watch that resume instead.
+   *
+   * Errors: `400` (bad decision / no matching pending wait / already timed
+   * out), `401` (auth), `404` (workflow not owned / not found).
+   */
+  signal(id: string, params: SignalExecutionParams): Promise<v4.Execution> {
+    return this.transport.request<v4.Execution>({
+      path: `/executions/${encodeURIComponent(id)}:signal`,
+      method: "POST",
+      query: { workflowId: params.workflowId },
+      body: { decision: params.decision, payload: params.payload },
     });
   }
 
@@ -151,6 +189,21 @@ export class ExecutionsResource {
    * Poll-and-wait helper — yields the final ExecutionStatusSummary
    * once the execution reaches a terminal status. Use `stream()`
    * when you want every intermediate status update.
+   *
+   * Terminal is an allow-list (`success` / `failed` / `error`), so a
+   * durable execution paused on an `await` node keeps waiting: both the
+   * in-flight `pending` status and the `waiting` pause are treated as
+   * non-terminal. To unblock a human-approval pause, call `signal(...)`
+   * from elsewhere; this helper then sees the resumed terminal status.
+   * Consumers that want to *react* to the pause (e.g. prompt an
+   * approver) should use `stream()` and branch on `status === "waiting"`.
+   *
+   * Caveat: if the SSE stream ends without a terminal event (network
+   * drop, proxy idle-timeout — plausible on long `waiting` pauses), this
+   * returns the last status seen, which may be non-terminal (`waiting` /
+   * `pending`). Callers that must distinguish "disconnected mid-wait"
+   * from "finished" should re-check `getStatus`/`retrieve`, or poll
+   * those directly instead of relying on a single long-lived stream.
    */
   async waitForTerminal(
     id: string,
