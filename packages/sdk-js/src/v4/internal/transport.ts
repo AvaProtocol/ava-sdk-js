@@ -20,6 +20,12 @@ export interface TransportOptions {
   defaultTimeoutMs?: number;
   /** Optional fetch implementation override (tests / non-Node runtimes). */
   fetchImpl?: typeof fetch;
+  /**
+   * Default headers applied to every request, below per-request headers
+   * and below the Bearer Authorization header. Used to carry non-Bearer
+   * credentials such as a partner assertion (`X-Partner-Assertion`).
+   */
+  headers?: Record<string, string>;
 }
 
 export interface RequestOptions {
@@ -49,12 +55,14 @@ export class Transport {
   private readonly defaultTimeoutMs: number;
   private readonly fetchImpl: typeof fetch;
   private bearerToken?: string;
+  private defaultHeaders: Record<string, string>;
 
   constructor(opts: TransportOptions) {
     this.baseUrl = opts.baseUrl.replace(/\/$/, "");
     this.defaultTimeoutMs = opts.defaultTimeoutMs ?? 30_000;
     this.fetchImpl = opts.fetchImpl ?? globalThis.fetch.bind(globalThis);
     this.bearerToken = opts.token;
+    this.defaultHeaders = { ...opts.headers };
   }
 
   /** Replace the Bearer token. Used after `client.auth.exchange()`. */
@@ -65,6 +73,15 @@ export class Transport {
   /** Read the current Bearer token (for tests / debugging). */
   getToken(): string | undefined {
     return this.bearerToken;
+  }
+
+  /**
+   * Replace the default headers applied to every request. Used to refresh a
+   * short-lived non-Bearer credential (e.g. a rotated partner assertion)
+   * without reconstructing the client.
+   */
+  setDefaultHeaders(headers: Record<string, string> | undefined): void {
+    this.defaultHeaders = { ...headers };
   }
 
   /** Issue a JSON request and decode the response body. */
@@ -111,7 +128,13 @@ export class Transport {
       opts.signal.addEventListener("abort", () => controller.abort(), { once: true });
     }
 
+    // Precedence: defaultHeaders (lowest) < SDK invariants < per-request
+    // headers < Authorization. `Accept` is defaulted between defaultHeaders
+    // and opts.headers so a stray default can't corrupt JSON decode, while a
+    // per-request override (e.g. the SSE stream's text/event-stream) still
+    // wins.
     const headers: Record<string, string> = {
+      ...this.defaultHeaders,
       Accept: "application/json",
       ...opts.headers,
     };
@@ -120,7 +143,10 @@ export class Transport {
     }
     let body: BodyInit | undefined;
     if (opts.body !== undefined && opts.body !== null) {
-      headers["Content-Type"] ??= "application/json";
+      // The transport always JSON-serializes the body, so Content-Type is an
+      // invariant — set it after the spreads so a defaultHeaders/per-request
+      // value can't mislabel the payload.
+      headers["Content-Type"] = "application/json";
       body = JSON.stringify(opts.body);
     }
 
