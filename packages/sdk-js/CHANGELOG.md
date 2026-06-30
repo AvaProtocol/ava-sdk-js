@@ -1,5 +1,11 @@
 # @avaprotocol/sdk-js
 
+## 4.2.0
+
+### Minor Changes
+
+- c3f1f0e: add ClientOptions.headers for non-Bearer credentials
+
 ## 4.1.0
 
 ### Minor Changes
