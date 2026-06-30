@@ -27,6 +27,15 @@ export interface ClientOptions {
   defaultTimeoutMs?: number;
   /** Override the fetch impl. Useful for tests and non-Node runtimes. */
   fetchImpl?: typeof fetch;
+  /**
+   * Default headers sent on every request. Use this to carry a non-Bearer
+   * credential — notably a partner assertion in `X-Partner-Assertion` for the
+   * no-fund simulate / wallet-derivation flow, where the end user has no
+   * wallet signature. Construct a dedicated client for that flow (no `token`)
+   * and put the short-lived assertion here. Fund-moving calls still require a
+   * Bearer token from `auth.exchange()`.
+   */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -62,6 +71,7 @@ export class Client {
       token: opts.token,
       defaultTimeoutMs: opts.defaultTimeoutMs,
       fetchImpl: opts.fetchImpl,
+      headers: opts.headers,
     };
     this.transport = new Transport(transportOpts);
 
@@ -85,5 +95,13 @@ export class Client {
   /** Current Bearer token. Returns undefined when anonymous. */
   get token(): string | undefined {
     return this.transport.getToken();
+  }
+
+  /**
+   * Replace the default headers (e.g. refresh a short-lived
+   * `X-Partner-Assertion`) without reconstructing the client.
+   */
+  setHeaders(headers: Record<string, string> | undefined): void {
+    this.transport.setDefaultHeaders(headers);
   }
 }
