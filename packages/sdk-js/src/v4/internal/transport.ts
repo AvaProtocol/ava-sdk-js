@@ -128,9 +128,14 @@ export class Transport {
       opts.signal.addEventListener("abort", () => controller.abort(), { once: true });
     }
 
+    // Precedence: defaultHeaders (lowest) < SDK invariants < per-request
+    // headers < Authorization. `Accept` is defaulted between defaultHeaders
+    // and opts.headers so a stray default can't corrupt JSON decode, while a
+    // per-request override (e.g. the SSE stream's text/event-stream) still
+    // wins.
     const headers: Record<string, string> = {
-      Accept: "application/json",
       ...this.defaultHeaders,
+      Accept: "application/json",
       ...opts.headers,
     };
     if (this.bearerToken) {
@@ -138,7 +143,10 @@ export class Transport {
     }
     let body: BodyInit | undefined;
     if (opts.body !== undefined && opts.body !== null) {
-      headers["Content-Type"] ??= "application/json";
+      // The transport always JSON-serializes the body, so Content-Type is an
+      // invariant — set it after the spreads so a defaultHeaders/per-request
+      // value can't mislabel the payload.
+      headers["Content-Type"] = "application/json";
       body = JSON.stringify(opts.body);
     }
 
