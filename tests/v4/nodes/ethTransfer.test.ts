@@ -29,10 +29,13 @@ import {
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
-// 300s: deploy+trigger block matches a future block (blockNumber+5) then waits
-// for the bundler/UserOp receipt — ~75-90s nominal, but the real Sepolia
-// execution has repeatedly landed at ~181s (right at the old 180s limit),
-// flaking the whole shard. Give it headroom so a slow-but-successful tx passes.
+// deploy+trigger block matches a future block (blockNumber+5) then waits for the
+// bundler/UserOp receipt — ~45s against a fresh gateway. The jest budget is set
+// ABOVE the test client's 240s defaultTimeoutMs (tests/utils/client.ts) so a slow
+// blocking :trigger surfaces as a clean client abort rather than a jest kill.
+// Persistent ~240s slowness in CI means a STALE avs-dev:latest image (republish
+// the EigenLayer-AVS dev docker after gateway changes — see publish-dev-docker.yml),
+// not inherent Sepolia latency.
 jest.setTimeout(300_000);
 
 // Pull a fresh wallet per test from the per-process salt cursor — the
