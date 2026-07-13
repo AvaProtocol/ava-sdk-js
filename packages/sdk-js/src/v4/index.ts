@@ -32,7 +32,7 @@ export { APIError, NetworkError, AuthRequiredError } from "./internal/errors";
 export { AuthResource } from "./resources/auth";
 export { ExecutionsResource } from "./resources/executions";
 export { HealthResource } from "./resources/health";
-export { NodesResource } from "./resources/nodes";
+export { NodesResource, type RunNodeOptions } from "./resources/nodes";
 export { OperatorsResource } from "./resources/operators";
 export { SecretsResource } from "./resources/secrets";
 export { TokensResource } from "./resources/tokens";

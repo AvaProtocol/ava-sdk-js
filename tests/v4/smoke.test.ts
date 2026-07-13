@@ -353,4 +353,33 @@ describe("v4 SDK smoke", () => {
       });
     });
   });
+
+  describe("nodes.run idempotency", () => {
+    const makeClient = () => {
+      let captured: { headers?: Record<string, string> } | undefined;
+      const fakeFetch: typeof fetch = async (_input, init) => {
+        captured = { headers: init?.headers as Record<string, string> | undefined };
+        return new Response(JSON.stringify({ success: true, output: {} }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      };
+      const client = new Client({ baseUrl: "http://example.test/api/v1", fetchImpl: fakeFetch });
+      return { client, getCaptured: () => captured };
+    };
+
+    const node = Nodes.customCode({ id: "c", name: "c", source: "return 1;" });
+
+    test("sends the Idempotency-Key header when idempotencyKey is provided", async () => {
+      const { client, getCaptured } = makeClient();
+      await client.nodes.run({ node }, { idempotencyKey: "confirm-123" });
+      expect(getCaptured()?.headers?.["Idempotency-Key"]).toBe("confirm-123");
+    });
+
+    test("omits the header when no idempotencyKey is provided", async () => {
+      const { client, getCaptured } = makeClient();
+      await client.nodes.run({ node });
+      expect(getCaptured()?.headers?.["Idempotency-Key"]).toBeUndefined();
+    });
+  });
 });
