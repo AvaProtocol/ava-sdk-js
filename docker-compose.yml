@@ -33,3 +33,22 @@ services:
       - ./config:/app/config
     depends_on:
       - gateway
+
+  # Registered test operator (0x997e5d40…) so tasks with on-chain triggers
+  # (block/event) actually fire — without a connected operator the aggregator
+  # returns "no connected operator currently monitors chain_id=11155111". The
+  # ECDSA/BLS keystores are written to config/.operator-keys/ from GitHub
+  # secrets in CI; their passwords come from OPERATOR_{ECDSA,BLS}_KEY_PASSWORD.
+  operator:
+    image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
+    command:
+      - "operator"
+      - "--config"
+      - "/app/config/operator-sepolia.runtime.yaml"
+    environment:
+      OPERATOR_ECDSA_KEY_PASSWORD: ${OPERATOR_ECDSA_KEY_PASSWORD}
+      OPERATOR_BLS_KEY_PASSWORD: ${OPERATOR_BLS_KEY_PASSWORD}
+    volumes:
+      - ./config:/app/config
+    depends_on:
+      - gateway

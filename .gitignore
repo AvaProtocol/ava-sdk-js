@@ -99,3 +99,7 @@ temp/
 
 # PR comment output files
 pr-comments-*.json
+
+# Generated at CI runtime from templates + secrets (envsubst / decoded keystores) — never commit.
+config/*.runtime.yaml
+config/.operator-keys/
