@@ -56,6 +56,7 @@ interface CliFlags {
   owner?: string;
   factory?: string;
   timeout?: string;
+  idempotencyKey?: string;
 }
 
 interface ParsedArgs {
@@ -100,6 +101,9 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
         break;
       case "timeout":
         flags.timeout = argv[++i];
+        break;
+      case "idempotency-key":
+        flags.idempotencyKey = argv[++i];
         break;
       default:
         // Unknown flag — fold into positional so command-specific
@@ -316,6 +320,22 @@ const commands: Record<string, { description: string; usage: string; run: Comman
       await ensureAuth(client);
       const body = readJsonFile<v4.SimulateWorkflowRequest>(file);
       return client.workflows.simulate(body);
+    },
+  },
+
+  "nodes:run": {
+    description: "Run a single node in isolation (no workflow persisted)",
+    usage: "nodes:run <file.json> [--idempotency-key KEY]",
+    run: async (client, [file], flags) => {
+      if (!file) fail(EXIT_USER_ERROR, "NODES_BAD_ARGS", "Usage: nodes:run <file.json>");
+      await ensureAuth(client);
+      const body = readJsonFile<v4.RunNodeRequest>(file);
+      // A --idempotency-key makes a real execute (node config isSimulated:false)
+      // safe to retry without broadcasting a second UserOp.
+      return client.nodes.run(
+        body,
+        flags.idempotencyKey ? { idempotencyKey: flags.idempotencyKey } : undefined,
+      );
     },
   },
 

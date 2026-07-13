@@ -91,6 +91,12 @@ jobs:
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
       BUNDLER_URL: ${{ secrets.BUNDLER_URL }}
+      # Registered test operator (raw-JSON keystores + passwords) so on-chain
+      # (block/event) triggers actually fire in the E2E stack.
+      OPERATOR_ECDSA_KEYSTORE: ${{ secrets.OPERATOR_ECDSA_KEYSTORE }}
+      OPERATOR_BLS_KEYSTORE: ${{ secrets.OPERATOR_BLS_KEYSTORE }}
+      OPERATOR_ECDSA_KEY_PASSWORD: ${{ secrets.OPERATOR_ECDSA_KEY_PASSWORD }}
+      OPERATOR_BLS_KEY_PASSWORD: ${{ secrets.OPERATOR_BLS_KEY_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -111,7 +117,7 @@ jobs:
       - name: Inject secrets into gateway + worker configs
         run: |
           export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET BUNDLER_URL CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
-          for src in gateway worker-sepolia; do
+          for src in gateway worker-sepolia operator-sepolia; do
             envsubst < config/${src}.yaml > config/${src}.runtime.yaml
             echo "Generated config/${src}.runtime.yaml: $(wc -l < config/${src}.runtime.yaml) lines"
             if grep -q "\${.*}" config/${src}.runtime.yaml; then
@@ -179,6 +185,60 @@ jobs:
             docker compose logs worker-sepolia
             exit 1
           fi
+
+      - name: Write operator keystores
+        run: |
+          mkdir -p config/.operator-keys
+          # Keystores are stored as raw JSON secrets and written verbatim.
+          printf '%s' "$OPERATOR_ECDSA_KEYSTORE" > config/.operator-keys/operator.ecdsa.key.json
+          printf '%s' "$OPERATOR_BLS_KEYSTORE"   > config/.operator-keys/operator.bls.key.json
+          echo "ECDSA keystore: $(wc -c < config/.operator-keys/operator.ecdsa.key.json) bytes; BLS keystore: $(wc -c < config/.operator-keys/operator.bls.key.json) bytes"
+          # Sanity-check shape (no secret values printed) so a bad secret fails here, clearly.
+          jq -e '.address and .crypto' config/.operator-keys/operator.ecdsa.key.json > /dev/null && echo "ECDSA keystore JSON valid"
+          jq -e '.pubKey and .crypto'  config/.operator-keys/operator.bls.key.json  > /dev/null && echo "BLS keystore JSON valid"
+
+      - name: Start operator
+        run: |
+          docker compose up -d operator
+          echo "Waiting for operator to register + connect to the aggregator..."
+          max_attempts=18
+          attempt=0
+          ready=false
+          while [ $attempt -lt $max_attempts ]; do
+            # Hard-fail fast if the operator crashed (e.g. not registered,
+            # keystore/password mismatch) — it won't recover on its own. Use -a
+            # so an already-exited container is still listed (plain `ps` hides it,
+            # which would let a crash slip past this check).
+            if docker compose ps -a operator | grep -qiE "exit|dead"; then
+              echo "Operator container exited unexpectedly:"
+              docker compose ps -a operator
+              docker compose logs operator
+              exit 1
+            fi
+            if docker compose logs operator 2>&1 | grep -q "Operator ready"; then
+              echo "Operator is ready and connected!"
+              ready=true
+              break
+            fi
+            echo "Attempt $((attempt + 1))/$max_attempts: operator not ready yet..."
+            docker compose logs operator --tail=5
+            sleep 5
+            attempt=$((attempt + 1))
+          done
+          # Mirror the gateway/worker health steps: fail explicitly if the
+          # operator never became ready, rather than running tests against a
+          # stack with no connected operator (the exact failure this guards).
+          if [ "$ready" != "true" ]; then
+            echo "Operator never became ready after $((max_attempts * 5))s"
+            docker compose ps -a
+            docker compose logs operator
+            exit 1
+          fi
+          # Give the aggregator a moment to register the operator connection
+          # (operator notifications batch every ~3s) before tests create tasks.
+          sleep 5
+          docker compose ps
+          docker compose logs operator --tail=30
 
       - name: Generate AVS API key
         run: |

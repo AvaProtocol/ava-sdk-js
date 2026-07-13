@@ -1,0 +1,38 @@
+# Operator config for the CI E2E stack (Sepolia).
+#
+# Runs the registered test operator 0x997e5d40a32c44a3d93e59fc55c4fd20b7d2d49d
+# so tasks with on-chain triggers (block/event) actually fire — without a
+# connected operator the aggregator returns "no connected operator currently
+# monitors chain_id=11155111". Secrets are injected via envsubst in
+# .github/workflows/dev-test-on-pr.yml (mirrors the gateway/worker configs);
+# the ECDSA/BLS keystore passwords come from OPERATOR_{ECDSA,BLS}_KEY_PASSWORD.
+environment: development
+
+operator_address: 0x997e5d40a32c44a3d93e59fc55c4fd20b7d2d49d
+
+avs_registry_coordinator_address: 0xcA95381802FD1398d5BF2D01243210cFb3a2b3BD
+operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
+
+eth_rpc_url: ${ETH_RPC_URL}
+eth_ws_url: ${ETH_WS_URL}
+
+# Keystores are written to config/.operator-keys/ from GitHub secrets in CI.
+ecdsa_private_key_store_path: /app/config/.operator-keys/operator.ecdsa.key.json
+bls_private_key_store_path: /app/config/.operator-keys/operator.bls.key.json
+
+db_path: /tmp/ap-avs-operator
+
+# In-network gRPC address of the gateway (aggregator) container.
+aggregator_server_ip_port_address: "gateway:2206"
+
+eigen_metrics_ip_port_address: 0.0.0.0:9090
+enable_metrics: false
+node_api_ip_port_address: 0.0.0.0:9010
+enable_node_api: true
+
+target_chain:
+  eth_rpc_url: ${ETH_RPC_URL}
+  eth_ws_url: ${ETH_WS_URL}
+
+enabled_features:
+  event_trigger: true
