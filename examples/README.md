@@ -51,6 +51,7 @@ yarn start executions:watch <exec-id> --workflow-id <wid> --timeout 90s
 | `workflows:pause <id>` / `workflows:resume <id>` | Toggle status |
 | `workflows:trigger <id> [--blocking]` | Manually fire the trigger |
 | `workflows:simulate <file.json>` | Simulate without persisting |
+| `nodes:run <file.json> [--idempotency-key KEY]` | Run a single node in isolation (no workflow); pass a key to make a real execute retry-safe |
 | `workflows:count [--owner ADDR]` | Count workflows |
 | `executions:list <workflow-id> [--limit N]` | Nested list |
 | `executions:get <execution-id> --workflow-id <wid>` | Single execution |

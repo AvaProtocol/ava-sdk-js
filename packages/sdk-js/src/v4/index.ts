@@ -8,6 +8,12 @@ export { Chains, type ChainId } from "./chains";
 export { Triggers } from "./builders/triggers";
 export { Nodes } from "./builders/nodes";
 export {
+  UniswapV3,
+  type UniswapV3FeeTier,
+  type UniswapV3SwapNodeOptions,
+  type UniswapV3QuoteNodeOptions,
+} from "./builders/uniswap";
+export {
   Protocols,
   Tokens,
   lookupToken,
@@ -33,6 +39,11 @@ export { AuthResource } from "./resources/auth";
 export { ExecutionsResource } from "./resources/executions";
 export { HealthResource } from "./resources/health";
 export { NodesResource, type RunNodeOptions } from "./resources/nodes";
+export {
+  readContractWriteExecutions,
+  type ContractWriteExecutionStatus,
+  type ContractWriteMethodExecution,
+} from "./results/contractWrite";
 export { OperatorsResource } from "./resources/operators";
 export { SecretsResource } from "./resources/secrets";
 export { TokensResource } from "./resources/tokens";
