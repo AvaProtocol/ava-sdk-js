@@ -50,16 +50,21 @@ function asRecord(value: unknown): Record<string, unknown> {
  * non-contractWrite node, or a gateway that doesn't surface the metadata).
  */
 export function readContractWriteExecutions(
-  resp: v4.RunNodeResponse,
+  resp: v4.RunNodeResponse | undefined,
 ): ContractWriteMethodExecution[] {
   const results = asRecord(resp?.metadata).results;
   if (!Array.isArray(results)) return [];
 
-  return results.map((raw): ContractWriteMethodExecution => {
+  const executions: ContractWriteMethodExecution[] = [];
+  for (const raw of results) {
     const entry = asRecord(raw);
+    // Skip malformed entries with no method name rather than emitting a
+    // phantom execution (empty methodName) that a caller might act on.
+    if (typeof entry.methodName !== "string" || !entry.methodName) continue;
     const receipt = asRecord(entry.receipt);
+
     const out: ContractWriteMethodExecution = {
-      methodName: typeof entry.methodName === "string" ? entry.methodName : "",
+      methodName: entry.methodName,
       success: entry.success === true,
     };
     if (typeof entry.error === "string" && entry.error) out.error = entry.error;
@@ -71,15 +76,19 @@ export function readContractWriteExecutions(
     if (typeof receipt.userOpHash === "string" && receipt.userOpHash) {
       out.userOpHash = receipt.userOpHash;
     }
-    // The gateway uses the sentinel "pending" for an unmined tx hash; surface a
-    // transactionHash only once it's a real mined hash.
+    // A transaction hash exists only once mined. Key off the normalized
+    // executionStatus ("pending" ⇒ not mined) rather than the gateway's raw
+    // "pending" sentinel, so a sentinel change can't leak a fake hash; the
+    // string guard is a defensive backstop.
     if (
+      out.executionStatus !== "pending" &&
       typeof receipt.transactionHash === "string" &&
       receipt.transactionHash &&
       receipt.transactionHash !== "pending"
     ) {
       out.transactionHash = receipt.transactionHash;
     }
-    return out;
-  });
+    executions.push(out);
+  }
+  return executions;
 }

@@ -38,8 +38,13 @@ const quoteResp = await client.nodes.run({
   }),
   inputVariables: settings,
 });
-// The predicted amountOut is decoded into the node output (output.data.*).
-const expectedOut = /* read amountOut from quoteResp.output */ "0";
+// QuoterV2.quoteExactInputSingle returns (amountOut, sqrtPriceX96After,
+// initializedTicksCrossed, gasEstimate); the gateway decodes it under
+// output.data.quoteExactInputSingle. Read the first return value defensively —
+// the exact key depends on the ABI decoding, so fall back across shapes:
+const quoteData = (quoteResp.output as { data?: Record<string, any> })?.data ?? {};
+const decoded = quoteData.quoteExactInputSingle ?? quoteData;
+const expectedOut = String(decoded.amountOut ?? decoded[0] ?? "0");
 
 // 2. Slippage floor (0.5%).
 const amountOutMinimum = UniswapV3.minAmountOut(expectedOut, 50);

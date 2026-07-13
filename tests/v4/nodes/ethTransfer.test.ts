@@ -29,9 +29,11 @@ import {
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
-// 180s: deploy+trigger block matches a future block (blockNumber+5)
-// then waits for the bundler/UserOp receipt — ~75-90s nominal on CI.
-jest.setTimeout(180_000);
+// 300s: deploy+trigger block matches a future block (blockNumber+5) then waits
+// for the bundler/UserOp receipt — ~75-90s nominal, but the real Sepolia
+// execution has repeatedly landed at ~181s (right at the old 180s limit),
+// flaking the whole shard. Give it headroom so a slow-but-successful tx passes.
+jest.setTimeout(300_000);
 
 // Pull a fresh wallet per test from the per-process salt cursor — the
 // validation tests don't need funding, so a hot wallet works fine.

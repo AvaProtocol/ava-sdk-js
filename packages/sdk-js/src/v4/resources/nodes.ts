@@ -13,6 +13,9 @@ export interface RunNodeOptions {
    * Generate a fresh key per user-initiated action (e.g. one per Confirm
    * click) and reuse it across retries of that same action. The gateway
    * dedupes per authenticated subject for a short TTL.
+   *
+   * A falsy value (empty string / undefined) is treated as "no key" — the
+   * header is simply omitted, not sent empty.
    */
   idempotencyKey?: string;
 }

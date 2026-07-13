@@ -203,17 +203,21 @@ jobs:
           echo "Waiting for operator to register + connect to the aggregator..."
           max_attempts=18
           attempt=0
+          ready=false
           while [ $attempt -lt $max_attempts ]; do
             # Hard-fail fast if the operator crashed (e.g. not registered,
-            # keystore/password mismatch) — it won't recover on its own.
-            if [ "$(docker compose ps -q operator)" ] && ! docker compose ps operator | grep -qiE "up|running"; then
+            # keystore/password mismatch) — it won't recover on its own. Use -a
+            # so an already-exited container is still listed (plain `ps` hides it,
+            # which would let a crash slip past this check).
+            if docker compose ps -a operator | grep -qiE "exit|dead"; then
               echo "Operator container exited unexpectedly:"
-              docker compose ps operator
+              docker compose ps -a operator
               docker compose logs operator
               exit 1
             fi
             if docker compose logs operator 2>&1 | grep -q "Operator ready"; then
               echo "Operator is ready and connected!"
+              ready=true
               break
             fi
             echo "Attempt $((attempt + 1))/$max_attempts: operator not ready yet..."
@@ -221,6 +225,15 @@ jobs:
             sleep 5
             attempt=$((attempt + 1))
           done
+          # Mirror the gateway/worker health steps: fail explicitly if the
+          # operator never became ready, rather than running tests against a
+          # stack with no connected operator (the exact failure this guards).
+          if [ "$ready" != "true" ]; then
+            echo "Operator never became ready after $((max_attempts * 5))s"
+            docker compose ps -a
+            docker compose logs operator
+            exit 1
+          fi
           # Give the aggregator a moment to register the operator connection
           # (operator notifications batch every ~3s) before tests create tasks.
           sleep 5

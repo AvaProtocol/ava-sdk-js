@@ -187,5 +187,24 @@ describe("readContractWriteExecutions", () => {
     expect(readContractWriteExecutions(resp(undefined))).toEqual([]);
     expect(readContractWriteExecutions(resp({}))).toEqual([]);
     expect(readContractWriteExecutions({ success: true } as v4.RunNodeResponse)).toEqual([]);
+    expect(readContractWriteExecutions(undefined)).toEqual([]);
+  });
+
+  test("skips malformed entries and surfaces a method error", () => {
+    const out = readContractWriteExecutions(
+      resp({
+        results: [
+          null,
+          "not-an-object",
+          ["nested", "array"],
+          { success: true }, // missing methodName → skipped
+          { methodName: "approve", success: false, error: "execution reverted" },
+        ],
+      }),
+    );
+    // Only the one well-formed entry survives; the phantom (empty methodName) is dropped.
+    expect(out).toEqual([
+      { methodName: "approve", success: false, error: "execution reverted" },
+    ]);
   });
 });
