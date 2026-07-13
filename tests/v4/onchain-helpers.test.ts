@@ -11,9 +11,12 @@ import {
  * gateway required.
  */
 
-const WETH = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"; // Sepolia WETH
-const USDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // Sepolia USDC
-const RUNNER = "0x2222222222222222222222222222222222222222";
+// Token addresses come from the shared protocol catalog (drift-proof), the same
+// source the Uniswap template test uses — not re-hardcoded here.
+const WETH = Protocols.uniswapV3.tokens.WETH[Chains.Sepolia]!;
+const USDC = Protocols.uniswapV3.tokens.USDC[Chains.Sepolia]!;
+// A pure builder input — any address works; these tests never hit a wallet.
+const RECIPIENT = "0x2222222222222222222222222222222222222222";
 
 type CWConfig = {
   contractAddress: string;
@@ -31,7 +34,7 @@ describe("UniswapV3.swapNode", () => {
       tokenIn: WETH,
       tokenOut: USDC,
       fee: 3000,
-      recipient: RUNNER,
+      recipient: RECIPIENT,
       amountIn: "1000000000000000",
       amountOutMinimum: "990000",
     });
@@ -43,7 +46,7 @@ describe("UniswapV3.swapNode", () => {
       tokenIn: WETH,
       tokenOut: USDC,
       fee: 3000,
-      recipient: RUNNER,
+      recipient: RECIPIENT,
       amountIn: "1000000000000000",
       amountOutMinimum: "990000",
       sqrtPriceLimitX96: "0",
@@ -59,7 +62,7 @@ describe("UniswapV3.swapNode", () => {
       tokenIn: WETH,
       tokenOut: USDC,
       fee: 500,
-      recipient: RUNNER,
+      recipient: RECIPIENT,
       amountIn: "1",
       amountOutMinimum: "0",
       routerAddress: override,
@@ -79,7 +82,7 @@ describe("UniswapV3.swapNode", () => {
         tokenIn: WETH,
         tokenOut: USDC,
         fee: 3000,
-        recipient: RUNNER,
+        recipient: RECIPIENT,
         amountIn: "1",
         amountOutMinimum: "0",
       }),
