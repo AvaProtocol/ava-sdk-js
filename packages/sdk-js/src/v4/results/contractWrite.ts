@@ -37,7 +37,11 @@ export interface ContractWriteMethodExecution {
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  // Exclude arrays (typeof [] === "object") so only plain objects are read as
+  // records — a malformed array entry shouldn't masquerade as a result/receipt.
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 /**
