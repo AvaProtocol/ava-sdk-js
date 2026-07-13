@@ -91,7 +91,7 @@ jobs:
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
       BUNDLER_URL: ${{ secrets.BUNDLER_URL }}
-      # Registered test operator (base64 keystores + passwords) so on-chain
+      # Registered test operator (raw-JSON keystores + passwords) so on-chain
       # (block/event) triggers actually fire in the E2E stack.
       OPERATOR_ECDSA_KEYSTORE: ${{ secrets.OPERATOR_ECDSA_KEYSTORE }}
       OPERATOR_BLS_KEYSTORE: ${{ secrets.OPERATOR_BLS_KEYSTORE }}
@@ -189,9 +189,13 @@ jobs:
       - name: Write operator keystores
         run: |
           mkdir -p config/.operator-keys
-          echo "$OPERATOR_ECDSA_KEYSTORE" | base64 -d > config/.operator-keys/operator.ecdsa.key.json
-          echo "$OPERATOR_BLS_KEYSTORE"   | base64 -d > config/.operator-keys/operator.bls.key.json
+          # Keystores are stored as raw JSON secrets and written verbatim.
+          printf '%s' "$OPERATOR_ECDSA_KEYSTORE" > config/.operator-keys/operator.ecdsa.key.json
+          printf '%s' "$OPERATOR_BLS_KEYSTORE"   > config/.operator-keys/operator.bls.key.json
           echo "ECDSA keystore: $(wc -c < config/.operator-keys/operator.ecdsa.key.json) bytes; BLS keystore: $(wc -c < config/.operator-keys/operator.bls.key.json) bytes"
+          # Sanity-check shape (no secret values printed) so a bad secret fails here, clearly.
+          jq -e '.address and .crypto' config/.operator-keys/operator.ecdsa.key.json > /dev/null && echo "ECDSA keystore JSON valid"
+          jq -e '.pubKey and .crypto'  config/.operator-keys/operator.bls.key.json  > /dev/null && echo "BLS keystore JSON valid"
 
       - name: Start operator
         run: |
