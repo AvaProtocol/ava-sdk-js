@@ -1,5 +1,33 @@
 # @avaprotocol/sdk-js
 
+## 4.3.0
+
+### Minor Changes
+
+- 2a2525c: feat(v4): support `Idempotency-Key` on `client.nodes.run`
+
+  `client.nodes.run(req, options?)` now accepts an optional `{ idempotencyKey }`
+  sent as the Stripe-style `Idempotency-Key` HTTP header. For a real execute
+  (`isSimulated: false`), reusing the same key across retries of one user-initiated
+  action (e.g. a Confirm click) prevents the gateway from broadcasting a second
+  UserOp — the retried request replays the first result. Backward compatible: the
+  header is only sent when a key is provided.
+
+- 25bc3e8: feat(v4): Uniswap V3 swap/quote node builders + contractWrite execution readers
+
+  Adds the SDK surface for a chat agent's one-time "preview → confirm → execute"
+  market order:
+
+  - `UniswapV3.swapNode` / `UniswapV3.quoteNode` / `UniswapV3.minAmountOut` —
+    assemble a single-hop `exactInputSingle` swap and its QuoterV2 quote over
+    `Protocols.uniswapV3`, and compute `amountOutMinimum` from a slippage tolerance.
+  - `readContractWriteExecutions(resp)` — read the normalized per-method outcome
+    (`confirmed` / `pending` / `failed`) plus `userOpHash` / `transactionHash` from
+    a `contractWrite` `nodes.run` response.
+
+  Pairs with the `Idempotency-Key` support on `nodes.run`. The example CLI gains a
+  `nodes:run <file.json> [--idempotency-key KEY]` command.
+
 ## 4.2.0
 
 ### Minor Changes
