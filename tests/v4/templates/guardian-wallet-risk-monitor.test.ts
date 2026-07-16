@@ -358,13 +358,13 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// 3. Live e2e — deploy + trigger against a real gateway. Opt-in only: the two
-//    extensions (REST options.auth + {{state.*}}) must exist on the target
-//    gateway. Run with RUN_GUARDIAN_LIVE=1 (and TEST_PRIVATE_KEY / AVS_REST_URL).
+// 3. Live e2e — deploy + trigger against a real gateway (needs TEST_PRIVATE_KEY /
+//    AVS_REST_URL, like every other template test). Deploy + retrieve is asserted
+//    unconditionally (works today). The triggered-run assertion soft-skips while
+//    the gateway lacks the two extensions (REST options.auth + {{state.*}}) — the
+//    run fails, we log why and return; once they land it asserts the verdict step.
 // ────────────────────────────────────────────────────────────────────────────
-const describeLive = process.env.RUN_GUARDIAN_LIVE ? describe : describe.skip;
-
-describeLive("Guardian wallet-risk monitor (live gateway)", () => {
+describe("Guardian wallet-risk monitor (live gateway)", () => {
   jest.setTimeout(60_000);
   let client: Client;
   const createdWorkflowIds: string[] = [];
