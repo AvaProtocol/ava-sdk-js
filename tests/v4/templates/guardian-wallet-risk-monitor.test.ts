@@ -88,8 +88,13 @@ function guardianVerdictSource(): string {
 var CHAIN_NAME = "{{monitor.chainName}}";
 var WALLET = "{{monitor.wallet}}";
 var CHAT_ID = "{{monitor.chatId}}";
-var WEAK = ["honeypot_related_address", "blacklist_doubt"];
-try { var _r = JSON.parse("{{apContext.configVars.guardian_ruleset}}"); if (_r && _r.weak) WEAK = _r.weak; } catch (e) {}
+// Bare-inject (NOT wrapped in quotes): the gateway substitutes the configVar value raw, so a
+// JSON object literal drops straight in as a JS object. Quoting the template would instead give
+// JSON.parse of {"weak":...} with the inner quotes intact — a syntax error. NOTE: never write a
+// double-brace token in a comment here — the gateway preprocesses the WHOLE source (comments too)
+// and treats it as a template var. guardian_ruleset MUST be set; the default only covers a bad .weak.
+var _rules = {{apContext.configVars.guardian_ruleset}};
+var WEAK = (_rules && _rules.weak) ? _rules.weak : ["honeypot_related_address", "blacklist_doubt"];
 var rows = (goplusApprovals && goplusApprovals.data && (goplusApprovals.data.result || goplusApprovals.data)) || [];
 if (!(rows instanceof Array)) rows = [];
 var approvals = (moralisApprovals && moralisApprovals.data && moralisApprovals.data.result) || [];
