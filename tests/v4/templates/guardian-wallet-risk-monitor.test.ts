@@ -360,9 +360,12 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
 // ────────────────────────────────────────────────────────────────────────────
 // 3. Live e2e — deploy + trigger against a real gateway (needs TEST_PRIVATE_KEY /
 //    AVS_REST_URL, like every other template test). Deploy + retrieve is asserted
-//    unconditionally (works today). The triggered-run assertion soft-skips while
-//    the gateway lacks the two extensions (REST options.auth + {{state.*}}) — the
-//    run fails, we log why and return; once they land it asserts the verdict step.
+//    unconditionally (works today). The triggered-run assertion soft-skips until the
+//    gateway has the two extensions (REST options.auth + the {{state.*}} binding) AND
+//    the guardian_ruleset configVar is set. Verified live 2026-07-16 against v4.2.0:
+//    deploy succeeds; the run fails at the verdict step with "could not resolve
+//    variable apContext.configVars.guardian_ruleset in source" (an unresolved {{...}}
+//    in a customCode source hard-fails the node). Once ready it asserts the verdict step.
 // ────────────────────────────────────────────────────────────────────────────
 describe("Guardian wallet-risk monitor (live gateway)", () => {
   jest.setTimeout(60_000);
