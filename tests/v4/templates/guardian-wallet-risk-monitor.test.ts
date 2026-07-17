@@ -364,15 +364,17 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
 
 // ────────────────────────────────────────────────────────────────────────────
 // 3. Live e2e — deploy + trigger against a real gateway (needs TEST_PRIVATE_KEY /
-//    AVS_REST_URL, like every other template test). Deploy + retrieve is asserted
-//    unconditionally (works today). The triggered-run assertion soft-skips until the
-//    gateway has the two extensions (REST options.auth + the {{state.*}} binding) AND
-//    the guardian_ruleset configVar is set. Verified live 2026-07-16 against v4.2.0:
-//    deploy succeeds; the run fails at the verdict step with "could not resolve
-//    variable apContext.configVars.guardian_ruleset in source" (an unresolved {{...}}
-//    in a customCode source hard-fails the node). Once ready it asserts the verdict step.
+//    AVS_REST_URL, like every other template test). Gated behind RUN_GUARDIAN_LIVE=1
+//    so default/CI runs skip it (it deploys and triggers a real workflow). When run it
+//    hard-asserts: deploy + retrieve, then the triggered run must reach the verdict node
+//    with success — a failed trigger throws with the failing step's error. Requires the
+//    gateway extensions (REST options.auth + the {{state.*}} binding) AND the
+//    guardian_ruleset configVar. Verified live 2026-07-17 against prod (v4.3.0,
+//    api.avaprotocol.org): deploy succeeds and the verdict step passes.
+//    Run with: RUN_GUARDIAN_LIVE=1 AVS_REST_URL=<gateway> yarn jest guardian.
 // ────────────────────────────────────────────────────────────────────────────
-describe("Guardian wallet-risk monitor (live gateway)", () => {
+const RUN_GUARDIAN_LIVE = process.env.RUN_GUARDIAN_LIVE === "1";
+(RUN_GUARDIAN_LIVE ? describe : describe.skip)("Guardian wallet-risk monitor (live gateway)", () => {
   jest.setTimeout(60_000);
   let client: Client;
   const createdWorkflowIds: string[] = [];
@@ -386,7 +388,11 @@ describe("Guardian wallet-risk monitor (live gateway)", () => {
   });
 
   test("deploys, then a triggered run reaches the verdict node", async () => {
-    const wallet = await createSmartWallet(client);
+    // Reuse an existing smart wallet when the owner already has one — a live prod
+    // owner hits the per-owner wallet-count limit, so always minting a fresh wallet
+    // would fail before the guardian even deploys. Fall back to creating one.
+    const existingWallets = await client.wallets.list();
+    const wallet = existingWallets.data?.[0] ?? (await createSmartWallet(client));
     const req = buildWalletRiskMonitor({
       smartWalletAddress: wallet.address,
       // A known dirty mainnet EOA gives a non-empty alert; default to the runner for a clean-scan smoke test.
@@ -412,9 +418,20 @@ describe("Guardian wallet-risk monitor (live gateway)", () => {
       isBlocking: true,
     });
     if (trig.status === "failed" || trig.error) {
-      // Expected until the gateway ships options.auth + the {{state.*}} binding.
-      console.log(`Skipping run assertion — trigger failed (needs gateway extensions): ${trig.error ?? trig.status}`);
-      return;
+      // The gateway ships options.auth + the {{state.*}} binding and guardian_ruleset is
+      // configured, so a failed trigger is a real regression — surface the failing step's
+      // error (prod gateway logs aren't reachable from here) in the failure, don't skip.
+      let stepErrors = "";
+      try {
+        const failExec = await client.executions.retrieve(trig.executionId, { workflowId: created.id });
+        stepErrors = (failExec.steps ?? [])
+          .filter((s) => !s.success)
+          .map((s) => `[${s.id}] ${s.error ?? "(no error)"}`)
+          .join("; ");
+      } catch (e) {
+        stepErrors = `could not fetch execution: ${(e as Error).message}`;
+      }
+      throw new Error(`Guardian trigger failed (${trig.error ?? trig.status}): ${stepErrors}`);
     }
     const exec = await client.executions.retrieve(trig.executionId, { workflowId: created.id });
     const verdictStep = exec.steps?.find((s) => s.id === "verdict");
