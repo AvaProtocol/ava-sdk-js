@@ -96,6 +96,22 @@ export const UniswapV3 = Object.freeze({
    * simulate previews the whole batch (approve then swap).
    */
   swapWithApprovalNode(opts: UniswapV3SwapNodeOptions): v4.Node {
+    // Fail fast on inputs that can only be a caller mistake. This node emits a real ERC-20 approval,
+    // so catch these at build time rather than as an opaque on-chain revert (the atomicity would
+    // roll the approve back, but a clear error beats a wasted preview/execute round-trip).
+    if (opts.tokenIn.toLowerCase() === opts.tokenOut.toLowerCase()) {
+      throw new Error("swapWithApprovalNode: tokenIn and tokenOut must differ");
+    }
+    let amountInWei: bigint;
+    try {
+      amountInWei = BigInt(opts.amountIn);
+    } catch {
+      throw new Error(`swapWithApprovalNode: amountIn must be an integer wei string, got "${opts.amountIn}"`);
+    }
+    if (amountInWei <= 0n) {
+      throw new Error("swapWithApprovalNode: amountIn must be greater than 0");
+    }
+
     const router =
       opts.routerAddress ??
       addressForChain(Protocols.uniswapV3.swapRouter02, opts.chainId, "SwapRouter02");

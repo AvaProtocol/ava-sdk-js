@@ -155,6 +155,24 @@ describe("UniswapV3.swapWithApprovalNode", () => {
     expect(config.contractAddress).toBe(override);
     expect(config.methodCalls[0].methodParams).toEqual([override, "1"]);
   });
+
+  test("rejects caller-mistake inputs (same token, non-positive/non-numeric amountIn)", () => {
+    const base = {
+      id: "s",
+      name: "s",
+      chainId: Chains.Sepolia,
+      tokenIn: USDC,
+      tokenOut: WETH,
+      fee: 500 as const,
+      recipient: RECIPIENT,
+      amountIn: "1000",
+      amountOutMinimum: "0",
+    };
+    expect(() => UniswapV3.swapWithApprovalNode({ ...base, tokenOut: USDC })).toThrow(/must differ/);
+    expect(() => UniswapV3.swapWithApprovalNode({ ...base, amountIn: "0" })).toThrow(/greater than 0/);
+    expect(() => UniswapV3.swapWithApprovalNode({ ...base, amountIn: "-5" })).toThrow(/greater than 0/);
+    expect(() => UniswapV3.swapWithApprovalNode({ ...base, amountIn: "abc" })).toThrow(/integer wei/);
+  });
 });
 
 describe("UniswapV3.quoteNode", () => {

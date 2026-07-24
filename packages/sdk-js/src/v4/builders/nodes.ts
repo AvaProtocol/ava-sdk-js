@@ -81,7 +81,7 @@ export const Nodes = Object.freeze({
       methodParams?: string[];
       callData?: string;
       applyToFields?: string[];
-      /** Per-call target contract override (defaults to the node-level `contractAddress`). */
+      /** Per-call target contract override (defaults to the node-level `contractAddress`); see `contractWrite` for the atomic-batch semantics. */
       contractAddress?: string;
     }>;
     chainId: number;
@@ -125,7 +125,15 @@ export const Nodes = Object.freeze({
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
     body?: string;
     headers?: Record<string, string>;
-    options?: { summarize?: boolean };
+    options?: {
+      summarize?: boolean;
+      /**
+       * Server-side credential injection. The gateway mints the named provider's token from
+       * `macros.secrets` and attaches it as the Authorization header at execution time, so the
+       * secret never appears in the (client-visible) workflow JSON. (e.g. `{ provider: "goplus" }`.)
+       */
+      auth?: { provider: string };
+    };
   }): v4.Node {
     return {
       id: opts.id,

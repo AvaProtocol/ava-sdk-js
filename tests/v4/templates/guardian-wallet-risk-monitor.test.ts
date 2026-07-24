@@ -128,17 +128,13 @@ export function buildWalletRiskMonitor(opts: {
   schedule?: string;
 }): v4.CreateWorkflowRequest {
   const moralisChain = opts.chainId === 1 ? "eth" : "base";
-  // Hand-assembled so options.auth passes (the Nodes.restApi builder narrows options to {summarize?}).
-  const goplusApprovals = {
+  const goplusApprovals = Nodes.restApi({
     id: "goplusApprovals",
     name: "goplusApprovals",
-    type: "restApi",
-    config: {
-      method: "GET",
-      url: `https://api.gopluslabs.io/api/v2/token_approval_security/${opts.chainId}?addresses={{monitor.wallet}}`,
-      options: { auth: { provider: "goplus" } },
-    },
-  } as unknown as v4.Node;
+    method: "GET",
+    url: `https://api.gopluslabs.io/api/v2/token_approval_security/${opts.chainId}?addresses={{monitor.wallet}}`,
+    options: { auth: { provider: "goplus" } },
+  });
 
   return {
     name: "Wallet Risk Monitor",

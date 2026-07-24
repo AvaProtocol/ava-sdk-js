@@ -14,4 +14,8 @@ Support atomic approve+swap batching on a single `contractWrite` node.
 - New `UniswapV3.swapWithApprovalNode` builds a token-in swap that batches the
   ERC-20 `approve` (exact `amountIn`, not unlimited) with `exactInputSingle` into
   a single atomic node — approve and swap land together or not at all.
-  `swapNode` remains for the already-approved case.
+  `swapNode` remains for the already-approved case. It validates its inputs
+  (rejects `tokenIn === tokenOut` and non-positive `amountIn`).
+- `Nodes.restApi` `options` now types the server-side `auth` provider
+  (`{ provider: string }`) alongside `summarize`, so authenticated REST nodes no
+  longer need an unsafe cast.
