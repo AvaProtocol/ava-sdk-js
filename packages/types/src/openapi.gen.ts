@@ -936,6 +936,8 @@ export interface components {
         readonly MethodCall: {
             readonly methodName: string;
             readonly callData?: components["schemas"]["Hex"];
+            /** @description Per-call target contract. When set, this call is sent to this address instead of the node-level contractAddress, so a single ContractWrite node can express a heterogeneous atomic batch (e.g. approve on the token + swap on the router). Absent = the node-level contract. */
+            readonly contractAddress?: components["schemas"]["EthereumAddress"];
             readonly applyToFields?: readonly string[];
             readonly methodParams?: readonly string[];
         };

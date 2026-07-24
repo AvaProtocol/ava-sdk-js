@@ -21,7 +21,8 @@ const RECIPIENT = "0x2222222222222222222222222222222222222222";
 type CWConfig = {
   contractAddress: string;
   isSimulated?: boolean;
-  methodCalls: Array<{ methodName: string; methodParams: string[] }>;
+  contractAbi?: Array<Record<string, unknown>>;
+  methodCalls: Array<{ methodName: string; methodParams: string[]; contractAddress?: string }>;
 };
 const configOf = (node: v4.Node): CWConfig => (node as unknown as { config: CWConfig }).config;
 
@@ -87,6 +88,72 @@ describe("UniswapV3.swapNode", () => {
         amountOutMinimum: "0",
       }),
     ).toThrow(/SwapRouter02 address is not known for chain 999999/);
+  });
+});
+
+describe("UniswapV3.swapWithApprovalNode", () => {
+  test("batches approve@tokenIn + exactInputSingle@router into one atomic node", () => {
+    const node = UniswapV3.swapWithApprovalNode({
+      id: "swap",
+      name: "swap",
+      chainId: Chains.Sepolia,
+      tokenIn: USDC,
+      tokenOut: WETH,
+      fee: 500,
+      recipient: RECIPIENT,
+      amountIn: "1000000",
+      amountOutMinimum: "990000000000000",
+    });
+    expect(node.type).toBe("contractWrite");
+    const config = configOf(node);
+    const router = Protocols.uniswapV3.swapRouter02[Chains.Sepolia];
+
+    // Node-level target is the router (used by the swap call); two calls = one atomic batch.
+    expect(config.contractAddress).toBe(router);
+    expect(config.methodCalls).toHaveLength(2);
+
+    // Call 0: approve, routed to the input TOKEN via the per-call override, spender = router,
+    // approved for exactly amountIn (not unlimited).
+    expect(config.methodCalls[0].methodName).toBe("approve");
+    expect(config.methodCalls[0].contractAddress).toBe(USDC);
+    expect(config.methodCalls[0].methodParams).toEqual([router, "1000000"]);
+
+    // Call 1: the swap, no per-call override => node-level router target.
+    expect(config.methodCalls[1].methodName).toBe("exactInputSingle");
+    expect(config.methodCalls[1].contractAddress).toBeUndefined();
+    expect(JSON.parse(config.methodCalls[1].methodParams[0])).toEqual({
+      tokenIn: USDC,
+      tokenOut: WETH,
+      fee: 500,
+      recipient: RECIPIENT,
+      amountIn: "1000000",
+      amountOutMinimum: "990000000000000",
+      sqrtPriceLimitX96: "0",
+    });
+
+    // Merged ABI carries both method names so the gateway can resolve each call.
+    const abiNames = (config.contractAbi ?? []).map((f) => (f as { name?: string }).name);
+    expect(abiNames).toContain("approve");
+    expect(abiNames).toContain("exactInputSingle");
+  });
+
+  test("honors a router override (approve spender follows it)", () => {
+    const override = "0x9999999999999999999999999999999999999999";
+    const node = UniswapV3.swapWithApprovalNode({
+      id: "s",
+      name: "s",
+      chainId: 999999,
+      tokenIn: USDC,
+      tokenOut: WETH,
+      fee: 500,
+      recipient: RECIPIENT,
+      amountIn: "1",
+      amountOutMinimum: "0",
+      routerAddress: override,
+    });
+    const config = configOf(node);
+    expect(config.contractAddress).toBe(override);
+    expect(config.methodCalls[0].methodParams).toEqual([override, "1"]);
   });
 });
 
