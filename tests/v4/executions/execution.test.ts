@@ -46,8 +46,12 @@ describe("Execution Management Tests", () => {
     const blockNumber = await getCurrentBlockNumber();
 
     const created = await client.workflows.create({
+      // The template caps at 1 execution; this test triggers three times, so it
+      // needs a bigger budget. It used to pass 0 (unlimited), which the gateway
+      // now rejects — every run spends metered provider quota, so a workflow
+      // must declare a finite budget or take the server default.
       ...createFromTemplate(wallet.address),
-      maxExecution: 0,
+      maxExecution: 10,
       trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
     });
     const wfId = created.id as string;
@@ -74,8 +78,8 @@ describe("Execution Management Tests", () => {
     const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
-      maxExecution: 0,
-      trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["* * * * *"] }),
+      maxExecution: 10,
+      trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
@@ -98,7 +102,7 @@ describe("Execution Management Tests", () => {
     const blockNumber = await getCurrentBlockNumber();
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
-      maxExecution: 0,
+      maxExecution: 10,
       trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
     });
     const wfId = created.id as string;

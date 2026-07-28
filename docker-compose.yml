@@ -6,6 +6,12 @@ services:
   # of https://github.com/AvaProtocol/EigenLayer-AVS — set in CI via
   # .github/workflows/dev-test-on-pr.yml.
   gateway:
+    # host.docker.internal lets a node running in this container dial a server
+    # on the host — specifically tests/utils/stubServer.ts, which stands in for
+    # the third-party endpoints these tests used to hit. host-gateway is what
+    # makes the name resolve on Linux (CI); Docker Desktop provides it anyway.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
     command:
       - "aggregator"
@@ -21,6 +27,12 @@ services:
   # chains[].worker_addr ("worker-sepolia:50051"). Health check on
   # :8090 confirms the worker has registered with the gateway.
   worker-sepolia:
+    # host.docker.internal lets a node running in this container dial a server
+    # on the host — specifically tests/utils/stubServer.ts, which stands in for
+    # the third-party endpoints these tests used to hit. host-gateway is what
+    # makes the name resolve on Linux (CI); Docker Desktop provides it anyway.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
     command:
       - "worker"
@@ -40,6 +52,12 @@ services:
   # ECDSA/BLS keystores are written to config/.operator-keys/ from GitHub
   # secrets in CI; their passwords come from OPERATOR_{ECDSA,BLS}_KEY_PASSWORD.
   operator:
+    # host.docker.internal lets a node running in this container dial a server
+    # on the host — specifically tests/utils/stubServer.ts, which stands in for
+    # the third-party endpoints these tests used to hit. host-gateway is what
+    # makes the name resolve on Linux (CI); Docker Desktop provides it anyway.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     image: avaprotocol/avs-dev:${DOCKER_IMAGE_TAG:-latest}
     command:
       - "operator"

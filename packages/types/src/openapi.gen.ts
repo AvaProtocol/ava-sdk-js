@@ -1070,9 +1070,12 @@ export interface components {
          *     bridge arrival on another chain). Exactly one flavor must be configured.
          */
         readonly AwaitNodeConfig: {
-            /** @description External-signal flavor — signal channel: `telegram` or `api`. */
-            readonly channel?: string;
-            /** @description External-signal flavor — authorized approver identities. Empty = the workflow owner. */
+            /**
+             * @description External-signal flavor — signal channel: `telegram` or `api`.
+             * @enum {string}
+             */
+            readonly channel?: "telegram" | "api";
+            /** @description External-signal flavor — authorized approver identities. Empty = the workflow owner. NOTE (v1): not yet enforced — the signal endpoint authorizes by workflow ownership only, so the owner can always approve regardless of this list. Delegated-approver enforcement (Telegram binding) is a follow-up; do not rely on this field for security yet. */
             readonly approvers?: readonly string[];
             /** @description External-signal flavor — message shown to the approver. */
             readonly prompt?: string;
@@ -1264,7 +1267,7 @@ export interface components {
             readonly expiredAt?: number;
             /**
              * Format: int64
-             * @description Cap on how many times this workflow may execute. 0 = unlimited.
+             * @description Cap on how many times this workflow may execute. The workflow reaches status `completed` once `executionCount` hits this value. Present and finite on every workflow created since the server began assigning a default — a create request that omits the field takes that default, and one that sends 0 or a negative is rejected, so "run forever" is not expressible. Absent on workflows created before that change and stored uncapped; those keep running without a limit, and `remainingExecutions` is likewise absent for them.
              */
             readonly maxExecution?: number;
             /**
@@ -1272,6 +1275,16 @@ export interface components {
              * @description How many times this workflow has executed so far.
              */
             readonly executionCount?: number;
+            /**
+             * Format: int64
+             * @description Runs left before the workflow completes — `maxExecution` minus `executionCount`, floored at 0. Derived server-side so clients do not have to reproduce the arithmetic (and so an absent `executionCount` on a never-run workflow cannot be misread). Reported as 0 rather than omitted once the budget is spent. Absent only on legacy uncapped workflows, where no finite number exists.
+             */
+            readonly remainingExecutions?: number;
+            /**
+             * @description Why the workflow reached a terminal state. An exhausted execution budget and a passed expiry both produce status `completed`, so the status alone cannot distinguish them. Absent or UNSPECIFIED while the workflow is still runnable, and on workflows that terminated before this field existed. Cancellation is not represented — cancelling deletes the workflow rather than leaving a record.
+             * @enum {string}
+             */
+            readonly completionReason?: "TASK_COMPLETION_REASON_UNSPECIFIED" | "TASK_COMPLETION_REASON_MAX_EXECUTIONS_REACHED" | "TASK_COMPLETION_REASON_EXPIRED";
             /**
              * Format: int64
              * @description Unix-epoch milliseconds — when the workflow was first created.
@@ -1294,7 +1307,10 @@ export interface components {
             readonly startAt?: number;
             /** Format: int64 */
             readonly expiredAt?: number;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Optional cap on total executions. Omit the field to take the server default. Sending 0 (or a negative) is rejected rather than treated as unlimited: unlimited execution is not offered, because every run spends metered provider quota.
+             */
             readonly maxExecution?: number;
         };
         readonly WorkflowList: {

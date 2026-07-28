@@ -29,6 +29,7 @@ import {
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
+import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 import { createFromTemplate } from "../../utils/templates";
 
 jest.setTimeout(60_000);
@@ -43,6 +44,10 @@ function loopWithCustomCode(input: string, source: string, iterVar = "value") {
   });
 }
 
+/** Local stand-in for httpbin — see tests/utils/stubServer.ts. */
+let STUB = "";
+let stub: StubServer;
+
 describe("LoopNode Tests", () => {
   let client: Client;
   const createdWorkflowIds: string[] = [];
@@ -50,6 +55,18 @@ describe("LoopNode Tests", () => {
   beforeAll(async () => {
     client = getClient();
     await authenticateClient(client);
+
+    // A local stub replaces httpbin.org here: the gateway makes this request,
+    // not the test, so client-side mocking cannot intercept it — only a server
+    // the gateway can dial. See tests/utils/stubServer.ts.
+    stub = await startStubServerFor(client, (url) =>
+      Nodes.restApi({ id: "probe", name: "probe", url, method: "GET" }),
+    );
+    STUB = stub.baseUrl;
+  });
+
+  afterAll(async () => {
+    await stub?.close();
   });
 
   afterEach(async () => {
@@ -135,8 +152,9 @@ describe("LoopNode Tests", () => {
 
   describe("nodes.run with RestAPI runner", () => {
     test("iterates over URLs and fetches each", async () => {
-      // httpbin.org is the de-facto standard test target; if it's
-      // unreachable the runner will fail per iteration and we skip.
+      // Two stub URLs rather than two httpbin URLs: the loop runner fetches
+      // each one from inside the gateway, so a public target made this test
+      // fail whenever that service was down.
       const result = await client.nodes.run({
         node: Nodes.loop({
           id: "loop",
@@ -153,15 +171,12 @@ describe("LoopNode Tests", () => {
         }),
         inputVariables: {
           urlArray: [
-            "https://httpbin.org/get?n=1",
-            "https://httpbin.org/get?n=2",
+            `${STUB}/get?n=1`,
+            `${STUB}/get?n=2`,
           ],
         },
       });
-      if (!result.success) {
-        console.log(`Skipping — REST runner failed: ${result.error}`);
-        return;
-      }
+      expect(result.success).toBe(true);
       const data = (result.output as { data: any[] }).data;
       expect(Array.isArray(data)).toBe(true);
       expect(data).toHaveLength(2);

@@ -28,6 +28,44 @@ import {
 import type { Client } from "@avaprotocol/sdk-js";
 
 // ────────────────────────────────────────────────────────────────────────────
+// Schedule floor — one rule, every environment
+//
+// A leaked workflow runs until someone cancels it by hand: the 2026-07-17 live
+// run below left an every-minute guardian behind that made ~14.8K Moralis +
+// GoPlus calls over ten days before anyone noticed. Every execution costs money
+// on some metered provider (Moralis, GoPlus, and the RPC/bundler CU each run
+// spends), so occurrence *is* the cost — which makes the floor a property of the
+// workflow, not of the gateway it happens to point at. No environment carve-out:
+// a rule that only applies to prod is a rule nobody exercises until it matters.
+//
+// This test fires its own trigger (`isBlocking`) and never waits for the cron to
+// tick, so a fast schedule buys it nothing anyway.
+// ────────────────────────────────────────────────────────────────────────────
+const MIN_SCHEDULE = "0 */6 * * *";
+
+/** True when a cron's minute field makes it fire more than once an hour. */
+function isSubHourly(schedule: string): boolean {
+  const minute = schedule.trim().split(/\s+/)[0] ?? "";
+  return minute === "*" || /[*/,-]/.test(minute);
+}
+
+/**
+ * Refuses to deploy a sub-hourly cron anywhere. Asserted on the built request
+ * rather than on the constant above, so it also catches a future edit to
+ * `buildWalletRiskMonitor`'s own default.
+ */
+function assertScheduleWithinFloor(req: v4.CreateWorkflowRequest): void {
+  const config = (req.trigger as unknown as { config?: { schedules?: string[] } }).config;
+  const offenders = (config?.schedules ?? []).filter(isSubHourly);
+  if (offenders.length > 0) {
+    throw new Error(
+      `Refusing to deploy a sub-hourly cron (${offenders.join(", ")}). If cleanup ` +
+        `fails it bills Moralis + GoPlus on every tick, forever. Use ${MIN_SCHEDULE}.`,
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // The verdict evaluator — plain ES5 JS, so it runs identically in goja on the
 // gateway (embedded in the customCode source) and in this test (via new Function).
 // Ported verbatim from app/lib/goplus.ts `getTokenApprovalSecurity`.
@@ -320,6 +358,46 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
     expect((req.trigger as unknown as { config: { schedules: string[] } }).config.schedules).toEqual(["0 */6 * * *"]);
   });
 
+  // Regression: the 2026-07-17 live run deployed `* * * * *` against prod and
+  // leaked it, costing ~14.8K Moralis + GoPlus calls. The guard is the backstop.
+  describe("prod-cron guard", () => {
+    const withSchedule = (schedule: string) =>
+      buildWalletRiskMonitor({
+        smartWalletAddress: "0x3333333333333333333333333333333333333333",
+        watchedWallet: "0x4444444444444444444444444444444444444444",
+        chainId: 1,
+        chainName: "Ethereum",
+        telegramChatId: "123456789",
+        schedule,
+      });
+    test.each(["* * * * *", "*/5 * * * *", "0,30 * * * *", "0-5 * * * *"])(
+      "rejects sub-hourly %s",
+      (schedule) => {
+        expect(() => assertScheduleWithinFloor(withSchedule(schedule))).toThrow(/sub-hourly/i);
+      },
+    );
+
+    test("allows the 6h default", () => {
+      expect(() => assertScheduleWithinFloor(withSchedule(MIN_SCHEDULE))).not.toThrow();
+    });
+
+    // The floor is a property of the workflow, not of the target gateway — the
+    // same schedule must be rejected no matter where AVS_REST_URL points.
+    test.each([
+      ["prod", "https://api.avaprotocol.org/api/v1"],
+      ["local", "http://localhost:8080/api/v1"],
+    ])("rejects the minute cron with AVS_REST_URL on %s", (_label, url) => {
+      const original = process.env.AVS_REST_URL;
+      process.env.AVS_REST_URL = url;
+      try {
+        expect(() => assertScheduleWithinFloor(withSchedule("* * * * *"))).toThrow(/sub-hourly/i);
+      } finally {
+        if (original === undefined) delete process.env.AVS_REST_URL;
+        else process.env.AVS_REST_URL = original;
+      }
+    });
+  });
+
   test("has the 6-node scan→scan→verdict→branch→notify→mark graph", () => {
     expect(req.nodes.map((n) => n.id)).toEqual([
       "moralisApprovals",
@@ -396,8 +474,9 @@ const RUN_GUARDIAN_LIVE = process.env.RUN_GUARDIAN_LIVE === "1";
       chainId: 1,
       chainName: "Ethereum",
       telegramChatId: process.env.GUARDIAN_CHAT_ID ?? "0",
-      schedule: "* * * * *",
+      schedule: MIN_SCHEDULE,
     });
+    assertScheduleWithinFloor(req);
     const created = await client.workflows.create({
       ...req,
       // Runner lives on the test chain; the scan chain (monitor.chainId) is mainnet.

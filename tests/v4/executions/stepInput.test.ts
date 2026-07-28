@@ -2,7 +2,8 @@
  * Port of tests-v3-archive/executions/stepInput.test.ts.
  *
  * v3 leaned on a localhost:19876 mock server for the REST API
- * variants; v4 uses httpbin.org to keep the test self-contained.
+ * variants; v4 uses a local stub server (tests/utils/stubServer.ts) so the
+ * test is self-contained AND deterministic — no public endpoint to go down.
  *
  * Step shape diff (v3 → v4):
  *   - v3 step.inputsList -> v4 step.inputs
@@ -19,10 +20,13 @@ import {
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
+import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
 
-const HTTPBIN = "https://httpbin.org";
+/** Local stand-in for httpbin — see tests/utils/stubServer.ts. */
+let STUB = "";
+let stub: StubServer;
 
 describe("Step Input Tests", () => {
   let client: Client;
@@ -31,6 +35,18 @@ describe("Step Input Tests", () => {
   beforeAll(async () => {
     client = getClient();
     await authenticateClient(client);
+
+    // A local stub replaces httpbin.org here: the gateway makes this request,
+    // not the test, so client-side mocking cannot intercept it — only a server
+    // the gateway can dial. See tests/utils/stubServer.ts.
+    stub = await startStubServerFor(client, (url) =>
+      Nodes.restApi({ id: "probe", name: "probe", url, method: "GET" }),
+    );
+    STUB = stub.baseUrl;
+  });
+
+  afterAll(async () => {
+    await stub?.close();
   });
 
   afterEach(async () => {
@@ -66,7 +82,7 @@ describe("Step Input Tests", () => {
   test("trigger config + node config + step output round-trip through deploy + trigger", async () => {
     const wallet = await createSmartWallet(client);
     const triggerData = {
-      apiBaseUrl: HTTPBIN,
+      apiBaseUrl: STUB,
       apiKey: "test-key-123",
       environment: "testing",
       priority: "high",
