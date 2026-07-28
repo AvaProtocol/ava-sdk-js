@@ -25,25 +25,23 @@ import {
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
-import { TEST_REST_URL } from "../../utils/env";
 import type { Client } from "@avaprotocol/sdk-js";
 
 // ────────────────────────────────────────────────────────────────────────────
-// Prod-cron guard
+// Schedule floor — one rule, every environment
 //
-// A leaked workflow runs until someone cancels it by hand, and on prod that is
-// real money: the 2026-07-17 live run below left an every-minute guardian
-// behind that made ~14.8K Moralis + GoPlus calls over ten days before anyone
-// noticed. This test fires its own trigger (`isBlocking`) and never waits for
-// the cron to tick, so a fast schedule buys it nothing — it only multiplies the
-// cost of a leak. Keep the minute cron for local/staging gateways, where a leak
-// is cheap and obvious, and use the 6h product default against prod.
+// A leaked workflow runs until someone cancels it by hand: the 2026-07-17 live
+// run below left an every-minute guardian behind that made ~14.8K Moralis +
+// GoPlus calls over ten days before anyone noticed. Every execution costs money
+// on some metered provider (Moralis, GoPlus, and the RPC/bundler CU each run
+// spends), so occurrence *is* the cost — which makes the floor a property of the
+// workflow, not of the gateway it happens to point at. No environment carve-out:
+// a rule that only applies to prod is a rule nobody exercises until it matters.
+//
+// This test fires its own trigger (`isBlocking`) and never waits for the cron to
+// tick, so a fast schedule buys it nothing anyway.
 // ────────────────────────────────────────────────────────────────────────────
-const PROD_GATEWAY = /\bapi\.avaprotocol\.org\b/i;
-const FAST_SCHEDULE = "* * * * *";
-const PROD_SCHEDULE = "0 */6 * * *";
-
-const targetIsProd = (): boolean => PROD_GATEWAY.test(TEST_REST_URL());
+const MIN_SCHEDULE = "0 */6 * * *";
 
 /** True when a cron's minute field makes it fire more than once an hour. */
 function isSubHourly(schedule: string): boolean {
@@ -52,19 +50,17 @@ function isSubHourly(schedule: string): boolean {
 }
 
 /**
- * Refuses to deploy a sub-hourly cron against prod. Asserted on the built
- * request rather than on the constant above, so it also catches a future edit
- * to `buildWalletRiskMonitor`'s own default.
+ * Refuses to deploy a sub-hourly cron anywhere. Asserted on the built request
+ * rather than on the constant above, so it also catches a future edit to
+ * `buildWalletRiskMonitor`'s own default.
  */
-function assertScheduleSafeForTarget(req: v4.CreateWorkflowRequest): void {
-  if (!targetIsProd()) return;
+function assertScheduleWithinFloor(req: v4.CreateWorkflowRequest): void {
   const config = (req.trigger as unknown as { config?: { schedules?: string[] } }).config;
   const offenders = (config?.schedules ?? []).filter(isSubHourly);
   if (offenders.length > 0) {
     throw new Error(
-      `Refusing to deploy a sub-hourly cron (${offenders.join(", ")}) against prod ` +
-        `(${TEST_REST_URL()}). If cleanup fails, it bills Moralis + GoPlus forever. ` +
-        `Use ${PROD_SCHEDULE}, or point AVS_REST_URL at a local/staging gateway.`,
+      `Refusing to deploy a sub-hourly cron (${offenders.join(", ")}). If cleanup ` +
+        `fails it bills Moralis + GoPlus on every tick, forever. Use ${MIN_SCHEDULE}.`,
     );
   }
 }
@@ -374,28 +370,31 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
         telegramChatId: "123456789",
         schedule,
       });
-    const original = process.env.AVS_REST_URL;
-    afterEach(() => {
-      if (original === undefined) delete process.env.AVS_REST_URL;
-      else process.env.AVS_REST_URL = original;
-    });
-
     test.each(["* * * * *", "*/5 * * * *", "0,30 * * * *", "0-5 * * * *"])(
-      "rejects sub-hourly %s against prod",
+      "rejects sub-hourly %s",
       (schedule) => {
-        process.env.AVS_REST_URL = "https://api.avaprotocol.org/api/v1";
-        expect(() => assertScheduleSafeForTarget(withSchedule(schedule))).toThrow(/sub-hourly/i);
+        expect(() => assertScheduleWithinFloor(withSchedule(schedule))).toThrow(/sub-hourly/i);
       },
     );
 
-    test("allows the 6h default against prod", () => {
-      process.env.AVS_REST_URL = "https://api.avaprotocol.org/api/v1";
-      expect(() => assertScheduleSafeForTarget(withSchedule(PROD_SCHEDULE))).not.toThrow();
+    test("allows the 6h default", () => {
+      expect(() => assertScheduleWithinFloor(withSchedule(MIN_SCHEDULE))).not.toThrow();
     });
 
-    test("allows a minute cron against a non-prod gateway", () => {
-      process.env.AVS_REST_URL = "http://localhost:8080/api/v1";
-      expect(() => assertScheduleSafeForTarget(withSchedule(FAST_SCHEDULE))).not.toThrow();
+    // The floor is a property of the workflow, not of the target gateway — the
+    // same schedule must be rejected no matter where AVS_REST_URL points.
+    test.each([
+      ["prod", "https://api.avaprotocol.org/api/v1"],
+      ["local", "http://localhost:8080/api/v1"],
+    ])("rejects the minute cron with AVS_REST_URL on %s", (_label, url) => {
+      const original = process.env.AVS_REST_URL;
+      process.env.AVS_REST_URL = url;
+      try {
+        expect(() => assertScheduleWithinFloor(withSchedule("* * * * *"))).toThrow(/sub-hourly/i);
+      } finally {
+        if (original === undefined) delete process.env.AVS_REST_URL;
+        else process.env.AVS_REST_URL = original;
+      }
     });
   });
 
@@ -475,9 +474,9 @@ const RUN_GUARDIAN_LIVE = process.env.RUN_GUARDIAN_LIVE === "1";
       chainId: 1,
       chainName: "Ethereum",
       telegramChatId: process.env.GUARDIAN_CHAT_ID ?? "0",
-      schedule: targetIsProd() ? PROD_SCHEDULE : FAST_SCHEDULE,
+      schedule: MIN_SCHEDULE,
     });
-    assertScheduleSafeForTarget(req);
+    assertScheduleWithinFloor(req);
     const created = await client.workflows.create({
       ...req,
       // Runner lives on the test chain; the scan chain (monitor.chainId) is mainnet.
