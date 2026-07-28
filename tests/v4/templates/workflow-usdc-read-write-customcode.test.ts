@@ -50,7 +50,7 @@ describe("Template: USDC read+write+customCode", () => {
       trigger: Triggers.cron({
         id: "timeTrigger",
         name: "timeTrigger",
-        schedule: ["*/2 * * * *"],
+        schedule: ["*/5 * * * *"],
       }),
       nodes: [
         Nodes.contractRead({

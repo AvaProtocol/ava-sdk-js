@@ -75,7 +75,7 @@ describe("workflows.trigger Tests", () => {
       const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
-        trigger: Triggers.cron({ id: "trigger", name: "cronTrigger", schedule: ["* * * * *"] }),
+        trigger: Triggers.cron({ id: "trigger", name: "cronTrigger", schedule: ["0 * * * *"] }),
       });
       const wfId = created.id as string;
       createdWorkflowIds.push(wfId);
@@ -164,7 +164,7 @@ describe("workflows.trigger Tests", () => {
       const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
-        trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["* * * * *"] }),
+        trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
       });
       const wfId = created.id as string;
       createdWorkflowIds.push(wfId);
@@ -188,7 +188,7 @@ describe("workflows.trigger Tests", () => {
       const wallet = await createSmartWallet(client);
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
-        trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["* * * * *"] }),
+        trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
       });
       const wfId = created.id as string;
       createdWorkflowIds.push(wfId);
@@ -221,7 +221,7 @@ describe("workflows.trigger Tests", () => {
       const created = await client.workflows.create({
         ...createFromTemplate(wallet.address),
         maxExecution: 1,
-        trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["* * * * *"] }),
+        trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
       });
       const wfId = created.id as string;
       createdWorkflowIds.push(wfId);
