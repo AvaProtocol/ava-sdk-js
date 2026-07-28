@@ -10,6 +10,8 @@
  * duplicate global declarations otherwise.
  */
 
+import { assertNoLeakedWorkflows } from "./client";
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
@@ -32,6 +34,14 @@ expect.extend({
           : `expected ${actual} to equal (case-insensitive) ${want}`,
     };
   },
+});
+
+// A workflow that survives cleanup keeps running on a live gateway forever.
+// `removeCreatedWorkflows` deliberately doesn't throw (it runs in `finally` /
+// `afterEach`, where it would mask the real assertion), so enforce it here
+// instead — after the file's assertions have already been reported.
+afterAll(() => {
+  assertNoLeakedWorkflows();
 });
 
 // Re-export an empty object so this file is treated as a module

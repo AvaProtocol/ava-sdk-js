@@ -25,7 +25,49 @@ import {
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
+import { TEST_REST_URL } from "../../utils/env";
 import type { Client } from "@avaprotocol/sdk-js";
+
+// ────────────────────────────────────────────────────────────────────────────
+// Prod-cron guard
+//
+// A leaked workflow runs until someone cancels it by hand, and on prod that is
+// real money: the 2026-07-17 live run below left an every-minute guardian
+// behind that made ~14.8K Moralis + GoPlus calls over ten days before anyone
+// noticed. This test fires its own trigger (`isBlocking`) and never waits for
+// the cron to tick, so a fast schedule buys it nothing — it only multiplies the
+// cost of a leak. Keep the minute cron for local/staging gateways, where a leak
+// is cheap and obvious, and use the 6h product default against prod.
+// ────────────────────────────────────────────────────────────────────────────
+const PROD_GATEWAY = /\bapi\.avaprotocol\.org\b/i;
+const FAST_SCHEDULE = "* * * * *";
+const PROD_SCHEDULE = "0 */6 * * *";
+
+const targetIsProd = (): boolean => PROD_GATEWAY.test(TEST_REST_URL());
+
+/** True when a cron's minute field makes it fire more than once an hour. */
+function isSubHourly(schedule: string): boolean {
+  const minute = schedule.trim().split(/\s+/)[0] ?? "";
+  return minute === "*" || /[*/,-]/.test(minute);
+}
+
+/**
+ * Refuses to deploy a sub-hourly cron against prod. Asserted on the built
+ * request rather than on the constant above, so it also catches a future edit
+ * to `buildWalletRiskMonitor`'s own default.
+ */
+function assertScheduleSafeForTarget(req: v4.CreateWorkflowRequest): void {
+  if (!targetIsProd()) return;
+  const config = (req.trigger as unknown as { config?: { schedules?: string[] } }).config;
+  const offenders = (config?.schedules ?? []).filter(isSubHourly);
+  if (offenders.length > 0) {
+    throw new Error(
+      `Refusing to deploy a sub-hourly cron (${offenders.join(", ")}) against prod ` +
+        `(${TEST_REST_URL()}). If cleanup fails, it bills Moralis + GoPlus forever. ` +
+        `Use ${PROD_SCHEDULE}, or point AVS_REST_URL at a local/staging gateway.`,
+    );
+  }
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // The verdict evaluator — plain ES5 JS, so it runs identically in goja on the
@@ -320,6 +362,43 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
     expect((req.trigger as unknown as { config: { schedules: string[] } }).config.schedules).toEqual(["0 */6 * * *"]);
   });
 
+  // Regression: the 2026-07-17 live run deployed `* * * * *` against prod and
+  // leaked it, costing ~14.8K Moralis + GoPlus calls. The guard is the backstop.
+  describe("prod-cron guard", () => {
+    const withSchedule = (schedule: string) =>
+      buildWalletRiskMonitor({
+        smartWalletAddress: "0x3333333333333333333333333333333333333333",
+        watchedWallet: "0x4444444444444444444444444444444444444444",
+        chainId: 1,
+        chainName: "Ethereum",
+        telegramChatId: "123456789",
+        schedule,
+      });
+    const original = process.env.AVS_REST_URL;
+    afterEach(() => {
+      if (original === undefined) delete process.env.AVS_REST_URL;
+      else process.env.AVS_REST_URL = original;
+    });
+
+    test.each(["* * * * *", "*/5 * * * *", "0,30 * * * *", "0-5 * * * *"])(
+      "rejects sub-hourly %s against prod",
+      (schedule) => {
+        process.env.AVS_REST_URL = "https://api.avaprotocol.org/api/v1";
+        expect(() => assertScheduleSafeForTarget(withSchedule(schedule))).toThrow(/sub-hourly/i);
+      },
+    );
+
+    test("allows the 6h default against prod", () => {
+      process.env.AVS_REST_URL = "https://api.avaprotocol.org/api/v1";
+      expect(() => assertScheduleSafeForTarget(withSchedule(PROD_SCHEDULE))).not.toThrow();
+    });
+
+    test("allows a minute cron against a non-prod gateway", () => {
+      process.env.AVS_REST_URL = "http://localhost:8080/api/v1";
+      expect(() => assertScheduleSafeForTarget(withSchedule(FAST_SCHEDULE))).not.toThrow();
+    });
+  });
+
   test("has the 6-node scan→scan→verdict→branch→notify→mark graph", () => {
     expect(req.nodes.map((n) => n.id)).toEqual([
       "moralisApprovals",
@@ -396,8 +475,9 @@ const RUN_GUARDIAN_LIVE = process.env.RUN_GUARDIAN_LIVE === "1";
       chainId: 1,
       chainName: "Ethereum",
       telegramChatId: process.env.GUARDIAN_CHAT_ID ?? "0",
-      schedule: "* * * * *",
+      schedule: targetIsProd() ? PROD_SCHEDULE : FAST_SCHEDULE,
     });
+    assertScheduleSafeForTarget(req);
     const created = await client.workflows.create({
       ...req,
       // Runner lives on the test chain; the scan chain (monitor.chainId) is mainnet.
