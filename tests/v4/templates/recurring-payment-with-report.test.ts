@@ -10,7 +10,7 @@
  *       -> no:  Telegram insufficient-balance alert
  *
  * Real Telegram + funded wallet aren't required here — we use
- * httpbin.org as a Telegram stand-in, and run the simulate path
+ * a local stub server as a Telegram stand-in, and run the simulate path
  * which doesn't actually move funds.
  */
 
@@ -24,8 +24,13 @@ import {
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
+import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
+
+/** Local stand-in for httpbin — see tests/utils/stubServer.ts. */
+let STUB = "";
+let stub: StubServer;
 
 describe("Template: recurring payment with report", () => {
   let client: Client;
@@ -36,6 +41,18 @@ describe("Template: recurring payment with report", () => {
     client = getClient();
     await authenticateClient(client);
     eoaAddress = getEOAAddress();
+
+    // A local stub replaces httpbin.org here: the gateway makes this request,
+    // not the test, so client-side mocking cannot intercept it — only a server
+    // the gateway can dial. See tests/utils/stubServer.ts.
+    stub = await startStubServerFor(client, (url) =>
+      Nodes.restApi({ id: "probe", name: "probe", url, method: "GET" }),
+    );
+    STUB = stub.baseUrl;
+  });
+
+  afterAll(async () => {
+    await stub?.close();
   });
 
   afterEach(async () => {
@@ -99,7 +116,7 @@ describe("Template: recurring payment with report", () => {
         Nodes.restApi({
           id: "telegram",
           name: "telegramSummary",
-          url: "https://httpbin.org/post",
+          url: `${STUB}/post`,
           method: "POST",
           body: JSON.stringify({ text: "Batch transfer complete" }),
           headers: { "Content-Type": "application/json" },

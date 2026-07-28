@@ -111,7 +111,13 @@ describe("createWorkflow Tests", () => {
     const notify = Nodes.restApi({
       id: "notification",
       name: "notification",
-      url: "http://localhost:19876/post",
+      // Never fetched: this test only creates and retrieves the workflow, it
+      // never triggers it. The URL used to point at v3's mock server on port
+      // 19876, which v4 does not run — reading as though that server still
+      // existed. `.invalid` is reserved by RFC 2606 and can never resolve, so
+      // it states outright that nothing here dials out. A test that *does*
+      // execute a REST node should use tests/utils/stubServer.ts instead.
+      url: "https://notify.invalid/post",
       method: "POST",
       body: "{}",
       headers: { "content-type": "application/json" },

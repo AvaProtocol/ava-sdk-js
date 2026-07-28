@@ -71,6 +71,11 @@ jobs:
         suite: [core, workflows, executions, triggers, nodes, templates]
 
     env:
+      # The gateway/worker run in containers, so a stub server bound on the
+      # runner host is not reachable at 127.0.0.1 from their point of view.
+      # docker-compose maps this name to the host (extra_hosts + host-gateway);
+      # tests/utils/stubServer.ts builds its base URL from it.
+      TEST_STUB_HOST: host.docker.internal
       # Secrets
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}
