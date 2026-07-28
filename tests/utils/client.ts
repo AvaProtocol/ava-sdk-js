@@ -17,6 +17,7 @@
 
 import { Wallet } from "ethers";
 import {
+  APIError,
   Client,
   type ClientOptions,
   type v4,
@@ -200,9 +201,26 @@ export async function createSmartWallet(
 }
 
 /**
- * Bulk cancel/delete a list of workflows; swallows individual
- * failures so the helper can run in a `finally` cleanup without
- * masking the original test failure.
+ * Workflows whose cleanup failed, keyed by id. A surviving workflow keeps
+ * executing on its schedule forever, so a leak must never pass silently —
+ * `assertNoLeakedWorkflows()` (wired into a global `afterAll`) turns this
+ * registry into a test failure.
+ */
+const leakedWorkflows = new Map<string, string>();
+
+/**
+ * Bulk cancel/delete a list of workflows and record any that survive.
+ *
+ * This helper still never throws: callers invoke it from `finally` /
+ * `afterEach`, where throwing would replace the real assertion error. But
+ * silence is what made a leak invisible for ten days — a live-gateway run on
+ * 2026-07-17 left an every-minute prod workflow behind that burned ~14.8K
+ * Moralis and GoPlus calls before anyone noticed. So a failed cancel now logs
+ * loudly and is registered; the global `afterAll` fails the run afterwards,
+ * once assertions have already been reported.
+ *
+ * A 404 means the workflow is already gone — tests that cancel explicitly and
+ * then clean up again hit this, and it is success, not a leak.
  */
 export async function removeCreatedWorkflows(
   client: Client,
@@ -212,10 +230,34 @@ export async function removeCreatedWorkflows(
     if (!id) continue;
     try {
       await client.workflows.cancel(id);
-    } catch {
-      // Ignore — test cleanup shouldn't drown out the assertion failure.
+      leakedWorkflows.delete(id);
+    } catch (error) {
+      if (error instanceof APIError && error.status === 404) {
+        leakedWorkflows.delete(id);
+        continue;
+      }
+      const reason = error instanceof Error ? error.message : String(error);
+      leakedWorkflows.set(id, reason);
+      console.error(
+        `[cleanup] LEAKED WORKFLOW ${id} — cancel failed: ${reason}. ` +
+          `It keeps executing on its schedule (and spending) until cancelled by hand.`,
+      );
     }
   }
+}
+
+/**
+ * Throws if any workflow survived cleanup. Wired into a global `afterAll` by
+ * `tests/utils/matchers.ts`, so every spec file enforces it without boilerplate.
+ */
+export function assertNoLeakedWorkflows(): void {
+  if (leakedWorkflows.size === 0) return;
+  const leaked = [...leakedWorkflows.entries()];
+  leakedWorkflows.clear();
+  throw new Error(
+    `${leaked.length} workflow(s) survived cleanup and are still running — cancel them by hand:\n` +
+      leaked.map(([id, reason]) => `  - ${id}: ${reason}`).join("\n"),
+  );
 }
 
 /**
