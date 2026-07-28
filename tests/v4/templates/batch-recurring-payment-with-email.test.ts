@@ -3,8 +3,9 @@
  *
  * Same shape as recurring-payment-with-report but driven by a cron
  * trigger and emitting via "email" (RestAPI -> SendGrid in production).
- * We use httpbin so the workflow can simulate without real SendGrid
- * credentials.
+ * We use a local stub server (tests/utils/stubServer.ts) so the workflow
+ * simulates without real SendGrid credentials and without depending on a
+ * third party being up.
  */
 
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";

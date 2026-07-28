@@ -5,8 +5,9 @@
  * user's wallet and emit a Telegram alert via RestAPI. The port keeps
  * the workflow shape (event trigger with from/to queries + RestAPI
  * node) and validates it survives create + simulate. We don't
- * actually call Telegram — the URL points at httpbin so the workflow
- * can run without a real bot token.
+ * actually call Telegram — the URL points at a local stub server
+ * (tests/utils/stubServer.ts), so the workflow runs without a real bot
+ * token and without depending on a third party being up.
  */
 
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";

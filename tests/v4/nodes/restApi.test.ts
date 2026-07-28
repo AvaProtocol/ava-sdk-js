@@ -46,7 +46,7 @@ import {
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
-import { startStubServer, stubUnreachableMessage, type StubServer } from "../../utils/stubServer";
+import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
 
@@ -70,18 +70,14 @@ describe("RestAPI Node Tests", () => {
     client = getClient();
     await authenticateClient(client);
 
-    stub = await startStubServer();
+    // Same helper the other stub-backed suites use: it starts the server, proves
+    // the gateway can reach it, and closes the listener before throwing if it
+    // cannot — an inline probe that threw first would leak the handle and leave
+    // Jest reporting an open handle instead of the reachability error.
+    stub = await startStubServerFor(client, (url) =>
+      Nodes.restApi({ id: "probe", name: "probe", url, method: "GET" }),
+    );
     STUB = stub.baseUrl;
-
-    // Fail here, once, with actionable guidance — otherwise an unreachable stub
-    // shows up as every assertion in the file failing for an opaque reason.
-    const probe = await client.nodes.run({
-      node: Nodes.restApi({ id: "rest", name: "rest", url: `${STUB}/get?probe=1`, method: "GET" }),
-      inputVariables: {},
-    });
-    if (!probe.success) {
-      throw new Error(stubUnreachableMessage(STUB, probe.error));
-    }
   });
 
   afterAll(async () => {
