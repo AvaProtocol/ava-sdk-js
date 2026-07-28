@@ -16,8 +16,13 @@ import {
   createSmartWallet,
   settingsFor,
 } from "../../utils/client";
+import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
+
+/** Local stand-in for httpbin — see tests/utils/stubServer.ts. */
+let STUB = "";
+let stub: StubServer;
 
 describe("workflows.simulate Tests", () => {
   let client: Client;
@@ -25,6 +30,18 @@ describe("workflows.simulate Tests", () => {
   beforeAll(async () => {
     client = getClient();
     await authenticateClient(client);
+
+    // A local stub replaces httpbin.org here: the gateway makes this request,
+    // not the test, so client-side mocking cannot intercept it — only a server
+    // the gateway can dial. See tests/utils/stubServer.ts.
+    stub = await startStubServerFor(client, (url) =>
+      Nodes.restApi({ id: "probe", name: "probe", url, method: "GET" }),
+    );
+    STUB = stub.baseUrl;
+  });
+
+  afterAll(async () => {
+    await stub?.close();
   });
 
   describe("Manual trigger + customCode", () => {
@@ -104,7 +121,7 @@ describe("workflows.simulate Tests", () => {
           Nodes.restApi({
             id: "rest",
             name: "rest",
-            url: "https://httpbin.org/get?from=sim",
+            url: `${STUB}/get?from=sim`,
             method: "GET",
             headers: { "User-Agent": "AvaProtocol-v4-Test" },
           }),
@@ -113,11 +130,8 @@ describe("workflows.simulate Tests", () => {
         inputVariables: { settings: settingsFor(wallet.address) },
       });
       const step = result.steps?.find((s) => s.id === "rest");
-      if (!step?.success) {
-        console.log("Skipping — httpbin unreachable");
-        return;
-      }
-      const inner = (step.output as { data: { data: any; status: number } }).data;
+      expect(step?.success).toBe(true);
+      const inner = (step!.output as { data: { data: any; status: number } }).data;
       expect(inner.status).toBe(200);
       expect(inner.data.args).toEqual({ from: "sim" });
     });

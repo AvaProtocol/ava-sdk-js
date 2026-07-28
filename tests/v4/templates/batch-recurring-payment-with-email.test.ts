@@ -17,8 +17,13 @@ import {
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
+import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
+
+/** Local stand-in for httpbin — see tests/utils/stubServer.ts. */
+let STUB = "";
+let stub: StubServer;
 
 describe("Template: batch recurring payment with email", () => {
   let client: Client;
@@ -29,6 +34,18 @@ describe("Template: batch recurring payment with email", () => {
     client = getClient();
     await authenticateClient(client);
     eoaAddress = getEOAAddress();
+
+    // A local stub replaces httpbin.org here: the gateway makes this request,
+    // not the test, so client-side mocking cannot intercept it — only a server
+    // the gateway can dial. See tests/utils/stubServer.ts.
+    stub = await startStubServerFor(client, (url) =>
+      Nodes.restApi({ id: "probe", name: "probe", url, method: "GET" }),
+    );
+    STUB = stub.baseUrl;
+  });
+
+  afterAll(async () => {
+    await stub?.close();
   });
 
   afterEach(async () => {
@@ -87,7 +104,7 @@ describe("Template: batch recurring payment with email", () => {
         Nodes.restApi({
           id: "email",
           name: "email",
-          url: "https://httpbin.org/post",
+          url: `${STUB}/post`,
           method: "POST",
           body: JSON.stringify({ subject: "Batch transfer complete" }),
           headers: { "Content-Type": "application/json" },
