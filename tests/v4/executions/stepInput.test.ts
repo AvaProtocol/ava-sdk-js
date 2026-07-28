@@ -24,8 +24,6 @@ import { startStubServerFor, type StubServer } from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
 
-
-
 /** Local stand-in for httpbin — see tests/utils/stubServer.ts. */
 let STUB = "";
 let stub: StubServer;
