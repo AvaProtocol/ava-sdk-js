@@ -51,7 +51,10 @@ describe("Template: Telegram alert on transfer", () => {
     const created = await client.workflows.create({
       name: "Telegram alert on transfer",
       smartWalletAddress: wallet.address,
-      maxExecution: 0,
+      // An event trigger fires at whatever rate the chain produces matching
+      // logs, so the gateway's execution cap is its only static bound. 0 used
+      // to mean unlimited and is now rejected — pass an explicit budget.
+      maxExecution: 10,
       trigger: Triggers.event({
         id: "trigger",
         name: "transferMonitor",

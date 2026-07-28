@@ -101,7 +101,7 @@ describe("executions.retrieve Tests", () => {
     const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
-      trigger: Triggers.cron({ id: "trigger", name: "cronTrigger", schedule: ["* * * * *"] }),
+      trigger: Triggers.cron({ id: "trigger", name: "cronTrigger", schedule: ["0 * * * *"] }),
     });
     const wfId = created.id as string;
     createdWorkflowIds.push(wfId);
