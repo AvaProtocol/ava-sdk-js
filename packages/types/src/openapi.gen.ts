@@ -526,6 +526,121 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/wallets/{address}/policies:prepare": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Allocate a grant and return the EIP-712 payload the owner signs
+         * @description Allocates the policy id, validation entity, and session signer, builds
+         *     the exact `installValidation` calldata the signature will commit to,
+         *     and returns the typed data for `eth_signTypedData_v4`. Stores nothing:
+         *     a prepare that is never submitted leaves no state behind. The echoed
+         *     fields must be passed back verbatim to `:submit` — the gateway
+         *     recomputes everything from them, so tampering only produces a
+         *     signature that no longer verifies.
+         */
+        readonly post: operations["prepareWalletPolicy"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/policies:submit": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Submit the owner's signature and persist the grant
+         * @description Recomputes the grant from the echoed prepare fields, verifies the
+         *     signature recovers to the authenticated owner, re-checks the entity
+         *     allocation inside the write, and stores the policy as `pending`. The
+         *     install itself rides the first workflow operation on this wallet —
+         *     nothing reaches the chain here.
+         */
+        readonly post: operations["submitWalletPolicy"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/policies": {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        /**
+         * List the wallet's session policies
+         * @description Grant material (calldata, signatures) is never echoed.
+         */
+        readonly get: operations["listWalletPolicies"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/policies/{policyId}": {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly policyId: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        /** Get one session policy */
+        readonly get: operations["getWalletPolicy"];
+        readonly put?: never;
+        readonly post?: never;
+        /**
+         * Revoke a session policy
+         * @description A `pending` grant (never used on-chain) is deleted outright — nothing
+         *     was installed, so nothing remains. An `active` grant stops authorizing
+         *     immediately, but its on-chain validation still exists until the owner
+         *     executes `uninstallValidation`; the response says which case applied.
+         */
+        readonly delete: operations["revokeWalletPolicy"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/secrets": {
         readonly parameters: {
             readonly query?: never;
@@ -1713,6 +1828,124 @@ export interface components {
         readonly OperatorList: {
             readonly data: readonly components["schemas"]["OperatorInfo"][];
         };
+        /** @description One contract the agent may call, scoped to selectors. */
+        readonly AllowedAction: {
+            readonly target: components["schemas"]["EthereumAddress"];
+            /** @description 4-byte function selectors permitted on the target. */
+            readonly selectors: readonly string[];
+        };
+        /**
+         * @description Cumulative ERC-20 spend cap, enforced on-chain at execution. The
+         *     token must appear as an `allowedActions` target.
+         */
+        readonly Erc20SpendCap: {
+            readonly token: components["schemas"]["EthereumAddress"];
+            /**
+             * @description Total cap in the token's smallest unit (decimal string, no reset).
+             * @example 500000000
+             */
+            readonly amount: string;
+        };
+        readonly PreparePolicyRequest: {
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly agentLabel: string;
+            readonly justification?: string;
+            readonly allowedActions: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCap: components["schemas"]["Erc20SpendCap"];
+            /**
+             * Format: int64
+             * @description Grant lifetime, relative (skew-proof). Becomes an absolute validUntil.
+             */
+            readonly expiresInSeconds: number;
+        };
+        readonly PreparedPolicy: {
+            readonly policyId: components["schemas"]["Ulid"];
+            readonly chainId: components["schemas"]["ChainId"];
+            /**
+             * Format: int64
+             * @description The validation entity allocated for this grant (provisional until submit).
+             */
+            readonly entityId: number;
+            readonly sessionSigner: components["schemas"]["EthereumAddress"];
+            /**
+             * Format: int64
+             * @description Unix seconds; bounds signing → first use, NOT the grant lifetime.
+             */
+            readonly deadline: number;
+            /**
+             * Format: int64
+             * @description Absolute grant expiry, unix milliseconds. Echo verbatim to submit.
+             */
+            readonly validUntil: number;
+            /** @description The EIP-712 hash the typed data produces, for client-side verification. */
+            readonly digest: string;
+            /** @description The exact eth_signTypedData_v4 payload for the owner's wallet. */
+            readonly typedData: {
+                readonly [key: string]: unknown;
+            };
+        };
+        readonly SubmitPolicyRequest: {
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly policyId: components["schemas"]["Ulid"];
+            /** Format: int64 */
+            readonly entityId: number;
+            /** Format: int64 */
+            readonly deadline: number;
+            /**
+             * Format: int64
+             * @description The ABSOLUTE expiry from prepare. It is baked into the signed calldata; recomputing it would change the digest.
+             */
+            readonly validUntil: number;
+            readonly agentLabel: string;
+            readonly justification?: string;
+            readonly allowedActions: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCap: components["schemas"]["Erc20SpendCap"];
+            /** @description The owner's 65-byte signature over the prepared digest. */
+            readonly signature: string;
+        };
+        readonly SessionPolicy: {
+            readonly id: components["schemas"]["Ulid"];
+            readonly runner: components["schemas"]["EthereumAddress"];
+            readonly chainId: components["schemas"]["ChainId"];
+            /**
+             * @description pending = signed and stored, install not yet on-chain (revocable
+             *     for free). active = install applied. revoked = grants nothing.
+             * @enum {string}
+             */
+            readonly status: "pending" | "active" | "revoked";
+            /** Format: int64 */
+            readonly entityId: number;
+            readonly sessionSigner: components["schemas"]["EthereumAddress"];
+            readonly agentLabel: string;
+            readonly justification?: string;
+            readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
+            /**
+             * Format: int64
+             * @description Unix milliseconds.
+             */
+            readonly validUntil: number;
+            /**
+             * Format: int64
+             * @description Unix milliseconds.
+             */
+            readonly createdAt: number;
+        };
+        readonly SessionPolicyList: {
+            readonly items: readonly components["schemas"]["SessionPolicy"][];
+        };
+        readonly RevokePolicyResponse: {
+            /**
+             * @description deleted = was pending, nothing was ever installed. revoked = retained for audit.
+             * @enum {string}
+             */
+            readonly status: "deleted" | "revoked";
+            /**
+             * @description True when the grant's validation is still installed on the
+             *     account and needs the owner's uninstallValidation to clear.
+             */
+            readonly onChainCleanupRequired: boolean;
+        };
     };
     responses: {
         /** @description Request validation failed. */
@@ -2497,6 +2730,173 @@ export interface operations {
                 };
             };
             readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly prepareWalletPolicy: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PreparePolicyRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Payload to sign, plus the allocations submit must echo. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PreparedPolicy"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly submitWalletPolicy: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["SubmitPolicyRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Grant stored; the gateway may now execute within it. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SessionPolicy"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            /**
+             * @description The validation entity was taken by another grant while this one
+             *     was being signed. Prepare again.
+             */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    readonly listWalletPolicies: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Policies for this wallet, newest first. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SessionPolicyList"];
+                };
+            };
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getWalletPolicy: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly policyId: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The policy. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SessionPolicy"];
+                };
+            };
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly revokeWalletPolicy: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly policyId: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Revocation outcome. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["RevokePolicyResponse"];
+                };
+            };
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
         };
     };

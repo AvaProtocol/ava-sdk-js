@@ -91,6 +91,21 @@ export type WithdrawResponse = components["schemas"]["WithdrawResponse"];
 export type NonceResponse = components["schemas"]["NonceResponse"];
 
 // ---------------------------------------------------------------------
+// Session policies — the grant that lets the gateway execute for a wallet
+// ---------------------------------------------------------------------
+
+export type SessionPolicy = components["schemas"]["SessionPolicy"];
+export type SessionPolicyList = components["schemas"]["SessionPolicyList"];
+// Status is an inline enum on SessionPolicy rather than its own schema, so
+// it is derived from the parent — keeping it in step automatically.
+export type SessionPolicyStatus = SessionPolicy["status"];
+export type PreparePolicyRequest = components["schemas"]["PreparePolicyRequest"];
+export type PreparedPolicy = components["schemas"]["PreparedPolicy"];
+export type SubmitPolicyRequest = components["schemas"]["SubmitPolicyRequest"];
+export type AllowedAction = components["schemas"]["AllowedAction"];
+export type Erc20SpendCap = components["schemas"]["Erc20SpendCap"];
+
+// ---------------------------------------------------------------------
 // Secrets, tokens, operators, auth, problem
 // ---------------------------------------------------------------------
 
