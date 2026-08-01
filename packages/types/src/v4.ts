@@ -104,6 +104,7 @@ export type PreparedPolicy = components["schemas"]["PreparedPolicy"];
 export type SubmitPolicyRequest = components["schemas"]["SubmitPolicyRequest"];
 export type AllowedAction = components["schemas"]["AllowedAction"];
 export type Erc20SpendCap = components["schemas"]["Erc20SpendCap"];
+export type RevokePolicyResponse = components["schemas"]["RevokePolicyResponse"];
 
 // ---------------------------------------------------------------------
 // Secrets, tokens, operators, auth, problem

@@ -126,13 +126,17 @@ export class PoliciesResource {
    * validation module is still on the account and clearing it needs a
    * separate on-chain uninstall — the gateway stops using the grant either
    * way, but only the first case leaves nothing behind.
+   *
+   * The response says which happened: `deleted` when the grant never reached
+   * the chain, `revoked` when the record is retained for audit because a
+   * module is still installed.
    */
   revoke(
     address: string,
     policyId: string,
     chainId: number,
-  ): Promise<v4.SessionPolicy> {
-    return this.transport.request<v4.SessionPolicy>({
+  ): Promise<v4.RevokePolicyResponse> {
+    return this.transport.request<v4.RevokePolicyResponse>({
       path: `/wallets/${encodeURIComponent(address)}/policies/${encodeURIComponent(policyId)}`,
       method: "DELETE",
       query: { chainId },
