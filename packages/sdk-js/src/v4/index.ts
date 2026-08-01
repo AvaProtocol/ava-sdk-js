@@ -48,6 +48,8 @@ export { OperatorsResource } from "./resources/operators";
 export { SecretsResource } from "./resources/secrets";
 export { TokensResource } from "./resources/tokens";
 export { TriggersResource } from "./resources/triggers";
+export { PoliciesResource } from "./resources/policies";
+export type { TypedDataSigner } from "./resources/policies";
 export { WalletsResource } from "./resources/wallets";
 export { WorkflowsResource } from "./resources/workflows";
 
