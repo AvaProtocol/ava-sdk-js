@@ -95,14 +95,19 @@ export class PoliciesResource {
   /**
    * GET /wallets/{address}/policies — the wallet's grants, newest first.
    *
+   * `chainId` is optional: omitted, the gateway uses the JWT's `aud` chain.
+   *
    * Grant material (the install calldata and the owner's signature) is never
    * echoed back; this is the manage screen's read, not a way to recover an
    * authorization.
    */
-  list(address: string, chainId: number): Promise<v4.SessionPolicyList> {
+  list(
+    address: string,
+    opts?: { chainId?: number },
+  ): Promise<v4.SessionPolicyList> {
     return this.transport.request<v4.SessionPolicyList>({
       path: `/wallets/${encodeURIComponent(address)}/policies`,
-      query: { chainId },
+      query: opts,
     });
   }
 
@@ -110,11 +115,11 @@ export class PoliciesResource {
   get(
     address: string,
     policyId: string,
-    chainId: number,
+    opts?: { chainId?: number },
   ): Promise<v4.SessionPolicy> {
     return this.transport.request<v4.SessionPolicy>({
       path: `/wallets/${encodeURIComponent(address)}/policies/${encodeURIComponent(policyId)}`,
-      query: { chainId },
+      query: opts,
     });
   }
 
@@ -134,12 +139,12 @@ export class PoliciesResource {
   revoke(
     address: string,
     policyId: string,
-    chainId: number,
+    opts?: { chainId?: number },
   ): Promise<v4.RevokePolicyResponse> {
     return this.transport.request<v4.RevokePolicyResponse>({
       path: `/wallets/${encodeURIComponent(address)}/policies/${encodeURIComponent(policyId)}`,
       method: "DELETE",
-      query: { chainId },
+      query: opts,
     });
   }
 

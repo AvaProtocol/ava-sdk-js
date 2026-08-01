@@ -43,13 +43,11 @@ function signTypedDataWithEthers(privateKey: string) {
 
 describe("policies (live gateway)", () => {
   let client: Client;
-  let owner: string;
   let wallet: string;
 
   beforeAll(async () => {
     client = getClient();
     await authenticateClient(client);
-    owner = new EthersWallet(testPrivateKey()).address;
 
     // Salt 0 is the owner's default wallet; ensure-and-register is idempotent.
     const w = await client.wallets.create({ salt: "0" });
@@ -68,7 +66,7 @@ describe("policies (live gateway)", () => {
     expect(prepared.validUntil).toBeGreaterThan(Date.now());
 
     // Prepare stores nothing: an abandoned grant screen leaves no policy.
-    const after = await client.policies.list(wallet, TEST_AUTH_CHAIN_ID);
+    const after = await client.policies.list(wallet);
     expect(after.items.some((p) => p.id === prepared.policyId)).toBe(false);
   }, 120_000);
 
@@ -83,31 +81,35 @@ describe("policies (live gateway)", () => {
     // Pending, not active: the install rides the first workflow operation.
     expect(policy.status).toBe("pending");
 
-    const listed = await client.policies.list(wallet, TEST_AUTH_CHAIN_ID);
+    const listed = await client.policies.list(wallet);
     expect(listed.items.some((p) => p.id === policy.id)).toBe(true);
 
     // Grant material must never be echoed back — this is a read for the
     // manage screen, not a way to recover an authorization.
-    const fetched = await client.policies.get(wallet, policy.id, TEST_AUTH_CHAIN_ID);
+    const fetched = await client.policies.get(wallet, policy.id);
     expect(JSON.stringify(fetched)).not.toContain("installCall");
     expect(JSON.stringify(fetched)).not.toContain("ownerSignature");
 
     // Revoking before first use is complete on its own: nothing was installed.
     // Never used, so nothing was installed: the record goes away entirely
     // rather than being retained for audit.
-    const revoked = await client.policies.revoke(wallet, policy.id, TEST_AUTH_CHAIN_ID);
+    const revoked = await client.policies.revoke(wallet, policy.id);
     expect(revoked.status).toBe("deleted");
   }, 180_000);
 
   test("a signature from someone other than the owner is refused", async () => {
     const stranger = EthersWallet.createRandom();
+    // A label unique to this attempt, so the assertion below can only be
+    // satisfied by this grant's absence — not by it happening to look like
+    // some other policy on the wallet.
+    const label = `ImposterBot-${Date.now()}`;
+
     await expect(
-      client.policies.grant(wallet, request(), signTypedDataWithEthers(stranger.privateKey)),
+      client.policies.grant(wallet, request(label), signTypedDataWithEthers(stranger.privateKey)),
     ).rejects.toThrow();
 
-    // And nothing was stored for it.
-    const listed = await client.policies.list(wallet, TEST_AUTH_CHAIN_ID);
-    expect(listed.items.every((p) => p.status !== "pending" || p.agentLabel !== "ImposterBot")).toBe(true);
+    const listed = await client.policies.list(wallet);
+    expect(listed.items.some((p) => p.agentLabel === label)).toBe(false);
   }, 180_000);
 
   function request(label = "TradingBot"): v4.PreparePolicyRequest {
