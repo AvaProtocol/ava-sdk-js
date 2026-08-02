@@ -16,7 +16,12 @@ import { Wallet as EthersWallet } from "ethers";
 import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
-import { getClient, authenticateClient, testPrivateKey, TEST_AUTH_CHAIN_ID } from "../../utils/client";
+import {
+  getClient,
+  authenticateClient,
+  testPrivateKey,
+  TEST_AUTH_CHAIN_ID,
+} from "../../utils/client";
 
 // Sepolia test USDC — the same token the Uniswap fixtures use.
 const TOKEN = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
@@ -30,14 +35,23 @@ const APPROVE_SELECTOR = "0x095ea7b3";
  */
 function signTypedDataWithEthers(privateKey: string) {
   const signer = new EthersWallet(privateKey);
-  return async (typedData: Readonly<Record<string, unknown>>): Promise<string> => {
+  return async (
+    typedData: Readonly<Record<string, unknown>>
+  ): Promise<string> => {
     const { domain, types, message } = typedData as {
       domain: Record<string, unknown>;
       types: Record<string, unknown>;
       message: Record<string, unknown>;
     };
-    const { EIP712Domain: _ignored, ...rest } = types as Record<string, unknown>;
-    return signer.signTypedData(domain as never, rest as never, message as never);
+    const { EIP712Domain: _ignored, ...rest } = types as Record<
+      string,
+      unknown
+    >;
+    return signer.signTypedData(
+      domain as never,
+      rest as never,
+      message as never
+    );
   };
 }
 
@@ -74,27 +88,33 @@ describe("policies (live gateway)", () => {
     const policy = await client.policies.grant(
       wallet,
       request(),
-      signTypedDataWithEthers(testPrivateKey()),
+      signTypedDataWithEthers(testPrivateKey())
     );
 
-    expect(policy.id).toBeTruthy();
-    // Pending, not active: the install rides the first workflow operation.
-    expect(policy.status).toBe("pending");
+    try {
+      expect(policy.id).toBeTruthy();
+      // Pending, not active: the install rides the first workflow operation.
+      expect(policy.status).toBe("pending");
 
-    const listed = await client.policies.list(wallet);
-    expect(listed.items.some((p) => p.id === policy.id)).toBe(true);
+      const listed = await client.policies.list(wallet);
+      expect(listed.items.some((p) => p.id === policy.id)).toBe(true);
 
-    // Grant material must never be echoed back — this is a read for the
-    // manage screen, not a way to recover an authorization.
-    const fetched = await client.policies.get(wallet, policy.id);
-    expect(JSON.stringify(fetched)).not.toContain("installCall");
-    expect(JSON.stringify(fetched)).not.toContain("ownerSignature");
+      // Grant material must never be echoed back — this is a read for the
+      // manage screen, not a way to recover an authorization.
+      const fetched = await client.policies.get(wallet, policy.id);
+      expect(JSON.stringify(fetched)).not.toContain("installCall");
+      expect(JSON.stringify(fetched)).not.toContain("ownerSignature");
 
-    // Revoking before first use is complete on its own: nothing was installed.
-    // Never used, so nothing was installed: the record goes away entirely
-    // rather than being retained for audit.
-    const revoked = await client.policies.revoke(wallet, policy.id);
-    expect(revoked.status).toBe("deleted");
+      // Never used, so nothing was installed: the record goes away entirely
+      // rather than being retained for audit.
+      const revoked = await client.policies.revoke(wallet, policy.id);
+      expect(revoked.status).toBe("deleted");
+    } finally {
+      // A failed assertion above must not leave a pending grant behind on a
+      // wallet other tests share. Revoke is idempotent enough that the
+      // happy-path call above is harmless to repeat.
+      await client.policies.revoke(wallet, policy.id).catch(() => undefined);
+    }
   }, 180_000);
 
   test("a signature from someone other than the owner is refused", async () => {
@@ -105,13 +125,16 @@ describe("policies (live gateway)", () => {
     const label = `ImposterBot-${Date.now()}`;
 
     await expect(
-      client.policies.grant(wallet, request(label), signTypedDataWithEthers(stranger.privateKey)),
+      client.policies.grant(
+        wallet,
+        request(label),
+        signTypedDataWithEthers(stranger.privateKey)
+      )
     ).rejects.toThrow();
 
     const listed = await client.policies.list(wallet);
     expect(listed.items.some((p) => p.agentLabel === label)).toBe(false);
   }, 180_000);
-
 
   // The path Studio actually takes: chips → SessionPolicyActions → a grant the
   // gateway accepts. Proves the builder's output is a shape the API takes, not
@@ -126,11 +149,13 @@ describe("policies (live gateway)", () => {
     const policy = await client.policies.grant(
       wallet,
       { ...request("ChipBuiltBot"), allowedActions },
-      signTypedDataWithEthers(testPrivateKey()),
+      signTypedDataWithEthers(testPrivateKey())
     );
-    expect(policy.status).toBe("pending");
-
-    await client.policies.revoke(wallet, policy.id);
+    try {
+      expect(policy.status).toBe("pending");
+    } finally {
+      await client.policies.revoke(wallet, policy.id).catch(() => undefined);
+    }
   }, 180_000);
 
   function request(label = "TradingBot"): v4.PreparePolicyRequest {

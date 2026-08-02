@@ -16,9 +16,15 @@ describe("SessionPolicyActions", () => {
   // Selectors verified against `cast sig`. If one of these ever changes it is
   // a mistake, not a refactor — pinning them is the whole point.
   test("selectors are the real 4-byte hashes", () => {
-    expect(SessionPolicyActions.erc20Approve(USDC).selectors).toEqual(["0x095ea7b3"]);
-    expect(SessionPolicyActions.erc20Transfer(USDC).selectors).toEqual(["0xa9059cbb"]);
-    expect(SessionPolicyActions.uniswapV3Swap(SEPOLIA).selectors).toEqual(["0x04e45aaf"]);
+    expect(SessionPolicyActions.erc20Approve(USDC).selectors).toEqual([
+      "0x095ea7b3",
+    ]);
+    expect(SessionPolicyActions.erc20Transfer(USDC).selectors).toEqual([
+      "0xa9059cbb",
+    ]);
+    expect(SessionPolicyActions.uniswapV3Swap(SEPOLIA).selectors).toEqual([
+      "0x04e45aaf",
+    ]);
   });
 
   test("uniswapV3Swap resolves the router from the shared protocol catalog", () => {
@@ -30,18 +36,28 @@ describe("SessionPolicyActions", () => {
 
   // Better to refuse than to grant a zero address or the wrong chain's router.
   test("an unknown chain is refused, with the way out in the message", () => {
-    expect(() => SessionPolicyActions.uniswapV3Swap(999_999)).toThrow(/not known for chain 999999/);
-    expect(() => SessionPolicyActions.uniswapV3Swap(999_999)).toThrow(/explicit target/);
+    expect(() => SessionPolicyActions.uniswapV3Swap(999_999)).toThrow(
+      /not known for chain 999999/
+    );
+    expect(() => SessionPolicyActions.uniswapV3Swap(999_999)).toThrow(
+      /explicit/
+    );
   });
 
   test("an explicit target overrides the catalog", () => {
     const custom = "0x00000000000000000000000000000000deadBeef";
-    expect(SessionPolicyActions.uniswapV3Swap(999_999, { target: custom }).target).toBe(custom);
+    expect(
+      SessionPolicyActions.uniswapV3Swap(999_999, { target: custom }).target
+    ).toBe(custom);
   });
 
   test("malformed addresses are rejected rather than passed through", () => {
-    expect(() => SessionPolicyActions.erc20Approve("0x123")).toThrow(/20-byte address/);
-    expect(() => SessionPolicyActions.erc20Approve("not-an-address")).toThrow(/20-byte address/);
+    expect(() => SessionPolicyActions.erc20Approve("0x123")).toThrow(
+      /20-byte address/
+    );
+    expect(() => SessionPolicyActions.erc20Approve("not-an-address")).toThrow(
+      /20-byte address/
+    );
   });
 
   describe("custom", () => {
@@ -53,12 +69,18 @@ describe("SessionPolicyActions", () => {
     // An empty list reads as "allow this contract" but grants nothing, so the
     // agent fails at validation with no clue why.
     test("refuses an empty selector list", () => {
-      expect(() => SessionPolicyActions.custom(USDC, [])).toThrow(/grants nothing/);
+      expect(() => SessionPolicyActions.custom(USDC, [])).toThrow(
+        /grants nothing/
+      );
     });
 
     test("refuses a selector that is not 4 bytes", () => {
-      expect(() => SessionPolicyActions.custom(USDC, ["0x1234"])).toThrow(/4 bytes/);
-      expect(() => SessionPolicyActions.custom(USDC, ["0x095ea7b3ff"])).toThrow(/4 bytes/);
+      expect(() => SessionPolicyActions.custom(USDC, ["0x1234"])).toThrow(
+        /4 bytes/
+      );
+      expect(() => SessionPolicyActions.custom(USDC, ["0x095ea7b3ff"])).toThrow(
+        /4 bytes/
+      );
     });
   });
 
@@ -71,7 +93,9 @@ describe("SessionPolicyActions", () => {
         SessionPolicyActions.erc20Transfer(USDC),
       ]);
       expect(merged).toHaveLength(1);
-      expect([...merged[0].selectors].sort()).toEqual(["0x095ea7b3", "0xa9059cbb"].sort());
+      expect([...merged[0].selectors].sort()).toEqual(
+        ["0x095ea7b3", "0xa9059cbb"].sort()
+      );
     });
 
     test("keeps distinct targets apart", () => {
@@ -102,5 +126,31 @@ describe("SessionPolicyActions", () => {
       expect(a.selectors.length).toBeGreaterThan(0);
       for (const s of a.selectors) expect(s).toMatch(/^0x[0-9a-fA-F]{8}$/);
     }
+  });
+});
+
+// merge() matches targets case-insensitively but returns the target as first
+// supplied. Both forms satisfy the API (EthereumAddress is "lowercase or
+// checksummed"), so lowercasing would not be wrong — it would just mean
+// merge([a]) does not return `a`, and a checksummed address from Studio comes
+// back flattened for the manage screen to render.
+describe("merge preserves the caller's address casing", () => {
+  const CHECKSUMMED = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+
+  test("a single action round-trips unchanged", () => {
+    const action = SessionPolicyActions.erc20Approve(CHECKSUMMED);
+    expect(SessionPolicyActions.merge([action])).toEqual([action]);
+  });
+
+  test("still merges when the same address is supplied in different cases", () => {
+    const merged = SessionPolicyActions.merge([
+      SessionPolicyActions.erc20Approve(CHECKSUMMED),
+      SessionPolicyActions.erc20Transfer(CHECKSUMMED.toLowerCase()),
+    ]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].target).toBe(CHECKSUMMED); // first-seen form wins
+    expect([...merged[0].selectors].sort()).toEqual(
+      ["0x095ea7b3", "0xa9059cbb"].sort()
+    );
   });
 });

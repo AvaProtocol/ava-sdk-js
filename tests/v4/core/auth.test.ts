@@ -62,7 +62,9 @@ describe("Authentication Tests", () => {
       const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
-        const wf = await client.workflows.create(createFromTemplate(wallet.address));
+        const wf = await client.workflows.create(
+          createFromTemplate(wallet.address)
+        );
         workflowId = wf.id as string;
         expect(workflowId).toHaveLength(26);
       } finally {
@@ -74,7 +76,9 @@ describe("Authentication Tests", () => {
       const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
-        const created = await client.workflows.create(createFromTemplate(wallet.address));
+        const created = await client.workflows.create(
+          createFromTemplate(wallet.address)
+        );
         workflowId = created.id as string;
         const fetched = await client.workflows.retrieve(workflowId);
         expect(fetched.id).toEqual(workflowId);
@@ -89,7 +93,9 @@ describe("Authentication Tests", () => {
       const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
-        const created = await client.workflows.create(createFromTemplate(wallet.address));
+        const created = await client.workflows.create(
+          createFromTemplate(wallet.address)
+        );
         workflowId = created.id as string;
         const list = await client.workflows.list({
           smartWalletAddress: [wallet.address],
@@ -104,7 +110,9 @@ describe("Authentication Tests", () => {
       const wallet = await createSmartWallet(client);
       let workflowId: string | undefined;
       try {
-        const created = await client.workflows.create(createFromTemplate(wallet.address));
+        const created = await client.workflows.create(
+          createFromTemplate(wallet.address)
+        );
         workflowId = created.id as string;
         const paused = await client.workflows.pause(workflowId);
         expect(paused.status).toBe("disabled");
@@ -115,12 +123,18 @@ describe("Authentication Tests", () => {
 
     test("workflows.cancel deletes the workflow", async () => {
       const wallet = await createSmartWallet(client);
-      const created = await client.workflows.create(createFromTemplate(wallet.address));
+      const created = await client.workflows.create(
+        createFromTemplate(wallet.address)
+      );
       const workflowId = created.id as string;
-      await expect(client.workflows.cancel(workflowId)).resolves.toBeUndefined();
-      await expect(client.workflows.retrieve(workflowId)).rejects.toMatchObject({
-        status: 404,
-      });
+      await expect(
+        client.workflows.cancel(workflowId)
+      ).resolves.toBeUndefined();
+      await expect(client.workflows.retrieve(workflowId)).rejects.toMatchObject(
+        {
+          status: 404,
+        }
+      );
     });
   });
 
@@ -177,7 +191,11 @@ describe("Authentication Tests", () => {
       // connectivity-only rollout state).
       const c = getClient();
       const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), { uri: TEST_AUTH_URI, chainId: 56, version });
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 56,
+        version,
+      });
       expect(res.token).toBeTruthy();
       // The JWT body should encode the requested chain id in the
       // audience claim — that's how downstream chain-routed handlers
@@ -192,10 +210,11 @@ describe("Authentication Tests", () => {
       const payload = await buildAuthPayload(client);
       // Re-sign the message with a different key — verifier will
       // reject because the recovered address doesn't match ownerAddress.
-      const otherKey = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
+      const otherKey =
+        "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
       const badSig = await generateSignature(payload.message, otherKey);
       await expect(
-        client.auth.exchange({ ...payload, signature: badSig }),
+        client.auth.exchange({ ...payload, signature: badSig })
       ).rejects.toMatchObject({ status: 401 });
     });
   });
@@ -209,32 +228,44 @@ describe("Authentication Tests", () => {
 
     test("workflows.create rejects with 401", async () => {
       await expect(
-        client.workflows.create(createFromTemplate(eoaAddress)),
+        client.workflows.create(createFromTemplate(eoaAddress))
       ).rejects.toMatchObject({ status: 401 });
     });
 
     test("workflows.list rejects with 401", async () => {
-      await expect(client.workflows.list()).rejects.toMatchObject({ status: 401 });
+      await expect(client.workflows.list()).rejects.toMatchObject({
+        status: 401,
+      });
     });
 
     test("workflows.retrieve rejects with 401", async () => {
-      await expect(client.workflows.retrieve("01ANYULID")).rejects.toBeInstanceOf(APIError);
+      await expect(
+        client.workflows.retrieve("01ANYULID")
+      ).rejects.toBeInstanceOf(APIError);
     });
 
     test("workflows.pause rejects with 401", async () => {
-      await expect(client.workflows.pause("01ANYULID")).rejects.toBeInstanceOf(APIError);
+      await expect(client.workflows.pause("01ANYULID")).rejects.toBeInstanceOf(
+        APIError
+      );
     });
 
     test("workflows.cancel rejects with 401", async () => {
-      await expect(client.workflows.cancel("01ANYULID")).rejects.toBeInstanceOf(APIError);
+      await expect(client.workflows.cancel("01ANYULID")).rejects.toBeInstanceOf(
+        APIError
+      );
     });
 
     test("wallets.list rejects with 401", async () => {
-      await expect(client.wallets.list()).rejects.toMatchObject({ status: 401 });
+      await expect(client.wallets.list()).rejects.toMatchObject({
+        status: 401,
+      });
     });
 
     test("wallets.create rejects with 401", async () => {
-      await expect(client.wallets.create({ salt: "1" })).rejects.toMatchObject({ status: 401 });
+      await expect(client.wallets.create({ salt: "1" })).rejects.toMatchObject({
+        status: 401,
+      });
     });
   });
 });

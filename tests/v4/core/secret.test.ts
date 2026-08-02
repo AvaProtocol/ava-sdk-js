@@ -48,7 +48,7 @@ function nextSecretSuffix(): string {
 // errors — mirrors v3's removeCreatedSecrets cleanup helper.
 async function cleanupSecrets(
   client: Client,
-  entries: Array<{ name: string; workflowId?: string; orgId?: string }>,
+  entries: Array<{ name: string; workflowId?: string; orgId?: string }>
 ): Promise<void> {
   for (const e of entries) {
     try {
@@ -66,7 +66,11 @@ describe("secret Tests", () => {
   let client: Client;
   let client2: Client;
   const createdWorkflowIds: string[] = [];
-  const createdSecrets: Array<{ name: string; workflowId?: string; orgId?: string }> = [];
+  const createdSecrets: Array<{
+    name: string;
+    workflowId?: string;
+    orgId?: string;
+  }> = [];
 
   beforeAll(async () => {
     client = getClient();
@@ -137,7 +141,9 @@ describe("secret Tests", () => {
 
     test("create secret at user level succeeds", async () => {
       const name = `dummysecret_${nextSecretSuffix()}`;
-      await expect(client.secrets.put(name, { value: "value" })).resolves.toBeUndefined();
+      await expect(
+        client.secrets.put(name, { value: "value" })
+      ).resolves.toBeUndefined();
       createdSecrets.push({ name });
       // Verify deletion succeeds — proves the secret existed.
       await expect(client.secrets.delete(name)).resolves.toBeUndefined();
@@ -147,14 +153,18 @@ describe("secret Tests", () => {
 
     test("create secret at workflow level", async () => {
       const name = `dummysecret_${nextSecretSuffix()}`;
-      const workflowId = `01ABC${nextSecretSuffix()}`.replace(/_/g, "0").slice(0, 26);
+      const workflowId = `01ABC${nextSecretSuffix()}`
+        .replace(/_/g, "0")
+        .slice(0, 26);
 
       await expect(
-        client.secrets.put(name, { value: "value", workflowId }),
+        client.secrets.put(name, { value: "value", workflowId })
       ).resolves.toBeUndefined();
       createdSecrets.push({ name, workflowId });
 
-      await expect(client.secrets.delete(name, { workflowId })).resolves.toBeUndefined();
+      await expect(
+        client.secrets.delete(name, { workflowId })
+      ).resolves.toBeUndefined();
       createdSecrets.pop();
     });
 
@@ -194,7 +204,9 @@ describe("secret Tests", () => {
     test("delete at workflowId scope succeeds", async () => {
       const userName = `abc_${nextSecretSuffix()}`;
       const workflowName = `def_${nextSecretSuffix()}`;
-      const workflowId = `01ABC${nextSecretSuffix()}`.replace(/_/g, "0").slice(0, 26);
+      const workflowId = `01ABC${nextSecretSuffix()}`
+        .replace(/_/g, "0")
+        .slice(0, 26);
 
       await client.secrets.put(userName, { value: "value1" });
       createdSecrets.push({ name: userName });
@@ -203,18 +215,26 @@ describe("secret Tests", () => {
       createdSecrets.push({ name: workflowName, workflowId });
 
       await expect(
-        client.secrets.delete(workflowName, { workflowId }),
+        client.secrets.delete(workflowName, { workflowId })
       ).resolves.toBeUndefined();
-      createdSecrets.splice(createdSecrets.findIndex((s) => s.name === workflowName), 1);
+      createdSecrets.splice(
+        createdSecrets.findIndex((s) => s.name === workflowName),
+        1
+      );
 
       await expect(client.secrets.delete(userName)).resolves.toBeUndefined();
-      createdSecrets.splice(createdSecrets.findIndex((s) => s.name === userName), 1);
+      createdSecrets.splice(
+        createdSecrets.findIndex((s) => s.name === userName),
+        1
+      );
     });
 
     // Regression for AvaProtocol/EigenLayer-AVS#772.
     test("delete workflow-scoped secret without passing workflowId", async () => {
       const name = `def_${nextSecretSuffix()}`;
-      const workflowId = `01ABC${nextSecretSuffix()}`.replace(/_/g, "0").slice(0, 26);
+      const workflowId = `01ABC${nextSecretSuffix()}`
+        .replace(/_/g, "0")
+        .slice(0, 26);
 
       await client.secrets.put(name, { value: "value", workflowId });
       createdSecrets.push({ name, workflowId });
@@ -237,7 +257,9 @@ describe("secret Tests", () => {
       await client.secrets.put(name, { value: "value" });
       createdSecrets.push({ name });
 
-      await expect(client.secrets.put(name, { value: "newvalue" })).resolves.toBeUndefined();
+      await expect(
+        client.secrets.put(name, { value: "newvalue" })
+      ).resolves.toBeUndefined();
       await expect(client.secrets.delete(name)).resolves.toBeUndefined();
       createdSecrets.pop();
     });
@@ -256,7 +278,10 @@ describe("secret Tests", () => {
     });
 
     afterAll(async () => {
-      await cleanupSecrets(client, pageNames.map((n) => ({ name: n })));
+      await cleanupSecrets(
+        client,
+        pageNames.map((n) => ({ name: n }))
+      );
     });
 
     test("supports forward pagination via after", async () => {
@@ -283,7 +308,8 @@ describe("secret Tests", () => {
     test("supports backward pagination via before", async () => {
       const pageSize = 3;
       const firstPage = await client.secrets.list({ limit: pageSize });
-      if (!firstPage.pageInfo.endCursor || !firstPage.pageInfo.hasNextPage) return;
+      if (!firstPage.pageInfo.endCursor || !firstPage.pageInfo.hasNextPage)
+        return;
 
       const secondPage = await client.secrets.list({
         after: firstPage.pageInfo.endCursor,
@@ -312,11 +338,15 @@ describe("secret Tests", () => {
       const largerPage = await client.secrets.list({ limit: 5 });
       expect(smallPage.data.length).toBeLessThanOrEqual(2);
       expect(largerPage.data.length).toBeLessThanOrEqual(5);
-      expect(largerPage.data.length).toBeGreaterThanOrEqual(smallPage.data.length);
+      expect(largerPage.data.length).toBeGreaterThanOrEqual(
+        smallPage.data.length
+      );
     });
 
     test("filters secrets by workflowId", async () => {
-      const workflowId = `01ABC${nextSecretSuffix()}`.replace(/_/g, "0").slice(0, 26);
+      const workflowId = `01ABC${nextSecretSuffix()}`
+        .replace(/_/g, "0")
+        .slice(0, 26);
       const name = `${secretPrefix}workflow_${nextSecretSuffix()}`;
 
       await client.secrets.put(name, { value: "workflow_value", workflowId });
@@ -331,15 +361,17 @@ describe("secret Tests", () => {
     });
 
     test("rejects an invalid limit with HTTP 400", async () => {
-      await expect(client.secrets.list({ limit: -1 })).rejects.toMatchObject({ status: 400 });
+      await expect(client.secrets.list({ limit: -1 })).rejects.toMatchObject({
+        status: 400,
+      });
     });
 
     test("rejects an invalid cursor with HTTP 400", async () => {
       await expect(
-        client.secrets.list({ before: "invalid-cursor" }),
+        client.secrets.list({ before: "invalid-cursor" })
       ).rejects.toMatchObject({ status: 400 });
       await expect(
-        client.secrets.list({ after: "invalid-cursor" }),
+        client.secrets.list({ after: "invalid-cursor" })
       ).rejects.toMatchObject({ status: 400 });
     });
   });
