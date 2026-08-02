@@ -26,15 +26,23 @@ export type UniswapV3FeeTier = 100 | 500 | 3000 | 10000;
 
 const DEFAULT_SQRT_PRICE_LIMIT = "0";
 
-function addressForChain(
+/**
+ * Resolve a per-chain address from the protocol catalog, or refuse.
+ *
+ * Exported so other builders resolving catalog addresses share one
+ * implementation and one message. Refusing beats defaulting: a missing entry
+ * would otherwise become a zero address or another chain's contract, and both
+ * produce something that looks valid and points at the wrong place.
+ */
+export function addressForChain(
   map: Partial<Record<number, string>>,
   chainId: number,
-  label: string,
+  label: string
 ): string {
   const addr = map[chainId];
   if (!addr) {
     throw new Error(
-      `Uniswap V3 ${label} address is not known for chain ${chainId}; pass an explicit override`,
+      `${label} address is not known for chain ${chainId}; pass an explicit override`
     );
   }
   return addr;
@@ -106,7 +114,9 @@ export const UniswapV3 = Object.freeze({
     try {
       amountInWei = BigInt(opts.amountIn);
     } catch {
-      throw new Error(`swapWithApprovalNode: amountIn must be an integer wei string, got "${opts.amountIn}"`);
+      throw new Error(
+        `swapWithApprovalNode: amountIn must be an integer wei string, got "${opts.amountIn}"`
+      );
     }
     if (amountInWei <= 0n) {
       throw new Error("swapWithApprovalNode: amountIn must be greater than 0");
@@ -114,7 +124,11 @@ export const UniswapV3 = Object.freeze({
 
     const router =
       opts.routerAddress ??
-      addressForChain(Protocols.uniswapV3.swapRouter02, opts.chainId, "SwapRouter02");
+      addressForChain(
+        Protocols.uniswapV3.swapRouter02,
+        opts.chainId,
+        "Uniswap V3 SwapRouter02"
+      );
     return Nodes.contractWrite({
       id: opts.id,
       name: opts.name,
@@ -123,8 +137,13 @@ export const UniswapV3 = Object.freeze({
       // overrides it to the token via a per-call contractAddress.
       contractAddress: router,
       // Merged ABI so the gateway resolves both method names against one node.
-      contractAbi: [...Protocols.erc20.approveAbi, ...Protocols.uniswapV3.swapRouter02Abi],
-      ...(opts.isSimulated !== undefined ? { isSimulated: opts.isSimulated } : {}),
+      contractAbi: [
+        ...Protocols.erc20.approveAbi,
+        ...Protocols.uniswapV3.swapRouter02Abi,
+      ],
+      ...(opts.isSimulated !== undefined
+        ? { isSimulated: opts.isSimulated }
+        : {}),
       methodCalls: [
         {
           methodName: "approve",
@@ -142,7 +161,8 @@ export const UniswapV3 = Object.freeze({
               recipient: opts.recipient,
               amountIn: opts.amountIn,
               amountOutMinimum: opts.amountOutMinimum,
-              sqrtPriceLimitX96: opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
+              sqrtPriceLimitX96:
+                opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
             }),
           ],
         },
@@ -161,14 +181,20 @@ export const UniswapV3 = Object.freeze({
   swapNode(opts: UniswapV3SwapNodeOptions): v4.Node {
     const router =
       opts.routerAddress ??
-      addressForChain(Protocols.uniswapV3.swapRouter02, opts.chainId, "SwapRouter02");
+      addressForChain(
+        Protocols.uniswapV3.swapRouter02,
+        opts.chainId,
+        "Uniswap V3 SwapRouter02"
+      );
     return Nodes.contractWrite({
       id: opts.id,
       name: opts.name,
       chainId: opts.chainId,
       contractAddress: router,
       contractAbi: Protocols.uniswapV3.swapRouter02Abi,
-      ...(opts.isSimulated !== undefined ? { isSimulated: opts.isSimulated } : {}),
+      ...(opts.isSimulated !== undefined
+        ? { isSimulated: opts.isSimulated }
+        : {}),
       methodCalls: [
         {
           methodName: "exactInputSingle",
@@ -181,7 +207,8 @@ export const UniswapV3 = Object.freeze({
               recipient: opts.recipient,
               amountIn: opts.amountIn,
               amountOutMinimum: opts.amountOutMinimum,
-              sqrtPriceLimitX96: opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
+              sqrtPriceLimitX96:
+                opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
             }),
           ],
         },
@@ -198,7 +225,11 @@ export const UniswapV3 = Object.freeze({
   quoteNode(opts: UniswapV3QuoteNodeOptions): v4.Node {
     const quoter =
       opts.quoterAddress ??
-      addressForChain(Protocols.uniswapV3.quoterV2, opts.chainId, "QuoterV2");
+      addressForChain(
+        Protocols.uniswapV3.quoterV2,
+        opts.chainId,
+        "Uniswap V3 QuoterV2"
+      );
     return Nodes.contractWrite({
       id: opts.id,
       name: opts.name,
@@ -215,7 +246,8 @@ export const UniswapV3 = Object.freeze({
               tokenOut: opts.tokenOut,
               amountIn: opts.amountIn,
               fee: opts.fee,
-              sqrtPriceLimitX96: opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
+              sqrtPriceLimitX96:
+                opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
             }),
           ],
         },
@@ -229,10 +261,15 @@ export const UniswapV3 = Object.freeze({
    * is a conservative minimum. Throws on a slippage outside [0, 10000].
    */
   minAmountOut(expectedOut: string | bigint, slippageBps: number): string {
-    if (!Number.isInteger(slippageBps) || slippageBps < 0 || slippageBps > 10_000) {
+    if (
+      !Number.isInteger(slippageBps) ||
+      slippageBps < 0 ||
+      slippageBps > 10_000
+    ) {
       throw new Error("slippageBps must be an integer in [0, 10000]");
     }
-    const out = typeof expectedOut === "bigint" ? expectedOut : BigInt(expectedOut);
+    const out =
+      typeof expectedOut === "bigint" ? expectedOut : BigInt(expectedOut);
     if (out < 0n) throw new Error("expectedOut must be non-negative");
     return ((out * BigInt(10_000 - slippageBps)) / 10_000n).toString();
   },
