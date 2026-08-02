@@ -13,7 +13,7 @@
 
 import { Wallet as EthersWallet } from "ethers";
 
-import { Client } from "@avaprotocol/sdk-js";
+import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
 import { getClient, authenticateClient, testPrivateKey, TEST_AUTH_CHAIN_ID } from "../../utils/client";
@@ -110,6 +110,27 @@ describe("policies (live gateway)", () => {
 
     const listed = await client.policies.list(wallet);
     expect(listed.items.some((p) => p.agentLabel === label)).toBe(false);
+  }, 180_000);
+
+
+  // The path Studio actually takes: chips → SessionPolicyActions → a grant the
+  // gateway accepts. Proves the builder's output is a shape the API takes, not
+  // just a well-formed object.
+  test("a grant built from action chips is accepted", async () => {
+    const allowedActions = SessionPolicyActions.merge([
+      SessionPolicyActions.erc20Approve(TOKEN),
+      SessionPolicyActions.uniswapV3Swap(TEST_AUTH_CHAIN_ID),
+    ]);
+    expect(allowedActions).toHaveLength(2);
+
+    const policy = await client.policies.grant(
+      wallet,
+      { ...request("ChipBuiltBot"), allowedActions },
+      signTypedDataWithEthers(testPrivateKey()),
+    );
+    expect(policy.status).toBe("pending");
+
+    await client.policies.revoke(wallet, policy.id);
   }, 180_000);
 
   function request(label = "TradingBot"): v4.PreparePolicyRequest {
