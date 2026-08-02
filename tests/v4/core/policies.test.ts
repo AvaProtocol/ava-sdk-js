@@ -40,9 +40,7 @@ const PREPARED = {
   typedData: { domain: { chainId: 11155111 }, message: { nonce: "0x1" } },
 } satisfies v4.PreparedPolicy;
 
-async function startGateway(
-  captured: Captured
-): Promise<{ url: string; close: () => Promise<void> }> {
+async function startGateway(captured: Captured): Promise<{ url: string; close: () => Promise<void> }> {
   const server: Server = createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => (raw += c));
@@ -84,10 +82,7 @@ describe("policies.grant", () => {
     agentLabel: "TradingBot",
     justification: "Execute swaps you approve in chat",
     allowedActions: [
-      {
-        target: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
-        selectors: ["0x095ea7b3"],
-      },
+      { target: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", selectors: ["0x095ea7b3"] },
     ],
     erc20SpendCap: {
       token: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
@@ -103,10 +98,7 @@ describe("policies.grant", () => {
   beforeEach(async () => {
     captured = { paths: [] };
     gateway = await startGateway(captured);
-    client = new Client({
-      baseUrl: `${gateway.url}/api/v1`,
-      token: "test-jwt",
-    });
+    client = new Client({ baseUrl: `${gateway.url}/api/v1`, token: "test-jwt" });
   });
 
   afterEach(async () => {
@@ -124,11 +116,7 @@ describe("policies.grant", () => {
   });
 
   test("echoes prepare's allocations verbatim to submit", async () => {
-    await client.policies.grant(
-      wallet,
-      request,
-      async () => `0x${"11".repeat(65)}`
-    );
+    await client.policies.grant(wallet, request, async () => `0x${"11".repeat(65)}`);
 
     const submitted = captured.submitBody!;
     expect(submitted.policyId).toBe(PREPARED.policyId);
@@ -139,11 +127,7 @@ describe("policies.grant", () => {
 
   test("submits the ABSOLUTE validUntil from prepare, never a recomputed one", async () => {
     const before = Date.now();
-    await client.policies.grant(
-      wallet,
-      request,
-      async () => `0x${"11".repeat(65)}`
-    );
+    await client.policies.grant(wallet, request, async () => `0x${"11".repeat(65)}`);
 
     const submitted = captured.submitBody!;
     expect(submitted.validUntil).toBe(PREPARED.validUntil);
@@ -151,17 +135,11 @@ describe("policies.grant", () => {
     // Guard the specific mistake: deriving it from expiresInSeconds. That
     // would land near now + 30 days and change the digest the owner signed.
     const recomputed = before + request.expiresInSeconds * 1000;
-    expect(
-      Math.abs((submitted.validUntil as number) - recomputed)
-    ).toBeGreaterThan(60_000);
+    expect(Math.abs((submitted.validUntil as number) - recomputed)).toBeGreaterThan(60_000);
   });
 
   test("carries the grant terms through so the gateway rebuilds the same calldata", async () => {
-    await client.policies.grant(
-      wallet,
-      request,
-      async () => `0x${"11".repeat(65)}`
-    );
+    await client.policies.grant(wallet, request, async () => `0x${"11".repeat(65)}`);
 
     const submitted = captured.submitBody!;
     expect(submitted.allowedActions).toEqual(request.allowedActions);
@@ -172,11 +150,7 @@ describe("policies.grant", () => {
   });
 
   test("hits prepare then submit, in that order", async () => {
-    await client.policies.grant(
-      wallet,
-      request,
-      async () => `0x${"11".repeat(65)}`
-    );
+    await client.policies.grant(wallet, request, async () => `0x${"11".repeat(65)}`);
 
     expect(captured.paths).toHaveLength(2);
     expect(captured.paths[0]).toContain("policies:prepare");
@@ -187,7 +161,7 @@ describe("policies.grant", () => {
     await expect(
       client.policies.grant(wallet, request, async () => {
         throw new Error("user rejected");
-      })
+      }),
     ).rejects.toThrow("user rejected");
 
     // Prepare stores nothing server-side, so an abandoned grant screen must

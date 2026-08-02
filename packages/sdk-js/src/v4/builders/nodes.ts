@@ -63,9 +63,7 @@ export const Nodes = Object.freeze({
         ...(opts.contractAbi ? { contractAbi: opts.contractAbi } : {}),
         ...(opts.methodCalls ? { methodCalls: opts.methodCalls } : {}),
         ...(opts.callData ? { callData: opts.callData } : {}),
-        ...(opts.isSimulated !== undefined
-          ? { isSimulated: opts.isSimulated }
-          : {}),
+        ...(opts.isSimulated !== undefined ? { isSimulated: opts.isSimulated } : {}),
         ...(opts.valueWei ? { value: opts.valueWei } : {}),
         ...(opts.gasLimit ? { gasLimit: opts.gasLimit } : {}),
         chainId: opts.chainId,
@@ -154,11 +152,7 @@ export const Nodes = Object.freeze({
   branch(opts: {
     id: string;
     name: string;
-    conditions: Array<{
-      id: string;
-      expression: string;
-      type?: "if" | "elseIf" | "else";
-    }>;
+    conditions: Array<{ id: string; expression: string; type?: "if" | "elseIf" | "else" }>;
   }): v4.Node {
     return {
       id: opts.id,
@@ -168,20 +162,12 @@ export const Nodes = Object.freeze({
     } as v4.Node;
   },
 
-  filter(opts: {
-    id: string;
-    name: string;
-    expression: string;
-    inputVariable: string;
-  }): v4.Node {
+  filter(opts: { id: string; name: string; expression: string; inputVariable: string }): v4.Node {
     return {
       id: opts.id,
       name: opts.name,
       type: "filter",
-      config: {
-        expression: opts.expression,
-        inputVariable: opts.inputVariable,
-      },
+      config: { expression: opts.expression, inputVariable: opts.inputVariable },
     } as v4.Node;
   },
 
@@ -237,15 +223,9 @@ export const Nodes = Object.freeze({
       config: {
         address: opts.address,
         chain: opts.chain,
-        ...(opts.includeSpam !== undefined
-          ? { includeSpam: opts.includeSpam }
-          : {}),
-        ...(opts.includeZeroBalances !== undefined
-          ? { includeZeroBalances: opts.includeZeroBalances }
-          : {}),
-        ...(opts.minUsdValueCents !== undefined
-          ? { minUsdValueCents: opts.minUsdValueCents }
-          : {}),
+        ...(opts.includeSpam !== undefined ? { includeSpam: opts.includeSpam } : {}),
+        ...(opts.includeZeroBalances !== undefined ? { includeZeroBalances: opts.includeZeroBalances } : {}),
+        ...(opts.minUsdValueCents !== undefined ? { minUsdValueCents: opts.minUsdValueCents } : {}),
       },
     } as v4.Node;
   },
@@ -279,37 +259,25 @@ export const Nodes = Object.freeze({
       name: string;
       timeoutSeconds?: number;
     } & (
-      | {
-          channel: "telegram" | "api";
-          approvers?: string[];
-          prompt?: string;
-          chainEvent?: never;
-        }
-      | {
-          chainEvent: v4.EventTriggerConfig;
-          channel?: never;
-          approvers?: never;
-          prompt?: never;
-        }
-    )
+      | { channel: "telegram" | "api"; approvers?: string[]; prompt?: string; chainEvent?: never }
+      | { chainEvent: v4.EventTriggerConfig; channel?: never; approvers?: never; prompt?: never }
+    ),
   ): v4.Node {
     const hasExternal = "channel" in opts && opts.channel !== undefined;
     const hasChainEvent = "chainEvent" in opts && opts.chainEvent !== undefined;
     if (hasExternal && hasChainEvent) {
       throw new Error(
-        "Nodes.await: set either `channel` (external-signal) or `chainEvent` (chain-event), not both"
+        "Nodes.await: set either `channel` (external-signal) or `chainEvent` (chain-event), not both",
       );
     }
     if (!hasExternal && !hasChainEvent) {
       throw new Error(
-        "Nodes.await: must set either `channel` (external-signal) or `chainEvent` (chain-event)"
+        "Nodes.await: must set either `channel` (external-signal) or `chainEvent` (chain-event)",
       );
     }
 
     const config: Record<string, unknown> = {
-      ...(opts.timeoutSeconds !== undefined
-        ? { timeoutSeconds: opts.timeoutSeconds }
-        : {}),
+      ...(opts.timeoutSeconds !== undefined ? { timeoutSeconds: opts.timeoutSeconds } : {}),
     };
     if (hasChainEvent) {
       config.chainEvent = opts.chainEvent;

@@ -106,7 +106,7 @@ describe("Wallet Management Tests", () => {
         // Now create a second workflow and pause it to verify the
         // "disabled" counter moves.
         const created2 = await client.workflows.create(
-          createFromTemplate(wallet.address)
+          createFromTemplate(wallet.address),
         );
         workflowId2 = created2.id as string;
         await client.workflows.pause(workflowId2);
@@ -131,13 +131,13 @@ describe("Wallet Management Tests", () => {
 
     test("rejects a negative salt with HTTP 400", async () => {
       await expect(
-        client.wallets.create({ salt: "-12" })
+        client.wallets.create({ salt: "-12" }),
       ).rejects.toMatchObject({ status: 400 });
     });
 
     test("rejects an invalid factory address with HTTP 400", async () => {
       await expect(
-        client.wallets.create({ salt: "0", factoryAddress: "0x1234" })
+        client.wallets.create({ salt: "0", factoryAddress: "0x1234" }),
       ).rejects.toMatchObject({ status: 400 });
     });
 
@@ -172,11 +172,9 @@ describe("Wallet Management Tests", () => {
 
       const list = await client.wallets.list();
 
-      const walletsForSalt = (s: string) =>
-        list.data.filter((w) => w.salt === s);
-      const uniqueKeys = (
-        rows: ReadonlyArray<{ salt?: string; factoryAddress?: string }>
-      ) => new Set(rows.map((r) => `${r.salt}-${r.factoryAddress}`));
+      const walletsForSalt = (s: string) => list.data.filter((w) => w.salt === s);
+      const uniqueKeys = (rows: ReadonlyArray<{ salt?: string; factoryAddress?: string }>) =>
+        new Set(rows.map((r) => `${r.salt}-${r.factoryAddress}`));
 
       const salt1Rows = walletsForSalt(salt1);
       const salt2Rows = walletsForSalt(salt2);
@@ -219,26 +217,22 @@ describe("Wallet Management Tests", () => {
       expect(created.isHidden ?? false).toBeFalsy();
 
       // Hide.
-      const hidden = await client.wallets.update(created.address, {
-        isHidden: true,
-      });
+      const hidden = await client.wallets.update(created.address, { isHidden: true });
       expect(hidden.isHidden).toBe(true);
 
       const listAfterHide = await client.wallets.list();
       const hiddenRow = listAfterHide.data.find(
-        (w) => w.salt === salt && w.factoryAddress === hidden.factoryAddress
+        (w) => w.salt === salt && w.factoryAddress === hidden.factoryAddress,
       );
       expect(hiddenRow?.isHidden).toBe(true);
 
       // Unhide.
-      const unhidden = await client.wallets.update(created.address, {
-        isHidden: false,
-      });
+      const unhidden = await client.wallets.update(created.address, { isHidden: false });
       expect(unhidden.isHidden ?? false).toBeFalsy();
 
       const listAfterUnhide = await client.wallets.list();
       const unhiddenRow = listAfterUnhide.data.find(
-        (w) => w.salt === salt && w.factoryAddress === unhidden.factoryAddress
+        (w) => w.salt === salt && w.factoryAddress === unhidden.factoryAddress,
       );
       expect(unhiddenRow?.isHidden ?? false).toBeFalsy();
     });

@@ -16,12 +16,7 @@ import type { v4 } from "@avaprotocol/types";
  * SDK callers use the builder or hand-assemble the object.
  */
 export const Triggers = Object.freeze({
-  block(opts: {
-    name: string;
-    id?: string;
-    interval: number;
-    chainId: number;
-  }): v4.Trigger {
+  block(opts: { name: string; id?: string; interval: number; chainId: number }): v4.Trigger {
     return {
       type: "block",
       name: opts.name,
@@ -53,11 +48,7 @@ export const Triggers = Object.freeze({
     } as v4.Trigger;
   },
 
-  fixedTime(opts: {
-    name: string;
-    id?: string;
-    epochsMs: number[];
-  }): v4.Trigger {
+  fixedTime(opts: { name: string; id?: string; epochsMs: number[] }): v4.Trigger {
     return {
       type: "fixedTime",
       name: opts.name,
@@ -128,9 +119,7 @@ export const Triggers = Object.freeze({
       config: {
         queries: opts.queries,
         chainId: opts.chainId,
-        ...(opts.cooldownSeconds !== undefined
-          ? { cooldownSeconds: opts.cooldownSeconds }
-          : {}),
+        ...(opts.cooldownSeconds !== undefined ? { cooldownSeconds: opts.cooldownSeconds } : {}),
       },
     } as v4.Trigger;
   },
