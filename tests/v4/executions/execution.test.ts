@@ -13,8 +13,7 @@
 import { Client, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getIsolatedClient,
   getCurrentBlockNumber,
   createSmartWallet,
   nextTestSalt,
@@ -29,8 +28,9 @@ describe("Execution Management Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    // A private EOA for this suite. Salts alone do not isolate an
+    // owner-scoped query, and this suite asserts on exact counts.
+    ({ client } = await getIsolatedClient());
   });
 
   afterEach(async () => {
