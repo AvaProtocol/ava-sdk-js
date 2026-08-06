@@ -124,6 +124,47 @@ export const SessionPolicyActions = Object.freeze({
   },
 
   /**
+   * Uniswap V3 capability compile: router `exactInputSingle` plus `approve`
+   * for every ERC-20 the agent may spend as `tokenIn`.
+   *
+   * **Why this exists:** a USDC-only Uniswap grant (router + approve(USDC))
+   * covers USDC→ETH buys but **not** demoted ETH→USDC sells, which need
+   * `approve(WETH)` before `exactInputSingle`. Passing only the spend-cap
+   * token is the historical Studio default and is the root of
+   * FINDINGS_AA23_WETH_SELL_SESSION_SCOPE.md.
+   *
+   * Studio / clients should pass **both** the cap token (e.g. USDC) and
+   * catalog WETH (and any other tradeable `tokenIn`) for Auto mode.
+   *
+   * Cap token / USD notional is still set via `erc20SpendCap` on the policy
+   * request — this helper only builds allowlist rows.
+   */
+  uniswapV3Capability(
+    chainId: number,
+    opts: {
+      /** Tokens the agent may `approve` for the router (must include every tokenIn). */
+      approveTokens: readonly string[];
+      /** Override SwapRouter02 when not using the catalog address. */
+      router?: string;
+    }
+  ): v4.AllowedAction[] {
+    if (!opts?.approveTokens?.length) {
+      throw new Error(
+        "uniswapV3Capability requires at least one approveTokens entry (e.g. USDC and WETH)"
+      );
+    }
+    const actions: v4.AllowedAction[] = [
+      SessionPolicyActions.uniswapV3Swap(chainId, {
+        target: opts.router,
+      }),
+    ];
+    for (const token of opts.approveTokens) {
+      actions.push(SessionPolicyActions.erc20Approve(token));
+    }
+    return SessionPolicyActions.merge(actions);
+  },
+
+  /**
    * Merge actions that share a target, so the grant carries one entry per
    * contract.
    *
@@ -153,3 +194,51 @@ export const SessionPolicyActions = Object.freeze({
     }));
   },
 });
+
+/**
+ * Pure allowlist coverage — does `granted` cover every row in `required`?
+ *
+ * Same semantics Studio's `grantCoverage` uses for action rows (case-insensitive
+ * target + selector). Cap-token / amount / expiry checks stay product-side.
+ *
+ * Used so clients can preflight demoted WETH sells against an existing
+ * USDC-only grant without inventing rows.
+ */
+export function actionsCover(
+  required: readonly v4.AllowedAction[],
+  granted: readonly v4.AllowedAction[]
+): boolean {
+  return missingActions(required, granted).length === 0;
+}
+
+/**
+ * Required `{ target, selectors[] }` rows not fully covered by `granted`.
+ * A required selector is covered when some granted row for the same target
+ * includes it. Partial target coverage returns only the uncovered selectors
+ * on that target (or the whole row if the target is absent).
+ */
+export function missingActions(
+  required: readonly v4.AllowedAction[],
+  granted: readonly v4.AllowedAction[]
+): v4.AllowedAction[] {
+  const byTarget = new Map<string, Set<string>>();
+  for (const g of granted) {
+    const key = g.target.toLowerCase();
+    const set = byTarget.get(key) ?? new Set<string>();
+    for (const s of g.selectors) set.add(s.toLowerCase());
+    byTarget.set(key, set);
+  }
+  const missing: v4.AllowedAction[] = [];
+  for (const r of required) {
+    const set = byTarget.get(r.target.toLowerCase());
+    if (!set) {
+      missing.push({ target: r.target, selectors: [...r.selectors] });
+      continue;
+    }
+    const uncovered = r.selectors.filter((s) => !set.has(s.toLowerCase()));
+    if (uncovered.length > 0) {
+      missing.push({ target: r.target, selectors: uncovered });
+    }
+  }
+  return missing;
+}

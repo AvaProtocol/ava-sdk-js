@@ -7,10 +7,16 @@
  * later as an operation refused at validation.
  */
 
-import { SessionPolicyActions, Protocols } from "@avaprotocol/sdk-js";
+import {
+  SessionPolicyActions,
+  Protocols,
+  actionsCover,
+  missingActions,
+} from "@avaprotocol/sdk-js";
 
 const SEPOLIA = 11_155_111;
 const USDC = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+const WETH = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14";
 
 describe("SessionPolicyActions", () => {
   // Selectors verified against `cast sig`. If one of these ever changes it is
@@ -112,6 +118,56 @@ describe("SessionPolicyActions", () => {
         SessionPolicyActions.erc20Approve(USDC),
       ]);
       expect(merged[0].selectors).toEqual(["0x095ea7b3"]);
+    });
+  });
+
+  describe("uniswapV3Capability", () => {
+    test("includes router exactInputSingle and approve for each token", () => {
+      const actions = SessionPolicyActions.uniswapV3Capability(SEPOLIA, {
+        approveTokens: [USDC, WETH],
+      });
+      const router = Protocols.uniswapV3.swapRouter02[SEPOLIA];
+      expect(actions).toHaveLength(3);
+      const byTarget = Object.fromEntries(
+        actions.map((a) => [a.target.toLowerCase(), a.selectors])
+      );
+      expect(byTarget[router!.toLowerCase()]).toEqual(["0x04e45aaf"]);
+      expect(byTarget[USDC.toLowerCase()]).toEqual(["0x095ea7b3"]);
+      expect(byTarget[WETH.toLowerCase()]).toEqual(["0x095ea7b3"]);
+    });
+
+    test("refuses an empty approveTokens list", () => {
+      expect(() =>
+        SessionPolicyActions.uniswapV3Capability(SEPOLIA, { approveTokens: [] })
+      ).toThrow(/approveTokens/);
+    });
+  });
+
+  describe("actionsCover / missingActions", () => {
+    test("USDC grant misses WETH approve", () => {
+      const granted = SessionPolicyActions.uniswapV3Capability(SEPOLIA, {
+        approveTokens: [USDC],
+      });
+      const required = SessionPolicyActions.uniswapV3Capability(SEPOLIA, {
+        approveTokens: [WETH],
+      });
+      expect(actionsCover(required, granted)).toBe(false);
+      const miss = missingActions(required, granted);
+      expect(
+        miss.some((m) => m.target.toLowerCase() === WETH.toLowerCase())
+      ).toBe(true);
+    });
+
+    test("USDC+WETH grant covers demoted sell rows", () => {
+      const granted = SessionPolicyActions.uniswapV3Capability(SEPOLIA, {
+        approveTokens: [USDC, WETH],
+      });
+      const required = SessionPolicyActions.merge([
+        SessionPolicyActions.erc20Approve(WETH),
+        SessionPolicyActions.uniswapV3Swap(SEPOLIA),
+      ]);
+      expect(actionsCover(required, granted)).toBe(true);
+      expect(missingActions(required, granted)).toEqual([]);
     });
   });
 
