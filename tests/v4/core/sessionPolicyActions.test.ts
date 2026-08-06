@@ -127,11 +127,12 @@ describe("SessionPolicyActions", () => {
         approveTokens: [USDC, WETH],
       });
       const router = Protocols.uniswapV3.swapRouter02[SEPOLIA];
+      expect(router).toBeDefined();
       expect(actions).toHaveLength(3);
       const byTarget = Object.fromEntries(
         actions.map((a) => [a.target.toLowerCase(), a.selectors])
       );
-      expect(byTarget[router!.toLowerCase()]).toEqual(["0x04e45aaf"]);
+      expect(byTarget[String(router).toLowerCase()]).toEqual(["0x04e45aaf"]);
       expect(byTarget[USDC.toLowerCase()]).toEqual(["0x095ea7b3"]);
       expect(byTarget[WETH.toLowerCase()]).toEqual(["0x095ea7b3"]);
     });

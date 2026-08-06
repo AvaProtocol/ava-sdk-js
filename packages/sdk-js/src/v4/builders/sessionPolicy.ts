@@ -148,7 +148,7 @@ export const SessionPolicyActions = Object.freeze({
       router?: string;
     }
   ): v4.AllowedAction[] {
-    if (!opts?.approveTokens?.length) {
+    if (!opts.approveTokens.length) {
       throw new Error(
         "uniswapV3Capability requires at least one approveTokens entry (e.g. USDC and WETH)"
       );
@@ -235,7 +235,9 @@ export function missingActions(
       missing.push({ target: r.target, selectors: [...r.selectors] });
       continue;
     }
-    const uncovered = r.selectors.filter((s) => !set.has(s.toLowerCase()));
+    const uncovered = r.selectors
+      .filter((s) => !set.has(s.toLowerCase()))
+      .map((s) => s.toLowerCase());
     if (uncovered.length > 0) {
       missing.push({ target: r.target, selectors: uncovered });
     }
