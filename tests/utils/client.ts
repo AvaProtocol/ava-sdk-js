@@ -31,6 +31,32 @@ export function testPrivateKey(): string {
   return requireEnv("TEST_PRIVATE_KEY");
 }
 
+/**
+ * A private EOA for one suite, and the client authenticated as it.
+ *
+ * Unique salts stop two suites sharing a wallet, but they do not help a query
+ * scoped by OWNER — every suite authenticating as TEST_PRIVATE_KEY sees every
+ * other suite's wallets, workflows, and secrets. A suite that asserts on
+ * anything owner-wide is therefore order-dependent no matter how its salts are
+ * allocated.
+ *
+ * A random key removes that entirely: the gateway mints a JWT from any
+ * signature, so identity costs nothing. Use this for CRUD, listing, and
+ * pagination suites.
+ *
+ * It is NOT for suites that need funds. A fresh EOA owns nothing, so anything
+ * sending a real UserOp, spending gas, or touching a pre-funded fixture wallet
+ * must keep using {@link authenticateClient} with the shared key.
+ */
+export async function getIsolatedClient(
+  overrides?: Partial<ClientOptions>,
+): Promise<{ client: Client; owner: string; privateKey: string }> {
+  const wallet = Wallet.createRandom();
+  const client = getClient(overrides);
+  await authenticateClient(client, wallet.privateKey);
+  return { client, owner: wallet.address, privateKey: wallet.privateKey };
+}
+
 /** Returns a fresh, unauthenticated v4 Client pointed at the test stack. */
 export function getClient(overrides?: Partial<ClientOptions>): Client {
   return new Client({
@@ -156,14 +182,57 @@ export async function buildAuthPayload(
 // ---------------------------------------------------------------------
 
 /**
- * Per-process salt counter. Tests pick salts from a high range
- * (1_000+) so they don't collide with user-driven workflows in dev.
+ * Salt allocation, unique per worker AND per run.
  *
- * For most call sites a single `nextTestSalt()` is enough; rare
- * suites that need stable per-test salts can pass an explicit
- * `saltValue` to `createSmartWallet`.
+ * A plain module-level counter is not enough, and the way it failed is worth
+ * keeping in mind. Jest gives every worker its own process, so a counter
+ * seeded at a constant restarts in each one: with 9 workers, nine of them
+ * hand out salt 1001. Same salt + same owner EOA = the *same* smart-wallet
+ * address, so two suites that each believed they had a private wallet were
+ * writing to one. Tests that scope a query by `smartWalletAddress` — the
+ * correct thing to do — still saw the other suite's records, and exact-count
+ * assertions failed intermittently depending on which worker got there first.
+ *
+ * The same reset also repeated salts across runs, so state accumulated on a
+ * handful of addresses instead of spreading. The observable symptom was the
+ * shared test EOA holding only four wallets after many full-suite runs.
+ *
+ * The base therefore mixes two things:
+ *   - JEST_WORKER_ID, so parallel workers never overlap;
+ *   - a per-run seed (CI run id, else the process start time), so today's run
+ *     cannot land on yesterday's wallets.
+ *
+ * Salts stay above 1_000 so they never collide with user-driven wallets in
+ * dev. Note `max_wallets_per_owner` is 2_000 per chain — unique salts mean
+ * wallet records accumulate, so a long-lived shared test EOA needs an
+ * occasional sweep rather than being assumed infinite.
  */
-let saltCursor = 1_000;
+// The two strides must not be able to alias. Worker occupies the low digits
+// and cannot exceed its stride (10k wallets from one worker in one run is far
+// beyond anything the suite does); the run seed occupies digits above that.
+// Getting this backwards silently reintroduces the bug in a subtler form:
+// with a worker stride of 100k and a run stride of 1k, worker 4 of run 555
+// and worker 3 of run 655 both land on 956000 — and since wallet records
+// persist, a later run would inherit an earlier one's state.
+const SALT_WORKER_STRIDE = 10_000;
+const SALT_RUN_STRIDE = 1_000_000;
+
+function saltBase(): number {
+  const worker = Number(process.env.JEST_WORKER_ID ?? 1);
+  // GITHUB_RUN_ID in CI; wall-clock locally. Either way it changes per run.
+  const runSeed = Number(process.env.GITHUB_RUN_ID ?? Date.now()) % 100_000;
+  return 1_000 + runSeed * SALT_RUN_STRIDE + worker * SALT_WORKER_STRIDE;
+}
+
+let saltCursor = saltBase();
+
+/**
+ * A salt no other worker or run will hand out.
+ *
+ * Suites that need a salt stable across re-runs must pass an explicit
+ * `saltValue` to `createSmartWallet` — but be aware that opts out of the
+ * isolation above and shares the wallet with anything else using that salt.
+ */
 export function nextTestSalt(): string {
   saltCursor += 1;
   return String(saltCursor);

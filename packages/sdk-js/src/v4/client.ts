@@ -7,6 +7,7 @@ import { OperatorsResource } from "./resources/operators";
 import { SecretsResource } from "./resources/secrets";
 import { TokensResource } from "./resources/tokens";
 import { TriggersResource } from "./resources/triggers";
+import { PoliciesResource } from "./resources/policies";
 import { WalletsResource } from "./resources/wallets";
 import { WorkflowsResource } from "./resources/workflows";
 
@@ -57,6 +58,7 @@ export class Client {
   readonly health: HealthResource;
   readonly nodes: NodesResource;
   readonly operators: OperatorsResource;
+  readonly policies: PoliciesResource;
   readonly secrets: SecretsResource;
   readonly tokens: TokensResource;
   readonly triggers: TriggersResource;
@@ -80,6 +82,7 @@ export class Client {
     this.health = new HealthResource(this.transport);
     this.nodes = new NodesResource(this.transport);
     this.operators = new OperatorsResource(this.transport);
+    this.policies = new PoliciesResource(this.transport);
     this.secrets = new SecretsResource(this.transport);
     this.tokens = new TokensResource(this.transport);
     this.triggers = new TriggersResource(this.transport);

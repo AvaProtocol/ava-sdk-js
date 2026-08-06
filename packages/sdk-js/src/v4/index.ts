@@ -14,6 +14,12 @@ export {
   type UniswapV3QuoteNodeOptions,
 } from "./builders/uniswap";
 export {
+  SessionPolicyActions,
+  SELECTOR_ERC20_APPROVE,
+  SELECTOR_ERC20_TRANSFER,
+  SELECTOR_UNISWAP_V3_EXACT_INPUT_SINGLE,
+} from "./builders/sessionPolicy";
+export {
   Protocols,
   Tokens,
   lookupToken,
@@ -48,6 +54,8 @@ export { OperatorsResource } from "./resources/operators";
 export { SecretsResource } from "./resources/secrets";
 export { TokensResource } from "./resources/tokens";
 export { TriggersResource } from "./resources/triggers";
+export { PoliciesResource } from "./resources/policies";
+export type { TypedDataSigner } from "./resources/policies";
 export { WalletsResource } from "./resources/wallets";
 export { WorkflowsResource } from "./resources/workflows";
 
