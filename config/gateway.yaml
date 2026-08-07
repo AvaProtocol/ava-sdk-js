@@ -44,7 +44,10 @@ tenderly_access_key: ${TENDERLY_ACCESS_KEY}
 smart_wallet:
   eth_rpc_url: ${ETH_RPC_URL}
   eth_ws_url: ${ETH_WS_URL}
-  bundler_url: ${BUNDLER_URL}
+  # Bundler — Alchemy, matching production. Endpoint derived from
+  # alchemy_api_key + chain subdomain; no self_hosted fallback in CI.
+  bundler_provider: alchemy
+  alchemy_api_key: ${ALCHEMY_API_KEY}
   controller_private_key: ${CONTROLLER_PRIVATE_KEY}
   paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92
   max_wallets_per_owner: 2000
@@ -58,7 +61,8 @@ chains:
     smart_wallet:
       eth_rpc_url: ${ETH_RPC_URL}
       eth_ws_url: ${ETH_WS_URL}
-      bundler_url: ${BUNDLER_URL}
+      bundler_provider: alchemy
+      alchemy_api_key: ${ALCHEMY_API_KEY}
       controller_private_key: ${CONTROLLER_PRIVATE_KEY}
       paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92
       max_wallets_per_owner: 2000
@@ -93,3 +97,8 @@ notifications:
     provider: context-memory
     api_endpoint: "https://context-api.avaprotocol.org"
     api_key: ${CONTEXT_MEMORY_API_KEY}
+
+# The E2E stack never draws on the production Gas Manager policy: the
+# policy's webhook points at the production gateway, which would approve and
+# bill a CI run against production's wallet records and credit ledger.
+disable_gas_sponsorship: true

@@ -102,9 +102,15 @@ export type SessionPolicyStatus = SessionPolicy["status"];
 export type PreparePolicyRequest = components["schemas"]["PreparePolicyRequest"];
 export type PreparedPolicy = components["schemas"]["PreparedPolicy"];
 export type SubmitPolicyRequest = components["schemas"]["SubmitPolicyRequest"];
+// SessionPolicy plus required supersededPolicyIds — submit replaces earlier
+// usable grants on the runner and reports which ones (#716 / #731).
+export type SubmitPolicyResponse = components["schemas"]["SubmitPolicyResponse"];
 export type AllowedAction = components["schemas"]["AllowedAction"];
 export type Erc20SpendCap = components["schemas"]["Erc20SpendCap"];
 export type RevokePolicyResponse = components["schemas"]["RevokePolicyResponse"];
+// Owner-executable uninstallValidation payload when an applied grant is
+// soft-revoked (or still needs cleanup on GET). EigenLayer-AVS #731 / #717.
+export type OnChainRevokeCleanup = components["schemas"]["OnChainRevokeCleanup"];
 
 // ---------------------------------------------------------------------
 // Secrets, tokens, operators, auth, problem
