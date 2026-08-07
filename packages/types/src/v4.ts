@@ -105,6 +105,9 @@ export type SubmitPolicyRequest = components["schemas"]["SubmitPolicyRequest"];
 export type AllowedAction = components["schemas"]["AllowedAction"];
 export type Erc20SpendCap = components["schemas"]["Erc20SpendCap"];
 export type RevokePolicyResponse = components["schemas"]["RevokePolicyResponse"];
+// Owner-executable uninstallValidation payload when an applied grant is
+// soft-revoked (or still needs cleanup on GET). EigenLayer-AVS #731 / #717.
+export type OnChainRevokeCleanup = components["schemas"]["OnChainRevokeCleanup"];
 
 // ---------------------------------------------------------------------
 // Secrets, tokens, operators, auth, problem

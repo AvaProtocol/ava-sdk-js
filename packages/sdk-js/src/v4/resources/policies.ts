@@ -126,15 +126,21 @@ export class PoliciesResource {
   /**
    * DELETE /wallets/{address}/policies/{policyId} — revoke.
    *
-   * Before the grant's first use this is complete on its own: nothing was
-   * installed, so deleting the authorization ends it. Afterwards the
-   * validation module is still on the account and clearing it needs a
-   * separate on-chain uninstall — the gateway stops using the grant either
-   * way, but only the first case leaves nothing behind.
+   * Soft-revokes in gateway storage immediately (the send path stops using
+   * the grant). On-chain outcomes:
    *
-   * The response says which happened: `deleted` when the grant never reached
-   * the chain, `revoked` when the record is retained for audit because a
-   * module is still installed.
+   * - `status: "deleted"` — rare; no InstallCall retained; record removed.
+   * - `status: "revoked"`, `onChainCleanupRequired: false` — pending grant
+   *   retained so InstallCall survives a late-landing install; nothing known
+   *   on chain yet (no cleanup payload).
+   * - `status: "revoked"`, `onChainCleanupRequired: true` — applied grant
+   *   still believed installed. Response includes `onChainCleanup`:
+   *   `{ entityId, target, callData, chainId }` for the owner wallet to send
+   *   as a plain call to the runner (or owner-fallback UserOp). Production
+   *   grants are policied; the gateway controller cannot self-uninstall.
+   *
+   * GET the same policy after revoke may still carry `onChainCleanup` until
+   * teardown is verified (`TornDownAt`). See EigenLayer-AVS #731 / #717.
    */
   revoke(
     address: string,

@@ -105,10 +105,12 @@ describe("policies (live gateway)", () => {
       expect(JSON.stringify(fetched)).not.toContain("installCall");
       expect(JSON.stringify(fetched)).not.toContain("ownerSignature");
 
-      // Never used, so nothing was installed: the record goes away entirely
-      // rather than being retained for audit.
+      // Pending with InstallCall is retained as revoked so a late-landing
+      // install can still be cleaned up (#731). Nothing is known on chain yet.
       const revoked = await client.policies.revoke(wallet, policy.id);
-      expect(revoked.status).toBe("deleted");
+      expect(revoked.status).toBe("revoked");
+      expect(revoked.onChainCleanupRequired).toBe(false);
+      expect(revoked.onChainCleanup).toBeUndefined();
     } finally {
       // A failed assertion above must not leave a pending grant behind on a
       // wallet other tests share. Revoke is idempotent enough that the
