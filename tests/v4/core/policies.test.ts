@@ -59,7 +59,14 @@ async function startGateway(captured: Captured): Promise<{ url: string; close: (
       if (path.includes("policies:submit")) {
         captured.submitBody = body;
         res.statusCode = 201;
-        res.end(JSON.stringify({ id: PREPARED.policyId, status: "pending" }));
+        // Matches SubmitPolicyResponse: SessionPolicy fields + supersededPolicyIds.
+        res.end(
+          JSON.stringify({
+            id: PREPARED.policyId,
+            status: "pending",
+            supersededPolicyIds: [],
+          }),
+        );
         return;
       }
       res.statusCode = 404;
