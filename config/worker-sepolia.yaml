@@ -26,7 +26,13 @@ eth_rpc_url: ${ETH_RPC_URL}
 eth_ws_url: ${ETH_WS_URL}
 
 bundler_url: ${BUNDLER_URL}
+# Alchemy, matching production; endpoint derived from the key.
+bundler_provider: alchemy
+alchemy_api_key: ${ALCHEMY_API_KEY}
 
 smart_wallet:
   controller_private_key: ${CONTROLLER_PRIVATE_KEY}
   paymaster_address: 0xd856f532F7C032e6b30d76F19187F25A068D6d92
+
+# Never draw on the production Gas Manager policy from CI.
+disable_gas_sponsorship: true
