@@ -95,10 +95,7 @@ jobs:
       TENDERLY_ACCOUNT: ${{ vars.TENDERLY_ACCOUNT }}
       TENDERLY_PROJECT: ${{ vars.TENDERLY_PROJECT }}
       THEGRAPH_API_KEY: ${{ vars.THEGRAPH_API_KEY }}
-      BUNDLER_URL: ${{ secrets.BUNDLER_URL }}
-      # Runs the E2E stack on the bundler production uses. Without it the
-      # gateway defaults to bundler_provider: alchemy with no key and fails
-      # closed at send time.
+      # Required: E2E stack uses Alchemy (production path). Missing key fails closed.
       ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
       # Registered test operator (raw-JSON keystores + passwords) so on-chain
       # (block/event) triggers actually fire in the E2E stack.
@@ -125,7 +122,7 @@ jobs:
 
       - name: Inject secrets into gateway + worker configs
         run: |
-          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET BUNDLER_URL ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
+          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
           for src in gateway worker-sepolia operator-sepolia; do
             envsubst < config/${src}.yaml > config/${src}.runtime.yaml
             echo "Generated config/${src}.runtime.yaml: $(wc -l < config/${src}.runtime.yaml) lines"

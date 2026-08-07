@@ -25,8 +25,7 @@ gateway_address: "gateway:2206"
 eth_rpc_url: ${ETH_RPC_URL}
 eth_ws_url: ${ETH_WS_URL}
 
-bundler_url: ${BUNDLER_URL}
-# Alchemy, matching production; endpoint derived from the key.
+# Alchemy, matching production; endpoint derived from alchemy_api_key.
 bundler_provider: alchemy
 alchemy_api_key: ${ALCHEMY_API_KEY}
 
