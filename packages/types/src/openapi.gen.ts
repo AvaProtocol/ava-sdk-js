@@ -572,6 +572,21 @@ export interface paths {
          *     allocation inside the write, and stores the policy as `pending`. The
          *     install itself rides the first workflow operation on this wallet —
          *     nothing reaches the chain here.
+         *
+         *     **This REPLACES the runner's previous grants.** A wallet carries at
+         *     most one usable grant: the send path resolves exactly one and refuses
+         *     to execute when it finds more, so grants do not stack. Every other
+         *     usable grant on this runner is revoked as part of this call, and the
+         *     ones revoked come back in `supersededPolicyIds`. There is no flag to
+         *     opt out, and clients do not need to revoke the previous grant first.
+         *
+         *     Replacement is scoped to the runner, not to a capability: submitting a
+         *     grant for one capability revokes the runner's grant for any other.
+         *
+         *     Off-chain only. The superseded grants' validation entities and ERC-20
+         *     spend caps stay installed on the account until the owner signs
+         *     `uninstallValidation` — replacing a grant does not reduce what the
+         *     account could authorize on chain, only what this gateway will use.
          */
         readonly post: operations["submitWalletPolicy"];
         readonly delete?: never;
@@ -630,10 +645,17 @@ export interface paths {
         readonly post?: never;
         /**
          * Revoke a session policy
-         * @description A `pending` grant (never used on-chain) is deleted outright — nothing
-         *     was installed, so nothing remains. An `active` grant stops authorizing
-         *     immediately, but its on-chain validation still exists until the owner
-         *     executes `uninstallValidation`; the response says which case applied.
+         * @description Outcomes:
+         *
+         *     - `status: deleted` — rare: no InstallCall retained; record removed.
+         *     - `status: revoked`, `onChainCleanupRequired: false` — pending grant
+         *       retained so InstallCall survives a late-landing install (orphan
+         *       path). Not known on chain yet; no cleanup payload.
+         *     - `status: revoked`, `onChainCleanupRequired: true` — applied grant
+         *       still believed installed. Response includes `onChainCleanup`
+         *       (uninstallValidation call for the owner wallet: plain tx to the
+         *       runner, or owner-fallback UserOp). Once teardown is verified,
+         *       GET no longer returns cleanup for that policy.
          */
         readonly delete: operations["revokeWalletPolicy"];
         readonly options?: never;
@@ -1930,9 +1952,52 @@ export interface components {
              * @description Unix milliseconds.
              */
             readonly createdAt: number;
+            /**
+             * @description Present when status is revoked and the validation entity is still
+             *     installed on chain. Owner-executable uninstallValidation so clients
+             *     can finish teardown without re-calling DELETE (#717).
+             */
+            readonly onChainCleanup?: components["schemas"]["OnChainRevokeCleanup"];
+        };
+        readonly SubmitPolicyResponse: components["schemas"]["SessionPolicy"] & {
+            /**
+             * @description Grants revoked to keep this runner's authority a singleton —
+             *     the previous grants this submit replaced. Their `status` now
+             *     reads `revoked`; the array distinguishes a replacement the
+             *     gateway performed from one the user asked for via
+             *     `DELETE .../policies/{policyId}`.
+             *
+             *     Empty on a first grant. Non-empty means the user's earlier
+             *     permission is gone, which is worth reflecting in the UI.
+             */
+            readonly supersededPolicyIds: readonly components["schemas"]["Ulid"][];
         };
         readonly SessionPolicyList: {
             readonly items: readonly components["schemas"]["SessionPolicy"][];
+        };
+        /**
+         * @description Owner-executable call that clears an applied grant's validation entity
+         *     and hooks from the runner. Production grants are policied: the gateway
+         *     controller cannot self-uninstall (allowlist blocks uninstallValidation).
+         *     The owner sends this as a plain transaction to `target` (or a UserOp
+         *     validated by the owner fallback). Derived from the retained
+         *     `Grant.InstallCall`, never from live permission structs.
+         */
+        readonly OnChainRevokeCleanup: {
+            /**
+             * Format: int64
+             * @description Validation entity this cleanup removes.
+             */
+            readonly entityId: number;
+            /** @description The smart wallet (runner) to call. */
+            readonly target: components["schemas"]["EthereumAddress"];
+            /** @description uninstallValidation calldata (0x-prefixed). */
+            readonly callData: components["schemas"]["Hex"];
+            /**
+             * Format: int64
+             * @description Chain the runner lives on.
+             */
+            readonly chainId: number;
         };
         readonly RevokePolicyResponse: {
             /**
@@ -1945,6 +2010,11 @@ export interface components {
              *     account and needs the owner's uninstallValidation to clear.
              */
             readonly onChainCleanupRequired: boolean;
+            /**
+             * @description Present when onChainCleanupRequired is true. The wallet client
+             *     executes this call to finish on-chain teardown (#717).
+             */
+            readonly onChainCleanup?: components["schemas"]["OnChainRevokeCleanup"];
         };
     };
     responses: {
@@ -2784,7 +2854,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["SessionPolicy"];
+                    readonly "application/json": components["schemas"]["SubmitPolicyResponse"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

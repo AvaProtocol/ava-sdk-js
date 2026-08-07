@@ -77,6 +77,11 @@ export class PoliciesResource {
    * Returns the policy as `pending`: authorized, but not yet on chain. It
    * becomes `active` when the first workflow operation applies the install.
    *
+   * Also returns `supersededPolicyIds`: every other usable grant on this
+   * runner that was revoked as part of this submit (replace-on-submit). A
+   * non-empty list means the user's earlier permission is gone — worth
+   * reflecting in the UI. There is no flag to opt out.
+   *
    * A 409 means the validation entity was taken by another grant while this
    * one was being signed — prepare again rather than retrying the submit,
    * since the entity is baked into the signed calldata.
@@ -84,8 +89,8 @@ export class PoliciesResource {
   submit(
     address: string,
     req: v4.SubmitPolicyRequest,
-  ): Promise<v4.SessionPolicy> {
-    return this.transport.request<v4.SessionPolicy>({
+  ): Promise<v4.SubmitPolicyResponse> {
+    return this.transport.request<v4.SubmitPolicyResponse>({
       path: `/wallets/${encodeURIComponent(address)}/policies:submit`,
       method: "POST",
       body: req,
@@ -126,15 +131,27 @@ export class PoliciesResource {
   /**
    * DELETE /wallets/{address}/policies/{policyId} — revoke.
    *
-   * Before the grant's first use this is complete on its own: nothing was
-   * installed, so deleting the authorization ends it. Afterwards the
-   * validation module is still on the account and clearing it needs a
-   * separate on-chain uninstall — the gateway stops using the grant either
-   * way, but only the first case leaves nothing behind.
+   * Soft-revokes in gateway storage immediately (the send path stops using
+   * the grant). On-chain outcomes:
    *
-   * The response says which happened: `deleted` when the grant never reached
-   * the chain, `revoked` when the record is retained for audit because a
-   * module is still installed.
+   * - `status: "deleted"` — rare; no InstallCall retained; record removed.
+   * - `status: "revoked"`, `onChainCleanupRequired: false` — pending grant
+   *   retained so InstallCall survives a late-landing install; nothing known
+   *   on chain yet (no cleanup payload).
+   * - `status: "revoked"`, `onChainCleanupRequired: true` — applied grant
+   *   still believed installed. Response includes `onChainCleanup`:
+   *   `{ entityId, target, callData, chainId }` for the owner wallet to send
+   *   as a plain call to the runner (or owner-fallback UserOp). Production
+   *   grants are policied; the gateway controller cannot self-uninstall.
+   *
+   * **Cleanup is not idempotent.** Re-sending `uninstallValidation` after the
+   * entity is already clear reverts (measured on Sepolia). The gateway only
+   * learns the owner executed cleanup on the *next grant's prepare* (chain
+   * readback sets `TornDownAt`); until then GET/list may still return
+   * `onChainCleanup` from storage belief alone. Clients must: send the payload
+   * **once**, treat success locally (do not re-prompt on a lingering field),
+   * and not read presence of `onChainCleanup` as proof teardown has not run.
+   * See EigenLayer-AVS #731 / #717.
    */
   revoke(
     address: string,
@@ -157,6 +174,9 @@ export class PoliciesResource {
    * signed calldata, so recomputing it from `expiresInSeconds` at submit time
    * changes the digest and the signature stops verifying.
    *
+   * Returns {@link v4.SubmitPolicyResponse}: the new pending policy plus
+   * `supersededPolicyIds` for any earlier usable grants this submit replaced.
+   *
    * ```ts
    * const policy = await client.policies.grant(wallet, {
    *   chainId: 11155111,
@@ -165,13 +185,14 @@ export class PoliciesResource {
    *   erc20SpendCap: { token: usdc, amount: "500000000" },
    *   expiresInSeconds: 30 * 24 * 60 * 60,
    * }, (typedData) => walletClient.signTypedData(typedData as never));
+   * // policy.supersededPolicyIds — earlier grants replaced on this runner
    * ```
    */
   async grant(
     address: string,
     req: v4.PreparePolicyRequest,
     sign: TypedDataSigner,
-  ): Promise<v4.SessionPolicy> {
+  ): Promise<v4.SubmitPolicyResponse> {
     const prepared = await this.prepare(address, req);
     const signature = await sign(prepared.typedData);
 
