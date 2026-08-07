@@ -44,10 +44,8 @@ tenderly_access_key: ${TENDERLY_ACCESS_KEY}
 smart_wallet:
   eth_rpc_url: ${ETH_RPC_URL}
   eth_ws_url: ${ETH_WS_URL}
-  bundler_url: ${BUNDLER_URL}
-  # Bundler — Alchemy, matching production. The endpoint is derived from
-  # alchemy_api_key; bundler_url is not read on this path and is kept only so a
-  # secret-less run can fall back by setting bundler_provider: self_hosted.
+  # Bundler — Alchemy, matching production. Endpoint derived from
+  # alchemy_api_key + chain subdomain; no self_hosted fallback in CI.
   bundler_provider: alchemy
   alchemy_api_key: ${ALCHEMY_API_KEY}
   controller_private_key: ${CONTROLLER_PRIVATE_KEY}
@@ -63,7 +61,6 @@ chains:
     smart_wallet:
       eth_rpc_url: ${ETH_RPC_URL}
       eth_ws_url: ${ETH_WS_URL}
-      bundler_url: ${BUNDLER_URL}
       bundler_provider: alchemy
       alchemy_api_key: ${ALCHEMY_API_KEY}
       controller_private_key: ${CONTROLLER_PRIVATE_KEY}
