@@ -207,7 +207,8 @@ export interface paths {
          * Simulate a workflow without persisting it
          * @description Run a workflow definition end-to-end against the engine (Tenderly
          *     simulation for chain-writing nodes) and return the full Execution.
-         *     Nothing is persisted.
+         *     Nothing is persisted. Requires a user Bearer JWT; partner assertion
+         *     alone is not sufficient.
          */
         readonly post: operations["simulateWorkflow"];
         readonly delete?: never;
@@ -444,14 +445,19 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** List the authenticated user's smart wallets */
+        /**
+         * List the authenticated user's smart wallets
+         * @description Preview wallet resolve. Authorize with a user Bearer JWT **or** a
+         *     partner assertion (`scope: read`) whose `sub` is the owner EOA.
+         */
         readonly get: operations["listWallets"];
         readonly put?: never;
         /**
          * Derive (and persist) a smart wallet address from (owner, salt, factory)
          * @description Idempotent "ensure exists". Returns the deterministic CREATE2-derived
          *     address. POST (not GET) because it persists a wallet record server-side
-         *     as a side effect of the derivation.
+         *     as a side effect of the derivation. Authorize with a user Bearer JWT
+         *     **or** a partner assertion (`scope: read`) whose `sub` is the owner EOA.
          */
         readonly post: operations["createWallet"];
         readonly delete?: never;
@@ -709,7 +715,12 @@ export interface paths {
             };
             readonly cookie?: never;
         };
-        /** Retrieve ERC-20 token metadata */
+        /**
+         * Retrieve ERC-20 token metadata
+         * @description Partner-gated public-ish chain data. Requires a partner assertion
+         *     with `scope: read` (`X-Partner-Assertion`). A user Bearer JWT alone
+         *     is not sufficient.
+         */
         readonly get: operations["getToken"];
         readonly put?: never;
         readonly post?: never;
@@ -732,7 +743,8 @@ export interface paths {
          * Execute a single node with inline input variables
          * @description Useful for SDK testing flows — run a node definition against
          *     provided input variables without persisting a workflow. Honors
-         *     `node.config.chainId` (overrides body `chainId`).
+         *     `node.config.chainId` (overrides body `chainId`). Requires a user
+         *     Bearer JWT; partner assertion alone is not sufficient.
          */
         readonly post: operations["runNode"];
         readonly delete?: never;
@@ -750,7 +762,10 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /** Evaluate a trigger definition with inline input */
+        /**
+         * Evaluate a trigger definition with inline input
+         * @description Requires a user Bearer JWT; partner assertion alone is not sufficient.
+         */
         readonly post: operations["runTrigger"];
         readonly delete?: never;
         readonly options?: never;
@@ -770,6 +785,7 @@ export interface paths {
          * @description Read-only monitoring endpoint. Returns each operator's
          *     `supportedChainIds`, `capabilities`, `lastSeen`, and `version`.
          *     Useful for dashboards and debugging multi-chain task routing.
+         *     Currently unauthenticated (public monitoring).
          */
         readonly get: operations["listOperators"];
         readonly put?: never;
@@ -3157,7 +3173,6 @@ export interface operations {
                     readonly "application/json": components["schemas"]["OperatorList"];
                 };
             };
-            readonly 401: components["responses"]["Unauthorized"];
         };
     };
 }

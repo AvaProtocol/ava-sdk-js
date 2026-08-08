@@ -38,6 +38,13 @@ export {
   type BuildAuthMessageInput,
   type BuiltAuthMessage,
 } from "./auth";
+export {
+  mintPartnerAssertion,
+  partnerAssertionHeaders,
+  PARTNER_ASSERTION_HEADER,
+  PARTNER_SCOPE_READ,
+  type MintPartnerAssertionInput,
+} from "./partnerAssertion";
 export { APIError, NetworkError, AuthRequiredError } from "./internal/errors";
 
 // Resource classes are exported in case advanced consumers want to

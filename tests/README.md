@@ -7,8 +7,16 @@ the root of this repo and point `AVS_REST_URL` at the gateway.
 ```bash
 export AVS_REST_URL=http://localhost:8080/api/v1
 export TEST_PRIVATE_KEY=0x...                       # EOA for auth flow
+# Partner-gated token metadata (matches gateway partners[] + audience):
+export PARTNER_ASSERTION_PRIVATE_KEY=...            # base64 Ed25519 seed
+export PARTNER_ASSERTION_ISSUER=studio              # optional, default studio
+export PARTNER_ASSERTION_AUDIENCE=avs-gateway-local # if gateway sets audience
 yarn test
 ```
+
+`tokens.retrieve` requires a partner assertion (`scope: read`); user JWT alone
+returns 401. `tests/v4/core/getToken.test.ts` skips when
+`PARTNER_ASSERTION_PRIVATE_KEY` is unset. Simulate / runNode still use user JWT.
 
 `tests-v3-archive/` holds the legacy gRPC test suite (44 files). They
 are excluded from `yarn test` because the v3 surface has been

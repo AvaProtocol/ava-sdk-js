@@ -47,3 +47,12 @@ export const TEST_PRIVATE_KEY = (): string => requireEnv("TEST_PRIVATE_KEY");
 
 /** Pre-minted admin JWT (alternative to TEST_PRIVATE_KEY). */
 export const TEST_API_KEY = (): string | undefined => process.env.AVS_API_KEY;
+
+/**
+ * Partner assertion env (EigenLayer-AVS permission map — token metadata).
+ * See tests/utils/partner.ts and gateway `partners[]` / partner_assertion_audience.
+ *
+ * - PARTNER_ASSERTION_PRIVATE_KEY — base64 Ed25519 private seed
+ * - PARTNER_ASSERTION_ISSUER — default "studio"
+ * - PARTNER_ASSERTION_AUDIENCE — e.g. "avs-gateway-local"
+ */

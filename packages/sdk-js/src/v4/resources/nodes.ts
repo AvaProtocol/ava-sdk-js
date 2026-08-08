@@ -48,10 +48,11 @@ export class NodesResource {
    *
    * Simulation vs. execution: by default a `contractWrite` node is
    * Tenderly-simulated. Set the node's `isSimulated: false` to execute for
-   * real through the smart wallet — a fund-moving call that requires a Bearer
-   * JWT (the `X-Partner-Assertion` simulate credential is rejected). For a
-   * real execute, pass an {@link RunNodeOptions.idempotencyKey} so a retried
-   * Confirm can't broadcast twice.
+   * real through the smart wallet — fund-moving requires a user Bearer JWT.
+   * Partner assertions do not authorize `nodes:run` (JWT required even for
+   * simulated runs). For a real execute, pass an
+   * {@link RunNodeOptions.idempotencyKey} so a retried Confirm can't broadcast
+   * twice.
    */
   run(
     req: v4.RunNodeRequest,
