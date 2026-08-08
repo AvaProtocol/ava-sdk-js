@@ -95,4 +95,16 @@ describe("mintPartnerAssertion", () => {
     expect(Object.keys(headers)).toEqual([PARTNER_ASSERTION_HEADER]);
     expect(headers[PARTNER_ASSERTION_HEADER].split(".")).toHaveLength(3);
   });
+
+  it("accepts base64-wrapped PEM (Studio GATEWAY_STUDIO_PARTNER_KEY format)", () => {
+    const { privateKey } = generateKeyPairSync("ed25519");
+    const pem = privateKey.export({ type: "pkcs8", format: "pem" }) as string;
+    const pemB64 = Buffer.from(pem, "utf8").toString("base64");
+    const token = mintPartnerAssertion({
+      privateKeyBase64: pemB64,
+      partnerId: "studio",
+      scope: PARTNER_SCOPE_READ,
+    });
+    expect(token.split(".")).toHaveLength(3);
+  });
 });

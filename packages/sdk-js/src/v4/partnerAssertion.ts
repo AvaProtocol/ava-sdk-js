@@ -23,9 +23,11 @@ const ED25519_PKCS8_PREFIX = Buffer.from(
 
 export interface MintPartnerAssertionInput {
   /**
-   * Partner's Ed25519 private key as base64 (optionally `ed25519:`-prefixed).
-   * Accepts a 32-byte seed, a 64-byte seed+public, or a full PKCS#8 DER blob.
-   * Must match a `public_keys` entry on the gateway's `partners[]` config.
+   * Partner's Ed25519 private key. Accepts:
+   * - base64 of a 32-byte seed, 64-byte seed+public, or PKCS#8 DER
+   * - base64 of a PEM PKCS#8 block (Studio `GATEWAY_STUDIO_PARTNER_KEY` format)
+   * - raw PEM text (`-----BEGIN PRIVATE KEY-----`…)
+   * Optionally `ed25519:`-prefixed. Must match a gateway `partners[].public_keys` entry.
    */
   privateKeyBase64: string;
   /** Partner id; must equal the assertion `iss` and a registered partner id (e.g. `"studio"`). */
@@ -139,7 +141,30 @@ export function partnerAssertionHeaders(
 
 function ed25519PrivateKeyFromBase64(encoded: string): KeyObject {
   const trimmed = encoded.trim().replace(/^ed25519:/i, "");
+
+  // Studio stores GATEWAY_STUDIO_PARTNER_KEY as base64(PEM PKCS8 text).
+  // Detect PEM either raw or after base64 decode.
+  if (trimmed.includes("BEGIN PRIVATE KEY")) {
+    try {
+      return createPrivateKey(trimmed);
+    } catch (err) {
+      throw new Error(
+        `invalid Ed25519 PEM private key: ${(err as Error).message}`,
+      );
+    }
+  }
   const raw = decodeBase64Flexible(trimmed);
+  const asUtf8 = raw.toString("utf8");
+  if (asUtf8.includes("BEGIN PRIVATE KEY")) {
+    try {
+      return createPrivateKey(asUtf8);
+    } catch (err) {
+      throw new Error(
+        `invalid Ed25519 PEM private key (base64-wrapped): ${(err as Error).message}`,
+      );
+    }
+  }
+
   let pkcs8: Buffer;
   if (raw.length === 32) {
     pkcs8 = Buffer.concat([ED25519_PKCS8_PREFIX, raw]);
@@ -153,7 +178,7 @@ function ed25519PrivateKeyFromBase64(encoded: string): KeyObject {
     pkcs8 = raw;
   } else {
     throw new Error(
-      `partner private key must be base64 of 32-byte seed, 64-byte seed+pub, or PKCS#8 DER (got ${raw.length} bytes)`,
+      `partner private key must be base64 of 32-byte seed, 64-byte seed+pub, PKCS#8 DER, or base64(PEM) (got ${raw.length} bytes)`,
     );
   }
   try {
