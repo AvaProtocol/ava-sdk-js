@@ -10,7 +10,8 @@ import { Transport } from "../internal/transport";
  *
  * **Auth:** partner-gated (`X-Partner-Assertion` with `scope: read`).
  * A user Bearer JWT alone is rejected by the gateway. Mint via
- * {@link mintPartnerAssertion} / set on {@link Client} headers.
+ * `@avaprotocol/sdk-js/partner` (`mintPartnerAssertion`) and set on
+ * {@link Client} headers.
  */
 export class TokensResource {
   constructor(private readonly transport: Transport) {}

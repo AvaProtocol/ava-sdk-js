@@ -15,6 +15,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./partner": {
+      "types": "./dist/partner.d.ts",
+      "import": "./dist/partner.js",
+      "require": "./dist/partner.js"
     }
   },
   "author": "Vinh Nguyen (https://github.com/v9n), Chris Li (https://github.com/chrisli30)",
@@ -25,7 +30,7 @@
   },
   "scripts": {
     "build:declarations": "tsc -b tsconfig.json",
-    "build:js": "tsup src/index.ts --format cjs,esm",
+    "build:js": "tsup src/index.ts src/partner.ts --format cjs,esm",
     "build": "yarn build:declarations && yarn build:js",
     "clean": "rm -rf node_modules dist tsconfig.tsbuildinfo docs-api",
     "docs": "typedoc && node scripts/flatten-docs.js",

@@ -19,7 +19,7 @@
 
 import { Chains, Client, Tokens, type TokenChainEntry } from "@avaprotocol/sdk-js";
 
-import { getClient } from "../../utils/client";
+import { authenticateClient, getClient } from "../../utils/client";
 import { hasPartnerAssertionKey, testPartnerHeaders } from "../../utils/partner";
 
 interface TokenDef {
@@ -269,7 +269,6 @@ describeOrSkip("getToken Tests", () => {
   });
 
   test("user JWT alone is rejected (partner required)", async () => {
-    const { authenticateClient } = await import("../../utils/client");
     const jwtOnly = getClient();
     await authenticateClient(jwtOnly);
     await expect(retrieve(jwtOnly, TOKENS.USDC.address)).rejects.toMatchObject({

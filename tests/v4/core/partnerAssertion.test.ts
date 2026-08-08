@@ -5,7 +5,7 @@ import {
   partnerAssertionHeaders,
   PARTNER_ASSERTION_HEADER,
   PARTNER_SCOPE_READ,
-} from "@avaprotocol/sdk-js";
+} from "@avaprotocol/sdk-js/partner";
 
 function seedBase64FromGenerated(): {
   seedB64: string;
@@ -106,5 +106,53 @@ describe("mintPartnerAssertion", () => {
       scope: PARTNER_SCOPE_READ,
     });
     expect(token.split(".")).toHaveLength(3);
+  });
+
+  it("trims array scopes and mints jti by default", () => {
+    const { seedB64 } = seedBase64FromGenerated();
+    const token = mintPartnerAssertion({
+      privateKeyBase64: seedB64,
+      partnerId: "studio",
+      scope: [" read ", "  ", "tokens"],
+    });
+    const payload = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64url").toString("utf8"),
+    );
+    expect(payload.scope).toBe("read tokens");
+    expect(typeof payload.jti).toBe("string");
+    expect(String(payload.jti).length).toBeGreaterThan(0);
+  });
+
+  it("rejects whitespace-only array scopes, empty partnerId, and garbage keys", () => {
+    const { seedB64 } = seedBase64FromGenerated();
+    expect(() =>
+      mintPartnerAssertion({
+        privateKeyBase64: seedB64,
+        partnerId: "studio",
+        scope: ["  ", ""],
+      }),
+    ).toThrow(/scope/i);
+    expect(() =>
+      mintPartnerAssertion({
+        privateKeyBase64: seedB64,
+        partnerId: "   ",
+        scope: "read",
+      }),
+    ).toThrow(/partnerId/i);
+    expect(() =>
+      mintPartnerAssertion({
+        privateKeyBase64: seedB64,
+        partnerId: "studio",
+        scope: "read",
+        audience: ["  ", ""],
+      }),
+    ).toThrow(/audience/i);
+    expect(() =>
+      mintPartnerAssertion({
+        privateKeyBase64: "!!!not-base64!!!",
+        partnerId: "studio",
+        scope: "read",
+      }),
+    ).toThrow(/private key|base64/i);
   });
 });

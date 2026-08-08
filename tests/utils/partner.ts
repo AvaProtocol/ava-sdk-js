@@ -16,7 +16,7 @@ import {
   partnerAssertionHeaders,
   PARTNER_ASSERTION_HEADER,
   PARTNER_SCOPE_READ,
-} from "@avaprotocol/sdk-js";
+} from "@avaprotocol/sdk-js/partner";
 
 import { optionalEnv } from "./env";
 

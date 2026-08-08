@@ -15,8 +15,9 @@ yarn test
 ```
 
 `tokens.retrieve` requires a partner assertion (`scope: read`); user JWT alone
-returns 401. `tests/v4/core/getToken.test.ts` skips when
-`PARTNER_ASSERTION_PRIVATE_KEY` is unset. Simulate / runNode still use user JWT.
+returns 401. Mint via `@avaprotocol/sdk-js/partner` (Node-only).
+`tests/v4/core/getToken.test.ts` skips when `PARTNER_ASSERTION_PRIVATE_KEY`
+is unset. Simulate / runNode still use user JWT.
 
 `tests-v3-archive/` holds the legacy gRPC test suite (44 files). They
 are excluded from `yarn test` because the v3 surface has been

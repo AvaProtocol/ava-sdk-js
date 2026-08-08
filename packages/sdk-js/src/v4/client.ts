@@ -30,8 +30,9 @@ export interface ClientOptions {
   fetchImpl?: typeof fetch;
   /**
    * Default headers sent on every request. Use this to carry a partner
-   * assertion (`X-Partner-Assertion` via {@link mintPartnerAssertion} /
-   * {@link partnerAssertionHeaders}) for partner-gated routes:
+   * assertion (`X-Partner-Assertion` minted via
+   * `@avaprotocol/sdk-js/partner` `mintPartnerAssertion`) for partner-gated
+   * routes:
    * - token metadata (`tokens.retrieve`) — partner `scope: read` required
    * - preview wallet list/create — partner `read` + EOA `sub`, **or** user JWT
    *

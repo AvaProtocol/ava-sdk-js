@@ -1,20 +1,35 @@
-import { createPrivateKey, sign as cryptoSign, type KeyObject } from "node:crypto";
-
 /**
- * Header name for the short-lived Ed25519 partner assertion JWT accepted
- * by the AVS gateway (see EigenLayer-AVS `aggregator/rest/permission.go`).
+ * Server-only partner assertion minting (Node.js).
+ *
+ * Uses `node:crypto` — **do not import this module from the root SDK barrel**
+ * or browser bundles. Import via:
+ *   `import { mintPartnerAssertion } from "@avaprotocol/sdk-js/partner"`
+ *
+ * Browser-safe constants live in `partnerAssertionConstants.ts` and are
+ * re-exported from the root package for header names / scope strings.
  */
-export const PARTNER_ASSERTION_HEADER = "X-Partner-Assertion";
 
-/**
- * Partner scope for token metadata and preview wallet list/create.
- * Simulate / runNode / runTrigger require a user Bearer JWT instead.
- */
-export const PARTNER_SCOPE_READ = "read";
+import {
+  createPrivateKey,
+  randomUUID,
+  sign as cryptoSign,
+  type KeyObject,
+} from "node:crypto";
+
+import {
+  PARTNER_ASSERTION_HEADER,
+  PARTNER_SCOPE_READ,
+} from "./partnerAssertionConstants";
+
+export {
+  PARTNER_ASSERTION_HEADER,
+  PARTNER_SCOPE_READ,
+} from "./partnerAssertionConstants";
 
 /**
  * PKCS#8 DER prefix for a 32-byte Ed25519 seed
  * (`SEQUENCE` / version / AlgorithmIdentifier ed25519 / OCTET STRING seed).
+ * Length 16; + 32-byte seed = 48-byte PKCS#8 blob Node accepts.
  */
 const ED25519_PKCS8_PREFIX = Buffer.from(
   "302e020100300506032b657004220420",
@@ -51,11 +66,16 @@ export interface MintPartnerAssertionInput {
   expiresInSeconds?: number;
   /** Override `iat` (unix seconds). Defaults to now. */
   issuedAt?: number;
+  /**
+   * Optional JWT ID. Defaults to a random UUID (`jti`) so Studio and gateway
+   * tooling can correlate / (future) de-dupe assertions.
+   */
+  jti?: string;
 }
 
 /**
  * Mint a short-lived EdDSA (Ed25519) partner assertion JWT for
- * `X-Partner-Assertion`.
+ * `X-Partner-Assertion`. **Node.js only** — see module header.
  *
  * Permission model (gateway):
  * - `scope: read` alone → token metadata; with non-zero EOA `sub` → wallet list/create
@@ -63,8 +83,11 @@ export interface MintPartnerAssertionInput {
  * - Session policies / fund ops → user JWT; partner header refused
  *
  * @example
+ *   import { mintPartnerAssertion, PARTNER_SCOPE_READ, PARTNER_ASSERTION_HEADER } from "@avaprotocol/sdk-js/partner";
+ *   import { Client } from "@avaprotocol/sdk-js";
+ *
  *   const assertion = mintPartnerAssertion({
- *     privateKeyBase64: process.env.PARTNER_ASSERTION_PRIVATE_KEY!,
+ *     privateKeyBase64: process.env.GATEWAY_STUDIO_PARTNER_KEY!,
  *     partnerId: "studio",
  *     scope: PARTNER_SCOPE_READ,
  *     audience: "avs-gateway-staging",
@@ -73,7 +96,6 @@ export interface MintPartnerAssertionInput {
  *     baseUrl,
  *     headers: { [PARTNER_ASSERTION_HEADER]: assertion },
  *   });
- *   await client.tokens.retrieve(usdcAddress, { chainId: 11155111 });
  */
 export function mintPartnerAssertion(input: MintPartnerAssertionInput): string {
   const expiresIn = input.expiresInSeconds ?? 300;
@@ -89,9 +111,7 @@ export function mintPartnerAssertion(input: MintPartnerAssertionInput): string {
   const iat = input.issuedAt ?? Math.floor(Date.now() / 1000);
   const exp = iat + expiresIn;
 
-  const scope = Array.isArray(input.scope)
-    ? input.scope.join(" ")
-    : String(input.scope).trim();
+  const scope = normalizeScope(input.scope);
   if (!scope) {
     throw new Error("scope is required");
   }
@@ -104,6 +124,7 @@ export function mintPartnerAssertion(input: MintPartnerAssertionInput): string {
     scope,
     iat,
     exp,
+    jti: input.jti?.trim() || randomUUID(),
   };
   if (input.subject !== undefined && input.subject !== "") {
     payload.sub = input.subject;
@@ -111,10 +132,11 @@ export function mintPartnerAssertion(input: MintPartnerAssertionInput): string {
   if (input.audience !== undefined) {
     const aud = input.audience;
     if (Array.isArray(aud)) {
-      if (aud.length === 0) {
+      const cleaned = aud.map((a) => String(a).trim()).filter(Boolean);
+      if (cleaned.length === 0) {
         throw new Error("audience array must not be empty when provided");
       }
-      payload.aud = [...aud];
+      payload.aud = cleaned.length === 1 ? cleaned[0] : cleaned;
     } else if (String(aud).trim() !== "") {
       payload.aud = String(aud).trim();
     }
@@ -126,6 +148,20 @@ export function mintPartnerAssertion(input: MintPartnerAssertionInput): string {
   // Node: for Ed25519, algorithm must be null / undefined.
   const signature = cryptoSign(null, Buffer.from(signingInput, "utf8"), key);
   return `${signingInput}.${base64Url(signature)}`;
+}
+
+/**
+ * Normalize scope claim: trim each entry, drop empties, join with spaces
+ * (OAuth-style). Throws via empty string when nothing remains.
+ */
+function normalizeScope(scope: string | readonly string[]): string {
+  if (Array.isArray(scope)) {
+    return scope
+      .map((s) => String(s).trim())
+      .filter((s) => s.length > 0)
+      .join(" ");
+  }
+  return String(scope).trim();
 }
 
 /**
@@ -190,6 +226,12 @@ function ed25519PrivateKeyFromBase64(encoded: string): KeyObject {
   }
 }
 
+/**
+ * Decode base64 or base64url. Node's `base64` decoder is lenient about
+ * alphabet (may silently drop or mis-map url-safe chars), so we try both
+ * encodings and keep the **longer** non-empty buffer — a wrong alphabet
+ * usually yields a shorter/wrong blob rather than throwing.
+ */
 function decodeBase64Flexible(s: string): Buffer {
   const candidates = [
     () => Buffer.from(s, "base64"),
@@ -200,7 +242,6 @@ function decodeBase64Flexible(s: string): Buffer {
     try {
       const b = tryDecode();
       if (b.length > 0) {
-        // Prefer the first non-empty decode; std base64 may accept url-safe poorly
         if (!last || b.length >= last.length) last = b;
       }
     } catch {
