@@ -27,7 +27,6 @@ export type UniswapV3PoolDef = {
 
 export type ChainConfig = {
   name: string;
-  avsEndpoint: string;
   chainId: string;
   chainEndpoint: string | null;
   explorerApiBaseUrl?: string | null;
@@ -40,7 +39,6 @@ export type ChainConfig = {
 
 const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
   dev: {
-    avsEndpoint: "localhost:2206",
     chainId: "11155111", // Sepolia chain ID for local dev
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api-sepolia.etherscan.io/api",
@@ -48,8 +46,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   sepolia: {
-    avsEndpoint: "aggregator-sepolia.avaprotocol.org:2206",
-    // avsEndpoint: "ballast.proxy.rlwy.net:10661", EigenLayer-AVS feature branch of feature/railway-migration-phase1-testnet
     chainId: "11155111",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api-sepolia.etherscan.io/api",
@@ -98,7 +94,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     },
   },
   "base-sepolia": {
-    avsEndpoint: "aggregator-base-sepolia.avaprotocol.org:3206",
     chainId: "84532",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api-sepolia.basescan.org/api",
@@ -106,7 +101,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   base: {
-    avsEndpoint: "aggregator-base.avaprotocol.org:3206",
     chainId: "8453",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api.basescan.org/api",
@@ -114,7 +108,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   ethereum: {
-    avsEndpoint: "aggregator.avaprotocol.org:2206",
     chainId: "1",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api.etherscan.io/api",
@@ -122,7 +115,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   soneium: {
-    avsEndpoint: "aggregator-soneium.avaprotocol.org:2208",
     chainId: "1868",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://soneium.blockscout.com/api",
@@ -130,7 +122,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   "soneium-minato": {
-    avsEndpoint: "aggregator-soneium-minato.avaprotocol.org:2208",
     chainId: "1946",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://soneium.blockscout.com/api",
@@ -138,7 +129,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   bsc: {
-    avsEndpoint: "aggregator-bsc.avaprotocol.org:2209",
     chainId: "56",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api.bscscan.com/api",
@@ -146,7 +136,6 @@ const staticChains: Record<string, Omit<ChainConfig, "rpcUrl" | "name">> = {
     oracles: {},
   },
   "bsc-testnet": {
-    avsEndpoint: "aggregator-bsc-testnet.avaprotocol.org:2209",
     chainId: "97",
     chainEndpoint: null,
     explorerApiBaseUrl: "https://api-testnet.bscscan.com/api",
