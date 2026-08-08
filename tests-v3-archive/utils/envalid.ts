@@ -61,8 +61,12 @@ export const ENV_CONFIGS: Record<
     throw new Error(`Chain configuration not found for environment: ${env}`);
   }
   acc[env] = {
-    // For dev environment, use localhost aggregator endpoint for local development
-    aggregatorEndpoint: env === "dev" ? "localhost:2206" : c.avsEndpoint,
+    // Local only. This archived v3 suite dials the gRPC aggregator, and every
+    // hosted one it used to reach (aggregator*.avaprotocol.org:2206) has been
+    // retired with the move to the unified REST gateway — most no longer have
+    // a DNS record. Against a non-local environment these tests cannot run at
+    // all, so naming a dead host here would only disguise that as a timeout.
+    aggregatorEndpoint: "localhost:2206",
     operatorEndpoint: "localhost:9010", // Operator node API endpoint
     chainId: c.chainId,
     chainEndpoint: c.chainEndpoint,
