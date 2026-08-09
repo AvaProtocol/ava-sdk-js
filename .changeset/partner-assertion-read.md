@@ -3,13 +3,15 @@
 "@avaprotocol/types": patch
 ---
 
-feat: mintPartnerAssertion for partner-gated token/wallet reads
+feat: partner assertion minting for permission-gated gateway reads
 
-Adds Node-only `@avaprotocol/sdk-js/partner` (`mintPartnerAssertion` /
-`partnerAssertionHeaders`) so Studio and e2e can send `X-Partner-Assertion`
-with `scope: read`. Root package exports browser-safe constants only
-(`PARTNER_ASSERTION_HEADER`, `PARTNER_SCOPE_READ`) — no `node:crypto` on the
-main barrel. Simulate/runNode remain user-JWT-only. getToken e2e uses partner
-auth when PARTNER_ASSERTION_PRIVATE_KEY is set.
+Aligns with EigenLayer-AVS permission map (#739):
 
-Regens OpenAPI types from AVS staging (`partnerAssertion` security scheme).
+- **`@avaprotocol/sdk-js/partner`** (Node-only): `mintPartnerAssertion`,
+  `partnerAssertionHeaders` — EdDSA `X-Partner-Assertion` with `scope: read`,
+  optional EOA `sub`, `jti`, Studio base64-PEM keys
+- **Root package** (browser-safe): `PARTNER_ASSERTION_HEADER`, `PARTNER_SCOPE_READ`
+  only — no `node:crypto` on the main barrel
+- OpenAPI regen: `partnerAssertion` security scheme; tokens partner-only;
+  wallets partner or bearer; simulate/runNode bearer-only
+- E2E: getToken uses partner assertion; JWT-alone expects 401
