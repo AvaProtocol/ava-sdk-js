@@ -7,6 +7,11 @@ import { Transport } from "../internal/transport";
  * aggregator's curated whitelist plus an on-chain `name/symbol/decimals`
  * fallback. Used by the Studio token-picker, transfer-preview UI, and
  * the notification cost-line renderer.
+ *
+ * **Auth:** partner-gated (`X-Partner-Assertion` with `scope: read`).
+ * A user Bearer JWT alone is rejected by the gateway. Mint via
+ * `@avaprotocol/sdk-js/partner` (`mintPartnerAssertion`) and set on
+ * {@link Client} headers.
  */
 export class TokensResource {
   constructor(private readonly transport: Transport) {}
@@ -19,9 +24,9 @@ export class TokensResource {
    * partial response keeps the caller's UI from breaking on
    * unrecognized tokens.
    *
-   * `opts.chainId` picks which chain's whitelist + RPC to consult.
-   * Omit it to fall back to the JWT's `aud` chain (the gateway's
-   * default chain context for the authenticated user).
+   * Requires a partner assertion (`scope: read`). Pass `opts.chainId`
+   * to select the whitelist/RPC chain (recommended when no user JWT
+   * `aud` is present).
    */
   retrieve(address: string, opts?: { chainId?: number }): Promise<v4.TokenMetadataResponse> {
     return this.transport.request<v4.TokenMetadataResponse>({

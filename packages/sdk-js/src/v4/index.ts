@@ -38,6 +38,12 @@ export {
   type BuildAuthMessageInput,
   type BuiltAuthMessage,
 } from "./auth";
+// Partner assertion *constants* only — minting is Node-only and lives at
+// `@avaprotocol/sdk-js/partner` so browser bundles never pull in `node:crypto`.
+export {
+  PARTNER_ASSERTION_HEADER,
+  PARTNER_SCOPE_READ,
+} from "./partnerAssertionConstants";
 export { APIError, NetworkError, AuthRequiredError } from "./internal/errors";
 
 // Resource classes are exported in case advanced consumers want to

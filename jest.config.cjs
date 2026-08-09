@@ -13,6 +13,8 @@ module.exports = {
   moduleNameMapper: {
     // Resolve workspace packages to their TypeScript source so tests
     // run against the latest code, not the built dist/.
+    // Subpath exports must be listed before the root package mapper.
+    "^@avaprotocol/sdk-js/partner$": "<rootDir>/packages/sdk-js/src/partner.ts",
     "^@avaprotocol/sdk-js$": "<rootDir>/packages/sdk-js/src/index.ts",
     "^@avaprotocol/types$": "<rootDir>/packages/types/src/index.ts",
   },

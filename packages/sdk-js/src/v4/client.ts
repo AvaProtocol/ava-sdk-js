@@ -29,12 +29,15 @@ export interface ClientOptions {
   /** Override the fetch impl. Useful for tests and non-Node runtimes. */
   fetchImpl?: typeof fetch;
   /**
-   * Default headers sent on every request. Use this to carry a non-Bearer
-   * credential — notably a partner assertion in `X-Partner-Assertion` for the
-   * no-fund simulate / wallet-derivation flow, where the end user has no
-   * wallet signature. Construct a dedicated client for that flow (no `token`)
-   * and put the short-lived assertion here. Fund-moving calls still require a
-   * Bearer token from `auth.exchange()`.
+   * Default headers sent on every request. Use this to carry a partner
+   * assertion (`X-Partner-Assertion` minted via
+   * `@avaprotocol/sdk-js/partner` `mintPartnerAssertion`) for partner-gated
+   * routes:
+   * - token metadata (`tokens.retrieve`) — partner `scope: read` required
+   * - preview wallet list/create — partner `read` + EOA `sub`, **or** user JWT
+   *
+   * Simulate / runNode / runTrigger and fund-moving calls require a user
+   * Bearer JWT from `auth.exchange()`; partner alone is not enough.
    */
   headers?: Record<string, string>;
 }

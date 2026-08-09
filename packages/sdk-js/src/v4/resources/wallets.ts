@@ -9,15 +9,17 @@ import { Transport } from "../internal/transport";
  * the SDK never creates an EOA, it ensures-and-registers smart
  * accounts owned by the authenticated user's EOA.
  *
- * All endpoints require auth and operate on wallets owned by the
- * JWT's subject EOA.
+ * **Auth:**
+ * - `list` / `create` (preview resolve) — user JWT **or** partner
+ *   assertion (`scope: read`, `sub` = owner EOA)
+ * - update / withdraw / nonce — user JWT only
  */
 export class WalletsResource {
   constructor(private readonly transport: Transport) {}
 
   /**
    * GET /wallets — every smart wallet owned by the authenticated
-   * EOA on the JWT's audience chain.
+   * EOA (JWT subject, or partner assertion `sub`).
    *
    * Hidden wallets (`isHidden=true`) are excluded by default. The
    * response is an envelope `{ data: Wallet[] }`, not a bare array.
@@ -39,6 +41,9 @@ export class WalletsResource {
    * Per-owner cap is enforced by `max_wallets_per_owner` in the
    * aggregator config; the call returns 429 `WALLETS_LIMIT_REACHED`
    * when exceeded.
+   *
+   * Preview-friendly: partner assertion with EOA `sub` is accepted
+   * without a user JWT.
    */
   create(req: v4.CreateWalletRequest): Promise<v4.Wallet> {
     return this.transport.request<v4.Wallet>({

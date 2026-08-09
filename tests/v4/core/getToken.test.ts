@@ -7,9 +7,9 @@
  *     {found, address, name, symbol, decimals, source, chainId}
  *     directly on the response.
  *
- * The v3 "per-request authKey" branch is gone — v4's auth is a
- * single client-scoped Bearer JWT, so the "should respect request
- * options" assertion is dropped.
+ * Auth (EigenLayer-AVS permission map): GET /tokens/{address} requires a
+ * partner assertion with `scope: read`. User JWT alone is rejected.
+ * Tests mint via PARTNER_ASSERTION_PRIVATE_KEY (see tests/utils/partner.ts).
  *
  * Token whitelist is inlined for the dev/sepolia chain (chainId
  * 11155111). Tests using TOKENS skip cleanly when the table is
@@ -19,10 +19,8 @@
 
 import { Chains, Client, Tokens, type TokenChainEntry } from "@avaprotocol/sdk-js";
 
-import {
-  authenticateClient,
-  getClient,
-} from "../../utils/client";
+import { authenticateClient, getClient } from "../../utils/client";
+import { hasPartnerAssertionKey, testPartnerHeaders } from "../../utils/partner";
 
 interface TokenDef {
   readonly address: string;
@@ -66,9 +64,13 @@ const TOKENS: Readonly<Record<string, TokenDef>> = {
   LINK: fromCatalog("LINK"),
 };
 
+/** Explicit chain for partner-only calls (no JWT `aud` fallback). */
+const SEPOLIA_CHAIN_ID = Chains.Sepolia;
+
 const HAS_TOKENS = Object.keys(TOKENS).length > 0;
-const describeOrSkip = HAS_TOKENS ? describe : describe.skip;
-const testOrSkip = HAS_TOKENS ? test : test.skip;
+const describeOrSkip =
+  HAS_TOKENS && hasPartnerAssertionKey() ? describe : describe.skip;
+const testOrSkip = HAS_TOKENS && hasPartnerAssertionKey() ? test : test.skip;
 
 /**
  * Match server-returned name against the expected name/symbol.
@@ -83,18 +85,30 @@ function nameMatchesExpected(actual: string | undefined, expected: TokenDef): bo
   return false;
 }
 
+function retrieve(client: Client, address: string) {
+  return client.tokens.retrieve(address, { chainId: SEPOLIA_CHAIN_ID });
+}
+
 describeOrSkip("getToken Tests", () => {
   let client: Client;
 
-  beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+  beforeAll(() => {
+    // Partner-only — no user JWT (matches gateway LevelPartnerRead).
+    client = getClient({ headers: testPartnerHeaders() });
   });
+
+  if (!hasPartnerAssertionKey()) {
+    // Surface why the suite is skipped when run interactively.
+    // eslint-disable-next-line no-console
+    console.warn(
+      "getToken Tests skipped: set PARTNER_ASSERTION_PRIVATE_KEY (+ audience) matching gateway partners[]",
+    );
+  }
 
   test.each(Object.entries(TOKENS))(
     "retrieve(%s) returns whitelist metadata (or placeholder)",
     async (tokenName, token) => {
-      const resp = await client.tokens.retrieve(token.address);
+      const resp = await retrieve(client, token.address);
       expect(resp.found).toBeTruthy();
       // v4 returns the address lowercased and exposes it directly on
       // the response (no nested `.token` object).
@@ -120,7 +134,7 @@ describeOrSkip("getToken Tests", () => {
     ["zero address", "0x0000000000000000000000000000000000000000"],
     ["non-existent address", "0x1234567890123456789012345678901234567890"],
   ])("retrieve(%s) returns a well-formed found/not-found response", async (context, address) => {
-    const resp = await client.tokens.retrieve(address);
+    const resp = await retrieve(client, address);
     expect(typeof resp.found).toBe("boolean");
     if (resp.found) {
       // Some non-test environments return cached metadata even for
@@ -143,14 +157,14 @@ describeOrSkip("getToken Tests", () => {
     // Echo routes "" -> different path (/tokens/) so the surface
     // there is 404 from the router, not 400 from the handler.
     // Either is acceptable as "not a valid request".
-    await expect(client.tokens.retrieve(address))
+    await expect(retrieve(client, address))
       .rejects.toMatchObject({ status: expect.any(Number) })
       .then(() => undefined)
       .catch(async () => {
         // If the call somehow resolves, the response must indicate
         // found=false so the test still expresses "garbage in →
         // safe handling out".
-        const resp = await client.tokens.retrieve(address);
+        const resp = await retrieve(client, address);
         expect(resp.found).toBe(false);
       });
     void description;
@@ -166,7 +180,7 @@ describeOrSkip("getToken Tests", () => {
     ];
 
     const responses = await Promise.all(
-      variants.map((addr) => client.tokens.retrieve(addr)),
+      variants.map((addr) => retrieve(client, addr)),
     );
 
     for (const resp of responses) {
@@ -182,7 +196,7 @@ describeOrSkip("getToken Tests", () => {
   testOrSkip.each(Object.values(TOKENS).map((t) => [t.address] as const))(
     "validate token metadata structure for %s",
     async (address) => {
-      const resp = await client.tokens.retrieve(address);
+      const resp = await retrieve(client, address);
       expect(resp.found).toBeTruthy();
       // v4 surfaces the address-as-id directly.
       expect(resp.address).toMatch(/^0x[a-f0-9]{40}$/);
@@ -201,7 +215,7 @@ describeOrSkip("getToken Tests", () => {
 
   testOrSkip("handles concurrent requests properly", async () => {
     const addresses = Object.values(TOKENS).map((t) => t.address);
-    const responses = await Promise.all(addresses.map((a) => client.tokens.retrieve(a)));
+    const responses = await Promise.all(addresses.map((a) => retrieve(client, a)));
     expect(responses).toHaveLength(addresses.length);
     responses.forEach((resp, idx) => {
       expect(resp.found).toBeTruthy();
@@ -213,9 +227,9 @@ describeOrSkip("getToken Tests", () => {
     if (!TOKENS.USDC) return;
     const address = TOKENS.USDC.address;
     const [first, second, third] = await Promise.all([
-      client.tokens.retrieve(address),
-      client.tokens.retrieve(address),
-      client.tokens.retrieve(address),
+      retrieve(client, address),
+      retrieve(client, address),
+      retrieve(client, address),
     ]);
     expect(first).toEqual(second);
     expect(second).toEqual(third);
@@ -230,7 +244,7 @@ describeOrSkip("getToken Tests", () => {
   )(
     "handle %s with %s decimals (flexible)",
     async (tokenName, token, expectedDecimals) => {
-      const resp = await client.tokens.retrieve(token.address);
+      const resp = await retrieve(client, token.address);
       expect(resp.found).toBeTruthy();
 
       if (resp.name === "Unknown Token") {
@@ -248,9 +262,17 @@ describeOrSkip("getToken Tests", () => {
 
   test("request completes within a reasonable time budget", async () => {
     const start = Date.now();
-    const resp = await client.tokens.retrieve("0x0000000000000000000000000000000000000000");
+    const resp = await retrieve(client, "0x0000000000000000000000000000000000000000");
     const duration = Date.now() - start;
     expect(duration).toBeLessThan(10_000);
     expect(typeof resp.found).toBe("boolean");
+  });
+
+  test("user JWT alone is rejected (partner required)", async () => {
+    const jwtOnly = getClient();
+    await authenticateClient(jwtOnly);
+    await expect(retrieve(jwtOnly, TOKENS.USDC.address)).rejects.toMatchObject({
+      status: 401,
+    });
   });
 });
