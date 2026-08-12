@@ -40,6 +40,20 @@ describe("SessionPolicyActions", () => {
     expect(action.target).toBe(Protocols.uniswapV3.swapRouter02[SEPOLIA]);
   });
 
+  test("uniswapV3Swap resolves Arbitrum and Optimism from the 0.10.0 catalog", () => {
+    const ARBITRUM = 42_161;
+    const OPTIMISM = 10;
+    expect(SessionPolicyActions.uniswapV3Swap(ARBITRUM).target).toBe(
+      Protocols.uniswapV3.swapRouter02[ARBITRUM]
+    );
+    expect(SessionPolicyActions.uniswapV3Swap(OPTIMISM).target).toBe(
+      Protocols.uniswapV3.swapRouter02[OPTIMISM]
+    );
+    expect(SessionPolicyActions.uniswapV3Swap(ARBITRUM).target).toBe(
+      "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+    );
+  });
+
   // Better to refuse than to grant a zero address or the wrong chain's router.
   test("an unknown chain is refused, with the way out in the message", () => {
     expect(() => SessionPolicyActions.uniswapV3Swap(999_999)).toThrow(

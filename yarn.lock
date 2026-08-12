@@ -7,10 +7,10 @@
   resolved "https://registry.npmjs.org/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz"
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
-"@avaprotocol/protocols@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@avaprotocol/protocols/-/protocols-0.6.0.tgz#b30b4a0696a37b3555a1e0e8ec18d6fbd75bd89a"
-  integrity sha512-s/U2SWRNcyoh6fl2Rydm6kaKUXP8n+JXHQoCvFX5TYEA+3GuV+QYkXtx3bSmzuj/khs6IV27O2+DoBMcajfH1A==
+"@avaprotocol/protocols@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@avaprotocol/protocols/-/protocols-0.10.0.tgz#909e52eb7526552543c7c3b1556a846b1fdfefe3"
+  integrity sha512-qBN0V99KRGbKlWfmKzYls52C5neb1nVHl5qj0PW2mDTgmrG8nxjp8reqAdLidbntJsUfPPnTYr5aauTlDo0d5g==
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.27.1":
   version "7.27.1"
