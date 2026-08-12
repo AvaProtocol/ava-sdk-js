@@ -37,7 +37,7 @@
     "prepare": "node ../../scripts/prepare-package.js"
   },
   "dependencies": {
-    "@avaprotocol/protocols": "^0.9.0",
+    "@avaprotocol/protocols": "^0.10.0",
     "@avaprotocol/types": "^4.5.1",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.2"
