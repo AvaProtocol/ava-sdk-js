@@ -1,5 +1,12 @@
 # @avaprotocol/sdk-js
 
+## 4.10.0
+
+### Minor Changes
+
+- e7ee66f: Bump `@avaprotocol/protocols` to `^0.10.0`. Uniswap V3 SwapRouter02 / WETH / native USDC now exist on Arbitrum and Optimism, so `SessionPolicyActions.uniswapV3Swap(42161)` and `uniswapV3Swap(10)` resolve from the catalog instead of throwing.
+- d4872d9: Bump `@avaprotocol/protocols` to `^0.9.0`. Picks up Arbitrum / Optimism chain IDs, `aaveV3.markets` (Ethereum Core/EtherFi/Lido/Horizon), Core reserves on the new chains, and re-exports the new Aave market/reserve types. Existing `Protocols.aaveV3.pool[chainId]` (Core) and Sepolia/Base callers are unchanged.
+
 ## 4.9.0
 
 ### Minor Changes
