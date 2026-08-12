@@ -188,6 +188,25 @@ describe("Authentication Tests", () => {
       expect(String(decoded.aud)).toBe("56");
     });
 
+    test("mints a JWT scoped to Arbitrum One (42161) — proves new-chain worker is reachable via gateway", async () => {
+      // Same probe as BNB (56). Signing the canonical auth message
+      // against chainId 42161 and getting a JWT with aud=42161 means
+      // the gateway has Arbitrum in chains[], TokenEnrichmentService
+      // initialized, and the EIP-191 template accepts the chain id.
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 42161,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const [, body] = res.token.split(".");
+      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("42161");
+    });
+
     test("rejects a signature that doesn't match the owner", async () => {
       const payload = await buildAuthPayload(client);
       // Re-sign the message with a different key — verifier will
