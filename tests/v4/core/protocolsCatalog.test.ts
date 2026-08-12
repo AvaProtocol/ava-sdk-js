@@ -1,14 +1,14 @@
 /**
- * Catalog compatibility after `@avaprotocol/protocols@0.9.0`.
+ * Catalog compatibility after `@avaprotocol/protocols@0.10.0`.
  *
- * Pure data — no gateway. Pins the 0.9.0 surface the SDK re-exports so a
+ * Pure data — no gateway. Pins the 0.10.0 surface the SDK re-exports so a
  * stale lockfile or a catalog regression cannot silently drop Arb/OP or
  * collapse Ethereum multi-market back to Core-only.
  */
 
 import { Chains, Protocols } from "@avaprotocol/sdk-js";
 
-describe("protocols catalog 0.9.0", () => {
+describe("protocols catalog 0.10.0", () => {
   test("spreads new catalog chain IDs onto SDK Chains", () => {
     expect(Chains.ArbitrumOne).toBe(42_161);
     expect(Chains.OptimismMainnet).toBe(10);
@@ -33,6 +33,18 @@ describe("protocols catalog 0.9.0", () => {
     const eth = Protocols.aaveV3.markets[Chains.EthereumMainnet] ?? [];
     expect(eth.map((m) => m.key)).toEqual(["core", "etherFi", "lido", "horizon"]);
     expect(eth[0]?.pool).toBe(Protocols.aaveV3.pool[Chains.EthereumMainnet]);
+  });
+
+  test("Uniswap V3 SwapRouter02 + WETH resolve on Arbitrum and Optimism", () => {
+    const officialRouter = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
+    expect(Protocols.uniswapV3.swapRouter02[Chains.ArbitrumOne]).toBe(officialRouter);
+    expect(Protocols.uniswapV3.swapRouter02[Chains.OptimismMainnet]).toBe(officialRouter);
+    expect(Protocols.wrapped.weth[Chains.ArbitrumOne]).toBe(
+      "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    );
+    expect(Protocols.wrapped.weth[Chains.OptimismMainnet]).toBe(
+      "0x4200000000000000000000000000000000000006"
+    );
   });
 
   test("existing Core callers stay on the same Sepolia Pool", () => {
