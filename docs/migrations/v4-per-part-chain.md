@@ -26,7 +26,10 @@ The configured set is the source of truth; anything else is rejected at create:
 | Chain | `chainId` | `Chains` constant |
 |---|---|---|
 | Ethereum | `1` | `Chains.EthereumMainnet` |
+| Optimism | `10` | `Chains.OptimismMainnet` |
+| BNB | `56` | `Chains.BnbMainnet` |
 | Base | `8453` | `Chains.BaseMainnet` |
+| Arbitrum | `42161` | `Chains.ArbitrumOne` |
 | Sepolia | `11155111` | `Chains.Sepolia` |
 | Base Sepolia | `84532` | `Chains.BaseSepolia` |
 
