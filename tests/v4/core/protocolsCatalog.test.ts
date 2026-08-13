@@ -1,17 +1,19 @@
 /**
- * Catalog compatibility after `@avaprotocol/protocols@0.10.0`.
+ * Catalog compatibility after `@avaprotocol/protocols@0.12.0`.
  *
- * Pure data — no gateway. Pins the 0.10.0 surface the SDK re-exports so a
- * stale lockfile or a catalog regression cannot silently drop Arb/OP or
- * collapse Ethereum multi-market back to Core-only.
+ * Pure data — no gateway. Pins the catalog surface the SDK re-exports so a
+ * stale lockfile or a catalog regression cannot silently drop Arb/OP/
+ * Unichain/Robinhood or collapse Ethereum multi-market back to Core-only.
  */
 
 import { Chains, Protocols } from "@avaprotocol/sdk-js";
 
-describe("protocols catalog 0.10.0", () => {
+describe("protocols catalog 0.12.0", () => {
   test("spreads new catalog chain IDs onto SDK Chains", () => {
     expect(Chains.ArbitrumOne).toBe(42_161);
     expect(Chains.OptimismMainnet).toBe(10);
+    expect(Chains.UnichainMainnet).toBe(130);
+    expect(Chains.RobinhoodMainnet).toBe(4_663);
     expect(Chains.Sepolia).toBe(11_155_111);
     expect(Chains.EigenLayerAuth).toBe(Chains.Sepolia);
   });
@@ -35,15 +37,27 @@ describe("protocols catalog 0.10.0", () => {
     expect(eth[0]?.pool).toBe(Protocols.aaveV3.pool[Chains.EthereumMainnet]);
   });
 
-  test("Uniswap V3 SwapRouter02 + WETH resolve on Arbitrum and Optimism", () => {
+  test("Uniswap V3 SwapRouter02 + WETH resolve on Arbitrum, Optimism, Unichain, Robinhood", () => {
     const officialRouter = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
     expect(Protocols.uniswapV3.swapRouter02[Chains.ArbitrumOne]).toBe(officialRouter);
     expect(Protocols.uniswapV3.swapRouter02[Chains.OptimismMainnet]).toBe(officialRouter);
+    expect(Protocols.uniswapV3.swapRouter02[Chains.UnichainMainnet]).toBe(
+      "0x73855d06DE49d0fe4A9c42636Ba96c62da12FF9C"
+    );
+    expect(Protocols.uniswapV3.swapRouter02[Chains.RobinhoodMainnet]).toBe(
+      "0xCaf681a66D020601342297493863E78C959E5cb2"
+    );
     expect(Protocols.wrapped.weth[Chains.ArbitrumOne]).toBe(
       "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
     );
     expect(Protocols.wrapped.weth[Chains.OptimismMainnet]).toBe(
       "0x4200000000000000000000000000000000000006"
+    );
+    expect(Protocols.wrapped.weth[Chains.UnichainMainnet]).toBe(
+      "0x4200000000000000000000000000000000000006"
+    );
+    expect(Protocols.wrapped.weth[Chains.RobinhoodMainnet]).toBe(
+      "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
     );
   });
 

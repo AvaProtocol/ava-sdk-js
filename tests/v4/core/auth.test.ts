@@ -207,6 +207,51 @@ describe("Authentication Tests", () => {
       expect(String(decoded.aud)).toBe("42161");
     });
 
+    test("mints a JWT scoped to OP Mainnet (10) — Wave B worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 10,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const [, body] = res.token.split(".");
+      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("10");
+    });
+
+    test("mints a JWT scoped to Unichain (130) — Wave B worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 130,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const [, body] = res.token.split(".");
+      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("130");
+    });
+
+    test("mints a JWT scoped to Robinhood Chain (4663) — worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 4663,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const [, body] = res.token.split(".");
+      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("4663");
+    });
+
     test("rejects a signature that doesn't match the owner", async () => {
       const payload = await buildAuthPayload(client);
       // Re-sign the message with a different key — verifier will
