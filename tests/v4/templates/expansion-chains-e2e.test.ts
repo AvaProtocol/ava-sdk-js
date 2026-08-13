@@ -4,10 +4,10 @@
  * Local docker-compose only wires Sepolia, so this file no-ops unless
  * TEST_ENV=railway (or MULTICHAIN_TEST=1). Against Railway it:
  *
- *   1. Mints a JWT whose `aud` is the target chain (gateway has the
- *      chain in chains[] and can verify the EIP-191 template).
- *   2. `nodes.run` a WETH/WBNB `symbol()` contractRead — real RPC
- *      through that chain's worker.
+ *   1. Mints a JWT whose `aud` is the target chain on the isolated
+ *      client's transport (gateway has the chain in chains[]).
+ *   2. `nodes.run` a WETH/WBNB `symbol()` contractRead under that
+ *      chain-scoped token — real RPC through that chain's worker.
  *   3. `workflows.simulate` the same read — Tenderly Simulation API
  *      for that chain id (Phase 6 of Adding_A_New_Chain.md).
  *
@@ -26,10 +26,9 @@ import { Chains, Client, Nodes, Protocols, Triggers } from "@avaprotocol/sdk-js"
 import {
   TEST_AUTH_URI,
   createSmartWallet,
-  getClient,
+  decodeJwtPayload,
   getIsolatedClient,
   settingsForChain,
-  testPrivateKey,
 } from "../../utils/client";
 
 jest.setTimeout(120_000);
@@ -81,28 +80,33 @@ const CHAINS: ReadonlyArray<{
 describeExpansion("Expansion chains E2E (auth + WETH read + simulate)", () => {
   let client: Client;
   let runner: string;
+  let isolatedKey: string;
 
   beforeAll(async () => {
     // Isolated EOA: the shared TEST_PRIVATE_KEY is already at
     // production max_wallets_per_owner. This suite is read-only.
     const isolated = await getIsolatedClient();
     client = isolated.client;
+    isolatedKey = isolated.privateKey;
     const wallet = await createSmartWallet(client);
     runner = wallet.address;
   });
 
   describe.each(CHAINS)("$name ($chainId)", ({ chainId, weth, symbol }) => {
-    test("mints a JWT scoped to the chain", async () => {
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+    beforeEach(async () => {
+      // Re-mint on the shared client as the isolated owner so
+      // nodes.run / simulate run under a JWT whose aud is this chain.
+      const { version } = await client.health.check();
+      await client.auth.exchangeWithKey(isolatedKey, {
         uri: TEST_AUTH_URI,
         chainId,
         version,
       });
-      expect(res.token).toBeTruthy();
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+    });
+
+    test("mints a JWT scoped to the chain", async () => {
+      expect(client.token).toBeTruthy();
+      const decoded = decodeJwtPayload(client.token!);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe(String(chainId));
     });

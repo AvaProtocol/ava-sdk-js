@@ -32,6 +32,18 @@ export function testPrivateKey(): string {
 }
 
 /**
+ * Decode a JWT payload. Header/payload are base64url (`-`/`_`, no
+ * padding); Node's `base64` alphabet mis-decodes those.
+ */
+export function decodeJwtPayload(token: string): Record<string, unknown> {
+  const body = token.split(".")[1];
+  if (!body) {
+    throw new Error("JWT missing payload");
+  }
+  return JSON.parse(Buffer.from(body, "base64url").toString());
+}
+
+/**
  * A private EOA for one suite, and the client authenticated as it.
  *
  * Unique salts stop two suites sharing a wallet, but they do not help a query

@@ -20,6 +20,7 @@ import {
   TEST_AUTH_URI,
   authenticateClient,
   buildAuthPayload,
+  decodeJwtPayload,
   generateSignature,
   getClient,
   getEOAAddress,
@@ -138,9 +139,7 @@ describe("Authentication Tests", () => {
       // The token also gets stashed on the transport for follow-up calls.
       expect(client.token).toEqual(res.token);
 
-      const [, body] = res.token.split(".");
-      expect(body).toBeTruthy();
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded).toMatchObject({
         iss: "AvaProtocol",
         sub: payload.ownerAddress,
@@ -182,8 +181,7 @@ describe("Authentication Tests", () => {
       // The JWT body should encode the requested chain id in the
       // audience claim — that's how downstream chain-routed handlers
       // know which chain the caller is operating against.
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("56");
     });
@@ -201,8 +199,7 @@ describe("Authentication Tests", () => {
         version,
       });
       expect(res.token).toBeTruthy();
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("42161");
     });
@@ -216,8 +213,7 @@ describe("Authentication Tests", () => {
         version,
       });
       expect(res.token).toBeTruthy();
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("10");
     });
@@ -231,8 +227,7 @@ describe("Authentication Tests", () => {
         version,
       });
       expect(res.token).toBeTruthy();
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("130");
     });
@@ -246,8 +241,7 @@ describe("Authentication Tests", () => {
         version,
       });
       expect(res.token).toBeTruthy();
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("4663");
     });
