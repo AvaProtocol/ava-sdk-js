@@ -40,17 +40,31 @@ describe("SessionPolicyActions", () => {
     expect(action.target).toBe(Protocols.uniswapV3.swapRouter02[SEPOLIA]);
   });
 
-  test("uniswapV3Swap resolves Arbitrum and Optimism from the 0.10.0 catalog", () => {
+  test("uniswapV3Swap resolves Arbitrum, Optimism, Unichain, and Robinhood from the catalog", () => {
     const ARBITRUM = 42_161;
     const OPTIMISM = 10;
+    const UNICHAIN = 130;
+    const ROBINHOOD = 4_663;
     expect(SessionPolicyActions.uniswapV3Swap(ARBITRUM).target).toBe(
       Protocols.uniswapV3.swapRouter02[ARBITRUM]
     );
     expect(SessionPolicyActions.uniswapV3Swap(OPTIMISM).target).toBe(
       Protocols.uniswapV3.swapRouter02[OPTIMISM]
     );
+    expect(SessionPolicyActions.uniswapV3Swap(UNICHAIN).target).toBe(
+      Protocols.uniswapV3.swapRouter02[UNICHAIN]
+    );
+    expect(SessionPolicyActions.uniswapV3Swap(ROBINHOOD).target).toBe(
+      Protocols.uniswapV3.swapRouter02[ROBINHOOD]
+    );
     expect(SessionPolicyActions.uniswapV3Swap(ARBITRUM).target).toBe(
       "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
+    );
+    expect(SessionPolicyActions.uniswapV3Swap(UNICHAIN).target).toBe(
+      "0x73855d06DE49d0fe4A9c42636Ba96c62da12FF9C"
+    );
+    expect(SessionPolicyActions.uniswapV3Swap(ROBINHOOD).target).toBe(
+      "0xCaf681a66D020601342297493863E78C959E5cb2"
     );
   });
 

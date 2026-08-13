@@ -20,6 +20,7 @@ import {
   TEST_AUTH_URI,
   authenticateClient,
   buildAuthPayload,
+  decodeJwtPayload,
   generateSignature,
   getClient,
   getEOAAddress,
@@ -138,9 +139,7 @@ describe("Authentication Tests", () => {
       // The token also gets stashed on the transport for follow-up calls.
       expect(client.token).toEqual(res.token);
 
-      const [, body] = res.token.split(".");
-      expect(body).toBeTruthy();
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded).toMatchObject({
         iss: "AvaProtocol",
         sub: payload.ownerAddress,
@@ -182,8 +181,7 @@ describe("Authentication Tests", () => {
       // The JWT body should encode the requested chain id in the
       // audience claim — that's how downstream chain-routed handlers
       // know which chain the caller is operating against.
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("56");
     });
@@ -201,10 +199,51 @@ describe("Authentication Tests", () => {
         version,
       });
       expect(res.token).toBeTruthy();
-      const [, body] = res.token.split(".");
-      const decoded = JSON.parse(Buffer.from(body, "base64").toString());
+      const decoded = decodeJwtPayload(res.token);
       expect(decoded.iss).toBe("AvaProtocol");
       expect(String(decoded.aud)).toBe("42161");
+    });
+
+    test("mints a JWT scoped to OP Mainnet (10) — Wave B worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 10,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const decoded = decodeJwtPayload(res.token);
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("10");
+    });
+
+    test("mints a JWT scoped to Unichain (130) — Wave B worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 130,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const decoded = decodeJwtPayload(res.token);
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("130");
+    });
+
+    test("mints a JWT scoped to Robinhood Chain (4663) — worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 4663,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const decoded = decodeJwtPayload(res.token);
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("4663");
     });
 
     test("rejects a signature that doesn't match the owner", async () => {
