@@ -23,7 +23,7 @@
  * 400, so those assertions check status instead of message text.
  */
 
-import { Client, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   authenticateClient,
@@ -31,8 +31,15 @@ import {
   createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
+  TEST_AUTH_CHAIN_ID,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
+
+// The multi-chain stack (Railway, or an explicitly multi-chain local run).
+// Matches the flags expansion-chains-e2e.test.ts already uses.
+const MULTICHAIN_STACK =
+  process.env.MULTICHAIN_TEST === "1" || process.env.TEST_ENV === "railway";
+const testMultichain = MULTICHAIN_STACK ? test : test.skip;
 
 describe("Wallet Management Tests", () => {
   let client: Client;
@@ -194,6 +201,33 @@ describe("Wallet Management Tests", () => {
         expect(wallet).toHaveProperty("isHidden");
         expect(wallet.isHidden ?? false).toBeFalsy();
       }
+    });
+
+    // Needs a gateway serving a SECOND chain. The CI stack in config/
+    // gateway.yaml is Sepolia-only, so there this would fail for lack of a
+    // configured chain rather than for the behaviour under test — the same
+    // reason the expansion-chain suite gates itself. The gateway-side
+    // guarantee is pinned hard in EigenLayer-AVS
+    // (TestListWalletsUsesQueryChainIdOverJwtAud); this is the wire check
+    // that the SDK actually sends `?chainId=`.
+    testMultichain("scopes the listing to chainId, not the JWT audience chain", async () => {
+      // Wallet records are per chain. This is the cross-chain read the
+      // Studio grant flow needs: one Sepolia-audience token reaching a
+      // second chain's wallets, with no second SIWE.
+      const otherChain = Chains.BaseSepolia;
+      expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
+
+      const salt = nextTestSalt();
+      const onOtherChain = await client.wallets.create({ salt, chainId: otherChain });
+      expect(onOtherChain.address).toBeTruthy();
+
+      const namedChain = await client.wallets.list({ chainId: otherChain });
+      expect(namedChain.data.some((w) => w.salt === salt)).toBe(true);
+
+      // The same token, no chainId: the aud chain's listing, which has
+      // never seen that salt.
+      const audChain = await client.wallets.list();
+      expect(audChain.data.some((w) => w.salt === salt)).toBe(false);
     });
 
     test("returns wallets sorted by salt (lexicographic)", async () => {

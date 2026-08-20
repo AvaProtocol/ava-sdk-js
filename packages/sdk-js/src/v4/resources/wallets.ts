@@ -23,9 +23,18 @@ export class WalletsResource {
    *
    * Hidden wallets (`isHidden=true`) are excluded by default. The
    * response is an envelope `{ data: Wallet[] }`, not a bare array.
+   *
+   * Wallet records are per chain, so the listing is too. `chainId` is
+   * optional: omitted, the gateway uses the JWT's `aud` chain, then its
+   * own default. Passing it lets one token read another chain's wallets
+   * without a second signature — the JWT proves EOA ownership, which is
+   * chain-independent.
    */
-  list(): Promise<v4.WalletList> {
-    return this.transport.request<v4.WalletList>({ path: "/wallets" });
+  list(opts?: { chainId?: number }): Promise<v4.WalletList> {
+    return this.transport.request<v4.WalletList>({
+      path: "/wallets",
+      query: opts,
+    });
   }
 
   /**
