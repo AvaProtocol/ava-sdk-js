@@ -43,6 +43,19 @@ export type TypedDataSigner = (
  * Every endpoint requires the owner's own JWT. A partner assertion is refused
  * outright — granting spend authority needs proven wallet ownership, not a
  * partner's word for it.
+ *
+ * The chain comes from the request — `chainId` in the body on
+ * {@link prepare} / {@link submit}, the `chainId` query elsewhere — and NOT
+ * from the JWT's `aud`. The token is EOA identity here, and owning an EOA is
+ * chain-independent, so one token can grant on any chain the gateway serves
+ * without a second signature.
+ *
+ * A chain the gateway does NOT serve is refused with
+ * `400 POLICIES_CHAIN_NOT_SERVED`, on prepare and again on submit. That
+ * happens before any signature is collected: such a grant would be signed
+ * and stored but unusable, since no bundler or RPC behind this gateway could
+ * ever send under it. Requires an aggregator on v4.17.0 or later; before
+ * that the grant was allocated and stored (EigenLayer-AVS #760).
  */
 export class PoliciesResource {
   constructor(private readonly transport: Transport) {}
