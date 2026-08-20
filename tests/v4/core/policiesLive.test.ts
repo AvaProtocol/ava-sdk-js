@@ -160,6 +160,29 @@ describe("policies (live gateway)", () => {
     }
   }, 180_000);
 
+  // v4.17.0 refuses a grant naming a chain this gateway does not serve,
+  // before any signature is collected: such a grant would be signed and
+  // stored but unusable, since no bundler behind this gateway could send
+  // under it. Asserted here rather than against the stub in policies.test.ts,
+  // where the refusal would only be the one the stub was told to give.
+  //
+  // 999_999 is not a real chain, so no stack this suite runs against serves
+  // it — unlike Base or Sepolia, which the Railway gateway does serve.
+  test("a chain the gateway does not serve is refused at prepare", async () => {
+    const unserved = 999_999;
+
+    await expect(
+      client.policies.prepare(wallet, { ...request(), chainId: unserved }),
+    ).rejects.toMatchObject({
+      status: 400,
+      code: "POLICIES_CHAIN_NOT_SERVED",
+    });
+
+    // Refused, not recorded: the wallet's grants are untouched.
+    const listed = await client.policies.list(wallet);
+    expect(listed.items.every((p) => p.chainId !== unserved)).toBe(true);
+  }, 120_000);
+
   function request(label = "TradingBot"): v4.PreparePolicyRequest {
     return {
       chainId: TEST_AUTH_CHAIN_ID,
