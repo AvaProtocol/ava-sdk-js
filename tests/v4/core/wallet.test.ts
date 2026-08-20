@@ -31,6 +31,7 @@ import {
   createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
+  TEST_AUTH_CHAIN_ID,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
@@ -194,6 +195,26 @@ describe("Wallet Management Tests", () => {
         expect(wallet).toHaveProperty("isHidden");
         expect(wallet.isHidden ?? false).toBeFalsy();
       }
+    });
+
+    test("scopes the listing to chainId, not the JWT audience chain", async () => {
+      // Wallet records are per chain. This is the cross-chain read the
+      // Studio grant flow needs: one Sepolia-audience token reaching a
+      // second chain's wallets, with no second SIWE.
+      const otherChain = 84_532;
+      expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
+
+      const salt = nextTestSalt();
+      const onOtherChain = await client.wallets.create({ salt, chainId: otherChain });
+      expect(onOtherChain.address).toBeTruthy();
+
+      const namedChain = await client.wallets.list({ chainId: otherChain });
+      expect(namedChain.data.some((w) => w.salt === salt)).toBe(true);
+
+      // The same token, no chainId: the aud chain's listing, which has
+      // never seen that salt.
+      const audChain = await client.wallets.list();
+      expect(audChain.data.some((w) => w.salt === salt)).toBe(false);
     });
 
     test("returns wallets sorted by salt (lexicographic)", async () => {

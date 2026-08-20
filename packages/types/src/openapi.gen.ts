@@ -449,6 +449,13 @@ export interface paths {
          * List the authenticated user's smart wallets
          * @description Preview wallet resolve. Authorize with a user Bearer JWT **or** a
          *     partner assertion (`scope: read`) whose `sub` is the owner EOA.
+         *
+         *     Wallets are stored per chain, so the listing is per chain too. The
+         *     `chainId` query selects which one, on the same precedence as
+         *     `POST /wallets`: explicit value, then the JWT `aud` chain, then the
+         *     gateway default. A JWT minted for one chain can therefore list
+         *     another's wallets without a second signature — it proves EOA
+         *     ownership, which is chain-independent.
          */
         readonly get: operations["listWallets"];
         readonly put?: never;
@@ -2669,7 +2676,13 @@ export interface operations {
     };
     readonly listWallets: {
         readonly parameters: {
-            readonly query?: never;
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
             readonly header?: never;
             readonly path?: never;
             readonly cookie?: never;
