@@ -10,7 +10,7 @@
     "lib": ["ES2022", "DOM"],
     "types": ["jest", "node"]
   },
-  "include": ["tests", "examples", "config/**/*"],
+  "include": ["tests", "examples", "config/**/*", "scripts/**/*.ts"],
   "ts-node": {
     "esm": true
   }
