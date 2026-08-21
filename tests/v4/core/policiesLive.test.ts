@@ -17,53 +17,25 @@ import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
 import {
-  getClient,
-  authenticateClient,
-  testPrivateKey,
+  getIsolatedClient,
   TEST_AUTH_CHAIN_ID,
 } from "../../utils/client";
+import { signTypedDataWithEthers } from "../../utils/sessionGrant";
 
 // Sepolia test USDC — the same token the Uniswap fixtures use.
 const TOKEN = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 const APPROVE_SELECTOR = "0x095ea7b3";
 
-/**
- * ethers signs typed data from (domain, types, message) and rejects the
- * EIP712Domain entry that eth_signTypedData_v4 payloads carry — it derives
- * that from the domain itself. Browser wallets take the whole envelope, which
- * is why the SDK passes it through untouched rather than destructuring.
- */
-function signTypedDataWithEthers(privateKey: string) {
-  const signer = new EthersWallet(privateKey);
-  return async (
-    typedData: Readonly<Record<string, unknown>>
-  ): Promise<string> => {
-    const { domain, types, message } = typedData as {
-      domain: Record<string, unknown>;
-      types: Record<string, unknown>;
-      message: Record<string, unknown>;
-    };
-    const { EIP712Domain: _ignored, ...rest } = types as Record<
-      string,
-      unknown
-    >;
-    return signer.signTypedData(
-      domain as never,
-      rest as never,
-      message as never
-    );
-  };
-}
-
 describe("policies (live gateway)", () => {
   let client: Client;
+  let ownerKey: string;
   let wallet: string;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client, privateKey: ownerKey } = await getIsolatedClient());
 
-    // Salt 0 is the owner's default wallet; ensure-and-register is idempotent.
+    // Isolated EOA so grant-then-revoke cannot tear down the funded
+    // UserOp fixture (shared TEST_PRIVATE_KEY, MA v2 salt 0).
     const w = await client.wallets.create({ salt: "0" });
     wallet = w.address;
   }, 120_000);
@@ -88,7 +60,7 @@ describe("policies (live gateway)", () => {
     const policy = await client.policies.grant(
       wallet,
       request(),
-      signTypedDataWithEthers(testPrivateKey())
+      signTypedDataWithEthers(ownerKey)
     );
 
     try {
@@ -151,7 +123,7 @@ describe("policies (live gateway)", () => {
     const policy = await client.policies.grant(
       wallet,
       { ...request("ChipBuiltBot"), allowedActions },
-      signTypedDataWithEthers(testPrivateKey())
+      signTypedDataWithEthers(ownerKey)
     );
     try {
       expect(policy.status).toBe("pending");
@@ -169,6 +141,16 @@ describe("policies (live gateway)", () => {
   // 999_999 is not a real chain, so no stack this suite runs against serves
   // it — unlike Base or Sepolia, which the Railway gateway does serve.
   test("a chain the gateway does not serve is refused at prepare", async () => {
+    // v4.17.0+ (EigenLayer-AVS #760). 4.16.x still allocates the grant.
+    const { version } = await client.health.check();
+    const [maj, min] = (version ?? "0.0.0").split(".").map((n) => Number(n) || 0);
+    if (maj < 4 || (maj === 4 && min < 17)) {
+      console.log(
+        `Skipping — POLICIES_CHAIN_NOT_SERVED needs aggregator >= 4.17.0 (this gateway is ${version})`,
+      );
+      return;
+    }
+
     const unserved = 999_999;
 
     await expect(

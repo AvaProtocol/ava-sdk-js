@@ -27,6 +27,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 import {
   authenticateClient,
   getClient,
+  getIsolatedClient,
   getEOAAddress,
   createSmartWallet,
   removeCreatedWorkflows,
@@ -69,8 +70,7 @@ describe("secret Tests", () => {
   const createdSecrets: Array<{ name: string; workflowId?: string; orgId?: string }> = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getIsolatedClient());
 
     client2 = getClient();
     await authenticateClient(client2, otherPrivateKey);

@@ -11,8 +11,7 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   settingsForChain,
 } from "../../utils/client";
@@ -46,8 +45,7 @@ describe("workflows.estimateFees Tests", () => {
   let smartWalletAddress: string;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
     const wallet = await createSmartWallet(client);
     smartWalletAddress = wallet.address;
   });

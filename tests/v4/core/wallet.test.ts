@@ -26,8 +26,7 @@
 import { Chains, Client, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
@@ -45,8 +44,7 @@ describe("Wallet Management Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   describe("wallets.create (v3 getWallet)", () => {
@@ -203,18 +201,20 @@ describe("Wallet Management Tests", () => {
       }
     });
 
-    // Needs a gateway serving a SECOND chain. The CI stack in config/
-    // gateway.yaml is Sepolia-only, so there this would fail for lack of a
-    // configured chain rather than for the behaviour under test — the same
-    // reason the expansion-chain suite gates itself. The gateway-side
+    // Needs a gateway serving a SECOND chain. The ava-sdk-js CI compose
+    // file is Sepolia-only; the local EigenLayer-AVS gateway serves
+    // Sepolia + Ethereum + Base. Base Sepolia (84532) was retired from
+    // that config. Gate on the same MULTICHAIN_TEST / TEST_ENV=railway
+    // flags expansion-chains-e2e.test.ts uses. The gateway-side
     // guarantee is pinned hard in EigenLayer-AVS
     // (TestListWalletsUsesQueryChainIdOverJwtAud); this is the wire check
     // that the SDK actually sends `?chainId=`.
     testMultichain("scopes the listing to chainId, not the JWT audience chain", async () => {
       // Wallet records are per chain. This is the cross-chain read the
       // Studio grant flow needs: one Sepolia-audience token reaching a
-      // second chain's wallets, with no second SIWE.
-      const otherChain = Chains.BaseSepolia;
+      // second chain's wallets, with no second SIWE. Base (8453) is in
+      // the local gateway chains[] and on production; JWT aud is Sepolia.
+      const otherChain = Chains.BaseMainnet;
       expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
 
       const salt = nextTestSalt();

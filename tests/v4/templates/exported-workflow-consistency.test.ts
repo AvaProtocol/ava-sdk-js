@@ -15,8 +15,7 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
@@ -31,8 +30,7 @@ describe("Template: exported workflow consistency", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {

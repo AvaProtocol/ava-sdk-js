@@ -10,8 +10,7 @@
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,
@@ -28,8 +27,7 @@ describe("Template: single approve with Tenderly simulation", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {
@@ -37,7 +35,7 @@ describe("Template: single approve with Tenderly simulation", () => {
   });
 
   test("simulates a manual-trigger workflow that approves USDC for the Uniswap router", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.manual({
         id: "trigger",

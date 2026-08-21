@@ -24,8 +24,7 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   getCurrentBlockNumber,
   createSmartWallet,
   removeCreatedWorkflows,
@@ -47,8 +46,7 @@ describe("CustomCode Node Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {

@@ -16,7 +16,6 @@ import {
   getIsolatedClient,
   getCurrentBlockNumber,
   createSmartWallet,
-  nextTestSalt,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -42,7 +41,7 @@ describe("Execution Management Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
 
     const created = await client.workflows.create({
@@ -75,7 +74,7 @@ describe("Execution Management Tests", () => {
   });
 
   test("non-blocking trigger returns immediate executionId with index assigned", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client);
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 10,
@@ -98,7 +97,7 @@ describe("Execution Management Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client);
     const blockNumber = await getCurrentBlockNumber();
     const created = await client.workflows.create({
       ...createFromTemplate(wallet.address),

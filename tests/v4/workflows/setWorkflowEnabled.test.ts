@@ -11,8 +11,7 @@
 import { Client } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";
@@ -25,8 +24,7 @@ describe("pause/resume Workflow Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {

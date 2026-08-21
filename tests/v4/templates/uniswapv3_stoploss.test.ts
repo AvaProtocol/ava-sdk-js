@@ -13,8 +13,7 @@
 import { Chains, Nodes, Protocols, Triggers, type Client } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,
@@ -37,8 +36,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {
@@ -110,7 +108,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
   }
 
   test("simulates the cron->priceRead->branch->swap workflow shape", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const sim = await client.workflows.simulate({
@@ -130,7 +128,7 @@ describe("Template: Uniswap V3 stop-loss", () => {
   });
 
   test("deploys + retrieves the workflow with the cron trigger type", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({

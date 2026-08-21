@@ -15,7 +15,6 @@ import { Client } from "@avaprotocol/sdk-js";
 
 import {
   getIsolatedClient,
-  getEOAAddress,
   createSmartWallet,
   nextTestSalt,
   removeCreatedWorkflows,
@@ -32,8 +31,7 @@ describe("Workflow Management Tests", () => {
   beforeAll(async () => {
     // A private EOA for this suite. Salts alone do not isolate an
     // owner-scoped query, and this suite asserts on exact counts.
-    ({ client } = await getIsolatedClient());
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getIsolatedClient());
   });
 
   afterEach(async () => {

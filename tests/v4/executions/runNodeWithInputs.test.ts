@@ -13,9 +13,7 @@
 import { Chains, Client, Nodes, Protocols, Tokens } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
-  getEOAAddress,
+  getSuiteClient,
   createSmartWallet,
   settingsFor,
 } from "../../utils/client";
@@ -30,9 +28,7 @@ describe("nodes.run (provider routing)", () => {
   let eoaAddress: string;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   test("Balance node always uses chain_rpc (read-only)", async () => {
@@ -58,7 +54,7 @@ describe("nodes.run (provider routing)", () => {
   });
 
   test("ContractWrite routes through Tenderly (is_simulated=true)", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client);
     const result = await client.nodes.run({
       node: Nodes.contractWrite({
         id: "w",

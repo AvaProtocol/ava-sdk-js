@@ -40,13 +40,16 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
-import { startStubServerFor, type StubServer } from "../../utils/stubServer";
+import {
+  describeIfGatewayCanReachStub,
+  startStubServerFor,
+  type StubServer,
+} from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
 
@@ -62,13 +65,12 @@ interface RestMetadata {
 let STUB = "";
 let stub: StubServer;
 
-describe("RestAPI Node Tests", () => {
+describeIfGatewayCanReachStub("RestAPI Node Tests", () => {
   let client: Client;
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
 
     // Same helper the other stub-backed suites use: it starts the server, proves
     // the gateway can reach it, and closes the listener before throwing if it

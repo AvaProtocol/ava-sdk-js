@@ -21,9 +21,7 @@
 import { Chains, Client, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
-  getEOAAddress,
+  getSuiteClient,
 } from "../../utils/client";
 
 jest.setTimeout(60_000);
@@ -43,9 +41,7 @@ describe("EventTrigger Tests", () => {
   let eoaAddress: string;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   describe("triggers.run", () => {

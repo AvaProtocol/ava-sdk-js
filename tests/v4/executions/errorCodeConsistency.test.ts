@@ -12,8 +12,7 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   settingsFor,
 } from "../../utils/client";
@@ -24,8 +23,7 @@ describe("Error code consistency between nodes.run and workflows.simulate", () =
   let client: Client;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   test("empty customCode source surfaces the same error code on both paths", async () => {

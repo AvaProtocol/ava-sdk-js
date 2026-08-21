@@ -13,14 +13,14 @@
  *     the test — so there's no drift, and this locks in the exact GoPlus v2 field
  *     names (approved_contract, address_info.trust_list, token- AND spender-level
  *     malicious_behavior).
- *  2. Live e2e (gated behind RUN_GUARDIAN_LIVE): deploy + trigger + assert the run.
- *     Skipped until a gateway with the two extensions (REST options.auth + the
- *     {{state.*}} binding) exists.
+ *  2. Live e2e: deploy + trigger + assert the run. The gateway extensions
+ *     (REST options.auth + {{state.*}} + guardian_ruleset) shipped; the
+ *     RUN_GUARDIAN_LIVE opt-in is no longer needed. Cleanup cancels the
+ *     workflow after each test so it does not keep scanning.
  */
 import { Triggers, Nodes, type v4 } from "@avaprotocol/sdk-js";
 import {
-  getClient,
-  authenticateClient,
+  getSuiteClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,
@@ -437,25 +437,17 @@ describe("buildWalletRiskMonitor — workflow shape", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// 3. Live e2e — deploy + trigger against a real gateway (needs TEST_PRIVATE_KEY /
-//    AVS_REST_URL, like every other template test). Gated behind RUN_GUARDIAN_LIVE=1
-//    so default/CI runs skip it (it deploys and triggers a real workflow). When run it
-//    hard-asserts: deploy + retrieve, then the triggered run must reach the verdict node
-//    with success — a failed trigger throws with the failing step's error. Requires the
-//    gateway extensions (REST options.auth + the {{state.*}} binding) AND the
-//    guardian_ruleset configVar. Verified live 2026-07-17 against prod (v4.3.0,
-//    api.avaprotocol.org): deploy succeeds and the verdict step passes.
-//    Run with: RUN_GUARDIAN_LIVE=1 AVS_REST_URL=<gateway> yarn jest guardian.
+// 3. Live e2e — deploy + trigger. Hard-asserts: deploy + retrieve, then the
+//    triggered run must reach the verdict node. A failed trigger throws with
+//    the failing step's error. Verified live 2026-07-17 against prod v4.3.0.
 // ────────────────────────────────────────────────────────────────────────────
-const RUN_GUARDIAN_LIVE = process.env.RUN_GUARDIAN_LIVE === "1";
-(RUN_GUARDIAN_LIVE ? describe : describe.skip)("Guardian wallet-risk monitor (live gateway)", () => {
+describe("Guardian wallet-risk monitor (live gateway)", () => {
   jest.setTimeout(60_000);
   let client: Client;
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
   afterEach(async () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));

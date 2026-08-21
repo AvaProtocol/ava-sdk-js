@@ -11,12 +11,15 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
+  getSuiteClient,
   createSmartWallet,
   settingsFor,
 } from "../../utils/client";
-import { startStubServerFor, type StubServer } from "../../utils/stubServer";
+import {
+  describeIfGatewayCanReachStub,
+  startStubServerFor,
+  type StubServer,
+} from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
 
@@ -24,12 +27,11 @@ jest.setTimeout(60_000);
 let STUB = "";
 let stub: StubServer;
 
-describe("workflows.simulate Tests", () => {
+describeIfGatewayCanReachStub("workflows.simulate Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
 
     // A local stub replaces httpbin.org here: the gateway makes this request,
     // not the test, so client-side mocking cannot intercept it — only a server

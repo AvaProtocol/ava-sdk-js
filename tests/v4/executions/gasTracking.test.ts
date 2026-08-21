@@ -13,12 +13,12 @@
  * holds.
  */
 
-import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
-  getEOAAddress,
+  getSuiteClient,
+  getFundedFixture,
+  assertUserOpTriggerOk,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
@@ -44,9 +44,7 @@ describe("Gas tracking", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   afterEach(async () => {
@@ -82,57 +80,59 @@ describe("Gas tracking", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
-    const blockNumber = (await import("ethers")).JsonRpcProvider
-      ? await (async () => {
-          const { JsonRpcProvider } = await import("ethers");
-          const ep = process.env.CHAIN_ENDPOINT ?? "";
-          return new JsonRpcProvider(ep.startsWith("http") ? ep : `https://${ep}`).getBlockNumber();
-        })()
-      : 0;
+    // Native ETH execute(to, value, 0x) AA23s under REST session grants
+    // (AllowlistModule NoSelectorSpecified). An ERC-20 approve has a real
+    // selector and still produces execution.cogs on a mined UserOp.
+    const { client: funded, owner: fundedOwner, wallet } = await getFundedFixture();
+    const usdc = Tokens.USDC[Chains.Sepolia]!.address;
+    const erc20Abi = [...Protocols.erc20.transferAbi, ...Protocols.erc20.approveAbi];
+    const blockNumber = await (async () => {
+      const { JsonRpcProvider } = await import("ethers");
+      const ep = process.env.CHAIN_ENDPOINT ?? "";
+      return new JsonRpcProvider(ep.startsWith("http") ? ep : `https://${ep}`).getBlockNumber();
+    })();
 
-    const created = await client.workflows.create({
+    const created = await funded.workflows.create({
       ...createFromTemplate(wallet.address),
       maxExecution: 1,
       trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
       nodes: [
-        Nodes.ethTransfer({
-          id: "transfer",
-          name: "transfer",
+        Nodes.contractWrite({
+          id: "approve",
+          name: "approve",
           chainId: 11_155_111,
-          destination: eoaAddress,
-          amountWei: "100000000000000",
+          contractAddress: usdc,
+          contractAbi: erc20Abi,
+          methodCalls: [{ methodName: "approve", methodParams: [fundedOwner, "0"] }],
         }),
       ],
-      edges: [{ id: "e1", source: "trigger", target: "transfer" }],
+      edges: [{ id: "e1", source: "trigger", target: "approve" }],
     });
     const wfId = created.id as string;
-    createdWorkflowIds.push(wfId);
+    try {
+      const trig = await funded.workflows.trigger(wfId, {
+        triggerType: "block",
+        triggerOutput: { blockNumber: blockNumber + 5 },
+        isBlocking: true,
+      });
+      assertUserOpTriggerOk(trig, wallet.address);
 
-    const trig = await client.workflows.trigger(wfId, {
-      triggerType: "block",
-      triggerOutput: { blockNumber: blockNumber + 5 },
-      isBlocking: true,
-    });
-    if (trig.status === "failed" || trig.status === "error" || trig.error) {
-      console.log(`Skipping — trigger returned ${trig.status}`);
-      return;
-    }
+      const exec = await funded.executions.retrieve(trig.executionId, { workflowId: wfId });
+      expect(Array.isArray(exec.cogs)).toBe(true);
+      for (const c of exec.cogs ?? []) {
+        expect(typeof c.nodeId).toBe("string");
+        expect(c.fee.unit).toBe("WEI");
+        expect(typeof c.fee.amount).toBe("string");
+      }
 
-    const exec = await client.executions.retrieve(trig.executionId, { workflowId: wfId });
-    expect(Array.isArray(exec.cogs)).toBe(true);
-    for (const c of exec.cogs ?? []) {
-      expect(typeof c.nodeId).toBe("string");
-      expect(c.fee.unit).toBe("WEI");
-      expect(typeof c.fee.amount).toBe("string");
-    }
-
-    // The step itself carries its own gas metadata.
-    const step = exec.steps?.find((s) => s.id === "transfer") as unknown as StepWithMeta | undefined;
-    if (step?.metadata) {
-      expect(typeof step.metadata.gasUsed).toBe("string");
-      expect(typeof step.metadata.gasPrice).toBe("string");
-      expect(typeof step.metadata.totalGasCost).toBe("string");
+      const step = exec.steps?.find((s) => s.id === "approve") as unknown as StepWithMeta | undefined;
+      if (step?.metadata) {
+        expect(typeof step.metadata.gasUsed).toBe("string");
+        expect(typeof step.metadata.gasPrice).toBe("string");
+        expect(typeof step.metadata.totalGasCost).toBe("string");
+      }
+    } finally {
+      await removeCreatedWorkflows(funded, [wfId]);
     }
   });
 

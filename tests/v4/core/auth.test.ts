@@ -18,14 +18,13 @@ import { APIError, Client } from "@avaprotocol/sdk-js";
 import {
   TEST_AUTH_CHAIN_ID,
   TEST_AUTH_URI,
-  authenticateClient,
   buildAuthPayload,
   decodeJwtPayload,
   generateSignature,
   getClient,
   getEOAAddress,
+  getSuiteClient,
   createSmartWallet,
-  nextTestSalt,
   removeCreatedWorkflows,
   testPrivateKey,
 } from "../../utils/client";
@@ -42,15 +41,13 @@ describe("Authentication Tests", () => {
     let client: Client;
 
     beforeAll(async () => {
-      client = getClient();
-      await authenticateClient(client);
+      ({ client } = await getSuiteClient());
     });
 
     test("wallets.create works with the authenticated client", async () => {
-      const salt = nextTestSalt();
-      const result = await createSmartWallet(client, { saltValue: salt });
+      const result = await createSmartWallet(client, { saltValue: "0" });
       expect(result.address).toHaveLength(42);
-      expect(result.salt).toEqual(salt);
+      expect(result.salt).toEqual("0");
       expect(result.factoryAddress).toBeTruthy();
     });
 
