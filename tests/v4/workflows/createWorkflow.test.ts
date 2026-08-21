@@ -13,6 +13,7 @@
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers, type v4 } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   getEOAAddress,
@@ -37,9 +38,7 @@ describe("createWorkflow Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   afterEach(async () => {

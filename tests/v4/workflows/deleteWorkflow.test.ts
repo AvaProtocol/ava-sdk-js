@@ -9,6 +9,7 @@
 import { Client } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   createSmartWallet,
@@ -21,8 +22,7 @@ describe("deleteWorkflow Tests", () => {
   let client: Client;
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   test("cancels a workflow and removes it from the list", async () => {

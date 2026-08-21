@@ -10,6 +10,7 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   getCurrentBlockNumber,
@@ -25,8 +26,7 @@ describe("Execution Status — partial / mixed step outcomes", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {

@@ -1,9 +1,9 @@
 # Production e2e: wallet cap, partner assertion, funded salt-2
 
 - **Date**: 2026-08-20
-- **Status**: In progress — step 1 (avs-infra `read` grant) shipped, deployed and verified 2026-08-20; steps 2–3 implemented in the working tree; step 4 (full re-run) pending
+- **Status**: Implemented — production helpers green 2026-08-20 (45/9/0 suites); local e2e **closed** 2026-08-21 against gateway `4.17.0` + EigenLayer-AVS #761 (`0c8aa185`): **54/54 suites, 385/385 tests, 0 failed, 0 skipped**
 - **Branch**: staging
-- **Related**: full v4 suite against `https://api.avaprotocol.org/api/v1` (`4.17.0`); log `logs/20260820-162128-full-e2e-prod.log`; avs-infra `railway/configs/gateway-railway.yaml`; Studio `GATEWAY_STUDIO_PARTNER_KEY`
+- **Related**: production `https://api.avaprotocol.org/api/v1` (`4.17.0`); local `http://localhost:8080/api/v1`; EigenLayer-AVS [#761](https://github.com/AvaProtocol/EigenLayer-AVS/issues/761) / staging `0c8aa185`; avs-infra `railway/configs/gateway-railway.yaml`; logs `logs/20260820-170300-full-e2e-prod-final.log`, `logs/20260821-000558-full-e2e-local-761.log`
 
 ## Problem
 
@@ -182,14 +182,137 @@ artifact carrying the bad value.
 
 ## Verification
 
-- Repeat the salt `0,1,2,3` / salt-0 reuse / 3-salt lex probes (must stay true).
-- `TEST_ENV=railway` single-file: `auth.test.ts` (was 4 fails after 3 creates) green with salt-0 reuse.
-- `TEST_ENV=railway` `wallet.test.ts` lex test green with 3 salts.
-- `TEST_ENV=railway` `getToken.test.ts` green after gateway `read` scope.
-- `withdraw` validation (amount 0) on isolated client; on-chain withdraw uses listed salt-2 and either confirms or skip-on-insufficient.
-- Full `TEST_ENV=railway yarn test` logged under `logs/`. Watch for a **real** 429 rate-limit (`title: Too Many Requests` with a rate-limit detail) — production is 10 req/s burst 50. Wallet-cap 429s use the same HTTP status today.
+2026-08-20 `TEST_ENV=railway yarn test` against production `4.17.0` after this change: **45 passed / 9 skipped / 0 failed** suites, **359 passed / 35 skipped** tests (`logs/20260820-170300-full-e2e-prod-final.log`). Before: 41 failed / 161 failed tests, almost all `limit=3` or `PARTNER_ASSERTION_INVALID`.
+
+Skipped suites are expected: 7 stub-backed files (production cannot dial `127.0.0.1`) plus `awaitSignal` / `multichain-per-part-chain` (gated). Stub suites still run against the local docker gateway.
+
+## Remote gateway findings (production `4.17.0`)
+
+Log: `logs/20260820-170300-full-e2e-prod-final.log`. Target `https://api.avaprotocol.org/api/v1`.
+
+| Constraint | What it did to the suite |
+|---|---|
+| `max_wallets_per_owner=3` per chain | Unique `nextTestSalt()` dies on the 4th create (`429`). One process-wide EOA is unusable. Per-file isolated EOA + default salt `"0"` is required. Lex sort must use 3 salts (`0,10,2`), not 4. |
+| Isolated throwaway EOA | Has no indexed tokens. Balance-node "list length > 0" would fail unless skipped or pointed at a funded address. |
+| Partner `aud` = `avs-gateway-prod` | Local `.env` key + `avs-gateway-local`/`staging` is `PARTNER_ASSERTION_INVALID` / `PARTNER_ASSERTION_AUDIENCE`. Studio production PEM matches the registry. |
+| Partner scopes must include `read` | `GET /tokens` requires `read`; `simulate` is not enough (`PARTNER_SCOPE_DENIED` until avs-infra grant). |
+| Default factory ≠ funded factory | `create({ salt: "2" })` derives a new unfunded wallet on `0x0000…6fecd` and 429s. Funded salt-2 lives on legacy `0xB99B…2834` with ~0.043 ETH / ~26 USDC. Must **list**, not re-derive. |
+| Gateway cannot dial `127.0.0.1` | 7 stub-backed suites (restApi, loop, simulateWorkflow, stepInput, telegram, recurring-payment, batch-recurring) must skip. They are not product bugs. |
+| HTTP 429 is overloaded | Wallet-cap and rate-limit share status 429. Cap detail is `max smart wallet count reached for owner (limit=3)`. |
+
+Local (`config/gateway.yaml`) does **not** have the cap of 3 (`max_wallets_per_owner: 2000`), so unique salts and the shared test EOA (which has indexed balances) are the right local shape. The 3-salt budget and isolated-EOA balance skip are production-only adaptations and are relaxed when `TEST_ENV` is unset.
+
+## Remote vs local (full v4 suite)
+
+| | Remote production | Local gateway |
+|---|---|---|
+| URL | `https://api.avaprotocol.org/api/v1` | `http://localhost:8080/api/v1` |
+| `/health` version | `4.17.0` | `4.16.0` |
+| `TEST_ENV` | `railway` | unset (`.env` + code default) |
+| Wallet cap | 3 per owner per chain | 2000 (`config/gateway.yaml`) |
+| Identity | isolated EOA per file | shared `TEST_PRIVATE_KEY` |
+| Default `createSmartWallet` salt | `"0"` | `nextTestSalt()` |
+| Lex-sort salts | 3 (`0,10,2`) on the railway run | 4 (`0,1,10,2`, original) |
+| Balance-node "length > 0" | would fail on empty isolated EOA | **asserted** — shared EOA has indexed tokens |
+| Stub suites (restApi, loop, simulate, stepInput, telegram, recurring, batch) | skip (gateway cannot dial `127.0.0.1`) | **run** |
+| `wallets.list({ chainId })` | ran (`TEST_ENV=railway`) | skipped (Sepolia-only stack) |
+| Expansion-chain E2E | ran | skipped |
+| `POLICIES_CHAIN_NOT_SERVED` | asserted (4.17.0) | no-op skip (4.16.0 still allocates the grant) |
+| Suites passed / skipped / failed | **45 / 9 / 0** | **51 / 3 / 0** |
+| Tests passed / skipped / failed | **359 / 35 / 0** | **372 / 22 / 0** |
+| Duration | 140 s | 102 s |
+| Log | `logs/20260820-170300-full-e2e-prod-final.log` | `logs/20260820-221742-full-e2e-local-2.log` |
+
+Local runs **+6 suites / +13 tests** vs remote because the 7 stub-backed files actually execute. Remote runs expansion-chain + `list({chainId})` that local skips. First local pass had **1 fail**: `policiesLive` unserved-chain refusal — `4.16.0` still returns a prepared grant for chain `999999`. That test now returns early unless `/health` is `>= 4.17.0`.
+
+## Local re-run after rebuild (`4.17.0`)
+
+Log: `logs/20260820-222509-local-417-corresponding.log`. Same binary version as production; local `chains[]` is Sepolia + Ethereum + Base (`config/gateway.yaml`), no Base Sepolia worker, no expansion-chain workers.
+
+| Test | Production `4.17.0` | Local `4.16.0` (pre-rebuild) | Local `4.17.0` (rebuilt) |
+|---|---|---|---|
+| `POLICIES_CHAIN_NOT_SERVED` on prepare(`999999`) | **pass** (400) | prepare **succeeded** (old behaviour) | **pass** (400, 9 ms) |
+| `wallets.list({ chainId: 84532 })` | **pass** (gated on `TEST_ENV=railway`) | skipped (flag off) | **fail** on Base Sepolia (not in local `chains[]`). Retargeted to Base (`8453`). |
+| Expansion-chain JWT `aud=56/42161/10/130/4663` | **pass** | skipped | **pass** (auth only) |
+| Expansion-chain `nodes.run` / simulate WETH `symbol()` | **pass** | skipped | **fail** on BNB/Arb/OP/Unichain/Robinhood (no local workers). Local run now uses Ethereum + Base. |
+
+After retargeting to the local `chains[]` (Sepolia JWT aud, Ethereum `:50053`, Base `:50054`), `MULTICHAIN_TEST=1` against local `4.17.0`:
+
+- `POLICIES_CHAIN_NOT_SERVED` — pass
+- `wallets.list({ chainId: 8453 })` scopes off the Sepolia aud list — pass
+- Ethereum + Base WETH `symbol()` via `nodes.run` and simulate — pass (6/6)
+
+`TEST_ENV=railway` still runs the Wave A/B/Robinhood expansion set. Log: `logs/20260820-223226-local-served-chains.log`.
 
 ## Resolved questions
 
 - **Sequence:** avs-infra `read` scope first (deploy), then SDK env + helpers + test migration. getToken is expected green only after the gateway grant is live.
 - **Partner key:** copy Studio production `GATEWAY_STUDIO_PARTNER_KEY` into gitignored `.env.railway` as `PARTNER_ASSERTION_PRIVATE_KEY`. Example file documents `PARTNER_ASSERTION_AUDIENCE=avs-gateway-prod` without the secret.
+
+## UserOp fixture: MA v2 + session grant (2026-08-20 evening)
+
+The remaining local UserOp/trigger “skips” were not an empty-balance problem. Gateway log:
+
+```
+no session authorization for smart wallet 0x5a8A…8856
+MA v2 execution requires a session grant — the gateway cannot sign as the owner fallback
+```
+
+`0x5a8A…` is salt-2 on the **legacy SimpleAccount** factory `0xB99BC2…2834`. `policies:prepare` refuses that runner (`SESSION_WALLET_NOT_MA_V2`). Tenderly sims do not need a grant; real bundler sends do.
+
+Fix in `tests/utils/client.ts` + `tests/utils/sessionGrant.ts`:
+
+- Funded fixture is **always** salt `"0"` on MA v2 factory `0x0000…6fecd` (CREATE2-stable for `TEST_PRIVATE_KEY`). That row is already in production's 3-wallet cap.
+- Address to fund (Sepolia): **`0x209eb31c199bEB4c386eF83CF442DE1a00667a1F`**. Owner EOA `0x804e…1557`. As of 2026-08-20 evening: ~0.22 ETH + ~56 USDC, deployed.
+- `getFundedFixture()` registers that wallet and submits a one-year session grant (`agentLabel: e2e-funded-wallet`) covering USDC `approve`/`transfer`. Native ETH rows in the allowlist do **not** make native sends work (see #761).
+- `policiesLive` uses `getIsolatedClient()` so its grant-then-revoke cannot tear down the fixture.
+
+Do **not** fund the legacy SimpleAccount `0x5a8A…8856` (factory `0xB99BC2…2834`) — `policies:prepare` refuses it with `SESSION_WALLET_NOT_MA_V2`.
+
+## EigenLayer-AVS #761 — local live check (2026-08-21)
+
+Gateway rebuilt from staging `0c8aa185` (`./out/ap` 2026-08-20 23:57, `/health` still reports `4.17.0`). Both parts of the issue are **correct**. The two design calls in the push (not running `MissingGrantCalls` on `ETHTransfer`; refusing native ETH whether or not a grant exists) are the right ones — a coverage “miss” would send people to re-grant a shape that cannot work.
+
+### Part 1 — native ETH typed refusal
+
+| Probe | Result |
+|---|---|
+| `POST …:withdraw` token=`ETH` | **400** `SESSION_POLICY_NATIVE_NOT_ALLOWED`, ~1 ms, no bundler |
+| Block-triggered `ethTransfer` | execution **failed**; **step** error contains `SESSION_POLICY_NATIVE_NOT_ALLOWED` (trigger envelope only says `1 of 2 steps failed: transfer`) |
+| `ethTransfer` `nodes.run` / `workflows.simulate` | **success** (Tenderly; preflight sits only on `executeRealETHTransfer`) |
+| 1000 ETH withdraw on a **fresh** salt-0 MA v2 wallet (no grant) | still **400** native refusal, not `no session authorization` |
+| Bundler AA23 | **absent** on these paths |
+
+SDK tests now **assert** the code instead of skipping.
+
+### Part 2 — withdraw sends in-process
+
+`ExecuteWithdraw` → `preset.SendUserOpAuto` with gateway-resolved session grant. Worker `ExecuteUserOp` is gone. Live Sepolia on `0x209eb31…`:
+
+| What | Result |
+|---|---|
+| 0.01 USDC to owner | mined `0x80c788f5…` / later full-suite runs also mined |
+| 0.01 USDC to alternate recipient `0x7E5F…5Bdf` | mined `0xfc16444e…` |
+| `no session authorization` / `worker ExecuteUserOp` | **gone** |
+
+Balance reads remain worker-routed; only the send moved. Sponsorship-neutral as stated in the push.
+
+### Full local suite after #761 (closes this investigation)
+
+`env -u TEST_ENV MULTICHAIN_TEST=1 yarn test` against `http://localhost:8080/api/v1`.
+
+| | Production (2026-08-20 helpers) | Local (2026-08-21, #761) |
+|---|---|---|
+| `/health` | `4.17.0` | `4.17.0` (`0c8aa185`) |
+| Suites passed / skipped / failed | 45 / 9 / 0 | **54 / 0 / 0** |
+| Tests passed / skipped / failed | 359 / 35 / 0 | **385 / 0 / 0** |
+| Duration | 140 s | 177 s |
+| Log | `logs/20260820-170300-full-e2e-prod-final.log` | `logs/20260821-000558-full-e2e-local-761.log` |
+
+Local +9 suites vs that production run are the stub-backed files (gateway can dial `127.0.0.1`) plus the UserOp/native-refusal tests that production never executed for real. No `Skipping —` lines in the local log.
+
+**Not in this close-out:** re-running `TEST_ENV=railway` against production. Production still needs the #761 binary deployed before ERC-20 withdraw / native-refusal assertions will match. Expansion-chain Wave A/B/Robinhood remain railway-only.
+
+### Remaining product limit (asserted, not a test hole)
+
+REST session grants **cannot** authorize native ETH (`execute(to, value, 0x)`). That is option C of #761, not an SDK bug. ERC-20 approve/transfer/withdraw on the MA v2 fixture do mine. To actually move ETH, send with the owner key outside the session.

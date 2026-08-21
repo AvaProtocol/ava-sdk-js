@@ -30,6 +30,24 @@ import type { AddressInfo } from "node:net";
 
 import type { Client } from "@avaprotocol/sdk-js";
 
+/** True when the gateway is this machine and can dial 127.0.0.1. */
+export function isLocalGateway(): boolean {
+  const raw = process.env.AVS_REST_URL ?? "http://localhost:8080/api/v1";
+  try {
+    const host = new URL(raw).hostname;
+    return host === "localhost" || host === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Stub-backed suites need the gateway to dial this process. Skip them
+ * against a remote gateway (`TEST_ENV=railway`) instead of failing every
+ * test with a connection-refused probe.
+ */
+export const describeIfGatewayCanReachStub = isLocalGateway() ? describe : describe.skip;
+
 export interface StubServer {
   /** Base URL the gateway should call, e.g. http://127.0.0.1:53124 */
   readonly baseUrl: string;

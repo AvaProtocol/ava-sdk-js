@@ -12,9 +12,9 @@
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
-  getEOAAddress,
+  getSuiteClient,
+  getFundedClient,
+  getFundedWallet,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,
@@ -33,9 +33,7 @@ describe("Template: USDC read+write+customCode", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   afterEach(async () => {
@@ -98,10 +96,18 @@ describe("Template: USDC read+write+customCode", () => {
   }
 
   test("simulates the workflow with both contractReads + contractWrite + customCode", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
+    // Tenderly does not override ERC-20 balances; the transfer step
+    // needs the MA v2 salt-0 wallet that actually holds Sepolia USDC.
+    const { client: funded, owner } = await getFundedClient();
+    const wallet = await getFundedWallet(funded);
+    if (!wallet) {
+      console.log("Skipping — funded MA v2 salt-0 wallet not available");
+      return;
+    }
+    eoaAddress = owner;
     const wf = buildWorkflow(wallet.address);
 
-    const sim = await client.workflows.simulate({
+    const sim = await funded.workflows.simulate({
       trigger: wf.trigger,
       nodes: wf.nodes,
       edges: wf.edges,
@@ -126,7 +132,7 @@ describe("Template: USDC read+write+customCode", () => {
   });
 
   test("deploys + retrieves the workflow with the cron trigger type", async () => {
-    const wallet = await createSmartWallet(client, { saltValue: "2" });
+    const wallet = await createSmartWallet(client);
     const wf = buildWorkflow(wallet.address);
 
     const created = await client.workflows.create({

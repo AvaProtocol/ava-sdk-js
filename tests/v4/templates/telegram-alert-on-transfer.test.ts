@@ -13,6 +13,7 @@
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   getEOAAddress,
@@ -20,7 +21,11 @@ import {
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
-import { startStubServerFor, type StubServer } from "../../utils/stubServer";
+import {
+  describeIfGatewayCanReachStub,
+  startStubServerFor,
+  type StubServer,
+} from "../../utils/stubServer";
 
 jest.setTimeout(60_000);
 
@@ -35,15 +40,13 @@ function padTopic(addr: string): string {
 let STUB = "";
 let stub: StubServer;
 
-describe("Template: Telegram alert on transfer", () => {
+describeIfGatewayCanReachStub("Template: Telegram alert on transfer", () => {
   let client: Client;
   let eoaAddress: string;
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
 
     // A local stub replaces httpbin.org here: the gateway makes this request,
     // not the test, so client-side mocking cannot intercept it — only a server

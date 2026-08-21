@@ -4,6 +4,9 @@
  * v3 had many near-duplicate variations of "with/without isSimulated".
  * v4 simplifies: nodes.run is always a simulation (no UserOp goes
  * out), and the only on-chain execution path is workflows.trigger.
+ * Real ETH transfer under a REST session grant is refused with
+ * SESSION_POLICY_NATIVE_NOT_ALLOWED (EigenLayer-AVS #761) — empty
+ * inner calldata cannot pass a selector-scoped allowlist.
  * The port keeps one assertion per scenario rather than re-asserting
  * the same response shape three different ways.
  *
@@ -19,15 +22,15 @@
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
   getCurrentBlockNumber,
-  getEOAAddress,
+  getSuiteClient,
+  getFundedFixture,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
+import { SESSION_POLICY_NATIVE_NOT_ALLOWED } from "../../utils/sessionGrant";
 
 // deploy+trigger block matches a future block (blockNumber+5) then waits for the
 // bundler/UserOp receipt — ~45s against a fresh gateway. The jest budget is set
@@ -46,9 +49,7 @@ describe("ETHTransfer Node Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   afterEach(async () => {
@@ -169,15 +170,24 @@ describe("ETHTransfer Node Tests", () => {
   });
 
   describe("deploy + trigger (real bundler round-trip)", () => {
-    test("submits an ETH transfer through a block-triggered workflow", async () => {
+    let funded: Client;
+    let fundedOwner: string;
+    let wallet: Awaited<ReturnType<typeof getFundedFixture>>["wallet"];
+    const fundedWorkflowIds: string[] = [];
+
+    beforeAll(async () => {
+      ({ client: funded, owner: fundedOwner, wallet } = await getFundedFixture());
+    });
+
+    afterEach(async () => {
+      await removeCreatedWorkflows(funded, fundedWorkflowIds.splice(0));
+    });
+
+    test("refuses a native ETH transfer with SESSION_POLICY_NATIVE_NOT_ALLOWED", async () => {
       if (!process.env.CHAIN_ENDPOINT) {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      // This test uses the funded salt:2 wallet. If it's unfunded
-      // (fresh chain), the trigger returns failed and we skip the
-      // assertion block.
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const blockNumber = await getCurrentBlockNumber();
       const triggerInterval = 5;
 
@@ -194,7 +204,7 @@ describe("ETHTransfer Node Tests", () => {
             id: "transfer",
             name: "transfer",
             chainId: 11_155_111,
-            destination: eoaAddress,
+            destination: fundedOwner,
             amountWei: "100000000000000",
           }),
         ],
@@ -203,31 +213,27 @@ describe("ETHTransfer Node Tests", () => {
         // a compile error from the engine.
         edges: [{ id: "e1", source: "trigger", target: "transfer" }],
       };
-      const created = await client.workflows.create(workflowReq);
+      const created = await funded.workflows.create(workflowReq);
       const workflowId = created.id as string;
-      createdWorkflowIds.push(workflowId);
+      fundedWorkflowIds.push(workflowId);
 
-      const trig = await client.workflows.trigger(workflowId, {
+      const trig = await funded.workflows.trigger(workflowId, {
         triggerType: "block",
         triggerOutput: { blockNumber: blockNumber + triggerInterval },
         isBlocking: true,
       });
-      // The bundler returns "error" (not "failed") when the UserOp
-      // can't be submitted — treat both as skip-conditions since the
-      // funded wallet may not actually be funded in dev.
-      if (trig.status === "failed" || trig.status === "error" || trig.error) {
-        console.log(`Skipping — trigger returned ${trig.status}${trig.error ? ": " + trig.error : ""}`);
-        return;
-      }
+      // Option C of EigenLayer-AVS #761: REST session grants cannot
+      // cover execute(to, value, 0x). The gateway refuses before the
+      // bundler instead of returning opaque AA23. The trigger envelope
+      // only says "1 of 2 steps failed: transfer"; the code is on the
+      // step.
+      expect(trig.status).toBe("failed");
 
-      const execution = await client.executions.retrieve(trig.executionId, { workflowId });
+      const execution = await funded.executions.retrieve(trig.executionId, { workflowId });
       const step = execution.steps?.find((s) => s.id === "transfer");
-      expect(step?.success).toBe(true);
-      const transfer = (step?.output as { data: { transfer: any } }).data.transfer;
-      expect(transfer.to.toLowerCase()).toBe(eoaAddress.toLowerCase());
-      expect(transfer.value).toBe("100000000000000");
-      const meta = (step as unknown as { metadata: Record<string, string> }).metadata;
-      expect(meta.transactionHash).toBeTruthy();
+      expect(step?.success).toBe(false);
+      const stepErr = `${step?.error ?? ""} ${step?.errorCode ?? ""}`;
+      expect(stepErr).toContain(SESSION_POLICY_NATIVE_NOT_ALLOWED);
     });
   });
 });

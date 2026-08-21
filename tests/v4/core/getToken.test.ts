@@ -17,7 +17,7 @@
  * passes.
  */
 
-import { Chains, Client, Tokens, type TokenChainEntry } from "@avaprotocol/sdk-js";
+import { APIError, Chains, Client, Tokens, type TokenChainEntry } from "@avaprotocol/sdk-js";
 
 import { authenticateClient, getClient } from "../../utils/client";
 import { hasPartnerAssertionKey, testPartnerHeaders } from "../../utils/partner";
@@ -92,9 +92,21 @@ function retrieve(client: Client, address: string) {
 describeOrSkip("getToken Tests", () => {
   let client: Client;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     // Partner-only — no user JWT (matches gateway LevelPartnerRead).
     client = getClient({ headers: testPartnerHeaders() });
+    try {
+      await retrieve(client, TOKENS.USDC.address);
+    } catch (error) {
+      if (error instanceof APIError && error.code === "PARTNER_SCOPE_DENIED") {
+        throw new Error(
+          'Gateway studio partner is not granted scope "read". ' +
+            "avs-infra gateway-railway.yaml partners[studio].scopes must include read " +
+            "(GET /tokens requires read; simulate is not enough).",
+        );
+      }
+      throw error;
+    }
   });
 
   if (!hasPartnerAssertionKey()) {

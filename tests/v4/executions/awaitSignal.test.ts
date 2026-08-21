@@ -17,26 +17,15 @@
  * 4. The returned execution is terminal (`"success"`) and carries the
  *    downstream step.
  *
- * GATED: this exercises brand-new server behaviour and live timing, so
- * it only runs when `DURABLE_E2E=1` is set (e.g.
- * `AVS_REST_URL=http://localhost:8080/api/v1 DURABLE_E2E=1 \
- *   yarn jest tests/v4/executions/awaitSignal.test.ts`).
- * Left off by default until the target gateway is confirmed to carry
- * the durable-execution engine.
- *
- * Verified passing 2026-06-28 against a local `make dev-stack`
- * (EigenLayer-AVS staging). Gateway logs for the run show the full
- * lifecycle: `execution suspended (durable) resume_node: gate` →
- * `POST /executions/{id}:signal -> 200` → `execution resumed to
- * terminal status: EXECUTION_STATUS_SUCCESS`. (An earlier gateway
- * build 404'd the POST `:signal` route — the generated echo route
- * `/executions/:id:signal` was unmatchable for POST; fixed server-side
- * before this run.)
+ * Durable execution shipped in EigenLayer-AVS #643–#648 (verified
+ * 2026-06-28 against local `make dev-stack`). Always runs — the
+ * `DURABLE_E2E=1` opt-in was a rollout flag and is no longer needed.
  */
 
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   createSmartWallet,
@@ -44,11 +33,6 @@ import {
 } from "../../utils/client";
 
 jest.setTimeout(180_000);
-
-const DURABLE_E2E = process.env.DURABLE_E2E === "1";
-// Use describe.skip when the opt-in flag is absent so the suite is a
-// no-op in default CI rather than authenticating + failing.
-const describeMaybe = DURABLE_E2E ? describe : describe.skip;
 
 /** Poll getStatus until `predicate` is true or the deadline passes. */
 async function waitForStatus(
@@ -69,13 +53,12 @@ async function waitForStatus(
   throw new Error(`execution ${execId} never reached the expected status (last: "${last}")`);
 }
 
-describeMaybe("durable execution — await(channel:'api') + executions.signal", () => {
+describe("durable execution — await(channel:'api') + executions.signal", () => {
   let client: Client;
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {

@@ -1,20 +1,20 @@
 /**
- * Test env helpers. Loads .env first (then .env.$TEST_ENV if set)
- * so test runs pick up the same configuration the v3 suite used
- * without each spec file having to call dotenv on its own.
+ * Test env helpers. Loads `.env.$TEST_ENV` first (when set), then `.env`
+ * as fallback. `override: false` so process env / CLI always wins.
+ *
+ * Specific-first matters for `TEST_ENV=railway`: `.env` holds local
+ * partner audience/key, `.env.railway` holds production's. Loading
+ * `.env` first used to pin those and ignore the railway file.
  */
 
 import * as path from "node:path";
 import * as fs from "node:fs";
 import * as dotenv from "dotenv";
 
-// Load in priority order: process env wins, then .env, then
-// .env.$TEST_ENV (defaults to "dev"). Quietly skip files that
-// don't exist — local devs keep different combinations.
 (function loadEnv(): void {
   const repoRoot = path.resolve(__dirname, "..", "..");
   const target = process.env.TEST_ENV ?? "dev";
-  const candidates = [path.join(repoRoot, ".env"), path.join(repoRoot, `.env.${target}`)];
+  const candidates = [path.join(repoRoot, `.env.${target}`), path.join(repoRoot, ".env")];
   for (const file of candidates) {
     if (fs.existsSync(file)) {
       dotenv.config({ path: file, override: false });
@@ -54,5 +54,5 @@ export const TEST_API_KEY = (): string | undefined => process.env.AVS_API_KEY;
  *
  * - PARTNER_ASSERTION_PRIVATE_KEY — base64 Ed25519 private seed
  * - PARTNER_ASSERTION_ISSUER — default "studio"
- * - PARTNER_ASSERTION_AUDIENCE — e.g. "avs-gateway-local"
+ * - PARTNER_ASSERTION_AUDIENCE — local: avs-gateway-local; production: avs-gateway-prod
  */

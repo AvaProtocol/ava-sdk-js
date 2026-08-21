@@ -15,10 +15,9 @@
  * carries a single client-scoped Bearer JWT, so per-request auth
  * overrides don't exist.
  *
- * The funded-wallet helper uses salt "2" (same as v3), which is
- * pre-funded on the long-lived dev/sepolia smart wallet. If the
- * wallet is unfunded (running against a fresh chain), the
- * on-chain tests skip cleanly; the validation tests still run.
+ * The funded-wallet helper looks up MA v2 salt "0" (see
+ * getFundedFixture). If the wallet is unfunded, on-chain tests skip
+ * with the address to fund; the validation tests still run.
  */
 
 import { ethers } from "ethers";
@@ -26,11 +25,16 @@ import { ethers } from "ethers";
 import { Chains, Client, Tokens, type v4 } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
   getClient,
-  getEOAAddress,
+  getFundedFixture,
+  FUNDED_FACTORY_ADDRESS,
+  FUNDED_WALLET_SALT,
   createSmartWallet,
 } from "../../utils/client";
+import {
+  e2eWithdrawAlternateRecipient,
+  SESSION_POLICY_NATIVE_NOT_ALLOWED,
+} from "../../utils/sessionGrant";
 import { optionalEnv } from "../../utils/env";
 
 // Real UserOp round-trips can take ~3 minutes (bundler → EntryPoint
@@ -40,7 +44,6 @@ import { optionalEnv } from "../../utils/env";
 jest.setTimeout(240_000);
 
 const WITHDRAW_TIMEOUT_MS = 200_000;
-const FUNDED_WALLET_SALT = "2";
 
 // Optional override — if the dev chain endpoint isn't sepolia or the
 // funded wallet doesn't exist, callers can flip this to skip the
@@ -67,16 +70,18 @@ async function pollReceipt(
   return { success: false, receipt: null };
 }
 
-async function tryFundedWallet(client: Client): Promise<v4.Wallet | undefined> {
-  if (SKIP_ON_CHAIN) return undefined;
-  return createSmartWallet(client, { saltValue: FUNDED_WALLET_SALT });
+function fundedSkipMessage(address: string, detail: string): string {
+  return (
+    `Skipping — ${detail}. Fund MA v2 salt-${FUNDED_WALLET_SALT} wallet ` +
+    `${address} (factory ${FUNDED_FACTORY_ADDRESS}) on Sepolia with ETH and USDC.`
+  );
 }
 
 /**
  * Submit a withdrawal against the funded test wallet. Returns the
  * response on success; returns undefined and logs a skip note when
- * the wallet is unfunded (server either throws 400/insufficient or
- * returns `{status: "failed"}`).
+ * the wallet is unfunded. Session-grant / bundler errors fail the
+ * test — those are not a funding gap.
  */
 async function submitWithdrawOrSkip(
   client: Client,
@@ -87,19 +92,28 @@ async function submitWithdrawOrSkip(
   try {
     response = await client.wallets.withdraw(address, req);
   } catch (err: unknown) {
-    const errObj = err as { status?: number; message?: string };
-    if (errObj.status === 400 || /insufficient/i.test(errObj.message ?? "")) {
-      console.log("Skipping — funded wallet not funded on this chain");
+    const errObj = err as { status?: number; code?: string; message?: string };
+    // Native ETH is a typed 400 (SESSION_POLICY_NATIVE_NOT_ALLOWED), not
+    // a funding miss — let those tests assert the code.
+    if (
+      errObj.status === 400 &&
+      errObj.code !== SESSION_POLICY_NATIVE_NOT_ALLOWED &&
+      /insufficient/i.test(`${errObj.code ?? ""} ${errObj.message ?? ""}`)
+    ) {
+      console.log(fundedSkipMessage(address, "wallet not funded on this chain"));
       return undefined;
     }
     throw err;
   }
   if (response.status === "failed") {
-    // The dev wallet (salt:2) isn't funded on this chain — bundler
-    // bounced the UserOp. Treat as a soft skip so the validation
-    // tests still cover their cases without requiring real ETH.
-    console.log(`Skipping — UserOp returned failed status${response.message ? `: ${response.message}` : ""}`);
-    return undefined;
+    const msg = response.message ?? "";
+    if (/insufficient/i.test(msg)) {
+      console.log(fundedSkipMessage(address, msg || "insufficient funds"));
+      return undefined;
+    }
+    throw new Error(
+      `UserOp withdraw failed for MA v2 funded wallet ${address}: ${msg || "failed"}`,
+    );
   }
   return response;
 }
@@ -107,70 +121,45 @@ async function submitWithdrawOrSkip(
 describe("Withdraw Funds Tests", () => {
   let client: Client;
   let eoaAddress: string;
+  let fundedWallet: v4.Wallet | undefined;
   // Lazily resolve the chain endpoint — only the on-chain tests
   // need it, and the validation tests must keep running when
   // CHAIN_ENDPOINT is absent.
   const chainEndpoint = optionalEnv("CHAIN_ENDPOINT", "");
 
   beforeAll(async () => {
-    eoaAddress = getEOAAddress();
-    client = getClient();
-    await authenticateClient(client);
+    const fx = await getFundedFixture();
+    client = fx.client;
+    eoaAddress = fx.owner;
+    if (!SKIP_ON_CHAIN) fundedWallet = fx.wallet;
   });
 
-  describe("withdraw: basic ETH happy path", () => {
-    test("submits an ETH withdrawal and confirms receipt", async () => {
-      const wallet = await tryFundedWallet(client);
+  describe("withdraw: native ETH (session-grant refusal)", () => {
+    test("refuses an ETH withdrawal with SESSION_POLICY_NATIVE_NOT_ALLOWED", async () => {
+      const wallet = fundedWallet;
       if (!wallet) {
-        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true");
-        return;
-      }
-      if (!chainEndpoint) {
-        console.log("Skipping — CHAIN_ENDPOINT not set");
+        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true or funded wallet unavailable");
         return;
       }
 
-      const provider = new ethers.JsonRpcProvider(
-        chainEndpoint.startsWith("http") ? chainEndpoint : `https://${chainEndpoint}`,
-      );
-      const initialBalance = await provider.getBalance(eoaAddress);
-
-      const req: v4.WithdrawRequest = {
-        recipientAddress: eoaAddress,
-        amount: "1000000000000000", // 0.001 ETH
-        token: "ETH",
-      };
-
-      const response = await submitWithdrawOrSkip(client, wallet.address, req);
-      if (!response) return;
-      expect(response.status).not.toBe("failed");
-      expect(response.smartWalletAddress?.toLowerCase()).toBe(
-        wallet.address.toLowerCase(),
-      );
-      expect(response.transactionHash).toBeTruthy();
-
-      const check = await pollReceipt(response.transactionHash!, provider);
-      expect(check.success).toBe(true);
-      expect(check.receipt?.status).toBe(1);
-
-      const expectedDelta = BigInt(req.amount);
-      let finalBalance = await provider.getBalance(eoaAddress);
-      let delta = finalBalance - initialBalance;
-      const deadline = Date.now() + 30_000;
-      while (delta < expectedDelta && Date.now() < deadline) {
-        await new Promise((r) => setTimeout(r, 1000));
-        finalBalance = await provider.getBalance(eoaAddress);
-        delta = finalBalance - initialBalance;
-      }
-      expect(delta).toBe(expectedDelta);
-    }, WITHDRAW_TIMEOUT_MS);
+      await expect(
+        client.wallets.withdraw(wallet.address, {
+          recipientAddress: eoaAddress,
+          amount: "1000000000000000", // 0.001 ETH
+          token: "ETH",
+        }),
+      ).rejects.toMatchObject({
+        status: 400,
+        code: SESSION_POLICY_NATIVE_NOT_ALLOWED,
+      });
+    });
   });
 
   describe("withdraw: ERC-20", () => {
     test("submits a USDC withdrawal when the token is configured", async () => {
-      const wallet = await tryFundedWallet(client);
+      const wallet = fundedWallet;
       if (!wallet) {
-        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true");
+        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true or funded wallet unavailable");
         return;
       }
 
@@ -218,20 +207,20 @@ describe("Withdraw Funds Tests", () => {
     });
 
     test("accepts an alternate recipient address", async () => {
-      const wallet = await tryFundedWallet(client);
+      const wallet = fundedWallet;
       if (!wallet) {
-        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true");
+        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true or funded wallet unavailable");
         return;
       }
 
-      const otherRecipient = getEOAAddress(
-        "0x0000000000000000000000000000000000000000000000000000000000000001",
-      );
-
+      const otherRecipient = e2eWithdrawAlternateRecipient();
+      const usdcAddress = Tokens.USDC[Chains.Sepolia]!.address;
+      // Native ETH is refused under REST session grants; ERC-20 transfer
+      // to a different recipient is the path that can still mine.
       const req: v4.WithdrawRequest = {
         recipientAddress: otherRecipient,
-        amount: "100000000000000", // 0.0001 ETH
-        token: "ETH",
+        amount: "10000", // 0.01 USDC
+        token: usdcAddress,
       };
 
       const response = await submitWithdrawOrSkip(client, wallet.address, req);
@@ -292,16 +281,16 @@ describe("Withdraw Funds Tests", () => {
 
   describe("withdraw: response shape", () => {
     test("returns the documented v4.WithdrawResponse shape", async () => {
-      const wallet = await tryFundedWallet(client);
+      const wallet = fundedWallet;
       if (!wallet) {
-        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true");
+        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true or funded wallet unavailable");
         return;
       }
 
       const req: v4.WithdrawRequest = {
         recipientAddress: eoaAddress,
-        amount: "1000000000000000",
-        token: "ETH",
+        amount: "10000",
+        token: Tokens.USDC[Chains.Sepolia]!.address,
       };
 
       const response = await submitWithdrawOrSkip(client, wallet.address, req);
@@ -330,10 +319,10 @@ describe("Withdraw Funds Tests", () => {
   });
 
   describe("paymaster reimbursement check", () => {
-    test("internal txs all succeed on paymaster-sponsored ETH withdrawal", async () => {
-      const wallet = await tryFundedWallet(client);
+    test("internal txs all succeed on a session-granted ERC-20 withdrawal", async () => {
+      const wallet = fundedWallet;
       if (!wallet) {
-        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true");
+        console.log("Skipping — WITHDRAW_SKIP_ON_CHAIN=true or funded wallet unavailable");
         return;
       }
       if (!chainEndpoint) {
@@ -347,8 +336,8 @@ describe("Withdraw Funds Tests", () => {
 
       const req: v4.WithdrawRequest = {
         recipientAddress: eoaAddress,
-        amount: "2000000000000000",
-        token: "ETH",
+        amount: "10000",
+        token: Tokens.USDC[Chains.Sepolia]!.address,
       };
 
       const response = await submitWithdrawOrSkip(client, wallet.address, req);
@@ -359,10 +348,6 @@ describe("Withdraw Funds Tests", () => {
       const check = await pollReceipt(response.transactionHash!, provider);
       expect(check.success).toBe(true);
       expect(check.receipt?.status).toBe(1);
-      // Withdrawals run with SkipReimbursement=true server-side (the
-      // paymaster absorbs gas so the user can withdraw their full
-      // balance). No reimbursement transfer is added to the UserOp
-      // for withdrawals — non-withdrawal operations do reimburse.
     }, WITHDRAW_TIMEOUT_MS);
   });
 });

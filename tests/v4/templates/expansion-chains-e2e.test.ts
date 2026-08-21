@@ -1,24 +1,24 @@
 /**
- * Wave A / Wave B / Robinhood read-only E2E against a multi-chain gateway.
+ * Multi-chain read-only E2E: JWT aud + WETH `symbol()` via the chain worker
+ * and Tenderly simulate.
  *
- * Local docker-compose only wires Sepolia, so this file no-ops unless
- * TEST_ENV=railway (or MULTICHAIN_TEST=1). Against Railway it:
+ * Gated on TEST_ENV=railway or MULTICHAIN_TEST=1.
  *
- *   1. Mints a JWT whose `aud` is the target chain on the isolated
- *      client's transport (gateway has the chain in chains[]).
- *   2. `nodes.run` a WETH/WBNB `symbol()` contractRead under that
- *      chain-scoped token — real RPC through that chain's worker.
- *   3. `workflows.simulate` the same read — Tenderly Simulation API
- *      for that chain id (Phase 6 of Adding_A_New_Chain.md).
+ * Local EigenLayer-AVS gateway `chains[]` is Sepolia + Ethereum + Base
+ * (workers :50051 / :50053 / :50054). Against that stack this file
+ * exercises Ethereum and Base (Sepolia is the JWT default).
  *
- * No UserOp is submitted. Uses an isolated EOA so production
+ * Against Railway it also covers Wave A / Wave B / Robinhood:
+ *
+ *   1. Mints a JWT whose `aud` is the target chain.
+ *   2. `nodes.run` a WETH/WBNB `symbol()` contractRead on that worker.
+ *   3. `workflows.simulate` the same read (Tenderly for that chain id).
+ *
+ * No UserOp is submitted. Isolated EOA so production
  * `max_wallets_per_owner` on the shared test key is not a problem.
  *
- * `.env` wins over `.env.railway` (override:false), so point at
- * production explicitly:
- *
- *   TEST_ENV=railway AVS_REST_URL=https://api.avaprotocol.org/api/v1 \
- *     yarn jest tests/v4/templates/expansion-chains-e2e.test.ts
+ *   MULTICHAIN_TEST=1 yarn jest tests/v4/templates/expansion-chains-e2e.test.ts
+ *   TEST_ENV=railway yarn jest tests/v4/templates/expansion-chains-e2e.test.ts
  */
 
 import { Chains, Client, Nodes, Protocols, Triggers } from "@avaprotocol/sdk-js";
@@ -39,7 +39,27 @@ const describeExpansion = MULTICHAIN_STACK ? describe : describe.skip;
 
 const SYMBOL_ABI = [...Protocols.erc20.symbolAbi];
 
-const CHAINS: ReadonlyArray<{
+const LOCAL_SERVED_CHAINS: ReadonlyArray<{
+  name: string;
+  chainId: number;
+  weth: string;
+  symbol: string;
+}> = [
+  {
+    name: "Ethereum",
+    chainId: Chains.EthereumMainnet,
+    weth: Protocols.wrapped.weth[Chains.EthereumMainnet]!,
+    symbol: "WETH",
+  },
+  {
+    name: "Base",
+    chainId: Chains.BaseMainnet,
+    weth: Protocols.wrapped.weth[Chains.BaseMainnet]!,
+    symbol: "WETH",
+  },
+];
+
+const EXPANSION_CHAINS: ReadonlyArray<{
   name: string;
   chainId: number;
   weth: string;
@@ -76,6 +96,9 @@ const CHAINS: ReadonlyArray<{
     symbol: "WETH",
   },
 ];
+
+const CHAINS =
+  process.env.TEST_ENV === "railway" ? EXPANSION_CHAINS : LOCAL_SERVED_CHAINS;
 
 describeExpansion("Expansion chains E2E (auth + WETH read + simulate)", () => {
   let client: Client;

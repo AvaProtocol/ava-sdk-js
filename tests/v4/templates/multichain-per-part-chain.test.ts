@@ -16,12 +16,11 @@
  *      chain round-trips through create → retrieve. This is the forward-
  *      compatible shape G5 will make mandatory — writing it now is
  *      no-regret.
- *   2. Cross-chain (gated on a multi-chain stack — Railway, or
- *      MULTICHAIN_TEST=1): trigger on Sepolia, contract read on Base
- *      Sepolia, in ONE workflow. Proves the two-axis model (watch X /
- *      act Y) survives the wire. A Sepolia-only stack rejects the Base
- *      Sepolia part (backend G4 — unconfigured explicit chain), so this
- *      case only runs where both chains are configured.
+ *   2. Cross-chain (gated on a multi-chain stack — local EigenLayer-AVS
+ *      with Ethereum/Base workers, Railway, or MULTICHAIN_TEST=1):
+ *      trigger on Sepolia, contract read on Base, in ONE workflow.
+ *      A Sepolia-only stack (ava-sdk-js CI compose) rejects the Base
+ *      part, so that case stays behind the stack gate.
  *
  * NOTE (intentional, per the renovation plan): this suite sets an
  * explicit `chainId` on every chain-aware part and sends NO
@@ -33,6 +32,7 @@
 import { APIError, Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   createSmartWallet,
@@ -42,31 +42,20 @@ import {
 
 jest.setTimeout(60_000);
 
-// READINESS GATE — the deployed server must honor an explicit per-node
-// `chainId` on the *persisted* create() path (backend G3). The current
-// `avs-dev:latest` image does NOT: a per-node `chainId` on contractRead
-// is rejected at create() in every representation —
-//   `cannot unmarshal string into ... ContractReadNodeConfig.chainId of
-//    type int64`
-// — because the node-config decode mixes protojson (int64 → quoted
-// string) with plain encoding/json (rejects the quotes). Verified
-// 2026-06-26; see docs/changes/chain-decoupling-sdk-tracking.md. Set
-// PER_NODE_CHAIN_READY=1 once the renovated backend (G3, incl. the
-// persisted create() path) is deployed to the target stack — then these
-// assertions lock the wire contract for real.
-const PER_NODE_CHAIN_READY = process.env.PER_NODE_CHAIN_READY === "1";
-
-// A multi-chain stack (Railway deploys worker-sepolia + worker-base-
-// sepolia + mainnet/base) is required for the genuine cross-chain case;
-// the local CI compose wires Sepolia only. Gate on an explicit opt-in.
+// Per-part chainId on create() shipped with the chain-decoupling
+// renovation (G3). The PER_NODE_CHAIN_READY opt-in was for the old
+// avs-dev image that rejected quoted int64 — no longer needed.
+//
+// Cross-chain watch/act needs a second chain in the gateway. Local
+// EigenLayer-AVS serves Sepolia + Ethereum + Base; the ava-sdk-js CI
+// compose is Sepolia-only. MULTICHAIN_TEST / TEST_ENV=railway is a
+// *stack* gate, not a feature flag.
 const MULTICHAIN_STACK =
   process.env.MULTICHAIN_TEST === "1" || process.env.TEST_ENV === "railway";
-
-const contractTest = PER_NODE_CHAIN_READY ? test : test.skip;
-const crossChainTest = PER_NODE_CHAIN_READY && MULTICHAIN_STACK ? test : test.skip;
+const crossChainTest = MULTICHAIN_STACK ? test : test.skip;
 
 const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
-const USDC_BASE_SEPOLIA = Tokens.USDC[Chains.BaseSepolia]!.address;
+const USDC_BASE = Tokens.USDC[Chains.BaseMainnet]!.address;
 const SYMBOL_ABI = Protocols.erc20.symbolAbi;
 
 // A non-anonymous ERC-20 Transfer signature for the event trigger's
@@ -85,15 +74,14 @@ describe("Template: per-part multi-chain wire contract", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
+    ({ client } = await getSuiteClient());
   });
 
   afterEach(async () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  contractTest("explicit per-part chainId round-trips through create → retrieve", async () => {
+  test("explicit per-part chainId round-trips through create → retrieve", async () => {
     const wallet = await createSmartWallet(client);
 
     const created = await client.workflows.create({
@@ -131,7 +119,7 @@ describe("Template: per-part multi-chain wire contract", () => {
     expect(partChainId(readNode)).toBe(Chains.Sepolia);
   });
 
-  contractTest("rejects a chain-aware node that omits chainId (400)", async () => {
+  test("rejects a chain-aware node that omits chainId (400)", async () => {
     const wallet = await createSmartWallet(client);
 
     // The builder requires `chainId` (TS-enforced), so strip it post-build to
@@ -175,13 +163,13 @@ describe("Template: per-part multi-chain wire contract", () => {
   });
 
   crossChainTest(
-    "watches an event on Sepolia and reads a contract on Base Sepolia (per-part chains)",
+    "watches an event on Sepolia and reads a contract on Base (per-part chains)",
     async () => {
       const wallet = await createSmartWallet(client);
 
       const created = await client.workflows.create({
         smartWalletAddress: wallet.address,
-        name: "Cross-chain watch Sepolia / act Base Sepolia",
+        name: "Cross-chain watch Sepolia / act Base",
         trigger: Triggers.event({
           id: "evt",
           name: "evt",
@@ -193,9 +181,10 @@ describe("Template: per-part multi-chain wire contract", () => {
             id: "read",
             name: "read",
             // The act-on chain differs from the watch chain — the whole
-            // point of the decoupling.
-            chainId: Chains.BaseSepolia,
-            contractAddress: USDC_BASE_SEPOLIA,
+            // point of the decoupling. Base (8453) is in the local
+            // gateway chains[]; Base Sepolia was retired from it.
+            chainId: Chains.BaseMainnet,
+            contractAddress: USDC_BASE,
             contractAbi: SYMBOL_ABI,
             methodCalls: [{ methodName: "symbol", methodParams: [] }],
           }),
@@ -208,7 +197,7 @@ describe("Template: per-part multi-chain wire contract", () => {
       const retrieved = await client.workflows.retrieve(created.id);
       expect(partChainId(retrieved.trigger)).toBe(Chains.Sepolia);
       const readNode = retrieved.nodes?.find((n) => n.id === "read");
-      expect(partChainId(readNode)).toBe(Chains.BaseSepolia);
+      expect(partChainId(readNode)).toBe(Chains.BaseMainnet);
     },
   );
 });

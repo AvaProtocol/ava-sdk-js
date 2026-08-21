@@ -15,17 +15,20 @@
  *     value (bool for approve/transfer, struct for tuple returns).
  *   - `result.executionContext.is_simulated = true` for sim paths.
  *
- * The funded smart wallet (salt:2) is required for the real
- * deploy+trigger path. If it's unfunded the test skips cleanly.
+ * The MA v2 salt-0 funded wallet + session grant is required for
+ * the real deploy+trigger path. Simulation of `transfer` also uses
+ * that wallet because Tenderly does not override ERC-20 balances.
  */
 
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
-  authenticateClient,
-  getClient,
   getCurrentBlockNumber,
-  getEOAAddress,
+  getSuiteClient,
+  getFundedClient,
+  getFundedWallet,
+  getFundedFixture,
+  assertUserOpTriggerOk,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
@@ -44,9 +47,7 @@ describe("ContractWrite Node Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   afterEach(async () => {
@@ -55,7 +56,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("nodes.run (Tenderly simulation)", () => {
     test("simulates an approve(spender, 0) call", async () => {
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client);
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -76,29 +77,31 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("simulates a transfer call against the funded wallet", async () => {
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
-      const result = await client.nodes.run({
+      // MA v2 salt-0 holds Sepolia USDC. A suite wallet (fresh salt /
+      // isolated EOA) has none, and Tenderly does not override ERC-20
+      // balances — transfer would revert with "amount exceeds balance".
+      const { client: funded, owner } = await getFundedClient();
+      const wallet = await getFundedWallet(funded);
+      expect(wallet).toBeTruthy();
+      const result = await funded.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
           name: "w",
           chainId: 11_155_111,
           contractAddress: USDC_SEPOLIA,
           contractAbi: ERC20_ABI,
-          methodCalls: [{ methodName: "transfer", methodParams: [eoaAddress, "1"] }],
+          methodCalls: [{ methodName: "transfer", methodParams: [owner, "1"] }],
         }),
-        inputVariables: { settings: settingsFor(wallet.address) },
+        inputVariables: { settings: settingsFor(wallet!.address) },
       });
-      // If the funded wallet has no USDC, the simulation reverts.
-      if (!result.success) {
-        console.log(`Skipping — transfer sim failed (likely no USDC): ${result.error}`);
-        return;
-      }
+      expect(result.success).toBe(true);
       const data = (result.output as { data: Record<string, any> }).data;
       expect(data.transfer).toBe(true);
+      expect((result.executionContext as Record<string, unknown>).is_simulated).toBe(true);
     });
 
     test("simulates multiple method calls in one node", async () => {
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client);
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -121,7 +124,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("rejects a method that doesn't exist in the ABI", async () => {
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client);
       const result = await client.nodes.run({
         node: Nodes.contractWrite({
           id: "w",
@@ -140,7 +143,7 @@ describe("ContractWrite Node Tests", () => {
 
   describe("workflows.simulate", () => {
     test("simulates an approve workflow step", async () => {
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
+      const wallet = await createSmartWallet(client);
       const sim = await client.workflows.simulate({
         trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
         nodes: [
@@ -164,12 +167,24 @@ describe("ContractWrite Node Tests", () => {
   });
 
   describe("deploy + trigger (real bundler round-trip)", () => {
+    let funded: Client;
+    let fundedOwner: string;
+    let wallet: Awaited<ReturnType<typeof getFundedFixture>>["wallet"];
+    const fundedWorkflowIds: string[] = [];
+
+    beforeAll(async () => {
+      ({ client: funded, owner: fundedOwner, wallet } = await getFundedFixture());
+    });
+
+    afterEach(async () => {
+      await removeCreatedWorkflows(funded, fundedWorkflowIds.splice(0));
+    });
+
     test("submits an approve through a block-triggered workflow", async () => {
       if (!process.env.CHAIN_ENDPOINT) {
         console.log("Skipping — CHAIN_ENDPOINT not set");
         return;
       }
-      const wallet = await createSmartWallet(client, { saltValue: "2" });
       const blockNumber = await getCurrentBlockNumber();
 
       const wfReq = {
@@ -187,25 +202,22 @@ describe("ContractWrite Node Tests", () => {
             chainId: 11_155_111,
             contractAddress: USDC_SEPOLIA,
             contractAbi: ERC20_ABI,
-            methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "0"] }],
+            methodCalls: [{ methodName: "approve", methodParams: [fundedOwner, "0"] }],
           }),
         ],
         edges: [{ id: "e1", source: "trigger", target: "w" }],
       };
-      const created = await client.workflows.create(wfReq);
+      const created = await funded.workflows.create(wfReq);
       const wfId = created.id as string;
-      createdWorkflowIds.push(wfId);
+      fundedWorkflowIds.push(wfId);
 
-      const trig = await client.workflows.trigger(wfId, {
+      const trig = await funded.workflows.trigger(wfId, {
         triggerType: "block",
         triggerOutput: { blockNumber: blockNumber + 5 },
         isBlocking: true,
       });
-      if (trig.status === "failed" || trig.status === "error" || trig.error) {
-        console.log(`Skipping — trigger returned ${trig.status}${trig.error ? ": " + trig.error : ""}`);
-        return;
-      }
-      const exec = await client.executions.retrieve(trig.executionId, { workflowId: wfId });
+      assertUserOpTriggerOk(trig, wallet.address);
+      const exec = await funded.executions.retrieve(trig.executionId, { workflowId: wfId });
       const step = exec.steps?.find((s) => s.id === "w");
       expect(step?.success).toBe(true);
       // After real submission, approve still returns true. The

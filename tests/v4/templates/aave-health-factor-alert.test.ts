@@ -42,6 +42,7 @@
 import { Chains, Nodes, Protocols, Triggers, type Client } from "@avaprotocol/sdk-js";
 
 import {
+  getSuiteClient,
   authenticateClient,
   getClient,
   getEOAAddress,
@@ -86,9 +87,7 @@ describe("Template: AAVE health factor alert", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    client = getClient();
-    await authenticateClient(client);
-    eoaAddress = getEOAAddress();
+    ({ client, owner: eoaAddress } = await getSuiteClient());
   });
 
   afterEach(async () => {
