@@ -11,8 +11,6 @@
  * costs no gas and needs no funded account.
  */
 
-import { Wallet as EthersWallet } from "ethers";
-
 import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
@@ -20,38 +18,11 @@ import {
   getIsolatedClient,
   TEST_AUTH_CHAIN_ID,
 } from "../../utils/client";
+import { signTypedDataWithEthers } from "../../utils/sessionGrant";
 
 // Sepolia test USDC — the same token the Uniswap fixtures use.
 const TOKEN = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 const APPROVE_SELECTOR = "0x095ea7b3";
-
-/**
- * ethers signs typed data from (domain, types, message) and rejects the
- * EIP712Domain entry that eth_signTypedData_v4 payloads carry — it derives
- * that from the domain itself. Browser wallets take the whole envelope, which
- * is why the SDK passes it through untouched rather than destructuring.
- */
-function signTypedDataWithEthers(privateKey: string) {
-  const signer = new EthersWallet(privateKey);
-  return async (
-    typedData: Readonly<Record<string, unknown>>
-  ): Promise<string> => {
-    const { domain, types, message } = typedData as {
-      domain: Record<string, unknown>;
-      types: Record<string, unknown>;
-      message: Record<string, unknown>;
-    };
-    const { EIP712Domain: _ignored, ...rest } = types as Record<
-      string,
-      unknown
-    >;
-    return signer.signTypedData(
-      domain as never,
-      rest as never,
-      message as never
-    );
-  };
-}
 
 describe("policies (live gateway)", () => {
   let client: Client;

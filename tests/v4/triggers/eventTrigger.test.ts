@@ -22,9 +22,6 @@ import { Chains, Client, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
-  getEOAAddress,
 } from "../../utils/client";
 
 jest.setTimeout(60_000);

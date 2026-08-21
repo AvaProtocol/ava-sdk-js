@@ -10,8 +10,6 @@ import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,

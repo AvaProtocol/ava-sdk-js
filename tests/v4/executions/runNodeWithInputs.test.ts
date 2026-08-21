@@ -14,9 +14,6 @@ import { Chains, Client, Nodes, Protocols, Tokens } from "@avaprotocol/sdk-js";
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
-  getEOAAddress,
   createSmartWallet,
   settingsFor,
 } from "../../utils/client";

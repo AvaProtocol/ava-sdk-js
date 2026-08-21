@@ -18,7 +18,6 @@ import { APIError, Client } from "@avaprotocol/sdk-js";
 import {
   TEST_AUTH_CHAIN_ID,
   TEST_AUTH_URI,
-  authenticateClient,
   buildAuthPayload,
   decodeJwtPayload,
   generateSignature,

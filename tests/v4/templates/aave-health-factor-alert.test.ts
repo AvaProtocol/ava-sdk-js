@@ -43,9 +43,6 @@ import { Chains, Nodes, Protocols, Triggers, type Client } from "@avaprotocol/sd
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
-  getEOAAddress,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,

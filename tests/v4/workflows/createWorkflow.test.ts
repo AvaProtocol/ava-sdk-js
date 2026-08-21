@@ -14,9 +14,6 @@ import { Chains, Client, Nodes, Protocols, Tokens, Triggers, type v4 } from "@av
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
-  getEOAAddress,
   createSmartWallet,
   removeCreatedWorkflows,
 } from "../../utils/client";

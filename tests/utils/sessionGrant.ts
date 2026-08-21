@@ -107,7 +107,7 @@ function stillValid(policy: v4.SessionPolicy): boolean {
   );
 }
 
-let inflight: Promise<v4.SessionPolicy> | undefined;
+const inflight = new Map<string, Promise<v4.SessionPolicy>>();
 
 /**
  * Reuse a covering pending/active grant on this runner, or submit one.
@@ -120,6 +120,10 @@ export async function ensureE2eSessionGrant(
   ownerAddress: string,
   chainId: number,
 ): Promise<v4.SessionPolicy> {
+  const key = `${chainId}:${ownerAddress.toLowerCase()}:${walletAddress.toLowerCase()}`;
+  const existing = inflight.get(key);
+  if (existing) return existing;
+
   const run = async (): Promise<v4.SessionPolicy> => {
     const required = e2eSessionActions(ownerAddress);
     const listed = await client.policies.list(walletAddress, { chainId });
@@ -160,10 +164,9 @@ export async function ensureE2eSessionGrant(
     }
   };
 
-  if (!inflight) {
-    inflight = run().finally(() => {
-      inflight = undefined;
-    });
-  }
-  return inflight;
+  const pending = run().finally(() => {
+    inflight.delete(key);
+  });
+  inflight.set(key, pending);
+  return pending;
 }

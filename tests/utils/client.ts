@@ -384,7 +384,7 @@ export async function getFundedFixture(
 
 /** Fail a trigger that bounced instead of treating UserOp errors as skips. */
 export function assertUserOpTriggerOk(
-  trig: { status?: string; error?: string },
+  trig: Pick<v4.TriggerWorkflowResponse, "status" | "error">,
   walletAddress: string,
 ): void {
   if (trig.status === "failed" || trig.status === "error" || trig.error) {

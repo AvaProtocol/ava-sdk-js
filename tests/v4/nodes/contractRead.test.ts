@@ -19,8 +19,6 @@ import { Chains, Client, Nodes, Protocols, Triggers } from "@avaprotocol/sdk-js"
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,

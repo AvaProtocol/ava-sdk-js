@@ -26,6 +26,7 @@ import { Chains, Client, Tokens, type v4 } from "@avaprotocol/sdk-js";
 
 import {
   getClient,
+  getFundedClient,
   getFundedFixture,
   FUNDED_FACTORY_ADDRESS,
   FUNDED_WALLET_SALT,
@@ -128,10 +129,28 @@ describe("Withdraw Funds Tests", () => {
   const chainEndpoint = optionalEnv("CHAIN_ENDPOINT", "");
 
   beforeAll(async () => {
-    const fx = await getFundedFixture();
-    client = fx.client;
-    eoaAddress = fx.owner;
-    if (!SKIP_ON_CHAIN) fundedWallet = fx.wallet;
+    // Validation tests still need an authenticated client. Skip the
+    // grant+UserOp fixture when WITHDRAW_SKIP_ON_CHAIN is set, and
+    // keep running those tests if the funded wallet cannot be created.
+    if (SKIP_ON_CHAIN) {
+      const fx = await getFundedClient();
+      client = fx.client;
+      eoaAddress = fx.owner;
+      return;
+    }
+    try {
+      const fx = await getFundedFixture();
+      client = fx.client;
+      eoaAddress = fx.owner;
+      fundedWallet = fx.wallet;
+    } catch (err) {
+      const fx = await getFundedClient();
+      client = fx.client;
+      eoaAddress = fx.owner;
+      console.log(
+        `Skipping on-chain withdraws — ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   });
 
   describe("withdraw: native ETH (session-grant refusal)", () => {

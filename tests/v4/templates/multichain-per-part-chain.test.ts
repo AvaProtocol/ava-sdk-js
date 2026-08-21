@@ -33,8 +33,6 @@ import { APIError, Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@a
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,

@@ -21,8 +21,6 @@
 import { Triggers, Nodes, type v4 } from "@avaprotocol/sdk-js";
 import {
   getSuiteClient,
-  getClient,
-  authenticateClient,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsForChain,

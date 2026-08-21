@@ -18,8 +18,6 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
   getCurrentBlockNumber,
   createSmartWallet,
   removeCreatedWorkflows,

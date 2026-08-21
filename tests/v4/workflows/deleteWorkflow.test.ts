@@ -10,8 +10,6 @@ import { Client } from "@avaprotocol/sdk-js";
 
 import {
   getSuiteClient,
-  authenticateClient,
-  getClient,
   createSmartWallet,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
