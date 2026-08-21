@@ -11,6 +11,8 @@
  * costs no gas and needs no funded account.
  */
 
+import { Wallet as EthersWallet } from "ethers";
+
 import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
