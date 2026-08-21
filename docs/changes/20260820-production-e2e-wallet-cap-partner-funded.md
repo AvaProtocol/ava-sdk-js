@@ -166,9 +166,19 @@ Two collateral confirmations:
 `PARTNER_ASSERTION_AUDIENCE=avs-gateway-prod`, so no SDK-side partner work
 remains — 2B.1 is satisfied.
 
-Still stale elsewhere: `EigenLayer-AVS config/gateway-sepolia.yaml` has the
-same dead `scopes: [simulate]`. Local-dev-only (audience `avs-gateway-local`),
-but it will bite the next person who runs the suite against it.
+The same dead `scopes: [simulate]` was also sitting in
+`EigenLayer-AVS config/gateway-sepolia.yaml` — fixed to `[read]`, with the
+comment block realigned to the wording already used in `config/gateway.yaml`
+(it still pointed at the retired `PLAN_PARTNER_PAYMENTS.md`). That file needs
+no PR: every real `config/*.yaml` is gitignored and symlinked into the local
+`ClaudeSync/EigenLayer-AVS-env/config/` store, so only the `*.example.yaml`
+files are tracked, and `config/gateway.example.yaml` already said `read`. All
+four gateway configs — local, local-sepolia, example, and prod — now parse to
+`scopes=[read]` through `config.PartnerConfig`.
+
+One consequence of that layout: any *other* machine with a stale local
+`gateway-sepolia.yaml` has to be fixed by hand, since there is no repo-side
+artifact carrying the bad value.
 
 ## Verification
 
