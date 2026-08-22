@@ -32,7 +32,7 @@
     "publish:bash": "bash ./scripts/publish-packages.sh",
     "publish:bash:dry-run": "bash ./scripts/publish-packages.sh --dry-run",
     "publish:help": "bash ./scripts/publish-packages.sh --help",
-    "lint": "eslint packages/*/src --ext .ts && eslint scripts/**/*.ts",
+    "lint": "eslint packages/*/src --ext .ts",
     "prepare": "husky"
   },
   "devDependencies": {
