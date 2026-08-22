@@ -27,8 +27,9 @@ import { Chains, Client, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   getSuiteClient,
+  getIsolatedClient,
   createSmartWallet,
-  nextTestSalt,
+  suiteSalt,
   removeCreatedWorkflows,
   TEST_AUTH_CHAIN_ID,
 } from "../../utils/client";
@@ -49,7 +50,7 @@ describe("Wallet Management Tests", () => {
 
   describe("wallets.create (v3 getWallet)", () => {
     test("derives a wallet with the aggregator's default factory", async () => {
-      const salt = nextTestSalt();
+      const salt = suiteSalt();
       const result = await client.wallets.create({ salt });
 
       expect(result.salt).toEqual(salt);
@@ -59,7 +60,7 @@ describe("Wallet Management Tests", () => {
 
     test("workflow lifecycle updates the wallet counts", async () => {
       // Use a fresh salt so the workflow counters start from a known baseline.
-      const salt = nextTestSalt();
+      const salt = suiteSalt();
       let wallet = await client.wallets.create({ salt });
 
       let workflowId1: string | undefined;
@@ -127,8 +128,12 @@ describe("Wallet Management Tests", () => {
     });
 
     test("accepts an explicit salt and echoes it back", async () => {
+      // Its own owner: this salt is deliberately outside the suite pool
+      // ("0"/"1"/"2"), so on the shared owner it would be a fourth distinct
+      // wallet and 429 against production's cap of 3.
+      const { client: echoClient } = await getIsolatedClient();
       const salt = "12345";
-      const result = await client.wallets.create({ salt });
+      const result = await echoClient.wallets.create({ salt });
       expect(result.salt).toEqual(salt);
       expect(result.factoryAddress).toBeTruthy();
       expect(result.address).toHaveLength(42);
@@ -147,7 +152,7 @@ describe("Wallet Management Tests", () => {
     });
 
     test("returns isHidden defaulted to false on a fresh wallet", async () => {
-      const salt = nextTestSalt();
+      const salt = suiteSalt();
       const wallet = await client.wallets.create({ salt });
       expect(wallet).toHaveProperty("isHidden");
       expect(wallet.isHidden ?? false).toBeFalsy();
@@ -156,7 +161,7 @@ describe("Wallet Management Tests", () => {
 
   describe("wallets.list (v3 getWallets)", () => {
     test("includes a freshly created custom-salt wallet", async () => {
-      const salt = nextTestSalt();
+      const salt = suiteSalt();
       await client.wallets.create({ salt });
 
       const list = await client.wallets.list();
@@ -165,8 +170,8 @@ describe("Wallet Management Tests", () => {
     });
 
     test("does not return duplicates for the same salt + factory", async () => {
-      const salt1 = nextTestSalt();
-      const salt2 = nextTestSalt();
+      const salt1 = suiteSalt();
+      const salt2 = suiteSalt();
 
       // Intentionally re-derive the same wallets to exercise
       // idempotency on the create endpoint.
@@ -189,7 +194,7 @@ describe("Wallet Management Tests", () => {
     });
 
     test("includes isHidden=false by default on listed wallets", async () => {
-      const salt = nextTestSalt();
+      const salt = suiteSalt();
       await client.wallets.create({ salt });
 
       const list = await client.wallets.list();
@@ -217,27 +222,39 @@ describe("Wallet Management Tests", () => {
       const otherChain = Chains.BaseMainnet;
       expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
 
-      const salt = nextTestSalt();
-      const onOtherChain = await client.wallets.create({ salt, chainId: otherChain });
+      // Its own owner: the assertion below is that the aud chain has NEVER
+      // seen this salt, and the suite pool recycles "0"/"1"/"2" — one of
+      // which an earlier test has already created on the aud chain.
+      const { client: crossClient } = await getIsolatedClient();
+      // NOT "0": authenticating already derives the owner's default salt-"0"
+      // wallet on the aud chain, which would defeat the absence assertion
+      // below before this test creates anything.
+      const salt = "1";
+      const onOtherChain = await crossClient.wallets.create({ salt, chainId: otherChain });
       expect(onOtherChain.address).toBeTruthy();
 
-      const namedChain = await client.wallets.list({ chainId: otherChain });
+      const namedChain = await crossClient.wallets.list({ chainId: otherChain });
       expect(namedChain.data.some((w) => w.salt === salt)).toBe(true);
 
       // The same token, no chainId: the aud chain's listing, which has
       // never seen that salt.
-      const audChain = await client.wallets.list();
+      const audChain = await crossClient.wallets.list();
       expect(audChain.data.some((w) => w.salt === salt)).toBe(false);
     });
 
     test("returns wallets sorted by salt (lexicographic)", async () => {
-      // Create four salts whose lexicographic order differs from
-      // numeric order: "0" < "1" < "10" < "2".
-      for (const salt of ["10", "2", "0", "1"]) {
-        await client.wallets.create({ salt });
+      // Its own owner: these salts are not the suite pool's, and a fourth
+      // distinct wallet on one owner is a 429 against production's cap of 3.
+      const { client: lexClient } = await getIsolatedClient();
+
+      // Three salts whose lexicographic order differs from numeric order:
+      // "0" < "10" < "2". A fourth ("1") adds no signal and does not fit
+      // under the cap.
+      for (const salt of ["10", "2", "0"]) {
+        await lexClient.wallets.create({ salt });
       }
 
-      const list = await client.wallets.list();
+      const list = await lexClient.wallets.list();
       const salts = list.data.map((w) => w.salt ?? "");
       const sorted = [...salts].sort((a, b) => a.localeCompare(b));
       expect(salts).toEqual(sorted);
@@ -246,7 +263,7 @@ describe("Wallet Management Tests", () => {
 
   describe("wallets.update (v3 setWallet)", () => {
     test("toggles the isHidden flag through update", async () => {
-      const salt = nextTestSalt();
+      const salt = suiteSalt();
       const created = await createSmartWallet(client, { saltValue: salt });
       expect(created.isHidden ?? false).toBeFalsy();
 

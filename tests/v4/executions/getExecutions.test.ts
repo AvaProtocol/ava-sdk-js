@@ -16,7 +16,7 @@ import {
   getIsolatedClient,
   getCurrentBlockNumber,
   createSmartWallet,
-  nextTestSalt,
+  suiteSalt,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -63,7 +63,7 @@ describe("executions.list Tests", () => {
       return;
     }
     const total = 4;
-    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client, { saltValue: suiteSalt() });
     const blockNumber = await getCurrentBlockNumber();
 
     // Each workflow fires once (maxExecution=1), producing 1 execution.
@@ -133,7 +133,7 @@ describe("executions.list Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client, { saltValue: suiteSalt() });
     const blockNumber = await getCurrentBlockNumber();
     const wfIds: string[] = [];
     for (let i = 0; i < 3; i++) {
@@ -150,7 +150,7 @@ describe("executions.list Tests", () => {
       console.log("Skipping — CHAIN_ENDPOINT not set");
       return;
     }
-    const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+    const wallet = await createSmartWallet(client, { saltValue: suiteSalt() });
     const blockNumber = await getCurrentBlockNumber();
     const wfIds: string[] = [];
     for (let i = 0; i < 4; i++) {

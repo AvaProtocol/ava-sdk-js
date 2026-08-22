@@ -295,6 +295,34 @@ export function nextTestSalt(): string {
   return String(saltCursor);
 }
 
+/** Production allows this many smart wallets per owner PER CHAIN. */
+export const TIGHT_WALLET_CAP_LIMIT = 3;
+
+let suiteSaltCursor = 0;
+
+/**
+ * A salt from the suite's bounded pool: `"0" | "1" | "2"` under a tight cap,
+ * `nextTestSalt()` otherwise.
+ *
+ * Production caps an owner at {@link TIGHT_WALLET_CAP_LIMIT} wallets per chain
+ * and a suite file runs on ONE isolated EOA, so the file may only ever address
+ * three distinct salts. `nextTestSalt()` is the opposite policy — a value no
+ * other worker or run will reuse — which is right for CI (cap 2000) and fatal
+ * against production: the fourth unique salt on one owner is a 429.
+ *
+ * Consecutive calls return DIFFERENT salts, so a test needing two wallets at
+ * once can call it twice. A test needing MORE than three distinct wallets, or
+ * one that must not collide with a salt an earlier test created (a listing
+ * asserting a salt is absent, say), needs its own `getIsolatedClient()` and a
+ * fresh quota — cycling cannot give it one.
+ */
+export function suiteSalt(): string {
+  if (!tightWalletCap()) return nextTestSalt();
+  const salt = String(suiteSaltCursor % TIGHT_WALLET_CAP_LIMIT);
+  suiteSaltCursor += 1;
+  return salt;
+}
+
 export interface CreateSmartWalletOptions {
   /** Override the salt instead of pulling from the per-process cursor. */
   saltValue?: string;

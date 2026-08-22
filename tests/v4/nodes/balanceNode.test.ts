@@ -12,6 +12,11 @@
  *   - Each entry: `{balance, balanceFormatted, decimals, name, symbol, tokenAddress}`
  *   - No double-wrap (filter/graphql have one, balance does not).
  *
+ * The queried address is the shared TEST_PRIVATE_KEY EOA, deliberately NOT
+ * the suite client's owner: under a tight wallet cap that owner is a random
+ * per-file EOA with an empty balance list, which makes every assertion here
+ * either fail or pass for the wrong reason.
+ *
  * Note: this node requires a working Moralis key on the aggregator;
  * a missing/invalid key surfaces as success=false with the Moralis
  * error text. The tests skip on Moralis errors so they don't fail
@@ -22,6 +27,7 @@ import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   getSuiteClient,
+  getEOAAddress,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
@@ -44,7 +50,16 @@ describe("BalanceNode Tests", () => {
   const createdWorkflowIds: string[] = [];
 
   beforeAll(async () => {
-    ({ client, owner: eoaAddress } = await getSuiteClient());
+    ({ client } = await getSuiteClient());
+    // The balance node READS an address; it never acts as it, so the queried
+    // address is independent of who authenticated. Use the shared funded EOA.
+    //
+    // Taking the suite client's OWN owner is what broke this: under a tight
+    // cap getSuiteClient() hands back a freshly generated random EOA, which
+    // holds no tokens, so Moralis correctly returned an empty list. Only the
+    // one test asserting a non-empty list failed — the other six kept passing
+    // vacuously, asserting shape and filtering against nothing.
+    eoaAddress = getEOAAddress();
   });
 
   afterEach(async () => {

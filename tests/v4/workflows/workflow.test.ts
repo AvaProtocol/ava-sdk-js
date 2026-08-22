@@ -16,7 +16,7 @@ import { Client } from "@avaprotocol/sdk-js";
 import {
   getIsolatedClient,
   createSmartWallet,
-  nextTestSalt,
+  suiteSalt,
   removeCreatedWorkflows,
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
@@ -82,7 +82,7 @@ describe("Workflow Management Tests", () => {
       const total = 4;
       const firstLimit = 1;
       // Fresh wallet for predictable counts.
-      const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+      const wallet = await createSmartWallet(client, { saltValue: suiteSalt() });
 
       for (let i = 0; i < total; i++) {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -148,7 +148,7 @@ describe("Workflow Management Tests", () => {
     test("supports backward pagination via the before cursor", async () => {
       const total = 4;
       const pageSize = 2;
-      const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+      const wallet = await createSmartWallet(client, { saltValue: suiteSalt() });
 
       for (let i = 0; i < total; i++) {
         const created = await client.workflows.create(createFromTemplate(wallet.address));
@@ -185,7 +185,7 @@ describe("Workflow Management Tests", () => {
       // Per-process salt may already have workflows attached from
       // earlier tests' completed-but-not-cancellable runs (e.g., the
       // maxExecution=1 path). Assert on shape rather than emptiness.
-      const wallet = await createSmartWallet(client, { saltValue: nextTestSalt() });
+      const wallet = await createSmartWallet(client, { saltValue: suiteSalt() });
       const list = await client.workflows.list({ smartWalletAddress: [wallet.address] });
       expect(Array.isArray(list.data)).toBe(true);
       expect(list.pageInfo).toBeDefined();
