@@ -31,6 +31,7 @@ describe("v4 SDK smoke", () => {
       expect(client.nodes).toBeDefined();
       expect(client.triggers).toBeDefined();
       expect(client.operators).toBeDefined();
+      expect(client.userops).toBeDefined();
     });
 
     test("baseUrl trailing slash is normalized", () => {
@@ -255,6 +256,46 @@ describe("v4 SDK smoke", () => {
         }
       ).config;
       expect(config.queries[0].topics).toEqual([transferTopic, ""]);
+    });
+  });
+
+  describe("userops.retrieve", () => {
+    test("GETs /userops/{hash}?chainId=... with the JWT", async () => {
+      let captured: { url: string; method?: string; auth?: string } | undefined;
+      const fakeFetch: typeof fetch = async (input, init) => {
+        const headers = new Headers(init?.headers);
+        captured = {
+          url: String(input),
+          method: init?.method,
+          auth: headers.get("Authorization") ?? undefined,
+        };
+        return new Response(
+          JSON.stringify({
+            userOpHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            executionStatus: "pending",
+            calls: [{ to: "0xToken", value: "0", selector: "0xa9059cbb", data: "0xa9059cbb" }],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      };
+      const client = new Client({
+        baseUrl: "http://example.test/api/v1",
+        token: "jwt-token",
+        fetchImpl: fakeFetch,
+      });
+      const got = await client.userops.retrieve(
+        "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        { chainId: 8453 },
+      );
+      expect(captured?.method).toBe("GET");
+      expect(captured?.auth).toBe("Bearer jwt-token");
+      const url = new URL(captured!.url);
+      expect(url.pathname).toBe(
+        "/api/v1/userops/0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      );
+      expect(url.searchParams.get("chainId")).toBe("8453");
+      expect(got.executionStatus).toBe("pending");
+      expect(got.calls?.[0]?.selector).toBe("0xa9059cbb");
     });
   });
 

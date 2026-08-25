@@ -61,9 +61,11 @@ export { NodesResource, type RunNodeOptions } from "./resources/nodes";
 export {
   readContractWriteExecutions,
   type ContractWriteExecutionStatus,
+  type ContractWriteInnerCall,
   type ContractWriteMethodExecution,
 } from "./results/contractWrite";
 export { OperatorsResource } from "./resources/operators";
+export { UserOpsResource } from "./resources/userops";
 export { SecretsResource } from "./resources/secrets";
 export { TokensResource } from "./resources/tokens";
 export { TriggersResource } from "./resources/triggers";

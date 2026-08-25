@@ -8,6 +8,7 @@ import { SecretsResource } from "./resources/secrets";
 import { TokensResource } from "./resources/tokens";
 import { TriggersResource } from "./resources/triggers";
 import { PoliciesResource } from "./resources/policies";
+import { UserOpsResource } from "./resources/userops";
 import { WalletsResource } from "./resources/wallets";
 import { WorkflowsResource } from "./resources/workflows";
 
@@ -36,8 +37,9 @@ export interface ClientOptions {
    * - token metadata (`tokens.retrieve`) — partner `scope: read` required
    * - preview wallet list/create — partner `read` + EOA `sub`, **or** user JWT
    *
-   * Simulate / runNode / runTrigger and fund-moving calls require a user
-   * Bearer JWT from `auth.exchange()`; partner alone is not enough.
+   * Simulate / runNode / runTrigger / userops.retrieve and fund-moving
+   * calls require a user Bearer JWT from `auth.exchange()`; partner
+   * alone is not enough.
    */
   headers?: Record<string, string>;
 }
@@ -65,6 +67,7 @@ export class Client {
   readonly secrets: SecretsResource;
   readonly tokens: TokensResource;
   readonly triggers: TriggersResource;
+  readonly userops: UserOpsResource;
   readonly wallets: WalletsResource;
   readonly workflows: WorkflowsResource;
 
@@ -89,6 +92,7 @@ export class Client {
     this.secrets = new SecretsResource(this.transport);
     this.tokens = new TokensResource(this.transport);
     this.triggers = new TriggersResource(this.transport);
+    this.userops = new UserOpsResource(this.transport);
     this.wallets = new WalletsResource(this.transport);
     this.workflows = new WorkflowsResource(this.transport);
   }
