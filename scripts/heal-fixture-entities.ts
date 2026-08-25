@@ -35,6 +35,7 @@
  *
  * Set SEPOLIA_RPC to a working endpoint; CHAIN_ENDPOINT in .env may be stale.
  */
+import type { v4 } from "@avaprotocol/types";
 import { JsonRpcProvider, Wallet as EthersWallet } from "ethers";
 
 import { getFundedClient, getFundedWallet } from "../tests/utils/client";
@@ -50,11 +51,8 @@ const SIGNERS_SELECTOR = "0x217178fb"; // keccak("signers(uint32,address)")[:4]
 // aa.SingleSignerValidationModuleAddressHex in EigenLayer-AVS.
 const SINGLE_SIGNER_MODULE = "0x00000000000099DE0BF6fA90dEB851E2A2df7d83";
 
-interface CleanupPayload {
-  readonly entityId?: number;
-  readonly target?: string;
-  readonly callData?: string;
-  readonly chainId?: number;
+function validEntityId(entityId: unknown): entityId is number {
+  return typeof entityId === "number" && Number.isInteger(entityId) && entityId >= 1;
 }
 
 async function entityInstalled(
@@ -88,10 +86,14 @@ async function main(): Promise<void> {
   console.log(CONFIRM ? "mode:   APPLY (sends transactions)\n" : "mode:   dry-run (pass --confirm to send)\n");
 
   const listed = await client.policies.list(wallet.address, { chainId: CHAIN_ID });
-  const pending: Array<{ id: string; cleanup: CleanupPayload }> = [];
+  const pending: Array<{ id: string; cleanup: v4.OnChainRevokeCleanup }> = [];
   for (const policy of listed.items) {
-    const cleanup = (policy as { onChainCleanup?: CleanupPayload }).onChainCleanup;
+    const cleanup = policy.onChainCleanup;
     if (!cleanup?.callData || !cleanup.target) continue;
+    if (!validEntityId(cleanup.entityId)) {
+      console.log(`  skip ${policy.id}: cleanup payload missing a valid entityId`);
+      continue;
+    }
     pending.push({ id: policy.id, cleanup });
   }
 
@@ -101,7 +103,7 @@ async function main(): Promise<void> {
   }
 
   for (const { id, cleanup } of pending) {
-    const entity = cleanup.entityId ?? -1;
+    const entity = cleanup.entityId;
     // Storage's belief that cleanup is required can outlive the actual
     // teardown (the gateway only learns on the next prepare), so trust the
     // chain, not the flag.
