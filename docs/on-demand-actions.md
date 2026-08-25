@@ -16,7 +16,9 @@ one-time action such as a Uniswap market order.
   build the swap and quote nodes and compute the slippage floor.
 - `readContractWriteExecutions(resp)` — read the normalized per-method outcome
   (`confirmed` / `pending` / `failed`) plus `userOpHash` / `transactionHash`
-  from a `contractWrite` response.
+  and inner `calls[]` / `failedCall` from a `contractWrite` response.
+- `client.userops.retrieve(userOpHash, { chainId })` — re-poll a pending UserOp
+  (JWT-gated; not a public explorer).
 
 ## Market order: quote → preview → execute
 
@@ -69,6 +71,11 @@ const executed = await client.nodes.run(
 for (const r of readContractWriteExecutions(executed)) {
   // r.executionStatus: "confirmed" | "pending" | "failed"
   // r.userOpHash (always for a real execute), r.transactionHash (once mined)
+  // r.calls: [{ to, value, selector, data }] when the gateway is on N14.a
+  if (r.executionStatus === "pending" && r.userOpHash) {
+    const status = await client.userops.retrieve(r.userOpHash, { chainId });
+    // status.executionStatus, status.calls, status.failedCall
+  }
 }
 ```
 
@@ -81,8 +88,9 @@ for (const r of readContractWriteExecutions(executed)) {
 - **Pool / fee tier is the caller's choice.** Pass the `fee` tier for the pool you
   intend to trade; the builders don't discover pools.
 - **Pending ≠ failed.** A submitted-but-unmined UserOp reports `pending` with a
-  `userOpHash` (and no `transactionHash` yet) — poll it rather than treating it as
-  a failure.
+  `userOpHash` (and no `transactionHash` yet) — poll `client.userops.retrieve`
+  rather than treating it as a failure.
 - Reading `executionStatus` / receipts requires a gateway that surfaces
   contractWrite metadata under `metadata.results` (AVS PR #660+); older gateways
-  return an empty list from `readContractWriteExecutions`.
+  return an empty list from `readContractWriteExecutions`. Inner `calls`
+  require a gateway on N14.a (EigenLayer-AVS #774).

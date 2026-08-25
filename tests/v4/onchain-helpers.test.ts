@@ -268,6 +268,50 @@ describe("readContractWriteExecutions", () => {
     expect(out[0].success).toBe(false);
   });
 
+  test("copies inner calls and failedCall from the receipt", () => {
+    const call = {
+      to: "0xToken",
+      value: "0",
+      selector: "0xa9059cbb",
+      data: "0xa9059cbb",
+    };
+    const out = readContractWriteExecutions(
+      resp({
+        results: [
+          {
+            methodName: "transfer",
+            success: false,
+            receipt: {
+              executionStatus: "failed",
+              userOpHash: "0xuo",
+              transactionHash: "0xtx",
+              calls: [call, { selector: "0x" }, null],
+              failedCall: call,
+            },
+          },
+        ],
+      }),
+    );
+    expect(out[0].calls).toEqual([call]);
+    expect(out[0].failedCall).toEqual(call);
+  });
+
+  test("omits calls when the receipt has none", () => {
+    const out = readContractWriteExecutions(
+      resp({
+        results: [
+          {
+            methodName: "approve",
+            success: true,
+            receipt: { executionStatus: "confirmed", userOpHash: "0xuo", transactionHash: "0xtx" },
+          },
+        ],
+      }),
+    );
+    expect(out[0].calls).toBeUndefined();
+    expect(out[0].failedCall).toBeUndefined();
+  });
+
   test("returns [] when the response has no results array", () => {
     expect(readContractWriteExecutions(resp(undefined))).toEqual([]);
     expect(readContractWriteExecutions(resp({}))).toEqual([]);

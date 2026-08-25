@@ -21,6 +21,14 @@ import type { v4 } from "@avaprotocol/types";
  */
 export type ContractWriteExecutionStatus = "confirmed" | "pending" | "failed";
 
+/** One inner execute / executeBatch entry unpacked by the gateway (N14.a). */
+export interface ContractWriteInnerCall {
+  to: string;
+  value: string;
+  selector: string;
+  data: string;
+}
+
 export interface ContractWriteMethodExecution {
   /** ABI method name (e.g. "exactInputSingle", "approve"). */
   methodName: string;
@@ -34,6 +42,18 @@ export interface ContractWriteMethodExecution {
   userOpHash?: string;
   /** On-chain transaction hash — present once mined (absent while pending). */
   transactionHash?: string;
+  /**
+   * Inner `execute` / `executeBatch` calls unpacked from the UserOp we
+   * submitted. Same full array on every method of an atomic batch.
+   * Absent on gateways that predate N14.a.
+   */
+  calls?: ContractWriteInnerCall[];
+  /**
+   * Set only when a UserOperationEvent shows this UserOp's inner call
+   * reverted and there is a single inner call. Not set on AA23 / bundler
+   * reject or an outer tx failure.
+   */
+  failedCall?: ContractWriteInnerCall;
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -42,6 +62,30 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function asInnerCall(value: unknown): ContractWriteInnerCall | undefined {
+  const rec = asRecord(value);
+  if (
+    typeof rec.to !== "string" ||
+    !rec.to ||
+    typeof rec.selector !== "string" ||
+    !rec.selector
+  ) {
+    return undefined;
+  }
+  return {
+    to: rec.to,
+    value: typeof rec.value === "string" ? rec.value : "0",
+    selector: rec.selector,
+    data: typeof rec.data === "string" ? rec.data : "0x",
+  };
+}
+
+function asInnerCalls(value: unknown): ContractWriteInnerCall[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const calls = value.map(asInnerCall).filter((c): c is ContractWriteInnerCall => !!c);
+  return calls.length > 0 ? calls : undefined;
 }
 
 /**
@@ -88,6 +132,10 @@ export function readContractWriteExecutions(
     ) {
       out.transactionHash = receipt.transactionHash;
     }
+    const calls = asInnerCalls(receipt.calls);
+    if (calls) out.calls = calls;
+    const failedCall = asInnerCall(receipt.failedCall);
+    if (failedCall) out.failedCall = failedCall;
     executions.push(out);
   }
   return executions;

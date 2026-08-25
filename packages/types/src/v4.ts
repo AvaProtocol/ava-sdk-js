@@ -134,6 +134,10 @@ export type AuthExchangeResponse = components["schemas"]["AuthExchangeResponse"]
 
 export type RunNodeRequest = components["schemas"]["RunNodeRequest"];
 export type RunNodeResponse = components["schemas"]["RunNodeResponse"];
+
+export type Bytes32 = components["schemas"]["Bytes32"];
+export type UserOpInnerCall = components["schemas"]["UserOpInnerCall"];
+export type UserOpStatusResponse = components["schemas"]["UserOpStatusResponse"];
 export type RunTriggerRequest = components["schemas"]["RunTriggerRequest"];
 export type RunTriggerResponse = components["schemas"]["RunTriggerResponse"];
 

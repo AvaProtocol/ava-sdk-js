@@ -35,6 +35,12 @@ import {
 } from "../../utils/client";
 import { createFromTemplate } from "../../utils/templates";
 
+// Every other network-touching suite raises this; wallet.test.ts was left on
+// Jest's 5s default. Three tests here now stand up their own isolated client
+// (a full SIWE round-trip) before doing any wallet work, which does not fit in
+// 5s whenever the gateway is cold — e.g. right after a redeploy.
+jest.setTimeout(60_000);
+
 // The multi-chain stack (Railway, or an explicitly multi-chain local run).
 // Matches the flags expansion-chains-e2e.test.ts already uses.
 const MULTICHAIN_STACK =

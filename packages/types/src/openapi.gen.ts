@@ -760,6 +760,34 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/userops/{userOpHash}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Look up a UserOp this user submitted
+         * @description Re-poll a UserOp by hash (G3 / N14.a). Same gate as `nodes:run`
+         *     (user Bearer JWT; partner assertion alone is not sufficient). The
+         *     sender must be one of the caller's smart wallets — this is **not**
+         *     a public AA explorer. Unknown hashes and hashes that belong to
+         *     another user both return 404.
+         *
+         *     Inner `calls` are unpacked from the UserOp `callData` via the
+         *     gateway's existing `UnpackExecuteCalldata` (execute / executeBatch
+         *     / MA v2). Pending is not failed.
+         */
+        readonly get: operations["getUserOp"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/triggers:run": {
         readonly parameters: {
             readonly query?: never;
@@ -822,6 +850,37 @@ export interface components {
         readonly EthereumAddress: string;
         /** @description Arbitrary-length hex-encoded byte string. */
         readonly Hex: string;
+        /**
+         * @description 32-byte hex hash (UserOp hash, transaction hash).
+         * @example 0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+         */
+        readonly Bytes32: string;
+        readonly UserOpInnerCall: {
+            readonly to: components["schemas"]["EthereumAddress"];
+            /** @description Native value in wei (decimal string). */
+            readonly value: string;
+            /** @description 4-byte function selector of `data` (`0x00000000` for a value-only call). */
+            readonly selector: string;
+            readonly data: components["schemas"]["Hex"];
+        };
+        readonly UserOpStatusResponse: {
+            readonly userOpHash: components["schemas"]["Bytes32"];
+            readonly sender?: components["schemas"]["EthereumAddress"];
+            /**
+             * @description `pending` means the bundler accepted the op and it is not yet
+             *     mined. It is not a failure.
+             * @enum {string}
+             */
+            readonly executionStatus: "pending" | "confirmed" | "failed";
+            readonly transactionHash?: components["schemas"]["Hex"];
+            /** @description Block number as a hex string when mined. */
+            readonly blockNumber?: string;
+            /** @description Inner UserOp success from the bundler receipt. Absent while pending. */
+            readonly success?: boolean;
+            readonly calls?: readonly components["schemas"]["UserOpInnerCall"][];
+            /** @description Present when the inner call reverted and there is a single inner call. */
+            readonly failedCall?: components["schemas"]["UserOpInnerCall"];
+        };
         /**
          * @description ULID identifier (26-char Crockford base32).
          * @example 01JG2FE5MDVKBPHEG0PEYSDKAC
@@ -3140,6 +3199,37 @@ export interface operations {
             };
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
+        };
+    };
+    readonly getUserOp: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly userOpHash: components["schemas"]["Bytes32"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Typed UserOp status and inner calls. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["UserOpStatusResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
         };
     };
     readonly runTrigger: {
