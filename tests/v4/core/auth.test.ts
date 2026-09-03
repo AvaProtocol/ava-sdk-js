@@ -13,7 +13,7 @@
  * the SDK depends on.
  */
 
-import { APIError, Client } from "@avaprotocol/sdk-js";
+import { APIError, Chains, Client } from "@avaprotocol/sdk-js";
 
 import {
   TEST_AUTH_CHAIN_ID,
@@ -159,119 +159,47 @@ describe("Authentication Tests", () => {
       expect(res.subject?.toLowerCase()).toEqual(eoaAddress.toLowerCase());
     });
 
-    test("mints a JWT scoped to BNB Smart Chain (56) — proves new-chain worker is reachable via gateway", async () => {
-      // Lightest possible probe that a newly-added chain is wired up
-      // through the full stack: signing a canonical auth message
-      // against `chainId: 56`, posting it to /api/v1/auth:exchange,
-      // and getting back a JWT means the gateway:
-      //   - has chain 56 in its chains[] config (gateway-railway.yaml)
-      //   - resolved its per-chain TokenEnrichmentService at startup
-      //   - was able to validate the EIP-191 signature against the
-      //     chain-aware message template
-      // No smart wallet ops happen here, so this works even when
-      // SimpleAccountFactory isn't deployed on the chain (the BNB
-      // connectivity-only rollout state).
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), { uri: TEST_AUTH_URI, chainId: 56, version });
-      expect(res.token).toBeTruthy();
-      // The JWT body should encode the requested chain id in the
-      // audience claim — that's how downstream chain-routed handlers
-      // know which chain the caller is operating against.
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("56");
-    });
+    // Lightest possible probe that a newly-added chain is wired up
+    // through the full stack: signing a canonical auth message
+    // against the requested chainId, posting it to /api/v1/auth:exchange,
+    // and getting back a JWT means the gateway:
+    //   - has the chain in its chains[] config
+    //   - resolved its per-chain TokenEnrichmentService at startup
+    //   - was able to validate the EIP-191 signature against the
+    //     chain-aware message template
+    // No smart wallet ops happen here, so this works even when
+    // SimpleAccountFactory isn't deployed (connectivity-only rollout).
+    // The JWT `aud` claim is the requested chain id — that's how
+    // downstream chain-routed handlers know which chain the caller
+    // is operating against.
+    //
+    // Hyperliquid is HyperEVM (Chains.HyperliquidMainnet = 999), not HyperCore.
+    const EXPANSION_JWT_CHAINS: ReadonlyArray<{ name: string; chainId: number }> = [
+      { name: "BNB Smart Chain", chainId: Chains.BnbMainnet },
+      { name: "Arbitrum One", chainId: Chains.ArbitrumOne },
+      { name: "OP Mainnet", chainId: Chains.OptimismMainnet },
+      { name: "Unichain", chainId: Chains.UnichainMainnet },
+      { name: "Robinhood Chain", chainId: Chains.RobinhoodMainnet },
+      { name: "Polygon PoS", chainId: Chains.PolygonMainnet },
+      { name: "Hyperliquid EVM", chainId: Chains.HyperliquidMainnet },
+    ];
 
-    test("mints a JWT scoped to Arbitrum One (42161) — proves new-chain worker is reachable via gateway", async () => {
-      // Same probe as BNB (56). Signing the canonical auth message
-      // against chainId 42161 and getting a JWT with aud=42161 means
-      // the gateway has Arbitrum in chains[], TokenEnrichmentService
-      // initialized, and the EIP-191 template accepts the chain id.
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        uri: TEST_AUTH_URI,
-        chainId: 42161,
-        version,
-      });
-      expect(res.token).toBeTruthy();
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("42161");
-    });
-
-    test("mints a JWT scoped to OP Mainnet (10) — Wave B worker reachable via gateway", async () => {
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        uri: TEST_AUTH_URI,
-        chainId: 10,
-        version,
-      });
-      expect(res.token).toBeTruthy();
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("10");
-    });
-
-    test("mints a JWT scoped to Unichain (130) — Wave B worker reachable via gateway", async () => {
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        uri: TEST_AUTH_URI,
-        chainId: 130,
-        version,
-      });
-      expect(res.token).toBeTruthy();
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("130");
-    });
-
-    test("mints a JWT scoped to Robinhood Chain (4663) — worker reachable via gateway", async () => {
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        uri: TEST_AUTH_URI,
-        chainId: 4663,
-        version,
-      });
-      expect(res.token).toBeTruthy();
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("4663");
-    });
-
-    test("mints a JWT scoped to Polygon PoS (137) — Wave C worker reachable via gateway", async () => {
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        uri: TEST_AUTH_URI,
-        chainId: 137,
-        version,
-      });
-      expect(res.token).toBeTruthy();
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("137");
-    });
-
-    test("mints a JWT scoped to Hyperliquid EVM (999) — Wave C worker reachable via gateway", async () => {
-      // HyperEVM (chain 999), not HyperCore. Same probe as the other
-      // expansion chains: JWT aud is enough; no UserOp.
-      const c = getClient();
-      const { version } = await c.health.check();
-      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
-        uri: TEST_AUTH_URI,
-        chainId: 999,
-        version,
-      });
-      expect(res.token).toBeTruthy();
-      const decoded = decodeJwtPayload(res.token);
-      expect(decoded.iss).toBe("AvaProtocol");
-      expect(String(decoded.aud)).toBe("999");
-    });
+    test.each(EXPANSION_JWT_CHAINS)(
+      "mints a JWT scoped to $name ($chainId) — worker reachable via gateway",
+      async ({ chainId }) => {
+        const c = getClient();
+        const { version } = await c.health.check();
+        const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+          uri: TEST_AUTH_URI,
+          chainId,
+          version,
+        });
+        expect(res.token).toBeTruthy();
+        const decoded = decodeJwtPayload(res.token);
+        expect(decoded.iss).toBe("AvaProtocol");
+        expect(String(decoded.aud)).toBe(String(chainId));
+      },
+    );
 
     test("rejects a signature that doesn't match the owner", async () => {
       const payload = await buildAuthPayload(client);

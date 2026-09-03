@@ -8,11 +8,12 @@
  * (workers :50051 / :50053 / :50054). Against that stack this file
  * exercises Ethereum and Base (Sepolia is the JWT default).
  *
- * Against Railway it also covers Wave A / Wave B / Robinhood:
+ * Against Railway it also covers Wave A / Wave B / Robinhood / Wave C:
  *
  *   1. Mints a JWT whose `aud` is the target chain.
- *   2. `nodes.run` a WETH/WBNB `symbol()` contractRead on that worker.
+ *   2. `nodes.run` a wrapped-native `symbol()` contractRead on that worker.
  *   3. `workflows.simulate` the same read (Tenderly for that chain id).
+ *      Hyperliquid EVM is read-only here — Tenderly has no chain 999.
  *
  * No UserOp is submitted. Isolated EOA so production
  * `max_wallets_per_owner` on the shared test key is not a problem.
@@ -44,6 +45,7 @@ const LOCAL_SERVED_CHAINS: ReadonlyArray<{
   chainId: number;
   weth: string;
   symbol: string;
+  simulate?: boolean;
 }> = [
   {
     name: "Ethereum",
@@ -64,6 +66,7 @@ const EXPANSION_CHAINS: ReadonlyArray<{
   chainId: number;
   weth: string;
   symbol: string;
+  simulate?: boolean;
 }> = [
   {
     name: "BNB Smart Chain",
@@ -95,6 +98,20 @@ const EXPANSION_CHAINS: ReadonlyArray<{
     weth: Protocols.wrapped.weth[Chains.RobinhoodMainnet]!,
     symbol: "WETH",
   },
+  {
+    name: "Polygon PoS",
+    chainId: Chains.PolygonMainnet,
+    weth: Protocols.wrapped.weth[Chains.PolygonMainnet]!,
+    symbol: "WPOL",
+  },
+  {
+    name: "Hyperliquid EVM",
+    chainId: Chains.HyperliquidMainnet,
+    weth: Protocols.wrapped.weth[Chains.HyperliquidMainnet]!,
+    symbol: "WHYPE",
+    // Tenderly has Polygon (137) but not HyperEVM (999).
+    simulate: false,
+  },
 ];
 
 const CHAINS =
@@ -115,7 +132,7 @@ describeExpansion("Expansion chains E2E (auth + WETH read + simulate)", () => {
     runner = wallet.address;
   });
 
-  describe.each(CHAINS)("$name ($chainId)", ({ chainId, weth, symbol }) => {
+  describe.each(CHAINS)("$name ($chainId)", ({ chainId, weth, symbol, simulate }) => {
     beforeEach(async () => {
       // Re-mint on the shared client as the isolated owner so
       // nodes.run / simulate run under a JWT whose aud is this chain.
@@ -153,34 +170,37 @@ describeExpansion("Expansion chains E2E (auth + WETH read + simulate)", () => {
       expect(data.symbol).toBe(symbol);
     });
 
-    test("workflows.simulate reads wrapped-native symbol via Tenderly", async () => {
-      const sim = await client.workflows.simulate({
-        trigger: Triggers.manual({
-          id: "trigger",
-          name: "manualTrigger",
-          lang: "json",
-          data: {},
-        }),
-        nodes: [
-          Nodes.contractRead({
-            id: "r",
-            name: "wethSymbol",
-            chainId,
-            contractAddress: weth,
-            contractAbi: SYMBOL_ABI,
-            methodCalls: [{ methodName: "symbol", methodParams: [] }],
+    (simulate === false ? test.skip : test)(
+      "workflows.simulate reads wrapped-native symbol via Tenderly",
+      async () => {
+        const sim = await client.workflows.simulate({
+          trigger: Triggers.manual({
+            id: "trigger",
+            name: "manualTrigger",
+            lang: "json",
+            data: {},
           }),
-        ],
-        edges: [{ id: "e1", source: "trigger", target: "r" }],
-        inputVariables: { settings: settingsForChain(runner, chainId) },
-      });
-      if (sim.status !== "success") {
-        throw new Error(`simulate failed on ${chainId}: ${JSON.stringify(sim)}`);
-      }
-      const step = sim.steps?.find((s) => s.id === "r");
-      expect(step?.success).toBe(true);
-      const data = (step?.output as { data: Record<string, unknown> }).data;
-      expect(data.symbol).toBe(symbol);
-    });
+          nodes: [
+            Nodes.contractRead({
+              id: "r",
+              name: "wethSymbol",
+              chainId,
+              contractAddress: weth,
+              contractAbi: SYMBOL_ABI,
+              methodCalls: [{ methodName: "symbol", methodParams: [] }],
+            }),
+          ],
+          edges: [{ id: "e1", source: "trigger", target: "r" }],
+          inputVariables: { settings: settingsForChain(runner, chainId) },
+        });
+        if (sim.status !== "success") {
+          throw new Error(`simulate failed on ${chainId}: ${JSON.stringify(sim)}`);
+        }
+        const step = sim.steps?.find((s) => s.id === "r");
+        expect(step?.success).toBe(true);
+        const data = (step?.output as { data: Record<string, unknown> }).data;
+        expect(data.symbol).toBe(symbol);
+      },
+    );
   });
 });

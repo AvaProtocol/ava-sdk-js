@@ -1,21 +1,27 @@
 /**
- * Catalog compatibility after `@avaprotocol/protocols@0.12.0`.
+ * Catalog compatibility after `@avaprotocol/protocols@1.0.0`.
  *
  * Pure data — no gateway. Pins the catalog surface the SDK re-exports so a
  * stale lockfile or a catalog regression cannot silently drop Arb/OP/
- * Unichain/Robinhood or collapse Ethereum multi-market back to Core-only.
+ * Unichain/Robinhood/Polygon/Hyperliquid or collapse Ethereum multi-market
+ * back to Core-only. Also pins the Holesky drop (catalog 1.0.0 major).
  */
 
 import { Chains, Protocols } from "@avaprotocol/sdk-js";
 
-describe("protocols catalog 0.12.0", () => {
+describe("protocols catalog 1.0.0", () => {
   test("spreads new catalog chain IDs onto SDK Chains", () => {
     expect(Chains.ArbitrumOne).toBe(42_161);
     expect(Chains.OptimismMainnet).toBe(10);
     expect(Chains.UnichainMainnet).toBe(130);
     expect(Chains.RobinhoodMainnet).toBe(4_663);
+    expect(Chains.PolygonMainnet).toBe(137);
+    expect(Chains.HyperliquidMainnet).toBe(999);
     expect(Chains.Sepolia).toBe(11_155_111);
     expect(Chains.EigenLayerAuth).toBe(Chains.Sepolia);
+    expect(
+      (Chains as Record<string, number | undefined>).Holesky,
+    ).toBeUndefined();
   });
 
   test("Aave V3 Core Pool + markets cover Arbitrum and Optimism", () => {
@@ -59,6 +65,21 @@ describe("protocols catalog 0.12.0", () => {
     expect(Protocols.wrapped.weth[Chains.RobinhoodMainnet]).toBe(
       "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
     );
+  });
+
+  test("WPOL and WHYPE resolve on Polygon and Hyperliquid EVM", () => {
+    expect(Protocols.wrapped.weth[Chains.PolygonMainnet]).toBe(
+      "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"
+    );
+    expect(Protocols.wrapped.weth[Chains.HyperliquidMainnet]).toBe(
+      "0x5555555555555555555555555555555555555555"
+    );
+    expect(Protocols.uniswapV3.swapRouter02[Chains.PolygonMainnet]).toBeUndefined();
+    expect(
+      Protocols.uniswapV3.swapRouter02[Chains.HyperliquidMainnet],
+    ).toBeUndefined();
+    expect(Protocols.aaveV3.pool[Chains.PolygonMainnet]).toBeUndefined();
+    expect(Protocols.aaveV3.pool[Chains.HyperliquidMainnet]).toBeUndefined();
   });
 
   test("existing Core callers stay on the same Sepolia Pool", () => {
