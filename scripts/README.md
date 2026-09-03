@@ -9,7 +9,9 @@ Scripts for managing ERC-4337 smart wallets, including nonce management, UserOp 
 
 ## Publish Scripts
 
-This section contains automated scripts to simplify the package publishing process for the ava-sdk-js monorepo.
+The primary release path is `.github/workflows/release.yml` (changesets Version PR → `changeset publish` via npm Trusted Publishing). Do not run `yarn version` on `staging`.
+
+These scripts are a **local escape hatch** if you must publish from a laptop with `npm login`.
 
 ## Quick Start
 

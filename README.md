@@ -140,44 +140,28 @@ Make sure to set the following environment variables in your `.env.test` file:
 
 ## Release Process
 
-This section describes the simplified release process for the ava-sdk-js monorepo, matching the typical developer workflow:
+Versioning uses [changesets](https://github.com/changesets/changesets). Do **not** run `yarn version` on `staging` — versions move only on the Version PR.
 
-### Release Process (Simplified)
+1. Land the change on `staging` with a changeset (`.changeset/*.md`).
+2. Squash-merge `staging` → `main`.
+3. The `Release` workflow (`.github/workflows/release.yml`) opens (or updates) a **Version Packages** PR that runs `changeset version` — bumps `packages/*/package.json` and CHANGELOGs. Review and merge it.
+4. That merge re-runs the same workflow with no pending changesets and publishes to npm via `changeset publish` (stable → `latest`, pre-release → its identifier).
+5. `/sync-main` so `staging` picks up the version bump.
 
-1. **Commit your changes:**
-   ```bash
-   git add packages/sdk-js/src/
-   git commit -m "fix: getAutomationFee is not a function in execution problem"
-   git push
-   ```
+npm auth is [Trusted Publishing](https://docs.npmjs.com/trusted-publishers) (OIDC) — no `NPM_TOKEN`. Configure once per package (`@avaprotocol/sdk-js` and `@avaprotocol/types`): npm package settings → Trusted Publishers → GitHub Actions → repo `AvaProtocol/ava-sdk-js`, workflow `release.yml`.
 
-2. **Build all packages:**
-   ```bash
-   yarn build
-   ```
+### Publishing manually (escape hatch)
 
-3. **Create a changeset:**
-   ```bash
-   yarn run changeset
-   # Follow the prompts to select packages and describe the change
-   ```
+If you need to publish without the GitHub Action (emergency release from a machine with `npm login`):
 
-4. **Version packages:**
-   ```bash
-   yarn run version
-   # This runs 'changeset version' to update package.json files
-   git push
-   ```
+```bash
+yarn version-packages          # consumes pending changesets
+yarn build
+npm whoami
+yarn release                   # yarn build && changeset publish
+```
 
-5. **Publish to npm:**
-   ```bash
-   npm run publish
-   # This runs the publish-packages.js script to publish all packages
-   ```
-
-**Note:**
-- The `npm run publish` script handles protobuf regeneration and publishing. If you see errors related to missing binaries (like `protoc`), ensure all dev dependencies are installed and your environment is set up correctly.
-- For troubleshooting, see the Troubleshooting section below.
+`scripts/publish-packages.js` remains as a local interactive fallback (`yarn publish` / `yarn publish:dry-run`).
 
 ## Contributing
 

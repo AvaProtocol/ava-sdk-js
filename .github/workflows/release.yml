@@ -1,0 +1,83 @@
+name: Release
+
+# Runs on every push to `main`. If there are unconsumed changesets, opens
+# (or updates) a "Version Packages" PR that bumps package.json + writes
+# CHANGELOG entries. When that PR is merged, the same workflow re-runs
+# without pending changesets and publishes to npm via `changeset publish`,
+# which auto-routes pre-release versions to the right dist-tag (no manual
+# --tag wrangling).
+#
+# Auth: uses npm Trusted Publishing (OIDC) — no NPM_TOKEN required.
+# Configure once on npm for BOTH packages (@avaprotocol/sdk-js and
+# @avaprotocol/types): package settings → Trusted Publishers → Add
+# publisher, point at this repo + this workflow filename (`release.yml`).
+#
+# After the Version PR lands on main, run /sync-main so staging picks up
+# the version bump. Do not run `yarn version` on staging — the Version PR
+# is the only place versions move.
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Version + publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # allow changesets/action to push the version PR
+      pull-requests: write  # allow it to open / update the PR
+      id-token: write       # for npm provenance on the publish step
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          # The npm CLI must support OIDC trusted publishing (>= 11.5.1).
+          # Node 20 ships with 10.x, so we upgrade below.
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Upgrade npm for trusted publishing
+        # Trusted Publishing requires npm >= 11.5.1. setup-node@v4 doesn't
+        # expose a built-in `npm-version` knob, so we install a newer CLI
+        # explicitly. `npm publish` (called by `changeset publish`) then
+        # auto-detects the OIDC environment and authenticates against npm
+        # without an NPM_TOKEN.
+        #
+        # Pin to the 11.x line rather than `@latest`: npm@12 dropped Node
+        # 20 support (requires Node ^22.22.2 || ^24.15.0 || >=26.0.0), so
+        # `npm@latest` fails with EBADENGINE on the Node 20 runner above.
+        # npm 11.x supports Node 20.17+ and already has OIDC trusted
+        # publishing. Bump this (and node-version) together if moving to
+        # npm 12+.
+        run: npm install --global "npm@^11.5.1"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Create Release PR or publish
+        uses: changesets/action@v1
+        with:
+          # `yarn release` runs `yarn build && changeset publish`. Build
+          # produces dist/ for both workspace packages; changeset publish
+          # picks the right dist-tag from the semver (stable → latest,
+          # prerelease → the prerelease identifier) and only publishes
+          # packages whose version moved. With OIDC trusted publishing
+          # enabled on each package, no NPM_TOKEN is needed.
+          publish: yarn release
+          # When there are pending changesets, this opens/updates a PR
+          # that runs `yarn version-packages` (= `changeset version`).
+          version: yarn version-packages
+          title: "chore: version packages"
+          commit: "chore: version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # NPM_TOKEN intentionally omitted — Trusted Publishing replaces it.
