@@ -4,7 +4,8 @@
  * Pure data — no gateway. Pins the catalog surface the SDK re-exports so a
  * stale lockfile or a catalog regression cannot silently drop Arb/OP/
  * Unichain/Robinhood/Polygon/Hyperliquid or collapse Ethereum multi-market
- * back to Core-only. Also pins the Holesky drop (catalog 1.0.0 major).
+ * back to Core-only. `Chains.Holesky` stays as a deprecated SDK alias
+ * so catalog 1.0.0 does not force an SDK major.
  */
 
 import { Chains, Protocols } from "@avaprotocol/sdk-js";
@@ -19,9 +20,9 @@ describe("protocols catalog 1.0.0", () => {
     expect(Chains.HyperliquidMainnet).toBe(999);
     expect(Chains.Sepolia).toBe(11_155_111);
     expect(Chains.EigenLayerAuth).toBe(Chains.Sepolia);
-    expect(
-      (Chains as Record<string, number | undefined>).Holesky,
-    ).toBeUndefined();
+    // Deprecated SDK alias — catalog 1.0.0 dropped this; keep it so
+    // a 4.x minor does not break existing Chains.Holesky callers.
+    expect(Chains.Holesky).toBe(17_000);
   });
 
   test("Aave V3 Core Pool + markets cover Arbitrum and Optimism", () => {
