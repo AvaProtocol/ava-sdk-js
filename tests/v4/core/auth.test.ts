@@ -243,6 +243,36 @@ describe("Authentication Tests", () => {
       expect(String(decoded.aud)).toBe("4663");
     });
 
+    test("mints a JWT scoped to Polygon PoS (137) — Wave C worker reachable via gateway", async () => {
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 137,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const decoded = decodeJwtPayload(res.token);
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("137");
+    });
+
+    test("mints a JWT scoped to Hyperliquid EVM (999) — Wave C worker reachable via gateway", async () => {
+      // HyperEVM (chain 999), not HyperCore. Same probe as the other
+      // expansion chains: JWT aud is enough; no UserOp.
+      const c = getClient();
+      const { version } = await c.health.check();
+      const res = await c.auth.exchangeWithKey(testPrivateKey(), {
+        uri: TEST_AUTH_URI,
+        chainId: 999,
+        version,
+      });
+      expect(res.token).toBeTruthy();
+      const decoded = decodeJwtPayload(res.token);
+      expect(decoded.iss).toBe("AvaProtocol");
+      expect(String(decoded.aud)).toBe("999");
+    });
+
     test("rejects a signature that doesn't match the owner", async () => {
       const payload = await buildAuthPayload(client);
       // Re-sign the message with a different key — verifier will
