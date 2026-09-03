@@ -149,10 +149,16 @@ block), `worker`, `operator`, `create-api-key`.
 
 ### Release
 
+Do **not** run `yarn version` / `yarn version-packages` on `staging`. Pending `.changeset/*.md` files land on `main` unconsumed.
+
 ```bash
-yarn changeset          # Create changeset for production release
-yarn release            # Production release via changesets
-yarn publish:dry-run    # Dry run publishing
+yarn changeset          # Create a changeset on the feature/staging PR
+```
+
+After `staging` → `main` squash-merge, `.github/workflows/release.yml` either opens a "chore: version packages" PR or (once that PR is merged) runs `yarn release` (`yarn build && changeset publish`) via npm Trusted Publishing. Then `/sync-main`.
+
+```bash
+yarn publish:dry-run    # Local interactive fallback only
 ```
 
 ## Architecture

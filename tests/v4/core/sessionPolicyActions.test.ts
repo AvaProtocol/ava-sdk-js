@@ -10,6 +10,7 @@
 import {
   SessionPolicyActions,
   Protocols,
+  Chains,
   actionsCover,
   missingActions,
 } from "@avaprotocol/sdk-js";
@@ -76,6 +77,15 @@ describe("SessionPolicyActions", () => {
     expect(() => SessionPolicyActions.uniswapV3Swap(999_999)).toThrow(
       /explicit/
     );
+  });
+
+  test("uniswapV3Swap refuses Polygon and Hyperliquid until catalog coverage lands", () => {
+    expect(() => SessionPolicyActions.uniswapV3Swap(Chains.PolygonMainnet)).toThrow(
+      /not known for chain 137/,
+    );
+    expect(() =>
+      SessionPolicyActions.uniswapV3Swap(Chains.HyperliquidMainnet),
+    ).toThrow(/not known for chain 999/);
   });
 
   test("an explicit target overrides the catalog", () => {

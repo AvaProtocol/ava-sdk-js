@@ -4,9 +4,10 @@
 // single source of truth for which chain JWTs are minted against.
 //
 // The full chain set comes from `@avaprotocol/protocols` (the data-only
-// DeFi catalog), with one SDK-specific addition (`EigenLayerAuth`) for
-// the auth-handler audience. New chains added to the catalog flow
-// through automatically — bumping the catalog dep is enough.
+// DeFi catalog), plus two SDK-specific constants: `EigenLayerAuth` for
+// the auth-handler audience, and a deprecated `Holesky` alias so a
+// catalog major does not force an SDK major. New chains added to the
+// catalog flow through automatically — bumping the catalog dep is enough.
 
 import { Chains as CatalogChains } from "@avaprotocol/protocols";
 
@@ -16,11 +17,15 @@ export const Chains = Object.freeze({
    * The chain the auth handler signs the canonical EIP-191 message
    * against. Defaults to Sepolia — keep this synced with the
    * aggregator's `smart_wallet.chain_id` setting (currently Sepolia
-   * in dev/staging, Ethereum mainnet in production). This is the only
-   * chain constant the SDK adds on top of the catalog, because the
-   * catalog is consumer-agnostic and doesn't know about our auth flow.
+   * in dev/staging, Ethereum mainnet in production).
    */
   EigenLayerAuth: 11_155_111 as const,
+  /**
+   * @deprecated Catalog 1.0.0 dropped `Chains.Holesky` (17000). Kept
+   * as an SDK alias so existing `Chains.Holesky` callers still compile
+   * on a 4.x minor. Use `Chains.Sepolia` for testnet work.
+   */
+  Holesky: 17_000 as const,
 });
 
 export type ChainId = (typeof Chains)[keyof typeof Chains] | number;
