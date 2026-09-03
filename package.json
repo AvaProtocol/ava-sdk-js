@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "node -e \"console.error('Do not run yarn version on staging. Versions move on the Version PR (yarn version-packages).'); process.exit(1)\"",
     "version-packages": "changeset version",
     "openapi-download": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/staging/api/openapi.yaml > packages/types/openapi/openapi.yaml",
     "types-gen": "openapi-typescript packages/types/openapi/openapi.yaml --output packages/types/src/openapi.gen.ts --immutable",
