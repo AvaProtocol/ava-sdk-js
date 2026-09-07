@@ -84,6 +84,8 @@ jobs:
       CONTROLLER_PRIVATE_KEY: ${{ secrets.CONTROLLER_PRIVATE_KEY }}
       AP_NOTIFY_BOT_TOKEN: ${{ secrets.AP_NOTIFY_BOT_TOKEN }}
       MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
+      GOPLUS_APP_KEY: ${{ secrets.GOPLUS_APP_KEY }}
+      GOPLUS_APP_SECRET: ${{ secrets.GOPLUS_APP_SECRET }}
       SENDGRID_KEY: ${{ secrets.SENDGRID_KEY }}
       ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
       ETH_WS_URL: ${{ secrets.ETH_WS_URL }}
@@ -122,13 +124,13 @@ jobs:
 
       - name: Inject secrets into gateway + worker configs
         run: |
-          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY CONTEXT_MEMORY_API_KEY
+          export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY GOPLUS_APP_KEY GOPLUS_APP_SECRET CONTEXT_MEMORY_API_KEY
           for src in gateway worker-sepolia operator-sepolia; do
             envsubst < config/${src}.yaml > config/${src}.runtime.yaml
             echo "Generated config/${src}.runtime.yaml: $(wc -l < config/${src}.runtime.yaml) lines"
-            if grep -q "\${.*}" config/${src}.runtime.yaml; then
+            if grep -vE '^\s*#' config/${src}.runtime.yaml | grep -q '\${'; then
               echo "WARNING: Found unsubstituted variables in ${src}.runtime.yaml:"
-              grep "\${.*}" config/${src}.runtime.yaml
+              grep -vE '^\s*#' config/${src}.runtime.yaml | grep '\${'
             else
               echo "All variables substituted correctly in ${src}.runtime.yaml."
             fi

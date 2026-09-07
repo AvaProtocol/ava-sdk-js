@@ -46,3 +46,8 @@ Separately, `tests-v3-archive/` was leftover gRPC coverage that `yarn test` alre
 - CI job 100573507706 (E2E / core on PR #259): 2 failed suites, both `operator authentication required` → `no connected operator currently monitors chain_id=11155111`. Same error on workflows, executions, triggers, nodes, templates.
 - Local: `yarn test:smoke` after the change (no gateway required).
 - Full E2E confirmation is the next staging→main Actions run: operator step must print `Operator is authenticated and pinging the aggregator` and the six matrix jobs must get past workflow create.
+
+Follow-up after run 34166504974 (operator auth green; remaining failures were unfunded MA v2 salt-0 + guardian config):
+
+- `moralis_api_key` is a **platform secret** — EigenLayer-AVS never copies it into `apContext.configVars`. The guardian restApi node was interpolating `{{apContext.configVars.moralis_api_key}}`, which is always empty, so Moralis 401'd. The node now uses `options.auth: { provider: "moralis" }` (same path as GoPlus). BalanceNode already skips when the key is unset; the live guardian scan does the same. CI does not require a Moralis GitHub secret.
+- `guardian_ruleset` inlined in `config/gateway.yaml` `macros.secrets`, matching `avs-infra/railway/configs/gateway-railway.yaml` and `EigenLayer-AVS/config/gateway.example.yaml`.
