@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/gasTracking.test.ts (874 lines).
- *
  * Most v3 scenarios were variants of "fire a workflow, look at the
  * step metadata + execution.cogs". The v4 port keeps one
  * representative per concern (single ETH transfer, multi-step

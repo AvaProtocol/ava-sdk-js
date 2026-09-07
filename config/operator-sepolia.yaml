@@ -1,6 +1,6 @@
 # Operator config for the CI E2E stack (Sepolia).
 #
-# Runs the registered test operator 0x997e5d40a32c44a3d93e59fc55c4fd20b7d2d49d
+# Runs the registered test operator 0x997E5D40a32c44a3D93E59fC55C4Fd20b7d2d49D
 # so tasks with on-chain triggers (block/event) actually fire — without a
 # connected operator the aggregator returns "no connected operator currently
 # monitors chain_id=11155111". Secrets are injected via envsubst in
@@ -8,7 +8,14 @@
 # the ECDSA/BLS keystore passwords come from OPERATOR_{ECDSA,BLS}_KEY_PASSWORD.
 environment: development
 
-operator_address: 0x997e5d40a32c44a3d93e59fc55c4fd20b7d2d49d
+# Must be EIP-55 checksummed. The operator signs
+# `Operator:{address}Epoch:{unix}` using common.Address.String()
+# (checksummed) but the Ping/Sync RPC claims this yaml value. The
+# aggregator recovers the signature against the claimed address, so a
+# lowercase spelling fails closed with "operator authentication
+# required" and every block/event-trigger workflow create 400s.
+# See EigenLayer-AVS #767.
+operator_address: 0x997E5D40a32c44a3D93E59fC55C4Fd20b7d2d49D
 
 avs_registry_coordinator_address: 0xcA95381802FD1398d5BF2D01243210cFb3a2b3BD
 operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605

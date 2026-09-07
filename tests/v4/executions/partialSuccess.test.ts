@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/partialSuccess.test.ts.
- *
  * The contract under test: any step failure flips the execution
  * status to "failed", even when other steps succeeded. The
  * "partial success" name is a misnomer — v4's engine treats any

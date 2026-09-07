@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/inputVariables.test.ts.
- *
  * Workflow creation tests confirm inputVariables round-trips through
  * the create + retrieve API; simulation tests confirm the runner can
  * access them as named globals.

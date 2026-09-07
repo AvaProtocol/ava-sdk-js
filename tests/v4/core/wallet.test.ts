@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/core/wallet.test.ts.
- *
  * Wallet field renames that show up throughout this suite:
  *   - factory             -> factoryAddress
  *   - totalTaskCount      -> totalWorkflowCount

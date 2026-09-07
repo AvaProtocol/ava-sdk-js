@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/execution.test.ts (647 lines).
- *
  * Covers the execution-index sequencing behavior: each trigger of a
  * given workflow gets a 0-based monotonic index, and that index is
  * surfaced on both executions.retrieve and executions.list.

@@ -1,8 +1,6 @@
 module.exports = {
-  // The mock-server / globalSetup / failureSummaryReporter from the
-  // v3 test rig are not used by v4 tests — the v4 smoke suite is
-  // pure unit code and the integration tests (when added) hit a
-  // live aggregator over HTTP.
+  // Smoke tests are pure unit code; the rest of tests/v4 hits a live
+  // aggregator over HTTP (docker compose locally, GitHub Actions in CI).
   roots: ["<rootDir>/tests/v4"],
   transform: {
     "^.+\\.(ts|tsx|js|jsx)$": "babel-jest",

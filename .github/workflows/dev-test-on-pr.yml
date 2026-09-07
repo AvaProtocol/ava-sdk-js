@@ -31,7 +31,7 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} HEAD)
-          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests/|config/)'
+          SOURCE_PATTERN='^(packages/sdk-js/src|packages/types/src|tests/|config/|docker-compose\.yml|jest\.config\.cjs|\.github/workflows/)'
           MATCHING_FILES=$(echo "$CHANGED_FILES" | grep -E "$SOURCE_PATTERN" || echo "")
 
           if [ -z "$MATCHING_FILES" ]; then
@@ -206,8 +206,8 @@ jobs:
       - name: Start operator
         run: |
           docker compose up -d operator
-          echo "Waiting for operator to register + connect to the aggregator..."
-          max_attempts=18
+          echo "Waiting for operator to authenticate with the aggregator..."
+          max_attempts=24
           attempt=0
           ready=false
           while [ $attempt -lt $max_attempts ]; do
@@ -219,25 +219,37 @@ jobs:
               echo "Operator container exited unexpectedly:"
               docker compose ps -a operator
               docker compose logs operator
+              docker compose logs gateway --tail=80
               exit 1
             fi
-            if docker compose logs operator 2>&1 | grep -q "Operator ready"; then
-              echo "Operator is ready and connected!"
+            # "Operator ready" only means the process started. After EigenLayer-AVS
+            # #767 the aggregator refuses unauthenticated Node RPCs, so a connected
+            # but unauthenticated operator still yields "no connected operator
+            # currently monitors chain_id=11155111" on every block/event create.
+            # Auth refusal will not recover without a config change — fail fast.
+            if docker compose logs operator 2>&1 | grep -q "operator authentication required"; then
+              echo "Operator reached the aggregator but was refused (operator authentication required)."
+              echo "config/operator-sepolia.yaml operator_address must be EIP-55 checksummed"
+              echo "to match the address the operator signs into its gRPC Authorization header."
+              docker compose logs operator --tail=80
+              docker compose logs gateway --tail=80
+              exit 1
+            fi
+            if docker compose logs operator 2>&1 | grep -q "Successfully pinged aggregator"; then
+              echo "Operator is authenticated and pinging the aggregator."
               ready=true
               break
             fi
-            echo "Attempt $((attempt + 1))/$max_attempts: operator not ready yet..."
+            echo "Attempt $((attempt + 1))/$max_attempts: operator not authenticated yet..."
             docker compose logs operator --tail=5
             sleep 5
             attempt=$((attempt + 1))
           done
-          # Mirror the gateway/worker health steps: fail explicitly if the
-          # operator never became ready, rather than running tests against a
-          # stack with no connected operator (the exact failure this guards).
           if [ "$ready" != "true" ]; then
-            echo "Operator never became ready after $((max_attempts * 5))s"
+            echo "Operator never authenticated after $((max_attempts * 5))s"
             docker compose ps -a
             docker compose logs operator
+            docker compose logs gateway --tail=80
             exit 1
           fi
           # Give the aggregator a moment to register the operator connection
@@ -252,21 +264,65 @@ jobs:
           # converts \n to \r\n on stdout, so the captured API key gets a trailing
           # \r and the gateway rejects it as "API key invalid".
           #
-          # Binary path is /ava — the published avaprotocol/avs-dev:latest image
-          # still ships the older binary name at root. The EigenLayer-AVS source
-          # Dockerfile has since renamed it to /app/ap (ENTRYPOINT ["./ap"]); flip
-          # this to "./ap" once a fresh image tag picks up that rebuild.
-          API_KEY=$(docker compose exec -T gateway /ava create-api-key --config /app/config/gateway.runtime.yaml --role=admin --subject=0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557)
+          # Binary name depends on the image: avaprotocol/avs-dev:latest still
+          # ships /ava; the EigenLayer-AVS source Dockerfile renamed it to
+          # /app/ap (ENTRYPOINT ["./ap"]). Detect whichever the running
+          # container actually has.
+          BIN=$(docker compose exec -T gateway sh -c 'if [ -x /ava ]; then echo /ava; elif [ -x /app/ap ]; then echo /app/ap; else echo ./ap; fi' | tr -d '\r')
+          echo "Using gateway binary: $BIN"
+          API_KEY=$(docker compose exec -T gateway "$BIN" create-api-key --config /app/config/gateway.runtime.yaml --role=admin --subject=0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557)
           echo "AVS_API_KEY=$API_KEY" >> $GITHUB_ENV
           echo "API key generated (${#API_KEY} chars)"
 
       - name: "Run test:${{ matrix.suite }}"
         run: yarn test:${{ matrix.suite }}
 
-  # ── Job 3: Report results ─────────────────────────────────────────
+      - name: Dump stack logs on failure
+        if: failure()
+        run: |
+          echo "::group::docker compose ps"
+          docker compose ps -a
+          echo "::endgroup::"
+          echo "::group::gateway logs"
+          docker compose logs gateway --tail=120
+          echo "::endgroup::"
+          echo "::group::worker-sepolia logs"
+          docker compose logs worker-sepolia --tail=80
+          echo "::endgroup::"
+          echo "::group::operator logs"
+          docker compose logs operator --tail=120
+          echo "::endgroup::"
+
+  # ── Job 3: Lint + unit smoke (no docker stack) ────────────────────
+  smoke:
+    name: Lint + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build SDK
+        run: yarn build
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Smoke + on-chain helper unit tests
+        run: yarn test:smoke
+
+  # ── Job 4: Report results ─────────────────────────────────────────
   report:
     name: Report
-    needs: [setup, e2e-tests]
+    needs: [setup, e2e-tests, smoke]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -274,15 +330,20 @@ jobs:
         run: |
           echo "## E2E Test Results" >> $GITHUB_STEP_SUMMARY
 
+          if [ "${{ needs.smoke.result }}" != "success" ]; then
+            echo "Lint/smoke failed. Check the Lint + smoke job." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
           if [ "${{ needs.setup.outputs.should_run }}" = "false" ]; then
-            echo "Tests skipped — no source/test changes detected." >> $GITHUB_STEP_SUMMARY
+            echo "E2E tests skipped — no source/test changes detected. Lint/smoke passed." >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
 
           if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
             echo "All test suites passed." >> $GITHUB_STEP_SUMMARY
           elif [ "${{ needs.e2e-tests.result }}" = "skipped" ]; then
-            echo "Tests were skipped." >> $GITHUB_STEP_SUMMARY
+            echo "E2E tests were skipped. Lint/smoke passed." >> $GITHUB_STEP_SUMMARY
           else
             echo "Some test suites failed. Check individual job logs for details." >> $GITHUB_STEP_SUMMARY
             exit 1

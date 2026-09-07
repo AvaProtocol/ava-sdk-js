@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/workflows/deleteWorkflow.test.ts.
- *
  * v4 cancel returns void (HTTP 204). The "not found" branch surfaces
  * as HTTP 404 instead of v3's `{success: false, status: "not_found"}`
  * shape — assert on the HTTP status now that errors are typed.

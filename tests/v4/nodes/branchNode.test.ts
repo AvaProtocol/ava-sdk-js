@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/branchNode.test.ts.
- *
  * Edge syntax: branch successors are addressed by `<branchId>.<conditionId>`
  * (e.g. `branch1.on`). This survives the v3 → v4 transition because
  * the engine encodes branch gating in the edge's source string.

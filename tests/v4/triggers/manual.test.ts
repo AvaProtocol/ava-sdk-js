@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/triggers/manual.test.ts (1615 lines).
- *
  * v3 spent most lines re-asserting the same shape across
  * runTrigger / simulate / deploy+trigger. The v4 port collapses
  * those into one assertion per surface plus the genuinely unique

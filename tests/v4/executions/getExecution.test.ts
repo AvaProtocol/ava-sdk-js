@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/getExecution.test.ts.
- *
  * v3 → v4 API:
  *   - client.getExecution(workflowId, execId) ->
  *     client.executions.retrieve(execId, {workflowId})

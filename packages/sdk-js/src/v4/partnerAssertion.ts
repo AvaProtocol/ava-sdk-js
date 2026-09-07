@@ -16,10 +16,7 @@ import {
   type KeyObject,
 } from "node:crypto";
 
-import {
-  PARTNER_ASSERTION_HEADER,
-  PARTNER_SCOPE_READ,
-} from "./partnerAssertionConstants";
+import { PARTNER_ASSERTION_HEADER } from "./partnerAssertionConstants";
 
 export {
   PARTNER_ASSERTION_HEADER,

@@ -8,7 +8,6 @@ export default [
   { 
     ignores: [
       "**/dist/**",           // Build output directories
-      "**/grpc_codegen/**",   // Generated gRPC code
       "**/openapi.gen.ts",    // Generated openapi-typescript output
       "**/*.d.ts",            // TypeScript declaration files
       "**/*_pb.js",           // Protocol buffer generated files

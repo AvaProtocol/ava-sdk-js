@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/contractWrite.test.ts (2219 lines).
- *
  * v3's giant test file came from re-asserting the same shape across
  * runNodeWithInputs / simulate / deploy+trigger. v4 keeps just one
  * happy-path per surface, since the response shape is uniform.

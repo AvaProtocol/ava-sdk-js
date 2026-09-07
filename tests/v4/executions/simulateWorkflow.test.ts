@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/simulateWorkflow.test.ts.
- *
  * v3 client.simulateWorkflow(req) -> v4 client.workflows.simulate(req).
  *
  * Step shape changes:

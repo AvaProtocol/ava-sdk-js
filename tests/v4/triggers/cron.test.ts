@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/triggers/cron.test.ts (795 lines).
- *
  * v3 TriggerFactory validation tests are dropped (factory is gone
  * in v4). v4 server is lenient on cron strings — even malformed
  * ones return a "next-firing-at-now" placeholder rather than 400.

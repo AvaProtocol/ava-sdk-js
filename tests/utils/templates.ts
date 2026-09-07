@@ -1,12 +1,8 @@
 /**
  * Workflow template helpers — produce minimal valid
  * `v4.CreateWorkflowRequest` payloads that can be CRUD'd in tests
- * without needing a funded smart wallet.
- *
- * v3 lived in tests-v3-archive/utils/templates.ts and depended on
- * the Workflow / Step class hierarchy plus NodeFactory /
- * TriggerFactory. v4's plain-object payloads simplify this to a
- * single function per template shape.
+ * without needing a funded smart wallet. One function per template
+ * shape; payloads are plain objects from the OpenAPI types.
  */
 
 import { Triggers, Nodes, type v4 } from "@avaprotocol/sdk-js";

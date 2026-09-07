@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/uniswapv3_stoploss.test.ts.
- *
  * Studio template: monitor a Chainlink price feed and execute a
  * Uniswap V3 swap when the price crosses a threshold (stop-loss).
  *

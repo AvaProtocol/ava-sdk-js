@@ -44,8 +44,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0 # Fetch all history for all branches
+          # workflow_dispatch only — check out the ref the run was triggered from.
+          fetch-depth: 0
 
       - name: Debug environment variables
         run: |
@@ -157,8 +157,8 @@ jobs:
           TEST_ENV: ${{ matrix.env }}
         run: yarn test:nodes
 
-      - name: Test Integrations
+      - name: Test Templates
         if: github.event_name == 'workflow_dispatch' || steps.check_source_changes.outputs.source_changed == 'true'
         env:
           TEST_ENV: ${{ matrix.env }}
-        run: yarn test:integrations
+        run: yarn test:templates

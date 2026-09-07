@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/RestAPi.test.ts.
- *
  * These tests exercise the gateway's restApi node, and the request is made by
  * the **gateway process**, not by this test. That rules out the usual JS
  * mocking tools — nock, msw, a patched global fetch — because they intercept

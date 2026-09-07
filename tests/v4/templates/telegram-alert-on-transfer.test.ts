@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/telegram-alert-on-transfer.test.ts.
- *
  * Real-world studio template: monitor ERC-20 Transfer events for the
  * user's wallet and emit a Telegram alert via RestAPI. The port keeps
  * the workflow shape (event trigger with from/to queries + RestAPI

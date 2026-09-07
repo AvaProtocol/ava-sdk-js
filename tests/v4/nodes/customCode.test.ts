@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/customCode.test.ts.
- *
  * v3 → v4 API renames:
  *   - client.runNodeWithInputs(p)          -> client.nodes.run(p)
  *   - client.simulateWorkflow(req)         -> client.workflows.simulate(req)

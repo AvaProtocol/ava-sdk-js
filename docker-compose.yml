@@ -46,7 +46,7 @@ services:
     depends_on:
       - gateway
 
-  # Registered test operator (0x997e5d40…) so tasks with on-chain triggers
+  # Registered test operator (0x997E5D40…, EIP-55 checksummed) so tasks with on-chain triggers
   # (block/event) actually fire — without a connected operator the aggregator
   # returns "no connected operator currently monitors chain_id=11155111". The
   # ECDSA/BLS keystores are written to config/.operator-keys/ from GitHub

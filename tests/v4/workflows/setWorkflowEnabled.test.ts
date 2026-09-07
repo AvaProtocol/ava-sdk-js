@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/workflows/setWorkflowEnabled.test.ts.
- *
  * v4 splits the v3 `setWorkflowEnabled(id, bool)` call into two
  * explicit verbs:
  *   - client.workflows.pause(id)  -> disable

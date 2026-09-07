@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/workflows/workflow.test.ts.
- *
  * v3 API renames:
  *   - client.getWorkflow(id)           -> client.workflows.retrieve(id)
  *   - client.getWorkflows([addrs], p)  -> client.workflows.list({smartWalletAddress: [addrs], ...p})

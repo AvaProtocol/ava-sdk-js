@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/core/withdraw.test.ts.
- *
  * v3 → v4 API mapping:
  *   - client.withdrawFunds({smartWalletAddress, ...req}, opts)
  *     -> client.wallets.withdraw(smartWalletAddress, req)

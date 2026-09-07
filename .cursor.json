@@ -5,7 +5,7 @@
     "lint": "cd ava-sdk-js && npm run lint"
   },
   "instructions": [
-    "The avs.proto file is in the EigenLayer-AVS directory. Always copy the `avs.proto` file to the `ava-sdk-js/grpc_codegen` folder, and run `npm run protoc-gen` to generate the protobuf files.",
-    "For the TypeScript SDK in ava-sdk-js, use `npm run build` to build and `npx jest` to run tests."
+    "The OpenAPI spec lives in EigenLayer-AVS `api/openapi.yaml`. Copy it with `yarn openapi-download` and regenerate types with `yarn types-gen`.",
+    "For the TypeScript SDK in ava-sdk-js, use `yarn build` to build and `yarn test` to run tests."
   ]
 }

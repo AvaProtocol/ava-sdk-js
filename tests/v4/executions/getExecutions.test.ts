@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/getExecutions.test.ts.
- *
  * v3 → v4 API:
  *   - client.getExecutions([workflowIds], opts) ->
  *     client.executions.list({workflowId: [...], ...opts})

@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/graphqlQuery.test.ts.
- *
  * v3 used a local mock server for GraphQL plus the Uniswap subgraph
  * on The Graph Network. v4 tests hit countries.trevorblades.com
  * (a public no-auth GraphQL endpoint) to stay self-contained and
