@@ -16,6 +16,13 @@
  * The funded-wallet helper looks up MA v2 salt "0" (see
  * getFundedFixture). If the wallet is unfunded, on-chain tests skip
  * with the address to fund; the validation tests still run.
+ *
+ * Every funded UserOp in this repo (withdraw, contractWrite trigger,
+ * gasTracking) shares that one sender. CI matrix jobs race the same
+ * EntryPoint nonce; a second send while the first is in the bundler
+ * mempool comes back `replacement underpriced`. submitWithdrawOrSkip
+ * retries that and waits for a receipt when the gateway returns one,
+ * so the next test in this file does not collide with itself.
  */
 
 import { ethers } from "ethers";
@@ -76,45 +83,87 @@ function fundedSkipMessage(address: string, detail: string): string {
   );
 }
 
+/** Bundler rejected a second UserOp for the same sender/nonce. */
+const USEROP_CONTENTION =
+  /replacement underpriced|AA25 invalid account nonce|invalid account nonce/i;
+
+function chainProvider(): ethers.JsonRpcProvider | undefined {
+  const ep = optionalEnv("CHAIN_ENDPOINT", "") || optionalEnv("ETH_RPC_URL", "");
+  if (!ep) return undefined;
+  return new ethers.JsonRpcProvider(ep.startsWith("http") ? ep : `https://${ep}`);
+}
+
+function isInsufficient(status: number | undefined, code: string, message: string): boolean {
+  return (
+    status === 400 &&
+    code !== SESSION_POLICY_NATIVE_NOT_ALLOWED &&
+    /insufficient/i.test(`${code} ${message}`)
+  );
+}
+
 /**
  * Submit a withdrawal against the funded test wallet. Returns the
  * response on success; returns undefined and logs a skip note when
  * the wallet is unfunded. Session-grant / bundler errors fail the
  * test — those are not a funding gap.
+ *
+ * `replacement underpriced` is retried: CI shards share this sender,
+ * and sequential tests in this file send another UserOp before the
+ * previous one has left the mempool. When the gateway returns a
+ * transaction hash we wait for inclusion so the next send sees a
+ * fresh nonce.
  */
 async function submitWithdrawOrSkip(
   client: Client,
   address: string,
   req: v4.WithdrawRequest,
 ): Promise<v4.WithdrawResponse | undefined> {
-  let response: v4.WithdrawResponse;
-  try {
-    response = await client.wallets.withdraw(address, req);
-  } catch (err: unknown) {
-    const errObj = err as { status?: number; code?: string; message?: string };
-    // Native ETH is a typed 400 (SESSION_POLICY_NATIVE_NOT_ALLOWED), not
-    // a funding miss — let those tests assert the code.
-    if (
-      errObj.status === 400 &&
-      errObj.code !== SESSION_POLICY_NATIVE_NOT_ALLOWED &&
-      /insufficient/i.test(`${errObj.code ?? ""} ${errObj.message ?? ""}`)
-    ) {
-      console.log(fundedSkipMessage(address, "wallet not funded on this chain"));
-      return undefined;
+  const deadline = Date.now() + 180_000;
+  let lastContention = "";
+  while (Date.now() < deadline) {
+    let response: v4.WithdrawResponse;
+    try {
+      response = await client.wallets.withdraw(address, req);
+    } catch (err: unknown) {
+      const errObj = err as { status?: number; code?: string; message?: string };
+      const code = errObj.code ?? "";
+      const message = errObj.message ?? "";
+      if (isInsufficient(errObj.status, code, message)) {
+        console.log(fundedSkipMessage(address, "wallet not funded on this chain"));
+        return undefined;
+      }
+      if (USEROP_CONTENTION.test(`${code} ${message}`)) {
+        lastContention = message || code;
+        await new Promise((r) => setTimeout(r, 8_000));
+        continue;
+      }
+      throw err;
     }
-    throw err;
-  }
-  if (response.status === "failed") {
-    const msg = response.message ?? "";
-    if (/insufficient/i.test(msg)) {
-      console.log(fundedSkipMessage(address, msg || "insufficient funds"));
-      return undefined;
+    if (response.status === "failed") {
+      const msg = response.message ?? "";
+      if (/insufficient/i.test(msg)) {
+        console.log(fundedSkipMessage(address, msg || "insufficient funds"));
+        return undefined;
+      }
+      if (USEROP_CONTENTION.test(msg)) {
+        lastContention = msg;
+        await new Promise((r) => setTimeout(r, 8_000));
+        continue;
+      }
+      throw new Error(
+        `UserOp withdraw failed for MA v2 funded wallet ${address}: ${msg || "failed"}`,
+      );
     }
-    throw new Error(
-      `UserOp withdraw failed for MA v2 funded wallet ${address}: ${msg || "failed"}`,
-    );
+    const hash = response.transactionHash;
+    const provider = chainProvider();
+    if (hash && provider) {
+      await pollReceipt(hash, provider);
+    }
+    return response;
   }
-  return response;
+  throw new Error(
+    `UserOp withdraw failed for MA v2 funded wallet ${address}: still contended after retries: ${lastContention}`,
+  );
 }
 
 describe("Withdraw Funds Tests", () => {
