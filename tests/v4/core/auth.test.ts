@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/core/auth.test.ts.
- *
  * v3 had three describe groups:
  *   1. "Authenticated with client.authKey"  — token set on the client.
  *   2. "Authenticated with options.authKey" — per-request override (gRPC-only).

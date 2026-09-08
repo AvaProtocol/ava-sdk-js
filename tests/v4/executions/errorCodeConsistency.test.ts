@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/errorCodeConsistency.test.ts.
- *
  * Asserts that the error code returned by nodes.run for a given
  * failure mode matches the errorCode field on the corresponding
  * step in workflows.simulate. v4 surfaces error codes as strings

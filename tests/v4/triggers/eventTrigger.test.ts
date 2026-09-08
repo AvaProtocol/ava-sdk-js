@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/triggers/eventTrigger.test.ts (2317 lines).
- *
  * v3 used `padAddressForTopic` from the SDK; v4 doesn't ship that
  * helper, so the test inlines a 32-byte padding helper. Topic
  * filters use:

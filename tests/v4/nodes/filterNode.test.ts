@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/filterNode.test.ts.
- *
  * Filter expression syntax — `{{variable}}` for the array reference,
  * bare `value.x` for the iteratee. This survives v4 unchanged.
  *

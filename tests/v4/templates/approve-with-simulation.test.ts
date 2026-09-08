@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/test-single-approve-with-simulation.test.ts.
- *
  * Real-world studio template: approve a token spend amount and then
  * (in production) chain a swap via Uniswap V3. The port focuses on
  * the approve simulation path against Sepolia USDC — the swap leg is

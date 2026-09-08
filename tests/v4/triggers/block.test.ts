@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/triggers/block.test.ts (804 lines).
- *
  * v3's TriggerFactory + toRequest() validation tests are dropped —
  * v4 builders return plain JSON and validation now happens server-
  * side (and is currently lenient: zero / negative intervals are

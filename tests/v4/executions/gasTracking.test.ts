@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/gasTracking.test.ts (874 lines).
- *
  * Most v3 scenarios were variants of "fire a workflow, look at the
  * step metadata + execution.cogs". The v4 port keeps one
  * representative per concern (single ETH transfer, multi-step
@@ -18,7 +16,7 @@ import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol
 import {
   getSuiteClient,
   getFundedFixture,
-  assertUserOpTriggerOk,
+  triggerUserOpAndAssert,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
@@ -94,7 +92,9 @@ describe("Gas tracking", () => {
 
     const created = await funded.workflows.create({
       ...createFromTemplate(wallet.address),
-      maxExecution: 1,
+      // Failed UserOp sends still consume a slot; retries for bundler
+      // contention (replacement underpriced) need spare executions.
+      maxExecution: 10,
       trigger: Triggers.block({ id: "trigger", name: "blockTrigger", chainId: 11_155_111, interval: 5 }),
       nodes: [
         Nodes.contractWrite({
@@ -110,12 +110,16 @@ describe("Gas tracking", () => {
     });
     const wfId = created.id as string;
     try {
-      const trig = await funded.workflows.trigger(wfId, {
-        triggerType: "block",
-        triggerOutput: { blockNumber: blockNumber + 5 },
-        isBlocking: true,
-      });
-      assertUserOpTriggerOk(trig, wallet.address);
+      const trig = await triggerUserOpAndAssert(
+        funded,
+        wfId,
+        {
+          triggerType: "block",
+          triggerOutput: { blockNumber: blockNumber + 5 },
+          isBlocking: true,
+        },
+        wallet.address,
+      );
 
       const exec = await funded.executions.retrieve(trig.executionId, { workflowId: wfId });
       expect(Array.isArray(exec.cogs)).toBe(true);

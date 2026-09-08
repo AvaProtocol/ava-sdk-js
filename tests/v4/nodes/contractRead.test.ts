@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/contractRead.test.ts (1653 lines).
- *
  * Anchored on the Sepolia Chainlink ETH/USD price feed — a stable
  * on-chain target that's been in place long enough to use as a
  * permanent test fixture. v3 spent most of its 1.6K lines asserting

@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/core/secret.test.ts.
- *
  * v3 → v4 API rename map:
  *   - client.createSecret(name, value, opts)  -> client.secrets.put(name, {value, ...opts})
  *   - client.updateSecret(name, value)        -> client.secrets.put(name, {value})  (idempotent)

@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/stepInput.test.ts.
- *
  * v3 leaned on a localhost:19876 mock server for the REST API
  * variants; v4 uses a local stub server (tests/utils/stubServer.ts) so the
  * test is self-contained AND deterministic — no public endpoint to go down.

@@ -25,6 +25,12 @@ operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
 
 jwt_secret: ${JWT_SECRET}
 
+# Explicit allowlist so a missing default in a future image cannot
+# silently drop the CI operator. Same address as
+# config/operator-sepolia.yaml (EIP-55 checksummed).
+approved_operators:
+  - "0x997E5D40a32c44a3D93E59fC55C4Fd20b7d2d49D"
+
 # REST rate-limit overrides — the full v4 jest suite spreads ~90 requests
 # across parallel workers and trips the conservative production default
 # (10/s, burst 50). Lifted to match the gateway-railway test env.
@@ -89,7 +95,19 @@ macros:
     ap_notify_bot_token: ${AP_NOTIFY_BOT_TOKEN}
     sendgrid_key: ${SENDGRID_KEY}
     thegraph_api_key: ${THEGRAPH_API_KEY}
+    # Platform keys — engine-internal only (BalanceNode, restApi
+    # options.auth.provider). NEVER copied into apContext.configVars.
     moralis_api_key: ${MORALIS_API_KEY}
+    goplus_app_key: ${GOPLUS_APP_KEY}
+    goplus_app_secret: ${GOPLUS_APP_SECRET}
+    # guardian_ruleset — tunable verdict knobs read via
+    # {{apContext.configVars.guardian_ruleset}} (bare-injected as a JS
+    # object). Inlined, not an env ref: it is not a secret, and the JSON
+    # braces/quotes cannot survive envsubst. Must be valid JSON and must
+    # be set — an unresolved template in customCode hard-fails the node.
+    # Same value as avs-infra/railway/configs/gateway-railway.yaml and
+    # EigenLayer-AVS config/gateway.example.yaml.
+    guardian_ruleset: '{"weak":["honeypot_related_address","blacklist_doubt"]}'
 
 notifications:
   summary:

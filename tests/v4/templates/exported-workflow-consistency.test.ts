@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/exported-workflow-consistency.test.ts.
- *
  * v3 captured an exported workflow from the studio (manual trigger ->
  * filter -> loop -> customCode) and asserted that:
  *   1. simulateWorkflow produces the expected step graph

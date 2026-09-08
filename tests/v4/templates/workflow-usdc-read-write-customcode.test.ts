@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/workflow-usdc-read-write-customcode.test.ts.
- *
  * Replicates the real-world workflow shape:
  *   cron trigger -> contractRead(symbol) + contractRead(decimals) -> contractWrite(transfer)
  *                                                                 -> customCode (builds message)

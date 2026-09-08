@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Ava SDK for JavaScript/TypeScript - a monorepo containing a type-safe gRPC wrapper for integrating with Ava Protocol's AVS. Two main packages: `@avaprotocol/sdk-js` (main SDK) and `@avaprotocol/types` (type definitions).
+Ava SDK for JavaScript/TypeScript - a monorepo containing a type-safe REST client for Ava Protocol's AVS gateway. Two main packages: `@avaprotocol/sdk-js` (main SDK) and `@avaprotocol/types` (OpenAPI-generated type definitions).
 
 ## Development Commands
 
@@ -13,18 +13,18 @@ yarn                    # Install dependencies
 yarn build              # Build all packages
 yarn clean              # Clean all build artifacts
 yarn lint               # Lint code
-yarn run proto-download # Download latest proto files
-yarn run protoc-gen     # Generate protobuf types
+yarn run openapi-download # Pull latest OpenAPI spec from EigenLayer-AVS
+yarn run types-gen        # Regenerate packages/types/src/openapi.gen.ts
 ```
 
 ### Testing
 
-All E2E suites target the v4 REST surface (`tests/v4/**`); the legacy
-v3 gRPC tests are archived under `tests-v3-archive/`. Each suite maps
+All E2E suites target the REST surface (`tests/v4/**`). Each suite maps
 to a subdirectory and is sharded as its own CI matrix job:
 
 ```bash
-yarn test                              # Run the full v4 suite (everything under tests/v4)
+yarn test                              # Run the full suite (everything under tests/v4)
+yarn test:smoke                        # tests/v4/smoke + onchain-helpers — no gateway required
 yarn test:core                         # tests/v4/core      — auth, wallet, secrets, getToken, withdraw
 yarn test:workflows                    # tests/v4/workflows — CRUD + trigger/enable/cancel
 yarn test:executions                   # tests/v4/executions — simulate, runNodeWithInputs, gas, fees
@@ -134,13 +134,11 @@ curl http://localhost:8090/health      # Worker liveness probe
 
 The binary is now **`ap`**. Built from EigenLayer-AVS source via
 `make build` → `./out/ap`; `make dev-stack` / `make gateway` invoke
-that. The published `avaprotocol/avs-dev:latest` image's older `/ava`
-entrypoint is legacy — the `apikey-gen` script in `package.json` still
-references `/ava` and only matters when running the docker-compose
-stack against that legacy image; the source `make dev-stack` path mints
-keys via `./out/ap create-api-key`. Subcommands (either binary):
-`aggregator` (runs in gateway mode when the config carries a `chains[]`
-block), `worker`, `operator`, `create-api-key`.
+that. The published `avaprotocol/avs-dev:latest` image still ships
+`/ava`; CI and `yarn apikey-gen` detect whichever binary the running
+container has. Subcommands (either binary): `aggregator` (gateway mode
+when the config carries a `chains[]` block), `worker`, `operator`,
+`create-api-key`.
 
 > Note: `make dev-stack` (source) is the primary local stack today; the
 > `docker compose` flow below targets the published image and is the CI
@@ -165,30 +163,24 @@ yarn publish:dry-run    # Local interactive fallback only
 
 ### Package Structure
 
-- **packages/sdk-js/**: Main SDK - gRPC client and models
-- **packages/types/**: Type definitions, enums, interfaces
-- **grpc_codegen/**: Generated gRPC code from protocol buffers
-- **tests/**: Test suites organized by functionality
+- **packages/sdk-js/**: REST client (`Client`) and resource sub-clients
+- **packages/types/**: OpenAPI-generated types (`openapi.gen.ts`) plus hand-written enums
+- **tests/v4/**: E2E suites organized by functionality
 - **examples/**: Usage examples
 
 ### Core Components
 
-- **Client** (extends BaseClient): Auth (signature + API key), gRPC communication, workflow management, smart wallet integration
-- **Workflow**: Automation workflows with triggers, nodes, and edges
-- **Node/Trigger Factories**: Create typed workflow components
-- **Execution/Step**: Track workflow execution state and results
+- **Client**: Auth (EIP-191 exchange or admin JWT), REST transport, resource sub-clients (`workflows`, `executions`, `wallets`, `secrets`, `tokens`, `nodes`, `triggers`, `operators`, `userops`)
+- **Triggers / Nodes builders**: Typed helpers that produce OpenAPI-shaped objects
+- **Execution records**: Plain JSON objects from the REST API (no class hierarchy)
 
 ### Authentication Flow
 
-1. `getSignatureFormat(wallet)` - Get message to sign
-2. `authWithSignature({ message, signature })` OR `authWithAPIKey({ message, apiKey })`
-3. `setAuthKey(authKey)` - Store for subsequent requests
+1. `signAuthMessage(privateKey, { uri, chainId, version })` — EIP-191 message
+2. `client.auth.exchangeWithKey({ message, signature })` — gateway mints a JWT
+3. `client.setToken(jwt)` — attached as `Authorization: Bearer` on subsequent requests
 
-### Timeout Presets
-
-- `TimeoutPresets.FAST` - 5s timeout, 2 retries
-- `TimeoutPresets.SLOW` - 2min timeout, 2 retries
-- `TimeoutPresets.NO_RETRY` - 30s timeout, no retries
+Admin JWTs from `create-api-key` skip the exchange and go straight to `setToken`.
 
 ## Development Guidelines
 
@@ -202,13 +194,13 @@ yarn publish:dry-run    # Local interactive fallback only
 
 #### simulateWorkflow must include `settings` in inputVariables
 
-When calling `client.simulateWorkflow()`, always spread the workflow and pass `inputVariables` with a `settings` object containing at minimum:
+When calling `client.workflows.simulate()`, always spread the workflow and pass `inputVariables` with a `settings` object containing at minimum:
 - `name`: workflow name (required by the context-memory AI summarizer)
 - `runner`: smart wallet address
 - `chain`: chain name (e.g., "sepolia")
 
 ```typescript
-const simulationResult = await client.simulateWorkflow({
+const simulationResult = await client.workflows.simulate({
   ...workflow,
   inputVariables: {
     settings: {
@@ -222,17 +214,15 @@ const simulationResult = await client.simulateWorkflow({
 
 Without `settings.name`, the aggregator's context-memory API fails validation and falls back to a generic deterministic summary.
 
-### runNodeWithInputs API Structure
-
-Use the same node structure as `simulateWorkflow`:
+### nodes.run API Structure
 
 ```typescript
-await client.runNodeWithInputs({
+await client.nodes.run({
   node: {
     id: "node-id",
     name: "nodeName",
-    type: NodeType.ContractWrite,
-    data: { /* node-specific config */ }
+    type: "contractWrite",
+    config: { /* node-specific config */ }
   },
   inputVariables: { /* input data */ }
 });
@@ -240,16 +230,15 @@ await client.runNodeWithInputs({
 
 ### Adding New Node/Trigger Types
 
-1. Add type definition in `packages/types/src/` (`node.ts` or `trigger.ts`)
-2. Implement class in `packages/sdk-js/src/models/node/` or `trigger/`
-3. Update the corresponding Factory to handle the new type
-4. Add tests in `tests/nodes/` or `tests/triggers/`
+1. Spec the shape in EigenLayer-AVS `api/openapi.yaml`, then `yarn openapi-download && yarn types-gen`
+2. Add a builder in `packages/sdk-js/src/` (`Triggers.*` / `Nodes.*`)
+3. Add tests in `tests/v4/nodes/` or `tests/v4/triggers/`
 
-### Protocol Buffer Updates
+### OpenAPI updates
 
-1. `yarn run proto-download` (updates `grpc_codegen/avs.proto`)
-2. `yarn run protoc-gen` (regenerates TypeScript bindings)
-3. Update SDK code for new/changed fields
+1. `yarn run openapi-download` (pulls `packages/types/openapi/openapi.yaml`)
+2. `yarn run types-gen` (regenerates `packages/types/src/openapi.gen.ts`)
+3. Update SDK builders / resource clients for new/changed fields
 4. Update tests
 
 ## Requirements

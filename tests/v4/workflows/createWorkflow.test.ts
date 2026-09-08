@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/workflows/createWorkflow.test.ts.
- *
  * v3 used `client.createWorkflow()` to instantiate a Workflow class
  * and `client.submitWorkflow()` to push it; v4 has a single
  * `client.workflows.create(req)` that returns the persisted record.

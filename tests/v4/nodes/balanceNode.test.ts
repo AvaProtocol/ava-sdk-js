@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/balanceNode.test.ts (877 lines).
- *
  * Balance node queries Moralis under the hood; v3 used Vitalik's
  * address on mainnet, but that account now has too many ERC-20s
  * for a single Moralis call (HTTP 400). v4 tests query the test

@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/runNodeWithInputs.test.ts.
- *
  * v3 client.runNodeWithInputs(p) -> v4 client.nodes.run(p).
  *
  * The v3 file was specifically about the `isSimulated` toggle on

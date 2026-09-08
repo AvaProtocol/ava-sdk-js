@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/batch-recurring-payment-with-email.test.ts.
- *
  * Same shape as recurring-payment-with-report but driven by a cron
  * trigger and emitting via "email" (RestAPI -> SendGrid in production).
  * We use a local stub server (tests/utils/stubServer.ts) so the workflow

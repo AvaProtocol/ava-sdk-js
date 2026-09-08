@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/contractWrite.test.ts (2219 lines).
- *
  * v3's giant test file came from re-asserting the same shape across
  * runNodeWithInputs / simulate / deploy+trigger. v4 keeps just one
  * happy-path per surface, since the response shape is uniform.
@@ -28,7 +26,7 @@ import {
   getFundedClient,
   getFundedWallet,
   getFundedFixture,
-  assertUserOpTriggerOk,
+  triggerUserOpAndAssert,
   createSmartWallet,
   removeCreatedWorkflows,
   settingsFor,
@@ -189,6 +187,7 @@ describe("ContractWrite Node Tests", () => {
 
       const wfReq = {
         ...createFromTemplate(wallet.address),
+        maxExecution: 10,
         trigger: Triggers.block({
           id: "trigger",
           name: "blockTrigger",
@@ -211,12 +210,16 @@ describe("ContractWrite Node Tests", () => {
       const wfId = created.id as string;
       fundedWorkflowIds.push(wfId);
 
-      const trig = await funded.workflows.trigger(wfId, {
-        triggerType: "block",
-        triggerOutput: { blockNumber: blockNumber + 5 },
-        isBlocking: true,
-      });
-      assertUserOpTriggerOk(trig, wallet.address);
+      const trig = await triggerUserOpAndAssert(
+        funded,
+        wfId,
+        {
+          triggerType: "block",
+          triggerOutput: { blockNumber: blockNumber + 5 },
+          isBlocking: true,
+        },
+        wallet.address,
+      );
       const exec = await funded.executions.retrieve(trig.executionId, { workflowId: wfId });
       const step = exec.steps?.find((s) => s.id === "w");
       expect(step?.success).toBe(true);

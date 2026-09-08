@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/templates/recurring-payment-with-report.test.ts.
- *
  * Studio template: on-demand batch transfer with Telegram report.
  *   ManualTrigger
  *     -> Balance (check ETH)

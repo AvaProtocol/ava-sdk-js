@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/workflows/triggerWorkflow.test.ts.
- *
  * v3 used `client.triggerWorkflow({id, triggerData, isBlocking})` —
  * v4 uses `client.workflows.trigger(id, body)` where body has
  * `triggerType`, `triggerOutput`, `isBlocking`.

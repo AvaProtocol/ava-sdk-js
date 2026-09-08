@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/loopNode.test.ts (2754 lines).
- *
  * The v3 test exercised every runner type (CustomCode, RestAPI,
  * ContractRead, ContractWrite, ETHTransfer, GraphQL) and both
  * sequential + parallel execution modes. v4's LoopNodeConfig is

@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/core/getTokenMetadata.test.ts.
- *
  * v3 → v4 mapping:
  *   - client.getTokenMetadata({address}) -> client.tokens.retrieve(address)
  *   - v3 wrapped fields under `response.token.*`; v4 returns

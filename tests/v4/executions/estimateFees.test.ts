@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/executions/estimateFees.test.ts.
- *
  * v3 client.estimateFees() -> v4 client.workflows.estimateFees(req).
  *
  * The response shape carries over from v3: top-level success/error,

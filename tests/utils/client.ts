@@ -380,6 +380,50 @@ export async function getFundedWallet(
 }
 
 /**
+ * Bundler still holds a prior UserOp for this sender. CI matrix jobs
+ * (and sequential tests in one file) share MA v2 salt-0, so a second
+ * `eth_sendUserOperation` comes back `replacement underpriced` / AA25
+ * until the first leaves the mempool.
+ */
+export const USEROP_CONTENTION =
+  /replacement underpriced|AA25 invalid account nonce|invalid account nonce/i;
+
+export function isUserOpContention(message: string): boolean {
+  return USEROP_CONTENTION.test(message);
+}
+
+const USEROP_RETRY_DEADLINE_MS = 180_000;
+const USEROP_RETRY_PAUSE_MS = 8_000;
+
+/**
+ * Retry a funded-wallet UserOp send while the Alchemy bundler still
+ * holds a prior op for this sender. `extractError` maps a resolved
+ * value that is itself a failed send (withdraw `status: failed`,
+ * trigger envelope with `error`) onto the message to match.
+ */
+export async function retryOnUserOpContention<T>(
+  send: () => Promise<T>,
+  extractError?: (value: T) => string | undefined,
+): Promise<T> {
+  const deadline = Date.now() + USEROP_RETRY_DEADLINE_MS;
+  let last = "";
+  while (Date.now() < deadline) {
+    try {
+      const value = await send();
+      const err = extractError?.(value);
+      if (!err || !isUserOpContention(err)) return value;
+      last = err;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (!isUserOpContention(msg)) throw e;
+      last = msg;
+    }
+    await new Promise((r) => setTimeout(r, USEROP_RETRY_PAUSE_MS));
+  }
+  throw new Error(`UserOp still contended after retries: ${last}`);
+}
+
+/**
  * The funded UserOp fixture: shared EOA + MA v2 salt-0 runner + a
  * covering session grant. Every real-bundler test should take the
  * wallet from here so funding one address covers the suite.
@@ -423,6 +467,33 @@ export function assertUserOpTriggerOk(
         `Fund this address on Sepolia with ETH (and USDC for ERC-20 tests).`,
     );
   }
+}
+
+function triggerError(trig: Pick<v4.TriggerWorkflowResponse, "status" | "error">): string | undefined {
+  if (trig.status === "failed" || trig.status === "error" || trig.error) {
+    return `${trig.status ?? ""}${trig.error ? `: ${trig.error}` : ""}`;
+  }
+  return undefined;
+}
+
+/**
+ * `workflows.trigger` for a funded-wallet UserOp. Retries bundler
+ * nonce contention (`replacement underpriced` / AA25). Callers that
+ * use `maxExecution: 1` should raise it — a failed send still
+ * consumes an execution slot.
+ */
+export async function triggerUserOpAndAssert(
+  client: Client,
+  workflowId: string,
+  req: v4.TriggerWorkflowRequest,
+  walletAddress: string,
+): Promise<v4.TriggerWorkflowResponse> {
+  const trig = await retryOnUserOpContention(
+    () => client.workflows.trigger(workflowId, req),
+    triggerError,
+  );
+  assertUserOpTriggerOk(trig, walletAddress);
+  return trig;
 }
 
 /**

@@ -1,6 +1,4 @@
 /**
- * Port of tests-v3-archive/nodes/ethTransfer.test.ts (1191 lines).
- *
  * v3 had many near-duplicate variations of "with/without isSimulated".
  * v4 simplifies: nodes.run is always a simulation (no UserOp goes
  * out), and the only on-chain execution path is workflows.trigger.
