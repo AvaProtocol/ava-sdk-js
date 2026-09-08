@@ -13,9 +13,10 @@
  *     value (bool for approve/transfer, struct for tuple returns).
  *   - `result.executionContext.is_simulated = true` for sim paths.
  *
- * The MA v2 salt-0 funded wallet + session grant is required for
- * the real deploy+trigger path. Simulation of `transfer` also uses
- * that wallet because Tenderly does not override ERC-20 balances.
+ * The MA v2 funded wallet for this suite (nodes → salt `"2"`) + session
+ * grant is required for the real deploy+trigger path. Simulation of
+ * `transfer` also uses that wallet because Tenderly does not override
+ * ERC-20 balances.
  */
 
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
@@ -75,7 +76,7 @@ describe("ContractWrite Node Tests", () => {
     });
 
     test("simulates a transfer call against the funded wallet", async () => {
-      // MA v2 salt-0 holds Sepolia USDC. A suite wallet (fresh salt /
+      // This suite's funded MA v2 wallet holds Sepolia USDC. A suite wallet (fresh salt /
       // isolated EOA) has none, and Tenderly does not override ERC-20
       // balances — transfer would revert with "amount exceeds balance".
       const { client: funded, owner } = await getFundedClient();
