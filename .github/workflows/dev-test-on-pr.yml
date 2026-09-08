@@ -68,7 +68,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [core, workflows, executions, triggers, nodes, templates]
+        include:
+          # Static MA v2 salt per shard so parallel UserOps do not share
+          # an EntryPoint nonce (#263). Must stay inside 0/1/2.
+          - suite: core
+            funded_salt: "0"
+          - suite: workflows
+            funded_salt: "0"
+          - suite: executions
+            funded_salt: "1"
+          - suite: triggers
+            funded_salt: "0"
+          - suite: nodes
+            funded_salt: "2"
+          - suite: templates
+            funded_salt: "0"
 
     env:
       # The gateway/worker run in containers, so a stub server bound on the
@@ -76,6 +90,8 @@ jobs:
       # docker-compose maps this name to the host (extra_hosts + host-gateway);
       # tests/utils/stubServer.ts builds its base URL from it.
       TEST_STUB_HOST: host.docker.internal
+      # Wins over Jest testPath inference in fundedWalletSalt().
+      FUNDED_WALLET_SALT: ${{ matrix.funded_salt }}
       # Secrets
       TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       ECDSA_PRIVATE_KEY: ${{ secrets.ECDSA_PRIVATE_KEY }}

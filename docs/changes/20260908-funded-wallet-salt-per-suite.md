@@ -24,11 +24,11 @@ Assign a **static salt per CI suite directory**, not per `test()` case:
 
 Only `"0" | "1" | "2"` so a `TEST_ENV=railway` run stays inside production's 3-wallet cap. `FUNDED_WALLET_SALT` env still overrides for debugging.
 
-`getFundedWallet` / `getFundedFixture` call `fundedWalletSalt()`, which reads Jest `testPath`. CREATE2(owner, factory, salt) is stable — fund each of the three addresses once.
+`getFundedWallet` / `getFundedFixture` call `fundedWalletSalt()`. CI sets `FUNDED_WALLET_SALT` per matrix job (source of truth on GitHub Actions). Local `yarn test:<suite>` infers the same map from Jest `testPath`. Under Jest with no path and no env, it throws rather than silently reusing salt `"0"`. CREATE2(owner, factory, salt) is stable — fund each of the three addresses once.
 
 Per-test-case salts were rejected: a file can send several UserOps sequentially (withdraw), and more than three unique salts on one owner 429s on production.
 
 ## Verification
 
-- `fundedSaltForTestPath` unit tests in `tests/v4/core/suiteSalt.test.ts` (no gateway).
+- `fundedSaltForTestPath` / `fundedWalletSalt` unit tests in `tests/v4/core/suiteSalt.test.ts` (no gateway).
 - Skip messages print the suite salt + derived address so an unfunded shard is obvious.

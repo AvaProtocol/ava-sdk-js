@@ -338,6 +338,9 @@ export interface CreateSmartWalletOptions {
  *
  * Address is CREATE2(owner, factory, salt) — stable across runs for a
  * given `TEST_PRIVATE_KEY`. Fund that address, not a fresh salt.
+ *
+ * `policiesLive.test.ts` uses {@link getIsolatedClient} so its
+ * grant-then-revoke cannot tear this fixture down.
  */
 export const FUNDED_FACTORY_ADDRESS =
   "0x00000000000017c61b5bEe81050EC8eFc9c6fecd";
@@ -357,8 +360,9 @@ export const FUNDED_WALLET_SALT = "0";
  * EntryPoint nonce (`replacement underpriced` / #263). Files inside
  * one suite run `--runInBand`, so they keep one salt.
  *
- * Only `"0" | "1" | "2"` — production's 3-wallet cap. Override with
- * `FUNDED_WALLET_SALT` in the environment when debugging a shard.
+ * Only `"0" | "1" | "2"` — production's 3-wallet cap. CI sets
+ * `FUNDED_WALLET_SALT` per matrix job; this map is the local
+ * `yarn test:<suite>` path. Env still wins when debugging a shard.
  */
 export const FUNDED_SALT_BY_SUITE = {
   core: "0",
@@ -382,25 +386,37 @@ export function fundedSaltForTestPath(testPath: string): string {
   return FUNDED_WALLET_SALT;
 }
 
+function jestGetState(): (() => { testPath?: string }) | undefined {
+  const g = globalThis as {
+    expect?: { getState?: () => { testPath?: string } };
+  };
+  return g.expect?.getState;
+}
+
 function currentJestTestPath(): string | undefined {
-  try {
-    const g = globalThis as { expect?: { getState?: () => { testPath?: string } } };
-    return g.expect?.getState?.().testPath;
-  } catch {
-    return undefined;
-  }
+  return jestGetState()?.().testPath;
 }
 
 /**
  * Salt `getFundedWallet` / `getFundedFixture` will use in this process.
  * `FUNDED_WALLET_SALT` env wins (CI/debug); otherwise the calling test
- * file's suite directory.
+ * file's suite directory. Under Jest with no path and no env, throw —
+ * defaulting to salt `"0"` is the #263 nonce race.
+ *
+ * Scripts outside Jest (no `expect.getState`) still get salt `"0"`.
  */
 export function fundedWalletSalt(): string {
   const fromEnv = process.env.FUNDED_WALLET_SALT;
   if (fromEnv) return fromEnv;
   const testPath = currentJestTestPath();
   if (testPath) return fundedSaltForTestPath(testPath);
+  if (typeof jestGetState() === "function") {
+    throw new Error(
+      "fundedWalletSalt: Jest has no tests/v4/<suite>/ testPath and " +
+        "FUNDED_WALLET_SALT is unset. Refusing to default to salt 0 " +
+        "(that is the #263 nonce race).",
+    );
+  }
   return FUNDED_WALLET_SALT;
 }
 

@@ -54,6 +54,8 @@ CI suite** so parallel matrix jobs do not share an EntryPoint nonce
 | templates / workflows / triggers | `0` |
 
 Those are the only three salts allowed under production's 3-wallet cap.
-CREATE2(owner, factory, salt) is stable for `TEST_PRIVATE_KEY` — fund
-each derived address on Sepolia with ETH and USDC. Unfunded shards skip
-or fail with the address in the message. Override with `FUNDED_WALLET_SALT`.
+CI sets `FUNDED_WALLET_SALT` per matrix job; local `yarn test:<suite>`
+infers the same map from the file path. CREATE2(owner, factory, salt)
+is stable for `TEST_PRIVATE_KEY` — fund each derived address on Sepolia
+with ETH and USDC. Unfunded shards skip or fail with the address in the
+message. Override with `FUNDED_WALLET_SALT`.

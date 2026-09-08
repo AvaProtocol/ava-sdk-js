@@ -13,6 +13,7 @@ import {
   TIGHT_WALLET_CAP_LIMIT,
   FUNDED_SALT_BY_SUITE,
   fundedSaltForTestPath,
+  fundedWalletSalt,
   suiteSalt,
   tightWalletCap,
 } from "../../utils/client";
@@ -100,5 +101,43 @@ describe("fundedSaltForTestPath", () => {
       expect(salt).toBeGreaterThanOrEqual(0);
       expect(salt).toBeLessThan(TIGHT_WALLET_CAP_LIMIT);
     }
+  });
+});
+
+describe("fundedWalletSalt", () => {
+  const original = process.env.FUNDED_WALLET_SALT;
+
+  afterEach(() => {
+    if (original === undefined) delete process.env.FUNDED_WALLET_SALT;
+    else process.env.FUNDED_WALLET_SALT = original;
+  });
+
+  test("FUNDED_WALLET_SALT env wins over the test file's suite", () => {
+    process.env.FUNDED_WALLET_SALT = "2";
+    expect(fundedWalletSalt()).toBe("2");
+  });
+
+  test("without an override, this file (tests/v4/core) maps to salt 0", () => {
+    delete process.env.FUNDED_WALLET_SALT;
+    expect(fundedWalletSalt()).toBe("0");
+  });
+
+  test("throws under Jest when testPath is missing and no env override", () => {
+    delete process.env.FUNDED_WALLET_SALT;
+    const state = expect.getState();
+    const spy = jest.spyOn(expect, "getState").mockReturnValue({
+      ...state,
+      testPath: undefined,
+    });
+    let threw: unknown;
+    try {
+      fundedWalletSalt();
+    } catch (error) {
+      threw = error;
+    } finally {
+      spy.mockRestore();
+    }
+    expect(threw).toBeInstanceOf(Error);
+    expect(String(threw)).toMatch(/#263 nonce race/);
   });
 });
