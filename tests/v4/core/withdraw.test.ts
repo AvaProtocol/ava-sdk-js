@@ -20,9 +20,10 @@
  * Every funded UserOp in this repo (withdraw, contractWrite trigger,
  * gasTracking) shares that one sender. CI matrix jobs race the same
  * EntryPoint nonce; a second send while the first is in the bundler
- * mempool comes back `replacement underpriced`. submitWithdrawOrSkip
- * retries that and waits for a receipt when the gateway returns one,
- * so the next test in this file does not collide with itself.
+ * mempool comes back `replacement underpriced`. Contention is retried
+ * via `retryOnUserOpContention`; this helper also waits for a receipt
+ * when the gateway returns one so the next test in this file does not
+ * collide with itself.
  */
 
 import { ethers } from "ethers";
@@ -35,6 +36,7 @@ import {
   getFundedFixture,
   FUNDED_FACTORY_ADDRESS,
   FUNDED_WALLET_SALT,
+  retryOnUserOpContention,
   createSmartWallet,
 } from "../../utils/client";
 import {
@@ -83,10 +85,6 @@ function fundedSkipMessage(address: string, detail: string): string {
   );
 }
 
-/** Bundler rejected a second UserOp for the same sender/nonce. */
-const USEROP_CONTENTION =
-  /replacement underpriced|AA25 invalid account nonce|invalid account nonce/i;
-
 function chainProvider(): ethers.JsonRpcProvider | undefined {
   const ep = optionalEnv("CHAIN_ENDPOINT", "") || optionalEnv("ETH_RPC_URL", "");
   if (!ep) return undefined;
@@ -118,52 +116,36 @@ async function submitWithdrawOrSkip(
   address: string,
   req: v4.WithdrawRequest,
 ): Promise<v4.WithdrawResponse | undefined> {
-  const deadline = Date.now() + 180_000;
-  let lastContention = "";
-  while (Date.now() < deadline) {
-    let response: v4.WithdrawResponse;
-    try {
-      response = await client.wallets.withdraw(address, req);
-    } catch (err: unknown) {
-      const errObj = err as { status?: number; code?: string; message?: string };
-      const code = errObj.code ?? "";
-      const message = errObj.message ?? "";
-      if (isInsufficient(errObj.status, code, message)) {
-        console.log(fundedSkipMessage(address, "wallet not funded on this chain"));
-        return undefined;
-      }
-      if (USEROP_CONTENTION.test(`${code} ${message}`)) {
-        lastContention = message || code;
-        await new Promise((r) => setTimeout(r, 8_000));
-        continue;
-      }
-      throw err;
+  let response: v4.WithdrawResponse;
+  try {
+    response = await retryOnUserOpContention(
+      () => client.wallets.withdraw(address, req),
+      (r) => (r.status === "failed" ? r.message : undefined),
+    );
+  } catch (err: unknown) {
+    const errObj = err as { status?: number; code?: string; message?: string };
+    if (isInsufficient(errObj.status, errObj.code ?? "", errObj.message ?? "")) {
+      console.log(fundedSkipMessage(address, "wallet not funded on this chain"));
+      return undefined;
     }
-    if (response.status === "failed") {
-      const msg = response.message ?? "";
-      if (/insufficient/i.test(msg)) {
-        console.log(fundedSkipMessage(address, msg || "insufficient funds"));
-        return undefined;
-      }
-      if (USEROP_CONTENTION.test(msg)) {
-        lastContention = msg;
-        await new Promise((r) => setTimeout(r, 8_000));
-        continue;
-      }
-      throw new Error(
-        `UserOp withdraw failed for MA v2 funded wallet ${address}: ${msg || "failed"}`,
-      );
-    }
-    const hash = response.transactionHash;
-    const provider = chainProvider();
-    if (hash && provider) {
-      await pollReceipt(hash, provider);
-    }
-    return response;
+    throw err;
   }
-  throw new Error(
-    `UserOp withdraw failed for MA v2 funded wallet ${address}: still contended after retries: ${lastContention}`,
-  );
+  if (response.status === "failed") {
+    const msg = response.message ?? "";
+    if (/insufficient/i.test(msg)) {
+      console.log(fundedSkipMessage(address, msg || "insufficient funds"));
+      return undefined;
+    }
+    throw new Error(
+      `UserOp withdraw failed for MA v2 funded wallet ${address}: ${msg || "failed"}`,
+    );
+  }
+  const hash = response.transactionHash;
+  const provider = chainProvider();
+  if (hash && provider) {
+    await pollReceipt(hash, provider);
+  }
+  return response;
 }
 
 describe("Withdraw Funds Tests", () => {
