@@ -13,17 +13,15 @@
  * carries a single client-scoped Bearer JWT, so per-request auth
  * overrides don't exist.
  *
- * The funded-wallet helper looks up MA v2 salt "0" (see
- * getFundedFixture). If the wallet is unfunded, on-chain tests skip
- * with the address to fund; the validation tests still run.
+ * The funded-wallet helper looks up this suite's static MA v2 salt
+ * (core → `"0"`; see `fundedWalletSalt`). If the wallet is unfunded,
+ * on-chain tests skip with the address to fund; the validation tests
+ * still run.
  *
- * Every funded UserOp in this repo (withdraw, contractWrite trigger,
- * gasTracking) shares that one sender. CI matrix jobs race the same
- * EntryPoint nonce; a second send while the first is in the bundler
- * mempool comes back `replacement underpriced`. Contention is retried
- * via `retryOnUserOpContention`; this helper also waits for a receipt
- * when the gateway returns one so the next test in this file does not
- * collide with itself.
+ * Sequential withdraws in this file share one sender. Contention is
+ * retried via `retryOnUserOpContention`; this helper also waits for a
+ * receipt when the gateway returns one so the next test does not
+ * collide with itself. Parallel CI shards use other salts.
  */
 
 import { ethers } from "ethers";
@@ -35,7 +33,7 @@ import {
   getFundedClient,
   getFundedFixture,
   FUNDED_FACTORY_ADDRESS,
-  FUNDED_WALLET_SALT,
+  fundedWalletSalt,
   retryOnUserOpContention,
   createSmartWallet,
 } from "../../utils/client";
@@ -80,7 +78,7 @@ async function pollReceipt(
 
 function fundedSkipMessage(address: string, detail: string): string {
   return (
-    `Skipping — ${detail}. Fund MA v2 salt-${FUNDED_WALLET_SALT} wallet ` +
+    `Skipping — ${detail}. Fund MA v2 salt-${fundedWalletSalt()} wallet ` +
     `${address} (factory ${FUNDED_FACTORY_ADDRESS}) on Sepolia with ETH and USDC.`
   );
 }

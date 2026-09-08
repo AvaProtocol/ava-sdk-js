@@ -41,3 +41,19 @@ exact string (EigenLayer-AVS #767). A lowercase spelling connects, then
 fails every Ping/Sync with `operator authentication required`, and every
 block/event workflow create 400s with `no connected operator currently
 monitors chain_id=11155111`.
+
+Real-bundler tests (`getFundedFixture`) use a **static MA v2 salt per
+CI suite** so parallel matrix jobs do not share an EntryPoint nonce
+([#263](https://github.com/AvaProtocol/ava-sdk-js/issues/263)):
+
+| Suite | Salt |
+|---|---|
+| `yarn test:core` (withdraw) | `0` |
+| `yarn test:executions` (gasTracking) | `1` |
+| `yarn test:nodes` (contractWrite) | `2` |
+| templates / workflows / triggers | `0` |
+
+Those are the only three salts allowed under production's 3-wallet cap.
+CREATE2(owner, factory, salt) is stable for `TEST_PRIVATE_KEY` — fund
+each derived address on Sepolia with ETH and USDC. Unfunded shards skip
+or fail with the address in the message. Override with `FUNDED_WALLET_SALT`.

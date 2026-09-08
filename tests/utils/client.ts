@@ -100,7 +100,7 @@ export async function getSuiteClient(
 
 /**
  * Shared `TEST_PRIVATE_KEY` client. Only for tests that need the
- * pre-funded MA v2 salt-0 wallet. Does not isolate.
+ * pre-funded MA v2 fixture wallet. Does not isolate.
  *
  * Prefer {@link getFundedFixture} for real UserOps — that helper also
  * ensures the session grant the gateway requires to sign.
@@ -336,20 +336,76 @@ export interface CreateSmartWalletOptions {
  * SimpleAccount factory `0xB99BC2…2834` still holds historical ETH on
  * salt-2, but `policies:prepare` refuses it with SESSION_WALLET_NOT_MA_V2.
  *
- * Salt `"0"`: the owner's default MA v2 wallet. It is already in
- * production's 3-wallet cap, and CREATE2(owner, factory, 0) is the
- * address to fund once. `policiesLive.test.ts` uses an isolated EOA
- * so its grant-then-revoke cannot tear this fixture down.
- *
  * Address is CREATE2(owner, factory, salt) — stable across runs for a
  * given `TEST_PRIVATE_KEY`. Fund that address, not a fresh salt.
  */
-export const FUNDED_WALLET_SALT = "0";
 export const FUNDED_FACTORY_ADDRESS =
   "0x00000000000017c61b5bEe81050EC8eFc9c6fecd";
 
 /**
- * Resolve the MA v2 salt-0 wallet on the authenticated owner.
+ * Default funded salt (core suite, and anything that is not a parallel
+ * UserOp shard). Prefer {@link fundedWalletSalt} at call sites.
+ */
+export const FUNDED_WALLET_SALT = "0";
+
+/**
+ * Static MA v2 salt for real-bundler tests, keyed by the CI matrix
+ * suite (the `tests/v4/<suite>/` directory).
+ *
+ * GitHub Actions runs those directories in parallel. They used to
+ * share salt `"0"`, so two `eth_sendUserOperation`s raced one
+ * EntryPoint nonce (`replacement underpriced` / #263). Files inside
+ * one suite run `--runInBand`, so they keep one salt.
+ *
+ * Only `"0" | "1" | "2"` — production's 3-wallet cap. Override with
+ * `FUNDED_WALLET_SALT` in the environment when debugging a shard.
+ */
+export const FUNDED_SALT_BY_SUITE = {
+  core: "0",
+  executions: "1",
+  nodes: "2",
+  templates: "0",
+  workflows: "0",
+  triggers: "0",
+} as const;
+
+export type FundedSuite = keyof typeof FUNDED_SALT_BY_SUITE;
+
+/** Map a jest testPath onto {@link FUNDED_SALT_BY_SUITE}. Unknown → `"0"`. */
+export function fundedSaltForTestPath(testPath: string): string {
+  const normalized = testPath.replace(/\\/g, "/");
+  const match = /\/tests\/v4\/([^/]+)\//.exec(normalized);
+  const suite = match?.[1];
+  if (suite && suite in FUNDED_SALT_BY_SUITE) {
+    return FUNDED_SALT_BY_SUITE[suite as FundedSuite];
+  }
+  return FUNDED_WALLET_SALT;
+}
+
+function currentJestTestPath(): string | undefined {
+  try {
+    const g = globalThis as { expect?: { getState?: () => { testPath?: string } } };
+    return g.expect?.getState?.().testPath;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Salt `getFundedWallet` / `getFundedFixture` will use in this process.
+ * `FUNDED_WALLET_SALT` env wins (CI/debug); otherwise the calling test
+ * file's suite directory.
+ */
+export function fundedWalletSalt(): string {
+  const fromEnv = process.env.FUNDED_WALLET_SALT;
+  if (fromEnv) return fromEnv;
+  const testPath = currentJestTestPath();
+  if (testPath) return fundedSaltForTestPath(testPath);
+  return FUNDED_WALLET_SALT;
+}
+
+/**
+ * Resolve the MA v2 funded wallet on the authenticated owner.
  *
  * Looks up the existing (factory, salt) row and only creates if none
  * exists. Never falls back to the legacy SimpleAccount factory.
@@ -358,11 +414,12 @@ export const FUNDED_FACTORY_ADDRESS =
  */
 export async function getFundedWallet(
   client: Client,
+  salt: string = fundedWalletSalt(),
 ): Promise<v4.Wallet | undefined> {
   const listed = await client.wallets.list();
   const existing = listed.data.find(
     (w) =>
-      w.salt === FUNDED_WALLET_SALT &&
+      w.salt === salt &&
       w.factoryAddress?.toLowerCase() ===
         FUNDED_FACTORY_ADDRESS.toLowerCase(),
   );
@@ -370,7 +427,7 @@ export async function getFundedWallet(
 
   try {
     return await client.wallets.create({
-      salt: FUNDED_WALLET_SALT,
+      salt,
       factoryAddress: FUNDED_FACTORY_ADDRESS,
     });
   } catch (error) {
@@ -380,10 +437,11 @@ export async function getFundedWallet(
 }
 
 /**
- * Bundler still holds a prior UserOp for this sender. CI matrix jobs
- * (and sequential tests in one file) share MA v2 salt-0, so a second
+ * Bundler still holds a prior UserOp for this sender. Sequential
+ * tests in one file share a salt (runInBand), so a second
  * `eth_sendUserOperation` comes back `replacement underpriced` / AA25
- * until the first leaves the mempool.
+ * until the first leaves the mempool. Parallel CI shards use
+ * {@link fundedWalletSalt} so they do not share a sender.
  */
 export const USEROP_CONTENTION =
   /replacement underpriced|AA25 invalid account nonce|invalid account nonce/i;
@@ -424,9 +482,10 @@ export async function retryOnUserOpContention<T>(
 }
 
 /**
- * The funded UserOp fixture: shared EOA + MA v2 salt-0 runner + a
- * covering session grant. Every real-bundler test should take the
- * wallet from here so funding one address covers the suite.
+ * The funded UserOp fixture: shared EOA + MA v2 runner for this
+ * suite's static salt ({@link fundedWalletSalt}) + a covering session
+ * grant. Parallel CI shards (core / executions / nodes) each get a
+ * different salt so they do not share an EntryPoint nonce.
  */
 export async function getFundedFixture(
   overrides?: Partial<ClientOptions>,
@@ -437,10 +496,11 @@ export async function getFundedFixture(
   wallet: v4.Wallet;
 }> {
   const { client, owner, privateKey } = await getFundedClient(overrides);
-  const wallet = await getFundedWallet(client);
+  const salt = fundedWalletSalt();
+  const wallet = await getFundedWallet(client, salt);
   if (!wallet) {
     throw new Error(
-      `MA v2 funded wallet is not registered (salt ${FUNDED_WALLET_SALT}, factory ${FUNDED_FACTORY_ADDRESS}). ` +
+      `MA v2 funded wallet is not registered (salt ${salt}, factory ${FUNDED_FACTORY_ADDRESS}). ` +
         `Create it once for this owner, fund it on Sepolia with ETH and USDC, then re-run.`,
     );
   }
@@ -462,7 +522,7 @@ export function assertUserOpTriggerOk(
   if (trig.status === "failed" || trig.status === "error" || trig.error) {
     throw new Error(
       `UserOp failed for MA v2 funded wallet ${walletAddress} ` +
-        `(salt ${FUNDED_WALLET_SALT}, factory ${FUNDED_FACTORY_ADDRESS}): ` +
+        `(salt ${fundedWalletSalt()}, factory ${FUNDED_FACTORY_ADDRESS}): ` +
         `${trig.status ?? ""}${trig.error ? `: ${trig.error}` : ""}. ` +
         `Fund this address on Sepolia with ETH (and USDC for ERC-20 tests).`,
     );

@@ -9,7 +9,13 @@
  * a test outside it is collected by neither, and a test that never runs is
  * worse than no test. It needs no gateway; it just rides the core shard.
  */
-import { TIGHT_WALLET_CAP_LIMIT, suiteSalt, tightWalletCap } from "../../utils/client";
+import {
+  TIGHT_WALLET_CAP_LIMIT,
+  FUNDED_SALT_BY_SUITE,
+  fundedSaltForTestPath,
+  suiteSalt,
+  tightWalletCap,
+} from "../../utils/client";
 
 describe("suiteSalt", () => {
   const originalTightCap = process.env.TIGHT_WALLET_CAP;
@@ -68,5 +74,31 @@ describe("suiteSalt", () => {
     const numeric = produced.map(Number);
     expect(numeric).toEqual([...numeric].sort((a, b) => a - b));
     expect(Math.max(...numeric)).toBeGreaterThanOrEqual(TIGHT_WALLET_CAP_LIMIT);
+  });
+});
+
+describe("fundedSaltForTestPath", () => {
+  test("maps each CI shard directory onto a static salt inside the 3-wallet cap", () => {
+    expect(fundedSaltForTestPath("/repo/tests/v4/core/withdraw.test.ts")).toBe("0");
+    expect(fundedSaltForTestPath("/repo/tests/v4/executions/gasTracking.test.ts")).toBe("1");
+    expect(fundedSaltForTestPath("/repo/tests/v4/nodes/contractWrite.test.ts")).toBe("2");
+    expect(fundedSaltForTestPath("/repo/tests/v4/nodes/ethTransfer.test.ts")).toBe("2");
+    expect(fundedSaltForTestPath("/repo/tests/v4/templates/workflow-usdc-read-write-customcode.test.ts")).toBe("0");
+    expect(fundedSaltForTestPath("/repo/tests/v4/workflows/workflow.test.ts")).toBe("0");
+    expect(fundedSaltForTestPath("/repo/tests/v4/triggers/block.test.ts")).toBe("0");
+  });
+
+  test("unknown paths fall back to salt 0", () => {
+    expect(fundedSaltForTestPath("/repo/tests/v4/smoke.test.ts")).toBe("0");
+    expect(fundedSaltForTestPath("withdraw.test.ts")).toBe("0");
+  });
+
+  test("the map only uses salts inside the production wallet cap", () => {
+    const salts = Object.values(FUNDED_SALT_BY_SUITE).map(Number);
+    expect(new Set(salts).size).toBeLessThanOrEqual(TIGHT_WALLET_CAP_LIMIT);
+    for (const salt of salts) {
+      expect(salt).toBeGreaterThanOrEqual(0);
+      expect(salt).toBeLessThan(TIGHT_WALLET_CAP_LIMIT);
+    }
   });
 });

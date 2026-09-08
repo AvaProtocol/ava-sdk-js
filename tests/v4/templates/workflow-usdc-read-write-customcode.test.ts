@@ -95,11 +95,11 @@ describe("Template: USDC read+write+customCode", () => {
 
   test("simulates the workflow with both contractReads + contractWrite + customCode", async () => {
     // Tenderly does not override ERC-20 balances; the transfer step
-    // needs the MA v2 salt-0 wallet that actually holds Sepolia USDC.
+    // needs the suite's funded MA v2 wallet (templates → salt "0") that holds Sepolia USDC.
     const { client: funded, owner } = await getFundedClient();
     const wallet = await getFundedWallet(funded);
     if (!wallet) {
-      console.log("Skipping — funded MA v2 salt-0 wallet not available");
+      console.log("Skipping — funded MA v2 wallet not available");
       return;
     }
     eoaAddress = owner;
