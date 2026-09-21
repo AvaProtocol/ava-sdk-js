@@ -165,6 +165,53 @@ export const SessionPolicyActions = Object.freeze({
   },
 
   /**
+   * Native ETH send (`ethTransfer` / withdraw): empty-calldata execute to
+   * listed EOAs, capped in wei. Does **not** emit `allowedActions`.
+   *
+   * A 7702-delegated EOA has designation code, so listing it as a
+   * recipient without `allowContractRecipient` is refused (K4).
+   */
+  nativeTransfer(opts: {
+    recipients: readonly string[];
+    capWei: bigint;
+    allowContractRecipient?: boolean;
+  }): {
+    nativeRecipients: string[];
+    nativeSpendCap: { amount: string };
+    allowContractRecipient?: boolean;
+  } {
+    if (opts.recipients.length === 0) {
+      throw new Error("nativeTransfer requires at least one recipient");
+    }
+    if (opts.capWei <= 0n) {
+      throw new Error("nativeTransfer capWei must be > 0");
+    }
+    const nativeRecipients = opts.recipients.map((r) =>
+      requireAddress(r, "native recipient"),
+    );
+    return {
+      nativeRecipients,
+      nativeSpendCap: { amount: opts.capWei.toString() },
+      ...(opts.allowContractRecipient ? { allowContractRecipient: true } : {}),
+    };
+  },
+
+  /**
+   * Payable-write native cap (`nativeValueCap`) without ethTransfer.
+   * Merge with a builder that emits `allowedActions` and an ERC-20 cap;
+   * alone the gateway returns POLICIES_BAD_PERMISSIONS.
+   */
+  nativeValueCap(opts: { capWei: bigint }): Pick<
+    v4.PreparePolicyRequest,
+    "nativeSpendCap"
+  > {
+    if (opts.capWei <= 0n) {
+      throw new Error("nativeValueCap capWei must be > 0");
+    }
+    return { nativeSpendCap: { amount: opts.capWei.toString() } };
+  },
+
+  /**
    * Merge actions that share a target, so the grant carries one entry per
    * contract.
    *

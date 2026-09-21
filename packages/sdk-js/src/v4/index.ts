@@ -72,6 +72,13 @@ export { TriggersResource } from "./resources/triggers";
 export { PoliciesResource } from "./resources/policies";
 export type { TypedDataSigner } from "./resources/policies";
 export { WalletsResource } from "./resources/wallets";
+export {
+  SMA7702_DELEGATE,
+  SMA7702_IMPL_HASH,
+  signEoa7702Authorization,
+  assert7702ChainId,
+  type Eoa7702AuthorizationSigner,
+} from "./eoa7702";
 export { WorkflowsResource } from "./resources/workflows";
 
 // Re-export the v4 type bag so consumers don't have to import

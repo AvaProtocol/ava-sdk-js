@@ -361,6 +361,15 @@ components:
         - running
         - completed
         - failed
+      # Prefix Go constants (WorkflowStatusEnabled, …). oapi-codegen only
+      # prefixes when names collide; these five don't, so they landed as
+      # Enabled/Completed/Failed and can be confused with ExecutionStatus.
+      x-enum-varnames:
+        - WorkflowStatusEnabled
+        - WorkflowStatusDisabled
+        - WorkflowStatusRunning
+        - WorkflowStatusCompleted
+        - WorkflowStatusFailed
       description: |
         Lifecycle status. `enabled` means actively monitored; `disabled` is
         paused. `running`, `completed`, `failed` are terminal-ish states
@@ -1167,7 +1176,21 @@ components:
         status: { $ref: '#/components/schemas/ExecutionStatus' }
         startAt: { type: integer, format: int64 }
         endAt: { type: integer, format: int64 }
-        error: { type: string }
+        error:
+          type: string
+          description: |
+            Empty when status is success. On failed, a summary of the form
+            `N of M steps failed: <name>: <step.error>, …` so the cause
+            (e.g. a bundler `replacement underpriced`) is on this envelope,
+            not only on GET /executions/{id}. On error, the system message.
+        steps:
+          type: array
+          items: { $ref: '#/components/schemas/ExecutionStep' }
+          description: |
+            Execution steps. Populated when isBlocking=true (same as gRPC
+            TriggerTaskResp.steps). The envelope `error` summary is built
+            from each failed step's `error` string. `errorCode` is copied
+            onto the step only; it is not concatenated into `error`.
 
     SimulateWorkflowRequest:
       type: object
@@ -1439,10 +1462,21 @@ components:
         address: { $ref: '#/components/schemas/EthereumAddress' }
         salt:
           type: string
-          description: Salt used in CREATE2 derivation (decimal string).
+          description: |
+            Salt used in CREATE2 derivation (decimal string). Empty for
+            `kind: eoa_7702` (no factory, no salt).
         factoryAddress:
           $ref: '#/components/schemas/EthereumAddress'
-          description: Factory contract used to derive this address.
+          description: Factory contract used to derive this address. Omitted for eoa_7702.
+        kind:
+          type: string
+          description: |
+            Empty/omitted for derived CREATE2 wallets. `eoa_7702` is the owner's
+            EOA delegated to SemiModularAccount7702.
+          enum: [eoa_7702]
+        delegate:
+          $ref: '#/components/schemas/EthereumAddress'
+          description: SMA-7702 implementation the EOA designates. Set when kind is eoa_7702.
         isHidden: { type: boolean }
         totalWorkflowCount: { type: integer, format: int64 }
         enabledWorkflowCount: { type: integer, format: int64 }
@@ -1518,6 +1552,48 @@ components:
         recipientAddress: { $ref: '#/components/schemas/EthereumAddress' }
         amount: { type: string }
         token: { type: string }
+
+    PreparedDelegation:
+      type: object
+      required: [chainId, delegate, nonce, digest]
+      description: |
+        EIP-7702 authorization the owner signs. `digest` is `SetCodeAuthorization.SigHash`
+        (0x05 ‖ rlp([chainId, delegate, nonce])). `chainId` is never 0.
+        Aggregator-broadcast submit uses this nonce as the EOA's nonce (the EOA
+        is the authority, not the type-4 sender).
+      properties:
+        chainId: { $ref: '#/components/schemas/ChainId' }
+        delegate: { $ref: '#/components/schemas/EthereumAddress' }
+        nonce:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Authority (EOA) nonce for the 7702 authorization.
+        digest: { $ref: '#/components/schemas/Hex' }
+
+    SubmitDelegationRequest:
+      type: object
+      required: [chainId, nonce, signature]
+      properties:
+        chainId: { $ref: '#/components/schemas/ChainId' }
+        nonce:
+          type: integer
+          format: int64
+          minimum: 0
+        signature:
+          $ref: '#/components/schemas/Hex'
+          description: 65-byte ECDSA over digest (v 0/1 or 27/28).
+
+    DelegationStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [missing, pending, delegated]
+        delegate: { $ref: '#/components/schemas/EthereumAddress' }
+        codeHash: { $ref: '#/components/schemas/Hex' }
+        chainId: { $ref: '#/components/schemas/ChainId' }
 
     NonceResponse:
       type: object
@@ -1737,12 +1813,29 @@ components:
           description: Total cap in the token's smallest unit (decimal string, no reset).
           example: '500000000'
       description: |
-        Cumulative ERC-20 spend cap, enforced on-chain at execution. The
-        token must appear as an `allowedActions` target.
+        Cumulative ERC-20 spend cap for one token, enforced on-chain at
+        execution. The token must appear as an `allowedActions` target.
+        Prefer `erc20SpendCaps` when capping more than one token; this
+        field remains the one-token alias (must match one entry of that
+        array when both are sent). Native ETH is not this list.
+
+    NativeSpendCap:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: string
+          pattern: '^[0-9]+$'
+          description: |
+            Cumulative native-token cap in wei (decimal string, no reset).
+            Enforced on-chain by NativeTokenLimitModule. Self-funded UserOps
+            also decrement this cap by gas; sponsored UserOps decrement only
+            the ETH value sent.
+          example: '10000000000000000'
 
     PreparePolicyRequest:
       type: object
-      required: [chainId, agentLabel, allowedActions, erc20SpendCap, expiresInSeconds]
+      required: [chainId, agentLabel, expiresInSeconds]
       properties:
         chainId: { $ref: '#/components/schemas/ChainId' }
         agentLabel:
@@ -1756,7 +1849,38 @@ components:
           type: array
           minItems: 1
           items: { $ref: '#/components/schemas/AllowedAction' }
+          description: |
+            Selector-scoped contract calls. Native-only grants omit this
+            field. A present empty array is 400.
         erc20SpendCap: { $ref: '#/components/schemas/Erc20SpendCap' }
+        erc20SpendCaps:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Erc20SpendCap' }
+          description: |
+            Per-token ERC-20 caps (AllowlistModule HasERC20SpendLimit per
+            target). Source of truth when present. `erc20SpendCap` must
+            match one entry. A capped token's allowedActions may only be
+            transfer and/or approve — deposit/withdraw on the same target
+            reverts on-chain. Native ETH is not this list.
+        nativeRecipients:
+          type: array
+          minItems: 1
+          maxItems: 5 # keep in sync with MaxNativeRecipients in session_permissions.go
+          items: { $ref: '#/components/schemas/EthereumAddress' }
+          description: |
+            EOAs this grant may send native ETH to (empty-calldata execute).
+            Omit for Uniswap/ERC-20-only and for payable-write-only
+            (nativeValueCap). A present empty array is 400. Max 5
+            (MaxNativeRecipients; deferred replace of 20-row grants AA23s).
+        nativeSpendCap: { $ref: '#/components/schemas/NativeSpendCap' }
+        allowContractRecipient:
+          type: boolean
+          default: false
+          description: |
+            When true, nativeRecipients may be contracts (any-function on
+            that address, ERC-20 uncapped). Default false: each recipient
+            must have empty code. Logged when true.
         expiresInSeconds:
           type: integer
           format: int64
@@ -1794,7 +1918,7 @@ components:
 
     SubmitPolicyRequest:
       type: object
-      required: [chainId, policyId, entityId, deadline, validUntil, agentLabel, allowedActions, erc20SpendCap, signature]
+      required: [chainId, policyId, entityId, deadline, validUntil, agentLabel, signature]
       properties:
         chainId: { $ref: '#/components/schemas/ChainId' }
         policyId: { $ref: '#/components/schemas/Ulid' }
@@ -1819,7 +1943,24 @@ components:
           type: array
           minItems: 1
           items: { $ref: '#/components/schemas/AllowedAction' }
+          description: |
+            Selector-scoped contract calls. Native-only grants omit this
+            field. A present empty array is 400. Echo prepare verbatim.
         erc20SpendCap: { $ref: '#/components/schemas/Erc20SpendCap' }
+        erc20SpendCaps:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Erc20SpendCap' }
+          description: Per-token ERC-20 caps. Source of truth when present; erc20SpendCap must match one entry.
+        nativeRecipients:
+          type: array
+          minItems: 1
+          maxItems: 5 # keep in sync with MaxNativeRecipients in session_permissions.go
+          items: { $ref: '#/components/schemas/EthereumAddress' }
+        nativeSpendCap: { $ref: '#/components/schemas/NativeSpendCap' }
+        allowContractRecipient:
+          type: boolean
+          default: false
         signature:
           type: string
           pattern: '^0x[a-fA-F0-9]{130}$'
@@ -1849,6 +1990,22 @@ components:
           type: array
           items: { $ref: '#/components/schemas/AllowedAction' }
         erc20SpendCap: { $ref: '#/components/schemas/Erc20SpendCap' }
+        erc20SpendCaps:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/Erc20SpendCap' }
+          description: |
+            Per-token ERC-20 caps. Omitted on singular-only grants; present
+            when the client submitted `erc20SpendCaps`. The alias
+            `erc20SpendCap` is the submitted singular when submitted;
+            otherwise the first list entry.
+        nativeRecipients:
+          type: array
+          minItems: 1
+          items: { $ref: '#/components/schemas/EthereumAddress' }
+        nativeSpendCap: { $ref: '#/components/schemas/NativeSpendCap' }
+        allowContractRecipient:
+          type: boolean
         validUntil:
           type: integer
           format: int64
@@ -2666,6 +2823,106 @@ paths:
               schema: { $ref: '#/components/schemas/NonceResponse' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /wallets/{address}/delegation:prepare:
+    parameters:
+      - name: address
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/EthereumAddress' }
+        description: The owner's EOA (the account that will be 7702-delegated).
+    post:
+      tags: [Wallets]
+      summary: Return the EIP-7702 authorization the owner signs
+      description: |
+        AVS-side consent, first of two approvals (delegate, then session grant).
+        Chain-bound: `chainId=0` is refused. First production chains are Sepolia
+        and Base, and the SMA-7702 pin must be configured. Partner assertions
+        are refused. Does not broadcast and does not install session hooks.
+      operationId: prepareEoaDelegation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chainId: { $ref: '#/components/schemas/ChainId' }
+      responses:
+        '200':
+          description: Authorization payload to sign.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PreparedDelegation' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /wallets/{address}/delegation:submit:
+    parameters:
+      - name: address
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/EthereumAddress' }
+    post:
+      tags: [Wallets]
+      summary: Broadcast the signed 7702 authorization and persist the EOA runner
+      description: |
+        Reconstructs the authorization, recovers the authority (must be the
+        path EOA), broadcasts a type-4 tx from the aggregator (the EOA is not
+        the sender, so the auth nonce is the EOA nonce, not nonce+1), then
+        asserts K13 (`ef0100`‖delegate + impl hash) — never tx status.
+        Upserts `kind=eoa_7702` wallet record. Does not install session hooks.
+      operationId: submitEoaDelegation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitDelegationRequest' }
+      responses:
+        '200':
+          description: EOA is designated to SMA-7702.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DelegationStatus' }
+        '202':
+          description: |
+            Type-4 was broadcast; K13 is not yet visible. Poll GET
+            `/wallets/{address}/delegation` (GET upserts the eoa_7702 row
+            once code matches). Do not resubmit — the EOA nonce has not
+            changed and a second broadcast spends controller gas again.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DelegationStatus' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: Code at the EOA is not the pinned SMA-7702 designation.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /wallets/{address}/delegation:
+    parameters:
+      - name: address
+        in: path
+        required: true
+        schema: { $ref: '#/components/schemas/EthereumAddress' }
+    get:
+      tags: [Wallets]
+      summary: Current 7702 designation of the EOA
+      operationId: getEoaDelegation
+      parameters:
+        - $ref: '#/components/parameters/ChainIdQuery'
+      responses:
+        '200':
+          description: Delegation status from a code read (K13), not tx status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DelegationStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
 
   # =====================================================================
   # Session policies — grants of execution authority on a wallet

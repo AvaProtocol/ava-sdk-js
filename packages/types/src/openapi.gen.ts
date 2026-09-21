@@ -539,6 +539,77 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/wallets/{address}/delegation:prepare": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                /** @description The owner's EOA (the account that will be 7702-delegated). */
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Return the EIP-7702 authorization the owner signs
+         * @description AVS-side consent, first of two approvals (delegate, then session grant).
+         *     Chain-bound: `chainId=0` is refused. First production chains are Sepolia
+         *     and Base, and the SMA-7702 pin must be configured. Partner assertions
+         *     are refused. Does not broadcast and does not install session hooks.
+         */
+        readonly post: operations["prepareEoaDelegation"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/delegation:submit": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Broadcast the signed 7702 authorization and persist the EOA runner
+         * @description Reconstructs the authorization, recovers the authority (must be the
+         *     path EOA), broadcasts a type-4 tx from the aggregator (the EOA is not
+         *     the sender, so the auth nonce is the EOA nonce, not nonce+1), then
+         *     asserts K13 (`ef0100`‖delegate + impl hash) — never tx status.
+         *     Upserts `kind=eoa_7702` wallet record. Does not install session hooks.
+         */
+        readonly post: operations["submitEoaDelegation"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/delegation": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        /** Current 7702 designation of the EOA */
+        readonly get: operations["getEoaDelegation"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/wallets/{address}/policies:prepare": {
         readonly parameters: {
             readonly query?: never;
@@ -1561,7 +1632,20 @@ export interface components {
             readonly startAt?: number;
             /** Format: int64 */
             readonly endAt?: number;
+            /**
+             * @description Empty when status is success. On failed, a summary of the form
+             *     `N of M steps failed: <name>: <step.error>, …` so the cause
+             *     (e.g. a bundler `replacement underpriced`) is on this envelope,
+             *     not only on GET /executions/{id}. On error, the system message.
+             */
             readonly error?: string;
+            /**
+             * @description Execution steps. Populated when isBlocking=true (same as gRPC
+             *     TriggerTaskResp.steps). The envelope `error` summary is built
+             *     from each failed step's `error` string. `errorCode` is copied
+             *     onto the step only; it is not concatenated into `error`.
+             */
+            readonly steps?: readonly components["schemas"]["ExecutionStep"][];
         };
         readonly SimulateWorkflowRequest: {
             readonly chainId?: components["schemas"]["ChainId"];
@@ -1753,10 +1837,21 @@ export interface components {
         };
         readonly Wallet: {
             readonly address: components["schemas"]["EthereumAddress"];
-            /** @description Salt used in CREATE2 derivation (decimal string). */
+            /**
+             * @description Salt used in CREATE2 derivation (decimal string). Empty for
+             *     `kind: eoa_7702` (no factory, no salt).
+             */
             readonly salt: string;
-            /** @description Factory contract used to derive this address. */
+            /** @description Factory contract used to derive this address. Omitted for eoa_7702. */
             readonly factoryAddress?: components["schemas"]["EthereumAddress"];
+            /**
+             * @description Empty/omitted for derived CREATE2 wallets. `eoa_7702` is the owner's
+             *     EOA delegated to SemiModularAccount7702.
+             * @enum {string}
+             */
+            readonly kind?: "eoa_7702";
+            /** @description SMA-7702 implementation the EOA designates. Set when kind is eoa_7702. */
+            readonly delegate?: components["schemas"]["EthereumAddress"];
             readonly isHidden?: boolean;
             /** Format: int64 */
             readonly totalWorkflowCount?: number;
@@ -1811,6 +1906,36 @@ export interface components {
             readonly recipientAddress?: components["schemas"]["EthereumAddress"];
             readonly amount?: string;
             readonly token?: string;
+        };
+        /**
+         * @description EIP-7702 authorization the owner signs. `digest` is `SetCodeAuthorization.SigHash`
+         *     (0x05 ‖ rlp([chainId, delegate, nonce])). `chainId` is never 0.
+         *     Aggregator-broadcast submit uses this nonce as the EOA's nonce (the EOA
+         *     is the authority, not the type-4 sender).
+         */
+        readonly PreparedDelegation: {
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly delegate: components["schemas"]["EthereumAddress"];
+            /**
+             * Format: int64
+             * @description Authority (EOA) nonce for the 7702 authorization.
+             */
+            readonly nonce: number;
+            readonly digest: components["schemas"]["Hex"];
+        };
+        readonly SubmitDelegationRequest: {
+            readonly chainId: components["schemas"]["ChainId"];
+            /** Format: int64 */
+            readonly nonce: number;
+            /** @description 65-byte ECDSA over digest (v 0/1 or 27/28). */
+            readonly signature: components["schemas"]["Hex"];
+        };
+        readonly DelegationStatus: {
+            /** @enum {string} */
+            readonly status: "missing" | "pending" | "delegated";
+            readonly delegate?: components["schemas"]["EthereumAddress"];
+            readonly codeHash?: components["schemas"]["Hex"];
+            readonly chainId?: components["schemas"]["ChainId"];
         };
         readonly NonceResponse: {
             /** @description Smart wallet nonce as a decimal string. */
@@ -1939,8 +2064,11 @@ export interface components {
             readonly selectors: readonly string[];
         };
         /**
-         * @description Cumulative ERC-20 spend cap, enforced on-chain at execution. The
-         *     token must appear as an `allowedActions` target.
+         * @description Cumulative ERC-20 spend cap for one token, enforced on-chain at
+         *     execution. The token must appear as an `allowedActions` target.
+         *     Prefer `erc20SpendCaps` when capping more than one token; this
+         *     field remains the one-token alias (must match one entry of that
+         *     array when both are sent). Native ETH is not this list.
          */
         readonly Erc20SpendCap: {
             readonly token: components["schemas"]["EthereumAddress"];
@@ -1950,12 +2078,49 @@ export interface components {
              */
             readonly amount: string;
         };
+        readonly NativeSpendCap: {
+            /**
+             * @description Cumulative native-token cap in wei (decimal string, no reset).
+             *     Enforced on-chain by NativeTokenLimitModule. Self-funded UserOps
+             *     also decrement this cap by gas; sponsored UserOps decrement only
+             *     the ETH value sent.
+             * @example 10000000000000000
+             */
+            readonly amount: string;
+        };
         readonly PreparePolicyRequest: {
             readonly chainId: components["schemas"]["ChainId"];
             readonly agentLabel: string;
             readonly justification?: string;
-            readonly allowedActions: readonly components["schemas"]["AllowedAction"][];
-            readonly erc20SpendCap: components["schemas"]["Erc20SpendCap"];
+            /**
+             * @description Selector-scoped contract calls. Native-only grants omit this
+             *     field. A present empty array is 400.
+             */
+            readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
+            /**
+             * @description Per-token ERC-20 caps (AllowlistModule HasERC20SpendLimit per
+             *     target). Source of truth when present. `erc20SpendCap` must
+             *     match one entry. A capped token's allowedActions may only be
+             *     transfer and/or approve — deposit/withdraw on the same target
+             *     reverts on-chain. Native ETH is not this list.
+             */
+            readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
+            /**
+             * @description EOAs this grant may send native ETH to (empty-calldata execute).
+             *     Omit for Uniswap/ERC-20-only and for payable-write-only
+             *     (nativeValueCap). A present empty array is 400. Max 5
+             *     (MaxNativeRecipients; deferred replace of 20-row grants AA23s).
+             */
+            readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            /**
+             * @description When true, nativeRecipients may be contracts (any-function on
+             *     that address, ERC-20 uncapped). Default false: each recipient
+             *     must have empty code. Logged when true.
+             * @default false
+             */
+            readonly allowContractRecipient: boolean;
             /**
              * Format: int64
              * @description Grant lifetime, relative (skew-proof). Becomes an absolute validUntil.
@@ -2002,8 +2167,18 @@ export interface components {
             readonly validUntil: number;
             readonly agentLabel: string;
             readonly justification?: string;
-            readonly allowedActions: readonly components["schemas"]["AllowedAction"][];
-            readonly erc20SpendCap: components["schemas"]["Erc20SpendCap"];
+            /**
+             * @description Selector-scoped contract calls. Native-only grants omit this
+             *     field. A present empty array is 400. Echo prepare verbatim.
+             */
+            readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
+            /** @description Per-token ERC-20 caps. Source of truth when present; erc20SpendCap must match one entry. */
+            readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            /** @default false */
+            readonly allowContractRecipient: boolean;
             /** @description The owner's 65-byte signature over the prepared digest. */
             readonly signature: string;
         };
@@ -2024,6 +2199,16 @@ export interface components {
             readonly justification?: string;
             readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
             readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
+            /**
+             * @description Per-token ERC-20 caps. Omitted on singular-only grants; present
+             *     when the client submitted `erc20SpendCaps`. The alias
+             *     `erc20SpendCap` is the submitted singular when submitted;
+             *     otherwise the first list entry.
+             */
+            readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            readonly allowContractRecipient?: boolean;
             /**
              * Format: int64
              * @description Unix milliseconds.
@@ -2889,6 +3074,120 @@ export interface operations {
             };
             readonly 401: components["responses"]["Unauthorized"];
             readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly prepareEoaDelegation: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                /** @description The owner's EOA (the account that will be 7702-delegated). */
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly chainId?: components["schemas"]["ChainId"];
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Authorization payload to sign. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PreparedDelegation"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly submitEoaDelegation: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["SubmitDelegationRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description EOA is designated to SMA-7702. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DelegationStatus"];
+                };
+            };
+            /**
+             * @description Type-4 was broadcast; K13 is not yet visible. Poll GET
+             *     `/wallets/{address}/delegation` (GET upserts the eoa_7702 row
+             *     once code matches). Do not resubmit — the EOA nonce has not
+             *     changed and a second broadcast spends controller gas again.
+             */
+            readonly 202: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DelegationStatus"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            /** @description Code at the EOA is not the pinned SMA-7702 designation. */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    readonly getEoaDelegation: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Delegation status from a code read (K13), not tx status. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DelegationStatus"];
+                };
+            };
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
         };
     };
     readonly prepareWalletPolicy: {

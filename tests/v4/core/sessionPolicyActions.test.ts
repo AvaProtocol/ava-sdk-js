@@ -34,6 +34,30 @@ describe("SessionPolicyActions", () => {
     ]);
   });
 
+  test("nativeTransfer emits recipients and cap, not allowedActions", () => {
+    const alice = "0x000000000000000000000000000000000000a11c";
+    const n = SessionPolicyActions.nativeTransfer({
+      recipients: [alice],
+      capWei: 10n ** 16n,
+    });
+    expect(n.nativeRecipients).toEqual([alice]);
+    expect(n.nativeSpendCap).toEqual({ amount: "10000000000000000" });
+    expect(n.allowContractRecipient).toBeUndefined();
+    expect("allowedActions" in n).toBe(false);
+  });
+
+  test("nativeTransfer refuses empty recipients and zero cap", () => {
+    expect(() =>
+      SessionPolicyActions.nativeTransfer({ recipients: [], capWei: 1n }),
+    ).toThrow(/recipient/i);
+    expect(() =>
+      SessionPolicyActions.nativeTransfer({
+        recipients: ["0x000000000000000000000000000000000000a11c"],
+        capWei: 0n,
+      }),
+    ).toThrow(/capWei/);
+  });
+
   test("uniswapV3Swap resolves the router from the shared protocol catalog", () => {
     const action = SessionPolicyActions.uniswapV3Swap(SEPOLIA);
     // Not a literal in this test either — both sides read the catalog, so a
