@@ -2116,11 +2116,12 @@ export interface components {
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             /**
              * @description When true, nativeRecipients may be contracts (any-function on
-             *     that address, ERC-20 uncapped). Default false: each recipient
-             *     must have empty code. Logged when true.
-             * @default false
+             *     that address, ERC-20 uncapped). Omitted/false: each recipient
+             *     must have empty code. Logged when true. The gateway defaults
+             *     omitted to false; do not put `default: false` here — it makes
+             *     openapi-typescript emit a required field.
              */
-            readonly allowContractRecipient: boolean;
+            readonly allowContractRecipient?: boolean;
             /**
              * Format: int64
              * @description Grant lifetime, relative (skew-proof). Becomes an absolute validUntil.
@@ -2177,8 +2178,7 @@ export interface components {
             readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
-            /** @default false */
-            readonly allowContractRecipient: boolean;
+            readonly allowContractRecipient?: boolean;
             /** @description The owner's 65-byte signature over the prepared digest. */
             readonly signature: string;
         };
@@ -3177,7 +3177,14 @@ export interface operations {
         };
         readonly requestBody?: never;
         readonly responses: {
-            /** @description Delegation status from a code read (K13), not tx status. */
+            /**
+             * @description Delegation status from a code read (K13), not tx status.
+             *     GET returns `missing` or `delegated` only — never `pending`.
+             *     `pending` is the 202 submit body while the type-4 has been
+             *     broadcast but K13 is not yet visible. Poll GET until
+             *     `delegated`; `missing` after submit means not visible yet,
+             *     not that submit failed. Do not resubmit.
+             */
             readonly 200: {
                 headers: {
                     readonly [name: string]: unknown;

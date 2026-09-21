@@ -36,6 +36,9 @@ export const SELECTOR_UNISWAP_V3_EXACT_INPUT_SINGLE = "0x04e45aaf";
 /** `transfer(address,uint256)` — a direct ERC-20 send. */
 export const SELECTOR_ERC20_TRANSFER = "0xa9059cbb";
 
+/** Product cap; keep in sync with MaxNativeRecipients / OpenAPI maxItems. */
+export const MAX_NATIVE_RECIPIENTS = 5;
+
 function routerForChain(chainId: number): string {
   return addressForChain(
     Protocols.uniswapV3.swapRouter02 as Partial<Record<number, string>>,
@@ -167,14 +170,22 @@ export const SessionPolicyActions = Object.freeze({
   /**
    * Native ETH send (`ethTransfer` / withdraw): empty-calldata execute to
    * listed EOAs, capped in wei. Does **not** emit `allowedActions`.
+   * At most {@link MAX_NATIVE_RECIPIENTS} addresses.
    *
    * A 7702-delegated EOA has designation code, so listing it as a
-   * recipient without `allowContractRecipient` is refused (K4).
+   * recipient is refused unless {@link nativeTransfer} is called with
+   * `allowAnyFunctionOnRecipient: true` — that is K4: any-function on
+   * the address and ERC-20 uncapped, not "send ETH to a smart account".
    */
   nativeTransfer(opts: {
     recipients: readonly string[];
     capWei: bigint;
-    allowContractRecipient?: boolean;
+    /**
+     * Unsafe. Listed addresses may be contracts; the grant is
+     * any-function on each and ERC-20 uncapped. Required to send ETH
+     * to a 7702-delegated EOA. Emits wire `allowContractRecipient`.
+     */
+    allowAnyFunctionOnRecipient?: true;
   }): {
     nativeRecipients: string[];
     nativeSpendCap: { amount: string };
@@ -182,6 +193,11 @@ export const SessionPolicyActions = Object.freeze({
   } {
     if (opts.recipients.length === 0) {
       throw new Error("nativeTransfer requires at least one recipient");
+    }
+    if (opts.recipients.length > MAX_NATIVE_RECIPIENTS) {
+      throw new Error(
+        `nativeTransfer allows at most ${MAX_NATIVE_RECIPIENTS} recipients`,
+      );
     }
     if (opts.capWei <= 0n) {
       throw new Error("nativeTransfer capWei must be > 0");
@@ -192,7 +208,9 @@ export const SessionPolicyActions = Object.freeze({
     return {
       nativeRecipients,
       nativeSpendCap: { amount: opts.capWei.toString() },
-      ...(opts.allowContractRecipient ? { allowContractRecipient: true } : {}),
+      ...(opts.allowAnyFunctionOnRecipient
+        ? { allowContractRecipient: true }
+        : {}),
     };
   },
 

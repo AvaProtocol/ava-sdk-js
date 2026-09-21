@@ -1,6 +1,10 @@
 import type { v4 } from "@avaprotocol/types";
 
-import { assert7702ChainId } from "../eoa7702";
+import {
+  assert7702ChainId,
+  assertDelegatedImpl,
+  assertPreparedDelegation,
+} from "../eoa7702";
 import { Transport } from "../internal/transport";
 
 /**
@@ -124,16 +128,18 @@ export class WalletsResource {
    * (aggregator-broadcast, not `nonce+1`). `chainId=0` is refused.
    * First chains: Sepolia and Base. Partner assertions are refused.
    */
-  prepareDelegation(
+  async prepareDelegation(
     address: string,
     opts?: { chainId?: number },
   ): Promise<v4.PreparedDelegation> {
     assert7702ChainId(opts?.chainId);
-    return this.transport.request<v4.PreparedDelegation>({
+    const prepared = await this.transport.request<v4.PreparedDelegation>({
       path: `/wallets/${encodeURIComponent(address)}/delegation:prepare`,
       method: "POST",
       body: opts?.chainId !== undefined ? { chainId: opts.chainId } : {},
     });
+    assertPreparedDelegation(prepared);
+    return prepared;
   }
 
   /**
@@ -145,16 +151,17 @@ export class WalletsResource {
    * (EOA nonce is unchanged; a second broadcast spends controller gas).
    * Receipt status is not evidence. Stale nonce is `DELEGATION_STALE_NONCE`.
    */
-  submitDelegation(
+  async submitDelegation(
     address: string,
     req: v4.SubmitDelegationRequest,
   ): Promise<v4.DelegationStatus> {
     assert7702ChainId(req.chainId);
-    return this.transport.request<v4.DelegationStatus>({
+    const status = await this.transport.request<v4.DelegationStatus>({
       path: `/wallets/${encodeURIComponent(address)}/delegation:submit`,
       method: "POST",
       body: req,
     });
+    return assertDelegatedImpl(status);
   }
 
   /**
@@ -162,20 +169,23 @@ export class WalletsResource {
    * `delegated`). When `delegated`, the gateway upserts the eoa_7702
    * wallet row so a 202 becomes grantable without a second submit.
    */
-  getDelegation(
+  async getDelegation(
     address: string,
     opts?: { chainId?: number },
   ): Promise<v4.DelegationStatus> {
     assert7702ChainId(opts?.chainId);
-    return this.transport.request<v4.DelegationStatus>({
+    const status = await this.transport.request<v4.DelegationStatus>({
       path: `/wallets/${encodeURIComponent(address)}/delegation`,
       query: opts,
     });
+    return assertDelegatedImpl(status);
   }
 
   /**
-   * Prepare, sign, submit. On `pending`, poll GET until `delegated`.
-   * Never resubmits.
+   * Prepare, sign, submit. On 202, poll GET until `delegated`.
+   * GET returns `missing` | `delegated` only — never `pending` —
+   * so `missing` after submit means the type-4 is not visible yet,
+   * not that delegation failed. Never resubmits.
    *
    * Workflows that should spend from the EOA must name this runner;
    * the gateway does not fall back from an empty derived SW. Execute
@@ -194,7 +204,7 @@ export class WalletsResource {
       nonce: prepared.nonce,
       signature,
     });
-    if (submitted.status !== "pending") {
+    if (submitted.status === "delegated") {
       return submitted;
     }
     const intervalMs = poll?.intervalMs ?? 2_000;
@@ -205,7 +215,7 @@ export class WalletsResource {
       const status = await this.getDelegation(address, {
         chainId: prepared.chainId,
       });
-      if (status.status !== "pending") {
+      if (status.status === "delegated") {
         return status;
       }
     }

@@ -14,6 +14,7 @@ import { Wallet as EthersWallet } from "ethers";
 
 import {
   APIError,
+  authorizationDigest,
   Client,
   SMA7702_DELEGATE,
   signEoa7702Authorization,
@@ -52,10 +53,10 @@ describe("EOA 7702 delegation (live gateway)", () => {
     expect(prepared.digest).toMatch(/^0x[0-9a-fA-F]{64}$/);
   });
 
-  test("chainId 0 is refused in the SDK before it can be coerced to JWT aud", () => {
-    expect(() => {
-      void client.wallets.prepareDelegation(owner, { chainId: 0 });
-    }).toThrow(/chainId=0 is refused/);
+  test("chainId 0 is refused in the SDK before it can be coerced to JWT aud", async () => {
+    await expect(
+      client.wallets.prepareDelegation(owner, { chainId: 0 }),
+    ).rejects.toThrow(/chainId=0 is refused/);
   });
 
   test("a non-first chain is refused by the gateway", async () => {
@@ -68,10 +69,9 @@ describe("EOA 7702 delegation (live gateway)", () => {
     } satisfies Partial<APIError>);
   });
 
-  test("partner assertion is refused", async () => {
-    if (!hasPartnerAssertionKey()) {
-      return;
-    }
+  (hasPartnerAssertionKey() ? test : test.skip)(
+    "partner assertion is refused",
+    async () => {
     const live = new Client({
       baseUrl: TEST_REST_URL(),
       headers: partnerAssertionHeaders({
@@ -86,13 +86,22 @@ describe("EOA 7702 delegation (live gateway)", () => {
     await expect(
       live.wallets.prepareDelegation(owner, { chainId: TEST_AUTH_CHAIN_ID }),
     ).rejects.toMatchObject({ name: "APIError", status: 403 });
-  });
+    },
+  );
 
   test("stale nonce is refused before broadcast", async () => {
     const prepared = await client.wallets.prepareDelegation(owner, {
       chainId: TEST_AUTH_CHAIN_ID,
     });
-    const stale = { ...prepared, nonce: prepared.nonce + 1 };
+    const stale = {
+      ...prepared,
+      nonce: prepared.nonce + 1,
+      digest: authorizationDigest({
+        chainId: prepared.chainId,
+        delegate: prepared.delegate,
+        nonce: prepared.nonce + 1,
+      }),
+    };
     const signature = signEoa7702Authorization(privateKey, stale);
     await expect(
       client.wallets.submitDelegation(owner, {

@@ -46,10 +46,19 @@ describe("SessionPolicyActions", () => {
     expect("allowedActions" in n).toBe(false);
   });
 
-  test("nativeTransfer refuses empty recipients and zero cap", () => {
+  test("nativeTransfer refuses empty recipients, too many, and zero cap", () => {
     expect(() =>
       SessionPolicyActions.nativeTransfer({ recipients: [], capWei: 1n }),
     ).toThrow(/recipient/i);
+    expect(() =>
+      SessionPolicyActions.nativeTransfer({
+        recipients: Array.from(
+          { length: 6 },
+          (_, i) => `0x${(i + 1).toString(16).padStart(40, "0")}`,
+        ),
+        capWei: 1n,
+      }),
+    ).toThrow(/at most 5/);
     expect(() =>
       SessionPolicyActions.nativeTransfer({
         recipients: ["0x000000000000000000000000000000000000a11c"],
