@@ -1,5 +1,5 @@
 /**
- * EOA 7702 delegation against the live local gateway.
+ * EOA 7702 delegation against a live gateway that has Track B routes.
  *
  * Does **not** 7702-delegate TEST_PRIVATE_KEY. Does **not** broadcast a
  * successful type-4 (that spends controller gas). Happy-path submit is
@@ -8,6 +8,10 @@
  *
  * Isolated throwaway EOA — JWT identity is free; the key is never the
  * Track A fixture owner.
+ *
+ * CI's `avaprotocol/avs-dev` image does not yet expose these routes
+ * (404). Skip there unless `EOA_7702_LIVE=1`. Local `yarn test` against
+ * a staging-built aggregator still runs the suite.
  */
 
 import { Wallet as EthersWallet } from "ethers";
@@ -27,7 +31,12 @@ import { hasPartnerAssertionKey } from "../../utils/partner";
 
 jest.setTimeout(60_000);
 
-describe("EOA 7702 delegation (live gateway)", () => {
+const describeLive =
+  process.env.CI === "true" && process.env.EOA_7702_LIVE !== "1"
+    ? describe.skip
+    : describe;
+
+describeLive("EOA 7702 delegation (live gateway)", () => {
   let client: Client;
   let owner: string;
   let privateKey: string;
