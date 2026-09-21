@@ -1,18 +1,26 @@
 import type { v4 } from "@avaprotocol/types";
 
+import {
+  assert7702ChainId,
+  assertDelegatedImpl,
+  assertPreparedDelegation,
+} from "../eoa7702";
 import { Transport } from "../internal/transport";
 
 /**
- * `client.wallets.*` — smart-wallet CRUD plus the UserOp-driven
- * withdraw action. A "wallet" here is an ERC-6900 / ERC-4337 smart
- * account derived deterministically from `(owner, factory, salt)` —
- * the SDK never creates an EOA, it ensures-and-registers smart
- * accounts owned by the authenticated user's EOA.
+ * `client.wallets.*` — smart-wallet CRUD, the UserOp-driven withdraw
+ * action, and EIP-7702 EOA delegation (Track B).
+ *
+ * A derived wallet is an ERC-6900 / ERC-4337 smart account from
+ * `(owner, factory, salt)`. `create` never makes an EOA and never
+ * writes `kind: eoa_7702` — that record comes from
+ * {@link prepareDelegation} / {@link submitDelegation} after K13.
  *
  * **Auth:**
  * - `list` / `create` (preview resolve) — user JWT **or** partner
  *   assertion (`scope: read`, `sub` = owner EOA)
- * - update / withdraw / nonce — user JWT only
+ * - update / withdraw / nonce / delegation — user JWT only
+ *   (partner assertions are refused on 7702)
  */
 export class WalletsResource {
   constructor(private readonly transport: Transport) {}
@@ -109,5 +117,108 @@ export class WalletsResource {
     return this.transport.request<v4.NonceResponse>({
       path: `/wallets/${encodeURIComponent(address)}:getNonce`,
     });
+  }
+
+  /**
+   * POST /wallets/{eoa}/delegation:prepare — EIP-7702 authorization
+   * the owner signs. Not a session grant; do not send this payload to
+   * `policies.prepare`.
+   *
+   * `delegate` is always SMA-7702. `nonce` is the EOA's pending nonce
+   * (aggregator-broadcast, not `nonce+1`). `chainId=0` is refused.
+   * First chains: Sepolia and Base. Partner assertions are refused.
+   */
+  async prepareDelegation(
+    address: string,
+    opts?: { chainId?: number },
+  ): Promise<v4.PreparedDelegation> {
+    assert7702ChainId(opts?.chainId);
+    const prepared = await this.transport.request<v4.PreparedDelegation>({
+      path: `/wallets/${encodeURIComponent(address)}/delegation:prepare`,
+      method: "POST",
+      body: opts?.chainId !== undefined ? { chainId: opts.chainId } : {},
+    });
+    assertPreparedDelegation(prepared);
+    return prepared;
+  }
+
+  /**
+   * POST /wallets/{eoa}/delegation:submit — broadcast the signed
+   * authorization and persist `kind=eoa_7702` once K13 matches.
+   *
+   * `200` + `delegated` — designation is visible. `202` + `pending` —
+   * type-4 was sent; **poll {@link getDelegation}, do not resubmit**
+   * (EOA nonce is unchanged; a second broadcast spends controller gas).
+   * Receipt status is not evidence. Stale nonce is `DELEGATION_STALE_NONCE`.
+   */
+  async submitDelegation(
+    address: string,
+    req: v4.SubmitDelegationRequest,
+  ): Promise<v4.DelegationStatus> {
+    assert7702ChainId(req.chainId);
+    const status = await this.transport.request<v4.DelegationStatus>({
+      path: `/wallets/${encodeURIComponent(address)}/delegation:submit`,
+      method: "POST",
+      body: req,
+    });
+    return assertDelegatedImpl(status);
+  }
+
+  /**
+   * GET /wallets/{eoa}/delegation — K13 code read (`missing` or
+   * `delegated`). When `delegated`, the gateway upserts the eoa_7702
+   * wallet row so a 202 becomes grantable without a second submit.
+   */
+  async getDelegation(
+    address: string,
+    opts?: { chainId?: number },
+  ): Promise<v4.DelegationStatus> {
+    assert7702ChainId(opts?.chainId);
+    const status = await this.transport.request<v4.DelegationStatus>({
+      path: `/wallets/${encodeURIComponent(address)}/delegation`,
+      query: opts,
+    });
+    return assertDelegatedImpl(status);
+  }
+
+  /**
+   * Prepare, sign, submit. On 202, poll GET until `delegated`.
+   * GET returns `missing` | `delegated` only — never `pending` —
+   * so `missing` after submit means the type-4 is not visible yet,
+   * not that delegation failed. Never resubmits.
+   *
+   * Workflows that should spend from the EOA must name this runner;
+   * the gateway does not fall back from an empty derived SW. Execute
+   * still requires `eoa_7702_execute: true` on the gateway.
+   */
+  async delegate(
+    address: string,
+    opts: { chainId?: number } | undefined,
+    sign: (prepared: v4.PreparedDelegation) => Promise<string>,
+    poll?: { intervalMs?: number; timeoutMs?: number },
+  ): Promise<v4.DelegationStatus> {
+    const prepared = await this.prepareDelegation(address, opts);
+    const signature = await sign(prepared);
+    const submitted = await this.submitDelegation(address, {
+      chainId: prepared.chainId,
+      nonce: prepared.nonce,
+      signature,
+    });
+    if (submitted.status === "delegated") {
+      return submitted;
+    }
+    const intervalMs = poll?.intervalMs ?? 2_000;
+    const timeoutMs = poll?.timeoutMs ?? 60_000;
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, intervalMs));
+      const status = await this.getDelegation(address, {
+        chainId: prepared.chainId,
+      });
+      if (status.status === "delegated") {
+        return status;
+      }
+    }
+    return submitted;
   }
 }

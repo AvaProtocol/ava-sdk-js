@@ -156,6 +156,21 @@ describe("policies.grant", () => {
     expect(submitted.signature).toBe(`0x${"11".repeat(65)}`);
   });
 
+  test("echoes native ETH fields so a native-only grant rebuilds the same calldata", async () => {
+    const nativeReq: v4.PreparePolicyRequest = {
+      chainId: 11155111,
+      agentLabel: "SendETH",
+      nativeRecipients: ["0x000000000000000000000000000000000000a11c"],
+      nativeSpendCap: { amount: "1" },
+      expiresInSeconds: 2_592_000,
+    };
+    await client.policies.grant(wallet, nativeReq, async () => `0x${"11".repeat(65)}`);
+    const submitted = captured.submitBody!;
+    expect(submitted.nativeRecipients).toEqual(nativeReq.nativeRecipients);
+    expect(submitted.nativeSpendCap).toEqual(nativeReq.nativeSpendCap);
+    expect(submitted.allowedActions).toBeUndefined();
+  });
+
   test("hits prepare then submit, in that order", async () => {
     await client.policies.grant(wallet, request, async () => `0x${"11".repeat(65)}`);
 

@@ -221,6 +221,10 @@ export class PoliciesResource {
       justification: req.justification,
       allowedActions: req.allowedActions,
       erc20SpendCap: req.erc20SpendCap,
+      erc20SpendCaps: req.erc20SpendCaps,
+      nativeRecipients: req.nativeRecipients,
+      nativeSpendCap: req.nativeSpendCap,
+      allowContractRecipient: req.allowContractRecipient,
       signature,
     });
   }

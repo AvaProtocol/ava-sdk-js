@@ -18,6 +18,7 @@ export {
   SELECTOR_ERC20_APPROVE,
   SELECTOR_ERC20_TRANSFER,
   SELECTOR_UNISWAP_V3_EXACT_INPUT_SINGLE,
+  MAX_NATIVE_RECIPIENTS,
   actionsCover,
   missingActions,
 } from "./builders/sessionPolicy";
@@ -72,6 +73,16 @@ export { TriggersResource } from "./resources/triggers";
 export { PoliciesResource } from "./resources/policies";
 export type { TypedDataSigner } from "./resources/policies";
 export { WalletsResource } from "./resources/wallets";
+export {
+  SMA7702_DELEGATE,
+  SMA7702_IMPL_HASH,
+  signEoa7702Authorization,
+  authorizationDigest,
+  assertPreparedDelegation,
+  assertDelegatedImpl,
+  assert7702ChainId,
+  type Eoa7702AuthorizationSigner,
+} from "./eoa7702";
 export { WorkflowsResource } from "./resources/workflows";
 
 // Re-export the v4 type bag so consumers don't have to import

@@ -15,7 +15,7 @@
     "changeset": "changeset",
     "version": "node -e \"console.error('Do not run yarn version on staging. Versions move on the Version PR (yarn version-packages).'); process.exit(1)\"",
     "version-packages": "changeset version",
-    "openapi-download": "curl -s https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/staging/api/openapi.yaml > packages/types/openapi/openapi.yaml",
+    "openapi-download": "node scripts/openapi-download.js",
     "types-gen": "openapi-typescript packages/types/openapi/openapi.yaml --output packages/types/src/openapi.gen.ts --immutable",
     "apikey-gen": "sh -c 'BIN=$(docker compose exec -T gateway sh -c \"if [ -x /ava ]; then echo /ava; elif [ -x /app/ap ]; then echo /app/ap; else echo ./ap; fi\" | tr -d \"\\r\"); API_KEY=$(docker compose exec -T gateway $BIN create-api-key --config /app/config/gateway.runtime.yaml --role=admin --subject=0x804e49e8C4eDb560AE7c48B554f6d2e27Bb81557) && echo \"Generated API key for tests: $API_KEY\" && echo \"Writing to .env.test to replace the TEST_API_KEY env variable\" && sed -i \"\" -e \"s/^TEST_API_KEY=.*/TEST_API_KEY=$API_KEY/\" .env.test && echo \"Done.\"'",
     "build": "yarn workspaces run build",

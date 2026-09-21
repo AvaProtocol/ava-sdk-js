@@ -89,6 +89,10 @@ export type CreateWalletRequest = components["schemas"]["CreateWalletRequest"];
 export type WithdrawRequest = components["schemas"]["WithdrawRequest"];
 export type WithdrawResponse = components["schemas"]["WithdrawResponse"];
 export type NonceResponse = components["schemas"]["NonceResponse"];
+export type PreparedDelegation = components["schemas"]["PreparedDelegation"];
+export type SubmitDelegationRequest = components["schemas"]["SubmitDelegationRequest"];
+export type DelegationStatus = components["schemas"]["DelegationStatus"];
+export type NativeSpendCap = components["schemas"]["NativeSpendCap"];
 
 // ---------------------------------------------------------------------
 // Session policies — the grant that lets the gateway execute for a wallet
