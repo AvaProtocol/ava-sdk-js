@@ -1,16 +1,16 @@
 # OpenAPI specification
 
-`openapi.yaml` is the source of truth for the v4 REST surface. It's copied
-verbatim from [`AvaProtocol/EigenLayer-AVS`](https://github.com/AvaProtocol/EigenLayer-AVS)
-at `api/openapi.yaml` — the engine's REST package is generated from the same
-file, so the two stay in lockstep.
+`openapi.yaml` is copied from [`AvaProtocol/EigenLayer-AVS`](https://github.com/AvaProtocol/EigenLayer-AVS)
+`api/openapi.yaml` via `yarn openapi-download`. Server facts stay on that
+file. The download script applies **one** local patch: it strips
+`default: false` on `allowContractRecipient` because `openapi-typescript`
+would otherwise emit a required field. Do not `curl` the spec by hand.
 
-When the server spec changes, refresh this file and regenerate:
+When the server spec changes, refresh and regenerate:
 
 ```bash
-# Pull the latest spec from the engine repo (adjust path to your checkout).
-cp ../../../EigenLayer-AVS/api/openapi.yaml openapi.yaml
-yarn --cwd ../.. types-gen
+yarn openapi-download
+yarn types-gen
 ```
 
 `yarn types-gen` runs `openapi-typescript` to produce `src/openapi.gen.ts`,
