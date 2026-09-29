@@ -104,7 +104,7 @@ jobs:
           echo "=== Required Variables from envalid.ts ==="
           echo "AVS_API_KEY: ...${AVS_API_KEY: -6}" # Show last 6 chars for security
           echo "CHAIN_ENDPOINT: $CHAIN_ENDPOINT"
-          echo "TEST_PRIVATE_KEY: ...${TEST_PRIVATE_KEY: -6}" # Show last 6 chars for security
+          echo "TEST_PRIVATE_KEY: $([ -n "$TEST_PRIVATE_KEY" ] && echo set || echo missing)" # Never print any part of a private key
           echo "TEST_ENV: $TEST_ENV"
 
           if [ -z "$AVS_API_KEY" ] || [ -z "$CHAIN_ENDPOINT" ] || [ -z "$TEST_PRIVATE_KEY" ] || [ -z "$TEST_ENV" ]; then
