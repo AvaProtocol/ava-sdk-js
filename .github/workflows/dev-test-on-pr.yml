@@ -290,7 +290,7 @@ jobs:
           echo "Using gateway binary: $BIN"
           # The key's subject is the test wallet, so derive it from the
           # secret rather than pin an address that goes stale on rotation.
-          SUBJECT=$(node scripts/test-wallet-address.js)
+          SUBJECT=$(node scripts/test-wallet-address.js | tail -n1)
           echo "API key subject: $SUBJECT"
           API_KEY=$(docker compose exec -T gateway "$BIN" create-api-key --config /app/config/gateway.runtime.yaml --role=admin --subject="$SUBJECT")
           echo "AVS_API_KEY=$API_KEY" >> $GITHUB_ENV

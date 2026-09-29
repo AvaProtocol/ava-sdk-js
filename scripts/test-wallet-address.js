@@ -1,5 +1,5 @@
 const { Wallet } = require("ethers");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 /**
  * Prints the address of TEST_PRIVATE_KEY (from the environment or .env).
