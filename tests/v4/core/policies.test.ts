@@ -40,7 +40,10 @@ const PREPARED = {
   typedData: { domain: { chainId: 11155111 }, message: { nonce: "0x1" } },
 } satisfies v4.PreparedPolicy;
 
-async function startGateway(captured: Captured): Promise<{ url: string; close: () => Promise<void> }> {
+async function startGateway(
+  captured: Captured,
+  prepared: v4.PreparedPolicy = PREPARED,
+): Promise<{ url: string; close: () => Promise<void> }> {
   const server: Server = createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => (raw += c));
@@ -53,7 +56,7 @@ async function startGateway(captured: Captured): Promise<{ url: string; close: (
       if (path.includes("policies:prepare")) {
         captured.prepareBody = body;
         res.statusCode = 200;
-        res.end(JSON.stringify(PREPARED));
+        res.end(JSON.stringify(prepared));
         return;
       }
       if (path.includes("policies:submit")) {
@@ -151,6 +154,9 @@ describe("policies.grant", () => {
     const submitted = captured.submitBody!;
     expect(submitted.allowedActions).toEqual(request.allowedActions);
     expect(submitted.erc20SpendCap).toEqual(request.erc20SpendCap);
+    expect(submitted.basePolicyId).toBeUndefined();
+    expect(submitted.allowContractRecipient).toBeUndefined();
+    expect(submitted.dropTaskIds).toBeUndefined();
     expect(submitted.agentLabel).toBe(request.agentLabel);
     expect(submitted.justification).toBe(request.justification);
     expect(submitted.signature).toBe(`0x${"11".repeat(65)}`);
@@ -169,6 +175,102 @@ describe("policies.grant", () => {
     expect(submitted.nativeRecipients).toEqual(nativeReq.nativeRecipients);
     expect(submitted.nativeSpendCap).toEqual(nativeReq.nativeSpendCap);
     expect(submitted.allowedActions).toBeUndefined();
+  });
+
+  test("echoes the merged grant, not the add fragment", async () => {
+    await gateway.close();
+    const usdc = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+    const merged = {
+      ...PREPARED,
+      basePolicyId: "",
+      allowedActions: [{ target: usdc, selectors: ["0xa9059cbb", "0x095ea7b3"] }],
+      erc20SpendCap: { token: usdc, amount: "19" },
+      erc20SpendCaps: [{ token: usdc, amount: "19" }],
+    } satisfies v4.PreparedPolicy;
+    captured = { paths: [] };
+    gateway = await startGateway(captured, merged);
+    client = new Client({ baseUrl: `${gateway.url}/api/v1`, token: "test-jwt" });
+
+    const fragment = {
+      allowedActions: [{ target: usdc, selectors: ["0xa9059cbb"] }],
+      erc20SpendCaps: [{ token: usdc, amount: "12" }],
+    };
+    await client.policies.grant(
+      wallet,
+      { ...request, add: fragment, dropTaskIds: ["swap-1"] },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
+    const submitted = captured.submitBody!;
+    expect(submitted.allowedActions).toEqual(merged.allowedActions);
+    expect(submitted.erc20SpendCap).toEqual(merged.erc20SpendCap);
+    expect(submitted.erc20SpendCaps).toEqual(merged.erc20SpendCaps);
+    expect(submitted.basePolicyId).toBe("");
+    expect(submitted.allowContractRecipient).toBeUndefined();
+    expect(submitted.dropTaskIds).toEqual(["swap-1"]);
+    expect(captured.prepareBody?.add).toEqual(fragment);
+    expect(captured.prepareBody?.dropTaskIds).toBeUndefined();
+  });
+
+  test("echoes prepare's basePolicyId and contract-recipient flag, not the caller's", async () => {
+    await gateway.close();
+    const usdc = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
+    const merged = {
+      ...PREPARED,
+      basePolicyId: "01JABCDEF0000000000000000",
+      changes: {
+        summary: ["Weekly swap: until Dec 28, was Nov 30"],
+        basePolicyId: "01JABCDEF0000000000000000",
+      },
+      allowedActions: [{ target: usdc, selectors: ["0xa9059cbb"] }],
+      allowContractRecipient: true,
+    } satisfies v4.PreparedPolicy;
+    captured = { paths: [] };
+    gateway = await startGateway(captured, merged);
+    client = new Client({ baseUrl: `${gateway.url}/api/v1`, token: "test-jwt" });
+
+    await client.policies.grant(
+      wallet,
+      {
+        ...request,
+        basePolicyId: "01STALE000000000000000000",
+        allowContractRecipient: false,
+        add: {
+          allowedActions: [{ target: usdc, selectors: ["0xa9059cbb"] }],
+        },
+      },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
+    const submitted = captured.submitBody!;
+    expect(captured.prepareBody?.basePolicyId).toBe("01STALE000000000000000000");
+    expect(submitted.basePolicyId).toBe("01JABCDEF0000000000000000");
+    expect(submitted.allowedActions).toEqual(merged.allowedActions);
+    expect(submitted.allowContractRecipient).toBe(true);
+    expect(submitted.erc20SpendCap).toBeUndefined();
+  });
+
+  test("echoes a caller-supplied basePolicyId on a full-set grant", async () => {
+    const policyId = "01JABCDEF0000000000000000";
+    await client.policies.grant(
+      wallet,
+      { ...request, basePolicyId: policyId },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
+    expect(captured.prepareBody?.basePolicyId).toBe(policyId);
+    expect(captured.submitBody!.basePolicyId).toBe(policyId);
+    expect(captured.submitBody!.allowedActions).toEqual(request.allowedActions);
+
+    captured.prepareBody = undefined;
+    captured.submitBody = undefined;
+    await client.policies.grant(
+      wallet,
+      { ...request, basePolicyId: "" },
+      async () => `0x${"11".repeat(65)}`,
+    );
+    expect(captured.prepareBody?.basePolicyId).toBe("");
+    expect(captured.submitBody!.basePolicyId).toBe("");
   });
 
   test("hits prepare then submit, in that order", async () => {

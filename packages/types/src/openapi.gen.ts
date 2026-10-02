@@ -94,6 +94,12 @@ export interface paths {
          *     the server validates those chains and ensures the smart wallet belongs
          *     to the authenticated user. Returns the persisted Workflow with its
          *     server-assigned `id` and `createdAt`.
+         *
+         *     When the gateway config `session_policy_deploy_check` is on, a workflow
+         *     whose fund-moving steps the runner's usable grant does not cover is
+         *     refused with `409 SESSION_POLICY_NOT_COVERING`. `required` is the grant
+         *     those steps still need. A workflow that only notifies passes with no
+         *     grant. The flag defaults to off, so today's callers are unchanged.
          */
         readonly post: operations["createWorkflow"];
         readonly delete?: never;
@@ -161,7 +167,11 @@ export interface paths {
         readonly put?: never;
         /**
          * Resume a workflow
-         * @description Transition from `disabled` to `enabled`. Idempotent.
+         * @description Transition from `disabled` to `enabled`. Idempotent. When
+         *     `session_policy_deploy_check` is on, enabling a workflow whose
+         *     fund-moving steps the runner's usable grant does not cover is
+         *     `409 SESSION_POLICY_NOT_COVERING`. Disabling is not checked.
+         *     Notification-only workflows pass with no grant.
          */
         readonly post: operations["resumeWorkflow"];
         readonly delete?: never;
@@ -209,6 +219,12 @@ export interface paths {
          *     simulation for chain-writing nodes) and return the full Execution.
          *     Nothing is persisted. Requires a user Bearer JWT; partner assertion
          *     alone is not sufficient.
+         *
+         *     Grant preflight fails fund-moving steps unless `authorizationMode` is
+         *     `report`. Report mode returns `authorization` and lets the simulation
+         *     proceed so a test screen can show "it works" and "needs permission"
+         *     as two results. `maxExecution`, `startAt`, and `expiredAt` size that
+         *     verdict to the schedule. They do not change the simulated run.
          */
         readonly post: operations["simulateWorkflow"];
         readonly delete?: never;
@@ -667,10 +683,21 @@ export interface paths {
          *     Replacement is scoped to the runner, not to a capability: submitting a
          *     grant for one capability revokes the runner's grant for any other.
          *
-         *     Off-chain only. The superseded grants' validation entities and ERC-20
-         *     spend caps stay installed on the account until the owner signs
-         *     `uninstallValidation` — replacing a grant does not reduce what the
-         *     account could authorize on chain, only what this gateway will use.
+         *     The deferred batch that installs the new grant also uninstalls up to
+         *     four prior validation entities (#717). The owner signs that batch
+         *     once, at prepare. Replacing a grant does not leave the old entities
+         *     installed until a separate `uninstallValidation` signature. `DELETE`
+         *     of an already-applied grant is different: the controller cannot call
+         *     `uninstallValidation` itself, so that response still carries
+         *     `onChainCleanup` for the owner wallet.
+         *
+         *     When `basePolicyId` is sent, including an empty string, the runner's
+         *     usable grant must still be that value or the call is
+         *     `409 SESSION_POLICY_BASE_CHANGED`.
+         *
+         *     The stored grant must still cover every enabled task on this runner,
+         *     except ids listed in `dropTaskIds`. Otherwise the call is
+         *     `409 SESSION_POLICY_NOT_COVERING` and nothing is stored.
          */
         readonly post: operations["submitWalletPolicy"];
         readonly delete?: never;
@@ -1011,6 +1038,23 @@ export interface components {
              * @example WORKFLOW_NOT_FOUND
              */
             readonly code?: string;
+            /**
+             * @description Usable session grant involved in this failure, when there is one.
+             *     Set on `SESSION_POLICY_BASE_CHANGED` and `SESSION_POLICY_NOT_COVERING`.
+             */
+            readonly policyId?: string;
+            /**
+             * @description Enabled tasks a grant would leave unable to run. Set on
+             *     `409 SESSION_POLICY_NOT_COVERING` from policies:submit.
+             */
+            readonly affectedTaskIds?: readonly string[];
+            /** @description Planned calls the grant does not allow. */
+            readonly missingActions?: readonly components["schemas"]["AllowedAction"][];
+            /**
+             * @description Grant the caller still needs. Set on
+             *     `409 SESSION_POLICY_NOT_COVERING` from create and resume.
+             */
+            readonly required?: components["schemas"]["SessionPolicyNeed"];
         };
         readonly HealthStatus: {
             /** @enum {string} */
@@ -1653,6 +1697,31 @@ export interface components {
             readonly nodes: readonly components["schemas"]["Node"][];
             readonly edges?: readonly components["schemas"]["Edge"][];
             readonly inputVariables: components["schemas"]["InputVariables"];
+            /**
+             * @description `enforce` when omitted. Grant preflight fails the step, which is
+             *     what one-shot Auto paths read as `SESSION_POLICY_TARGET_NOT_ALLOWED`.
+             *     `report` does not fail steps for a missing or short grant, and the
+             *     execution includes `authorization`. A storage lookup failure still
+             *     fails the step.
+             * @enum {string}
+             */
+            readonly authorizationMode?: "enforce" | "report";
+            /**
+             * Format: int64
+             * @description Runs this workflow may still make. With a cron trigger and
+             *     `expiredAt`, the requirement uses whichever allows fewer runs.
+             */
+            readonly maxExecution?: number;
+            /**
+             * Format: int64
+             * @description Unix milliseconds. Schedule window start, same clock as create.
+             */
+            readonly startAt?: number;
+            /**
+             * Format: int64
+             * @description Unix milliseconds. Schedule window end, same clock as create.
+             */
+            readonly expiredAt?: number;
         };
         readonly EstimateFeesRequest: {
             readonly chainId?: components["schemas"]["ChainId"];
@@ -1800,6 +1869,11 @@ export interface components {
             readonly cogs?: readonly components["schemas"]["NodeCOGS"][];
             /** @description Value-capture fee charged (post-paid). */
             readonly valueFee?: components["schemas"]["ValueFee"];
+            /**
+             * @description Present on simulate when `authorizationMode` is `report`.
+             *     Omitted on stored executions and on enforce-mode simulates.
+             */
+            readonly authorization?: components["schemas"]["SessionAuthorization"];
         };
         readonly ExecutionList: {
             readonly data: readonly components["schemas"]["Execution"][];
@@ -2088,6 +2162,108 @@ export interface components {
              */
             readonly amount: string;
         };
+        /**
+         * @description Opt-in simulate verdict. Returned only when `authorizationMode` is
+         *     `report`. It does not replace step errors from anything other than
+         *     grant coverage.
+         */
+        readonly SessionAuthorization: {
+            /**
+             * @description `covered` — the usable grant already allows this workflow, or the
+             *     workflow moves no funds.
+             *     `no_grant` — fund-moving steps and no usable grant.
+             *     `not_covered` — a planned call or native recipient is outside the grant.
+             *     `cap_too_low` — a sized cap or native budget is short.
+             *     `expires_too_soon` — the grant ends before this workflow's window.
+             *     `cap_needs_input` — a spend amount is not a fixed number, so the
+             *     caller must choose the cap.
+             * @enum {string}
+             */
+            readonly status: "covered" | "no_grant" | "not_covered" | "cap_too_low" | "expires_too_soon" | "cap_needs_input";
+            /** @description The runner's current usable grant, when there is one. */
+            readonly policyId?: string;
+            readonly missingActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly required?: components["schemas"]["SessionPolicyNeed"];
+            readonly detail?: string;
+        };
+        /**
+         * @description Permissions one workflow still needs, sized to the runs it has left.
+         *     Cap amounts are totals in the token's smallest unit, not per-run amounts.
+         */
+        readonly SessionPolicyNeed: {
+            readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            /**
+             * Format: int64
+             * @description Absolute unix milliseconds the grant must last through. 0 when the window is unknown.
+             */
+            readonly validUntil?: number;
+        };
+        /**
+         * @description What the automation being set up needs. Merged, under the runner
+         *     lock, with what that runner's enabled tasks on this chain still need.
+         *     Cap amounts are totals for this automation. They are not added to the
+         *     previous grant's totals, because a replacement grant starts its caps
+         *     from zero.
+         */
+        readonly SessionPolicyAddition: {
+            readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            readonly allowContractRecipient?: boolean;
+            /**
+             * Format: int64
+             * @description Absolute unix milliseconds this automation needs. Omit to use
+             *     now + `expiresInSeconds`. The signed expiry is the later of that
+             *     horizon and every enabled task's end on this chain.
+             */
+            readonly validUntil?: number;
+        };
+        readonly SessionPolicyCapChange: {
+            readonly token: components["schemas"]["EthereumAddress"];
+            /** @description New total, in the token's smallest unit. */
+            readonly amount: string;
+            /** @description Previous grant's total. Omitted when the token is new. */
+            readonly previousAmount?: string;
+        };
+        readonly SessionPolicyExpiryChange: {
+            readonly taskId?: string;
+            readonly name: string;
+            /** Format: int64 */
+            readonly validUntil: number;
+            /**
+             * Format: int64
+             * @description The wallet grant's previous expiry. One expiry covers every permission.
+             */
+            readonly previousValidUntil?: number;
+        };
+        /**
+         * @description What the approval screen shows. `summary` is the copy. The structured
+         *     fields are the same facts.
+         */
+        readonly SessionPolicyChanges: {
+            /**
+             * @description Approval lines. An expiry change reads
+             *     "<task name>: until <Mon D>, was <Mon D>" in UTC when both dates
+             *     are in the same year, for example
+             *     "Weekly swap: until Dec 28, was Nov 30". When the years differ,
+             *     both dates include the year.
+             */
+            readonly summary: readonly string[];
+            /**
+             * @description Usable grant the merge read. Empty when the runner had none.
+             *     Echo this to submit, including the empty string.
+             */
+            readonly basePolicyId?: string;
+            readonly keptActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly addedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly removedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly capChanges?: readonly components["schemas"]["SessionPolicyCapChange"][];
+            readonly expiryChanges?: readonly components["schemas"]["SessionPolicyExpiryChange"][];
+        };
         readonly PreparePolicyRequest: {
             readonly chainId: components["schemas"]["ChainId"];
             readonly agentLabel: string;
@@ -2116,17 +2292,32 @@ export interface components {
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             /**
              * @description When true, nativeRecipients may be contracts (any-function on
-             *     that address, ERC-20 uncapped). Omitted/false: each recipient
-             *     must have empty code. Logged when true. The gateway defaults
-             *     omitted to false; do not put `default: false` here — it makes
-             *     openapi-typescript emit a required field.
+             *     that address, ERC-20 uncapped). Default false: each recipient
+             *     must have empty code. Logged when true.
              */
             readonly allowContractRecipient?: boolean;
             /**
              * Format: int64
-             * @description Grant lifetime, relative (skew-proof). Becomes an absolute validUntil.
+             * @description Grant lifetime, relative (skew-proof). Becomes an absolute
+             *     validUntil. When `add` is set, this is the new automation's
+             *     horizon if `add.validUntil` is omitted. The signed expiry can be
+             *     later, because the wallet keeps one expiry and it must cover
+             *     every enabled automation.
              */
             readonly expiresInSeconds: number;
+            /**
+             * @description Usable grant this prepare was merged against. Omit on a legacy
+             *     prepare that sends the full permission set and does not compare.
+             *     Send an empty string when the client believes there is no usable
+             *     grant. A mismatch is 409 SESSION_POLICY_BASE_CHANGED.
+             */
+            readonly basePolicyId?: string;
+            /**
+             * @description Create or update in one call. When set, the permission fields
+             *     above are ignored. The response's permission fields are the
+             *     merged set and must be echoed to submit.
+             */
+            readonly add?: components["schemas"]["SessionPolicyAddition"];
         };
         readonly PreparedPolicy: {
             readonly policyId: components["schemas"]["Ulid"];
@@ -2153,6 +2344,19 @@ export interface components {
             readonly typedData: {
                 readonly [key: string]: unknown;
             };
+            /**
+             * @description Set when prepare merged an `add`. Empty means there was no usable
+             *     grant. Echo `changes.basePolicyId`, including the empty string.
+             */
+            readonly basePolicyId?: string;
+            readonly changes?: components["schemas"]["SessionPolicyChanges"];
+            /** @description Merged actions to echo to submit. Present when `add` was sent. */
+            readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
+            readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
+            readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            readonly allowContractRecipient?: boolean;
         };
         readonly SubmitPolicyRequest: {
             readonly chainId: components["schemas"]["ChainId"];
@@ -2181,6 +2385,19 @@ export interface components {
             readonly allowContractRecipient?: boolean;
             /** @description The owner's 65-byte signature over the prepared digest. */
             readonly signature: string;
+            /**
+             * @description Echo prepare's `basePolicyId` / `changes.basePolicyId`, including
+             *     an empty string when prepare saw no usable grant. Omit only on a
+             *     legacy submit that did not compare. A mismatch is
+             *     409 SESSION_POLICY_BASE_CHANGED.
+             */
+            readonly basePolicyId?: string;
+            /**
+             * @description Enabled tasks this grant may leave uncovered. Any other enabled
+             *     task on this runner whose fund-moving steps are outside the grant
+             *     is refused with 409 SESSION_POLICY_NOT_COVERING.
+             */
+            readonly dropTaskIds?: readonly string[];
         };
         readonly SessionPolicy: {
             readonly id: components["schemas"]["Ulid"];
@@ -2238,6 +2455,12 @@ export interface components {
              *     permission is gone, which is worth reflecting in the UI.
              */
             readonly supersededPolicyIds: readonly components["schemas"]["Ulid"][];
+            /**
+             * @description Enabled tasks this grant leaves uncovered, which the request
+             *     named in `dropTaskIds`. Empty when every enabled task on the
+             *     runner is still covered.
+             */
+            readonly affectedTaskIds?: readonly string[];
         };
         readonly SessionPolicyList: {
             readonly items: readonly components["schemas"]["SessionPolicy"][];
@@ -2451,6 +2674,20 @@ export interface operations {
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
+            /**
+             * @description `SESSION_POLICY_NOT_COVERING` when `session_policy_deploy_check` is
+             *     on and the runner's usable grant does not cover this workflow's
+             *     fund-moving steps. `required`, `policyId`, and `missingActions`
+             *     describe the gap. Notification-only workflows do not hit this.
+             */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             readonly 429: components["responses"]["RateLimited"];
         };
     };
@@ -2555,7 +2792,12 @@ export interface operations {
             };
             readonly 401: components["responses"]["Unauthorized"];
             readonly 404: components["responses"]["NotFound"];
-            /** @description Workflow is in a terminal state and cannot be resumed. */
+            /**
+             * @description The workflow is in a terminal state and cannot be resumed, or
+             *     `session_policy_deploy_check` is on and enabling it would leave its
+             *     fund-moving steps outside the runner's usable grant
+             *     (`SESSION_POLICY_NOT_COVERING`; `required` describes the gap).
+             */
             readonly 409: {
                 headers: {
                     readonly [name: string]: unknown;
@@ -3256,8 +3498,15 @@ export interface operations {
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             /**
-             * @description The validation entity was taken by another grant while this one
-             *     was being signed. Prepare again.
+             * @description `POLICIES_ENTITY_TAKEN` — the validation entity was taken by
+             *     another grant while this one was being signed. Prepare again.
+             *
+             *     `SESSION_POLICY_BASE_CHANGED` — `basePolicyId` is not the runner's
+             *     usable grant anymore. Prepare again.
+             *
+             *     `SESSION_POLICY_NOT_COVERING` — this grant would leave an enabled
+             *     task on the runner unable to run, and that task was not listed in
+             *     `dropTaskIds`. `affectedTaskIds` names them.
              */
             readonly 409: {
                 headers: {
