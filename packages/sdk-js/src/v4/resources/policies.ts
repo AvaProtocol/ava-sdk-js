@@ -95,9 +95,18 @@ export class PoliciesResource {
    * non-empty list means the user's earlier permission is gone — worth
    * reflecting in the UI. There is no flag to opt out.
    *
-   * A 409 means the validation entity was taken by another grant while this
-   * one was being signed — prepare again rather than retrying the submit,
-   * since the entity is baked into the signed calldata.
+   * A 409 is one of:
+   *
+   * - `POLICIES_ENTITY_TAKEN` — the validation entity was taken by another
+   *   grant while this one was being signed. Prepare again rather than
+   *   retrying the submit; the entity is baked into the signed calldata.
+   * - `SESSION_POLICY_BASE_CHANGED` — `basePolicyId` is not the runner's
+   *   current usable grant. An empty string means prepare saw none. Prepare
+   *   again.
+   * - `SESSION_POLICY_NOT_COVERING` — storing this grant would leave another
+   *   enabled automation on the runner unable to run. `affectedTaskIds` names
+   *   those workflows. Send them back as `dropTaskIds` only when the owner
+   *   means to stop them.
    */
   submit(
     address: string,
@@ -190,6 +199,27 @@ export class PoliciesResource {
    * Returns {@link v4.SubmitPolicyResponse}: the new pending policy plus
    * `supersededPolicyIds` for any earlier usable grants this submit replaced.
    *
+   * When `req.add` is set, prepare merges that fragment with what the
+   * runner's enabled automations still need and returns the full permission
+   * set. Submit echoes that merged set and `basePolicyId` (including `""`
+   * when there was no grant), taking the id from prepare rather than from
+   * the request. Echoing `add` itself would sign a fragment and replace the
+   * wallet's other permissions.
+   *
+   * When `add` is omitted, a `basePolicyId` the caller set — including `""` —
+   * is echoed to submit. Prepare already compared it; dropping it on submit
+   * would store the grant on the legacy replace-all path. Leave the field
+   * off entirely for that replace-all path, which is also how a wallet with
+   * two usable grants gets repaired.
+   *
+   * Prepare emits `allowContractRecipient` only when it is true. Submit
+   * echoes that omission, which the gateway reads as false. The field stays
+   * optional on the request types: the vendored spec drops the server's
+   * `default: false` so `openapi-typescript` does not make it required.
+   *
+   * `dropTaskIds`, when passed, is forwarded to submit so the owner can
+   * name enabled workflows this grant is allowed to leave uncovered.
+   *
    * ```ts
    * const policy = await client.policies.grant(wallet, {
    *   chainId: 11155111,
@@ -203,11 +233,41 @@ export class PoliciesResource {
    */
   async grant(
     address: string,
-    req: v4.PreparePolicyRequest,
+    req: GrantRequest,
     sign: TypedDataSigner,
   ): Promise<v4.SubmitPolicyResponse> {
-    const prepared = await this.prepare(address, req);
+    const { dropTaskIds, ...prepareReq } = req;
+    const prepared = await this.prepare(address, prepareReq);
     const signature = await sign(prepared.typedData);
+    // A fragment must not be what the owner signs. Prepare already merged it.
+    // `allowContractRecipient` is included only when the source set it, so an
+    // omitted flag stays omitted and the gateway applies its default of false.
+    const permissions = req.add
+      ? {
+          allowedActions: prepared.allowedActions,
+          erc20SpendCap: prepared.erc20SpendCap,
+          erc20SpendCaps: prepared.erc20SpendCaps,
+          nativeRecipients: prepared.nativeRecipients,
+          nativeSpendCap: prepared.nativeSpendCap,
+          ...(prepared.allowContractRecipient !== undefined
+            ? { allowContractRecipient: prepared.allowContractRecipient }
+            : {}),
+          basePolicyId:
+            prepared.basePolicyId ?? prepared.changes?.basePolicyId ?? "",
+        }
+      : {
+          allowedActions: req.allowedActions,
+          erc20SpendCap: req.erc20SpendCap,
+          erc20SpendCaps: req.erc20SpendCaps,
+          nativeRecipients: req.nativeRecipients,
+          nativeSpendCap: req.nativeSpendCap,
+          ...(req.allowContractRecipient !== undefined
+            ? { allowContractRecipient: req.allowContractRecipient }
+            : {}),
+          ...(req.basePolicyId !== undefined
+            ? { basePolicyId: req.basePolicyId }
+            : {}),
+        };
 
     return this.submit(address, {
       chainId: prepared.chainId,
@@ -219,13 +279,17 @@ export class PoliciesResource {
       validUntil: prepared.validUntil,
       agentLabel: req.agentLabel,
       justification: req.justification,
-      allowedActions: req.allowedActions,
-      erc20SpendCap: req.erc20SpendCap,
-      erc20SpendCaps: req.erc20SpendCaps,
-      nativeRecipients: req.nativeRecipients,
-      nativeSpendCap: req.nativeSpendCap,
-      allowContractRecipient: req.allowContractRecipient,
+      ...permissions,
+      ...(dropTaskIds !== undefined ? { dropTaskIds } : {}),
       signature,
     });
   }
 }
+
+/**
+ * {@link PoliciesResource.grant} input. `dropTaskIds` is submit-only: prepare
+ * does not take it, and it is omitted from the prepare body.
+ */
+export type GrantRequest = v4.PreparePolicyRequest & {
+  dropTaskIds?: string[];
+};
