@@ -663,7 +663,11 @@ export interface paths {
          *     from the stored workflow (a loop over a previous step) is
          *     `409 SESSION_POLICY_TARGET_UNRESOLVED`. That is not an unsized
          *     amount. Pause the automation, or name its id in `dropTaskIds`.
-         *     An unsized amount on this path is `400 POLICIES_BAD_PERMISSIONS`.
+         *     An unsized token amount on this path is `400 POLICIES_BAD_PERMISSIONS`.
+         *     Installing a native spend cap while a running payable cannot be sized
+         *     is `409 SESSION_POLICY_NATIVE_UNSIZED`, including when the runner has
+         *     no usable grant. The addition or a sized running payable can be what
+         *     installs that cap.
          */
         readonly post: operations["prepareWalletPolicy"];
         readonly delete?: never;
@@ -2241,9 +2245,11 @@ export interface components {
         /**
          * @description What the automation being set up needs. Merged, under the runner
          *     lock, with what that runner's enabled tasks on this chain still need.
-         *     Cap amounts are totals for this automation. They are not added to the
-         *     previous grant's totals, because a replacement grant starts its caps
-         *     from zero.
+         *     Cap amounts are totals for this automation. When the runner has a
+         *     usable grant, each cap is the greater of what remains on that grant
+         *     and what enabled automations still need, plus this addition. With no
+         *     usable grant, caps start at zero and this addition is added to what
+         *     enabled automations still need.
          */
         readonly SessionPolicyAddition: {
             readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
@@ -3537,7 +3543,8 @@ export interface operations {
             };
             /**
              * @description `POLICIES_BAD_PERMISSIONS` — the grant is not signable. When
-             *     there is no usable grant, an unsized amount is this code.
+             *     there is no usable grant, an unsized token amount is this code.
+             *     An unsized native payable that would install a native cap is 409.
              */
             readonly 400: {
                 headers: {
@@ -3604,7 +3611,9 @@ export interface operations {
             };
             /**
              * @description `POLICIES_BAD_PERMISSIONS` — the echoed grant is not signable,
-             *     or, when there is no usable grant, an amount cannot be sized.
+             *     or, when there is no usable grant, a token amount cannot be sized.
+             *     An unsized native payable that would install a native cap is
+             *     `409 SESSION_POLICY_NATIVE_UNSIZED`.
              */
             readonly 400: {
                 headers: {
