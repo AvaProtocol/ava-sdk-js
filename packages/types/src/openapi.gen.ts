@@ -646,6 +646,24 @@ export interface paths {
          *     fields must be passed back verbatim to `:submit` — the gateway
          *     recomputes everything from them, so tampering only produces a
          *     signature that no longer verifies.
+         *
+         *     When `add` is set and the runner has a usable grant, the merged
+         *     grant starts from that grant. Actions, native recipients, and
+         *     `allowContractRecipient` only grow. Each token cap is what is
+         *     left on that grant (the on-chain remainder once the grant is
+         *     applied, otherwise the stored cap), or what enabled automations
+         *     still need when that is higher, plus the addition. A token with
+         *     nothing left is omitted. A router action stays. A task whose
+         *     target cannot be read does not fail prepare and does not add
+         *     that unknown target.
+         *
+         *     When `add` is set and there is no usable grant, the merged grant
+         *     is the addition plus every enabled task except ids in
+         *     `dropTaskIds`. A task whose token or recipient cannot be read
+         *     from the stored workflow (a loop over a previous step) is
+         *     `409 SESSION_POLICY_TARGET_UNRESOLVED`. That is not an unsized
+         *     amount. Pause the automation, or name its id in `dropTaskIds`.
+         *     An unsized amount on this path is `400 POLICIES_BAD_PERMISSIONS`.
          */
         readonly post: operations["prepareWalletPolicy"];
         readonly delete?: never;
@@ -693,11 +711,20 @@ export interface paths {
          *
          *     When `basePolicyId` is sent, including an empty string, the runner's
          *     usable grant must still be that value or the call is
-         *     `409 SESSION_POLICY_BASE_CHANGED`.
+         *     `409 SESSION_POLICY_BASE_CHANGED`. That code also covers a carried
+         *     grant whose signed permissions no longer match a fresh merge: the
+         *     remaining limit moved, the running set changed, or both. The grant
+         *     id can be unchanged. Prepare again.
          *
-         *     The stored grant must still cover every enabled task on this runner,
-         *     except ids listed in `dropTaskIds`. Otherwise the call is
-         *     `409 SESSION_POLICY_NOT_COVERING` and nothing is stored.
+         *     When a grant was carried, the stored grant is refused with
+         *     `409 SESSION_POLICY_NOT_COVERING` only when it covers less of an
+         *     enabled task than the current grant did. Tasks listed in
+         *     `dropTaskIds` are the ones this grant may leave uncovered.
+         *     When there is no current grant, the stored grant must still cover
+         *     every enabled task on this runner except those ids, or the call
+         *     is `409 SESSION_POLICY_NOT_COVERING` and nothing is stored.
+         *     A missing prepare snapshot (restart, or the prepare was evicted)
+         *     uses that same per-task check.
          */
         readonly post: operations["submitWalletPolicy"];
         readonly delete?: never;
@@ -1040,12 +1067,17 @@ export interface components {
             readonly code?: string;
             /**
              * @description Usable session grant involved in this failure, when there is one.
-             *     Set on `SESSION_POLICY_BASE_CHANGED` and `SESSION_POLICY_NOT_COVERING`.
+             *     Set on `SESSION_POLICY_BASE_CHANGED`, `SESSION_POLICY_NOT_COVERING`,
+             *     `SESSION_POLICY_TARGET_UNRESOLVED`, and
+             *     `SESSION_POLICY_NATIVE_UNSIZED`.
              */
             readonly policyId?: string;
             /**
              * @description Enabled tasks a grant would leave unable to run. Set on
-             *     `409 SESSION_POLICY_NOT_COVERING` from policies:submit.
+             *     `409 SESSION_POLICY_NOT_COVERING`,
+             *     `409 SESSION_POLICY_TARGET_UNRESOLVED`, and
+             *     `409 SESSION_POLICY_NATIVE_UNSIZED` from policies:prepare
+             *     and policies:submit.
              */
             readonly affectedTaskIds?: readonly string[];
             /** @description Planned calls the grant does not allow. */
@@ -2177,9 +2209,14 @@ export interface components {
              *     `expires_too_soon` — the grant ends before this workflow's window.
              *     `cap_needs_input` — a spend amount is not a fixed number, so the
              *     caller must choose the cap.
+             *     `target_unresolved` — a fund-moving target could not be read from
+             *     the stored workflow (a loop over a previous step, not a settings
+             *     list). Choosing a spend cap does not name that target. One
+             *     observed iteration does not clear this. Pause the automation, or
+             *     name it in `dropTaskIds`.
              * @enum {string}
              */
-            readonly status: "covered" | "no_grant" | "not_covered" | "cap_too_low" | "expires_too_soon" | "cap_needs_input";
+            readonly status: "covered" | "no_grant" | "not_covered" | "cap_too_low" | "expires_too_soon" | "cap_needs_input" | "target_unresolved";
             /** @description The runner's current usable grant, when there is one. */
             readonly policyId?: string;
             readonly missingActions?: readonly components["schemas"]["AllowedAction"][];
@@ -2226,8 +2263,19 @@ export interface components {
             readonly token: components["schemas"]["EthereumAddress"];
             /** @description New total, in the token's smallest unit. */
             readonly amount: string;
-            /** @description Previous grant's total. Omitted when the token is new. */
+            /**
+             * @description What remained on the previous grant, in the token's smallest
+             *     unit. Once that grant is on chain, this is the on-chain
+             *     remainder. Before then, it is the stored cap. Omitted when
+             *     the token is new.
+             */
             readonly previousAmount?: string;
+            /**
+             * @description True when this token's cap was dropped. `amount` is then "0",
+             *     and `previousAmount` is what remained. Omitted when the cap is
+             *     still on the grant.
+             */
+            readonly removed?: boolean;
         };
         readonly SessionPolicyExpiryChange: {
             readonly taskId?: string;
@@ -2302,7 +2350,8 @@ export interface components {
              *     validUntil. When `add` is set, this is the new automation's
              *     horizon if `add.validUntil` is omitted. The signed expiry can be
              *     later, because the wallet keeps one expiry and it must cover
-             *     every enabled automation.
+             *     every enabled automation. Values above 9223372036 overflow the
+             *     duration conversion and are rejected.
              */
             readonly expiresInSeconds: number;
             /**
@@ -2312,6 +2361,16 @@ export interface components {
              *     grant. A mismatch is 409 SESSION_POLICY_BASE_CHANGED.
              */
             readonly basePolicyId?: string;
+            /**
+             * @description Enabled tasks this prepare may leave out of the merged grant.
+             *     Honored only when `add` is set. Echo the same ids on submit.
+             *     When the runner has a usable grant, a task whose target cannot
+             *     be read does not fail prepare and does not add that target.
+             *     When there is no usable grant, that task is
+             *     `409 SESSION_POLICY_TARGET_UNRESOLVED` until it is paused or
+             *     named here.
+             */
+            readonly dropTaskIds?: readonly string[];
             /**
              * @description Create or update in one call. When set, the permission fields
              *     above are ignored. The response's permission fields are the
@@ -2349,6 +2408,11 @@ export interface components {
              *     grant. Echo `changes.basePolicyId`, including the empty string.
              */
             readonly basePolicyId?: string;
+            /**
+             * @description Enabled tasks this prepare left out because `dropTaskIds` named
+             *     them. Echo those ids as submit's `dropTaskIds`.
+             */
+            readonly affectedTaskIds?: readonly string[];
             readonly changes?: components["schemas"]["SessionPolicyChanges"];
             /** @description Merged actions to echo to submit. Present when `add` was sent. */
             readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
@@ -2393,9 +2457,17 @@ export interface components {
              */
             readonly basePolicyId?: string;
             /**
-             * @description Enabled tasks this grant may leave uncovered. Any other enabled
-             *     task on this runner whose fund-moving steps are outside the grant
-             *     is refused with 409 SESSION_POLICY_NOT_COVERING.
+             * @description Enabled tasks this grant may leave uncovered. Echo prepare's
+             *     `affectedTaskIds`. Naming a task does not fail submit.
+             *     When a grant was carried, submit refuses with
+             *     `409 SESSION_POLICY_NOT_COVERING` only when the new grant
+             *     covers less of an enabled task than the current grant did.
+             *     A task the current grant already does not cover does not
+             *     freeze the wallet. When there is no current grant, every
+             *     other enabled task whose fund-moving steps are outside the
+             *     grant is `409 SESSION_POLICY_NOT_COVERING`, and a task whose
+             *     target cannot be read is `409 SESSION_POLICY_TARGET_UNRESOLVED`
+             *     unless it is named here.
              */
             readonly dropTaskIds?: readonly string[];
         };
@@ -3463,10 +3535,47 @@ export interface operations {
                     readonly "application/json": components["schemas"]["PreparedPolicy"];
                 };
             };
-            readonly 400: components["responses"]["BadRequest"];
+            /**
+             * @description `POLICIES_BAD_PERMISSIONS` — the grant is not signable. When
+             *     there is no usable grant, an unsized amount is this code.
+             */
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
+            /**
+             * @description `SESSION_POLICY_BASE_CHANGED` — `basePolicyId` is not the runner's
+             *     usable grant anymore. Prepare again.
+             *
+             *     `SESSION_POLICY_TARGET_UNRESOLVED` — there is no usable grant,
+             *     and an enabled task moves funds to a target this prepare cannot
+             *     read, and that task was not listed in `dropTaskIds`.
+             *     `affectedTaskIds` names them. Pausing the task, or naming it
+             *     in `dropTaskIds`, is the way through. When a usable grant
+             *     exists, an unresolved task does not fail prepare.
+             *
+             *     `SESSION_POLICY_NATIVE_UNSIZED` — `add` would install a native
+             *     spend cap and a running task's payable value cannot be sized.
+             *     `affectedTaskIds` names those tasks. Pausing one, or naming it
+             *     in `dropTaskIds`, is the way through. The native limit module
+             *     is not installed. If the current grant already has a native
+             *     cap, this is not an error.
+             */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly submitWalletPolicy: {
@@ -3493,7 +3602,18 @@ export interface operations {
                     readonly "application/json": components["schemas"]["SubmitPolicyResponse"];
                 };
             };
-            readonly 400: components["responses"]["BadRequest"];
+            /**
+             * @description `POLICIES_BAD_PERMISSIONS` — the echoed grant is not signable,
+             *     or, when there is no usable grant, an amount cannot be sized.
+             */
+            readonly 400: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
@@ -3502,11 +3622,27 @@ export interface operations {
              *     another grant while this one was being signed. Prepare again.
              *
              *     `SESSION_POLICY_BASE_CHANGED` — `basePolicyId` is not the runner's
-             *     usable grant anymore. Prepare again.
+             *     usable grant anymore, or a carried grant's remaining limit or
+             *     running set moved after prepare. The grant id can be unchanged.
+             *     Prepare again.
              *
-             *     `SESSION_POLICY_NOT_COVERING` — this grant would leave an enabled
-             *     task on the runner unable to run, and that task was not listed in
-             *     `dropTaskIds`. `affectedTaskIds` names them.
+             *     `SESSION_POLICY_NOT_COVERING` — when a grant was carried, the
+             *     new grant covers less of an enabled task than the current grant
+             *     did. When there is no current grant, an enabled task on the
+             *     runner would be unable to run. Tasks listed in `dropTaskIds`
+             *     are excluded. `affectedTaskIds` names the tasks.
+             *
+             *     `SESSION_POLICY_TARGET_UNRESOLVED` — there is no usable grant,
+             *     and an enabled task moves funds to a target the grant cannot
+             *     read, and that task was not listed in `dropTaskIds`.
+             *     `affectedTaskIds` names them. When a usable grant exists, an
+             *     unresolved task does not fail submit by itself.
+             *
+             *     `SESSION_POLICY_NATIVE_UNSIZED` — the echoed grant would install
+             *     a native spend cap and a running task's payable value cannot be
+             *     sized. `affectedTaskIds` names those tasks. Pausing one, or
+             *     naming it in `dropTaskIds`, is the way through. If the current
+             *     grant already has a native cap, this is not an error.
              */
             readonly 409: {
                 headers: {
