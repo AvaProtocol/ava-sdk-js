@@ -106,8 +106,10 @@ export class WorkflowsResource {
    * step with `SESSION_POLICY_TARGET_NOT_ALLOWED`, which one-shot Auto paths
    * read today. `report` does not fail the step for a missing or short grant
    * and sets `authorization` on the execution (`covered`, `no_grant`,
-   * `not_covered`, `cap_too_low`, `expires_too_soon`, `cap_needs_input`).
-   * A storage lookup failure still fails the step. `maxExecution`, `startAt`,
+   * `not_covered`, `cap_too_low`, `expires_too_soon`, `cap_needs_input`,
+   * `target_unresolved`). `target_unresolved` means a fund-moving target
+   * could not be read from the stored workflow. A storage lookup failure
+   * still fails the step. `maxExecution`, `startAt`,
    * and `expiredAt` size that verdict the same way create sizes a workflow.
    */
   simulate(req: v4.SimulateWorkflowRequest): Promise<v4.Execution> {

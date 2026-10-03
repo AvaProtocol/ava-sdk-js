@@ -101,12 +101,24 @@ export class PoliciesResource {
    *   grant while this one was being signed. Prepare again rather than
    *   retrying the submit; the entity is baked into the signed calldata.
    * - `SESSION_POLICY_BASE_CHANGED` — `basePolicyId` is not the runner's
-   *   current usable grant. An empty string means prepare saw none. Prepare
-   *   again.
+   *   usable grant, or a carried grant's remaining limit or running set
+   *   moved after prepare. The grant id can be unchanged. An empty string
+   *   means prepare saw no grant. Prepare again.
    * - `SESSION_POLICY_NOT_COVERING` — storing this grant would leave another
-   *   enabled automation on the runner unable to run. `affectedTaskIds` names
-   *   those workflows. Send them back as `dropTaskIds` only when the owner
-   *   means to stop them.
+   *   enabled automation on the runner unable to run. When a grant was
+   *   carried, this is only a task the new grant covers less than the
+   *   current one did. `affectedTaskIds` names those workflows. Send them
+   *   back as `dropTaskIds` only when the owner means to stop them.
+   * - `SESSION_POLICY_TARGET_UNRESOLVED` — there is no usable grant, and an
+   *   enabled task moves funds to a target the grant cannot read, and that
+   *   task was not listed in `dropTaskIds`. `affectedTaskIds` names them.
+   *   When a usable grant exists, an unresolved task does not fail submit
+   *   by itself.
+   * - `SESSION_POLICY_NATIVE_UNSIZED` — the echoed grant would install a
+   *   native spend cap and a running task's payable value cannot be sized.
+   *   `affectedTaskIds` names those tasks. Pause one, or name it in
+   *   `dropTaskIds`. If the current grant already has a native cap, this
+   *   is not an error.
    */
   submit(
     address: string,
@@ -217,8 +229,13 @@ export class PoliciesResource {
    * optional on the request types: the vendored spec drops the server's
    * `default: false` so `openapi-typescript` does not make it required.
    *
-   * `dropTaskIds`, when passed, is forwarded to submit so the owner can
-   * name enabled workflows this grant is allowed to leave uncovered.
+   * `dropTaskIds` names enabled workflows this grant may leave uncovered.
+   * When `add` is set, those ids go on prepare, so the merged grant the
+   * owner signs already leaves them out. Submit echoes prepare's
+   * `affectedTaskIds`, the list prepare actually applied, not an extra id
+   * the caller named that was not enabled. When `add` is omitted, prepare
+   * does not receive the list — the gateway honors it only for an `add`
+   * merge — and submit still receives the caller's list.
    *
    * ```ts
    * const policy = await client.policies.grant(wallet, {
@@ -236,7 +253,11 @@ export class PoliciesResource {
     req: GrantRequest,
     sign: TypedDataSigner,
   ): Promise<v4.SubmitPolicyResponse> {
-    const { dropTaskIds, ...prepareReq } = req;
+    const { dropTaskIds, ...withoutDrops } = req;
+    // An `add` merge has to see the drop list, or the signed grant still
+    // includes those tasks and submit then disagrees with it. A replace-all
+    // grant ignores the list at prepare.
+    const prepareReq = req.add ? req : withoutDrops;
     const prepared = await this.prepare(address, prepareReq);
     const signature = await sign(prepared.typedData);
     // A fragment must not be what the owner signs. Prepare already merged it.
@@ -268,6 +289,9 @@ export class PoliciesResource {
             ? { basePolicyId: req.basePolicyId }
             : {}),
         };
+    // `add` echoes the ids prepare left out. Replace-all echoes the
+    // caller's list, because prepare did not apply one.
+    const submitDropTaskIds = req.add ? prepared.affectedTaskIds : dropTaskIds;
 
     return this.submit(address, {
       chainId: prepared.chainId,
@@ -280,15 +304,17 @@ export class PoliciesResource {
       agentLabel: req.agentLabel,
       justification: req.justification,
       ...permissions,
-      ...(dropTaskIds !== undefined ? { dropTaskIds } : {}),
+      ...(submitDropTaskIds !== undefined ? { dropTaskIds: submitDropTaskIds } : {}),
       signature,
     });
   }
 }
 
 /**
- * {@link PoliciesResource.grant} input. `dropTaskIds` is submit-only: prepare
- * does not take it, and it is omitted from the prepare body.
+ * {@link PoliciesResource.grant} input. `dropTaskIds` is already on
+ * {@link v4.PreparePolicyRequest}. With `add`, grant sends it on prepare
+ * and submits prepare's `affectedTaskIds`. Without `add`, grant sends it
+ * only on submit.
  */
 export type GrantRequest = v4.PreparePolicyRequest & {
   dropTaskIds?: string[];

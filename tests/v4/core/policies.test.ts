@@ -183,6 +183,7 @@ describe("policies.grant", () => {
     const merged = {
       ...PREPARED,
       basePolicyId: "",
+      affectedTaskIds: ["swap-1"],
       allowedActions: [{ target: usdc, selectors: ["0xa9059cbb", "0x095ea7b3"] }],
       erc20SpendCap: { token: usdc, amount: "19" },
       erc20SpendCaps: [{ token: usdc, amount: "19" }],
@@ -209,7 +210,39 @@ describe("policies.grant", () => {
     expect(submitted.allowContractRecipient).toBeUndefined();
     expect(submitted.dropTaskIds).toEqual(["swap-1"]);
     expect(captured.prepareBody?.add).toEqual(fragment);
+    expect(captured.prepareBody?.dropTaskIds).toEqual(["swap-1"]);
+  });
+
+  test("submits the ids prepare left out, not an extra id the caller named", async () => {
+    await gateway.close();
+    const merged = {
+      ...PREPARED,
+      basePolicyId: "",
+      affectedTaskIds: ["swap-1"],
+    } satisfies v4.PreparedPolicy;
+    captured = { paths: [] };
+    gateway = await startGateway(captured, merged);
+    client = new Client({ baseUrl: `${gateway.url}/api/v1`, token: "test-jwt" });
+
+    await client.policies.grant(
+      wallet,
+      { ...request, add: { allowedActions: request.allowedActions }, dropTaskIds: ["swap-1", "missing"] },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
+    expect(captured.prepareBody?.dropTaskIds).toEqual(["swap-1", "missing"]);
+    expect(captured.submitBody?.dropTaskIds).toEqual(["swap-1"]);
+  });
+
+  test("keeps dropTaskIds off prepare when add is omitted", async () => {
+    await client.policies.grant(
+      wallet,
+      { ...request, dropTaskIds: ["old"] },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
     expect(captured.prepareBody?.dropTaskIds).toBeUndefined();
+    expect(captured.submitBody?.dropTaskIds).toEqual(["old"]);
   });
 
   test("echoes prepare's basePolicyId and contract-recipient flag, not the caller's", async () => {
