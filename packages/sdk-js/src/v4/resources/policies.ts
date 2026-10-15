@@ -229,6 +229,11 @@ export class PoliciesResource {
    * optional on the request types: the vendored spec drops the server's
    * `default: false` so `openapi-typescript` does not make it required.
    *
+   * `changes.nativeGasWei` is on the prepare response for the approval
+   * screen. `grant()` returns {@link v4.SubmitPolicyResponse} and the
+   * signer receives only `typedData`, so a screen that shows the gas
+   * split calls {@link prepare} and {@link submit}.
+   *
    * `dropTaskIds` names enabled workflows this grant may leave uncovered.
    * When `add` is set, those ids go on prepare, so the merged grant the
    * owner signs already leaves them out. Submit echoes prepare's
@@ -263,6 +268,10 @@ export class PoliciesResource {
     // A fragment must not be what the owner signs. Prepare already merged it.
     // `allowContractRecipient` is included only when the source set it, so an
     // omitted flag stays omitted and the gateway applies its default of false.
+    // `nativeGasWei` is not a signed field. It arrives on `add` (forwarded
+    // with the rest of the prepare request) and returns on `changes` for the
+    // approval screen. The signed cap is `nativeSpendCap`, which already
+    // includes that gas. Submit does not accept `nativeGasWei`.
     const permissions = req.add
       ? {
           allowedActions: prepared.allowedActions,

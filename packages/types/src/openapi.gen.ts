@@ -69,6 +69,10 @@ export interface paths {
          *     with the EigenLayer registration chain ID (not the workflow target
          *     chain). SDKs construct the message locally — there is no
          *     `GetSignatureFormat` endpoint.
+         *
+         *     The token expires at the message's `Expire At`, which may be at most
+         *     48 hours from now. A message that expires later is refused with
+         *     `AUTH_EXPIRY_TOO_FAR`.
          */
         readonly post: operations["authExchange"];
         readonly delete?: never;
@@ -98,8 +102,14 @@ export interface paths {
          *     When the gateway config `session_policy_deploy_check` is on, a workflow
          *     whose fund-moving steps the runner's usable grant does not cover is
          *     refused with `409 SESSION_POLICY_NOT_COVERING`. `required` is the grant
-         *     those steps still need. A workflow that only notifies passes with no
-         *     grant. The flag defaults to off, so today's callers are unchanged.
+         *     those steps still need. A fund-moving workflow whose single usable
+         *     grant has already expired is `409 SESSION_POLICY_EXPIRED`, including
+         *     when the workflow has no end date. A fund-moving step whose target
+         *     cannot be read stays `409 SESSION_POLICY_TARGET_UNRESOLVED` even when
+         *     that grant has expired. A grant with no recorded expiry is not
+         *     expired. The owner grants again. A workflow that only notifies
+         *     passes with no grant. The flag defaults to off, so today's callers
+         *     are unchanged.
          */
         readonly post: operations["createWorkflow"];
         readonly delete?: never;
@@ -170,7 +180,11 @@ export interface paths {
          * @description Transition from `disabled` to `enabled`. Idempotent. When
          *     `session_policy_deploy_check` is on, enabling a workflow whose
          *     fund-moving steps the runner's usable grant does not cover is
-         *     `409 SESSION_POLICY_NOT_COVERING`. Disabling is not checked.
+         *     `409 SESSION_POLICY_NOT_COVERING`. A fund-moving workflow whose
+         *     grant has already expired is `409 SESSION_POLICY_EXPIRED`, including
+         *     when the workflow has no end date. A fund-moving step whose target
+         *     cannot be read stays `409 SESSION_POLICY_TARGET_UNRESOLVED` even when
+         *     that grant has expired. Disabling is not checked.
          *     Notification-only workflows pass with no grant.
          */
         readonly post: operations["resumeWorkflow"];
@@ -353,7 +367,7 @@ export interface paths {
             };
             readonly cookie?: never;
         };
-        /** Get execution status (lightweight, no steps) */
+        /** Get execution status (lightweight, no steps; includes the run summary once the run has ended) */
         readonly get: operations["getExecutionStatus"];
         readonly put?: never;
         readonly post?: never;
@@ -1072,8 +1086,8 @@ export interface components {
             /**
              * @description Usable session grant involved in this failure, when there is one.
              *     Set on `SESSION_POLICY_BASE_CHANGED`, `SESSION_POLICY_NOT_COVERING`,
-             *     `SESSION_POLICY_TARGET_UNRESOLVED`, and
-             *     `SESSION_POLICY_NATIVE_UNSIZED`.
+             *     `SESSION_POLICY_TARGET_UNRESOLVED`, `SESSION_POLICY_NATIVE_UNSIZED`,
+             *     and `SESSION_POLICY_EXPIRED`.
              */
             readonly policyId?: string;
             /**
@@ -1088,7 +1102,8 @@ export interface components {
             readonly missingActions?: readonly components["schemas"]["AllowedAction"][];
             /**
              * @description Grant the caller still needs. Set on
-             *     `409 SESSION_POLICY_NOT_COVERING` from create and resume.
+             *     `409 SESSION_POLICY_NOT_COVERING` and
+             *     `409 SESSION_POLICY_EXPIRED` from create and resume.
              */
             readonly required?: components["schemas"]["SessionPolicyNeed"];
         };
@@ -1883,6 +1898,23 @@ export interface components {
             /** Format: int64 */
             readonly endAt?: number;
         };
+        /**
+         * @description Studio's summary-step reply, present once the run has ended.
+         *     Absent on older runs and while the run is still in progress.
+         */
+        readonly ExecutionSummary: {
+            /** @description Report title. */
+            readonly subject?: string;
+            /**
+             * @description Structured report. Its fields include the summary line,
+             *     executions, errors, notice, and step counts.
+             */
+            readonly body?: {
+                readonly [key: string]: unknown;
+            };
+        } & {
+            readonly [key: string]: unknown;
+        };
         readonly Execution: {
             readonly id: components["schemas"]["Ulid"];
             readonly workflowId: components["schemas"]["Ulid"];
@@ -1905,6 +1937,7 @@ export interface components {
             readonly cogs?: readonly components["schemas"]["NodeCOGS"][];
             /** @description Value-capture fee charged (post-paid). */
             readonly valueFee?: components["schemas"]["ValueFee"];
+            readonly summary?: components["schemas"]["ExecutionSummary"];
             /**
              * @description Present on simulate when `authorizationMode` is `report`.
              *     Omitted on stored executions and on enforce-mode simulates.
@@ -1915,7 +1948,10 @@ export interface components {
             readonly data: readonly components["schemas"]["Execution"][];
             readonly pageInfo: components["schemas"]["PageInfo"];
         };
-        /** @description Lightweight execution status (no steps payload). */
+        /**
+         * @description Lightweight execution status (no steps payload). Includes the run
+         *     summary once the run has ended.
+         */
         readonly ExecutionStatusSummary: {
             readonly id: components["schemas"]["Ulid"];
             readonly workflowId?: components["schemas"]["Ulid"];
@@ -1925,6 +1961,7 @@ export interface components {
             /** Format: int64 */
             readonly endAt?: number;
             readonly error?: string;
+            readonly summary?: components["schemas"]["ExecutionSummary"];
         };
         readonly ExecutionCount: {
             /** Format: int64 */
@@ -2193,7 +2230,10 @@ export interface components {
              * @description Cumulative native-token cap in wei (decimal string, no reset).
              *     Enforced on-chain by NativeTokenLimitModule. Self-funded UserOps
              *     also decrement this cap by gas; sponsored UserOps decrement only
-             *     the ETH value sent.
+             *     the ETH value sent. When the chain does not sponsor gas, prepare
+             *     sizes headroom for those UserOps into this amount: the steady-op
+             *     ceiling times a per-chain fee assumption, plus one install. That
+             *     headroom can also be sent as value to the allowed recipients.
              * @example 10000000000000000
              */
             readonly amount: string;
@@ -2210,7 +2250,9 @@ export interface components {
              *     `no_grant` — fund-moving steps and no usable grant.
              *     `not_covered` — a planned call or native recipient is outside the grant.
              *     `cap_too_low` — a sized cap or native budget is short.
-             *     `expires_too_soon` — the grant ends before this workflow's window.
+             *     `expires_too_soon` — the grant has already expired, or it ends
+             *     before this workflow's window. A workflow with no end still
+             *     reports this when the grant's own expiry has passed.
              *     `cap_needs_input` — a spend amount is not a fixed number, so the
              *     caller must choose the cap.
              *     `target_unresolved` — a fund-moving target could not be read from
@@ -2237,6 +2279,13 @@ export interface components {
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             /**
+             * @description Wei of `nativeSpendCap` that is self-funded gas rather than ETH
+             *     this workflow sends. Steady UserOps only. Prepare adds one
+             *     install for the wallet when the grant is not yet applied.
+             *     Omitted when this workflow's gas was not priced.
+             */
+            readonly nativeGasWei?: string;
+            /**
              * Format: int64
              * @description Absolute unix milliseconds the grant must last through. 0 when the window is unknown.
              */
@@ -2256,6 +2305,13 @@ export interface components {
             readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
+            /**
+             * @description Wei of this addition's `nativeSpendCap` that is self-funded gas
+             *     rather than ETH sent. Already included in that cap. Prepare does
+             *     not add it again. It lets the approval screen split payments
+             *     from gas. Omit when the cap is value only.
+             */
+            readonly nativeGasWei?: string;
             readonly allowContractRecipient?: boolean;
             /**
              * Format: int64
@@ -2299,6 +2355,15 @@ export interface components {
          *     fields are the same facts.
          */
         readonly SessionPolicyChanges: {
+            /**
+             * @description Wei of the signed native cap that is self-funded gas: enabled
+             *     automations' steady UserOps, one install when the grant is not
+             *     yet applied, plus `nativeGasWei` from the addition. Omitted when
+             *     this prepare did not price gas. The rest of the signed native
+             *     cap is ETH the automations send. This headroom can also be sent
+             *     as value to the allowed recipients.
+             */
+            readonly nativeGasWei?: string;
             /**
              * @description Approval lines. An expiry change reads
              *     "<task name>: until <Mon D>, was <Mon D>" in UTC when both dates
@@ -2756,7 +2821,11 @@ export interface operations {
              * @description `SESSION_POLICY_NOT_COVERING` when `session_policy_deploy_check` is
              *     on and the runner's usable grant does not cover this workflow's
              *     fund-moving steps. `required`, `policyId`, and `missingActions`
-             *     describe the gap. Notification-only workflows do not hit this.
+             *     describe the gap. `SESSION_POLICY_EXPIRED` when that grant has
+             *     already expired, including when the workflow has no end date.
+             *     `SESSION_POLICY_TARGET_UNRESOLVED` when a fund-moving target cannot
+             *     be read, including when the grant has also expired.
+             *     Notification-only workflows do not hit this.
              */
             readonly 409: {
                 headers: {
@@ -2875,6 +2944,10 @@ export interface operations {
              *     `session_policy_deploy_check` is on and enabling it would leave its
              *     fund-moving steps outside the runner's usable grant
              *     (`SESSION_POLICY_NOT_COVERING`; `required` describes the gap).
+             *     `SESSION_POLICY_EXPIRED` when the runner's grant has already
+             *     expired, including when the workflow has no end date.
+             *     `SESSION_POLICY_TARGET_UNRESOLVED` when a fund-moving target cannot
+             *     be read, including when the grant has also expired.
              */
             readonly 409: {
                 headers: {
@@ -3545,6 +3618,12 @@ export interface operations {
              * @description `POLICIES_BAD_PERMISSIONS` — the grant is not signable. When
              *     there is no usable grant, an unsized token amount is this code.
              *     An unsized native payable that would install a native cap is 409.
+             *     An amount that was a JSON number past the exact integer range says
+             *     to send a decimal string.
+             *     `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS` — more than five native
+             *     recipients. Finished automations keep their addresses until revoke.
+             *     `SESSION_POLICY_RECIPIENT_NOT_EOA` — a native recipient is a contract
+             *     or a 7702-delegated EOA.
              */
             readonly 400: {
                 headers: {
@@ -3614,6 +3693,10 @@ export interface operations {
              *     or, when there is no usable grant, a token amount cannot be sized.
              *     An unsized native payable that would install a native cap is
              *     `409 SESSION_POLICY_NATIVE_UNSIZED`.
+             *     `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS` — more than five native
+             *     recipients. Finished automations keep their addresses until revoke.
+             *     `SESSION_POLICY_RECIPIENT_NOT_EOA` — a native recipient is a contract
+             *     or a 7702-delegated EOA.
              */
             readonly 400: {
                 headers: {
