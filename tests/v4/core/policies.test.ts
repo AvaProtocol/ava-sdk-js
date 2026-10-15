@@ -181,15 +181,25 @@ describe("policies.grant", () => {
   test("forwards add.nativeGasWei to prepare and keeps it off submit", async () => {
     await gateway.close();
     const recipient = "0x000000000000000000000000000000000000a11c";
+    // 0.01 ETH sent. The fragment's gas is this addition only. The merged
+    // gas is the other automations' steady gas plus that fragment gas, and
+    // the merged cap is the value plus the merged gas, so it is at least
+    // the fragment cap.
+    const valueWei = 10_000_000_000_000_000n;
+    const steadyGasWei = 3_000_000_000_000_000n;
+    const fragmentGasWei = 1_500_000_000_000_000n;
+    const mergedGasWei = steadyGasWei + fragmentGasWei;
+    const fragmentCapWei = valueWei + fragmentGasWei;
+    const mergedCapWei = valueWei + mergedGasWei;
     const merged = {
       ...PREPARED,
       basePolicyId: "",
       nativeRecipients: [recipient],
-      nativeSpendCap: { amount: "51012000000000000" },
+      nativeSpendCap: { amount: mergedCapWei.toString() },
       changes: {
         summary: ["Send ETH"],
         basePolicyId: "",
-        nativeGasWei: "51000000000000000",
+        nativeGasWei: mergedGasWei.toString(),
       },
     } satisfies v4.PreparedPolicy;
     captured = { paths: [] };
@@ -198,8 +208,8 @@ describe("policies.grant", () => {
 
     const fragment = {
       nativeRecipients: [recipient],
-      nativeSpendCap: { amount: "10000000000000000" },
-      nativeGasWei: "1500000000000000",
+      nativeSpendCap: { amount: fragmentCapWei.toString() },
+      nativeGasWei: fragmentGasWei.toString(),
     };
     await client.policies.grant(
       wallet,

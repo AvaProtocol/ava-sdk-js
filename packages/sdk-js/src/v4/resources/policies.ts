@@ -229,6 +229,11 @@ export class PoliciesResource {
    * optional on the request types: the vendored spec drops the server's
    * `default: false` so `openapi-typescript` does not make it required.
    *
+   * `changes.nativeGasWei` is on the prepare response for the approval
+   * screen. `grant()` returns {@link v4.SubmitPolicyResponse} and the
+   * signer receives only `typedData`, so a screen that shows the gas
+   * split calls {@link prepare} and {@link submit}.
+   *
    * `dropTaskIds` names enabled workflows this grant may leave uncovered.
    * When `add` is set, those ids go on prepare, so the merged grant the
    * owner signs already leaves them out. Submit echoes prepare's

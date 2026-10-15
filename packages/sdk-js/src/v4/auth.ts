@@ -56,7 +56,10 @@ export interface BuildAuthMessageInput {
   version: string;
   /** Issuance timestamp; defaults to `new Date()`. */
   issuedAt?: Date;
-  /** Token expiry; defaults to 24h from issuedAt. */
+  /**
+   * Token expiry. Defaults to 24 hours after `issuedAt`. The gateway
+   * rejects an expiry more than 48 hours out with `AUTH_EXPIRY_TOO_FAR`.
+   */
   expireAt?: Date;
 }
 
