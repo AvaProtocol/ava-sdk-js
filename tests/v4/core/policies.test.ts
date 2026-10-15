@@ -175,6 +175,43 @@ describe("policies.grant", () => {
     expect(submitted.nativeRecipients).toEqual(nativeReq.nativeRecipients);
     expect(submitted.nativeSpendCap).toEqual(nativeReq.nativeSpendCap);
     expect(submitted.allowedActions).toBeUndefined();
+    expect(submitted.nativeGasWei).toBeUndefined();
+  });
+
+  test("forwards add.nativeGasWei to prepare and keeps it off submit", async () => {
+    await gateway.close();
+    const recipient = "0x000000000000000000000000000000000000a11c";
+    const merged = {
+      ...PREPARED,
+      basePolicyId: "",
+      nativeRecipients: [recipient],
+      nativeSpendCap: { amount: "51012000000000000" },
+      changes: {
+        summary: ["Send ETH"],
+        basePolicyId: "",
+        nativeGasWei: "51000000000000000",
+      },
+    } satisfies v4.PreparedPolicy;
+    captured = { paths: [] };
+    gateway = await startGateway(captured, merged);
+    client = new Client({ baseUrl: `${gateway.url}/api/v1`, token: "test-jwt" });
+
+    const fragment = {
+      nativeRecipients: [recipient],
+      nativeSpendCap: { amount: "10000000000000000" },
+      nativeGasWei: "1500000000000000",
+    };
+    await client.policies.grant(
+      wallet,
+      { ...request, add: fragment },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
+    const submitted = captured.submitBody!;
+    expect(captured.prepareBody?.add).toEqual(fragment);
+    expect(submitted.nativeRecipients).toEqual(merged.nativeRecipients);
+    expect(submitted.nativeSpendCap).toEqual(merged.nativeSpendCap);
+    expect(submitted.nativeGasWei).toBeUndefined();
   });
 
   test("echoes the merged grant, not the add fragment", async () => {

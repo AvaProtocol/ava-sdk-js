@@ -263,6 +263,10 @@ export class PoliciesResource {
     // A fragment must not be what the owner signs. Prepare already merged it.
     // `allowContractRecipient` is included only when the source set it, so an
     // omitted flag stays omitted and the gateway applies its default of false.
+    // `nativeGasWei` is not a signed field. It arrives on `add` (forwarded
+    // with the rest of the prepare request) and returns on `changes` for the
+    // approval screen. The signed cap is `nativeSpendCap`, which already
+    // includes that gas. Submit does not accept `nativeGasWei`.
     const permissions = req.add
       ? {
           allowedActions: prepared.allowedActions,
