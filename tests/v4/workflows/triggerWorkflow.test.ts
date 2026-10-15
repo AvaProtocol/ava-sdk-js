@@ -16,7 +16,7 @@
  *     the gRPC→HTTP code translation).
  */
 
-import { Client, Protocols, Triggers } from "@avaprotocol/sdk-js";
+import { Chains, Client, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
 
 import {
   getSuiteClient,
@@ -27,6 +27,12 @@ import {
 import { createFromTemplate } from "../../utils/templates";
 
 jest.setTimeout(120_000);
+
+// The funded wallet's Sepolia USDC. An event query with no contract is
+// rejected by the gateway ("queries[].addresses must be a non-empty array",
+// EigenLayer-AVS #833); watching this token keeps the Transfer-to-wallet
+// topic filter meaningful.
+const USDC_SEPOLIA = Tokens.USDC[Chains.Sepolia]!.address;
 
 describe("workflows.trigger Tests", () => {
   let client: Client;
@@ -127,7 +133,7 @@ describe("workflows.trigger Tests", () => {
           chainId: 11_155_111,
           queries: [
             {
-              addresses: [],
+              addresses: [USDC_SEPOLIA],
               topics: [
                 Protocols.erc20.eventTopics.Transfer,
                 "",
