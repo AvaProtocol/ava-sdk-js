@@ -41,11 +41,13 @@ describe("External ETH transfer template", () => {
 
   test("unfunded simulation skips the transfer and produces the producer's report", async () => {
     const { contract } = templateTestConfig();
+    report.reports.length = 0;
     const compiled = compileExternalTemplate({
       runner,
       recipient,
       amountLabel: contract.unfunded.amountLabel,
       notifyUrl: report.url,
+      notifyAuthorization: report.authorization,
     });
     const simulated = await client.workflows.simulate({
       ...compiled.simulate,
@@ -103,6 +105,7 @@ describe("External ETH transfer template", () => {
         recipient: funded.owner,
         amountLabel: TEMPLATE_TEST.amount,
         notifyUrl: report.url,
+        notifyAuthorization: report.authorization,
       });
       const simulated = await funded.client.workflows.simulate({
         ...compiled.simulate,
@@ -124,10 +127,11 @@ describe("External ETH transfer template", () => {
       expect(
         required.nativeRecipients?.map((address) => address.toLowerCase()),
       ).toContain(funded.owner.toLowerCase());
-      // Compile-time check that simulate's requirement is accepted by grant.add.
+      // Checked by tsc; Jest's Babel transform does not enforce this assignment.
       const addition: NonNullable<
         Parameters<Client["policies"]["grant"]>[1]["add"]
       > = required;
+      // Shared grant additions persist; see tests/README.md before changing scope.
       if (simulated.authorization?.status !== TEMPLATE_STATUS.covered) {
         await funded.client.policies.grant(
           wallet.address,
@@ -141,6 +145,7 @@ describe("External ETH transfer template", () => {
           signTypedDataWithEthers(funded.privateKey),
         );
       }
+      report.reports.length = 0;
       const ids: string[] = [];
       const name = "external-template-" + randomUUID();
       try {
@@ -172,6 +177,7 @@ describe("External ETH transfer template", () => {
         expect(stored?.body.executions[0].txHash).toMatch(
           /^0x[0-9a-fA-F]{64}$/,
         );
+        expect(report.reports.length).toBeGreaterThan(0);
         expect(stored?.subject).toBe(report.reports.at(-1)?.subject);
         expect(stored?.body).toEqual(report.reports.at(-1)?.body);
         const status = await funded.client.executions.getStatus(

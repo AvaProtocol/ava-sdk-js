@@ -47,6 +47,10 @@ resolved in the source root; `sourceFile`, `templateId`, `reportPath` and
 JSON on stdin for `compile` and `summarize`, and returns JSON on stdout.
 Compilation must hash the bytes it compiles and return the current source commit.
 The SDK checks both against the producer checkout without logging their values.
+The artifact hash verifies that file; HEAD identifies the checkout but does not
+certify that other producer files are clean. Dirty working trees are supported
+so local edits can be tested. Jest uses Babel; run `yarn tsc --noEmit` separately
+for type validation.
 
 ```bash
 # Compile and check cleanup behavior; no gateway or wallet credentials:
@@ -58,8 +62,13 @@ TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json AVS_REST_URL=http://loca
 ```
 
 The report stub runs the producer's real summarizer with delivery stubbed. It
-binds to loopback by default; set `TEST_STUB_HOST` only for a container gateway
-that needs an externally reachable listener. `TEMPLATE_BRIDGE_TIMEOUT_MS`
+binds to loopback by default. A container gateway can use `TEST_STUB_HOST` for
+the advertised host and explicitly set `TEST_STUB_BIND_ADDRESS` for a wider bind.
+Each run generates its own bearer token, passed as `notifyAuthorization` to the
+producer compiler, and rejects report bodies over 1 MB. Bridge processes receive
+only basic system environment variables by default; use the config's optional
+`bridgeEnv` string array to select additional producer variables explicitly.
+Wallet keys are never inherited by default. `TEMPLATE_BRIDGE_TIMEOUT_MS`
 defaults to 90000. `TEMPLATE_BRIDGE_DEBUG=1` enables producer diagnostics locally;
 do not publish that output if the source repository contains private data.
 
@@ -67,7 +76,9 @@ The live test sends 0.000001 Sepolia ETH to the fixture owner's address. If a
 grant is needed, it adds the observed requirements to the shared fixture grant
 for seven days. That addition persists after cleanup and can broaden an existing
 grant; the test never revokes shared permissions. It removes only its own
-workflows, including recovery by unique name after a lost creation response.
+workflows, including bounded repeated recovery by unique name after a lost
+creation response. Name new gateway-free tests `*.contract.test.ts` so the
+contract-only command selects them.
 
 ## CI stack
 

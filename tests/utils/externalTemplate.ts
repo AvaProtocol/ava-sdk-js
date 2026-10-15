@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import type { Client, v4 } from "@avaprotocol/sdk-js";
@@ -11,7 +11,7 @@ export const TEMPLATE_TEST = {
   chainId: 11_155_111,
   amount: "0.000001",
   amountWei: "1000000000000",
-  authorization: "Bearer headless-test",
+  maxReportBytes: 1024 * 1024,
 } as const;
 export const TEMPLATE_ACTION = {
   compile: "compile",
@@ -27,6 +27,7 @@ export const TEMPLATE_MODE = { report: "report", manual: "manual" } as const;
 export interface TemplateTestConfig {
   sourceRoot: string;
   bridgeArgs: string[];
+  bridgeEnv?: string[];
   templateId: string;
   sourceFile: string;
   reportPath: string;
@@ -46,26 +47,96 @@ export interface TemplateTestConfig {
   };
 }
 
+let cachedConfig: { file: string; config: TemplateTestConfig } | undefined;
+const nonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.length > 0;
+const stringArray = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every(nonEmptyString);
+const record = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object" && !Array.isArray(value);
+
 export function templateTestConfig(): TemplateTestConfig {
   const file = process.env.TEMPLATE_TEST_CONFIG;
   if (!file)
     throw new Error(
       "TEMPLATE_TEST_CONFIG must point to a producer-owned test configuration",
     );
-  const config = JSON.parse(readFileSync(file, "utf8")) as TemplateTestConfig;
+  const absoluteFile = resolve(file);
+  if (cachedConfig?.file === absoluteFile) return cachedConfig.config;
+  const config = JSON.parse(
+    readFileSync(absoluteFile, "utf8"),
+  ) as TemplateTestConfig;
+  const contract = config?.contract;
   if (
-    !config.sourceRoot ||
-    !config.bridgeArgs?.length ||
-    !config.templateId ||
-    !config.sourceFile ||
-    !config.contract
+    !record(config) ||
+    !nonEmptyString(config.sourceRoot) ||
+    !stringArray(config.bridgeArgs) ||
+    config.bridgeArgs.length === 0 ||
+    (config.bridgeEnv !== undefined &&
+      (!stringArray(config.bridgeEnv) ||
+        !config.bridgeEnv.every((key) =>
+          /^[A-Za-z_][A-Za-z0-9_]*$/.test(key),
+        ))) ||
+    !nonEmptyString(config.templateId) ||
+    !nonEmptyString(config.sourceFile) ||
+    !nonEmptyString(config.reportPath) ||
+    !/^\/[A-Za-z0-9/_-]+$/.test(config.reportPath) ||
+    !record(contract) ||
+    !record(contract.input) ||
+    !nonEmptyString(contract.input.runner) ||
+    !nonEmptyString(contract.input.recipient) ||
+    !nonEmptyString(contract.input.amountLabel) ||
+    !record(contract.expectedCreate) ||
+    !stringArray(contract.nodeIds) ||
+    contract.nodeIds.length === 0 ||
+    !nonEmptyString(contract.transferNodeId) ||
+    !nonEmptyString(contract.reportNodeId) ||
+    !contract.nodeIds.includes(contract.transferNodeId) ||
+    !contract.nodeIds.includes(contract.reportNodeId) ||
+    !Array.isArray(contract.reportEdges) ||
+    !contract.reportEdges.every(
+      (edge) =>
+        record(edge) &&
+        nonEmptyString(edge.source) &&
+        nonEmptyString(edge.target),
+    ) ||
+    !record(contract.unfunded) ||
+    !nonEmptyString(contract.unfunded.amountLabel) ||
+    !nonEmptyString(contract.unfunded.summaryIncludes) ||
+    !nonEmptyString(contract.unfunded.errorIncludes) ||
+    typeof contract.withoutDeliveryHasReport !== "boolean"
   ) {
     throw new Error("Invalid external template test configuration");
   }
-  return {
-    ...config,
-    sourceRoot: resolve(dirname(resolve(file)), config.sourceRoot),
-  };
+  const sourceRoot = resolve(dirname(absoluteFile), config.sourceRoot);
+  const sourceRelative = relative(
+    sourceRoot,
+    resolve(sourceRoot, config.sourceFile),
+  );
+  if (isAbsolute(sourceRelative) || sourceRelative.split(sep)[0] === "..") {
+    throw new Error(
+      "The source artifact must stay inside the producer checkout",
+    );
+  }
+  const resolved = { ...config, sourceRoot };
+  cachedConfig = { file: absoluteFile, config: resolved };
+  return resolved;
+}
+
+function bridgeEnvironment(config: TemplateTestConfig): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { NODE_ENV: "test" };
+  for (const key of [
+    "PATH",
+    "HOME",
+    "TMPDIR",
+    "TMP",
+    "TEMP",
+    "SYSTEMROOT",
+    ...(config.bridgeEnv ?? []),
+  ]) {
+    if (process.env[key] !== undefined) env[key] = process.env[key];
+  }
+  return env;
 }
 
 export function templateBridge<T>(request: object): T {
@@ -81,7 +152,7 @@ export function templateBridge<T>(request: object): T {
         encoding: "utf8",
         timeout,
         stdio: ["pipe", "pipe", "pipe"],
-        env: { ...process.env, NODE_ENV: "test" },
+        env: bridgeEnvironment(config),
       }),
     );
   } catch (error) {
@@ -108,6 +179,7 @@ export function compileExternalTemplate(input: {
   recipient: string;
   amountLabel: string;
   notifyUrl?: string;
+  notifyAuthorization?: string;
 }): CompiledTemplateRequest {
   const config = templateTestConfig();
   const compiled = templateBridge<CompiledTemplateRequest>({
@@ -123,6 +195,7 @@ export function compileExternalTemplate(input: {
     cwd: config.sourceRoot,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
+    env: bridgeEnvironment(config),
   }).trim();
   if (
     compiled.provenance.templateSha256 !== expected ||
@@ -130,7 +203,7 @@ export function compileExternalTemplate(input: {
     compiled.provenance.sourceCommit !== commit
   ) {
     throw new Error(
-      "The request was not compiled from the current producer checkout",
+      "The source artifact hash or checkout HEAD provenance does not match",
     );
   }
   return compiled;
@@ -151,18 +224,29 @@ export interface TemplateReport {
 export async function startTemplateReportServer() {
   const config = templateTestConfig();
   const reports: TemplateReport[] = [];
+  const authorization = "Bearer " + randomBytes(32).toString("hex");
   const server = createServer(async (req, res) => {
     try {
       if (
         req.method !== "POST" ||
         req.url !== config.reportPath ||
-        req.headers.authorization !== TEMPLATE_TEST.authorization
+        req.headers.authorization !== authorization
       ) {
         res.writeHead(403).end();
         return;
       }
       const chunks: Buffer[] = [];
-      for await (const chunk of req) chunks.push(Buffer.from(chunk));
+      let size = 0;
+      for await (const chunk of req.iterator({ destroyOnReturn: false })) {
+        const data = Buffer.from(chunk);
+        size += data.length;
+        if (size > TEMPLATE_TEST.maxReportBytes) {
+          res.writeHead(413).end();
+          req.resume();
+          return;
+        }
+        chunks.push(data);
+      }
       const reply = templateBridge<{ ok: true; summary: TemplateReport }>({
         action: TEMPLATE_ACTION.summarize,
         digest: JSON.parse(Buffer.concat(chunks).toString()),
@@ -180,11 +264,7 @@ export async function startTemplateReportServer() {
   });
   await new Promise<void>((accept, reject) => {
     server.once("error", reject);
-    server.listen(
-      0,
-      process.env.TEST_STUB_HOST ? "0.0.0.0" : "127.0.0.1",
-      accept,
-    );
+    server.listen(0, process.env.TEST_STUB_BIND_ADDRESS ?? "127.0.0.1", accept);
   });
   const { port } = server.address() as AddressInfo;
   return {
@@ -195,10 +275,12 @@ export async function startTemplateReportServer() {
       port +
       config.reportPath,
     reports,
+    authorization,
     close: () =>
-      new Promise<void>((accept, reject) =>
-        server.close((error) => (error ? reject(error) : accept())),
-      ),
+      new Promise<void>((accept, reject) => {
+        server.close((error) => (error ? reject(error) : accept()));
+        server.closeAllConnections();
+      }),
   };
 }
 
@@ -211,21 +293,31 @@ export async function cleanupTemplateWorkflows(input: {
 }): Promise<void> {
   try {
     if (input.ids.length === 0) {
-      let after: string | undefined;
-      do {
-        const page = await input.client.workflows.list({
-          smartWalletAddress: [input.walletAddress],
-          limit: 100,
-          ...(after ? { after } : {}),
-        });
-        input.ids.push(
-          ...page.data
-            .filter((workflow) => workflow.name === input.name)
-            .map((workflow) => workflow.id),
-        );
-        after = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : undefined;
-      } while (after);
+      for (let attempt = 0; attempt < 2 && input.ids.length === 0; attempt++) {
+        if (attempt > 0) await new Promise((accept) => setTimeout(accept, 500));
+        let after: string | undefined;
+        do {
+          const page = await input.client.workflows.list({
+            smartWalletAddress: [input.walletAddress],
+            limit: 100,
+            ...(after ? { after } : {}),
+          });
+          input.ids.push(
+            ...page.data
+              .filter((workflow) => workflow.name === input.name)
+              .map((workflow) => workflow.id),
+          );
+          after = page.pageInfo.hasNextPage
+            ? page.pageInfo.endCursor
+            : undefined;
+        } while (after);
+      }
     }
+  } catch (error) {
+    // Discovery only runs after a failed create. Preserve that primary error,
+    // and still cancel any ids recovered before discovery failed.
+    console.error("Workflow recovery discovery failed");
+    if (process.env.TEMPLATE_BRIDGE_DEBUG === "1") console.error(error);
   } finally {
     await removeCreatedWorkflows(input.client, input.ids);
   }

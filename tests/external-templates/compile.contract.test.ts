@@ -6,10 +6,11 @@ import {
 
 describe("External template compilation contract", () => {
   test("compiles the current producer source and satisfies its contract", () => {
-    const { contract } = templateTestConfig();
+    const { contract, reportPath } = templateTestConfig();
     const compiled = compileExternalTemplate({
       ...contract.input,
-      notifyUrl: "http://127.0.0.1:9999" + templateTestConfig().reportPath,
+      notifyUrl: "http://127.0.0.1:9999" + reportPath,
+      notifyAuthorization: "Bearer compile-only",
     });
     expect(compiled.create).toMatchObject(contract.expectedCreate);
     expect(compiled.create.nodes.map((node) => node.id)).toEqual(

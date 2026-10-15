@@ -42,3 +42,50 @@ test("cleans known ids without depending on discovery", async () => {
   expect(list).not.toHaveBeenCalled();
   expect(cancel).toHaveBeenCalledWith("created");
 });
+
+test("retries discovery when a timed-out create becomes visible later", async () => {
+  const list = jest
+    .fn()
+    .mockResolvedValueOnce({ data: [], pageInfo: { hasNextPage: false } })
+    .mockResolvedValueOnce({
+      data: [{ id: "late", name: "this-test" }],
+      pageInfo: { hasNextPage: false },
+    });
+  const cancel = jest.fn().mockResolvedValue(undefined);
+  const client = { workflows: { list, cancel } } as unknown as Client;
+  await cleanupTemplateWorkflows({
+    client,
+    ids: [],
+    walletAddress: "wallet",
+    name: "this-test",
+  });
+  expect(list).toHaveBeenCalledTimes(2);
+  expect(cancel).toHaveBeenCalledWith("late");
+});
+
+test("preserves the primary error and cancels recovered ids when later discovery fails", async () => {
+  const list = jest
+    .fn()
+    .mockResolvedValueOnce({
+      data: [{ id: "created", name: "this-test" }],
+      pageInfo: { hasNextPage: true, endCursor: "next" },
+    })
+    .mockRejectedValueOnce(new Error("discovery failed"));
+  const cancel = jest.fn().mockResolvedValue(undefined);
+  const client = { workflows: { list, cancel } } as unknown as Client;
+  const diagnostic = jest.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    await expect(
+      cleanupTemplateWorkflows({
+        client,
+        ids: [],
+        walletAddress: "wallet",
+        name: "this-test",
+      }),
+    ).resolves.toBeUndefined();
+    expect(diagnostic).toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledWith("created");
+  } finally {
+    diagnostic.mockRestore();
+  }
+});
