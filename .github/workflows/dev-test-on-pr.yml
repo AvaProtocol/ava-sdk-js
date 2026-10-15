@@ -338,6 +338,14 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: Type-check external template harness
+        run: yarn test:external:types
+
+      - name: External template harness unit tests
+        run: |
+          mkdir -p logs
+          yarn test:external:unit 2>&1 | tee logs/$(date +%Y%m%d-%H%M%S)-external-unit.log
+
       - name: Smoke + on-chain helper unit tests
         run: yarn test:smoke
 

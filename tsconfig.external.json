@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@avaprotocol/sdk-js": ["packages/sdk-js/src/index.ts"],
+      "@avaprotocol/sdk-js/partner": ["packages/sdk-js/src/partner.ts"],
+      "@avaprotocol/types": ["packages/types/src/index.ts"]
+    }
+  },
+  "include": ["tests/external-templates/**/*.ts", "tests/utils/matchers.ts"]
+}
