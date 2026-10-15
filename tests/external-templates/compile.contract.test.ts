@@ -12,6 +12,7 @@ describe("External template compilation contract", () => {
       notifyUrl: "http://127.0.0.1:9999" + reportPath,
       notifyAuthorization: "Bearer compile-only",
     });
+    expect(typeof compiled.provenance.sourceDirty).toBe("boolean");
     expect(compiled.create).toMatchObject(contract.expectedCreate);
     expect(compiled.create.nodes.map((node) => node.id)).toEqual(
       contract.nodeIds,

@@ -1,5 +1,6 @@
+import { assertNoLeakedWorkflows } from "../../utils/client";
 import type { Client } from "@avaprotocol/sdk-js";
-import { cleanupTemplateWorkflows } from "../utils/externalTemplate";
+import { cleanupTemplateWorkflows } from "../../utils/externalTemplate";
 
 test("recovers a lost create response by exact name across pages without cancelling other workflows", async () => {
   const list = jest
@@ -87,5 +88,31 @@ test("preserves the primary error and cancels recovered ids when later discovery
     expect(cancel).toHaveBeenCalledWith("created");
   } finally {
     diagnostic.mockRestore();
+  }
+});
+
+test("failed cancellation is reported by the suite leak check", async () => {
+  const cancel = jest
+    .fn()
+    .mockRejectedValue(new Error("test cancellation failure"));
+  const client = { workflows: { cancel } } as unknown as Client;
+  const diagnostic = jest.spyOn(console, "error").mockImplementation(() => {});
+  try {
+    await cleanupTemplateWorkflows({
+      client,
+      ids: ["created"],
+      walletAddress: "wallet",
+      name: "this-test",
+    });
+    expect(() => assertNoLeakedWorkflows()).toThrow("survived cleanup");
+    expect(diagnostic).toHaveBeenCalled();
+  } finally {
+    diagnostic.mockRestore();
+    // Keep this fault-injection case from contaminating unrelated tests.
+    try {
+      assertNoLeakedWorkflows();
+    } catch {
+      /* registry is cleared before it throws */
+    }
   }
 });

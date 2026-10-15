@@ -37,7 +37,9 @@
     "lint": "eslint packages/*/src --ext .ts",
     "prepare": "husky",
     "test:external": "jest --config jest.external.config.cjs --runInBand",
-    "test:external:contract": "jest --config jest.external.config.cjs --runInBand contract.test"
+    "test:external:contract": "jest --config jest.external.config.cjs --runInBand contract.test",
+    "test:external:types": "tsc --project tsconfig.external.json",
+    "test:external:unit": "jest --config jest.external.config.cjs --runInBand tests/external-templates/unit"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

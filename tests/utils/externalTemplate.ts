@@ -1,4 +1,5 @@
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
+import { promisify } from "node:util";
 import { createHash, randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
@@ -139,11 +140,25 @@ function bridgeEnvironment(config: TemplateTestConfig): NodeJS.ProcessEnv {
   return env;
 }
 
-export function templateBridge<T>(request: object): T {
-  const config = templateTestConfig();
+const execFileAsync = promisify(execFile);
+
+function bridgeTimeout(): number {
   const timeout = Number(process.env.TEMPLATE_BRIDGE_TIMEOUT_MS ?? "90000");
   if (!Number.isFinite(timeout) || timeout <= 0)
     throw new Error("Invalid TEMPLATE_BRIDGE_TIMEOUT_MS");
+  return timeout;
+}
+
+function bridgeFailure(error: unknown): never {
+  if (process.env.TEMPLATE_BRIDGE_DEBUG === "1") console.error(error);
+  throw new Error(
+    "External template bridge failed; enable TEMPLATE_BRIDGE_DEBUG locally for details",
+  );
+}
+
+export function templateBridge<T>(request: object): T {
+  const config = templateTestConfig();
+  const timeout = bridgeTimeout();
   try {
     return JSON.parse(
       execFileSync(process.execPath, config.bridgeArgs, {
@@ -156,11 +171,43 @@ export function templateBridge<T>(request: object): T {
       }),
     );
   } catch (error) {
-    // Producer stderr can include private paths or data. Opt in locally only.
-    if (process.env.TEMPLATE_BRIDGE_DEBUG === "1") console.error(error);
-    throw new Error(
-      "External template bridge failed; enable TEMPLATE_BRIDGE_DEBUG locally for details",
+    return bridgeFailure(error);
+  }
+}
+
+/** Async producer invocation keeps the report listener responsive and cancellable. */
+export async function templateBridgeAsync<T>(
+  request: object,
+  options: { signal?: AbortSignal } = {},
+): Promise<T> {
+  const config = templateTestConfig();
+  const timeout = bridgeTimeout();
+  try {
+    const child = execFileAsync(process.execPath, config.bridgeArgs, {
+      cwd: config.sourceRoot,
+      encoding: "utf8",
+      timeout,
+      signal: options.signal,
+      env: bridgeEnvironment(config),
+    });
+    const inputWritten = new Promise<void>((accept, reject) => {
+      const stdin = child.child.stdin;
+      if (!stdin) {
+        reject(new Error("Producer stdin unavailable"));
+        return;
+      }
+      stdin.once("error", reject);
+      stdin.end(JSON.stringify(request), accept);
+    });
+    const [{ stdout }] = await Promise.all([child, inputWritten]).catch(
+      (error) => {
+        child.child.kill();
+        throw error;
+      },
     );
+    return JSON.parse(stdout);
+  } catch (error) {
+    return bridgeFailure(error);
   }
 }
 
@@ -169,44 +216,76 @@ export interface CompiledTemplateRequest {
     templateId: string;
     templateSha256: string;
     sourceCommit: string;
+    sourceDirty: boolean;
   };
   simulate: v4.SimulateWorkflowRequest;
   create: v4.CreateWorkflowRequest;
 }
-
-export function compileExternalTemplate(input: {
+type BridgeTemplateRequest = Omit<CompiledTemplateRequest, "provenance"> & {
+  provenance: Omit<CompiledTemplateRequest["provenance"], "sourceDirty">;
+};
+interface TemplateCompileInput {
   runner: string;
   recipient: string;
   amountLabel: string;
   notifyUrl?: string;
   notifyAuthorization?: string;
-}): CompiledTemplateRequest {
-  const config = templateTestConfig();
-  const compiled = templateBridge<CompiledTemplateRequest>({
+}
+function compileRequest(input: TemplateCompileInput) {
+  return {
     action: TEMPLATE_ACTION.compile,
-    templateId: config.templateId,
+    templateId: templateTestConfig().templateId,
     chainId: TEMPLATE_TEST.chainId,
     ...input,
-  });
+  };
+}
+function verifyCompiledTemplate(
+  compiled: BridgeTemplateRequest,
+): CompiledTemplateRequest {
+  const config = templateTestConfig();
   const expected = createHash("sha256")
     .update(readFileSync(resolve(config.sourceRoot, config.sourceFile)))
     .digest("hex");
-  const commit = execFileSync("git", ["rev-parse", "HEAD"], {
+  const gitOptions = {
     cwd: config.sourceRoot,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
+    encoding: "utf8" as const,
+    stdio: ["ignore", "pipe", "ignore"] as ["ignore", "pipe", "ignore"],
     env: bridgeEnvironment(config),
-  }).trim();
+  };
+  const commit = execFileSync("git", ["rev-parse", "HEAD"], gitOptions).trim();
+  const sourceDirty =
+    execFileSync("git", ["status", "--porcelain"], gitOptions).trim().length >
+    0;
   if (
     compiled.provenance.templateSha256 !== expected ||
     compiled.provenance.templateId !== config.templateId ||
     compiled.provenance.sourceCommit !== commit
   ) {
     throw new Error(
-      "The source artifact hash or checkout HEAD provenance does not match",
+      "The source artifact hash or checkout HEAD provenance does not match (" +
+        (sourceDirty ? "dirty" : "clean") +
+        " working tree)",
     );
   }
-  return compiled;
+  return { ...compiled, provenance: { ...compiled.provenance, sourceDirty } };
+}
+export function compileExternalTemplate(
+  input: TemplateCompileInput,
+): CompiledTemplateRequest {
+  return verifyCompiledTemplate(
+    templateBridge<BridgeTemplateRequest>(compileRequest(input)),
+  );
+}
+export async function compileExternalTemplateAsync(
+  input: TemplateCompileInput,
+  options: { signal?: AbortSignal } = {},
+): Promise<CompiledTemplateRequest> {
+  return verifyCompiledTemplate(
+    await templateBridgeAsync<BridgeTemplateRequest>(
+      compileRequest(input),
+      options,
+    ),
+  );
 }
 
 export interface TemplateReport {
@@ -225,7 +304,13 @@ export async function startTemplateReportServer() {
   const config = templateTestConfig();
   const reports: TemplateReport[] = [];
   const authorization = "Bearer " + randomBytes(32).toString("hex");
+  const pending = new Set<AbortController>();
+  let closing: Promise<void> | undefined;
   const server = createServer(async (req, res) => {
+    const controller = new AbortController();
+    res.once("close", () => {
+      if (!res.writableEnded) controller.abort();
+    });
     try {
       if (
         req.method !== "POST" ||
@@ -247,19 +332,33 @@ export async function startTemplateReportServer() {
         }
         chunks.push(data);
       }
-      const reply = templateBridge<{ ok: true; summary: TemplateReport }>({
-        action: TEMPLATE_ACTION.summarize,
-        digest: JSON.parse(Buffer.concat(chunks).toString()),
-      });
+      pending.add(controller);
+      const reply = await templateBridgeAsync<{
+        ok: true;
+        summary: TemplateReport;
+      }>(
+        {
+          action: TEMPLATE_ACTION.summarize,
+          digest: JSON.parse(Buffer.concat(chunks).toString()),
+        },
+        { signal: controller.signal },
+      );
       reports.push(reply.summary);
       res
         .writeHead(200, { "Content-Type": "application/json" })
         .end(JSON.stringify(reply));
     } catch (error) {
-      if (process.env.TEMPLATE_BRIDGE_DEBUG === "1") console.error(error);
-      res
-        .writeHead(500)
-        .end(JSON.stringify({ error: "Report computation failed" }));
+      if (
+        !controller.signal.aborted &&
+        process.env.TEMPLATE_BRIDGE_DEBUG === "1"
+      )
+        console.error(error);
+      if (!res.destroyed && !res.headersSent)
+        res
+          .writeHead(500)
+          .end(JSON.stringify({ error: "Report computation failed" }));
+    } finally {
+      pending.delete(controller);
     }
   });
   await new Promise<void>((accept, reject) => {
@@ -277,10 +376,11 @@ export async function startTemplateReportServer() {
     reports,
     authorization,
     close: () =>
-      new Promise<void>((accept, reject) => {
+      (closing ??= new Promise<void>((accept, reject) => {
+        for (const controller of pending) controller.abort();
         server.close((error) => (error ? reject(error) : accept()));
         server.closeAllConnections();
-      }),
+      })),
   };
 }
 
