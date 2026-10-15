@@ -18,7 +18,7 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
-import { Client } from "@avaprotocol/sdk-js";
+import { APIError, Client } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
 interface Captured {
@@ -40,9 +40,12 @@ const PREPARED = {
   typedData: { domain: { chainId: 11155111 }, message: { nonce: "0x1" } },
 } satisfies v4.PreparedPolicy;
 
+/** Prepare's reply: fixed, or computed from the prepare body the SDK sent. */
+type PrepareReply = v4.PreparedPolicy | ((prepareBody: Record<string, unknown>) => v4.PreparedPolicy);
+
 async function startGateway(
   captured: Captured,
-  prepared: v4.PreparedPolicy = PREPARED,
+  prepared: PrepareReply = PREPARED,
 ): Promise<{ url: string; close: () => Promise<void> }> {
   const server: Server = createServer((req, res) => {
     let raw = "";
@@ -56,7 +59,7 @@ async function startGateway(
       if (path.includes("policies:prepare")) {
         captured.prepareBody = body;
         res.statusCode = 200;
-        res.end(JSON.stringify(prepared));
+        res.end(JSON.stringify(typeof prepared === "function" ? prepared(body) : prepared));
         return;
       }
       if (path.includes("policies:submit")) {
@@ -175,6 +178,50 @@ describe("policies.grant", () => {
     expect(submitted.nativeRecipients).toEqual(nativeReq.nativeRecipients);
     expect(submitted.nativeSpendCap).toEqual(nativeReq.nativeSpendCap);
     expect(submitted.allowedActions).toBeUndefined();
+    expect(submitted.nativeGasWei).toBeUndefined();
+  });
+
+  test("forwards add.nativeGasWei to prepare and keeps it off submit", async () => {
+    await gateway.close();
+    const recipient = "0x000000000000000000000000000000000000a11c";
+    const valueWei = 10_000_000_000_000_000n;
+    // Steady gas of the runner's other enabled automations.
+    const steadyGasWei = 3_000_000_000_000_000n;
+    const fragmentGasWei = 1_500_000_000_000_000n;
+    // The stub merges the way the gateway does: the signed cap is the value,
+    // plus that steady gas, plus the gas this addition declares. A grant that
+    // dropped `add.nativeGasWei` on the way to prepare would sign a smaller cap.
+    const mergeLikeTheGateway = (prepareBody: Record<string, unknown>): v4.PreparedPolicy => {
+      const add = prepareBody.add as { nativeGasWei?: string } | undefined;
+      const gasWei = steadyGasWei + BigInt(add?.nativeGasWei ?? "0");
+      return {
+        ...PREPARED,
+        basePolicyId: "",
+        nativeRecipients: [recipient],
+        nativeSpendCap: { amount: (valueWei + gasWei).toString() },
+        changes: { summary: ["Send ETH"], basePolicyId: "", nativeGasWei: gasWei.toString() },
+      };
+    };
+    captured = { paths: [] };
+    gateway = await startGateway(captured, mergeLikeTheGateway);
+    client = new Client({ baseUrl: `${gateway.url}/api/v1`, token: "test-jwt" });
+
+    const fragment = {
+      nativeRecipients: [recipient],
+      nativeSpendCap: { amount: (valueWei + fragmentGasWei).toString() },
+      nativeGasWei: fragmentGasWei.toString(),
+    };
+    await client.policies.grant(
+      wallet,
+      { ...request, add: fragment },
+      async () => `0x${"11".repeat(65)}`,
+    );
+
+    const submitted = captured.submitBody as Partial<v4.SubmitPolicyRequest> & Record<string, unknown>;
+    expect(captured.prepareBody?.add).toEqual(fragment);
+    expect(submitted.nativeRecipients).toEqual([recipient]);
+    expect(submitted.nativeSpendCap?.amount).toBe((valueWei + steadyGasWei + fragmentGasWei).toString());
+    expect(submitted.nativeGasWei).toBeUndefined();
   });
 
   test("echoes the merged grant, not the add fragment", async () => {
@@ -295,8 +342,9 @@ describe("policies.grant", () => {
     expect(captured.submitBody!.basePolicyId).toBe(policyId);
     expect(captured.submitBody!.allowedActions).toEqual(request.allowedActions);
 
-    captured.prepareBody = undefined;
-    captured.submitBody = undefined;
+    // Object.assign, not two assignments: TypeScript would narrow both
+    // fields to undefined and not see the stub fill them during grant().
+    Object.assign(captured, { prepareBody: undefined, submitBody: undefined });
     await client.policies.grant(
       wallet,
       { ...request, basePolicyId: "" },
@@ -325,5 +373,60 @@ describe("policies.grant", () => {
     // not have reached submit either.
     expect(captured.submitBody).toBeUndefined();
     expect(captured.paths).toHaveLength(1);
+  });
+});
+
+describe("policy problem bodies", () => {
+  // Create and resume return SESSION_POLICY_EXPIRED (prepare never does), so
+  // the stand-in answers a resume.
+  test("an expired-grant 409 on resume keeps affectedTaskIds and required", async () => {
+    const recipient = "0x000000000000000000000000000000000000a11c";
+    const problem = {
+      type: "https://docs.avaprotocol.org/errors/session-policy-expired",
+      title: "Grant has expired",
+      status: 409,
+      detail: "the runner's grant expired at 2026-10-01T12:00:00Z; grant again before this workflow can run",
+      code: "SESSION_POLICY_EXPIRED",
+      policyId: "01EXPIRED00000000000000000",
+      affectedTaskIds: ["pay"],
+      required: {
+        nativeRecipients: [recipient],
+        nativeSpendCap: { amount: "10000000000000000" },
+        nativeGasWei: "1500000000000000",
+        validUntil: 1799999999000,
+      },
+    };
+    let requested = "";
+    const server = createServer((req, res) => {
+      requested = `${req.method} ${req.url}`;
+      res.statusCode = 409;
+      res.setHeader("content-type", "application/problem+json");
+      res.end(JSON.stringify(problem));
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const { port } = server.address() as AddressInfo;
+    const client = new Client({ baseUrl: `http://127.0.0.1:${port}/api/v1`, token: "test-jwt" });
+    try {
+      await client.workflows.resume("01JWORKFLOW000000000000000");
+      throw new Error("resume should have returned the expired-grant problem");
+    } catch (err) {
+      expect(requested).toBe("POST /api/v1/workflows/01JWORKFLOW000000000000000:resume");
+      expect(err).toBeInstanceOf(APIError);
+      expect(err).toMatchObject({
+        status: 409,
+        code: "SESSION_POLICY_EXPIRED",
+        problem: {
+          policyId: problem.policyId,
+          affectedTaskIds: ["pay"],
+          required: {
+            nativeRecipients: [recipient],
+            nativeSpendCap: { amount: "10000000000000000" },
+            nativeGasWei: "1500000000000000",
+          },
+        },
+      });
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 });
