@@ -323,8 +323,9 @@ export class PoliciesResource {
  * {@link PoliciesResource.grant} input. `dropTaskIds` is already on
  * {@link v4.PreparePolicyRequest}. With `add`, grant sends it on prepare
  * and submits prepare's `affectedTaskIds`. Without `add`, grant sends it
- * only on submit.
+ * only on submit. `readonly`, like the generated types: a mutable
+ * `string[]` here made a typed `v4.PreparePolicyRequest` unassignable.
  */
 export type GrantRequest = v4.PreparePolicyRequest & {
-  dropTaskIds?: string[];
+  dropTaskIds?: readonly string[];
 };

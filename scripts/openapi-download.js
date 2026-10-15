@@ -17,17 +17,12 @@ const SPEC_URL =
   "https://raw.githubusercontent.com/AvaProtocol/EigenLayer-AVS/staging/api/openapi.yaml";
 const OUT = path.join(__dirname, "..", "packages/types/openapi/openapi.yaml");
 
-const ALLOW_CONTRACT_DEFAULT = new RegExp(
-  String.raw`(allowContractRecipient:\n[ \t]+type: boolean\n)[ \t]+default: false\n`,
-  "g",
-);
-
 async function main() {
   const res = await fetch(SPEC_URL);
   if (!res.ok) {
     throw new Error(`GET ${SPEC_URL} → ${res.status} ${res.statusText}`);
   }
-  let yaml = await res.text();
+  const yaml = await res.text();
   if (!yaml.includes("openapi:")) {
     throw new Error(`GET ${SPEC_URL} did not return an OpenAPI document`);
   }
@@ -55,15 +50,41 @@ async function main() {
  * Drop `default: false` under `allowContractRecipient`. openapi-typescript
  * treats that default as required. The gateway still treats an omitted
  * field as false.
+ *
+ * Line-based, not one fixed shape: the `default:` line is removed wherever
+ * it sits among the property's own keys (before or after `type:`, with a
+ * `description:` between). Only the property's direct keys count, so text
+ * inside a nested block, such as a multi-line description, is left alone.
  */
 function stripAllowContractRecipientDefaults(yaml) {
-  ALLOW_CONTRACT_DEFAULT.lastIndex = 0;
-  const matches = yaml.match(ALLOW_CONTRACT_DEFAULT);
-  ALLOW_CONTRACT_DEFAULT.lastIndex = 0;
-  return {
-    yaml: yaml.replace(ALLOW_CONTRACT_DEFAULT, "$1"),
-    stripped: matches ? matches.length : 0,
-  };
+  const out = [];
+  let stripped = 0;
+  // Indent of the `allowContractRecipient:` key while inside its block, and
+  // of its direct keys once the first one is seen.
+  let keyIndent = -1;
+  let childIndent = -1;
+  for (const line of yaml.split("\n")) {
+    const trimmed = line.trim();
+    const indent = line.length - line.trimStart().length;
+    if (keyIndent >= 0 && trimmed !== "") {
+      if (indent <= keyIndent) {
+        keyIndent = -1;
+        childIndent = -1;
+      } else {
+        if (childIndent < 0) childIndent = indent;
+        if (indent === childIndent && /^default:\s*false\s*$/.test(trimmed)) {
+          stripped += 1;
+          continue;
+        }
+      }
+    }
+    if (/^allowContractRecipient:\s*$/.test(trimmed)) {
+      keyIndent = indent;
+      childIndent = -1;
+    }
+    out.push(line);
+  }
+  return { yaml: out.join("\n"), stripped };
 }
 
 module.exports = { stripAllowContractRecipientDefaults };

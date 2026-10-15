@@ -8,9 +8,6 @@ import { Wallet, getAddress } from "ethers";
  * (build + sign) so non-SDK callers (web wallets, smart-account
  * signers) can produce a message that exchanges cleanly.
  */
-/** Longest token lifetime `buildAuthMessage` will sign. The gateway rejects a longer span with `AUTH_EXPIRY_TOO_FAR`. */
-export const AUTH_EXPIRY_MAX_MS = 48 * 60 * 60 * 1000;
-
 export const AUTH_TEMPLATE = `Please sign the below text for ownership verification.
 
 URI: {uri}
@@ -19,6 +16,17 @@ Version: {version}
 Issued At: {issuedAt}
 Expire At: {expireAt}
 Wallet: {wallet}`;
+
+/**
+ * Longest span from `issuedAt` to `expireAt` that `buildAuthMessage` will
+ * build. The gateway measures its own limit from when it receives the
+ * message instead: it refuses an `Expire At` more than 48 hours ahead of
+ * its clock (plus 5 minutes of skew) with `AUTH_EXPIRY_TOO_FAR`. So an
+ * `issuedAt` set in the future can pass here and still be refused there.
+ * Gateways without that check (before EigenLayer-AVS#841) accept a longer
+ * span, which this SDK no longer builds.
+ */
+export const AUTH_EXPIRY_MAX_MS = 48 * 60 * 60 * 1000;
 
 export interface BuildAuthMessageInput {
   /** EOA the JWT will be bound to. Lowercased / checksummed both work. */
@@ -60,9 +68,10 @@ export interface BuildAuthMessageInput {
   /** Issuance timestamp; defaults to `new Date()`. */
   issuedAt?: Date;
   /**
-   * Token expiry. Defaults to 24 hours after `issuedAt`. A span longer
-   * than {@link AUTH_EXPIRY_MAX_MS} throws here, before anything is
-   * signed. The gateway rejects that same span with `AUTH_EXPIRY_TOO_FAR`.
+   * Token expiry. Defaults to 24 hours after `issuedAt`. More than
+   * {@link AUTH_EXPIRY_MAX_MS} after `issuedAt` throws here, before
+   * anything is signed. The gateway applies its 48-hour limit from the
+   * time it receives the message, not from `issuedAt`.
    */
   expireAt?: Date;
 }
@@ -127,7 +136,7 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
   const expireAt = input.expireAt ?? new Date(issuedAt.getTime() + 24 * 60 * 60 * 1000);
   if (expireAt.getTime() - issuedAt.getTime() > AUTH_EXPIRY_MAX_MS) {
     throw new Error(
-      "buildAuthMessage: expireAt is more than 48 hours after issuedAt. The gateway rejects that span with AUTH_EXPIRY_TOO_FAR.",
+      "buildAuthMessage: expireAt is more than 48 hours after issuedAt. The gateway refuses an Expire At more than 48 hours ahead with AUTH_EXPIRY_TOO_FAR.",
     );
   }
   // Canonicalize the address so the wire form matches what the
