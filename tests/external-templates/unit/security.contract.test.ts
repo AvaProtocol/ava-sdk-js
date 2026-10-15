@@ -14,6 +14,17 @@ import {
 let root: string;
 let previousEnvironment: NodeJS.ProcessEnv;
 
+// Checkpoints prove ordering; allow a loaded runner time to spawn Node without
+// weakening the requirement that the second report finishes before release.
+const TEST_TIMING = {
+  checkpointMs: 10_000,
+  producerMs: 30_000,
+  reportMs: 10_000,
+  pollMs: 10,
+  testMs: 45_000,
+} as const;
+jest.setTimeout(TEST_TIMING.testMs);
+
 function fixture(overrides: Record<string, unknown> = {}) {
   return {
     sourceRoot: ".",
@@ -119,16 +130,16 @@ test("uses per-run report tokens and rejects unauthenticated or oversized reques
 });
 
 async function waitForFile(file: string) {
-  const deadline = Date.now() + 2000;
+  const deadline = Date.now() + TEST_TIMING.checkpointMs;
   while (!existsSync(file)) {
     if (Date.now() >= deadline)
       throw new Error("Producer did not reach its test checkpoint");
-    await new Promise((accept) => setTimeout(accept, 10));
+    await new Promise((accept) => setTimeout(accept, TEST_TIMING.pollMs));
   }
 }
 
 test("serves a second report while a producer process is still running", async () => {
-  process.env.TEMPLATE_BRIDGE_TIMEOUT_MS = "5000";
+  process.env.TEMPLATE_BRIDGE_TIMEOUT_MS = String(TEST_TIMING.producerMs);
   writeFileSync(
     join(root, "bridge.mjs"),
     `
@@ -153,7 +164,7 @@ test("serves a second report while a producer process is still running", async (
       method: "POST",
       headers: { Authorization: server.authorization },
       body: "{}",
-      signal: AbortSignal.timeout(2000),
+      signal: AbortSignal.timeout(TEST_TIMING.reportMs),
     });
     expect(fast.status).toBe(200);
     expect(server.reports).toHaveLength(1);
