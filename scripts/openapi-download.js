@@ -40,17 +40,37 @@ async function main() {
     );
   }
 
-  const n = [...yaml.matchAll(ALLOW_CONTRACT_DEFAULT)].length;
-  yaml = yaml.replace(ALLOW_CONTRACT_DEFAULT, "$1");
+  const stripped = stripAllowContractRecipientDefaults(yaml);
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  fs.writeFileSync(OUT, yaml);
+  fs.writeFileSync(OUT, stripped.yaml);
   console.log(
     `wrote ${path.relative(process.cwd(), OUT)} from ${SPEC_URL}` +
-      (n ? ` (stripped ${n} allowContractRecipient default: false)` : ""),
+      (stripped.stripped
+        ? ` (stripped ${stripped.stripped} allowContractRecipient default: false)`
+        : ""),
   );
 }
 
-main().catch((err) => {
-  console.error(err.message || err);
-  process.exit(1);
-});
+/**
+ * Drop `default: false` under `allowContractRecipient`. openapi-typescript
+ * treats that default as required. The gateway still treats an omitted
+ * field as false.
+ */
+function stripAllowContractRecipientDefaults(yaml) {
+  ALLOW_CONTRACT_DEFAULT.lastIndex = 0;
+  const matches = yaml.match(ALLOW_CONTRACT_DEFAULT);
+  ALLOW_CONTRACT_DEFAULT.lastIndex = 0;
+  return {
+    yaml: yaml.replace(ALLOW_CONTRACT_DEFAULT, "$1"),
+    stripped: matches ? matches.length : 0,
+  };
+}
+
+module.exports = { stripAllowContractRecipientDefaults };
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err.message || err);
+    process.exit(1);
+  });
+}

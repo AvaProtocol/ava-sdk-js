@@ -18,7 +18,7 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
-import { Client } from "@avaprotocol/sdk-js";
+import { APIError, Client } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
 interface Captured {
@@ -181,10 +181,12 @@ describe("policies.grant", () => {
   test("forwards add.nativeGasWei to prepare and keeps it off submit", async () => {
     await gateway.close();
     const recipient = "0x000000000000000000000000000000000000a11c";
-    // 0.01 ETH sent. The fragment's gas is this addition only. The merged
-    // gas is the other automations' steady gas plus that fragment gas, and
-    // the merged cap is the value plus the merged gas, so it is at least
-    // the fragment cap.
+    // The stub returns `merged` as given. It does not recompute a cap.
+    // These figures are only the relationship the approval screen shows:
+    // fragment gas is this addition, merged gas adds the other automations'
+    // steady gas, and the merged cap is the value plus that merged gas.
+    // The assertions check that the SDK forwards the fragment and signs
+    // the stub's cap.
     const valueWei = 10_000_000_000_000_000n;
     const steadyGasWei = 3_000_000_000_000_000n;
     const fragmentGasWei = 1_500_000_000_000_000n;
@@ -218,9 +220,11 @@ describe("policies.grant", () => {
     );
 
     const submitted = captured.submitBody!;
+    expect(mergedCapWei).toBe(valueWei + steadyGasWei + fragmentGasWei);
+    expect(mergedCapWei > fragmentCapWei).toBe(true);
     expect(captured.prepareBody?.add).toEqual(fragment);
     expect(submitted.nativeRecipients).toEqual(merged.nativeRecipients);
-    expect(submitted.nativeSpendCap).toEqual(merged.nativeSpendCap);
+    expect(submitted.nativeSpendCap?.amount).toBe(mergedCapWei.toString());
     expect(submitted.nativeGasWei).toBeUndefined();
   });
 
@@ -372,5 +376,59 @@ describe("policies.grant", () => {
     // not have reached submit either.
     expect(captured.submitBody).toBeUndefined();
     expect(captured.paths).toHaveLength(1);
+  });
+});
+
+describe("policy problem bodies", () => {
+  test("an expired-grant 409 keeps affectedTaskIds and required", async () => {
+    const recipient = "0x000000000000000000000000000000000000a11c";
+    const problem = {
+      type: "https://docs.avaprotocol.org/errors/session-policy-expired",
+      title: "Grant has expired",
+      status: 409,
+      detail: "the runner's grant expired at 2026-10-01T12:00:00Z; grant again before this workflow can run",
+      code: "SESSION_POLICY_EXPIRED",
+      policyId: "01EXPIRED00000000000000000",
+      affectedTaskIds: ["pay"],
+      required: {
+        nativeRecipients: [recipient],
+        nativeSpendCap: { amount: "10000000000000000" },
+        nativeGasWei: "1500000000000000",
+        validUntil: 1799999999000,
+      },
+    };
+    const server = createServer((_req, res) => {
+      res.statusCode = 409;
+      res.setHeader("content-type", "application/problem+json");
+      res.end(JSON.stringify(problem));
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const { port } = server.address() as AddressInfo;
+    const client = new Client({ baseUrl: `http://127.0.0.1:${port}/api/v1`, token: "test-jwt" });
+    try {
+      await client.policies.prepare("0x209eb31c199bEB4c386eF83CF442DE1a00667a1F", {
+        chainId: 11155111,
+        agentLabel: "TradingBot",
+        expiresInSeconds: 3600,
+      });
+      throw new Error("prepare should have returned the expired-grant problem");
+    } catch (err) {
+      expect(err).toBeInstanceOf(APIError);
+      expect(err).toMatchObject({
+        status: 409,
+        code: "SESSION_POLICY_EXPIRED",
+        problem: {
+          policyId: problem.policyId,
+          affectedTaskIds: ["pay"],
+          required: {
+            nativeRecipients: [recipient],
+            nativeSpendCap: { amount: "10000000000000000" },
+            nativeGasWei: "1500000000000000",
+          },
+        },
+      });
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 });

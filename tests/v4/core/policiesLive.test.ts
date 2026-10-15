@@ -13,7 +13,7 @@
 
 import { Wallet as EthersWallet } from "ethers";
 
-import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
+import { Client, MAX_NATIVE_RECIPIENTS, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
 import {
@@ -164,6 +164,40 @@ describe("policies (live gateway)", () => {
     const listed = await client.policies.list(wallet);
     expect(listed.items.every((p) => p.chainId !== unserved)).toBe(true);
   }, 120_000);
+
+  test("more than five native recipients is refused before a signature", async () => {
+    const nativeRecipients = Array.from(
+      { length: MAX_NATIVE_RECIPIENTS + 1 },
+      (_, index) => `0x${(index + 1).toString(16).padStart(40, "0")}`,
+    );
+
+    await expect(
+      client.policies.prepare(wallet, nativeRequest("TooManyNatives", nativeRecipients)),
+    ).rejects.toMatchObject({
+      status: 400,
+      code: "SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS",
+    });
+  }, 120_000);
+
+  test("a contract native recipient is refused before a signature", async () => {
+    await expect(
+      client.policies.prepare(wallet, nativeRequest("ContractRecipient", [TOKEN])),
+    ).rejects.toMatchObject({
+      status: 400,
+      code: "SESSION_POLICY_RECIPIENT_NOT_EOA",
+    });
+  }, 120_000);
+
+  function nativeRequest(label: string, nativeRecipients: string[]): v4.PreparePolicyRequest {
+    return {
+      chainId: TEST_AUTH_CHAIN_ID,
+      agentLabel: label,
+      justification: "Send ETH",
+      nativeRecipients,
+      nativeSpendCap: { amount: "1000000000000000" },
+      expiresInSeconds: 30 * 24 * 60 * 60,
+    };
+  }
 
   function request(label = "TradingBot"): v4.PreparePolicyRequest {
     return {

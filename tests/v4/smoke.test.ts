@@ -5,6 +5,7 @@ import {
   Protocols,
   Triggers,
   buildAuthMessage,
+  AUTH_EXPIRY_MAX_MS,
   signAuthMessage,
 } from "@avaprotocol/sdk-js";
 
@@ -70,6 +71,40 @@ describe("v4 SDK smoke", () => {
       expect(built.message).toContain("Expire At: 2026-05-26T12:00:00.000Z");
       expect(built.message).toContain("Wallet: 0xD7050816337a3f8f690F8083B5Ff8019D50c0E50");
       expect(built.chainId).toBe(11_155_111);
+    });
+
+    test("buildAuthMessage accepts a 48 hour span and refuses a longer one", () => {
+      const issuedAt = new Date("2026-05-25T12:00:00.000Z");
+      const base = {
+        ownerAddress: "0xD7050816337a3f8f690F8083B5Ff8019D50c0E50",
+        uri: "http://localhost:3000",
+        chainId: 11_155_111,
+        version: "v4-test",
+        issuedAt,
+      };
+      expect(() =>
+        buildAuthMessage({ ...base, expireAt: new Date(issuedAt.getTime() + AUTH_EXPIRY_MAX_MS) }),
+      ).not.toThrow();
+      expect(() =>
+        buildAuthMessage({
+          ...base,
+          expireAt: new Date(issuedAt.getTime() + AUTH_EXPIRY_MAX_MS + 1),
+        }),
+      ).toThrow(/AUTH_EXPIRY_TOO_FAR/);
+    });
+
+    test("signAuthMessage refuses a span over 48 hours before signing", async () => {
+      const pk = "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d";
+      const issuedAt = new Date("2026-05-25T12:00:00.000Z");
+      await expect(
+        signAuthMessage(pk, {
+          uri: "http://localhost:3000",
+          chainId: 11_155_111,
+          version: "v4-test",
+          issuedAt,
+          expireAt: new Date(issuedAt.getTime() + AUTH_EXPIRY_MAX_MS + 1),
+        }),
+      ).rejects.toThrow(/AUTH_EXPIRY_TOO_FAR/);
     });
 
     test("signAuthMessage produces a hex signature with the recovered owner", async () => {

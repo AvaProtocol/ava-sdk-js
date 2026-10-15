@@ -40,6 +40,7 @@ export {
 export {
   buildAuthMessage,
   signAuthMessage,
+  AUTH_EXPIRY_MAX_MS,
   AUTH_TEMPLATE,
   type BuildAuthMessageInput,
   type BuiltAuthMessage,

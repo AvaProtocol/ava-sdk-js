@@ -8,6 +8,9 @@ import { Wallet, getAddress } from "ethers";
  * (build + sign) so non-SDK callers (web wallets, smart-account
  * signers) can produce a message that exchanges cleanly.
  */
+/** Longest token lifetime `buildAuthMessage` will sign. The gateway rejects a longer span with `AUTH_EXPIRY_TOO_FAR`. */
+export const AUTH_EXPIRY_MAX_MS = 48 * 60 * 60 * 1000;
+
 export const AUTH_TEMPLATE = `Please sign the below text for ownership verification.
 
 URI: {uri}
@@ -57,8 +60,9 @@ export interface BuildAuthMessageInput {
   /** Issuance timestamp; defaults to `new Date()`. */
   issuedAt?: Date;
   /**
-   * Token expiry. Defaults to 24 hours after `issuedAt`. The gateway
-   * rejects an expiry more than 48 hours out with `AUTH_EXPIRY_TOO_FAR`.
+   * Token expiry. Defaults to 24 hours after `issuedAt`. A span longer
+   * than {@link AUTH_EXPIRY_MAX_MS} throws here, before anything is
+   * signed. The gateway rejects that same span with `AUTH_EXPIRY_TOO_FAR`.
    */
   expireAt?: Date;
 }
@@ -121,6 +125,11 @@ export function buildAuthMessage(input: BuildAuthMessageInput): BuiltAuthMessage
   }
   const issuedAt = input.issuedAt ?? new Date();
   const expireAt = input.expireAt ?? new Date(issuedAt.getTime() + 24 * 60 * 60 * 1000);
+  if (expireAt.getTime() - issuedAt.getTime() > AUTH_EXPIRY_MAX_MS) {
+    throw new Error(
+      "buildAuthMessage: expireAt is more than 48 hours after issuedAt. The gateway rejects that span with AUTH_EXPIRY_TOO_FAR.",
+    );
+  }
   // Canonicalize the address so the wire form matches what the
   // aggregator extracts via crypto.PubkeyToAddress.
   const ownerAddress = getAddress(input.ownerAddress);
