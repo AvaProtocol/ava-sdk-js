@@ -38,13 +38,18 @@ export class NodesResource {
    * delegation, no persistence) and returns the raw output keyed by
    * node type — `{ success, output: { <nodeType>: {...} } }`.
    *
-   * Chain context: the chain is **explicit-or-error** since the chain
-   * decoupling — there is no `settings.chain_id` / JWT-`aud` / default
-   * fallback. For a chain-aware node, set either the request-level
-   * `chainId` or the node's own `config.chainId`; the gateway stamps the
-   * request chain onto the node when the node leaves it unset
-   * (`stampNodeChainIfUnset`). The chain must be one of the configured
-   * set (Ethereum, Base, Sepolia, Base Sepolia) or the call is rejected.
+   * Chain context: the request-level `chainId` names the chain the node
+   * runs on. The gateway pushes it into `settings.chain_id` (the per-chain
+   * smart-wallet config and the runner lookup read that) and stamps it onto
+   * a chain-aware node whose `config.chainId` is unset
+   * (`stampNodeChainIfUnset`). When the request carries no `chainId`, the
+   * gateway falls back to the JWT's `aud` chain — the chain the wallet
+   * signed in on (`handlers_nodes.go`). So a JWT minted on one chain can
+   * run a node on another only if the request names that chain; without it,
+   * a node whose own `config.chainId` differs from the `aud` chain runs
+   * with the wrong chain context. There is no `settings.chain_id` fallback
+   * and no gateway default. The chain must be one of the configured set
+   * (Ethereum, Base, Sepolia, Base Sepolia) or the call is rejected.
    *
    * Simulation vs. execution: by default a `contractWrite` node is
    * Tenderly-simulated. Set the node's `isSimulated: false` to execute for
