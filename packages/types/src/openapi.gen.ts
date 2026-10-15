@@ -1898,23 +1898,6 @@ export interface components {
             /** Format: int64 */
             readonly endAt?: number;
         };
-        /**
-         * @description Studio's summary-step reply, present once the run has ended.
-         *     Absent on older runs and while the run is still in progress.
-         */
-        readonly ExecutionSummary: {
-            /** @description Report title. */
-            readonly subject?: string;
-            /**
-             * @description Structured report. Its fields include the summary line,
-             *     executions, errors, notice, and step counts.
-             */
-            readonly body?: {
-                readonly [key: string]: unknown;
-            };
-        } & {
-            readonly [key: string]: unknown;
-        };
         readonly Execution: {
             readonly id: components["schemas"]["Ulid"];
             readonly workflowId: components["schemas"]["Ulid"];
@@ -1937,7 +1920,15 @@ export interface components {
             readonly cogs?: readonly components["schemas"]["NodeCOGS"][];
             /** @description Value-capture fee charged (post-paid). */
             readonly valueFee?: components["schemas"]["ValueFee"];
-            readonly summary?: components["schemas"]["ExecutionSummary"];
+            /**
+             * @description Studio's summary-step reply, present once the run has ended.
+             *     `subject` is the report title. `body` is the structured report
+             *     (summary line, executions, errors, notice, and step counts).
+             *     Absent on older runs and while the run is still in progress.
+             */
+            readonly summary?: {
+                readonly [key: string]: unknown;
+            };
             /**
              * @description Present on simulate when `authorizationMode` is `report`.
              *     Omitted on stored executions and on enforce-mode simulates.
@@ -1961,7 +1952,10 @@ export interface components {
             /** Format: int64 */
             readonly endAt?: number;
             readonly error?: string;
-            readonly summary?: components["schemas"]["ExecutionSummary"];
+            /** @description Same object as `Execution.summary`. Present once the run has ended. */
+            readonly summary?: {
+                readonly [key: string]: unknown;
+            };
         };
         readonly ExecutionCount: {
             /** Format: int64 */
