@@ -31,6 +31,44 @@ Suites map to `yarn test:<name>` and to CI matrix jobs:
 | `yarn test:nodes` | `tests/v4/nodes` |
 | `yarn test:templates` | `tests/v4/templates` |
 
+## External template integration
+
+These opt-in suites compile an externally maintained template from its current
+Git checkout. Keep the test configuration and all application-specific fixture
+values in the producer repository. The SDK stores no copied graph, template
+identifiers, private repository links, or deployment details.
+
+Install dependencies in both the SDK and producer checkout and use Node 24.
+Set `TEMPLATE_TEST_CONFIG` explicitly in local runs and producer CI. It points to
+a JSON file implementing `TemplateTestConfig` in `tests/utils/externalTemplate.ts`:
+`sourceRoot` is relative to that JSON file; `bridgeArgs` are arguments to Node
+resolved in the source root; `sourceFile`, `templateId`, `reportPath` and
+`contract` declare the artifact and its assertions. The producer bridge accepts
+JSON on stdin for `compile` and `summarize`, and returns JSON on stdout.
+Compilation must hash the bytes it compiles and return the current source commit.
+The SDK checks both against the producer checkout without logging their values.
+
+```bash
+# Compile and check cleanup behavior; no gateway or wallet credentials:
+TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json yarn test:external:contract
+# Include local gateway simulations:
+TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json AVS_REST_URL=http://localhost:8080/api/v1 yarn test:external
+# Also execute a tiny real Sepolia transfer using the funded test fixture:
+TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json AVS_REST_URL=http://localhost:8080/api/v1 TEMPLATE_LIVE=1 yarn test:external
+```
+
+The report stub runs the producer's real summarizer with delivery stubbed. It
+binds to loopback by default; set `TEST_STUB_HOST` only for a container gateway
+that needs an externally reachable listener. `TEMPLATE_BRIDGE_TIMEOUT_MS`
+defaults to 90000. `TEMPLATE_BRIDGE_DEBUG=1` enables producer diagnostics locally;
+do not publish that output if the source repository contains private data.
+
+The live test sends 0.000001 Sepolia ETH to the fixture owner's address. If a
+grant is needed, it adds the observed requirements to the shared fixture grant
+for seven days. That addition persists after cleanup and can broaden an existing
+grant; the test never revokes shared permissions. It removes only its own
+workflows, including recovery by unique name after a lost creation response.
+
 ## CI stack
 
 GitHub Actions (`.github/workflows/dev-test-on-pr.yml`) boots gateway +
