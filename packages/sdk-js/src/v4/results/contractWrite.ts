@@ -1,12 +1,11 @@
 import type { v4 } from "@avaprotocol/types";
 
 /**
- * Typed readers for a `contractWrite` `client.nodes.run` response.
+ * Typed readers for per-method contract-write metadata.
  *
- * The gateway returns per-method results under `metadata.results[]`, each with
- * a receipt. For a real execute (`isSimulated: false`) the receipt carries the
- * normalized outcome the preview→confirm→execute flow branches on. These
- * helpers pull that out of the otherwise-untyped response bag.
+ * The gateway returns results under `metadata.results[]`, each with a receipt.
+ * Deployed workflow executions carry the normalized on-chain outcome.
+ * These helpers pull it out of the otherwise-untyped metadata bag.
  *
  * Requires the gateway to surface array-typed contractWrite metadata (it is
  * wrapped under `metadata.results`); older gateways dropped it, in which case

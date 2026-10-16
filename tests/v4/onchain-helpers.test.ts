@@ -20,7 +20,6 @@ const RECIPIENT = "0x2222222222222222222222222222222222222222";
 
 type CWConfig = {
   contractAddress: string;
-  isSimulated?: boolean;
   contractAbi?: Array<Record<string, unknown>>;
   methodCalls: Array<{ methodName: string; methodParams: string[]; contractAddress?: string }>;
 };
@@ -54,7 +53,7 @@ describe("UniswapV3.swapNode", () => {
     });
   });
 
-  test("passes isSimulated through and honors a router override", () => {
+  test("honors a router override", () => {
     const override = "0x9999999999999999999999999999999999999999";
     const node = UniswapV3.swapNode({
       id: "s",
@@ -67,11 +66,9 @@ describe("UniswapV3.swapNode", () => {
       amountIn: "1",
       amountOutMinimum: "0",
       routerAddress: override,
-      isSimulated: false,
     });
     const config = configOf(node);
     expect(config.contractAddress).toBe(override);
-    expect(config.isSimulated).toBe(false);
   });
 
   test("throws for an unknown chain without a router override", () => {
@@ -176,7 +173,7 @@ describe("UniswapV3.swapWithApprovalNode", () => {
 });
 
 describe("UniswapV3.quoteNode", () => {
-  test("emits a simulated quoteExactInputSingle against QuoterV2", () => {
+  test("emits a contractRead quoteExactInputSingle against QuoterV2", () => {
     const node = UniswapV3.quoteNode({
       id: "q",
       name: "q",
@@ -188,15 +185,9 @@ describe("UniswapV3.quoteNode", () => {
     });
     const config = configOf(node);
     expect(config.contractAddress).toBe(Protocols.uniswapV3.quoterV2[Chains.Sepolia]);
-    expect(config.isSimulated).toBe(true);
+    expect(node.type).toBe("contractRead");
     expect(config.methodCalls[0].methodName).toBe("quoteExactInputSingle");
-    expect(JSON.parse(config.methodCalls[0].methodParams[0])).toEqual({
-      tokenIn: WETH,
-      tokenOut: USDC,
-      amountIn: "1000000000000000",
-      fee: 3000,
-      sqrtPriceLimitX96: "0",
-    });
+    expect(JSON.parse(config.methodCalls[0].methodParams[0])).toEqual([WETH, USDC, "1000000000000000", 3000, "0"]);
   });
 });
 

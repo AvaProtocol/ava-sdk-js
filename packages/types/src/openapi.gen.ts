@@ -891,8 +891,10 @@ export interface paths {
         readonly put?: never;
         /**
          * Execute a single node with inline input variables
-         * @description Useful for SDK testing flows — run a node definition against
-         *     provided input variables without persisting a workflow. Honors
+         * @description Run a non-transaction node against inline variables without persisting
+         *     a workflow. Contract writes and native transfers, including their loop
+         *     runners, are rejected. Simulate the complete workflow with its prerequisites
+         *     using `POST /workflows:simulate`. Honors
          *     `node.config.chainId` (overrides body `chainId`). Requires a user
          *     Bearer JWT; partner assertion alone is not sufficient.
          */
@@ -1340,8 +1342,6 @@ export interface components {
                 readonly [key: string]: unknown;
             }[];
             readonly methodCalls?: readonly components["schemas"]["MethodCall"][];
-            /** @description When true, use Tenderly simulation instead of sending a real UserOp. */
-            readonly isSimulated?: boolean;
             /** @description ETH value to send with the call (wei, decimal string). */
             readonly value?: string;
             /** @description Custom gas limit (decimal string). */
@@ -2133,7 +2133,10 @@ export interface components {
             readonly node: components["schemas"]["Node"];
             readonly inputVariables?: components["schemas"]["InputVariables"];
             readonly chainId?: components["schemas"]["ChainId"];
-            /** @description Optional ERC20 balance/allowance state overrides applied only during this isolated node simulation. Lets callers seed token balances and approvals so contract-write simulations (e.g. Uniswap swaps) don't revert with "transfer amount exceeds allowance/balance" before the approval/funding transactions have been run. Simulation-only: a real-execution request (isSimulated=false) that sets these is rejected with an error, never silently ignored. */
+            /**
+             * @deprecated
+             * @description Legacy single-node overrides. Nonempty overrides are rejected. Simulate actions as a complete workflow including their prerequisites.
+             */
             readonly erc20Overrides?: readonly components["schemas"]["ERC20StateOverride"][];
         };
         /** @description Seeds a token's balanceOf / allowance storage slots for a single simulation. balanceOf[owner] lives at keccak256(abi.encode(owner, balanceSlot)); allowance[owner][spender] at keccak256(abi.encode(spender, keccak256(abi.encode(owner, allowanceSlot)))). */
