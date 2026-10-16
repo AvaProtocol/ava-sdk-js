@@ -1,22 +1,6 @@
 /**
- * v3's giant test file came from re-asserting the same shape across
- * runNodeWithInputs / simulate / deploy+trigger. v4 keeps just one
- * happy-path per surface, since the response shape is uniform.
- *
- * v4 contractWrite always uses Tenderly under the hood for the
- * `nodes.run` and `workflows.simulate` paths — `is_simulated` is
- * always true. Real bundler submission only happens through
- * `workflows.trigger` against a funded wallet.
- *
- * Output shape:
- *   - `result.output.data.<methodName>` = method's decoded return
- *     value (bool for approve/transfer, struct for tuple returns).
- *   - `result.executionContext.is_simulated = true` for sim paths.
- *
- * The MA v2 funded wallet for this suite (nodes → salt `"2"`) + session
- * grant is required for the real deploy+trigger path. Simulation of
- * `transfer` also uses that wallet because Tenderly does not override
- * ERC-20 balances.
+ * Contract writes require complete workflows. Standalone requests are rejected
+ * before execution; workflow simulation and deployed execution own the mode.
  */
 
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
@@ -24,8 +8,6 @@ import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol
 import {
   getCurrentBlockNumber,
   getSuiteClient,
-  getFundedClient,
-  getFundedWallet,
   getFundedFixture,
   triggerUserOpAndAssert,
   createSmartWallet,
@@ -53,90 +35,15 @@ describe("ContractWrite Node Tests", () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
   });
 
-  describe("nodes.run (Tenderly simulation)", () => {
-    test("simulates an approve(spender, 0) call", async () => {
-      const wallet = await createSmartWallet(client);
-      const result = await client.nodes.run({
+  describe("nodes.run", () => {
+    test("rejects a standalone contract write", async () => {
+      await expect(client.nodes.run({
         node: Nodes.contractWrite({
-          id: "w",
-          name: "w",
-          chainId: 11_155_111,
-          contractAddress: USDC_SEPOLIA,
-          contractAbi: ERC20_ABI,
+          id: "w", name: "w", chainId: Chains.Sepolia,
+          contractAddress: USDC_SEPOLIA, contractAbi: ERC20_ABI,
           methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "0"] }],
         }),
-        inputVariables: { settings: settingsFor(wallet.address) },
-      });
-      expect(result.success).toBe(true);
-      const data = (result.output as { data: Record<string, any> }).data;
-      // ERC-20 approve returns bool; OZ-style returns true on success.
-      expect(data.approve).toBe(true);
-      const ctx = result.executionContext as Record<string, unknown>;
-      expect(ctx.is_simulated).toBe(true);
-    });
-
-    test("simulates a transfer call against the funded wallet", async () => {
-      // This suite's funded MA v2 wallet holds Sepolia USDC. A suite wallet (fresh salt /
-      // isolated EOA) has none, and Tenderly does not override ERC-20
-      // balances — transfer would revert with "amount exceeds balance".
-      const { client: funded, owner } = await getFundedClient();
-      const wallet = await getFundedWallet(funded);
-      expect(wallet).toBeTruthy();
-      const result = await funded.nodes.run({
-        node: Nodes.contractWrite({
-          id: "w",
-          name: "w",
-          chainId: 11_155_111,
-          contractAddress: USDC_SEPOLIA,
-          contractAbi: ERC20_ABI,
-          methodCalls: [{ methodName: "transfer", methodParams: [owner, "1"] }],
-        }),
-        inputVariables: { settings: settingsFor(wallet!.address) },
-      });
-      expect(result.success).toBe(true);
-      const data = (result.output as { data: Record<string, any> }).data;
-      expect(data.transfer).toBe(true);
-      expect((result.executionContext as Record<string, unknown>).is_simulated).toBe(true);
-    });
-
-    test("simulates multiple method calls in one node", async () => {
-      const wallet = await createSmartWallet(client);
-      const result = await client.nodes.run({
-        node: Nodes.contractWrite({
-          id: "w",
-          name: "w",
-          chainId: 11_155_111,
-          contractAddress: USDC_SEPOLIA,
-          contractAbi: ERC20_ABI,
-          methodCalls: [
-            { methodName: "approve", methodParams: [eoaAddress, "0"] },
-            { methodName: "approve", methodParams: [eoaAddress, "0"] },
-          ],
-        }),
-        inputVariables: { settings: settingsFor(wallet.address) },
-      });
-      expect(result.success).toBe(true);
-      const data = (result.output as { data: Record<string, any> }).data;
-      // Both calls were against the same method — engine keeps the
-      // last result keyed by methodName.
-      expect(data.approve).toBe(true);
-    });
-
-    test("rejects a method that doesn't exist in the ABI", async () => {
-      const wallet = await createSmartWallet(client);
-      const result = await client.nodes.run({
-        node: Nodes.contractWrite({
-          id: "w",
-          name: "w",
-          chainId: 11_155_111,
-          contractAddress: USDC_SEPOLIA,
-          contractAbi: ERC20_ABI,
-          methodCalls: [{ methodName: "nonexistent", methodParams: [] }],
-        }),
-        inputVariables: { settings: settingsFor(wallet.address) },
-      });
-      expect(result.success).toBe(false);
-      expect(typeof result.error).toBe("string");
+      })).rejects.toMatchObject({ status: 400, message: expect.stringContaining("complete workflow") });
     });
   });
 
@@ -162,6 +69,7 @@ describe("ContractWrite Node Tests", () => {
       expect(step?.success).toBe(true);
       const data = (step?.output as { data: Record<string, any> }).data;
       expect(data.approve).toBe(true);
+      expect(step?.executionContext?.is_simulated).toBe(true);
     });
   });
 

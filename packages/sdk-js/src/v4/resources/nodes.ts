@@ -8,8 +8,7 @@ export interface RunNodeOptions {
    * Optional idempotency key, sent as the `Idempotency-Key` HTTP header.
    *
    * A retried or double-submitted request carrying the same key returns the
-   * first result instead of executing again — for a real execute
-   * (`isSimulated: false`) that means it can't broadcast a second UserOp.
+   * first result instead of executing again.
    * Generate a fresh key per user-initiated action (e.g. one per Confirm
    * click) and reuse it across retries of that same action. The gateway
    * dedupes per authenticated subject for a short TTL.
@@ -51,13 +50,11 @@ export class NodesResource {
    * and no gateway default. The chain must be one of the configured set
    * (Ethereum, Base, Sepolia, Base Sepolia) or the call is rejected.
    *
-   * Simulation vs. execution: by default a `contractWrite` node is
-   * Tenderly-simulated. Set the node's `isSimulated: false` to execute for
-   * real through the smart wallet — fund-moving requires a user Bearer JWT.
-   * Partner assertions do not authorize `nodes:run` (JWT required even for
-   * simulated runs). For a real execute, pass an
-   * {@link RunNodeOptions.idempotencyKey} so a retried Confirm can't broadcast
-   * twice.
+   * Only read/data nodes can run in isolation. Contract writes and native
+   * transfers, including loops containing those runners, are rejected with
+   * HTTP 400. Include actions and their prerequisites in a complete workflow
+   * and use `workflows.simulate` for preview or deploy the workflow to execute.
+   * A user Bearer JWT is required; partner assertions do not authorize this API.
    */
   run(
     req: v4.RunNodeRequest,

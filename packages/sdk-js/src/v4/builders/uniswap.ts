@@ -7,7 +7,7 @@ import { Nodes } from "./nodes";
  * Uniswap V3 single-hop swap builders — thin, typed assemblers over
  * `Protocols.uniswapV3` (addresses + ABIs) and `Nodes.contractWrite`.
  *
- * The market-order shape is: quote (`quoteNode`, simulated) → compute
+ * The market-order shape is: quote (`quoteNode`, read-only RPC) → compute
  * `amountOutMinimum` from a slippage tolerance (`minAmountOut`) → swap. Pool
  * discovery / fee-tier selection is the caller's job — pass the `fee` tier for
  * the pool you intend to trade against.
@@ -72,8 +72,6 @@ export interface UniswapV3SwapNodeOptions {
   sqrtPriceLimitX96?: string;
   /** Override the SwapRouter02 address (defaults to the per-chain canonical one). */
   routerAddress?: string;
-  /** When false, execute the real swap; omit/true to Tenderly-simulate (preview). */
-  isSimulated?: boolean;
 }
 
 export interface UniswapV3QuoteNodeOptions {
@@ -99,9 +97,9 @@ export const UniswapV3 = Object.freeze({
    * not unlimited.
    *
    * Use this for a token-in swap where the router isn't already approved. For an
-   * already-approved token, use {@link swapNode}. Run via `client.nodes.run`
-   * with `isSimulated: false` (and an idempotency key) to execute; the default
-   * simulate previews the whole batch (approve then swap).
+   * already-approved token, use {@link swapNode}. Include the node in a complete
+   * workflow: `client.workflows.simulate` previews the batch; a deployed
+   * workflow executes it.
    */
   swapWithApprovalNode(opts: UniswapV3SwapNodeOptions): v4.Node {
     // Fail fast on inputs that can only be a caller mistake. This node emits a real ERC-20 approval,
@@ -141,9 +139,6 @@ export const UniswapV3 = Object.freeze({
         ...Protocols.erc20.approveAbi,
         ...Protocols.uniswapV3.swapRouter02Abi,
       ],
-      ...(opts.isSimulated !== undefined
-        ? { isSimulated: opts.isSimulated }
-        : {}),
       methodCalls: [
         {
           methodName: "approve",
@@ -174,9 +169,8 @@ export const UniswapV3 = Object.freeze({
    * Build a `contractWrite` node executing a single-hop `exactInputSingle` swap
    * on SwapRouter02. Assumes the router is already approved for `amountIn` on
    * `tokenIn` — for an unapproved token-in swap use {@link swapWithApprovalNode},
-   * which batches the approval atomically. Run it via `client.nodes.run` — with
-   * `isSimulated: false` (and an idempotency key) to execute for real, or the
-   * default simulate for a preview.
+   * which batches the approval atomically. Include the node in a complete
+   * workflow to simulate or execute it.
    */
   swapNode(opts: UniswapV3SwapNodeOptions): v4.Node {
     const router =
@@ -192,9 +186,6 @@ export const UniswapV3 = Object.freeze({
       chainId: opts.chainId,
       contractAddress: router,
       contractAbi: Protocols.uniswapV3.swapRouter02Abi,
-      ...(opts.isSimulated !== undefined
-        ? { isSimulated: opts.isSimulated }
-        : {}),
       methodCalls: [
         {
           methodName: "exactInputSingle",
@@ -218,9 +209,8 @@ export const UniswapV3 = Object.freeze({
 
   /**
    * Build a node that quotes `exactInputSingle` via QuoterV2. QuoterV2 is a
-   * state-changing "revert-to-return" call, so it is modelled as a
-   * **simulated** `contractWrite` (not `contractRead`); run it via
-   * `client.nodes.run` to read the predicted `amountOut` from the output.
+   * non-view call, executed through `eth_call` without persisting state.
+   * Use `client.nodes.run` to read the predicted `amountOut` from the output.
    */
   quoteNode(opts: UniswapV3QuoteNodeOptions): v4.Node {
     const quoter =
@@ -230,25 +220,23 @@ export const UniswapV3 = Object.freeze({
         opts.chainId,
         "Uniswap V3 QuoterV2"
       );
-    return Nodes.contractWrite({
+    return Nodes.contractRead({
       id: opts.id,
       name: opts.name,
       chainId: opts.chainId,
       contractAddress: quoter,
       contractAbi: Protocols.uniswapV3.quoterV2Abi,
-      isSimulated: true,
       methodCalls: [
         {
           methodName: "quoteExactInputSingle",
           methodParams: [
-            JSON.stringify({
-              tokenIn: opts.tokenIn,
-              tokenOut: opts.tokenOut,
-              amountIn: opts.amountIn,
-              fee: opts.fee,
-              sqrtPriceLimitX96:
-                opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
-            }),
+            JSON.stringify([
+              opts.tokenIn,
+              opts.tokenOut,
+              opts.amountIn,
+              opts.fee,
+              opts.sqrtPriceLimitX96 ?? DEFAULT_SQRT_PRICE_LIMIT,
+            ]),
           ],
         },
       ],

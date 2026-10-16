@@ -1,12 +1,4 @@
-/**
- * v3 client.runNodeWithInputs(p) -> v4 client.nodes.run(p).
- *
- * The v3 file was specifically about the `isSimulated` toggle on
- * ContractWrite. In v4 nodes.run always simulates (Tenderly for
- * contract writes, chain_rpc for reads); a real bundler submission
- * only happens through workflows.trigger. The port captures both
- * behaviors and asserts the provider field accordingly.
- */
+/** Standalone reads are supported; blockchain writes require a workflow. */
 
 import { Chains, Client, Nodes, Protocols, Tokens } from "@avaprotocol/sdk-js";
 
@@ -51,23 +43,13 @@ describe("nodes.run (provider routing)", () => {
     expect(ctx.provider).toBe("chain_rpc");
   });
 
-  test("ContractWrite routes through Tenderly (is_simulated=true)", async () => {
-    const wallet = await createSmartWallet(client);
-    const result = await client.nodes.run({
+  test("ContractWrite requires a complete workflow", async () => {
+    await expect(client.nodes.run({
       node: Nodes.contractWrite({
-        id: "w",
-        name: "approve",
-        chainId: 11_155_111,
-        contractAddress: USDC_SEPOLIA,
-        contractAbi: APPROVE_ABI,
+        id: "w", name: "approve", chainId: Chains.Sepolia,
+        contractAddress: USDC_SEPOLIA, contractAbi: APPROVE_ABI,
         methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "1000000"] }],
       }),
-      inputVariables: { settings: settingsFor(wallet.address) },
-    });
-    expect(result.success).toBe(true);
-    const ctx = result.executionContext as Record<string, unknown>;
-    // contractWrite simulation always goes through Tenderly in v4.
-    expect(ctx.provider).toBe("tenderly");
-    expect(ctx.is_simulated).toBe(true);
+    })).rejects.toMatchObject({ status: 400, message: expect.stringContaining("complete workflow") });
   });
 });
