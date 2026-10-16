@@ -15,3 +15,16 @@ complete workflow so prerequisites run in the correct order.
 
 The runtime `executionContext.is_simulated` result still reports how a step ran.
 It is an output field, not a node setting.
+
+## Migration
+
+Remove `isSimulated` from contract-write configuration and builder options.
+JavaScript callers and pre-built options objects may still contain extra keys;
+this does not restore the old behavior. `nodes.run` rejects blockchain actions
+with HTTP 400. Move them and their prerequisites into a complete workflow.
+
+`erc20Overrides` is deprecated on `RunNodeRequest`; nonempty values are rejected.
+Use the workflow's automatic state propagation from preceding simulated steps.
+
+`UniswapV3.quoteNode` now produces `contractRead`. Read the quote from
+`output.data.quoteExactInputSingle`, rather than contract-write receipts.

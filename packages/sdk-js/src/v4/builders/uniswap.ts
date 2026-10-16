@@ -229,6 +229,7 @@ export const UniswapV3 = Object.freeze({
       methodCalls: [
         {
           methodName: "quoteExactInputSingle",
+          // Contract reads take tuple values in ABI order; writes accept named objects.
           methodParams: [
             JSON.stringify([
               opts.tokenIn,

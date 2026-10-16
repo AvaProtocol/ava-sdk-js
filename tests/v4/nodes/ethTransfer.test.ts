@@ -41,13 +41,17 @@ describe("ETHTransfer Node Tests", () => {
   });
 
   describe("nodes.run", () => {
-    test("rejects a standalone native transfer", async () => {
-      await expect(client.nodes.run({
-        node: Nodes.ethTransfer({
+    test.each([false, true])("rejects a standalone native transfer (loop=%s)", async (loop) => {
+      const action = Nodes.ethTransfer({
           id: "n1", name: "n1", chainId: 11_155_111,
           destination: eoaAddress, amountWei: "1",
-        }),
-      })).rejects.toMatchObject({ status: 400, message: expect.stringContaining("complete workflow") });
+        });
+      const node = loop
+        ? Nodes.loop({ id: "loop", name: "loop", inputVariable: "{{items}}", runner: action })
+        : action;
+      await expect(client.nodes.run({ node })).rejects.toMatchObject({
+        status: 400, message: expect.stringContaining("complete workflow"),
+      });
     });
   });
 

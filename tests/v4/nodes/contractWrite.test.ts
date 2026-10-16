@@ -36,14 +36,18 @@ describe("ContractWrite Node Tests", () => {
   });
 
   describe("nodes.run", () => {
-    test("rejects a standalone contract write", async () => {
-      await expect(client.nodes.run({
-        node: Nodes.contractWrite({
+    test.each([false, true])("rejects a standalone contract write (loop=%s)", async (loop) => {
+      const action = Nodes.contractWrite({
           id: "w", name: "w", chainId: Chains.Sepolia,
           contractAddress: USDC_SEPOLIA, contractAbi: ERC20_ABI,
           methodCalls: [{ methodName: "approve", methodParams: [eoaAddress, "0"] }],
-        }),
-      })).rejects.toMatchObject({ status: 400, message: expect.stringContaining("complete workflow") });
+        });
+      const node = loop
+        ? Nodes.loop({ id: "loop", name: "loop", inputVariable: "{{items}}", runner: action })
+        : action;
+      await expect(client.nodes.run({ node })).rejects.toMatchObject({
+        status: 400, message: expect.stringContaining("complete workflow"),
+      });
     });
   });
 

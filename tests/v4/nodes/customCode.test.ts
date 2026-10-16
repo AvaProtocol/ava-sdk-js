@@ -12,8 +12,7 @@
  *     google.protobuf.Struct, scalar returns get nested).
  *
  * executionContext keys:
- *   - v3 used camelCase (`isSimulated`); v4 carries the proto field
- *     names directly (`is_simulated`, `chain_id`, `provider`).
+ *   - Runtime fields use `is_simulated`, `chain_id`, and `provider`.
  *
  * `return undefined` was a known v3 protobuf limitation — v4 still
  * normalizes to null, so the assertion holds.
