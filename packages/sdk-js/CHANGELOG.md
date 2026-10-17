@@ -1,5 +1,27 @@
 # @avaprotocol/sdk-js
 
+## 5.0.0
+
+### Major Changes
+
+- 1789e85: Remove the per-node `isSimulated` configuration option. Workflow simulation
+  previews all actions and deployed workflows execute all actions. Standalone
+  contract writes and native transfers (including loop runners) require a complete
+  workflow. `UniswapV3.quoteNode` now uses contractRead through read-only eth_call.
+  Single-node `erc20Overrides` are deprecated and nonempty values are rejected.
+
+### Patch Changes
+
+- 1789e85: Export `ExecutionErrorCode` for unresolved UserOperation confirmations, confirmed
+  UserOperation reverts, and writes skipped after a failed prerequisite. Document
+  execution-step metadata and the distinction between outer transaction status
+  and inner execution status. Add a REST workflow-simulation regression case for
+  failed approvals and dependent writes, and correct the gas regression test to
+  assert v4 top-level gas fields and their arithmetic.
+- Updated dependencies [1789e85]
+- Updated dependencies [1789e85]
+  - @avaprotocol/types@5.0.0
+
 ## 4.16.2
 
 ### Patch Changes
