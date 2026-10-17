@@ -155,3 +155,10 @@ export type EthereumAddress = components["schemas"]["EthereumAddress"];
 export type Hex = components["schemas"]["Hex"];
 export type ChainId = components["schemas"]["ChainId"];
 export type Timestamp = components["schemas"]["Timestamp"];
+
+/** Known workflow-write outcomes. Other execution errors remain open strings. */
+export enum ExecutionErrorCode {
+  USER_OP_CONFIRMATION_UNRESOLVED = "USER_OP_CONFIRMATION_UNRESOLVED",
+  USER_OP_EXECUTION_REVERTED = "USER_OP_EXECUTION_REVERTED",
+  WRITE_PREREQUISITE_FAILED = "WRITE_PREREQUISITE_FAILED",
+}
