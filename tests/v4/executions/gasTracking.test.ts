@@ -5,10 +5,9 @@
  * aggregation) and asserts the gas math (totalGasCost = gasUsed *
  * gasPrice) plus the execution-level cogs shape.
  *
- * Step metadata fields (gasUsed, gasPrice, totalGasCost,
- * transactionHash) are populated even by simulations — the values
- * are placeholders for sim-only paths but the math invariant still
- * holds.
+ * REST v4 exposes contract gas totals on ExecutionStep itself. Native
+ * simulation also carries flat gas metadata. Assert both shapes explicitly
+ * so the presence of receipt metadata cannot silently bypass the gas checks.
  */
 
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
@@ -26,15 +25,6 @@ import { createFromTemplate } from "../../utils/templates";
 // 180s: same blockNumber+5 trigger pattern as ethTransfer — 60s of
 // pure block-wait before the UserOp round-trip even starts.
 jest.setTimeout(180_000);
-
-interface StepWithMeta {
-  readonly metadata?: {
-    readonly gasUsed?: string;
-    readonly gasPrice?: string;
-    readonly totalGasCost?: string;
-    readonly transactionHash?: string;
-  };
-}
 
 describe("Gas tracking", () => {
   let client: Client;
@@ -105,12 +95,13 @@ describe("Gas tracking", () => {
         expect(typeof c.fee.amount).toBe("string");
       }
 
-      const step = exec.steps?.find((s) => s.id === "approve") as unknown as StepWithMeta | undefined;
-      if (step?.metadata) {
-        expect(typeof step.metadata.gasUsed).toBe("string");
-        expect(typeof step.metadata.gasPrice).toBe("string");
-        expect(typeof step.metadata.totalGasCost).toBe("string");
-      }
+      const step = exec.steps?.find((s) => s.id === "approve");
+      expect(step).toBeDefined();
+      expect(typeof step?.gasUsed).toBe("string");
+      expect(typeof step?.gasPrice).toBe("string");
+      expect(typeof step?.totalGasCost).toBe("string");
+      expect(BigInt(step!.gasUsed!)).toBeGreaterThan(0n);
+      expect(BigInt(step!.totalGasCost!)).toBe(BigInt(step!.gasUsed!) * BigInt(step!.gasPrice!));
     } finally {
       await removeCreatedWorkflows(funded, [wfId]);
     }

@@ -60,4 +60,6 @@ For contract writes, `receipt.status` describes the **outer Ethereum transaction
 An inner UserOperation can revert while the outer receipt has `status: "0x1"`.
 Use step `success`, `errorCode`, and receipt `executionStatus` to determine whether
 that action succeeded. Pending hashes stay available after an unresolved outcome.
+Gas totals (`gasUsed`, `gasPrice`, `totalGasCost`) are top-level execution-step
+fields when available; contract receipt metadata does not flatten these fields.
 Reports and independent branches continue after a skipped write.
