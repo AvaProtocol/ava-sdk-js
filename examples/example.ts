@@ -324,14 +324,13 @@ const commands: Record<string, { description: string; usage: string; run: Comman
   },
 
   "nodes:run": {
-    description: "Run a single node in isolation (no workflow persisted)",
+    description: "Run a read/data node in isolation (no workflow persisted)",
     usage: "nodes:run <file.json> [--idempotency-key KEY]",
     run: async (client, [file], flags) => {
       if (!file) fail(EXIT_USER_ERROR, "NODES_BAD_ARGS", "Usage: nodes:run <file.json>");
       await ensureAuth(client);
       const body = readJsonFile<v4.RunNodeRequest>(file);
-      // A --idempotency-key makes a real execute (node config isSimulated:false)
-      // safe to retry without broadcasting a second UserOp.
+      // An --idempotency-key reuses the first result for a retried read/data request.
       return client.nodes.run(
         body,
         flags.idempotencyKey ? { idempotencyKey: flags.idempotencyKey } : undefined,

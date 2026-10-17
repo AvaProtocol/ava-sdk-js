@@ -3,9 +3,8 @@
 // (`openapi.gen.ts`) carries every type the spec declares; this module
 // is the v4 SDK's public type bag.
 //
-// v3 types (`./api`, `./workflow`, `./trigger`, etc.) remain available
-// during the transition window; they map 1:1 to the proto shapes and
-// will be deleted once every consumer is on v4.
+// Legacy v3 types were removed with the gRPC surface. Consumers that still
+// require them should stay on the v3-compatible package release.
 
 import type { components, paths, operations } from "./openapi.gen";
 
@@ -155,3 +154,10 @@ export type EthereumAddress = components["schemas"]["EthereumAddress"];
 export type Hex = components["schemas"]["Hex"];
 export type ChainId = components["schemas"]["ChainId"];
 export type Timestamp = components["schemas"]["Timestamp"];
+
+/** Known workflow-write outcomes. Other execution errors remain open strings. */
+export enum ExecutionErrorCode {
+  USER_OP_CONFIRMATION_UNRESOLVED = "USER_OP_CONFIRMATION_UNRESOLVED",
+  USER_OP_EXECUTION_REVERTED = "USER_OP_EXECUTION_REVERTED",
+  WRITE_PREREQUISITE_FAILED = "WRITE_PREREQUISITE_FAILED",
+}

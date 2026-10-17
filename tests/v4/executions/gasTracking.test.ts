@@ -5,10 +5,9 @@
  * aggregation) and asserts the gas math (totalGasCost = gasUsed *
  * gasPrice) plus the execution-level cogs shape.
  *
- * Step metadata fields (gasUsed, gasPrice, totalGasCost,
- * transactionHash) are populated even by simulations — the values
- * are placeholders for sim-only paths but the math invariant still
- * holds.
+ * REST v4 exposes contract gas totals on ExecutionStep itself. Native
+ * simulation also carries flat gas metadata. Assert both shapes explicitly
+ * so the presence of receipt metadata cannot silently bypass the gas checks.
  */
 
 import { Chains, Client, Nodes, Protocols, Tokens, Triggers } from "@avaprotocol/sdk-js";
@@ -27,15 +26,6 @@ import { createFromTemplate } from "../../utils/templates";
 // pure block-wait before the UserOp round-trip even starts.
 jest.setTimeout(180_000);
 
-interface StepWithMeta {
-  readonly metadata?: {
-    readonly gasUsed?: string;
-    readonly gasPrice?: string;
-    readonly totalGasCost?: string;
-    readonly transactionHash?: string;
-  };
-}
-
 describe("Gas tracking", () => {
   let client: Client;
   let eoaAddress: string;
@@ -47,30 +37,6 @@ describe("Gas tracking", () => {
 
   afterEach(async () => {
     await removeCreatedWorkflows(client, createdWorkflowIds.splice(0));
-  });
-
-  test("ETH transfer node exposes gas metadata via nodes.run", async () => {
-    const wallet = await createSmartWallet(client);
-    const result = await client.nodes.run({
-      node: Nodes.ethTransfer({
-        id: "transfer",
-        name: "transfer",
-        chainId: 11_155_111,
-        destination: eoaAddress,
-        amountWei: "1000000000000000",
-      }),
-      inputVariables: { settings: settingsFor(wallet.address) },
-    });
-    expect(result.success).toBe(true);
-    const meta = result.metadata as Record<string, string>;
-    expect(typeof meta.gasUsed).toBe("string");
-    expect(typeof meta.gasPrice).toBe("string");
-    expect(typeof meta.totalGasCost).toBe("string");
-    // Validate the gas math invariant.
-    const used = BigInt(meta.gasUsed);
-    const price = BigInt(meta.gasPrice);
-    const total = BigInt(meta.totalGasCost);
-    expect(total).toBe(used * price);
   });
 
   test("execution.cogs aggregates gas costs across a multi-step workflow", async () => {
@@ -129,18 +95,19 @@ describe("Gas tracking", () => {
         expect(typeof c.fee.amount).toBe("string");
       }
 
-      const step = exec.steps?.find((s) => s.id === "approve") as unknown as StepWithMeta | undefined;
-      if (step?.metadata) {
-        expect(typeof step.metadata.gasUsed).toBe("string");
-        expect(typeof step.metadata.gasPrice).toBe("string");
-        expect(typeof step.metadata.totalGasCost).toBe("string");
-      }
+      const step = exec.steps?.find((s) => s.id === "approve");
+      expect(step).toBeDefined();
+      expect(typeof step?.gasUsed).toBe("string");
+      expect(typeof step?.gasPrice).toBe("string");
+      expect(typeof step?.totalGasCost).toBe("string");
+      expect(BigInt(step!.gasUsed!)).toBeGreaterThan(0n);
+      expect(BigInt(step!.totalGasCost!)).toBe(BigInt(step!.gasUsed!) * BigInt(step!.gasPrice!));
     } finally {
       await removeCreatedWorkflows(funded, [wfId]);
     }
   });
 
-  test("simulated workflow carries metadata.transactionHash on transfer steps", async () => {
+  test("workflow simulation exposes transfer gas metadata and transaction hash", async () => {
     const wallet = await createSmartWallet(client);
     const sim = await client.workflows.simulate({
       trigger: Triggers.cron({ id: "trigger", name: "cron", schedule: ["0 * * * *"] }),
@@ -156,8 +123,16 @@ describe("Gas tracking", () => {
       edges: [{ id: "e1", source: "trigger", target: "transfer" }],
       inputVariables: { settings: settingsFor(wallet.address) },
     });
-    const step = sim.steps?.find((s) => s.id === "transfer") as unknown as StepWithMeta | undefined;
-    expect(step?.metadata).toBeDefined();
-    expect(typeof step?.metadata?.transactionHash).toBe("string");
+    expect(sim.status).toBe("success");
+    const step = sim.steps?.find((s) => s.id === "transfer");
+    expect(step?.success).toBe(true);
+    const meta = step?.metadata as Record<string, string>;
+    expect(meta).toMatchObject({
+      gasUsed: expect.any(String),
+      gasPrice: expect.any(String),
+      totalGasCost: expect.any(String),
+      transactionHash: expect.any(String),
+    });
+    expect(BigInt(meta.totalGasCost)).toBe(BigInt(meta.gasUsed) * BigInt(meta.gasPrice));
   });
 });

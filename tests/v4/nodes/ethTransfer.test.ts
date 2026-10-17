@@ -1,20 +1,6 @@
 /**
- * v3 had many near-duplicate variations of "with/without isSimulated".
- * v4 simplifies: nodes.run is always a simulation (no UserOp goes
- * out), and the only on-chain execution path is workflows.trigger.
- * Real ETH transfer under a REST session grant is refused with
- * SESSION_POLICY_NATIVE_NOT_ALLOWED (EigenLayer-AVS #761) — empty
- * inner calldata cannot pass a selector-scoped allowlist.
- * The port keeps one assertion per scenario rather than re-asserting
- * the same response shape three different ways.
- *
- * Output shape map:
- *   - v3 `result.data.transfer.{from,to,value}`
- *   - v4 `result.output.data.transfer.{from,to,value}`
- *   - v3 `result.metadata.{gasUsed, gasPrice, totalGasCost, transactionHash}`
- *   - v4 same field set on `result.metadata` (top-level, NOT under output).
- *   - v3 `executionContext.{chainId, isSimulated, provider}` (camelCase)
- *   - v4 `executionContext.{chain_id, is_simulated, provider}` (snake_case)
+ * Native transfers require complete workflows. Standalone requests are rejected;
+ * workflow simulation and deployment exercise the supported action paths.
  */
 
 import { Client, Nodes, Triggers } from "@avaprotocol/sdk-js";
@@ -55,82 +41,17 @@ describe("ETHTransfer Node Tests", () => {
   });
 
   describe("nodes.run", () => {
-    test("simulates an ETH transfer and returns the canonical transfer/metadata shape", async () => {
-      const wallet = await createSmartWallet(client);
-      const amountWei = "1000000000000000"; // 0.001 ETH
-
-      const result = await client.nodes.run({
-        node: Nodes.ethTransfer({
-          id: "n1",
-          name: "n1",
-          chainId: 11_155_111,
-          destination: eoaAddress,
-          amountWei,
-        }),
-        inputVariables: { settings: settingsFor(wallet.address) },
+    test.each([false, true])("rejects a standalone native transfer (loop=%s)", async (loop) => {
+      const action = Nodes.ethTransfer({
+          id: "n1", name: "n1", chainId: 11_155_111,
+          destination: eoaAddress, amountWei: "1",
+        });
+      const node = loop
+        ? Nodes.loop({ id: "loop", name: "loop", inputVariable: "{{items}}", runner: action })
+        : action;
+      await expect(client.nodes.run({ node })).rejects.toMatchObject({
+        status: 400, message: expect.stringContaining("complete workflow"),
       });
-
-      expect(result.success).toBe(true);
-
-      const transfer = (result.output as { data: { transfer: any } }).data.transfer;
-      expect(transfer.from.toLowerCase()).toBe(wallet.address.toLowerCase());
-      expect(transfer.to.toLowerCase()).toBe(eoaAddress.toLowerCase());
-      expect(transfer.value).toBe(amountWei);
-
-      const metadata = result.metadata as Record<string, string>;
-      expect(typeof metadata.transactionHash).toBe("string");
-      // gasUsed / gasPrice / totalGasCost are populated even in
-      // simulation (placeholder values), unlike v3 where they were
-      // only present on real execution.
-      expect(typeof metadata.gasUsed).toBe("string");
-      expect(typeof metadata.gasPrice).toBe("string");
-      expect(typeof metadata.totalGasCost).toBe("string");
-
-      const ctx = result.executionContext as Record<string, unknown>;
-      expect(typeof ctx.chain_id).toBe("number");
-      expect(typeof ctx.is_simulated).toBe("boolean");
-      expect(ctx.provider).toBeTruthy();
-    });
-
-    test("rejects empty destination", async () => {
-      const wallet = await createSmartWallet(client);
-      // v4 returns success=false with an error message rather than
-      // throwing on validation — assert on the shape.
-      const result = await client.nodes.run({
-        node: Nodes.ethTransfer({
-          id: "n1",
-          name: "n1",
-          chainId: 11_155_111,
-          destination: "",
-          amountWei: "1",
-        }),
-        inputVariables: { settings: settingsFor(wallet.address) },
-      });
-      expect(result.success).toBe(false);
-      expect(typeof result.error).toBe("string");
-      expect(result.error?.length ?? 0).toBeGreaterThan(0);
-    });
-
-    test("accepts zero amount as a no-op simulation", async () => {
-      // v3 expected this to fail; v4 simulates a 0-wei transfer
-      // successfully (the engine's view: a valid 0-value transfer is
-      // legal even if pointless). The on-chain bundler would still
-      // reject a real 0-wei UserOp, so this only matters at the
-      // simulate path.
-      const wallet = await createSmartWallet(client);
-      const result = await client.nodes.run({
-        node: Nodes.ethTransfer({
-          id: "n1",
-          name: "n1",
-          chainId: 11_155_111,
-          destination: eoaAddress,
-          amountWei: "0",
-        }),
-        inputVariables: { settings: settingsFor(wallet.address) },
-      });
-      expect(result.success).toBe(true);
-      const transfer = (result.output as { data: { transfer: any } }).data.transfer;
-      expect(transfer.value).toBe("0");
     });
   });
 

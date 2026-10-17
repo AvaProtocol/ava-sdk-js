@@ -43,13 +43,12 @@ export const Nodes = Object.freeze({
       /**
        * Per-call target contract. When set, this call goes to this address instead of the
        * node-level `contractAddress`, so one node can express a heterogeneous atomic batch —
-       * e.g. approve on the token + swap on the router. Run real (`isSimulated: false`) via
-       * `client.nodes.run`, the gateway submits the whole node as one atomic UserOp.
+       * e.g. approve on the token + swap on the router. A deployed workflow
+       * submits the whole node as one atomic UserOp.
        */
       contractAddress?: string;
     }>;
     callData?: string;
-    isSimulated?: boolean;
     valueWei?: string;
     gasLimit?: string;
     chainId: number;
@@ -63,7 +62,6 @@ export const Nodes = Object.freeze({
         ...(opts.contractAbi ? { contractAbi: opts.contractAbi } : {}),
         ...(opts.methodCalls ? { methodCalls: opts.methodCalls } : {}),
         ...(opts.callData ? { callData: opts.callData } : {}),
-        ...(opts.isSimulated !== undefined ? { isSimulated: opts.isSimulated } : {}),
         ...(opts.valueWei ? { value: opts.valueWei } : {}),
         ...(opts.gasLimit ? { gasLimit: opts.gasLimit } : {}),
         chainId: opts.chainId,

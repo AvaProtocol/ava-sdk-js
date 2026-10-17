@@ -221,12 +221,15 @@ await client.nodes.run({
   node: {
     id: "node-id",
     name: "nodeName",
-    type: "contractWrite",
-    config: { /* node-specific config */ }
+    type: "customCode",
+    config: { source: "return 1", lang: "javascript" }
   },
   inputVariables: { /* input data */ }
 });
 ```
+
+`nodes.run` supports read/data operations only. Contract writes and native
+transfers, including loop runners, require a complete workflow.
 
 ### Adding New Node/Trigger Types
 

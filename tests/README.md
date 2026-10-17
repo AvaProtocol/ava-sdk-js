@@ -31,6 +31,75 @@ Suites map to `yarn test:<name>` and to CI matrix jobs:
 | `yarn test:nodes` | `tests/v4/nodes` |
 | `yarn test:templates` | `tests/v4/templates` |
 
+## External template integration
+
+These opt-in suites compile an externally maintained template from its current
+Git checkout. Keep the test configuration and all application-specific fixture
+values in the producer repository. The SDK stores no copied graph, template
+identifiers, private repository links, or deployment details.
+
+Install dependencies in both the SDK and producer checkout and use Node 24.
+Set `TEMPLATE_TEST_CONFIG` explicitly in local runs and producer CI. It points to
+a JSON file implementing `TemplateTestConfig` in `tests/utils/externalTemplate.ts`:
+`sourceRoot` is relative to that JSON file; `bridgeArgs` are arguments to Node
+resolved in the source root; `sourceFile`, `templateId`, `reportPath` and
+`contract` declare the artifact and its assertions. The producer bridge accepts
+JSON on stdin for `compile` and `summarize`, and returns JSON on stdout.
+Compilation must hash the bytes it compiles and return the current source commit.
+The SDK checks both against the producer checkout without logging their values.
+The artifact hash verifies that file; HEAD identifies the checkout but does not
+certify that other producer files are clean. The SDK records a `sourceDirty`
+boolean from the working tree without logging file names or contents. Dirty
+working trees remain supported so local edits can be tested.
+
+Jest uses Babel, so type checking is a separate gate: `yarn test:external:types`
+checks the harness against SDK workspace source. Public SDK CI runs that check
+and `yarn test:external:unit` without any external producer configuration or
+credentials. The producer compilation contract is exercised in producer CI.
+
+```bash
+# Standalone SDK harness checks; no producer checkout, gateway or credentials:
+yarn test:external:types
+yarn test:external:unit
+# Also compile the producer source; no gateway or wallet credentials:
+TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json yarn test:external:contract
+# Include local gateway simulations:
+TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json AVS_REST_URL=http://localhost:8080/api/v1 yarn test:external
+# Also execute a tiny real Sepolia transfer using the funded test fixture:
+TEMPLATE_TEST_CONFIG=/path/to/producer/test-config.json AVS_REST_URL=http://localhost:8080/api/v1 TEMPLATE_LIVE=1 yarn test:external
+```
+
+Each integration test owns a fresh report listener and token. Reports from a
+funded simulation are discarded before executing the live workflow, so an
+execution report cannot be confused with an earlier simulation. The report stub
+runs the producer's real summarizer asynchronously with delivery stubbed; closing
+the listener cancels active producer processes and sockets. It
+binds to loopback by default. A container gateway can use `TEST_STUB_HOST` for
+the advertised host and explicitly set `TEST_STUB_BIND_ADDRESS` for a wider bind.
+Each run generates its own bearer token, passed as `notifyAuthorization` to the
+producer compiler, and rejects report bodies over 1 MB. Bridge processes receive
+only basic system environment variables by default; use the config's optional
+`bridgeEnv` string array to select additional producer variables explicitly.
+Wallet keys are never inherited by default. `TEMPLATE_BRIDGE_TIMEOUT_MS`
+defaults to 90000. `TEMPLATE_BRIDGE_DEBUG=1` enables producer diagnostics locally;
+do not publish that output if the source repository contains private data.
+
+The live test sends 0.000001 Sepolia ETH to the fixture owner's address. If a
+grant is needed, it adds the observed requirements to the shared fixture grant
+for seven days. That addition persists after cleanup and can broaden an existing
+grant; the test never revokes shared permissions. It removes only its own
+workflows, including bounded repeated recovery by unique name after a lost
+creation response. Name new gateway-free tests `*.contract.test.ts` so the
+contract-only command selects them. Standalone harness tests belong under
+`tests/external-templates/unit` so public SDK CI can run them without a producer.
+
+The live test has one deadline across authentication, compilation, simulation,
+grants and workflow operations. Work stops 45 seconds before the run deadline;
+cleanup uses a separate authenticated client, bounded request timeouts and its
+own cancellation signal. The entire sequence is inside `try/finally`, and all
+timers are disposed even when setup or grant creation fails. The outer Jest
+deadline has an additional five-second margin for teardown.
+
 ## CI stack
 
 GitHub Actions (`.github/workflows/dev-test-on-pr.yml`) boots gateway +
