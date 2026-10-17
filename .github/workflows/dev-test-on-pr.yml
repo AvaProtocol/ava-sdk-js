@@ -7,12 +7,13 @@ on:
       docker_image_tag:
         description: "Docker Image Tag of avaprotocol/avs-dev"
         required: false
-        default: "latest"
+        default: "staging-fa3c6069"
 
 # Shared env for all jobs that need secrets
 env:
   TEST_ENV: "dev"
-  DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'latest' }}
+  # Includes the workflow prerequisite guard and REST confirmation metadata.
+  DOCKER_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.docker_image_tag || 'staging-fa3c6069' }}
 
 jobs:
   # ── Job 1: Check if tests should run ──────────────────────────────

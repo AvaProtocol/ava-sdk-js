@@ -21,13 +21,10 @@ yarn add @avaprotocol/types
 Here’s a quick example of how to use the types library to get started with Ava Protocol:
 
 ```typescript
-import { WorkflowStatus, TriggerType } from "@avaprotocol/types";
+import { ExecutionErrorCode, type ExecutionStep } from "@avaprotocol/types";
 
-// Check conditions such as workflow status
-if (workflow.status === WorkflowStatus.Enabled) {
-  // ...
-  // your logic here
-  // ...
+function needsConfirmationCheck(step: ExecutionStep): boolean {
+  return step.errorCode === ExecutionErrorCode.USER_OP_CONFIRMATION_UNRESOLVED;
 }
 ```
 
@@ -64,11 +61,3 @@ An inner UserOperation can revert while the outer receipt has `status: "0x1"`.
 Use step `success`, `errorCode`, and receipt `executionStatus` to determine whether
 that action succeeded. Pending hashes stay available after an unresolved outcome.
 Reports and independent branches continue after a skipped write.
-
-```typescript
-import { ExecutionErrorCode, type ExecutionStep } from "@avaprotocol/types";
-
-function needsConfirmationCheck(step: ExecutionStep): boolean {
-  return step.errorCode === ExecutionErrorCode.USER_OP_CONFIRMATION_UNRESOLVED;
-}
-```
