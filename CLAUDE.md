@@ -109,8 +109,8 @@ stream to `../EigenLayer-AVS/logs/{gateway,worker-sepolia,...}.log` — `grep` /
 What to look for:
 
 - **Gateway**: HTTP method + URI + status code for each request (`POST /api/v1/workflows:simulate status=200`), no `Worker reconnect failed` / `context deadline exceeded` warnings, no Sentry-bound errors.
-- **Worker**: `Chain worker gRPC server listening` at startup, the actual RPC calls the test induced (contract reads/writes show up as `eth_call` / Tenderly simulate requests), no `Failed to connect to WebSocket RPC` / `403 Forbidden` from the chain RPC.
-- **For contractWrite-bearing tests**: confirm Tenderly state-override invocations show up in worker logs — same-workflow `approve` should inject allowance state for the chained `supply`/`transfer`.
+- **Worker**: read-only chain RPCs and token metadata; inspect connection/read errors (`Failed to connect to WebSocket RPC`, `403 Forbidden`). Successful reads are not all logged, so quiet worker logs do not imply an idle worker.
+- **For contractWrite-bearing tests**: inspect `gateway.log` for Tenderly state overrides, UserOp/transaction hashes and confirmation outcomes — writes and session-policy resolution run in the gateway; a simulated `approve` should supply allowance state to the chained `supply`/`transfer`.
 
 If logs show a warning the test passes through (e.g. `Worker not ready, will retry`, `Failed to fetch paymaster owner`), surface it explicitly in the test's output or the change description. Tests that pass on green logs but ignore amber logs are how regressions slip in.
 
