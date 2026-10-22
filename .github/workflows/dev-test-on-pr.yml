@@ -99,7 +99,9 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       TENDERLY_ACCESS_KEY: ${{ secrets.TENDERLY_ACCESS_KEY }}
       CONTROLLER_PRIVATE_KEY: ${{ secrets.CONTROLLER_PRIVATE_KEY }}
-      SESSION_SIGNER_PRIVATE_KEY: ${{ secrets.SESSION_SIGNER_PRIVATE_KEY }}
+      # SESSION_SIGNER_PRIVATE_KEY is deliberately NOT here: it is scoped to
+      # the "Inject secrets" step, its only reader, so the test step (jest and
+      # every npm dependency) never has it in its environment.
       AP_NOTIFY_BOT_TOKEN: ${{ secrets.AP_NOTIFY_BOT_TOKEN }}
       MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
       GOPLUS_APP_KEY: ${{ secrets.GOPLUS_APP_KEY }}
@@ -141,6 +143,8 @@ jobs:
         run: yarn build
 
       - name: Inject secrets into gateway + worker configs
+        env:
+          SESSION_SIGNER_PRIVATE_KEY: ${{ secrets.SESSION_SIGNER_PRIVATE_KEY }}
         run: |
           # envsubst renders an unset secret as an empty value, which the
           # unsubstituted-variable check below cannot see. Gateways from
