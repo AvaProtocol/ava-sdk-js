@@ -142,6 +142,11 @@ jobs:
 
       - name: Inject secrets into gateway + worker configs
         run: |
+          # envsubst renders an unset secret as an empty value, which the
+          # unsubstituted-variable check below cannot see. Gateways from
+          # EigenLayer-AVS #864 on refuse to start without a session signer,
+          # so fail here with the cause rather than at the health wait.
+          : "${SESSION_SIGNER_PRIVATE_KEY:?SESSION_SIGNER_PRIVATE_KEY secret is not set}"
           export TEST_ENV ETH_RPC_URL ETH_WS_URL ECDSA_PRIVATE_KEY JWT_SECRET ALCHEMY_API_KEY CONTROLLER_PRIVATE_KEY SESSION_SIGNER_PRIVATE_KEY TENDERLY_ACCOUNT TENDERLY_PROJECT TENDERLY_ACCESS_KEY AP_NOTIFY_BOT_TOKEN SENDGRID_KEY THEGRAPH_API_KEY MORALIS_API_KEY GOPLUS_APP_KEY GOPLUS_APP_SECRET CONTEXT_MEMORY_API_KEY
           for src in gateway worker-sepolia operator-sepolia; do
             envsubst < config/${src}.yaml > config/${src}.runtime.yaml
