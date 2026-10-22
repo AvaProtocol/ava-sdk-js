@@ -123,6 +123,9 @@ compose file (`docker-compose.yml`) wires up gateway + worker-sepolia
 and are modeled on the EigenLayer-AVS `gateway-dev.example.yaml` /
 `worker-sepolia-dev.example.yaml` shapes; CI renders the `${...}`
 placeholders into `*.runtime.yaml` via `envsubst` before booting.
+Gateways from EigenLayer-AVS #864 on also need `SESSION_SIGNER_PRIVATE_KEY`:
+the repo secret in CI, and the test-only key in your local `.env` when you
+render `gateway.runtime.yaml` yourself. Never use a controller key for it.
 
 ```bash
 docker compose up -d gateway           # Start gateway (REST :8080, gRPC :2206)
