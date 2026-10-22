@@ -25,6 +25,12 @@ operator_state_retriever_address: 0x070E0ABE8407eb4727fC7C5284bdc1e5E5CBf605
 
 jwt_secret: ${JWT_SECRET}
 
+# Required by gateways built from EigenLayer-AVS #864 onward: signs every MA v2
+# session operation, and is the signer every session grant installs. A
+# test-only key of its own (secret SESSION_SIGNER_PRIVATE_KEY), never a
+# controller key. Older images ignore the field.
+session_signer_private_key: ${SESSION_SIGNER_PRIVATE_KEY}
+
 # Explicit allowlist so a missing default in a future image cannot
 # silently drop the CI operator. Same address as
 # config/operator-sepolia.yaml (EIP-55 checksummed).
