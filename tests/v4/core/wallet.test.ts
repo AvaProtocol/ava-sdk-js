@@ -246,6 +246,32 @@ describe("Wallet Management Tests", () => {
       expect(audChain.data.some((w) => w.salt === salt)).toBe(false);
     });
 
+    // Same gating as the listing test above. getNonce looks the wallet up
+    // and reads its nonce on one chain (EigenLayer-AVS
+    // TestGetWalletNonceChecksOwnershipOnTheReadChain); this is the wire
+    // check that the SDK sends `?chainId=`.
+    testMultichain("reads the nonce on chainId, not the JWT audience chain", async () => {
+      const otherChain = Chains.BaseMainnet;
+      expect(otherChain).not.toEqual(TEST_AUTH_CHAIN_ID);
+
+      // Its own owner, for the same reason as the listing test: the aud
+      // chain must never have seen this wallet.
+      const { client: crossClient } = await getIsolatedClient();
+      const wallet = await crossClient.wallets.create({ salt: "1", chainId: otherChain });
+
+      const { nonce } = await crossClient.wallets.getNonce(wallet.address, {
+        chainId: otherChain,
+      });
+      // The full nonce is key << 64 | sequence, and the owner's key is 0x1.
+      expect(BigInt(nonce) >> 64n).toBe(1n);
+
+      // The same token, no chainId: the aud chain has no record of it.
+      await expect(crossClient.wallets.getNonce(wallet.address)).rejects.toMatchObject({
+        status: 404,
+        code: "WALLETS_NOT_FOUND",
+      });
+    });
+
     test("returns wallets sorted by salt (lexicographic)", async () => {
       // Its own owner: these salts are not the suite pool's, and a fourth
       // distinct wallet on one owner is a 429 against production's cap of 3.
