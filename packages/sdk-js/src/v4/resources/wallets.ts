@@ -106,7 +106,15 @@ export class WalletsResource {
   }
 
   /**
-   * GET /wallets/{address}:getNonce — current AA nonce for the wallet.
+   * GET /wallets/{address}:getNonce — the nonce for the next UserOp the
+   * owner signs.
+   *
+   * The value is the full EntryPoint v0.7 nonce at the owner's
+   * validation key (`0x1`): `key << 64 | sequence`, as a decimal string.
+   * Put it in `userOp.nonce` unchanged. It exceeds
+   * `Number.MAX_SAFE_INTEGER`, so parse it with `BigInt`, never `Number`
+   * or `parseInt`. The sequence alone is
+   * `BigInt(nonce) & ((1n << 64n) - 1n)`.
    *
    * Used when an external signer needs to assemble a UserOp outside
    * the SDK's bundler path. Most callers don't need this directly —
