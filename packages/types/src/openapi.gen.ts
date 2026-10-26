@@ -107,7 +107,9 @@ export interface paths {
          *     when the workflow has no end date. A fund-moving step whose target
          *     cannot be read stays `409 SESSION_POLICY_TARGET_UNRESOLVED` even when
          *     that grant has expired. A grant with no recorded expiry is not
-         *     expired. The owner grants again. A workflow that only notifies
+         *     expired. A grant made for a session signer the gateway no longer
+         *     uses is `409 SESSION_POLICY_SIGNER_RETIRED`: it cannot execute
+         *     however well it covers the workflow. The owner grants again. A workflow that only notifies
          *     passes with no grant. The flag defaults to off, so today's callers
          *     are unchanged.
          */
@@ -184,7 +186,9 @@ export interface paths {
          *     grant has already expired is `409 SESSION_POLICY_EXPIRED`, including
          *     when the workflow has no end date. A fund-moving step whose target
          *     cannot be read stays `409 SESSION_POLICY_TARGET_UNRESOLVED` even when
-         *     that grant has expired. Disabling is not checked.
+         *     that grant has expired. A grant made for a session signer the
+         *     gateway no longer uses is `409 SESSION_POLICY_SIGNER_RETIRED`.
+         *     Disabling is not checked.
          *     Notification-only workflows pass with no grant.
          */
         readonly post: operations["resumeWorkflow"];
@@ -559,7 +563,14 @@ export interface paths {
             };
             readonly cookie?: never;
         };
-        /** Get the smart wallet's current nonce */
+        /**
+         * Get the smart wallet's current nonce
+         * @description The nonce for the next operation the owner signs. It is read from
+         *     EntryPoint v0.7 at the owner's validation key (`0x1`: entity 0,
+         *     global validation). Modular Account v2 selects the validation from
+         *     the nonce key, so a nonce read at key 0 is not one the account
+         *     accepts from its owner. Reflects mined state only.
+         */
         readonly get: operations["getWalletNonce"];
         readonly put?: never;
         readonly post?: never;
@@ -1089,7 +1100,7 @@ export interface components {
              * @description Usable session grant involved in this failure, when there is one.
              *     Set on `SESSION_POLICY_BASE_CHANGED`, `SESSION_POLICY_NOT_COVERING`,
              *     `SESSION_POLICY_TARGET_UNRESOLVED`, `SESSION_POLICY_NATIVE_UNSIZED`,
-             *     and `SESSION_POLICY_EXPIRED`.
+             *     `SESSION_POLICY_EXPIRED`, and `SESSION_POLICY_SIGNER_RETIRED`.
              */
             readonly policyId?: string;
             /**
@@ -1104,8 +1115,9 @@ export interface components {
             readonly missingActions?: readonly components["schemas"]["AllowedAction"][];
             /**
              * @description Grant the caller still needs. Set on
-             *     `409 SESSION_POLICY_NOT_COVERING` and
-             *     `409 SESSION_POLICY_EXPIRED` from create and resume.
+             *     `409 SESSION_POLICY_NOT_COVERING`,
+             *     `409 SESSION_POLICY_EXPIRED`, and
+             *     `409 SESSION_POLICY_SIGNER_RETIRED` from create and resume.
              */
             readonly required?: components["schemas"]["SessionPolicyNeed"];
         };
@@ -2085,7 +2097,10 @@ export interface components {
             readonly chainId?: components["schemas"]["ChainId"];
         };
         readonly NonceResponse: {
-            /** @description Smart wallet nonce as a decimal string. */
+            /**
+             * @description The full 256-bit nonce, `key << 64 | sequence`, as a decimal
+             *     string. Use it as `userOp.nonce` unchanged.
+             */
             readonly nonce: string;
         };
         /**
@@ -2250,7 +2265,8 @@ export interface components {
             /**
              * @description `covered` — the usable grant already allows this workflow, or the
              *     workflow moves no funds.
-             *     `no_grant` — fund-moving steps and no usable grant.
+             *     `no_grant` — fund-moving steps and no usable grant, including a
+             *     grant made for a session signer the gateway no longer uses.
              *     `not_covered` — a planned call or native recipient is outside the grant.
              *     `cap_too_low` — a sized cap or native budget is short.
              *     `expires_too_soon` — the grant has already expired, or it ends
@@ -2826,6 +2842,8 @@ export interface operations {
              *     fund-moving steps. `required`, `policyId`, and `missingActions`
              *     describe the gap. `SESSION_POLICY_EXPIRED` when that grant has
              *     already expired, including when the workflow has no end date.
+             *     `SESSION_POLICY_SIGNER_RETIRED` when that grant was made for a
+             *     session signer the gateway no longer uses.
              *     `SESSION_POLICY_TARGET_UNRESOLVED` when a fund-moving target cannot
              *     be read, including when the grant has also expired.
              *     Notification-only workflows do not hit this.
@@ -2949,6 +2967,8 @@ export interface operations {
              *     (`SESSION_POLICY_NOT_COVERING`; `required` describes the gap).
              *     `SESSION_POLICY_EXPIRED` when the runner's grant has already
              *     expired, including when the workflow has no end date.
+             *     `SESSION_POLICY_SIGNER_RETIRED` when it was made for a session
+             *     signer the gateway no longer uses.
              *     `SESSION_POLICY_TARGET_UNRESOLVED` when a fund-moving target cannot
              *     be read, including when the grant has also expired.
              */
@@ -3740,6 +3760,20 @@ export interface operations {
              *     grant already has a native cap, this is not an error.
              */
             readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /**
+             * @description `POLICIES_ENTITY_UNVERIFIED` — the signed validation entity could
+             *     not be read from the chain. Nothing was stored. Retry submit with
+             *     the same signature before its signing window expires; no new
+             *     prepare or owner signature is needed unless that window expires.
+             */
+            readonly 503: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
