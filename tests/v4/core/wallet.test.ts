@@ -262,12 +262,13 @@ describe("Wallet Management Tests", () => {
       const { nonce } = await crossClient.wallets.getNonce(wallet.address, {
         chainId: otherChain,
       });
-      // The owner's validation key is 0x1, so the full nonce is at least 2^64.
-      expect(BigInt(nonce) >= 1n << 64n).toBe(true);
+      // The full nonce is key << 64 | sequence, and the owner's key is 0x1.
+      expect(BigInt(nonce) >> 64n).toBe(1n);
 
       // The same token, no chainId: the aud chain has no record of it.
       await expect(crossClient.wallets.getNonce(wallet.address)).rejects.toMatchObject({
         status: 404,
+        code: "WALLETS_NOT_FOUND",
       });
     });
 

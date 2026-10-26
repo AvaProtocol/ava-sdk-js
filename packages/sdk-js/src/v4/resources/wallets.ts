@@ -121,9 +121,10 @@ export class WalletsResource {
    *
    * Wallet records are per chain, and the nonce is read on the same chain
    * the wallet is looked up on. `chainId` is optional: omitted, the gateway
-   * uses the JWT's `aud` chain, then its own default. A wallet with no
-   * record on that chain is a 404, so pass `chainId` to read a wallet on a
-   * chain other than the token's.
+   * uses the JWT's `aud` chain, then its own default. A chain the gateway
+   * does not serve is treated as its default chain, for both the lookup
+   * and the read. A wallet with no record on the resulting chain is a 404,
+   * so pass `chainId` to read a wallet on a chain other than the token's.
    *
    * Used when an external signer needs to assemble a UserOp outside
    * the SDK's bundler path. Most callers don't need this directly —
