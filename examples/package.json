@@ -9,7 +9,8 @@
   "license": "Apache-2.0",
   "scripts": {
     "start": "ts-node --transpile-only example.ts",
-    "verify": "ts-node --transpile-only example.ts verify"
+    "verify": "ts-node --transpile-only example.ts verify",
+    "sweep": "ts-node --project tsconfig.json wallet-sweep.ts"
   },
   "dependencies": {
     "@avaprotocol/sdk-js": "file:../packages/sdk-js",

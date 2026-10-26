@@ -1,4 +1,70 @@
-# examples/example.ts — agent-friendly verification CLI
+# SDK examples
+
+## Wallet sweep workflow example (#1987)
+
+`wallet-sweep.ts` composes **existing gateway nodes** for Sepolia USDC and WETH:
+
+`Manual → ContractRead balances → snapshot check → Branch → ContractWrite transfers`
+
+It first runs a read-only preview to omit zero balances and compile exact amounts
+into one multi-target write node. The complete workflow re-reads those balances
+and takes a failure branch if the snapshot changed. A failed read is unavailable,
+never zero. Token addresses/decimals come from the chain catalog.
+
+```bash
+# Build the workspace packages first, then use an existing development JWT.
+yarn build
+export AVS_REST_URL=http://localhost:8080/api/v1
+export AVS_API_KEY=... # never commit this value
+yarn --cwd examples sweep --source 0xSOURCE --to 0xDESTINATION
+yarn --cwd examples sweep --source 0xSOURCE --to 0xDESTINATION --simulate
+```
+
+Replace the address placeholders with actual addresses. Both tokens are selected
+by default; `--tokens USDC` selects just USDC. The source must hold the selected
+tokens to simulate a positive transfer. Alternatively, the existing development
+`TEST_PRIVATE_KEY` can authenticate the CLI when no JWT is set; it only signs the
+login message. The consumer Skill must use its connected wallet.
+
+The first command prints the fresh plan and compiled workflow, or `workflow: null`
+for an empty wallet. `--simulate` also runs the transfer workflow through
+`workflows.simulate`. Both commands are non-persistent: no workflow creation,
+trigger, grant, transaction signing or on-chain send occurs.
+
+This is the **workflow/simulation phase**, not owner-signed execution. The current
+gateway workflow route executes write methods separately; one multi-call node
+does not yet prove one atomic UserOperation. Owner-signature handoff and deliberate
+batch execution remain gateway/SDK work tracked in
+[Studio #1987](https://github.com/AvaProtocol/studio/issues/1987). Native ETH,
+EIP-7702 setup, arbitrary token imports and protocol exits are outside this demo.
+A passing simulation does not establish source-wallet ownership or signing support.
+
+The [owner-signed execution contract](../docs/wallet-sweep-owner-execution.md)
+records the audited gateway reuse points and next-phase checks: explicit batch
+encoding, entity-0/global nonce selection, raw-hash personal signing, finalized
+gas/sponsorship before signing, unchanged signed fields on relay and the existing
+status ownership boundary. It does not add execution support to this example.
+
+The shared factory is `examples/workflows/wallet-sweep.ts`. Offline tests cover
+exact amounts, exclusions, invalid inputs, stale snapshots and SDK transport;
+`tests/v4/templates/wallet-sweep.test.ts` checks real gateway reads and stale-plan
+refusal without funding a wallet. Set `WALLET_SWEEP_FUNDED_SIMULATION=1` to also
+run its funded test against the existing test owner's salt-0 Sepolia account.
+That account must already hold both tokens; the test neither funds it nor installs
+a grant. It checks both transfer results and unchanged source balances afterward.
+All gateway tests require the existing test environment/auth configuration.
+
+```bash
+# Pure graph/transport tests; no gateway needed.
+yarn jest --runInBand tests/v4/wallet-sweep.test.ts
+# Live reads and stale-plan refusal, plus the optional funded simulation.
+WALLET_SWEEP_FUNDED_SIMULATION=1 yarn jest --runInBand tests/v4/templates/wallet-sweep.test.ts
+```
+
+When running these tests, capture their output under `logs/` as described in
+the repository's `CLAUDE.md`. The example intentionally has no execute flag.
+
+## Verification CLI
 
 A thin command-line wrapper over `@avaprotocol/sdk-js@4` for smoke-
 testing the aggregator's REST surface. Designed for Claude Code (and
