@@ -1,7 +1,7 @@
 # Wallet sweep: owner-signed execution contract
 
 Related: [Studio #1987](https://github.com/AvaProtocol/studio/issues/1987).
-Source audit: EigenLayer-AVS commit
+Initial source audit: EigenLayer-AVS commit
 `ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12`.
 
 ## Current example and next phase
@@ -19,13 +19,20 @@ are omitted, so the later batching proof must use a source holding both tokens.
 
 Owner-signed execution requires the generic gateway handoff below. After that
 contract is implemented, expose thin typed SDK methods from the actual gateway
-schema and extend the example/integration tests. Endpoint names are undecided;
-the current authenticated Manual trigger is not that handoff. The existing
-Auto/session-grant execution path retains its authorization and retry behavior.
+schema and extend the example/integration tests. The
+[gateway handoff draft](https://github.com/AvaProtocol/EigenLayer-AVS/pull/871) now
+defines `POST /workflows:prepare` and signature-only
+`POST /executions/{id}:submit`, with the feature disabled by default. That work
+is not yet released or exposed by this SDK example. The existing authenticated
+Manual trigger is not the handoff. Auto/session-grant execution retains its
+authorization and retry behavior.
 
 ## Prepare the complete operation
 
-Reuse the per-call encoder and `PackExecuteBatchAuto` for the supported account.
+Reuse the per-call encoder and `PackExecuteBatchMAv2` for the supported account.
+This is the MA v2 successor to `PackExecuteBatchAuto` after gateway staging
+`3bffd581` removed v0.6 account support. The links below preserve the original
+`ac7ad90f` audit; the owner handoff uses the current MA v2 batch helper.
 The existing `executeAtomicBatch` packs MA v2 calls, but then calls
 `submitSmartWalletUserOp`, which still requires session authorization. Reusing
 that submission function unchanged would keep the server signer requirement.
@@ -73,6 +80,16 @@ For the audited MA v2 EOA fallback-owner path:
 These rules describe this supported account/validator, not arbitrary smart
 accounts, EIP-7702 delegates or contract owners. Verify compatibility before
 offering the signing request. An owner signature on a session nonce is invalid.
+The verified factory implementation is
+`0x000000000000c5A9089039570Dd36455b5C07383`
+(`alchemy.sma-bytecode.1.0.0`), whose fallback validator applies EIP-191 to the
+userOp hash. Alchemy's later 1.1.0 source validates the raw hash instead. Keep
+the signing recipe above for the verified build and refuse another implementation
+on a fresh prepare as well as between prepare and submit. Do not infer signing
+compatibility from a stored wallet association or current upstream `develop`.
+[Pinned 1.0.0 validator](https://github.com/alchemyplatform/modular-account/blob/bd75c9eca7ff5a66aaebc3cf2dab43ddc4622482/src/account/SemiModularAccountBase.sol#L120),
+[later digest change](https://github.com/alchemyplatform/modular-account/commit/88ee1ff359a22f155c779e2e9ef4bd04d821f412).
+
 `SessionAuthorization.Validate` intentionally rejects entity `0` and requires a
 server-held signer; do not weaken it to accommodate the owner path.
 [Nonce/framing helpers](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/pkg/erc4337/userop/v07_nonce.go#L29),
@@ -90,9 +107,21 @@ fields must remain exactly those reviewed and signed.
 `SendUserOpV07` returns a verification-gas-efficiency rejection unchanged because
 it has no key to re-sign. Do not route owner execution through
 `SendUserOpV07WithRetry`. Any required change to gas, nonce or other signed fields
-needs a fresh prepare/review and owner signature. Identical retransmission is
-allowed; reconcile uncertain broadcasts against the same operation hash before
-creating another operation. [Relay and retry behavior](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/pkg/erc4337/preset/builder_v07.go#L424)
+needs a fresh prepare/review and owner signature.
+[Relay and retry behavior](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/pkg/erc4337/preset/builder_v07.go#L424)
+
+The local gateway saves a durable `submitting` marker before sending. Repeated
+submit requests require a valid owner signature of the prepared hash and return
+the existing hash without rebroadcasting, including after a timeout or restart. If the
+process crashes between the marker and the RPC, that ID can remain unsent and
+cannot initiate another broadcast. A successful send followed by a storage error
+also leaves the marker; retrying the same ID returns the prepared hash.
+
+Retain the hash from prepare for status polling. A 404 remains unresolved and
+does not establish that no operation was accepted. Another broadcast requires
+a fresh prepare/review/signature; never automatically replace an uncertain
+operation. Polling status uses the user's JWT and wallet association without a
+transaction signature, so the SDK need not keep the signature for polling.
 
 ## Reuse status with its existing ownership boundary
 
@@ -119,6 +148,9 @@ no separate status service is required for an already supported source.
   sponsorship refusal and verification-gas repricing surface actionable failures.
 - Cancellation sends nothing. Duplicate submission and an uncertain broadcast
   reconcile one operation; pending remains pending until its receipt is known.
+- An unverified factory implementation is refused on fresh preparation, for
+  both deployed and counterfactual sources. A cached submit still requires a
+  valid signature; failure to save a post-send result never triggers a resend.
 - Batch failure transfers no selected tokens, while gas can still be spent.
   Confirm source/destination balance changes and install no new session grant.
 - Check browser-wallet signing separately after the SDK execution test passes.
