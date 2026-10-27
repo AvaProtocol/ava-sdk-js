@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
+import { getAddress } from "ethers";
 import { writeFileSync } from "node:fs";
 import { getFundedClient } from "../../utils/client";
 import { TEST_REST_URL } from "../../utils/env";
@@ -9,9 +10,10 @@ import {
 } from "../../../examples/workflows/wallet-sweep";
 import type { PreparedWalletSweep } from "../../../examples/workflows/wallet-sweep-execution";
 
-// Explicit live-write opt-in. The existing salt-0 Sepolia fixture must already
-// hold both test tokens and native gas; this test never funds it or grants a
-// session. CI's normal template suite only sees a skipped test.
+// Explicit live-write opt-in and source selection. Sweeping the shared salt-0
+// fixture empties balances other suites need, so never select it implicitly.
+// Use a dedicated funded wallet; this test never funds it or grants a session.
+// CI's normal template suite only sees a skipped test.
 const describeOwner =
   process.env.WALLET_SWEEP_OWNER_EXECUTION === "1" ? describe : describe.skip;
 describeOwner(
@@ -22,8 +24,17 @@ describeOwner(
     test("the actual CLI reviews and signs one batch, confirms both transfers and preserves session policies", async () => {
       const baseUrl = TEST_REST_URL();
       expect(["localhost", "127.0.0.1"]).toContain(new URL(baseUrl).hostname);
+      if (!process.env.WALLET_SWEEP_OWNER_SOURCE)
+        throw new Error(
+          "Set WALLET_SWEEP_OWNER_SOURCE to a dedicated funded Sepolia wallet. This test empties its selected balances; do not use the shared CI fixture.",
+        );
+      const source = getAddress(process.env.WALLET_SWEEP_OWNER_SOURCE);
       const { client, owner, privateKey } = await getFundedClient();
-      const source = (await client.wallets.create({ salt: "0" })).address;
+      expect(
+        (await client.wallets.list({ chainId: SWEEP_CHAIN_ID })).data.some(
+          (wallet) => getAddress(wallet.address) === source,
+        ),
+      ).toBe(true);
       const options = { source, destination: owner };
       const before = await previewWalletSweep(client, options);
       expect(before.plan.transfers.map((t) => t.symbol)).toEqual([

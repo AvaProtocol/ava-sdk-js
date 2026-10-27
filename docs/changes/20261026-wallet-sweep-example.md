@@ -50,3 +50,10 @@ prepare and one relay. An initial assertion exposed RPC post-state lag after
 the bundler's successful receipt; the test now polls reads for up to 60 seconds
 without signing or sending again. Workspace build, lint, example typecheck and
 test typecheck with `--moduleResolution bundler` pass.
+
+The live fixture initially shared CI's salt-0 account. Leaving it empty made the
+unchanged USDC read/write template simulation fail with `ERC20: transfer amount
+exceeds balance`, reproduced on the current local gateway. After restoring its
+swept tokens, the unchanged simulation test passes. The live test now requires an
+explicit `WALLET_SWEEP_OWNER_SOURCE` instead of silently choosing salt 0; use a
+dedicated funded wallet for future sweep checks.

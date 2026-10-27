@@ -69,13 +69,17 @@ yarn jest --runInBand tests/v4/wallet-sweep.test.ts tests/v4/wallet-sweep-execut
 # Live reads and stale-plan refusal; optional simulation needs an existing funded fixture.
 WALLET_SWEEP_FUNDED_SIMULATION=1 yarn jest --runInBand tests/v4/templates/wallet-sweep.test.ts
 # Explicit live-write opt-in: actual CLI, two transfers, nonce and policy checks.
-WALLET_SWEEP_OWNER_EXECUTION=1 yarn jest --runInBand tests/v4/templates/wallet-sweep-owner.test.ts
+WALLET_SWEEP_OWNER_EXECUTION=1 WALLET_SWEEP_OWNER_SOURCE=0xDEDICATED_WALLET yarn jest --runInBand tests/v4/templates/wallet-sweep-owner.test.ts
 ```
 
 Capture test output under `logs/` as required by `CLAUDE.md`. The owner execution
-suite only accepts a local gateway and requires both tokens and native gas in the
-existing test owner's salt-0 Sepolia account. It never funds the fixture or
-installs a grant. Browser-wallet signing is a separate integration check.
+suite only accepts a local gateway and requires an explicit
+`WALLET_SWEEP_OWNER_SOURCE`: a stored wallet owned by the development key, holding
+both tokens and native gas. Use a dedicated fixture: this test empties its selected
+balances. The shared CI salt-0 wallet must retain USDC for other simulation tests;
+if you deliberately sweep it, restore the test tokens before running those suites.
+The test never funds the fixture or installs a grant. Browser-wallet signing is
+a separate integration check.
 
 ## Verification CLI
 

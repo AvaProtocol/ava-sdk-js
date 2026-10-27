@@ -162,8 +162,10 @@ no separate status service is required for an already supported source.
 Offline tests cover transport, exact hash/call validation, wrong signing inputs,
 cancellation, expiry, uncertain submission and polling without a replacement.
 The opt-in `tests/v4/templates/wallet-sweep-owner.test.ts` runs the actual CLI
-against a local gateway and a funded Sepolia MA v2 fixture. It checks the review
-before confirming, both balance deltas, the owner nonce and unchanged session
+against a local gateway and an explicitly selected, funded Sepolia MA v2 fixture.
+Set `WALLET_SWEEP_OWNER_SOURCE` to a dedicated wallet: the sweep empties its token
+balances, so the shared CI salt-0 fixture must not be selected implicitly. It checks
+the review before confirming, both balance deltas, the owner nonce and unchanged session
 policies. It is skipped unless `WALLET_SWEEP_OWNER_EXECUTION=1` and never funds
 the fixture or creates a session grant.
 
