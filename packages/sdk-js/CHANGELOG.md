@@ -1,5 +1,22 @@
 # @avaprotocol/sdk-js
 
+## 5.1.0
+
+### Minor Changes
+
+- 6fe97a9: `wallets.getNonce(address, { chainId })` reads the nonce on a named chain. The gateway looks the wallet up on the chain it reads, so a wallet registered on a chain other than the token's needs `chainId`; without it the call is a 404. Needs a gateway that includes EigenLayer-AVS#868; earlier gateways check the wallet on their default chain whatever `chainId` says.
+
+### Patch Changes
+
+- 6fe97a9: Regenerate the OpenAPI types from EigenLayer-AVS staging:
+
+  - `getNonce` returns the full EntryPoint v0.7 nonce at the owner's validation key (`key << 64 | sequence`). Use it as `userOp.nonce` unchanged and parse it with `BigInt`. `wallets.getNonce` documents this.
+  - Policies submit declares its `503 POLICIES_ENTITY_UNVERIFIED` response, which the gateway has returned since v5.0.0. `policies.submit` documents it.
+  - Describes `SESSION_POLICY_SIGNER_RETIRED`, the refusal for a grant made for a session signer the gateway no longer uses.
+
+- Updated dependencies [6fe97a9]
+  - @avaprotocol/types@5.1.0
+
 ## 5.0.0
 
 ### Major Changes
