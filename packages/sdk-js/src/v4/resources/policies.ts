@@ -119,6 +119,11 @@ export class PoliciesResource {
    *   `affectedTaskIds` names those tasks. Pause one, or name it in
    *   `dropTaskIds`. If the current grant already has a native cap, this
    *   is not an error.
+   *
+   * A 503 `POLICIES_ENTITY_UNVERIFIED` means the gateway could not read the
+   * signed validation entity from the chain, and nothing was stored. Retry
+   * submit with the same signature while its signing window is open; a new
+   * prepare and owner signature are needed only once it expires.
    */
   submit(
     address: string,

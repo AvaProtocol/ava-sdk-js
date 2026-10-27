@@ -106,16 +106,35 @@ export class WalletsResource {
   }
 
   /**
-   * GET /wallets/{address}:getNonce — current AA nonce for the wallet.
+   * GET /wallets/{address}:getNonce — the nonce for the next UserOp the
+   * owner signs.
+   *
+   * The value is the full EntryPoint v0.7 nonce at the owner's
+   * validation key (`0x1`): `key << 64 | sequence`, as a decimal string.
+   * Put it in `userOp.nonce` unchanged. It exceeds
+   * `Number.MAX_SAFE_INTEGER`, so parse it with `BigInt`, never `Number`
+   * or `parseInt`. The sequence alone is
+   * `BigInt(nonce) & ((1n << 64n) - 1n)`.
+   *
+   * It reflects mined state only: while an owner UserOp is pending, the
+   * value is the nonce that UserOp already uses.
+   *
+   * Wallet records are per chain, and the nonce is read on the same chain
+   * the wallet is looked up on. `chainId` is optional: omitted, the gateway
+   * uses the JWT's `aud` chain, then its own default. A chain the gateway
+   * does not serve is treated as its default chain, for both the lookup
+   * and the read. A wallet with no record on the resulting chain is a 404,
+   * so pass `chainId` to read a wallet on a chain other than the token's.
    *
    * Used when an external signer needs to assemble a UserOp outside
    * the SDK's bundler path. Most callers don't need this directly —
    * `workflows.simulate` and `wallets.withdraw` handle nonce sourcing
    * internally.
    */
-  getNonce(address: string): Promise<v4.NonceResponse> {
+  getNonce(address: string, opts?: { chainId?: number }): Promise<v4.NonceResponse> {
     return this.transport.request<v4.NonceResponse>({
       path: `/wallets/${encodeURIComponent(address)}:getNonce`,
+      query: opts,
     });
   }
 
