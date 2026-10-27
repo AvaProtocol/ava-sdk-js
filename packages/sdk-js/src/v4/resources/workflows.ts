@@ -120,6 +120,26 @@ export class WorkflowsResource {
     });
   }
 
+  /**
+   * POST /workflows:prepare — resolve a Manual workflow and price one owner
+   * batch without submitting it. Requires the owner's JWT and a gateway with
+   * owner_execution_enabled. The returned execution is transient and waiting;
+   * its write has not executed and no persistent workflow is created.
+   *
+   * Review the returned calls, funding and fees before asking the wallet to
+   * personal_sign the 32 raw bytes of userOpHash. Continue with
+   * executions.submit; keep this hash for userops.retrieve even if submission
+   * times out. Never change priced fields after signing or treat simulation as
+   * preparation. The initial gateway supports the verified MA v2 owner path.
+   */
+  prepare(req: v4.PrepareWorkflowRequest): Promise<v4.PrepareWorkflowResponse> {
+    return this.transport.request<v4.PrepareWorkflowResponse>({
+      path: "/workflows:prepare",
+      method: "POST",
+      body: req,
+    });
+  }
+
   /** POST /workflows:estimateFees */
   estimateFees(req: v4.EstimateFeesRequest): Promise<v4.EstimateFeesResponse> {
     return this.transport.request<v4.EstimateFeesResponse>({

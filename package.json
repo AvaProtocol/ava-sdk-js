@@ -27,7 +27,7 @@
     "test:triggers": "jest --config jest.config.cjs --detectOpenHandles --runInBand tests/v4/triggers",
     "test:nodes": "jest --config jest.config.cjs --detectOpenHandles --runInBand tests/v4/nodes",
     "test:templates": "jest --config jest.config.cjs --detectOpenHandles --runInBand tests/v4/templates",
-    "test:smoke": "jest --config jest.config.cjs --detectOpenHandles --runInBand tests/v4/smoke.test.ts tests/v4/onchain-helpers.test.ts",
+    "test:smoke": "jest --config jest.config.cjs --detectOpenHandles --runInBand tests/v4/smoke.test.ts tests/v4/onchain-helpers.test.ts tests/v4/wallet-sweep.test.ts tests/v4/wallet-sweep-execution.test.ts",
     "release": "yarn build && changeset publish",
     "publish": "node ./scripts/publish-packages.js",
     "publish:dry-run": "node ./scripts/publish-packages.js --dry-run",

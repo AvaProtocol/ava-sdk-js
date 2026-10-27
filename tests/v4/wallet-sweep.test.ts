@@ -335,16 +335,21 @@ describe("wallet sweep example (offline)", () => {
     },
   );
 
-  test("CLI help performs no requests, and execution flags are not accepted", async () => {
+  test("CLI help performs no requests, and conflicting execution modes fail before login", async () => {
     const output = jest
       .spyOn(process.stdout, "write")
       .mockImplementation(() => true);
     try {
       await main(["--help"]);
       expect(output).toHaveBeenCalledWith(
-        expect.stringContaining("Never deploys or sends"),
+        expect.stringContaining("Defaults to preview"),
       );
-      await expect(main(["--execute"])).rejects.toThrow(/Unknown option/);
+      await expect(main(["--execute", "--simulate"])).rejects.toThrow(
+        /Choose only one/,
+      );
+      await expect(main(["--status", "0x1234", "--execute"])).rejects.toThrow(
+        /Choose only one/,
+      );
     } finally {
       output.mockRestore();
     }

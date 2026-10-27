@@ -44,8 +44,9 @@ export const Nodes = Object.freeze({
        * Per-call target contract. When set, this call goes to this address instead of the
        * node-level `contractAddress`, so one node can express calls to different contracts —
        * e.g. approve on the token + swap on the router. Atomic execution
-       * depends on the gateway route/version. The current workflow route
-       * executes methods separately; this builder does not enable batching.
+       * depends on the gateway route/version. Ordinary workflow execution
+       * runs methods separately; workflows.prepare explicitly packs one owner
+       * batch on supported gateways. This builder alone does not enable batching.
        */
       contractAddress?: string;
     }>;

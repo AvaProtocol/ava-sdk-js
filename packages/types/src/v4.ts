@@ -26,6 +26,9 @@ export type WorkflowCount = components["schemas"]["WorkflowCount"];
 export type WorkflowStatus = components["schemas"]["WorkflowStatus"];
 export type CreateWorkflowRequest = components["schemas"]["CreateWorkflowRequest"];
 export type SimulateWorkflowRequest = components["schemas"]["SimulateWorkflowRequest"];
+export type PrepareWorkflowRequest = components["schemas"]["PrepareWorkflowRequest"];
+export type PrepareWorkflowResponse = components["schemas"]["PrepareWorkflowResponse"];
+export type OwnerUserOperationV07 = components["schemas"]["OwnerUserOperationV07"];
 export type TriggerWorkflowRequest = components["schemas"]["TriggerWorkflowRequest"];
 export type TriggerWorkflowResponse = components["schemas"]["TriggerWorkflowResponse"];
 export type EstimateFeesRequest = components["schemas"]["EstimateFeesRequest"];
@@ -77,6 +80,8 @@ export type ExecutionStatusSummary = components["schemas"]["ExecutionStatusSumma
 export type ExecutionCount = components["schemas"]["ExecutionCount"];
 export type ExecutionStats = components["schemas"]["ExecutionStats"];
 export type SignalExecutionRequest = components["schemas"]["SignalExecutionRequest"];
+export type SubmitExecutionRequest = components["schemas"]["SubmitExecutionRequest"];
+export type SubmitExecutionResponse = components["schemas"]["SubmitExecutionResponse"];
 
 // ---------------------------------------------------------------------
 // Wallets

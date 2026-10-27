@@ -1,6 +1,6 @@
 /**
- * #1987: compose a sweep with existing nodes. This example only reads and
- * simulates; it neither deploys a workflow nor submits a transaction.
+ * #1987: compose a sweep with existing nodes. These helpers only build, read
+ * and simulate; wallet-sweep-execution.ts handles the explicit owner handoff.
  */
 import { getAddress, MaxUint256 } from "ethers";
 import {

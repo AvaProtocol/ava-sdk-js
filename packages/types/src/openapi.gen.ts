@@ -251,6 +251,67 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/workflows:prepare": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Prepare a Manual workflow for one owner-signed batch
+         * @description Resolve existing read/check nodes, capture the terminal ContractWrite
+         *     calls, and build/price one MA v2 batch without signing or broadcasting.
+         *     Requires the concrete owner's Bearer JWT and a registered supported
+         *     source wallet. Current on-chain owner, implementation and gas funding
+         *     are checked independently of the stored wallet association.
+         *     The factory implementation must be the verified personal_sign build
+         *     0x000000000000c5A9089039570Dd36455b5C07383; other builds are refused.
+         *     Up to 32 calls; no native value, EIP-7702, write Loop or post-write nodes.
+         *     Retained preparations are capped at 64 per owner. Ordinary Auto/session
+         *     and simulate behavior is unchanged.
+         */
+        readonly post: operations["prepareWorkflow"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/executions/{id}:submit": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Continue a prepared execution with its owner's transaction signature
+         * @description Submit the exact priced operation from prepareWorkflow. Accepts only
+         *     the signature, not caller-supplied UserOperation fields. Rechecks the
+         *     current owner/account identity, nonce and funding before first relay.
+         *     Uses SendUserOpV07 without a server signing key or gas/nonce retry.
+         *     Material changes or bundler rejection require fresh prepare/review/signing.
+         *     Repeat calls still require a valid signature and reconcile the existing
+         *     hash without rebroadcasting. Status polling requires the JWT only.
+         *     A durable submitting marker precedes the send: a crash before the RPC
+         *     leaves this id unretryable, even if it was never sent. A post-send
+         *     storage failure also preserves the marker. Poll the prepared hash;
+         *     404 remains unresolved and is not proof that no operation was sent.
+         *     Uncertain/submitted records are retained for 24 hours. A response is
+         *     not a receipt; reuse GET /userops/{userOpHash} for confirmation.
+         */
+        readonly post: operations["submitExecution"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/workflows:estimateFees": {
         readonly parameters: {
             readonly query?: never;
@@ -1786,6 +1847,94 @@ export interface components {
              */
             readonly expiredAt?: number;
         };
+        /**
+         * @description A Manual definition with read/check nodes and exactly one terminal
+         *     ContractWrite. The initial owner path supports one configured chain,
+         *     MA v2 derived wallets with an EOA fallback owner, and zero native value.
+         *     No persistent/Auto workflow or session grant is created.
+         *     Requires gateway owner_execution_enabled: true (default false).
+         */
+        readonly PrepareWorkflowRequest: {
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly trigger: components["schemas"]["Trigger"];
+            readonly nodes: readonly components["schemas"]["Node"][];
+            readonly edges?: readonly components["schemas"]["Edge"][];
+            readonly inputVariables: components["schemas"]["InputVariables"];
+        };
+        /**
+         * @description Finalized ERC-4337 v0.7 bundler-wire operation. Quantity fields are hex
+         *     strings, never JSON numbers. Signature is empty (0x) until continuation;
+         *     no operation field can be supplied or changed by submitExecution.
+         */
+        readonly OwnerUserOperationV07: {
+            readonly sender: components["schemas"]["EthereumAddress"];
+            readonly nonce: components["schemas"]["Hex"];
+            readonly callData: components["schemas"]["Hex"];
+            readonly callGasLimit: components["schemas"]["Hex"];
+            readonly verificationGasLimit: components["schemas"]["Hex"];
+            readonly preVerificationGas: components["schemas"]["Hex"];
+            readonly maxFeePerGas: components["schemas"]["Hex"];
+            readonly maxPriorityFeePerGas: components["schemas"]["Hex"];
+            readonly factory?: components["schemas"]["EthereumAddress"];
+            readonly factoryData?: components["schemas"]["Hex"];
+            readonly paymaster?: components["schemas"]["EthereumAddress"];
+            readonly paymasterData?: components["schemas"]["Hex"];
+            readonly paymasterVerificationGasLimit?: components["schemas"]["Hex"];
+            readonly paymasterPostOpGasLimit?: components["schemas"]["Hex"];
+            readonly signature: components["schemas"]["Hex"];
+        };
+        readonly PrepareWorkflowResponse: {
+            /**
+             * @description Transient execution in waiting status. Steps contain completed
+             *     reads/checks only; the terminal write is in calls, not reported as
+             *     completed. No deployed workflow/history record exists for this run.
+             */
+            readonly execution: components["schemas"]["Execution"];
+            readonly userOperation: components["schemas"]["OwnerUserOperationV07"];
+            readonly userOpHash: components["schemas"]["Bytes32"];
+            readonly owner: components["schemas"]["EthereumAddress"];
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly entryPoint: components["schemas"]["EthereumAddress"];
+            /**
+             * @description Sign the 32 raw bytes of userOpHash, with the EIP-191 prefix applied
+             *     once; ethers signMessage(getBytes(userOpHash)). Offered only for
+             *     the verified alchemy.sma-bytecode.1.0.0 implementation.
+             * @enum {string}
+             */
+            readonly signingMethod: "personal_sign";
+            /**
+             * Format: int64
+             * @description Gateway continuation deadline, Unix milliseconds (10 minutes).
+             *     This is not an on-chain signature expiry or revocation mechanism.
+             */
+            readonly expiresAt: number;
+            readonly writeNodeId: string;
+            readonly calls: readonly components["schemas"]["UserOpInnerCall"][];
+            /**
+             * @description Final funding choice; sponsorship refusal never silently charges the source.
+             * @enum {string}
+             */
+            readonly gasFunding: "source" | "sponsored";
+            /** @description Signed maximum gas cost in decimal wei, before any paymaster sponsorship. */
+            readonly maxGasCostWei: string;
+        };
+        readonly SubmitExecutionRequest: {
+            /** @description 65-byte EOA personal signature of the prepared hash. Recovery byte 0/1 or 27/28; gateway verifies and frames it for MA v2. */
+            readonly signature: string;
+        };
+        readonly SubmitExecutionResponse: {
+            readonly executionId: components["schemas"]["Ulid"];
+            readonly userOpHash: components["schemas"]["Bytes32"];
+            readonly chainId: components["schemas"]["ChainId"];
+            /**
+             * @description Relay progress, not transaction success. Poll GET /userops/{userOpHash}
+             *     with chainId for the existing receipt status. Unknown/submitting
+             *     can survive a transport failure or restart; repeating submit never
+             *     changes the operation or starts another broadcast.
+             * @enum {string}
+             */
+            readonly submissionState: "submitting" | "submitted" | "unknown";
+        };
         readonly EstimateFeesRequest: {
             readonly chainId?: components["schemas"]["ChainId"];
             readonly trigger: components["schemas"]["Trigger"];
@@ -3055,6 +3204,81 @@ export interface operations {
             };
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
+        };
+    };
+    readonly prepareWorkflow: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PrepareWorkflowRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Priced operation awaiting an owner signature; no transaction has been submitted. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PrepareWorkflowResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            /** @description Checks, source compatibility, funding or pricing failed; refresh the preparation. */
+            readonly 412: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            readonly 429: components["responses"]["RateLimited"];
+        };
+    };
+    readonly submitExecution: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["SubmitExecutionRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Relay accepted or uncertain; use the existing UserOp status route. */
+            readonly 202: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SubmitExecutionResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
+            /** @description Preparation is stale or rejected; prepare, review and sign again. */
+            readonly 412: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly estimateWorkflowFees: {

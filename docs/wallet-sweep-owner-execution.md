@@ -4,7 +4,7 @@ Related: [Studio #1987](https://github.com/AvaProtocol/studio/issues/1987).
 Initial source audit: EigenLayer-AVS commit
 `ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12`.
 
-## Current example and next phase
+## Implemented gateway and SDK handoff
 
 The current `examples/wallet-sweep.ts` reads and simulates Sepolia USDC/WETH
 transfers using existing workflow nodes. It compiles each selected positive
@@ -12,20 +12,24 @@ balance into a static `methodCalls` entry with an explicit token target and exac
 base-unit amount. CustomCode checks the balance snapshot; its output array does
 not dynamically become a ContractWrite call list. There is no write Loop.
 
-Workflow/simulation is the agreed first phase and can run before the owner
-handoff exists. Its successful transfer results do not establish owner signing,
-gas funding, one atomic UserOperation or successful real execution. Zero balances
-are omitted, so the later batching proof must use a source holding both tokens.
+The [gateway handoff](https://github.com/AvaProtocol/EigenLayer-AVS/pull/871)
+is merged into staging at `aecd174204a716c757136cf82c60f7ecf24eb017` and remains
+disabled unless `owner_execution_enabled` is set. This SDK vendors that commit's
+schema and exposes `client.workflows.prepare(request)` and
+`client.executions.submit(id, { signature })`. The latter sends only the
+signature; clients cannot replace the stored operation. Receipt polling uses
+`client.userops.retrieve(hash, { chainId })`, not workflow history or SSE.
 
-Owner-signed execution requires the generic gateway handoff below. After that
-contract is implemented, expose thin typed SDK methods from the actual gateway
-schema and extend the example/integration tests. The
-[gateway handoff draft](https://github.com/AvaProtocol/EigenLayer-AVS/pull/871) now
-defines `POST /workflows:prepare` and signature-only
-`POST /executions/{id}:submit`, with the feature disabled by default. That work
-is not yet released or exposed by this SDK example. The existing authenticated
-Manual trigger is not the handoff. Auto/session-grant execution retains its
-authorization and retry behavior.
+The example defaults to preview. `--simulate` moves no funds. `--execute`
+prepares once, independently checks the priced hash and exact batch against the
+plan, shows the owner a review, and requires confirmation before signing the raw
+hash bytes with the development `TEST_PRIVATE_KEY`. It submits once and polls
+that hash. `--status HASH` resumes polling without preparing, signing or sending.
+The consumer Skill must supply its connected wallet signer instead of a test key.
+
+The existing authenticated Manual trigger is not this handoff. Auto/session
+execution retains its authorization and retry behavior. A passing simulation
+alone does not establish ownership, gas funding, atomicity or real execution.
 
 ## Prepare the complete operation
 
@@ -45,8 +49,8 @@ factory/deployment data and any paymaster fields to that prepared execution.
 Validate the current supported account and owner relationship independently of
 gateway wallet records. [Current session build/price/sign path](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/pkg/erc4337/preset/send_v07.go#L96)
 
-Enable atomic batching explicitly for the owner-signed workflow path. The current
-guard is `r.vm.task == nil && len(methodCalls) > 1 && !r.vm.IsSimulation`:
+The handoff enables atomic batching explicitly for the owner-signed path. The
+original guard was `r.vm.task == nil && len(methodCalls) > 1 && !r.vm.IsSimulation`:
 deployed workflows execute methods separately, simulation does not take this
 batch route, and public `nodes:run` rejects fund-moving nodes. Preserve existing
 workflow behavior and the standalone restriction.
@@ -110,7 +114,7 @@ it has no key to re-sign. Do not route owner execution through
 needs a fresh prepare/review and owner signature.
 [Relay and retry behavior](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/pkg/erc4337/preset/builder_v07.go#L424)
 
-The local gateway saves a durable `submitting` marker before sending. Repeated
+The gateway saves a durable `submitting` marker before sending. Repeated
 submit requests require a valid owner signature of the prepared hash and return
 the existing hash without rebroadcasting, including after a timeout or restart. If the
 process crashes between the marker and the RPC, that ID can remain unsent and
@@ -135,7 +139,7 @@ no separate status service is required for an already supported source.
 [Status lookup](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/core/taskengine/userop_status.go#L95),
 [ownership check](https://github.com/AvaProtocol/EigenLayer-AVS/blob/ac7ad90f3c9e2610e5c5a8bc41e3cc4d863edb12/core/taskengine/validation.go#L16)
 
-## Execution acceptance cases for the next phase
+## Verification and remaining coverage
 
 - Two positive token balances produce two explicit calls and exactly one real
   UserOperation, with both transfers originating from the selected source.
@@ -155,5 +159,16 @@ no separate status service is required for an already supported source.
   Confirm source/destination balance changes and install no new session grant.
 - Check browser-wallet signing separately after the SDK execution test passes.
 
-These are future execution checks. The present simulation tests do not claim to
-cover them, and the CLI has no execute flag.
+Offline tests cover transport, exact hash/call validation, wrong signing inputs,
+cancellation, expiry, uncertain submission and polling without a replacement.
+The opt-in `tests/v4/templates/wallet-sweep-owner.test.ts` runs the actual CLI
+against a local gateway and a funded Sepolia MA v2 fixture. It checks the review
+before confirming, both balance deltas, the owner nonce and unchanged session
+policies. It is skipped unless `WALLET_SWEEP_OWNER_EXECUTION=1` and never funds
+the fixture or creates a session grant.
+
+The source-funded deployed-account happy path is the initial live check. Browser
+wallet signing, sponsored and counterfactual execution, refusal scenarios and
+atomic failure need separate live coverage; offline or simulation checks do not
+claim to prove those cases. Native ETH sweeping and EIP-7702 sources remain out
+of scope.
