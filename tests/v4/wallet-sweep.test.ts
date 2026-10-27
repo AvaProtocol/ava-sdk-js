@@ -180,40 +180,6 @@ describe("wallet sweep example (offline)", () => {
     }
   });
 
-  test("the freshness check takes the stale branch when a balance changes", () => {
-    const workflow = buildWalletSweepWorkflow(
-      walletSweepPlanFromPreview(OPTIONS, preview()),
-    );
-    const snapshot = workflow.nodes.find(
-      (node) => node.type === "customCode" && node.id === "snapshot",
-    );
-    if (!snapshot?.config || !("source" in snapshot.config))
-      throw new Error("Expected snapshot check");
-    const check = new Function("balance0", "balance1", snapshot.config.source);
-    expect(
-      check(
-        { data: { balanceOf: "1000000" } },
-        { data: { balanceOf: "20000000000000000" } },
-      ),
-    ).toEqual({ ready: true });
-    expect(
-      check(
-        { data: { balanceOf: "1000001" } },
-        { data: { balanceOf: "20000000000000000" } },
-      ),
-    ).toEqual({ ready: false });
-    expect(workflow.edges).toContainEqual({
-      id: "readyEdge",
-      source: "check.ready",
-      target: "transfer",
-    });
-    expect(workflow.edges).toContainEqual({
-      id: "staleEdge",
-      source: "check.stale",
-      target: "stale",
-    });
-  });
-
   test("the SDK contract makes only two simulation requests and never creates/triggers/sends", async () => {
     const replies: v4.Execution[] = [
       preview(),
@@ -262,7 +228,62 @@ describe("wallet sweep example (offline)", () => {
     expect(requests.map((request) => request.url)).toEqual(
       Array(2).fill("http://gateway.invalid/api/v1/workflows:simulate"),
     );
+    expect(requests[1].body.nodes.map((node) => node.type)).toEqual([
+      "contractWrite",
+    ]);
     expect(writeConfig(requests[1].body).methodCalls).toHaveLength(2);
+  });
+
+  test("freezes a mixed zero/nonzero balance snapshot without a second balance read", async () => {
+    let usdcBalance = "0";
+    const requests: v4.SimulateWorkflowRequest[] = [];
+    const client = new Client({
+      baseUrl: "http://gateway.invalid/api/v1",
+      fetchImpl: async (_url, init) => {
+        const request = JSON.parse(String(init?.body));
+        requests.push(request);
+        if (requests.length === 1) {
+          const captured = preview([usdcBalance, "20000000000000000"]);
+          // A deposit after capture does not expand or invalidate this batch.
+          usdcBalance = "1000000";
+          return Response.json(captured);
+        }
+        expect(request.nodes.map((node: v4.Node) => node.type)).toEqual([
+          "contractWrite",
+        ]);
+        expect(writeConfig(request).methodCalls).toEqual([
+          {
+            methodName: "transfer",
+            contractAddress: Tokens.WETH[SWEEP_CHAIN_ID]!.address,
+            methodParams: [OPTIONS.destination, "20000000000000000"],
+          },
+        ]);
+        return Response.json({
+          ...preview(),
+          steps: [
+            {
+              id: "transfer",
+              type: "contractWrite",
+              success: true,
+              metadata: {
+                results: [
+                  {
+                    success: true,
+                    value: true,
+                    receipt: { to: Tokens.WETH[SWEEP_CHAIN_ID]!.address },
+                  },
+                ],
+              },
+            },
+          ],
+        });
+      },
+    });
+    const result = await simulateWalletSweep(client, OPTIONS);
+    expect(result.plan.zeroBalanceTokens).toEqual(["USDC"]);
+    expect(result.plan.transfers.map((row) => row.symbol)).toEqual(["WETH"]);
+    expect(requests).toHaveLength(2);
+    expect(usdcBalance).toBe("1000000");
   });
 
   test("an empty preview does not create a write workflow or call a second simulation", async () => {

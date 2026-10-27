@@ -155,7 +155,7 @@ describe("owner-signed wallet sweep (offline)", () => {
     expect(requests[1].body).toEqual({ signature: "0x1234" });
   });
 
-  test("prepares the compiled workflow without simulation-only or scheduling fields", async () => {
+  test("captures balances once and prepares a static write without balance checks or scheduling fields", async () => {
     const sweep = fixture();
     const { client, requests } = clientFixture(sweep);
     const result = await prepareWalletSweep(client, {
@@ -174,6 +174,19 @@ describe("owner-signed wallet sweep (offline)", () => {
       "nodes",
       "trigger",
     ]);
+    const definition = requests[1].body as unknown as v4.PrepareWorkflowRequest;
+    expect(definition.nodes.map((node) => node.type)).toEqual([
+      "contractWrite",
+    ]);
+    expect(definition.nodes[0]).toMatchObject({
+      config: {
+        methodCalls: sweep.plan.transfers.map((token) => ({
+          methodName: "transfer",
+          contractAddress: token.tokenAddress,
+          methodParams: [sweep.plan.destination, token.amountWei],
+        })),
+      },
+    });
   });
 
   test("reviews, signs raw bytes once, submits once and confirms the same two calls", async () => {

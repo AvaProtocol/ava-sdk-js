@@ -9,8 +9,11 @@ Initial source audit: EigenLayer-AVS commit
 The current `examples/wallet-sweep.ts` reads and simulates Sepolia USDC/WETH
 transfers using existing workflow nodes. It compiles each selected positive
 balance into a static `methodCalls` entry with an explicit token target and exact
-base-unit amount. CustomCode checks the balance snapshot; its output array does
-not dynamically become a ContractWrite call list. There is no write Loop.
+base-unit amount. `prepareWalletSweep` reads the selected balances once, omits
+zeros and gives the gateway a static `Manual → ContractWrite` workflow. No
+snapshot guard, balance reread, dynamic call array or write Loop is needed.
+The prepared operation represents the captured balances. Later deposits are
+outside that batch; a decrease can cause the transfer to fail normally.
 
 The [gateway handoff](https://github.com/AvaProtocol/EigenLayer-AVS/pull/871)
 is merged into staging at `aecd174204a716c757136cf82c60f7ecf24eb017` and remains
@@ -107,6 +110,11 @@ the normalized/framed signature. Continue the same priced operation through
 `SendUserOpV07`, which needs no private key. Do not rerun the graph and substitute
 fresh amounts, nonce, gas, fees or sponsorship after signing. All hash-covered
 fields must remain exactly those reviewed and signed.
+
+The gateway replays the stored workflow to verify its encoded calls. This
+example's stored workflow contains only fixed transfer calls, so that replay
+does not read token balances. Account identity, nonce, gas and signature checks
+still follow the generic handoff contract.
 
 `SendUserOpV07` returns a verification-gas-efficiency rejection unchanged because
 it has no key to re-sign. Do not route owner execution through

@@ -2,13 +2,16 @@
 
 ## Wallet sweep example (#1987)
 
-`wallet-sweep.ts` composes existing gateway nodes for Sepolia USDC and WETH:
+`wallet-sweep.ts` prepares a Sepolia USDC/WETH sweep from one balance capture:
 
-`Manual → ContractRead balances → snapshot check → Branch → ContractWrite transfers`
+1. Read the selected token balances once with a read-only workflow.
+2. Compile a static `Manual → ContractWrite transfers` workflow from those amounts.
 
-It omits zero balances and compiles exact amounts into static, per-token calls.
-The workflow re-reads the balances and refuses a changed snapshot. Failed reads
-are unavailable, never zero. Token addresses and decimals come from the catalog.
+Zero balances are omitted from the transfer calls. Preparation, signing and
+submission keep the captured amounts without re-reading balances. Later deposits
+belong to a future sweep; a balance decrease can make the transfer fail normally.
+Failed initial reads are unavailable, never zero. Token addresses and decimals
+come from the catalog.
 
 ```bash
 # Build the workspace packages, then point at the local gateway.
@@ -66,7 +69,7 @@ account implementation, funding and recovery boundaries.
 ```bash
 # Offline graph, transport and owner-handoff checks.
 yarn jest --runInBand tests/v4/wallet-sweep.test.ts tests/v4/wallet-sweep-execution.test.ts
-# Live reads and stale-plan refusal; optional simulation needs an existing funded fixture.
+# Live reads; optional simulation needs an existing funded fixture.
 WALLET_SWEEP_FUNDED_SIMULATION=1 yarn jest --runInBand tests/v4/templates/wallet-sweep.test.ts
 # Explicit live-write opt-in: actual CLI, two transfers, nonce and policy checks.
 WALLET_SWEEP_OWNER_EXECUTION=1 WALLET_SWEEP_OWNER_SOURCE=0xDEDICATED_WALLET yarn jest --runInBand tests/v4/templates/wallet-sweep-owner.test.ts

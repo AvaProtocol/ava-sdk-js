@@ -222,6 +222,7 @@ export function validateWalletSweepPreparation(
     throw new Error("Invalid preparation deadline.");
 }
 
+/** Capture balances once, then price a static transfer batch from that snapshot. */
 export async function prepareWalletSweep(
   client: Client,
   options: WalletSweepOptions,

@@ -8,7 +8,8 @@ Related: [Studio #1987](https://github.com/AvaProtocol/studio/issues/1987)
 Users can preview, simulate and explicitly execute a Sepolia USDC/WETH sweep.
 The example reads catalog tokens through existing ContractRead nodes, omits zero
 balances and compiles exact snapshot amounts into one multi-target ContractWrite.
-A fresh balance check refuses a stale snapshot. The ordinary workflow/session
+The snapshot is captured once; the static transfer workflow has no balance
+rechecks or freshness branch. The ordinary workflow/session
 route is unchanged; only the owner handoff deliberately batches the calls into
 one atomic UserOperation.
 
@@ -57,3 +58,15 @@ exceeds balance`, reproduced on the current local gateway. After restoring its
 swept tokens, the unchanged simulation test passes. The live test now requires an
 explicit `WALLET_SWEEP_OWNER_SOURCE` instead of silently choosing salt 0; use a
 dedicated funded wallet for future sweep checks.
+
+Update on 2026-10-27: simplify preparation to capture balances once and freeze
+the resulting transfer calls. Remove the second balance read, snapshot guard
+and stale branch. Tokens captured at zero remain outside that prepared batch,
+even if a deposit arrives later. Tests cover that behavior and the write-only
+definition sent to prepare; the priced operation remains unchanged through
+signing and submission.
+
+The simplified definition passes 105 offline checks, unsigned preparation on
+the local gateway, and funded two-token simulation with unchanged source
+balances. The prepare request contains only the transfer node after the single
+read-only balance capture. This follow-up did not sign or broadcast a new sweep.

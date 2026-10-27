@@ -40,12 +40,8 @@ export interface WalletSweepPlan {
 
 const STEP = {
   trigger: "start",
-  snapshot: "snapshot",
-  branch: "check",
   transfer: "transfer",
-  stale: "stale",
 } as const;
-const BRANCH = { ready: "ready", stale: "stale" } as const;
 const WORKFLOW_NAME = "Sweep supported Sepolia balances";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 // The catalog supplies token addresses; its current ERC-20 ABI bundle does
@@ -208,7 +204,7 @@ export function walletSweepPlanFromPreview(
   };
 }
 
-/** Compile nonzero snapshot amounts into ONE multi-target ContractWrite node. */
+/** Freeze captured nonzero amounts into one write node, without balance rereads. */
 export function buildWalletSweepWorkflow(
   plan: WalletSweepPlan,
 ): v4.SimulateWorkflowRequest {
@@ -233,33 +229,6 @@ export function buildWalletSweepWorkflow(
       throw new Error("Omit zero balances before compiling the sweep.");
     return { ...token, amountWei };
   });
-  const reads = readNodes(source, transfers);
-  const snapshot = Nodes.customCode({
-    id: STEP.snapshot,
-    name: STEP.snapshot,
-    source: `
-    const amounts = [${reads.map((node) => `${node.name}.data.balanceOf`).join(",")}];
-    const expected = ${JSON.stringify(transfers.map((row) => row.amountWei))};
-    const ready = amounts.every((value, index) => {
-      if (typeof value === 'number' && !Number.isSafeInteger(value)) throw new Error('Unsafe balance');
-      if (!/^\\d+$/.test(String(value))) throw new Error('Unavailable balance');
-      return BigInt(value).toString() === expected[index];
-    });
-    return { ready };
-  `,
-  });
-  const branch = Nodes.branch({
-    id: STEP.branch,
-    name: STEP.branch,
-    conditions: [
-      {
-        id: BRANCH.ready,
-        type: "if",
-        expression: `{{${STEP.snapshot}.data.ready}}`,
-      },
-      { id: BRANCH.stale, type: "else", expression: "" },
-    ],
-  });
   const transfer = Nodes.contractWrite({
     id: STEP.transfer,
     name: STEP.transfer,
@@ -272,34 +241,10 @@ export function buildWalletSweepWorkflow(
       methodParams: [destination, row.amountWei],
     })),
   });
-  const stale = Nodes.customCode({
-    id: STEP.stale,
-    name: STEP.stale,
-    source:
-      "throw new Error('Balances changed. Read balances and review a new sweep.');",
-  });
   return envelope(
     source,
-    [...reads, snapshot, branch, transfer, stale],
-    [
-      ...sequentialEdges(reads),
-      {
-        id: "snapshotEdge",
-        source: reads[reads.length - 1].id,
-        target: STEP.snapshot,
-      },
-      { id: "branchEdge", source: STEP.snapshot, target: STEP.branch },
-      {
-        id: "readyEdge",
-        source: `${STEP.branch}.${BRANCH.ready}`,
-        target: STEP.transfer,
-      },
-      {
-        id: "staleEdge",
-        source: `${STEP.branch}.${BRANCH.stale}`,
-        target: STEP.stale,
-      },
-    ],
+    [transfer],
+    [{ id: "transferEdge", source: STEP.trigger, target: STEP.transfer }],
   );
 }
 

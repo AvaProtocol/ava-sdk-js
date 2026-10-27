@@ -5,11 +5,9 @@ import {
   getIsolatedClient,
 } from "../../utils/client";
 import {
-  buildWalletSweepWorkflow,
   previewWalletSweep,
   simulateWalletSweep,
   SWEEP_CHAIN_ID,
-  walletSweepPlanFromPreview,
 } from "../../../examples/workflows/wallet-sweep";
 
 jest.setTimeout(120_000);
@@ -35,40 +33,6 @@ describe("Template: wallet sweep (live gateway, simulation only)", () => {
     expect(plan.zeroBalanceTokens).toEqual(["USDC", "WETH"]);
     expect(workflow).toBeNull();
   });
-
-  test("a stale two-token snapshot cannot reach the transfer node", async () => {
-    // These are deliberately stale fixture amounts, not simulated holdings.
-    // The real read nodes see the empty wallet and must block both transfers.
-    const options = { source, destination };
-    const plan = walletSweepPlanFromPreview(options, {
-      id: "fixture",
-      workflowId: "",
-      startAt: 1,
-      status: "success",
-      steps: [0, 1].map((index) => ({
-        id: `balance${index}`,
-        type: "contractRead",
-        success: true,
-        output: { data: { balanceOf: "1" } },
-      })),
-    });
-    const execution = await client.workflows.simulate(
-      buildWalletSweepWorkflow(plan),
-    );
-    expect(execution.status).toBe("failed");
-    expect(
-      execution.steps?.find((step) => step.id === "snapshot"),
-    ).toMatchObject({
-      success: true,
-      output: { data: { ready: false } },
-    });
-    expect(execution.steps?.find((step) => step.id === "stale")).toMatchObject({
-      success: false,
-    });
-    expect(
-      execution.steps?.find((step) => step.id === "transfer")?.success,
-    ).not.toBe(true);
-  });
 });
 
 // Explicit opt-in: this fixture must already hold both test tokens. Never
@@ -83,18 +47,17 @@ describeFunded("Template: funded wallet sweep (simulation only)", () => {
       source,
       destination: "0x2222222222222222222222222222222222222222",
     };
-    const before = await previewWalletSweep(client, options);
-    expect(before.plan.transfers.map((row) => row.symbol)).toEqual([
+    const simulation = await simulateWalletSweep(client, options);
+    expect(simulation.plan.transfers.map((row) => row.symbol)).toEqual([
       "USDC",
       "WETH",
     ]);
-    const simulation = await simulateWalletSweep(client, options);
     expect(simulation.execution.status).toBe("success");
     const transfer = simulation.execution.steps?.find(
       (step) => step.id === "transfer",
     );
     expect(transfer?.metadata?.results).toHaveLength(2);
     const after = await previewWalletSweep(client, options);
-    expect(after.plan).toEqual(before.plan);
+    expect(after.plan).toEqual(simulation.plan);
   });
 });
