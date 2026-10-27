@@ -1,5 +1,5 @@
 module.exports = {
-  // Smoke tests are pure unit code; the rest of tests/v4 hits a live
+  // Smoke and top-level sweep tests are pure unit code; other suites hit a live
   // aggregator over HTTP (docker compose locally, GitHub Actions in CI).
   roots: ["<rootDir>/tests/v4"],
   transform: {

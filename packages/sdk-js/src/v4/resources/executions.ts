@@ -53,13 +53,34 @@ export interface SignalExecutionParams {
 }
 
 /**
- * `client.executions.*` — read-only access to past workflow runs and
- * a live SSE stream for in-flight ones. Workflow executions are
+ * `client.executions.*` — workflow run history, live SSE status, approval
+ * signals and continuation of owner-prepared executions. Workflow runs are
  * created by the operator when a trigger fires (or by `workflows.trigger`
- * for manual runs); this resource never creates them, only reads.
+ * for manual runs). Owner preparations are transient; poll their UserOp hash
+ * through userops.retrieve rather than the workflow-scoped history or stream.
  */
 export class ExecutionsResource {
   constructor(private readonly transport: Transport) {}
+
+  /**
+   * POST /executions/{id}:submit — continue workflows.prepare with only the
+   * owner's 65-byte personal signature. The gateway verifies and frames it,
+   * rechecks the preparation, and relays the original operation without a
+   * signing key or gas/nonce repair. A stale or rejected preparation requires
+   * a new review and signature; this method never prepares or retries.
+   *
+   * A response is relay progress, not transaction success. Poll the hash from
+   * prepare through userops.retrieve, including after a transport error. A 404
+   * remains unresolved. Repeating submit still requires a valid signature and
+   * reconciles the original hash without another broadcast.
+   */
+  submit(id: string, req: v4.SubmitExecutionRequest): Promise<v4.SubmitExecutionResponse> {
+    return this.transport.request<v4.SubmitExecutionResponse>({
+      path: `/executions/${encodeURIComponent(id)}:submit`,
+      method: "POST",
+      body: { signature: req.signature },
+    });
+  }
 
   /** GET /executions */
   list(params: ListExecutionsParams): Promise<v4.ExecutionList> {

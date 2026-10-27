@@ -11,5 +11,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["example.ts"]
+  "include": ["example.ts", "wallet-sweep.ts", "workflows/**/*.ts"]
 }
