@@ -18,7 +18,6 @@ export {
   SELECTOR_ERC20_APPROVE,
   SELECTOR_ERC20_TRANSFER,
   SELECTOR_UNISWAP_V3_EXACT_INPUT_SINGLE,
-  MAX_NATIVE_RECIPIENTS,
   actionsCover,
   missingActions,
 } from "./builders/sessionPolicy";
