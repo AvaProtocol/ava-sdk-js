@@ -36,9 +36,6 @@ export const SELECTOR_UNISWAP_V3_EXACT_INPUT_SINGLE = "0x04e45aaf";
 /** `transfer(address,uint256)` — a direct ERC-20 send. */
 export const SELECTOR_ERC20_TRANSFER = "0xa9059cbb";
 
-/** Product cap; keep in sync with MaxNativeRecipients / OpenAPI maxItems. */
-export const MAX_NATIVE_RECIPIENTS = 5;
-
 function routerForChain(chainId: number): string {
   return addressForChain(
     Protocols.uniswapV3.swapRouter02 as Partial<Record<number, string>>,
@@ -170,7 +167,10 @@ export const SessionPolicyActions = Object.freeze({
   /**
    * Native ETH send (`ethTransfer` / withdraw): empty-calldata execute to
    * listed EOAs, capped in wei. Does **not** emit `allowedActions`.
-   * At most {@link MAX_NATIVE_RECIPIENTS} addresses.
+   * The gateway caps how many native recipients a wallet's grant lists,
+   * across every automation it carries, and refuses more at prepare with
+   * `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS`. This builder does not
+   * count: one call can't see the rest of the wallet's grant.
    *
    * A 7702-delegated EOA has designation code, so listing it as a
    * recipient is refused unless {@link nativeTransfer} is called with
@@ -193,11 +193,6 @@ export const SessionPolicyActions = Object.freeze({
   } {
     if (opts.recipients.length === 0) {
       throw new Error("nativeTransfer requires at least one recipient");
-    }
-    if (opts.recipients.length > MAX_NATIVE_RECIPIENTS) {
-      throw new Error(
-        `nativeTransfer allows at most ${MAX_NATIVE_RECIPIENTS} recipients`,
-      );
     }
     if (opts.capWei <= 0n) {
       throw new Error("nativeTransfer capWei must be > 0");
