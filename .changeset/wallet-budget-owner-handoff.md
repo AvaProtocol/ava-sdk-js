@@ -1,6 +1,6 @@
 ---
-"@avaprotocol/types": major
-"@avaprotocol/sdk-js": major
+"@avaprotocol/types": minor
+"@avaprotocol/sdk-js": minor
 ---
 
 Add the stored wallet-budget owner-operation API from EigenLayer-AVS #886:
