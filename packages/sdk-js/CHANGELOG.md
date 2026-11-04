@@ -1,5 +1,38 @@
 # @avaprotocol/sdk-js
 
+## 5.2.0
+
+### Minor Changes
+
+- 6bd5315: Remove `MAX_NATIVE_RECIPIENTS` and the recipient count check in `SessionPolicyActions.nativeTransfer`. The gateway is the only place the cap lives: it applies to the wallet's whole grant, merged across every automation, which one builder call can't see, and it refuses more at prepare with `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS`. The gateway's cap rises from 5 to 20 (EigenLayer-AVS `MaxNativeRecipients`).
+- 6bd5315: Add typed owner-signed Manual workflow preparation and signature-only execution
+  submission from EigenLayer-AVS #871. Export the priced v0.7 operation and handoff
+  request/response types. Continue receipt polling through the existing UserOps
+  resource; transport failures never trigger an automatic replacement operation.
+- 6bd5315: Add the stored wallet-budget owner-operation API from EigenLayer-AVS #886:
+  `wallets.getBudget`, `policies.getPreparation`, `policies.submitPreparation`
+  and `policies.prepareCancel`, with explicit chains and exported budget types.
+  Submit sends only the signature; recovery never prepares or broadcasts again.
+
+  `PreparedPolicy.digest` and `typedData` are now optional because budget
+  preparations return `signing.kind: "owner_operation"` instead. Callers signing
+  a prepared policy must distinguish the signing path. `policies.grant` remains
+  the legacy typed-data helper and refuses owner-operation replies before calling
+  the signer. Legacy prepare/submit endpoints remain available.
+
+  Budget additions may omit `startNewTotals`; only an explicit true requests new
+  totals. Native-transfer `reserveGas` remains optional. Legacy grant submission
+  also preserves the gateway's delegated-recipient acknowledgements, including
+  the authoritative merged acknowledgements from prepare. Signing remains gated
+  by the gateway and this release enables no flags.
+
+### Patch Changes
+
+- 6bd5315: The `ClientOptions.baseUrl` example names the production gateway, `https://api.avaprotocol.org/api/v1`. It named `gateway.avaprotocol.org`, which does not resolve.
+- Updated dependencies [6bd5315]
+- Updated dependencies [6bd5315]
+  - @avaprotocol/types@5.2.0
+
 ## 5.1.0
 
 ### Minor Changes
