@@ -33,12 +33,18 @@ export type TypedDataSigner = (
  * installed. A policy IS that grant — scoped to specific targets and
  * selectors, capped in ERC-20 spend, and time-bounded.
  *
- * Granting is deliberately two calls. The owner signs an EIP-712 payload that
+ * Legacy granting is deliberately two calls. The owner signs an EIP-712 payload that
  * cannot exist until the gateway has allocated an entity and computed the
  * nonce the installing operation will use, so `prepare` returns the payload
  * and `submit` takes the signature back. Nothing reaches the chain in either:
  * the install rides the first workflow operation on that wallet, which is why
  * a grant is gasless to authorize and free to revoke before it is used.
+ *
+ * Budget prepare instead stores a priced owner operation. Review it, sign the
+ * raw 32-byte `signing.userOpHash` using personal_sign, and use
+ * {@link submitPreparation}. Poll {@link getPreparation} until `active` before
+ * enabling a Skill. `active` with `isCancel: true` settles a cancellation and
+ * does not install a permission. {@link grant} is legacy-only.
  *
  * Every endpoint requires the owner's own JWT. A partner assertion is refused
  * outright — granting spend authority needs proven wallet ownership, not a
@@ -64,13 +70,16 @@ export class PoliciesResource {
    * POST /wallets/{address}/policies:prepare — allocate the grant and get
    * the payload to sign.
    *
-   * Stores nothing. A prepare that is never submitted leaves no state, so
-   * abandoning the grant screen costs the user nothing.
+   * A legacy prepare stores nothing. A budget prepare stores an unsigned
+   * review for ten minutes and returns `signing.kind: "owner_operation"`.
+   * Neither creates usable authority. Budget prepare needs a trusted backend's
+   * `approvalDiscovery`; the SDK does not scan or attest to approval coverage.
    *
    * The returned `policyId`, `entityId`, `deadline`, and `validUntil` must be
    * echoed verbatim to {@link submit}: the gateway rebuilds the grant from
    * them, so altering one only produces a signature that no longer verifies.
-   * Prefer {@link grant}, which handles the echoing for you.
+   * Prefer {@link grant} for legacy typed-data grants. Budget operations use
+   * {@link submitPreparation}, which sends only the signature by stored id.
    */
   prepare(
     address: string,
@@ -80,6 +89,76 @@ export class PoliciesResource {
       path: `/wallets/${encodeURIComponent(address)}/policies:prepare`,
       method: "POST",
       body: req,
+    });
+  }
+
+  /**
+   * GET /wallets/{address}/policies/preparations/{id} — recover the stored
+   * budget review and reconcile its original operation, without broadcasting.
+   * After a lost submit reply, read this same id. Sending attempts survive the
+   * ten-minute signing window; a missing hash or bundler rejection does not
+   * release the hold. Unsent unsigned reviews can expire with 404.
+   */
+  getPreparation(
+    address: string,
+    id: string,
+    opts: { chainId: number }
+  ): Promise<v4.PreparedPolicy> {
+    return this.transport.request<v4.PreparedPolicy>({
+      path: `/wallets/${encodeURIComponent(address)}/policies/preparations/${encodeURIComponent(
+        id
+      )}`,
+      query: { chainId: opts.chainId },
+    });
+  }
+
+  /**
+   * POST .../policies/preparations/{id}:submit — send only the owner's
+   * 65-byte personal signature of the 32 raw userOpHash bytes. The gateway
+   * frames it and relays the stored operation without gas/nonce repair.
+   * No automatic prepare, retry, replacement or polling occurs here.
+   *
+   * `submitted` is not activation. Wait for `active` with `isCancel !== true`
+   * before enabling the Skill. `rejected` is unsettled and leaves runs paused;
+   * a transport error is uncertain, so recover the same id rather than send
+   * another operation. Repeated submit requires a valid signature and never
+   * rebroadcasts. First submit needs an unexpired review. Self-funded and fee
+   * capped by the gateway (currently Sepolia-only, off by default).
+   */
+  submitPreparation(
+    address: string,
+    id: string,
+    req: v4.SubmitBudgetPreparationRequest,
+    opts: { chainId: number }
+  ): Promise<v4.PreparedPolicy> {
+    return this.transport.request<v4.PreparedPolicy>({
+      path: `/wallets/${encodeURIComponent(address)}/policies/preparations/${encodeURIComponent(
+        id
+      )}:submit`,
+      method: "POST",
+      query: { chainId: opts.chainId },
+      body: { signature: req.signature },
+    });
+  }
+
+  /**
+   * POST .../policies/preparations/{id}:cancel — prepare a priced owner no-op
+   * on the held nonce. This does not cancel, sign or broadcast anything yet.
+   * Review and sign the returned operation, then submit its new preparation
+   * id through submitPreparation. Inclusion of either competing operation
+   * consumes the nonce; the other becomes superseded.
+   */
+  prepareCancel(
+    address: string,
+    id: string,
+    opts: { chainId: number }
+  ): Promise<v4.PreparedPolicy> {
+    return this.transport.request<v4.PreparedPolicy>({
+      path: `/wallets/${encodeURIComponent(address)}/policies/preparations/${encodeURIComponent(
+        id
+      )}:cancel`,
+      method: "POST",
+      query: { chainId: opts.chainId },
     });
   }
 
@@ -205,7 +284,9 @@ export class PoliciesResource {
   }
 
   /**
-   * The whole grant in one call: prepare, sign, submit.
+   * The whole legacy typed-data grant in one call: prepare, sign, submit.
+   * An owner-operation budget reply is refused before calling the signer;
+   * use prepare and submitPreparation with an explicit review instead.
    *
    * This is what a grant screen wants. It echoes the prepared allocations
    * back verbatim, which is the part that is easy to get subtly wrong by
@@ -269,6 +350,14 @@ export class PoliciesResource {
     // grant ignores the list at prepare.
     const prepareReq = req.add ? req : withoutDrops;
     const prepared = await this.prepare(address, prepareReq);
+    if (prepared.signing?.kind === "owner_operation" || prepared.preparationId) {
+      throw new Error(
+        "Budget permissions require owner-operation review and submitPreparation; grant() only signs legacy typed data."
+      );
+    }
+    if (!prepared.typedData) {
+      throw new Error("Policy prepare returned no legacy typed-data payload to sign.");
+    }
     const signature = await sign(prepared.typedData);
     // A fragment must not be what the owner signs. Prepare already merged it.
     // `allowContractRecipient` is included only when the source set it, so an
@@ -283,6 +372,7 @@ export class PoliciesResource {
           erc20SpendCap: prepared.erc20SpendCap,
           erc20SpendCaps: prepared.erc20SpendCaps,
           nativeRecipients: prepared.nativeRecipients,
+          delegatedNativeRecipients: prepared.delegatedNativeRecipients,
           nativeSpendCap: prepared.nativeSpendCap,
           ...(prepared.allowContractRecipient !== undefined
             ? { allowContractRecipient: prepared.allowContractRecipient }
@@ -295,6 +385,7 @@ export class PoliciesResource {
           erc20SpendCap: req.erc20SpendCap,
           erc20SpendCaps: req.erc20SpendCaps,
           nativeRecipients: req.nativeRecipients,
+          delegatedNativeRecipients: req.delegatedNativeRecipients,
           nativeSpendCap: req.nativeSpendCap,
           ...(req.allowContractRecipient !== undefined
             ? { allowContractRecipient: req.allowContractRecipient }

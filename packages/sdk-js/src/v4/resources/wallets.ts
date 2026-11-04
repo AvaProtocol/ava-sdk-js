@@ -19,11 +19,27 @@ import { Transport } from "../internal/transport";
  * **Auth:**
  * - `list` / `create` (preview resolve) — user JWT **or** partner
  *   assertion (`scope: read`, `sub` = owner EOA)
- * - update / withdraw / nonce / delegation — user JWT only
+ * - update / withdraw / nonce / delegation / budget — user JWT only
  *   (partner assertions are refused on 7702)
  */
 export class WalletsResource {
   constructor(private readonly transport: Transport) {}
+
+  /**
+   * GET /wallets/{address}/budget — the current permission's total, used and
+   * remaining amounts, unmetered rights, retirement health and pending change.
+   * Works for legacy workflow-sized permissions too (`sizing: "workflow"`).
+   *
+   * Pass the chain explicitly. A missing permission is 404; a failed remainder
+   * read is 503 BUDGET_READ_UNAVAILABLE, never a stored-total fallback. An
+   * unverified retirement is reported separately and does not hide amounts.
+   */
+  getBudget(address: string, opts: { chainId: number }): Promise<v4.WalletBudget> {
+    return this.transport.request<v4.WalletBudget>({
+      path: `/wallets/${encodeURIComponent(address)}/budget`,
+      query: { chainId: opts.chainId },
+    });
+  }
 
   /**
    * GET /wallets — every smart wallet owned by the authenticated

@@ -267,11 +267,22 @@ export interface paths {
          *     Requires the concrete owner's Bearer JWT and a registered supported
          *     source wallet. Current on-chain owner, implementation and gas funding
          *     are checked independently of the stored wallet association.
-         *     The factory implementation must be the verified personal_sign build
-         *     0x000000000000c5A9089039570Dd36455b5C07383; other builds are refused.
-         *     Up to 32 calls; no native value, EIP-7702, write Loop or post-write nodes.
-         *     Retained preparations are capped at 64 per owner. Ordinary Auto/session
-         *     and simulate behavior is unchanged.
+         *     Derived wallets require the verified factory personal_sign build
+         *     0x000000000000c5A9089039570Dd36455b5C07383. An EOA source must already be
+         *     delegated to the pinned SMA-7702 1.0.0 implementation, registered as
+         *     kind=eoa_7702, and enabled by eoa_7702_execute on Sepolia or Base.
+         *     EOA operations use sender=owner and omit factory deployment fields.
+         *     Delegation is a separate explicit wallet action; prepare never installs
+         *     delegation or a session grant. Both account kinds use personal_sign of
+         *     the 32 raw userOpHash bytes, owner nonce entity 0/global option 1.
+         *     A canonical delegated EOA can also sign for its derived smart wallet.
+         *     Up to 32 calls; no native value, write Loop or post-write nodes.
+         *     Unsigned preparations are capped at 64 per owner. Submitted, uncertain,
+         *     rejected, and unsent records do not consume that cap. A gateway with
+         *     owner execution disabled returns 403 OWNER_EXECUTION_DISABLED;
+         *     preparing again does not enable it. Other precondition failures return
+         *     412 and ask for a fresh prepare. Ordinary Auto/session and simulate
+         *     behavior is unchanged.
          */
         readonly post: operations["prepareWorkflow"];
         readonly delete?: never;
@@ -298,12 +309,20 @@ export interface paths {
          *     Material changes or bundler rejection require fresh prepare/review/signing.
          *     Repeat calls still require a valid signature and reconcile the existing
          *     hash without rebroadcasting. Status polling requires the JWT only.
-         *     A durable submitting marker precedes the send: a crash before the RPC
-         *     leaves this id unretryable, even if it was never sent. A post-send
-         *     storage failure also preserves the marker. Poll the prepared hash;
-         *     404 remains unresolved and is not proof that no operation was sent.
-         *     Uncertain/submitted records are retained for 24 hours. A response is
-         *     not a receipt; reuse GET /userops/{userOpHash} for confirmation.
+         *     A durable submitting marker precedes the send. The relay after that
+         *     marker keeps running when the client disconnects. A crash before the
+         *     RPC leaves the id submitting. A retry looks the hash up at the bundler:
+         *     a hit is stored as submitted; an unknown hash stays submitting until
+         *     the ten-minute signing window ends, then becomes unsent and requires a
+         *     new prepare. That prepare uses the same sender and owner nonce key
+         *     (entity 0, global), read from EntryPoint.getNonce with no session
+         *     nonce cache, so an unmined operation and its replacement cannot both
+         *     be included. A lookup error leaves the marker submitting. A post-send
+         *     storage failure also preserves the marker. Poll the prepared hash. An
+         *     empty bundler result during the window is unresolved. Uncertain and
+         *     submitted records are retained for 24 hours and do not count toward
+         *     the 64 prepared-record cap. A response is not a receipt; reuse
+         *     GET /userops/{userOpHash} for confirmation.
          */
         readonly post: operations["submitExecution"];
         readonly delete?: never;
@@ -712,6 +731,78 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/wallets/{address}/policies/preparations/{id}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        /** Recover an owned budget preparation or durable change */
+        readonly get: operations["getWalletBudgetPreparation"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/policies/preparations/{id}:submit": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Relay one stored owner-signed budget operation
+         * @description Feature off by default, Sepolia only. First submit requires an unexpired
+         *     preparation. Submit accepts only a personal_sign signature of the raw
+         *     userOpHash. A durable hold and submitting marker precede relay of the
+         *     exact operation. Repeat calls reconcile the hash without rebroadcasting.
+         *     Rejected or unknown sends keep the hold until the nonce is consumed.
+         *     Successful inclusion stays submitted until reset proof passes; activation
+         *     and hold release are atomic. Signing is self-funded and fee capped.
+         */
+        readonly post: operations["submitWalletBudgetPreparation"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/policies/preparations/{id}:cancel": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Prepare a self-funded owner cancellation on the held nonce
+         * @description Returns a fresh signing review containing only an owner no-op. Submit its id and signature through the budget submit route. Never broadcasts automatically.
+         */
+        readonly post: operations["prepareWalletBudgetCancel"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/wallets/{address}/policies:prepare": {
         readonly parameters: {
             readonly query?: never;
@@ -724,8 +815,37 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         /**
-         * Allocate a grant and return the EIP-712 payload the owner signs
-         * @description Allocates the policy id, validation entity, and session signer, builds
+         * Prepare a legacy typed grant or a stored unsigned budget operation
+         * @description With budget or approvalDiscovery, the experimental off-by-default
+         *     wallet_budget_preparation_enabled path stores a priced unsigned owner
+         *     operation and the exact intent/read/derived review. It requires a fresh
+         *     signed approvalDiscovery, explicitly self-funds, and returns signing.kind
+         *     owner_operation (personal_sign of raw userOpHash). It creates no usable
+         *     policy or hold. Budget submit needs the separate off-by-default
+         *     wallet_budget_signing_enabled flag and is limited to Sepolia.
+         *     GET /wallets/{address}/policies/preparations/{id} recovers the same review.
+         *     Missing/stale discovery returns 409 BUDGET_DISCOVERY_REQUIRED; incomplete
+         *     discovery or failed reads return 503; 64 live unsigned records per owner
+         *     returns 429. Only tested token deployments may be reset automatically:
+         *     v1 Sepolia USDC. Other live allowances requiring reset return 409
+         *     BUDGET_RESET_UNSUPPORTED_TOKEN with token/spender; insufficient ETH returns
+         *     409 BUDGET_FEE_INSUFFICIENT_ETH with neededWei/availableWei.
+         *     A quote above wallet_budget_max_fee_wei (default 0.005 ETH) returns
+         *     409 BUDGET_FEE_CEILING_EXCEEDED. Unsupported Permit2, NFT/operator or
+         *     unaudited spending targets return 409 BUDGET_ROUTE_UNSUPPORTED.
+         *     A live unknown validation authority returns BUDGET_AUTHORITY_UNKNOWN;
+         *     remove it in the wallet and check again. Ava's session operations are
+         *     refused with BUDGET_CHANGING while the wallet/chain hold is open;
+         *     scheduled runs wait without consuming an execution.
+         *     A known, unexpired legacy deferred signature returns 409
+         *     BUDGET_LEGACY_GRANT_PENDING with its latest outstanding deadline.
+         *     The default legacy signing window lasts up to 30 days. Revoking a
+         *     permission off chain does not invalidate its signature; migration must
+         *     wait until that window closes. This route offers no nonce-cancellation
+         *     remedy and an owner nonce change does not cancel a session-entity nonce.
+         *
+         *     Legacy path (no budget/discovery, non-budget wallet):
+         *     Allocates the policy id, validation entity, and session signer, builds
          *     the exact `installValidation` calldata the signature will commit to,
          *     and returns the typed data for `eth_signTypedData_v4`. Stores nothing:
          *     a prepare that is never submitted leaves no state behind. The echoed
@@ -735,7 +855,13 @@ export interface paths {
          *
          *     When `add` is set and the runner has a usable grant, the merged
          *     grant starts from that grant. Actions, native recipients, and
-         *     `allowContractRecipient` only grow. Each token cap is what is
+         *     `allowContractRecipient` only grow. `delegatedNativeRecipients` is
+         *     carried per recipient; when both grants name a delegate for the same
+         *     recipient, the gateway records the addition's delegate. The owner
+         *     signs the install call; that call's ETH row is not limited to the
+         *     delegate. The acknowledgement is gateway state, checked again when
+         *     the gateway sends. Each token cap
+         *     is what is
          *     left on that grant (the on-chain remainder once the grant is
          *     applied, otherwise the stored cap), or what enabled automations
          *     still need when that is higher, plus the addition. A token with
@@ -745,7 +871,10 @@ export interface paths {
          *
          *     When `add` is set and there is no usable grant, the merged grant
          *     is the addition plus every enabled task except ids in
-         *     `dropTaskIds`. A task whose token or recipient cannot be read
+         *     `dropTaskIds`. Acknowledgements for those running recipients come
+         *     from the wallet's last stored grant, including one that was
+         *     revoked. The chain read still applies, and this addition's
+         *     delegate wins when both name one. A task whose token or recipient cannot be read
          *     from the stored workflow (a loop over a previous step) is
          *     `409 SESSION_POLICY_TARGET_UNRESOLVED`. That is not an unsized
          *     amount. Pause the automation, or name its id in `dropTaskIds`.
@@ -817,6 +946,30 @@ export interface paths {
          *     uses that same per-task check.
          */
         readonly post: operations["submitWalletPolicy"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/wallets/{address}/budget": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Read the current permission's remaining token and native limits
+         * @description User JWT only; partner assertions are refused. Works for workflow-sized
+         *     permissions too. Pending deferred installs report stored totals with
+         *     status pending. Active limits are read on chain; a failed remainder read
+         *     is 503, never a stored-value fallback. Retirement read failures appear
+         *     as unverified entries in an otherwise successful response.
+         */
+        readonly get: operations["getWalletBudget"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -1164,6 +1317,10 @@ export interface components {
              *     `SESSION_POLICY_EXPIRED`, and `SESSION_POLICY_SIGNER_RETIRED`.
              */
             readonly policyId?: string;
+            readonly token?: components["schemas"]["EthereumAddress"];
+            readonly spender?: components["schemas"]["EthereumAddress"];
+            readonly neededWei?: string;
+            readonly availableWei?: string;
             /**
              * @description Enabled tasks a grant would leave unable to run. Set on
              *     `409 SESSION_POLICY_NOT_COVERING`,
@@ -1181,6 +1338,25 @@ export interface components {
              *     `409 SESSION_POLICY_SIGNER_RETIRED` from create and resume.
              */
             readonly required?: components["schemas"]["SessionPolicyNeed"];
+            /**
+             * @description Native recipient a policies:prepare or policies:submit refused
+             *     for its code. Set on `400 SESSION_POLICY_RECIPIENT_NOT_EOA`,
+             *     `400 SESSION_POLICY_RECIPIENT_NOT_ACKNOWLEDGED`, and
+             *     `400 SESSION_POLICY_RECIPIENT_DELEGATE_CHANGED`. It can be an
+             *     enabled task's recipient rather than one the request added.
+             */
+            readonly recipient?: components["schemas"]["EthereumAddress"];
+            /**
+             * @description Delegate the recipient's EIP-7702 designation names now. Set on
+             *     `SESSION_POLICY_RECIPIENT_NOT_ACKNOWLEDGED` and
+             *     `SESSION_POLICY_RECIPIENT_DELEGATE_CHANGED`.
+             */
+            readonly delegate?: components["schemas"]["EthereumAddress"];
+            /**
+             * @description Delegate the grant acknowledged for `recipient`. Set on
+             *     `SESSION_POLICY_RECIPIENT_DELEGATE_CHANGED`.
+             */
+            readonly acknowledgedDelegate?: components["schemas"]["EthereumAddress"];
         };
         readonly HealthStatus: {
             /** @enum {string} */
@@ -1405,6 +1581,8 @@ export interface components {
             readonly destination: components["schemas"]["EthereumAddress"];
             /** @description Amount in wei (decimal string for big-int safety). Special value `max` withdraws the entire balance. */
             readonly amount: string;
+            /** @description Owner preparation only. Treat amount as a captured balance cap and deduct the signed maximum gas cost; sponsored operations reserve zero. This node must be terminal. */
+            readonly reserveGas?: boolean;
             /** @description Chain to execute on. Required — a workflow carries no chain to inherit. */
             readonly chainId: components["schemas"]["ChainId"];
         };
@@ -2030,6 +2208,16 @@ export interface components {
             readonly success: boolean;
             readonly error?: string;
             readonly errorCode?: string;
+            /** @description Structured refusal fields. BUDGET_USED_UP has token/needed/remaining; BUDGET_ENDED has validUntil. */
+            readonly errorDetails?: {
+                readonly token?: components["schemas"]["EthereumAddress"];
+                readonly needed?: string;
+                readonly remaining?: string;
+                /** Format: int64 */
+                readonly validUntil?: number;
+            } & {
+                readonly [key: string]: unknown;
+            };
             readonly log?: string;
             readonly inputs?: readonly string[];
             /** @description Config of the trigger or node at execution time. */
@@ -2406,6 +2594,19 @@ export interface components {
             readonly amount: string;
         };
         /**
+         * @description The owner acknowledged that `recipient` is an EIP-7702 delegated EOA
+         *     and that its designation named `delegate`. The recipient must also be
+         *     in `nativeRecipients`. One entry per recipient. Listing an address
+         *     here does not authorize a plain contract, and it does not set
+         *     `allowContractRecipient`. Trusting the delegate is the client's job;
+         *     this record only checks that the designation still names the
+         *     acknowledged delegate. The ETH send stays an empty-calldata transfer.
+         */
+        readonly DelegatedNativeRecipient: {
+            readonly recipient: components["schemas"]["EthereumAddress"];
+            readonly delegate: components["schemas"]["EthereumAddress"];
+        };
+        /**
          * @description Opt-in simulate verdict. Returned only when `authorizationMode` is
          *     `report`. It does not replace step errors from anything other than
          *     grant coverage.
@@ -2434,12 +2635,20 @@ export interface components {
             /** @description The runner's current usable grant, when there is one. */
             readonly policyId?: string;
             readonly missingActions?: readonly components["schemas"]["AllowedAction"][];
+            /** @description Budget mode only. Spending tokens that need a new budget row. */
+            readonly missingTokens?: readonly components["schemas"]["EthereumAddress"][];
+            /**
+             * Format: int64
+             * @description Budget mode only. The recurring workflow end that exceeds the budget end, in Unix milliseconds.
+             */
+            readonly needsUntil?: number;
             readonly required?: components["schemas"]["SessionPolicyNeed"];
             readonly detail?: string;
         };
         /**
-         * @description Permissions one workflow still needs, sized to the runs it has left.
-         *     Cap amounts are totals in the token's smallest unit, not per-run amounts.
+         * @description Permissions one workflow still needs. Workflow mode sizes the remaining
+         *     runs. Budget mode reports one run and never sizes the wallet budget from
+         *     this need. Cap amounts are in the token's smallest unit.
          */
         readonly SessionPolicyNeed: {
             readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
@@ -2472,6 +2681,18 @@ export interface components {
             readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
             readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            /**
+             * @description Per-recipient EIP-7702 acknowledgements for native ETH recipients
+             *     in this addition. Carried per recipient when grants merge; when
+             *     the current grant and this addition name different delegates for
+             *     the same recipient, the gateway records this addition's delegate.
+             *     The owner signs the install call. The ETH row in that call is not
+             *     limited to the delegate, and the acknowledgement is not part of
+             *     the signature. The gateway checks it again when it sends. A
+             *     present empty array is 400. Does not change
+             *     `allowContractRecipient`, and does not authorize a plain contract.
+             */
+            readonly delegatedNativeRecipients?: readonly components["schemas"]["DelegatedNativeRecipient"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             /**
              * @description Wei of this addition's `nativeSpendCap` that is self-funded gas
@@ -2552,6 +2773,15 @@ export interface components {
             readonly expiryChanges?: readonly components["schemas"]["SessionPolicyExpiryChange"][];
         };
         readonly PreparePolicyRequest: {
+            readonly approvalDiscovery?: components["schemas"]["BudgetApprovalDiscovery"];
+            /**
+             * @description Owner totals, independent of workflow run counts. Budget signing
+             *     requires the stored owner-operation handoff, with separate
+             *     preparation and signing flags. It never produces a legacy
+             *     deferred-install signature. Signing is Sepolia-only, self-funded,
+             *     and subject to the configurable maximum fee (default 0.005 ETH).
+             */
+            readonly budget?: components["schemas"]["WalletBudgetInput"];
             readonly chainId: components["schemas"]["ChainId"];
             readonly agentLabel: string;
             readonly justification?: string;
@@ -2572,15 +2802,28 @@ export interface components {
             /**
              * @description EOAs this grant may send native ETH to (empty-calldata execute).
              *     Omit for Uniswap/ERC-20-only and for payable-write-only
-             *     (nativeValueCap). A present empty array is 400. Max 5
-             *     (MaxNativeRecipients; deferred replace of 20-row grants AA23s).
+             *     (nativeValueCap). A present empty array is 400. Max 20
+             *     (MaxNativeRecipients; a 20-row replace with four teardowns mines, measured on Sepolia).
              */
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            /**
+             * @description Owner acknowledgements of EIP-7702 delegations on native ETH
+             *     recipients. A recipient with code is allowed only when that code
+             *     is a designation (`0xef0100` plus a 20-byte delegate), this list
+             *     names that recipient, and the designation still points at the
+             *     acknowledged delegate. A plain contract stays refused, even if
+             *     it is listed. Empty code stays allowed. A present empty array is
+             *     400. This does not change `allowContractRecipient`, and the send
+             *     stays an empty-calldata transfer.
+             */
+            readonly delegatedNativeRecipients?: readonly components["schemas"]["DelegatedNativeRecipient"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             /**
-             * @description When true, nativeRecipients may be contracts (any-function on
-             *     that address, ERC-20 uncapped). Default false: each recipient
-             *     must have empty code. Logged when true.
+             * @description When true, every native recipient may be a contract (any function
+             *     on that address, ERC-20 uncapped). Default false: each recipient
+             *     must have empty code, or be an acknowledged EIP-7702 delegation
+             *     (`delegatedNativeRecipients`). Logged when true. An
+             *     acknowledgement is not this flag.
              */
             readonly allowContractRecipient?: boolean;
             /**
@@ -2592,7 +2835,7 @@ export interface components {
              *     every enabled automation. Values above 9223372036 overflow the
              *     duration conversion and are rejected.
              */
-            readonly expiresInSeconds: number;
+            readonly expiresInSeconds?: number;
             /**
              * @description Usable grant this prepare was merged against. Omit on a legacy
              *     prepare that sends the full permission set and does not compare.
@@ -2617,7 +2860,31 @@ export interface components {
              */
             readonly add?: components["schemas"]["SessionPolicyAddition"];
         };
+        /**
+         * @description prepared expires after ten minutes; that window limits only the first
+         *     relay. submitting, submitted and rejected remain recoverable without
+         *     expiry and keep Ava runs paused. A bundler rejection is not final.
+         *     active, reverted and superseded are settled. unsent is possible only
+         *     before a submitting marker. Successful inclusion stays submitted until
+         *     reset verification passes; activation and hold release are atomic.
+         * @enum {string}
+         */
+        readonly BudgetChangeState: "prepared" | "submitting" | "submitted" | "active" | "reverted" | "rejected" | "unsent" | "superseded";
         readonly PreparedPolicy: {
+            readonly state?: components["schemas"]["BudgetChangeState"];
+            readonly reason?: string;
+            readonly transactionHash?: components["schemas"]["Hex"];
+            /** Format: int64 */
+            readonly inclusionBlock?: number;
+            /** Format: int64 */
+            readonly finalReadBlock?: number;
+            /** @description A successful cancel settles as active with isCancel true; it consumes the nonce and does not activate a new permission. */
+            readonly isCancel?: boolean;
+            readonly preparationId?: components["schemas"]["Ulid"];
+            readonly signing?: components["schemas"]["PolicySigning"];
+            readonly budget?: components["schemas"]["WalletBudget"];
+            readonly approvalResets?: readonly components["schemas"]["BudgetApprovalReset"][];
+            readonly unmeteredPermissions?: readonly components["schemas"]["UnmeteredPermission"][];
             readonly policyId: components["schemas"]["Ulid"];
             readonly chainId: components["schemas"]["ChainId"];
             /**
@@ -2637,9 +2904,9 @@ export interface components {
              */
             readonly validUntil: number;
             /** @description The EIP-712 hash the typed data produces, for client-side verification. */
-            readonly digest: string;
+            readonly digest?: string;
             /** @description The exact eth_signTypedData_v4 payload for the owner's wallet. */
-            readonly typedData: {
+            readonly typedData?: {
                 readonly [key: string]: unknown;
             };
             /**
@@ -2658,10 +2925,22 @@ export interface components {
             readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
             readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            /**
+             * @description Merged EIP-7702 acknowledgements to echo to submit. Present when
+             *     `add` was sent and the merged grant has any. See
+             *     DelegatedNativeRecipient.
+             */
+            readonly delegatedNativeRecipients?: readonly components["schemas"]["DelegatedNativeRecipient"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             readonly allowContractRecipient?: boolean;
         };
         readonly SubmitPolicyRequest: {
+            /**
+             * @description Not accepted by this stateless submit route. Presence returns
+             *     409 BUDGET_HANDOFF_REQUIRED. Budget signatures must continue a
+             *     stored preparation on the signature-only owner-operation route.
+             */
+            readonly budget?: components["schemas"]["WalletBudgetInput"];
             readonly chainId: components["schemas"]["ChainId"];
             readonly policyId: components["schemas"]["Ulid"];
             /** Format: int64 */
@@ -2684,6 +2963,13 @@ export interface components {
             /** @description Per-token ERC-20 caps. Source of truth when present; erc20SpendCap must match one entry. */
             readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            /**
+             * @description Echo prepare's `delegatedNativeRecipients`. A recipient with code
+             *     is allowed only when its designation still names the acknowledged
+             *     delegate. A plain contract stays refused. A present empty array
+             *     is 400. Does not change `allowContractRecipient`.
+             */
+            readonly delegatedNativeRecipients?: readonly components["schemas"]["DelegatedNativeRecipient"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             readonly allowContractRecipient?: boolean;
             /** @description The owner's 65-byte signature over the prepared digest. */
@@ -2725,6 +3011,12 @@ export interface components {
             readonly sessionSigner: components["schemas"]["EthereumAddress"];
             readonly agentLabel: string;
             readonly justification?: string;
+            /** @description Absent means workflow sizing. Budget fields are additive and not written yet. */
+            readonly sizing?: components["schemas"]["BudgetSizing"];
+            /** Format: int64 */
+            readonly budgetStartedAt?: number;
+            readonly budgetStartAmounts?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly budgetStartNative?: components["schemas"]["NativeSpendCap"];
             readonly allowedActions?: readonly components["schemas"]["AllowedAction"][];
             readonly erc20SpendCap?: components["schemas"]["Erc20SpendCap"];
             /**
@@ -2735,6 +3027,13 @@ export interface components {
              */
             readonly erc20SpendCaps?: readonly components["schemas"]["Erc20SpendCap"][];
             readonly nativeRecipients?: readonly components["schemas"]["EthereumAddress"][];
+            /**
+             * @description EIP-7702 acknowledgements stored with this grant. A native send
+             *     to one of these recipients is refused once the designation names
+             *     a different delegate. A plain contract is not authorized by being
+             *     listed here. Does not change `allowContractRecipient`.
+             */
+            readonly delegatedNativeRecipients?: readonly components["schemas"]["DelegatedNativeRecipient"][];
             readonly nativeSpendCap?: components["schemas"]["NativeSpendCap"];
             readonly allowContractRecipient?: boolean;
             /**
@@ -2753,6 +3052,152 @@ export interface components {
              *     can finish teardown without re-calling DELETE (#717).
              */
             readonly onChainCleanup?: components["schemas"]["OnChainRevokeCleanup"];
+        };
+        readonly BudgetApprovalPair: {
+            readonly token: components["schemas"]["EthereumAddress"];
+            readonly spender: components["schemas"]["EthereumAddress"];
+        };
+        /**
+         * @description Trusted backend attestation of the full unfiltered approval inventory
+         *     (every page), plus catalog-token/allowed-contract pairs. No caller's
+         *     unsigned list is trusted. The gateway verifies the configured service
+         *     signer and freshness (two minutes), then reads allowances on chain.
+         *     Signature is EIP-712 ApprovalDiscovery, domain name Ava Wallet Budget
+         *     Approval Discovery, version 1, chainId, verifyingContract=wallet.
+         *     The message binds owner, wallet, candidatesHash, allowedContractsHash, source, fetchedAt and
+         *     complete. candidatesHash is keccak256 of sorted unique token/spender
+         *     address pairs concatenated as two left-padded 32-byte words per pair.
+         */
+        readonly BudgetApprovalDiscovery: {
+            readonly owner: components["schemas"]["EthereumAddress"];
+            readonly wallet: components["schemas"]["EthereumAddress"];
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly candidates: readonly components["schemas"]["BudgetApprovalPair"][];
+            /** @description Complete resulting callable target set; its sorted unique address words are hashed as allowedContractsHash. */
+            readonly allowedContracts: readonly components["schemas"]["EthereumAddress"][];
+            /** @enum {string} */
+            readonly source: "moralis";
+            /** Format: int64 */
+            readonly fetchedAt: number;
+            readonly complete: boolean;
+            readonly signature: components["schemas"]["Hex"];
+        };
+        readonly BudgetApprovalReset: {
+            readonly token: components["schemas"]["EthereumAddress"];
+            readonly spender: components["schemas"]["EthereumAddress"];
+            readonly amount: string;
+        };
+        /**
+         * @description Budget preparations use owner_operation and omit legacy digest and
+         *     typedData. Preparation and first submission have separate feature flags,
+         *     off by default. With signing enabled, signature-only first submission
+         *     relays the exact stored owner operation on Sepolia. The owner
+         *     personal_signs the 32 raw bytes of userOpHash. Submission is self-funded
+         *     and fee capped; repeat submissions reconcile without rebroadcasting.
+         */
+        readonly PolicySigning: {
+            /** @enum {string} */
+            readonly kind: "deferred_action" | "owner_operation";
+            readonly preparationId?: components["schemas"]["Ulid"];
+            readonly userOp?: components["schemas"]["OwnerUserOperationV07"];
+            readonly userOpHash?: components["schemas"]["Bytes32"];
+            readonly maxFeeWei?: string;
+            /** Format: int64 */
+            readonly expiresAt?: number;
+            /** @enum {string} */
+            readonly signingMethod?: "personal_sign";
+            readonly entryPoint?: components["schemas"]["EthereumAddress"];
+        };
+        readonly WalletBudgetInput: {
+            /**
+             * @description Owner totals, not the on-chain remainder. Tokens may appear only
+             *     once. Plain raises/extensions carry omitted totals unchanged;
+             *     startNewTotals requires every existing capped token total.
+             */
+            readonly erc20?: readonly components["schemas"]["Erc20SpendCap"][];
+            /**
+             * @description Combined ETH total, including earlier gas additions. A plain
+             *     raise/extension may omit it; startNewTotals must include it when
+             *     the current permission has a native cap.
+             */
+            readonly native?: components["schemas"]["NativeSpendCap"];
+            /** Format: int64 */
+            readonly validUntil: number;
+            /**
+             * @description Owner Change/Renew budget. Requires an explicit total for every
+             *     existing capped token and the native cap; partial resets are
+             *     refused. Starts usage counting again when activation succeeds.
+             */
+            readonly startNewTotals?: boolean;
+            /** @description Owner-only removal of named selectors. Other rows and totals are retained. */
+            readonly removeActions?: readonly components["schemas"]["AllowedAction"][];
+        };
+        /** @enum {string} */
+        readonly BudgetSizing: "workflow" | "budget";
+        readonly BudgetTokenRow: {
+            readonly token: components["schemas"]["EthereumAddress"];
+            readonly amount: string;
+            readonly remaining: string;
+            readonly used: string;
+            readonly unlimited: boolean;
+        };
+        readonly BudgetNativeRow: {
+            readonly amount: string;
+            readonly remaining: string;
+            readonly used: string;
+            readonly unlimited: boolean;
+            /** @description Recorded gas reserve inside amount. Omitted when the stored breakdown is unknown; never reconstructed. */
+            readonly gasWei?: string;
+        };
+        readonly UnmeteredPermission: {
+            /** @enum {string} */
+            readonly kind: "aave_withdraw" | "aave_borrow" | "wrapped_native" | "other";
+            readonly target: components["schemas"]["EthereumAddress"];
+            readonly selectors: readonly string[];
+            readonly token?: components["schemas"]["EthereumAddress"];
+            readonly added: boolean;
+        };
+        readonly BudgetRetirement: {
+            /** Format: int64 */
+            readonly entityId: number;
+            readonly policyId?: components["schemas"]["Ulid"];
+            /** @enum {string} */
+            readonly state: "registered" | "residual" | "unverified";
+            /** @description Remaining limits of an entity confirmed registered; absent otherwise. */
+            readonly erc20?: readonly components["schemas"]["Erc20SpendCap"][];
+            readonly native?: components["schemas"]["NativeSpendCap"];
+        };
+        readonly LiveApproval: {
+            readonly token: components["schemas"]["EthereumAddress"];
+            readonly spender: components["schemas"]["EthereumAddress"];
+            readonly amount: string;
+        };
+        readonly WalletBudget: {
+            readonly chainId: components["schemas"]["ChainId"];
+            readonly policyId: components["schemas"]["Ulid"];
+            /** @enum {string} */
+            readonly status: "pending" | "active";
+            readonly sizing: components["schemas"]["BudgetSizing"];
+            /** Format: int64 */
+            readonly validUntil: number;
+            /** Format: int64 */
+            readonly startedAt?: number;
+            readonly erc20: readonly components["schemas"]["BudgetTokenRow"][];
+            readonly native?: components["schemas"]["BudgetNativeRow"];
+            readonly unmeteredPermissions: readonly components["schemas"]["UnmeteredPermission"][];
+            readonly retirements?: readonly components["schemas"]["BudgetRetirement"][];
+            /** @description Reserved for approval discovery; omitted in this slice, not an assertion that no approvals exist. */
+            readonly liveApprovals?: readonly components["schemas"]["LiveApproval"][];
+            /** @description Latest durable budget change. A rejected or reset-unverified change explains why runs remain paused. */
+            readonly pendingChange?: {
+                readonly preparationId?: components["schemas"]["Ulid"];
+                readonly policyId: components["schemas"]["Ulid"];
+                /** @enum {string} */
+                readonly state: "prepared" | "submitting" | "submitted" | "reverted" | "rejected" | "unsent" | "superseded";
+                readonly reason?: string;
+            };
+            /** Format: int64 */
+            readonly readAt: number;
         };
         readonly SubmitPolicyResponse: components["schemas"]["SessionPolicy"] & {
             /**
@@ -3837,6 +4282,145 @@ export interface operations {
             readonly 403: components["responses"]["Forbidden"];
         };
     };
+    readonly getWalletBudgetPreparation: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Exact stored review and priced owner operation; no usable grant is created. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PreparedPolicy"];
+                };
+            };
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            /** @description Budget preparation is disabled. */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    readonly submitWalletBudgetPreparation: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly signature: components["schemas"]["Hex"];
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Stored change and its current state; active only after reset proof. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PreparedPolicy"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            /** @description Budget submission is not enabled. */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Required chain or storage evidence is unavailable; no unsafe hold release. */
+            readonly 503: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    readonly prepareWalletBudgetCancel: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+                readonly id: components["schemas"]["Ulid"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Exact priced cancellation operation to review and sign. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PreparedPolicy"];
+                };
+            };
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            /** @description No includable held nonce, unsupported chain or signing disabled. */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     readonly prepareWalletPolicy: {
         readonly parameters: {
             readonly query?: never;
@@ -3867,10 +4451,19 @@ export interface operations {
              *     An unsized native payable that would install a native cap is 409.
              *     An amount that was a JSON number past the exact integer range says
              *     to send a decimal string.
-             *     `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS` — more than five native
+             *     `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS` — more than twenty native
              *     recipients. Finished automations keep their addresses until revoke.
-             *     `SESSION_POLICY_RECIPIENT_NOT_EOA` — a native recipient is a contract
-             *     or a 7702-delegated EOA.
+             *     `SESSION_POLICY_RECIPIENT_NOT_EOA` — a native recipient is a
+             *     contract.
+             *     `SESSION_POLICY_RECIPIENT_NOT_ACKNOWLEDGED` — a native recipient is
+             *     a 7702-delegated EOA that `delegatedNativeRecipients` does not
+             *     acknowledge.
+             *     `SESSION_POLICY_RECIPIENT_DELEGATE_CHANGED` — an acknowledged
+             *     recipient's designation now names a different delegate.
+             *     All three set `recipient`, which can be another enabled task's
+             *     recipient: the merged grant carries every running automation's.
+             *     The last two also set `delegate`, and a changed delegate sets
+             *     `acknowledgedDelegate`.
              */
             readonly 400: {
                 headers: {
@@ -3887,6 +4480,10 @@ export interface operations {
              * @description `SESSION_POLICY_BASE_CHANGED` — `basePolicyId` is not the runner's
              *     usable grant anymore. Prepare again.
              *
+             *     `BUDGET_LEGACY_GRANT_PENDING` — an earlier deferred signature can
+             *     still install, even after off-chain revocation. The detail names
+             *     the latest deadline; the default window can last 30 days.
+             *
              *     `SESSION_POLICY_TARGET_UNRESOLVED` — there is no usable grant,
              *     and an enabled task moves funds to a target this prepare cannot
              *     read, and that task was not listed in `dropTaskIds`.
@@ -3902,6 +4499,16 @@ export interface operations {
              *     cap, this is not an error.
              */
             readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            readonly 429: components["responses"]["RateLimited"];
+            /** @description A required balance, allowance or complete discovery read is unavailable. */
+            readonly 503: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
@@ -3940,10 +4547,19 @@ export interface operations {
              *     or, when there is no usable grant, a token amount cannot be sized.
              *     An unsized native payable that would install a native cap is
              *     `409 SESSION_POLICY_NATIVE_UNSIZED`.
-             *     `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS` — more than five native
+             *     `SESSION_POLICY_TOO_MANY_NATIVE_RECIPIENTS` — more than twenty native
              *     recipients. Finished automations keep their addresses until revoke.
-             *     `SESSION_POLICY_RECIPIENT_NOT_EOA` — a native recipient is a contract
-             *     or a 7702-delegated EOA.
+             *     `SESSION_POLICY_RECIPIENT_NOT_EOA` — a native recipient is a
+             *     contract.
+             *     `SESSION_POLICY_RECIPIENT_NOT_ACKNOWLEDGED` — a native recipient is
+             *     a 7702-delegated EOA that `delegatedNativeRecipients` does not
+             *     acknowledge.
+             *     `SESSION_POLICY_RECIPIENT_DELEGATE_CHANGED` — an acknowledged
+             *     recipient's designation now names a different delegate.
+             *     All three set `recipient`, which can be another enabled task's
+             *     recipient: the merged grant carries every running automation's.
+             *     The last two also set `delegate`, and a changed delegate sets
+             *     `acknowledgedDelegate`.
              */
             readonly 400: {
                 headers: {
@@ -3997,6 +4613,64 @@ export interface operations {
              *     the same signature before its signing window expires; no new
              *     prepare or owner signature is needed unless that window expires.
              */
+            readonly 503: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    readonly getWalletBudget: {
+        readonly parameters: {
+            readonly query?: {
+                /**
+                 * @description The chain to operate on (a single value). Omit to use the aggregator
+                 *     default (the request's JWT `aud` chain, then the gateway default).
+                 */
+                readonly chainId?: components["parameters"]["ChainIdQuery"];
+            };
+            readonly header?: never;
+            readonly path: {
+                readonly address: components["schemas"]["EthereumAddress"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current limits and retirement health */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["WalletBudget"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            /** @description No current permission for this wallet and chain */
+            readonly 404: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description More than one current permission; authority is ambiguous */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description BUDGET_READ_UNAVAILABLE — a remainder could not be read */
             readonly 503: {
                 headers: {
                     readonly [name: string]: unknown;
