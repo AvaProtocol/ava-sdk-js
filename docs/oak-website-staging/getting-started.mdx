@@ -34,7 +34,7 @@ The Client is the single entrypoint. Construct one per aggregator endpoint and s
 import { Client } from "@avaprotocol/sdk-js";
 
 const client = new Client({
-  baseUrl: "https://gateway.avaprotocol.org/api/v1",
+  baseUrl: "https://api.avaprotocol.org/api/v1",
   // Optional: pin a request timeout (defaults to 30s).
   defaultTimeoutMs: 120_000,
 });
@@ -51,7 +51,7 @@ Every endpoint except `client.health.check()` requires a Bearer JWT. Two ways to
 ```ts
 import { Client, buildAuthMessage } from "@avaprotocol/sdk-js";
 
-const client = new Client({ baseUrl: "https://gateway.avaprotocol.org/api/v1" });
+const client = new Client({ baseUrl: "https://api.avaprotocol.org/api/v1" });
 
 // In the browser, build the message + ask the wallet to sign it.
 const { message } = buildAuthMessage({ ownerAddress });

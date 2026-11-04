@@ -15,7 +15,7 @@ import { WorkflowsResource } from "./resources/workflows";
 export interface ClientOptions {
   /**
    * Base URL of the REST API including the `/api/v1` prefix. Example:
-   * `https://gateway.avaprotocol.org/api/v1`. The SDK does not append
+   * `https://api.avaprotocol.org/api/v1`. The SDK does not append
    * `/api/v1` for you; partners running their own aggregator instance
    * can point baseUrl elsewhere if their reverse proxy strips the prefix.
    */

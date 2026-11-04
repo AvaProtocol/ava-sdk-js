@@ -13,7 +13,7 @@
 
 import { Wallet as EthersWallet } from "ethers";
 
-import { Client, MAX_NATIVE_RECIPIENTS, SessionPolicyActions } from "@avaprotocol/sdk-js";
+import { Client, SessionPolicyActions } from "@avaprotocol/sdk-js";
 import type { v4 } from "@avaprotocol/types";
 
 import {
@@ -21,6 +21,9 @@ import {
   TEST_AUTH_CHAIN_ID,
 } from "../../utils/client";
 import { signTypedDataWithEthers } from "../../utils/sessionGrant";
+
+/** More native recipients than the gateway's cap allows on one grant. */
+const OVER_NATIVE_RECIPIENT_CAP = 21;
 
 // Sepolia test USDC — the same token the Uniswap fixtures use.
 const TOKEN = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
@@ -165,9 +168,11 @@ describe("policies (live gateway)", () => {
     expect(listed.items.every((p) => p.chainId !== unserved)).toBe(true);
   }, 120_000);
 
-  test("more than five native recipients is refused before a signature", async () => {
+  test("more native recipients than the gateway allows is refused before a signature", async () => {
+    // The cap lives only in the gateway (MaxNativeRecipients, 20 today).
+    // Raise this past it if the gateway's cap grows.
     const nativeRecipients = Array.from(
-      { length: MAX_NATIVE_RECIPIENTS + 1 },
+      { length: OVER_NATIVE_RECIPIENT_CAP },
       (_, index) => `0x${(index + 1).toString(16).padStart(40, "0")}`,
     );
 

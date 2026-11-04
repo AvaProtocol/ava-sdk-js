@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 /**
- * Pull EigenLayer-AVS staging OpenAPI, then apply the one local patch
+ * Pull EigenLayer-AVS staging OpenAPI, then apply the local patch
  * `openapi-typescript` needs. Server facts (GET 7702 is missing|delegated,
  * never pending) live on the gateway spec — merge that first so a raw
  * download does not silently lose them.
  *
- * Local patch: drop `default: false` on `allowContractRecipient`. The
- * gateway still defaults omitted to false; the YAML default makes
- * openapi-typescript emit a required field.
+ * Local patch: drop `default: false` on optional request booleans
+ * `allowContractRecipient`, `startNewTotals`, and `reserveGas`. The gateway
+ * still defaults omitted to false; the YAML default makes openapi-typescript
+ * require them.
  */
 const fs = require("node:fs");
 const path = require("node:path");
@@ -35,19 +36,17 @@ async function main() {
     );
   }
 
-  const stripped = stripAllowContractRecipientDefaults(yaml);
+  const stripped = stripOptionalRequestDefaults(yaml);
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, stripped.yaml);
   console.log(
     `wrote ${path.relative(process.cwd(), OUT)} from ${SPEC_URL}` +
-      (stripped.stripped
-        ? ` (stripped ${stripped.stripped} allowContractRecipient default: false)`
-        : ""),
+      (stripped.stripped ? ` (stripped ${stripped.stripped} optional request default: false)` : ""),
   );
 }
 
 /**
- * Drop `default: false` under `allowContractRecipient`. openapi-typescript
+ * Drop `default: false` under optional request booleans. openapi-typescript
  * treats that default as required. The gateway still treats an omitted
  * field as false.
  *
@@ -56,10 +55,10 @@ async function main() {
  * `description:` between). Only the property's direct keys count, so text
  * inside a nested block, such as a multi-line description, is left alone.
  */
-function stripAllowContractRecipientDefaults(yaml) {
+function stripOptionalRequestDefaults(yaml) {
   const out = [];
   let stripped = 0;
-  // Indent of the `allowContractRecipient:` key while inside its block, and
+  // Indent of the selected property key while inside its block, and
   // of its direct keys once the first one is seen.
   let keyIndent = -1;
   let childIndent = -1;
@@ -78,7 +77,7 @@ function stripAllowContractRecipientDefaults(yaml) {
         }
       }
     }
-    if (/^allowContractRecipient:\s*$/.test(trimmed)) {
+    if (/^(allowContractRecipient|startNewTotals|reserveGas):\s*$/.test(trimmed)) {
       keyIndent = indent;
       childIndent = -1;
     }
@@ -87,7 +86,7 @@ function stripAllowContractRecipientDefaults(yaml) {
   return { yaml: out.join("\n"), stripped };
 }
 
-module.exports = { stripAllowContractRecipientDefaults };
+module.exports = { stripOptionalRequestDefaults };
 
 if (require.main === module) {
   main().catch((err) => {
