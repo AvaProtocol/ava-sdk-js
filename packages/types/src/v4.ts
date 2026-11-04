@@ -97,6 +97,15 @@ export type PreparedDelegation = components["schemas"]["PreparedDelegation"];
 export type SubmitDelegationRequest = components["schemas"]["SubmitDelegationRequest"];
 export type DelegationStatus = components["schemas"]["DelegationStatus"];
 export type NativeSpendCap = components["schemas"]["NativeSpendCap"];
+export type DelegatedNativeRecipient = components["schemas"]["DelegatedNativeRecipient"];
+export type WalletBudget = components["schemas"]["WalletBudget"];
+export type WalletBudgetInput = components["schemas"]["WalletBudgetInput"];
+export type BudgetSizing = components["schemas"]["BudgetSizing"];
+export type BudgetTokenRow = components["schemas"]["BudgetTokenRow"];
+export type BudgetNativeRow = components["schemas"]["BudgetNativeRow"];
+export type BudgetRetirement = components["schemas"]["BudgetRetirement"];
+export type LiveApproval = components["schemas"]["LiveApproval"];
+export type UnmeteredPermission = components["schemas"]["UnmeteredPermission"];
 
 // ---------------------------------------------------------------------
 // Session policies — the grant that lets the gateway execute for a wallet
@@ -109,6 +118,13 @@ export type SessionPolicyList = components["schemas"]["SessionPolicyList"];
 export type SessionPolicyStatus = SessionPolicy["status"];
 export type PreparePolicyRequest = components["schemas"]["PreparePolicyRequest"];
 export type PreparedPolicy = components["schemas"]["PreparedPolicy"];
+export type PolicySigning = components["schemas"]["PolicySigning"];
+export type BudgetChangeState = components["schemas"]["BudgetChangeState"];
+export type BudgetApprovalPair = components["schemas"]["BudgetApprovalPair"];
+export type BudgetApprovalDiscovery = components["schemas"]["BudgetApprovalDiscovery"];
+export type BudgetApprovalReset = components["schemas"]["BudgetApprovalReset"];
+export type SubmitBudgetPreparationRequest =
+  operations["submitWalletBudgetPreparation"]["requestBody"]["content"]["application/json"];
 export type SubmitPolicyRequest = components["schemas"]["SubmitPolicyRequest"];
 // SessionPolicy plus required supersededPolicyIds — submit replaces earlier
 // usable grants on the runner and reports which ones (#716 / #731).

@@ -3,8 +3,11 @@ import * as path from "node:path";
 
 // The download script is CJS. Babel-jest still exposes module.exports.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { stripAllowContractRecipientDefaults } = require("../../../scripts/openapi-download.js") as {
-  stripAllowContractRecipientDefaults: (yaml: string) => { yaml: string; stripped: number };
+const { stripOptionalRequestDefaults } = require("../../../scripts/openapi-download.js") as {
+  stripOptionalRequestDefaults: (yaml: string) => {
+    yaml: string;
+    stripped: number;
+  };
 };
 
 const VENDORED = path.resolve(__dirname, "../../../packages/types/openapi/openapi.yaml");
@@ -25,10 +28,12 @@ describe("openapi-download", () => {
       "",
     ].join("\n");
 
-    const out = stripAllowContractRecipientDefaults(yaml);
+    const out = stripOptionalRequestDefaults(yaml);
 
     expect(out.stripped).toBe(2);
-    expect(out.yaml).not.toMatch(/allowContractRecipient:\n[ \t]+type: boolean\n[ \t]+default: false/);
+    expect(out.yaml).not.toMatch(
+      /allowContractRecipient:\n[ \t]+type: boolean\n[ \t]+default: false/,
+    );
     expect(out.yaml).toContain("anotherFlag:\n  type: boolean\n  default: false");
     expect(out.yaml).toContain("allowContractRecipient:\n  type: boolean\n");
   });
@@ -49,7 +54,7 @@ describe("openapi-download", () => {
       "",
     ].join("\n");
 
-    const out = stripAllowContractRecipientDefaults(yaml);
+    const out = stripOptionalRequestDefaults(yaml);
 
     expect(out.stripped).toBe(2);
     expect(out.yaml).toBe(
@@ -70,7 +75,7 @@ describe("openapi-download", () => {
 
   test("the vendored spec has already had those defaults removed", () => {
     const yaml = fs.readFileSync(VENDORED, "utf8");
-    expect(stripAllowContractRecipientDefaults(yaml).stripped).toBe(0);
+    expect(stripOptionalRequestDefaults(yaml).stripped).toBe(0);
   });
 
   // The point of the strip: openapi-typescript makes a field with a default
@@ -81,5 +86,22 @@ describe("openapi-download", () => {
     const fields = [...generated.matchAll(/readonly allowContractRecipient(\??):/g)];
     expect(fields.length).toBeGreaterThan(0);
     expect(fields.filter((field) => field[1] !== "?")).toEqual([]);
+  });
+
+  test("budget additions may omit startNewTotals without resetting usage", () => {
+    const out = stripOptionalRequestDefaults(
+      "startNewTotals:\n  type: boolean\n  default: false\nother:\n  default: false\n",
+    );
+    expect(out.stripped).toBe(1);
+    expect(out.yaml).toBe("startNewTotals:\n  type: boolean\nother:\n  default: false\n");
+    const generated = fs.readFileSync(GENERATED, "utf8");
+    expect(generated).toContain("readonly startNewTotals?: boolean");
+    expect(generated).not.toContain("readonly startNewTotals: boolean");
+  });
+
+  test("native transfer reserveGas remains optional for ordinary transfers", () => {
+    const generated = fs.readFileSync(GENERATED, "utf8");
+    expect(generated).toContain("readonly reserveGas?: boolean");
+    expect(generated).not.toContain("readonly reserveGas: boolean");
   });
 });

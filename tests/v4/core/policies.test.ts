@@ -90,7 +90,7 @@ async function startGateway(
 
 describe("policies.grant", () => {
   const wallet = "0x209eb31c199bEB4c386eF83CF442DE1a00667a1F";
-  const request: v4.PreparePolicyRequest = {
+  const request = {
     chainId: 11155111,
     agentLabel: "TradingBot",
     justification: "Execute swaps you approve in chat",
@@ -102,7 +102,7 @@ describe("policies.grant", () => {
       amount: "500000000",
     },
     expiresInSeconds: 2_592_000,
-  };
+  } satisfies v4.PreparePolicyRequest;
 
   let gateway: { url: string; close: () => Promise<void> };
   let captured: Captured;
