@@ -772,6 +772,9 @@ export interface paths {
          *     Rejected or unknown sends keep the hold until the nonce is consumed.
          *     Successful inclusion stays submitted until reset proof passes; activation
          *     and hold release are atomic. Signing is self-funded and fee capped.
+         *     An outstanding legacy signature found by the submit-time recheck returns
+         *     409 BUDGET_LEGACY_GRANT_PENDING with legacyGrantDeadline, the latest
+         *     outstanding signature deadline in unix milliseconds.
          */
         readonly post: operations["submitWalletBudgetPreparation"];
         readonly delete?: never;
@@ -838,7 +841,8 @@ export interface paths {
          *     refused with BUDGET_CHANGING while the wallet/chain hold is open;
          *     scheduled runs wait without consuming an execution.
          *     A known, unexpired legacy deferred signature returns 409
-         *     BUDGET_LEGACY_GRANT_PENDING with its latest outstanding deadline.
+         *     BUDGET_LEGACY_GRANT_PENDING with legacyGrantDeadline, the latest
+         *     outstanding signature deadline in unix milliseconds.
          *     The default legacy signing window lasts up to 30 days. Revoking a
          *     permission off chain does not invalidate its signature; migration must
          *     wait until that window closes. This route offers no nonce-cancellation
@@ -1320,6 +1324,12 @@ export interface components {
             readonly token?: components["schemas"]["EthereumAddress"];
             readonly spender?: components["schemas"]["EthereumAddress"];
             readonly neededWei?: string;
+            /**
+             * Format: int64
+             * @description Latest outstanding legacy signature deadline, in unix milliseconds.
+             *     Set only on BUDGET_LEGACY_GRANT_PENDING.
+             */
+            readonly legacyGrantDeadline?: number;
             readonly availableWei?: string;
             /**
              * @description Enabled tasks a grant would leave unable to run. Set on
@@ -4360,7 +4370,11 @@ export interface operations {
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
-            /** @description Budget submission is not enabled. */
+            /**
+             * @description Budget submission is not enabled, or a first-submit recheck refused
+             *     the operation. BUDGET_LEGACY_GRANT_PENDING includes
+             *     legacyGrantDeadline in unix milliseconds.
+             */
             readonly 409: {
                 headers: {
                     readonly [name: string]: unknown;
@@ -4481,8 +4495,9 @@ export interface operations {
              *     usable grant anymore. Prepare again.
              *
              *     `BUDGET_LEGACY_GRANT_PENDING` — an earlier deferred signature can
-             *     still install, even after off-chain revocation. The detail names
-             *     the latest deadline; the default window can last 30 days.
+             *     still install, even after off-chain revocation. legacyGrantDeadline
+             *     is the latest outstanding signature deadline in unix milliseconds;
+             *     the default window can last 30 days.
              *
              *     `SESSION_POLICY_TARGET_UNRESOLVED` — there is no usable grant,
              *     and an enabled task moves funds to a target this prepare cannot
