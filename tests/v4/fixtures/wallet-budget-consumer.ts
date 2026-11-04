@@ -1,13 +1,31 @@
-import { Client, type TypedDataSigner } from "@avaprotocol/sdk-js";
+import { APIError, Client, type TypedDataSigner } from "@avaprotocol/sdk-js";
 import type {
   WalletBudgetInput,
   PreparedPolicy,
   SubmitBudgetPreparationRequest,
   BudgetChangeState,
+  v4,
 } from "@avaprotocol/types";
 declare const client: Client;
 declare const prepared: PreparedPolicy;
 declare const legacySigner: TypedDataSigner;
+declare const refusal: APIError;
+// A typed deadline is optional for older gateways and other Problem codes.
+const legacyGrantDeadline: number | undefined = refusal.problem?.legacyGrantDeadline;
+const legacyPending: v4.Problem = {
+  type: "about:blank",
+  title: "Budget request refused",
+  status: 409,
+  code: "BUDGET_LEGACY_GRANT_PENDING",
+  legacyGrantDeadline,
+};
+const olderGateway: v4.Problem = {
+  type: "about:blank",
+  title: "Budget request refused",
+  status: 409,
+};
+// @ts-expect-error The deadline is a JSON number in unix milliseconds, not prose.
+const invalidDeadline: v4.Problem = { ...legacyPending, legacyGrantDeadline: "2026-11-04T00:00:00Z" };
 const chain = { chainId: 11155111 };
 const budget: WalletBudgetInput = { validUntil: 1810000000000 };
 const submission: SubmitBudgetPreparationRequest = { signature: "0x" };
