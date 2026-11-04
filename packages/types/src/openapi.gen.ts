@@ -3089,8 +3089,11 @@ export interface components {
         };
         /**
          * @description Budget preparations use owner_operation and omit legacy digest and
-         *     typedData. Preparation is gated off by default. This preparation-only
-         *     slice never relays a budget operation; signature submit remains refused.
+         *     typedData. Preparation and first submission have separate feature flags,
+         *     off by default. With signing enabled, signature-only first submission
+         *     relays the exact stored owner operation on Sepolia. The owner
+         *     personal_signs the 32 raw bytes of userOpHash. Submission is self-funded
+         *     and fee capped; repeat submissions reconcile without rebroadcasting.
          */
         readonly PolicySigning: {
             /** @enum {string} */

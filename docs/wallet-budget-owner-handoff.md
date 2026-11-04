@@ -2,8 +2,10 @@
 
 The budget gateway contract is EigenLayer-AVS #886, merged to staging as
 `150f7e085b6032cd8c8e483dae63ae5add43d388`. The vendored OpenAPI and generated
-types are synced to that commit. The SDK provides explicit calls; the app owns
-the review, wallet prompt, recovery display and decision to enable a Skill.
+types also include the signing-description correction from
+[EigenLayer-AVS #887](https://github.com/AvaProtocol/EigenLayer-AVS/pull/887)
+(`0c325b66f6993fb0599f189d93d6e5ccc6bf9e68`). The SDK provides explicit calls;
+the app owns the review, wallet prompt, recovery display and decision to enable a Skill.
 
 ## Methods
 
