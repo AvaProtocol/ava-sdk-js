@@ -289,6 +289,45 @@ describe("wallet budget handoff", () => {
     },
   );
 
+  test.each([false, true, undefined])(
+    "preserves the gateway send boundary (%s) without inferring or retrying",
+    async (submissionStarted) => {
+      const problem: v4.Problem = {
+        type: "about:blank",
+        title: "Budget couldn't be submitted",
+        status: 503,
+        code: "BUDGET_READ_UNAVAILABLE",
+        ...(submissionStarted === undefined ? {} : { submissionStarted }),
+      };
+      reply(problem, 503);
+      const failure = await client.policies
+        .submitPreparation(wallet, id, { signature }, chain)
+        .catch((error: unknown) => error);
+      expect(failure).toBeInstanceOf(APIError);
+      expect((failure as APIError).problem).toStrictEqual(problem);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test("exposes the observed owner delegate in a structured refusal", async () => {
+    const delegate = "0x1111111111111111111111111111111111111111";
+    const problem: v4.Problem = {
+      type: "about:blank",
+      title: "Owner wallet account setup is not supported",
+      status: 409,
+      code: "EOA_DELEGATION_MISSING",
+      ownerDelegate: delegate,
+    };
+    reply(problem, 409);
+    const result = client.policies.prepare(wallet, { ...chain, agentLabel: "Sweep", budget: {} });
+    await expect(result).rejects.toMatchObject({
+      status: 409,
+      code: "EOA_DELEGATION_MISSING",
+      problem,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
   test("legacy grant refuses a budget response before prompting or submitting", async () => {
     reply({ ...prepared, typedData: { legacy: "must not sign" } });
     const sign = jest.fn();

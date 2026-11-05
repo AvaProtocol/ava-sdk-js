@@ -2,11 +2,32 @@
 
 `@avaprotocol/sdk-js` is the official TypeScript SDK for Ava Protocol's AVS.
 
-> **3.0.0 is a REST-only rewrite.** The 2.x line spoke gRPC; the 3.x line speaks the aggregator gateway's `/api/v1/...` REST API. The `4.0.0-dev.X` versions on npm are pre-release iterations of this rewrite that we ultimately stabilized as `3.0.0` to keep semver continuity from 2.x — see [CHANGELOG.md](./CHANGELOG.md) for the full rationale. The README sections below still describe the 2.x gRPC client; an updated quick-start for the 3.x REST client is tracked in a follow-up doc PR.
+> **3.0.0 is a REST-only rewrite.** The 2.x line spoke gRPC; the 3.x line speaks the aggregator gateway's `/api/v1/...` REST API. The `4.0.0-dev.X` versions on npm are pre-release iterations of this rewrite that we ultimately stabilized as `3.0.0` to keep semver continuity from 2.x — see [CHANGELOG.md](./CHANGELOG.md) for the full rationale. The archived README sections below describe the 2.x gRPC client; an updated quick-start for the 3.x REST client is tracked in a follow-up doc PR.
 
 > **[2.x — archived]** `@avaprotocol/sdk-js` was a simple, type-safe wrapper around gRPC designed to simplify integration with Ava Protocol's AVS. It enabled developers to interact with Ava Protocol efficiently, whether on the client-side or server-side, and provided full TypeScript support for a seamless development experience.
 
 ---
+
+## Budget submission recovery (REST)
+
+The gateway's `APIError.problem?.submissionStarted` is `true`, `false`, or
+absent. Only an explicit `false` proves that the request did not start sending.
+For example, a caller can use this local helper:
+
+```typescript
+import { APIError } from "@avaprotocol/sdk-js";
+
+function isDefinitelyUnsent(error: unknown): boolean {
+  return error instanceof APIError && error.problem?.submissionStarted === false;
+}
+```
+
+When this helper returns `true`, prepare a fresh review before requesting
+another signature. When `submissionStarted` is `true` or absent, or the HTTP
+reply is lost, reconcile the original preparation and hash before considering
+another operation. The SDK
+does not retry budget submissions automatically or infer a send boundary from
+HTTP status.
 
 ## Archived 2.x documentation
 
