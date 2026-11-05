@@ -10,6 +10,27 @@ declare const client: Client;
 declare const prepared: PreparedPolicy;
 declare const legacySigner: TypedDataSigner;
 declare const refusal: APIError;
+const submissionStarted: boolean | undefined = refusal.problem?.submissionStarted;
+const ownerDelegate: string | undefined = refusal.problem?.ownerDelegate;
+const unsent: v4.Problem = {
+  type: "about:blank",
+  title: "Budget couldn't be submitted",
+  status: 503,
+  code: "BUDGET_READ_UNAVAILABLE",
+  submissionStarted: false,
+};
+const uncertain: v4.Problem = { ...unsent, submissionStarted: true };
+const delegatedOwner: v4.Problem = {
+  type: "about:blank",
+  title: "Owner account setup is unsupported",
+  status: 409,
+  code: "EOA_DELEGATION_MISSING",
+  ownerDelegate,
+};
+// @ts-expect-error The send boundary is a JSON boolean, never prose.
+const invalidBoundary: v4.Problem = { ...unsent, submissionStarted: "false" };
+// @ts-expect-error The observed delegate is an address string, not a number.
+const invalidDelegate: v4.Problem = { ...delegatedOwner, ownerDelegate: 1 };
 // A typed deadline is optional for older gateways and other Problem codes.
 const legacyGrantDeadline: number | undefined = refusal.problem?.legacyGrantDeadline;
 const legacyPending: v4.Problem = {
