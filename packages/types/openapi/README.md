@@ -2,9 +2,10 @@
 
 `openapi.yaml` is copied from [`AvaProtocol/EigenLayer-AVS`](https://github.com/AvaProtocol/EigenLayer-AVS)
 `api/openapi.yaml` via `yarn openapi-download`. Server facts stay on that
-file. The download script applies **one** local patch: it strips
-`default: false` on `allowContractRecipient` because `openapi-typescript`
-would otherwise emit a required field. Do not `curl` the spec by hand.
+file. The download script strips `default: false` from the optional
+`allowContractRecipient`, `startNewTotals`, and `reserveGas` properties so
+`openapi-typescript` keeps them optional. The gateway still defaults omitted
+values to false. Do not `curl` the spec by hand.
 
 When the server spec changes, refresh and regenerate:
 

@@ -775,6 +775,12 @@ export interface paths {
          *     An outstanding legacy signature found by the submit-time recheck returns
          *     409 BUDGET_LEGACY_GRANT_PENDING with legacyGrantDeadline, the latest
          *     outstanding signature deadline in unix milliseconds.
+         *     Errors include submissionStarted when the send boundary is known.
+         *     False means this completed request never attempted its first-send marker
+         *     or relay; the client may prepare a fresh review. True or an
+         *     absent field requires reading the same preparation, with no second
+         *     operation. A lost reply always requires reconciliation. A 503 alone
+         *     does not distinguish pre-send checks from post-send storage failures.
          */
         readonly post: operations["submitWalletBudgetPreparation"];
         readonly delete?: never;
@@ -833,6 +839,8 @@ export interface paths {
          *     v1 Sepolia USDC. Other live allowances requiring reset return 409
          *     BUDGET_RESET_UNSUPPORTED_TOKEN with token/spender; insufficient ETH returns
          *     409 BUDGET_FEE_INSUFFICIENT_ETH with neededWei/availableWei.
+         *     An incompatible delegated owner returns 409 EOA_DELEGATION_MISSING
+         *     with ownerDelegate when the observed code is an EIP-7702 designation.
          *     A quote above wallet_budget_max_fee_wei (default 0.005 ETH) returns
          *     409 BUDGET_FEE_CEILING_EXCEEDED. Unsupported Permit2, NFT/operator or
          *     unaudited spending targets return 409 BUDGET_ROUTE_UNSUPPORTED.
@@ -1041,6 +1049,10 @@ export interface paths {
          *       (uninstallValidation call for the owner wallet: plain tx to the
          *       runner, or owner-fallback UserOp). Once teardown is verified,
          *       GET no longer returns cleanup for that policy.
+         *     - `500 POLICIES_REVOKED_CLEANUP_UNAVAILABLE` — the revoke was applied
+         *       in Ava, but the gateway could not construct the owner's on-chain
+         *       cleanup transaction. The on-chain permission may remain active.
+         *       The response does not mean the off-chain revoke failed.
          */
         readonly delete: operations["revokeWalletPolicy"];
         readonly options?: never;
@@ -1310,7 +1322,10 @@ export interface components {
             /**
              * @description Machine-readable error code. Stable across releases; clients can
              *     switch on this for programmatic handling. Mirrors the gRPC-era
-             *     ErrorCode enum vocabulary.
+             *     ErrorCode enum vocabulary. POLICIES_REJECTED (400) preserves an
+             *     authored client-validation reason, including expired signing
+             *     windows. POLICIES_UNAVAILABLE (503) hides unexpected internal
+             *     diagnostics, which remain only in server logs.
              * @example WORKFLOW_NOT_FOUND
              */
             readonly code?: string;
@@ -1324,6 +1339,31 @@ export interface components {
             readonly token?: components["schemas"]["EthereumAddress"];
             readonly spender?: components["schemas"]["EthereumAddress"];
             readonly neededWei?: string;
+            /**
+             * @description Budget signature-only submit send boundary, when known. False
+             *     proves this request was refused before attempting the durable
+             *     first-send marker, so it did not relay an operation. True includes
+             *     uncertain marker/storage failures and repeats of marked attempts; check the
+             *     existing preparation and never infer that nothing was sent.
+             *     A repeated submit of a settled unsent preparation remains false.
+             *     Absent means unknown, including older gateways. A lost response
+             *     also means unknown. Never infer this from HTTP status or prose.
+             */
+            readonly submissionStarted?: boolean;
+            /**
+             * @description Observed EIP-7702 delegate of the owner, only on
+             *     EOA_DELEGATION_MISSING from owner execution or budget preparation
+             *     and submission, and policy checks of an eoa_7702 runner. Absent
+             *     for non-designation code or unknown state. Gateway pin, reader or
+             *     implementation-hash failures on supported chains are
+             *     OWNER_ACCOUNT_UNAVAILABLE (503), never owner delegation advice.
+             *     A delegated owner on a chain other than Sepolia or Base is a
+             *     permanent EOA_DELEGATION_MISSING refusal even without a configured
+             *     pin; ownerDelegate still names the observed designation. A confirmed unsupported account
+             *     implementation, fallback owner or EntryPoint is
+             *     OWNER_ACCOUNT_UNSUPPORTED (409); preparing again does not fix it.
+             */
+            readonly ownerDelegate?: components["schemas"]["EthereumAddress"];
             /**
              * Format: int64
              * @description Latest outstanding legacy signature deadline, in unix milliseconds.
@@ -3686,6 +3726,20 @@ export interface operations {
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
+            /**
+             * @description EOA_DELEGATION_MISSING — owner account code is not supported.
+             *     OWNER_ACCOUNT_UNSUPPORTED — the account implementation, fallback
+             *     owner or EntryPoint is not supported; preparing again cannot fix it.
+             *     ownerDelegate names the observed EIP-7702 delegate, when present.
+             */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             /** @description Checks, source compatibility, funding or pricing failed; refresh the preparation. */
             readonly 412: {
                 headers: {
@@ -3725,6 +3779,20 @@ export interface operations {
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
             readonly 404: components["responses"]["NotFound"];
+            /**
+             * @description EOA_DELEGATION_MISSING — owner account code is not supported.
+             *     OWNER_ACCOUNT_UNSUPPORTED — the account implementation, fallback
+             *     owner or EntryPoint is not supported; preparing again cannot fix it.
+             *     ownerDelegate names the observed EIP-7702 delegate, when present.
+             */
+            readonly 409: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             /** @description Preparation is stale or rejected; prepare, review and sign again. */
             readonly 412: {
                 headers: {
@@ -4373,7 +4441,11 @@ export interface operations {
             /**
              * @description Budget submission is not enabled, or a first-submit recheck refused
              *     the operation. BUDGET_LEGACY_GRANT_PENDING includes
-             *     legacyGrantDeadline in unix milliseconds.
+             *     legacyGrantDeadline in unix milliseconds. EOA_DELEGATION_MISSING
+             *     includes ownerDelegate when the owner has an EIP-7702 designation.
+             *     OWNER_ACCOUNT_UNSUPPORTED identifies a confirmed unsupported
+             *     implementation, fallback owner or EntryPoint; preparing again
+             *     cannot fix it.
              */
             readonly 409: {
                 headers: {
@@ -4383,7 +4455,7 @@ export interface operations {
                     readonly "application/problem+json": components["schemas"]["Problem"];
                 };
             };
-            /** @description Required chain or storage evidence is unavailable; no unsafe hold release. */
+            /** @description Required chain or storage evidence is unavailable; no unsafe hold release. OWNER_ACCOUNT_UNAVAILABLE identifies a gateway account-verification fault, not owner setup advice. */
             readonly 503: {
                 headers: {
                     readonly [name: string]: unknown;
@@ -4522,7 +4594,7 @@ export interface operations {
                 };
             };
             readonly 429: components["responses"]["RateLimited"];
-            /** @description A required balance, allowance or complete discovery read is unavailable. */
+            /** @description A required balance, allowance or complete discovery read is unavailable. OWNER_ACCOUNT_UNAVAILABLE identifies a gateway pin, reader or RPC-chain configuration fault; it does not ask the owner to change account setup. */
             readonly 503: {
                 headers: {
                     readonly [name: string]: unknown;
@@ -4789,6 +4861,15 @@ export interface operations {
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
+            /** @description POLICIES_REVOKED_CLEANUP_UNAVAILABLE — revoke applied in Ava; on-chain cleanup could not be prepared. */
+            readonly 500: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
         };
     };
     readonly listSecrets: {
