@@ -310,12 +310,13 @@ describe("wallet budget handoff", () => {
   );
 
   test("exposes the observed owner delegate in a structured refusal", async () => {
+    const delegate = "0x1111111111111111111111111111111111111111";
     const problem: v4.Problem = {
       type: "about:blank",
       title: "Owner wallet account setup is not supported",
       status: 409,
       code: "EOA_DELEGATION_MISSING",
-      ownerDelegate: wallet,
+      ownerDelegate: delegate,
     };
     reply(problem, 409);
     const result = client.policies.prepare(wallet, { ...chain, agentLabel: "Sweep", budget: {} });

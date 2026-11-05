@@ -1359,9 +1359,10 @@ export interface components {
              *     OWNER_ACCOUNT_UNAVAILABLE (503), never owner delegation advice.
              *     A delegated owner on a chain other than Sepolia or Base is a
              *     permanent EOA_DELEGATION_MISSING refusal even without a configured
-             *     pin; ownerDelegate still names the observed designation. A confirmed unsupported account
-             *     implementation, fallback owner or EntryPoint is
-             *     OWNER_ACCOUNT_UNSUPPORTED (409); preparing again does not fix it.
+             *     pin; ownerDelegate still names the observed designation.
+             *     A confirmed unsupported account implementation, fallback owner or
+             *     EntryPoint is OWNER_ACCOUNT_UNSUPPORTED (409); preparing again
+             *     does not fix it.
              */
             readonly ownerDelegate?: components["schemas"]["EthereumAddress"];
             /**
