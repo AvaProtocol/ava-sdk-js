@@ -328,6 +328,38 @@ describe("wallet budget handoff", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
+  test.each(["prepare", "submit"])(
+    "preserves retired-grant removal calldata on %s without sending or retrying",
+    async (stage) => {
+      const cleanup: v4.OnChainRevokeCleanup = {
+        entityId: 99,
+        target: wallet,
+        callData: "0xb6b1ccfe00000000",
+        chainId: chain.chainId,
+      };
+      const problem: v4.Problem = {
+        type: "about:blank",
+        title: "Budget request refused",
+        status: 409,
+        code: "BUDGET_RETIRED_GRANT_INSTALLED",
+        onChainCleanup: cleanup,
+        ...(stage === "submit" ? { submissionStarted: false } : {}),
+      };
+      reply(problem, 409);
+      const result =
+        stage === "prepare"
+          ? client.policies.prepare(wallet, { ...chain, agentLabel: "Budget", budget: {} })
+          : client.policies.submitPreparation(wallet, id, { signature }, chain);
+      await expect(result).rejects.toBeInstanceOf(APIError);
+      await expect(result).rejects.toMatchObject({
+        status: 409,
+        code: "BUDGET_RETIRED_GRANT_INSTALLED",
+        problem,
+      });
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    },
+  );
+
   test("legacy grant refuses a budget response before prompting or submitting", async () => {
     reply({ ...prepared, typedData: { legacy: "must not sign" } });
     const sign = jest.fn();
