@@ -47,6 +47,8 @@ describe("policy cleanup reads", () => {
     ["required with payload", { ...policy, onChainCleanupRequired: true, onChainCleanup: cleanup }],
     ["required without payload", { ...policy, onChainCleanupRequired: true }],
     ["not required", { ...policy, onChainCleanupRequired: false }],
+    // Deliberately predates the current SessionPolicy contract. Transport
+    // preserves the old wire reply rather than synthesizing a boolean.
     ["older gateway without the flag", policy],
   ])("list and detail preserve %s unchanged", async (_name, received) => {
     reply({ items: [received] });

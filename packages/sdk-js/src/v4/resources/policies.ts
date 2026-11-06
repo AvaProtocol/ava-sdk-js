@@ -225,7 +225,8 @@ export class PoliciesResource {
    * authorization.
    *
    * `onChainCleanupRequired` can be true without an `onChainCleanup` payload.
-   * Check `=== true` when supporting older gateways that omit the flag.
+   * The return type reflects the current gateway's required boolean. Older
+   * gateways can omit it at runtime; use `=== true` for that compatibility case.
    * This read rechecks revoked permissions and records confirmed removals, so
    * later reads can clear both the requirement and payload.
    */
