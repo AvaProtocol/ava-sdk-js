@@ -10,6 +10,13 @@ declare const client: Client;
 declare const prepared: PreparedPolicy;
 declare const legacySigner: TypedDataSigner;
 declare const refusal: APIError;
+declare const policy: v4.SessionPolicy;
+const cleanupRequired: boolean = policy.onChainCleanupRequired;
+const cleanupPayload: v4.OnChainRevokeCleanup | undefined = policy.onChainCleanup;
+declare const submittedPolicy: v4.SubmitPolicyResponse;
+const submittedCleanupRequired: boolean = submittedPolicy.onChainCleanupRequired;
+// @ts-expect-error The cleanup requirement is a boolean, not text.
+const invalidCleanupRequired: v4.SessionPolicy = { ...policy, onChainCleanupRequired: "true" };
 const submissionStarted: boolean | undefined = refusal.problem?.submissionStarted;
 const ownerDelegate: string | undefined = refusal.problem?.ownerDelegate;
 const unsent: v4.Problem = {

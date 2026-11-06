@@ -223,6 +223,11 @@ export class PoliciesResource {
    * Grant material (the install calldata and the owner's signature) is never
    * echoed back; this is the manage screen's read, not a way to recover an
    * authorization.
+   *
+   * `onChainCleanupRequired` can be true without an `onChainCleanup` payload.
+   * Check `=== true` when supporting older gateways that omit the flag.
+   * This read rechecks revoked permissions and records confirmed removals, so
+   * later reads can clear both the requirement and payload.
    */
   list(
     address: string,
@@ -234,7 +239,11 @@ export class PoliciesResource {
     });
   }
 
-  /** GET /wallets/{address}/policies/{policyId} — one grant. */
+  /**
+   * GET /wallets/{address}/policies/{policyId} — one grant.
+   * Like {@link list}, preserves the cleanup requirement even without a
+   * payload and lets the gateway reconcile a confirmed on-chain removal.
+   */
   get(
     address: string,
     policyId: string,
