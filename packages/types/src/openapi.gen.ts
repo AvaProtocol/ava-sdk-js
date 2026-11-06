@@ -777,6 +777,9 @@ export interface paths {
          *     outstanding signature deadline in unix milliseconds.
          *     A live unrecognized validation authority returns 409 BUDGET_AUTHORITY_UNKNOWN;
          *     remove it in the wallet, then check again.
+         *     A SingleSigner registration pinned as a retired Ava signer returns
+         *     409 BUDGET_RETIRED_GRANT_INSTALLED with onChainCleanup. Send this removal
+         *     from the owner wallet and wait for confirmation before preparing again.
          *     Errors include submissionStarted when the send boundary is known.
          *     False means this completed request never attempted its first-send marker
          *     or relay; the client may prepare a fresh review. True or an
@@ -848,7 +851,10 @@ export interface paths {
          *     unaudited spending targets return 409 BUDGET_ROUTE_UNSUPPORTED.
          *     Budget preparation and submission return 409 BUDGET_AUTHORITY_UNKNOWN
          *     for a live unrecognized validation authority; remove it in the wallet,
-         *     then check again. Ava's session operations are
+         *     then check again. A SingleSigner registration pinned as a retired Ava
+         *     signer returns 409 BUDGET_RETIRED_GRANT_INSTALLED with onChainCleanup;
+         *     the owner sends the removal and waits for confirmation before retrying.
+         *     Ava's session operations are
          *     refused with BUDGET_CHANGING while the wallet/chain hold is open;
          *     scheduled runs wait without consuming an execution.
          *     A known, unexpired legacy deferred signature returns 409
@@ -1386,6 +1392,20 @@ export interface components {
              *     Set only on BUDGET_LEGACY_GRANT_PENDING.
              */
             readonly legacyGrantDeadline?: number;
+            /**
+             * @description Unsigned owner-directed removal of a registered grant naming a
+             *     configured retired Ava signer. Returned only with 409
+             *     BUDGET_RETIRED_GRANT_INSTALLED, never for an unknown authority.
+             *     The owner sends this call directly to target on chainId, then
+             *     prepares again after confirmation. The gateway does not send it.
+             *     Consumers must match target and chainId to the expected source
+             *     wallet and network before prompting the owner to sign.
+             *     A missing historical install may require skipping hook-module
+             *     storage cleanup; the call still removes registration and clears
+             *     the SingleSigner signer. No permission becomes usable by being
+             *     classified as retired.
+             */
+            readonly onChainCleanup?: components["schemas"]["OnChainRevokeCleanup"];
             readonly availableWei?: string;
             /**
              * @description Enabled tasks a grant would leave unable to run. Set on

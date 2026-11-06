@@ -328,6 +328,43 @@ describe("wallet budget handoff", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
+  test.each(["prepare", "submit"])(
+    "preserves retired-grant removal calldata on %s without sending or retrying",
+    async (stage) => {
+      const cleanup: v4.OnChainRevokeCleanup = {
+        entityId: 99,
+        target: wallet,
+        callData: "0xb6b1ccfe00000000",
+        chainId: chain.chainId,
+      };
+      const problem: v4.Problem = {
+        type: "about:blank",
+        title: "Budget request refused",
+        status: 409,
+        code: "BUDGET_RETIRED_GRANT_INSTALLED",
+        onChainCleanup: cleanup,
+        ...(stage === "submit" ? { submissionStarted: false } : {}),
+      };
+      reply(problem, 409);
+      const result =
+        stage === "prepare"
+          ? client.policies.prepare(wallet, { ...chain, agentLabel: "Budget", budget: {} })
+          : client.policies.submitPreparation(wallet, id, { signature }, chain);
+      const failure: unknown = await result.catch((error: unknown) => error);
+      expect(failure).toBeInstanceOf(APIError);
+      expect(failure).toMatchObject({
+        status: 409,
+        code: "BUDGET_RETIRED_GRANT_INSTALLED",
+        problem,
+      });
+      if (!(failure instanceof APIError)) throw new Error("Expected a structured APIError");
+      const ownerCleanup: v4.OnChainRevokeCleanup | undefined = failure.problem?.onChainCleanup;
+      expect(ownerCleanup).toStrictEqual(cleanup);
+      expect(failure.problem?.submissionStarted).toBe(stage === "submit" ? false : undefined);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    },
+  );
+
   test("legacy grant refuses a budget response before prompting or submitting", async () => {
     reply({ ...prepared, typedData: { legacy: "must not sign" } });
     const sign = jest.fn();

@@ -38,6 +38,14 @@ const delegatedOwner: v4.Problem = {
 const invalidBoundary: v4.Problem = { ...unsent, submissionStarted: "false" };
 // @ts-expect-error The observed delegate is an address string, not a number.
 const invalidDelegate: v4.Problem = { ...delegatedOwner, ownerDelegate: 1 };
+const retiredCleanup: v4.OnChainRevokeCleanup | undefined = refusal.problem?.onChainCleanup;
+const retiredGrant: v4.Problem = {
+  ...delegatedOwner,
+  code: "BUDGET_RETIRED_GRANT_INSTALLED",
+  ...(retiredCleanup !== undefined ? { onChainCleanup: retiredCleanup } : {}),
+};
+// @ts-expect-error Cleanup must carry a typed transaction, not raw calldata alone.
+const invalidRetiredCleanup: v4.Problem = { ...retiredGrant, onChainCleanup: "0xb6b1ccfe" };
 // A typed deadline is optional for older gateways and other Problem codes.
 const legacyGrantDeadline: number | undefined = refusal.problem?.legacyGrantDeadline;
 const legacyPending: v4.Problem = {

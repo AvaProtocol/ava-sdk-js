@@ -29,6 +29,12 @@ another operation. The SDK
 does not retry budget submissions automatically or infer a send boundary from
 HTTP status.
 
+`BUDGET_RETIRED_GRANT_INSTALLED` can include an unsigned removal call at
+`error.problem?.onChainCleanup`. Before prompting the owner, match its `target`
+and `chainId` to the selected source wallet and network, and review the removal
+calldata. The owner sends the call; the SDK does not send it automatically.
+Wait for confirmation before preparing the budget again.
+
 ## Archived 2.x documentation
 
 The sections below describe the 2.x gRPC client and are kept for users still on that line. The 3.x REST client documentation is tracked in a follow-up doc PR; in the meantime see the [CHANGELOG](./CHANGELOG.md) for what changed between 2.x and 3.x.
