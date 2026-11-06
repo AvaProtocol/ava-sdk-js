@@ -1,5 +1,15 @@
 # @avaprotocol/sdk-js
 
+## 5.2.4
+
+### Patch Changes
+
+- 03d4972: Expose the optional `Problem.onChainCleanup` payload for
+  `BUDGET_RETIRED_GRANT_INSTALLED`. Budget preparation and submission preserve the
+  owner-directed removal call without submitting or retrying it automatically.
+- Updated dependencies [03d4972]
+  - @avaprotocol/types@5.2.4
+
 ## 5.2.3
 
 ### Patch Changes
