@@ -1,5 +1,16 @@
 # @avaprotocol/types
 
+## 5.2.3
+
+### Patch Changes
+
+- bd8d88c: Expose `onChainCleanupRequired` on session-policy list, detail and submit
+  responses. A revoked policy can still require on-chain removal when its cleanup
+  payload is unavailable. Sync the OpenAPI contract from EigenLayer-AVS #894 and
+  document that policy reads reconcile completed removals.
+  The spec sync also includes the gateway's current unknown-authority refusal
+  documentation.
+
 ## 5.2.2
 
 ### Patch Changes
