@@ -42,7 +42,7 @@ const retiredCleanup: v4.OnChainRevokeCleanup | undefined = refusal.problem?.onC
 const retiredGrant: v4.Problem = {
   ...delegatedOwner,
   code: "BUDGET_RETIRED_GRANT_INSTALLED",
-  onChainCleanup: retiredCleanup,
+  ...(retiredCleanup !== undefined ? { onChainCleanup: retiredCleanup } : {}),
 };
 // @ts-expect-error Cleanup must carry a typed transaction, not raw calldata alone.
 const invalidRetiredCleanup: v4.Problem = { ...retiredGrant, onChainCleanup: "0xb6b1ccfe" };

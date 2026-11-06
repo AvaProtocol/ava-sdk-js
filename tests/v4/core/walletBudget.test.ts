@@ -350,12 +350,17 @@ describe("wallet budget handoff", () => {
         stage === "prepare"
           ? client.policies.prepare(wallet, { ...chain, agentLabel: "Budget", budget: {} })
           : client.policies.submitPreparation(wallet, id, { signature }, chain);
-      await expect(result).rejects.toBeInstanceOf(APIError);
-      await expect(result).rejects.toMatchObject({
+      const failure: unknown = await result.catch((error: unknown) => error);
+      expect(failure).toBeInstanceOf(APIError);
+      expect(failure).toMatchObject({
         status: 409,
         code: "BUDGET_RETIRED_GRANT_INSTALLED",
         problem,
       });
+      if (!(failure instanceof APIError)) throw new Error("Expected a structured APIError");
+      const ownerCleanup: v4.OnChainRevokeCleanup | undefined = failure.problem?.onChainCleanup;
+      expect(ownerCleanup).toStrictEqual(cleanup);
+      expect(failure.problem?.submissionStarted).toBe(stage === "submit" ? false : undefined);
       expect(fetchImpl).toHaveBeenCalledTimes(1);
     },
   );
