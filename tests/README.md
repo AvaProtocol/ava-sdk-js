@@ -31,6 +31,14 @@ Suites map to `yarn test:<name>` and to CI matrix jobs:
 | `yarn test:nodes` | `tests/v4/nodes` |
 | `yarn test:templates` | `tests/v4/templates` |
 
+The production workflow (`.github/workflows/prod-test-on-pr.yml`, manual
+dispatch only) shards by these same suites, with the same funded salts as
+below, against `https://api.avaprotocol.org` with `TEST_ENV=railway` and a
+Sepolia `CHAIN_ENDPOINT`. `chainRpcProvider()` in `tests/utils/client.ts`
+verifies the endpoint's chain id once per process, so an RPC for any other
+chain fails every on-chain test with a clear message instead of seeding
+block triggers from the wrong chain.
+
 ## External template integration
 
 These opt-in suites compile an externally maintained template from its current

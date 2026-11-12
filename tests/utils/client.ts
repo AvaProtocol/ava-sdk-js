@@ -15,7 +15,7 @@
  *     plain JSON objects shaped by the OpenAPI spec.
  */
 
-import { Wallet } from "ethers";
+import { JsonRpcProvider, Wallet } from "ethers";
 import {
   APIError,
   Client,
@@ -743,17 +743,49 @@ export function settingsForChain(runner: string, chainId: number, name = "Test S
   return { name, runner, chain_id: chainId };
 }
 
+const verifiedProviders = new Map<string, Promise<JsonRpcProvider>>();
+
+/**
+ * JSON-RPC provider for CHAIN_ENDPOINT, verified once per endpoint to serve
+ * {@link TEST_AUTH_CHAIN_ID}. Every suite hardcodes Sepolia: block-trigger
+ * seeds come from this endpoint's head, the USDC fixture is Sepolia's, and
+ * withdraw receipts are polled here. An endpoint for any other chain does not
+ * fail on its own; it hands out block numbers from the wrong chain (Base is
+ * tens of millions of blocks ahead, so a "near-future" trigger never fires)
+ * and receipts that never appear. The production workflow ran that way for
+ * months, so the check lives here rather than in each caller.
+ */
+export async function chainRpcProvider(): Promise<JsonRpcProvider> {
+  const ep = process.env.CHAIN_ENDPOINT ?? "";
+  if (!ep) throw new Error("CHAIN_ENDPOINT not set — on-chain tests need a Sepolia RPC");
+  const url = ep.startsWith("http") ? ep : `https://${ep}`;
+  let pending = verifiedProviders.get(url);
+  if (!pending) {
+    pending = (async () => {
+      const provider = new JsonRpcProvider(url);
+      const { chainId } = await provider.getNetwork();
+      if (Number(chainId) !== TEST_AUTH_CHAIN_ID) {
+        provider.destroy();
+        throw new Error(
+          `CHAIN_ENDPOINT serves chain ${chainId}, but the suites run on chain ` +
+            `${TEST_AUTH_CHAIN_ID} (Sepolia); point it at a Sepolia RPC`,
+        );
+      }
+      return provider;
+    })();
+    verifiedProviders.set(url, pending);
+    // A failed probe must not pin the failure for the rest of the process.
+    pending.catch(() => verifiedProviders.delete(url));
+  }
+  return pending;
+}
+
 /**
  * Fetch the current block number from the configured CHAIN_ENDPOINT.
  * Several node tests need this to seed a block-trigger workflow at
  * a near-future block.
  */
 export async function getCurrentBlockNumber(): Promise<number> {
-  const ep = process.env.CHAIN_ENDPOINT ?? "";
-  if (!ep) throw new Error("CHAIN_ENDPOINT not set — block-trigger tests need it");
-  const url = ep.startsWith("http") ? ep : `https://${ep}`;
-  // Defer the ethers import so non-chain tests don't pay the cost.
-  const { JsonRpcProvider } = await import("ethers");
-  const provider = new JsonRpcProvider(url);
+  const provider = await chainRpcProvider();
   return provider.getBlockNumber();
 }
