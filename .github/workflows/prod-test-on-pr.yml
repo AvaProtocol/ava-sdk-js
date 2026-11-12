@@ -34,6 +34,12 @@ jobs:
       # tests/utils/env.ts defaults AVS_REST_URL to localhost:8080, so without
       # this every gateway call fails with "fetch /health: fetch failed".
       AVS_REST_URL: https://api.avaprotocol.org/api/v1
+      # Production enforces partner admission on auth:exchange (EigenLayer-AVS
+      # #900, shipped in v6.2.5). The runner signs assertions as the dedicated
+      # `sdk-ci` partner registered in avs-infra's gateway config.
+      PARTNER_ASSERTION_PRIVATE_KEY: ${{ secrets.PARTNER_ASSERTION_PRIVATE_KEY }}
+      PARTNER_ASSERTION_ISSUER: sdk-ci
+      PARTNER_ASSERTION_AUDIENCE: avs-gateway-prod
       # On production env, when test run it may not cleanup data properly for multiple reasons.
       # In the next run, especially on pagination test, the assumption about data is wrong.
       # For those kind of particular test, we want to ensure a 100% unique salt across run
