@@ -17,6 +17,7 @@ import {
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
+import { heldSchedule } from "../../utils/templates";
 
 jest.setTimeout(60_000);
 
@@ -144,6 +145,8 @@ describe("Template: Uniswap V3 stop-loss", () => {
 
     const created = await fundedClient.workflows.create({
       ...wf,
+      // Held: a trigger firing before cleanup would move real funds.
+      ...heldSchedule(),
       // The top-level wf.name is the canonical workflow name; the
       // REST mapper auto-mirrors it into settings.name server-side.
       inputVariables: {

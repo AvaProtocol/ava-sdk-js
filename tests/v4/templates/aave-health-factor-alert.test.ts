@@ -48,6 +48,7 @@ import {
   removeCreatedWorkflows,
   settingsForChain,
 } from "../../utils/client";
+import { heldSchedule } from "../../utils/templates";
 
 jest.setTimeout(60_000);
 
@@ -315,6 +316,8 @@ describe("Template: AAVE health factor alert", () => {
 
     const created = await fundedClient.workflows.create({
       ...wf,
+      // Held: a trigger firing before cleanup would move real funds.
+      ...heldSchedule(),
       // settings.runner is required on every persisted workflow (same
       // as workflows.simulate) — the engine validates wallet
       // ownership against it. Omit and create fails with

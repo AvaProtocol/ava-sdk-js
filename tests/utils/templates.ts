@@ -80,3 +80,17 @@ export function createManualFromTemplate(
     ...overrides,
   };
 }
+
+/**
+ * Schedule fields that keep a deployed fund-moving workflow from running.
+ *
+ * The template deploy tests create real automations on the funded runner,
+ * whose grant covers their writes, so a trigger firing between create and
+ * cleanup would move real funds, and a submitted UserOp cannot be unsent.
+ * Starting a week out, allowing one run and expiring ten minutes later
+ * leaves nothing live even when cleanup fails.
+ */
+export function heldSchedule(): { startAt: number; expiredAt: number; maxExecution: number } {
+  const startAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  return { startAt, expiredAt: startAt + 10 * 60 * 1000, maxExecution: 1 };
+}
