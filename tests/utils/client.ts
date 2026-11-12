@@ -25,6 +25,7 @@ import {
 } from "@avaprotocol/sdk-js";
 
 import { TEST_REST_URL, requireEnv } from "./env";
+import { fetchWithRateLimitRetry } from "./fetchWithRetry";
 import { ensureE2eSessionGrant } from "./sessionGrant";
 
 /** Returns the configured test EOA private key. */
@@ -121,6 +122,9 @@ export function getClient(overrides?: Partial<ClientOptions>): Client {
     // 240s: real-bundler UserOp round-trips (Sepolia mempool + receipt polling)
     // can hit 120-200s on CI cold-start — must exceed the largest jest.setTimeout().
     defaultTimeoutMs: 240_000,
+    // Retry the gateway's 429 RATE_LIMITED after Retry-After; production
+    // keeps the default limiter and the live suites can exceed it.
+    fetchImpl: fetchWithRateLimitRetry(),
     ...overrides,
   });
 }
