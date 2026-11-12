@@ -120,9 +120,14 @@ export async function getFundedClient(
   return { client, owner: getEOAAddress(privateKey), privateKey };
 }
 
+// Options each test client was built with, so the auth exchange can reuse
+// the caller's transport settings (fetch, timeout, baseUrl) without the SDK
+// having to expose them.
+const clientOptions = new WeakMap<Client, Partial<ClientOptions>>();
+
 /** Returns a fresh, unauthenticated v4 Client pointed at the test stack. */
 export function getClient(overrides?: Partial<ClientOptions>): Client {
-  return new Client({
+  const client = new Client({
     baseUrl: TEST_REST_URL(),
     // 240s: real-bundler UserOp round-trips (Sepolia mempool + receipt polling)
     // can hit 120-200s on CI cold-start — must exceed the largest jest.setTimeout().
@@ -132,6 +137,8 @@ export function getClient(overrides?: Partial<ClientOptions>): Client {
     fetchImpl: fetchWithRateLimitRetry(),
     ...overrides,
   });
+  clientOptions.set(client, overrides ?? {});
+  return client;
 }
 
 // TEST_AUTH_CHAIN_ID is the chain id tests sign their auth message
@@ -187,10 +194,19 @@ export async function authenticateClient(
   // then move the JWT onto the caller's client. The caller's client must
   // not keep the header: partner-refusing endpoints (policies, budgets,
   // 7702) reject any request that carries one.
-  const resp = await getExchangeClient(getEOAAddress(pk)).auth.exchangeWithKey(
-    pk,
-    { uri: TEST_AUTH_URI, chainId: TEST_AUTH_CHAIN_ID, version },
-  );
+  // Reuse the caller's transport settings (fetch, timeout, baseUrl), but
+  // never its headers or token.
+  const transportOpts = { ...(clientOptions.get(client) ?? {}) };
+  delete transportOpts.headers;
+  delete transportOpts.token;
+  const resp = await getExchangeClient(
+    getEOAAddress(pk),
+    transportOpts,
+  ).auth.exchangeWithKey(pk, {
+    uri: TEST_AUTH_URI,
+    chainId: TEST_AUTH_CHAIN_ID,
+    version,
+  });
   client.setToken(resp.token);
   return resp.token;
 }
