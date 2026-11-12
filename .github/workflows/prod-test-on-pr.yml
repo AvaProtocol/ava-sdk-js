@@ -144,6 +144,12 @@ jobs:
     if: inputs.suite == 'all' || contains(fromJSON('["core","executions","nodes"]'), inputs.suite)
     runs-on: ubuntu-latest
     environment: production
+    # Only one dispatch may drive the salt-0 sender at a time, whichever ref
+    # or suite selection it came from. A newer pending run replaces an older
+    # pending one; the running one is never cancelled.
+    concurrency:
+      group: production-userop-salt0
+      cancel-in-progress: false
     env:
       AVS_REST_URL: https://api.avaprotocol.org/api/v1
       TEST_ENV: railway
